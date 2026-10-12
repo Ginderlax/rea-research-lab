@@ -1,0 +1,173 @@
+{
+  "schema": "rea-browser-execution-verification/v1",
+  "checked_at_utc": "2026-10-12T15:57:52.989Z",
+  "host": "http://127.0.0.1:4313",
+  "browser": "Codex in-app browser",
+  "data_scope": "Separate ignored execution-demo workspace; synthetic fixtures only. Existing user workspace/tab retained.",
+  "checks": [
+    {
+      "app": "editor",
+      "passed": true,
+      "operations": [
+        "save the 12-line minimum-edit witness",
+        "compare its 3-line edit with saved version",
+        "observe 9 removals and 0 additions",
+        "save edited file"
+      ],
+      "observed": "The interface reports minimal line-edit cost9; real saved file matches the three-line edit. Independent algorithm/performance comparisons are recorded separately."
+    },
+    {
+      "app": "metrics",
+      "passed": true,
+      "operations": [
+        "upload complete native dashboard fixture",
+        "download unchanged export",
+        "edit panel title/grid width",
+        "select custom variable db",
+        "ingest three CSV rows",
+        "bind local query to imported time-series target",
+        "inspect exact rendered values12/28/40",
+        "download edited JSON",
+        "navigate away and reopen saved dashboard"
+      ],
+      "observed": "Untouched export is byte-identical; edited export deeply equals the input with only intended title/grid/variable changes. Unknown keys, all original queries and unsupported panels remain equal. Separate local binding persists at revision4."
+    },
+    {
+      "app": "automation",
+      "passed": true,
+      "operations": [
+        "import own workflow JSON",
+        "save HTTP+wait+output workflow",
+        "run against loopback health endpoint",
+        "observe200 response and completed trace",
+        "save60000ms wait workflow",
+        "start and cancel",
+        "observe saved cancelled trace"
+      ],
+      "observed": "One completed request returns status200; second run cancels in the wait node. Both persisted histories match the visible results. No original n8n workflow/client execution is claimed."
+    },
+    {
+      "app": "archive",
+      "passed": true,
+      "operations": [
+        "create synthetic45-byte file",
+        "create/list/extract ZIP64",
+        "create/list/extract TAR.GZ",
+        "create/list/extract standalone GZIP",
+        "restart host and repeat TAR.GZ creation/list/extraction after extended-timestamp correction"
+      ],
+      "observed": "All four restored files equal the synthetic input bytes. Format integrity results appear in the interface. Separate original7za/.NET/bsdtar tests cover independently recorded cases."
+    }
+  ],
+  "console_errors_or_warnings_observed": 0,
+  "full_feature_parity_established": false,
+  "every_documented_feature_verified": false,
+  "universal_superiority_established": false,
+  "implementation_fingerprints": [
+    {
+      "path": "products/rea-studio/server.mjs",
+      "sha256": "ed40430c6df3bec60b8d05acd40f5c5ac4d8606cda3bc98f02065b2abe4050f3"
+    },
+    {
+      "path": "products/rea-studio/public/studio.mjs",
+      "sha256": "40ec58330f881f01bae9f26a5610b0fb8abbb79d4ae5258dd16c8f8724e1be20"
+    },
+    {
+      "path": "products/rea-studio/public/index.html",
+      "sha256": "d0d34be9575d78327002baf8383a8a9d7f341a6a4f5dccf22bf9059977f48f2d"
+    },
+    {
+      "path": "products/rea-studio/public/style.css",
+      "sha256": "6e04006894a14b4c68110971f2aae7fad01a1de8f372e9dc20f42148920271c8"
+    },
+    {
+      "path": "products/rea-studio/apps/editor/server.mjs",
+      "sha256": "b7eaab9dcee52394936c415aa3abe4c861c481677349f62880704ca2023fafea"
+    },
+    {
+      "path": "products/rea-studio/apps/editor/client.mjs",
+      "sha256": "6537ed329e48c1b4bb5e72fcec41f4f21bdc4dfecfc87f3bee1f29f6f749ff51"
+    },
+    {
+      "path": "products/rea-studio/apps/metrics/server.mjs",
+      "sha256": "76e24ad8341059a17ee567aa7f45aa94a654629eba83199a63dfbdabc42809f7"
+    },
+    {
+      "path": "products/rea-studio/apps/metrics/client.mjs",
+      "sha256": "43ce94873ed9755119c35c28f556965a6a376178a93656d059247996cadee145"
+    },
+    {
+      "path": "products/rea-studio/apps/automation/server.mjs",
+      "sha256": "1e3775f6835515a6fd6a278605c9880c18a2ee775b911a9f0194d3ab8079960b"
+    },
+    {
+      "path": "products/rea-studio/apps/automation/client.mjs",
+      "sha256": "27aa4fd3d7d8e8783b3f63c8f1d3fe4f7113731ce74a49b433c4c87bac95f3fc"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/server.mjs",
+      "sha256": "73f5f2cf1a232a0e954067bc28c6cde954dc64ec0b9aa390c1c670aaa5bc55b5"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/client.mjs",
+      "sha256": "889fbff75760334c19785767c83efffc0b3a8c337b57dfaefafdc08e8b302227"
+    },
+    {
+      "path": "products/rea-studio/apps/editor/git.mjs",
+      "sha256": "52f9b43507796ff012f6ac9330bde1ccf094bd2315dc6c952e2625465699d6de"
+    },
+    {
+      "path": "products/rea-studio/apps/editor/sequence-diff.mjs",
+      "sha256": "b32b31672184da8ece59b7aae2422216d21f30f994b55f617f33ced9d7b6de71"
+    },
+    {
+      "path": "products/rea-studio/apps/metrics/core.mjs",
+      "sha256": "8d23baeb9c1467f49199bc5735b00c47f4060f3b0ab844f94eb3cf3dfe33b067"
+    },
+    {
+      "path": "products/rea-studio/apps/metrics/fixtures/local-dashboard.json",
+      "sha256": "74058b9b5773a0bdae968c43216c05c05a7abf945e1ce26a257aa8b255f127bc"
+    },
+    {
+      "path": "products/rea-studio/apps/automation/core.mjs",
+      "sha256": "a3390f9a21dab463622ef841b84880c3e6cb24b60017da8db0e5eb145a495588"
+    },
+    {
+      "path": "products/rea-studio/apps/automation/engine.mjs",
+      "sha256": "222b56e6da988cd6e3de240679614789f5fe672a5880ff0379fe483dd1f2610a"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/zip.mjs",
+      "sha256": "16f7fca85cbe81698b1621968bc5281f8e80723b46e27a0ef89028dc14f65b6e"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/tar.mjs",
+      "sha256": "940ce0be9034b8b54813e5290f6b40af4a98b4b89f1ef4e31d07caed38585afd"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/gzip.mjs",
+      "sha256": "2d76ed467dbccd9263808d3a7efa9be0dbf78225b8c4d0c0184cd2a29d0e76c6"
+    }
+  ],
+  "screenshot": {
+    "path": "products/rea-studio/results/execution-preview.jpg",
+    "sha256": "758c3a2d9eb5e291691801b1475812c227c572113fc709127b431ad85d92e010"
+  },
+  "downloaded_fixture_checks": [
+    {
+      "label": "Untouched Grafana dashboard",
+      "bytes": 2442,
+      "sha256": "74058b9b5773a0bdae968c43216c05c05a7abf945e1ce26a257aa8b255f127bc"
+    },
+    {
+      "label": "Edited Grafana dashboard",
+      "bytes": 4399,
+      "sha256": "713a2996bbe27a279108b4ce2035aabc3d6b84c55fb4d27e1d0e470b653fa99e"
+    }
+  ],
+  "limitations": [
+    "Focused current workflow checks, not full original feature/product or comparative usability verification.",
+    "Browser archive checks do not exercise TAR standalone; automated tests cover it. Browser does not exercise original7za or every HTTP/error/retry/child-workflow mode.",
+    "The minimum-edit witness and synthetic fixture values are acceptance examples, not a universal performance or superiority proof."
+  ]
+}

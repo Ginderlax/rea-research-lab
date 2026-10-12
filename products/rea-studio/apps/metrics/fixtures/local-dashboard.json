@@ -1,0 +1,23 @@
+{
+  "id": null,
+  "uid": "rea-metrics-example",
+  "title": "Local telemetry exchange",
+  "schemaVersion": 42,
+  "version": 7,
+  "editable": true,
+  "tags": ["synthetic", "local"],
+  "time": { "from": "2026-01-01T00:00:00Z", "to": "2026-01-01T00:03:00Z", "futureRangeSetting": true },
+  "timezone": "utc",
+  "annotations": { "list": [] },
+  "templating": { "futureVariableSetting": "retained", "list": [
+    { "name": "env", "type": "custom", "query": "web,db", "hide": 0, "multi": false, "current": { "text": "web", "value": "web", "futureCurrent": 17 }, "options": [ { "text": "web", "value": "web", "selected": true }, { "text": "db", "value": "db", "selected": false } ], "futureVariable": { "flag": true } }
+  ] },
+  "panels": [
+    { "id": 1, "type": "text", "title": "Service $env", "gridPos": { "x": 0, "y": 0, "w": 24, "h": 5, "futureGrid": true }, "options": { "mode": "markdown", "content": "Saved local data for ${env}.", "futureOption": 81 } },
+    { "id": 2, "type": "timeseries", "title": "Saved CPU", "gridPos": { "x": 0, "y": 5, "w": 12, "h": 10 }, "datasource": { "type": "grafana-testdata-datasource", "uid": "synthetic-local" }, "targets": [ { "refId": "A", "data": [ { "name": "CPU", "fields": [ { "name": "Time", "type": "time", "values": [1767225600000,1767225660000,1767225780000] }, { "name": "Value", "type": "number", "values": [10,30,20] } ] } ], "futureTarget": { "nested": [1,2,3] } } ], "transformations": [] },
+    { "id": 3, "type": "table", "title": "Saved table", "gridPos": { "x": 12, "y": 5, "w": 12, "h": 10 }, "targets": [ { "refId": "A", "data": [ { "fields": [ { "name": "Service", "type": "string", "values": ["web","db"] }, { "name": "Value", "type": "number", "values": [10,90] } ] } ] } ], "transformations": [ { "id": "organize", "options": { "indexByName": { "Value": 0, "Service": 1 }, "renameByName": { "Value": "CPU" }, "excludeByName": {} } } ] },
+    { "id": 4, "type": "heatmap", "title": "Retained remote query", "gridPos": { "x": 0, "y": 15, "w": 24, "h": 5 }, "datasource": { "type": "prometheus", "uid": "external-reference" }, "targets": [ { "refId": "B", "expr": "rate(http_requests_total{service=\"$env\"}[5m])", "legendFormat": "{{service}}" } ], "transformations": [ { "id": "histogram", "options": { "bucketSize": 10 } } ], "futurePanel": { "flag": true } }
+  ],
+  "links": [],
+  "futureDashboard": { "message": "preserve every imported member", "__proto__": { "safe": true } }
+}

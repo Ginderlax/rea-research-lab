@@ -1,6 +1,6 @@
 {
   "schema": "rea-development-validation/v1",
-  "checked_at_utc": "2026-10-12T15:13:08.821Z",
+  "checked_at_utc": "2026-10-12T15:58:10.225Z",
   "scope": "Implemented development application contracts; does not establish every documented original-product feature or comparative superiority.",
   "runtime": "v24.16.0",
   "platform": "win32",
@@ -9,7 +9,10 @@
   "test_files": [
     "apps/archive/app.integration.test.mjs",
     "apps/archive/app.test.mjs",
+    "apps/archive/formats.test.mjs",
+    "apps/archive/zip.test.mjs",
     "apps/automation/app.test.mjs",
+    "apps/automation/execution.test.mjs",
     "apps/backup/app.integration.test.mjs",
     "apps/backup/app.test.mjs",
     "apps/editor/app.integration.test.mjs",
@@ -19,6 +22,8 @@
     "apps/flow/app.test.mjs",
     "apps/metrics/app.integration.test.mjs",
     "apps/metrics/app.test.mjs",
+    "apps/metrics/grafana.integration.test.mjs",
+    "apps/metrics/grafana.test.mjs",
     "apps/notes/app.integration.test.mjs",
     "apps/notes/app.test.mjs",
     "apps/notes/jex.test.mjs",
@@ -34,13 +39,13 @@
     "tests/host.test.mjs"
   ],
   "summary": {
-    "tests": 112,
-    "pass": 112,
+    "tests": 176,
+    "pass": 176,
     "fail": 0,
     "cancelled": 0,
     "skipped": 0,
     "todo": 0,
-    "duration_ms": 47461.3068
+    "duration_ms": 50708.0003
   },
   "source_files": [
     {
@@ -53,7 +58,23 @@
     },
     {
       "path": "apps/archive/client.mjs",
-      "sha256": "4439ca491f3c1877d70cf23f1e40c6a59db72e736818d8c2b8437becaf84f70b"
+      "sha256": "889fbff75760334c19785767c83efffc0b3a8c337b57dfaefafdc08e8b302227"
+    },
+    {
+      "path": "apps/archive/compatibility-evidence.json",
+      "sha256": "42da73a58a9ac571cba78e05f3dd47272d2a373c48e55a4c00748babdc1beaf8"
+    },
+    {
+      "path": "apps/archive/formats-validation.json",
+      "sha256": "ebeffa9c835ebee99cd89b954f92d22539c7118d2c1445efe8c11e20700243b6"
+    },
+    {
+      "path": "apps/archive/formats.test.mjs",
+      "sha256": "7a7847d60b34ead39b597aac54c1612f616ffe69b9a267e193bb01fc78554c98"
+    },
+    {
+      "path": "apps/archive/gzip.mjs",
+      "sha256": "2d76ed467dbccd9263808d3a7efa9be0dbf78225b8c4d0c0184cd2a29d0e76c6"
     },
     {
       "path": "apps/archive/interop.ps1",
@@ -61,7 +82,19 @@
     },
     {
       "path": "apps/archive/server.mjs",
-      "sha256": "b01284073eceb02f684bb6120ae6700a158e31760acfabce2c168c66544e8127"
+      "sha256": "73f5f2cf1a232a0e954067bc28c6cde954dc64ec0b9aa390c1c670aaa5bc55b5"
+    },
+    {
+      "path": "apps/archive/tar.mjs",
+      "sha256": "940ce0be9034b8b54813e5290f6b40af4a98b4b89f1ef4e31d07caed38585afd"
+    },
+    {
+      "path": "apps/archive/zip.mjs",
+      "sha256": "16f7fca85cbe81698b1621968bc5281f8e80723b46e27a0ef89028dc14f65b6e"
+    },
+    {
+      "path": "apps/archive/zip.test.mjs",
+      "sha256": "f7732808c8e734fdfd400a3af56108c0c3e1c0a6abbed3141dda3b86d56cdc66"
     },
     {
       "path": "apps/automation/app.test.mjs",
@@ -69,15 +102,27 @@
     },
     {
       "path": "apps/automation/client.mjs",
-      "sha256": "93bd3dc2a4b0ef31e7526b8b479e07be41b154335eea04eb8beb974e43c93aab"
+      "sha256": "27aa4fd3d7d8e8783b3f63c8f1d3fe4f7113731ce74a49b433c4c87bac95f3fc"
     },
     {
       "path": "apps/automation/core.mjs",
-      "sha256": "0cee883e163557ed741f00f258f21495ad135fe5a4032e469f3a10ced7d33805"
+      "sha256": "a3390f9a21dab463622ef841b84880c3e6cb24b60017da8db0e5eb145a495588"
+    },
+    {
+      "path": "apps/automation/engine.mjs",
+      "sha256": "222b56e6da988cd6e3de240679614789f5fe672a5880ff0379fe483dd1f2610a"
+    },
+    {
+      "path": "apps/automation/execution-validation.json",
+      "sha256": "175465ecf2733e6c1977d720ac255f8ac0805da9c7888d1bb5c738dff4ee0619"
+    },
+    {
+      "path": "apps/automation/execution.test.mjs",
+      "sha256": "9855e46ef1da6c862ad08e2d240cd079aa71e315d688468455b75fa57d290026"
     },
     {
       "path": "apps/automation/server.mjs",
-      "sha256": "b28eb394783b1e566225cf270f44c0e14368dc8c7fab7d97687a458b05667146"
+      "sha256": "1e3775f6835515a6fd6a278605c9880c18a2ee775b911a9f0194d3ab8079960b"
     },
     {
       "path": "apps/backup/app.integration.test.mjs",
@@ -117,11 +162,11 @@
     },
     {
       "path": "apps/editor/sequence-diff.mjs",
-      "sha256": "87fe7284ed00d70ccae740d7b148a32b7a9a17e92cdc73c666a299925465aec3"
+      "sha256": "b32b31672184da8ece59b7aae2422216d21f30f994b55f617f33ced9d7b6de71"
     },
     {
       "path": "apps/editor/sequence-diff.test.mjs",
-      "sha256": "bf2730b040a82223d06f4140181d5f4191110b0f4432f6e5ef92d4deb919836d"
+      "sha256": "68fec683c9aadd9a15797f66eacef5a8abfd0687700eb5bae587b7496b0b5f1b"
     },
     {
       "path": "apps/editor/server.mjs",
@@ -153,11 +198,67 @@
     },
     {
       "path": "apps/metrics/client.mjs",
-      "sha256": "776c10cc4aa624de20aaf756e0b5d11d15ff4fdde97dbb957e767b5e958b6e65"
+      "sha256": "43ce94873ed9755119c35c28f556965a6a376178a93656d059247996cadee145"
+    },
+    {
+      "path": "apps/metrics/core.mjs",
+      "sha256": "8d23baeb9c1467f49199bc5735b00c47f4060f3b0ab844f94eb3cf3dfe33b067"
+    },
+    {
+      "path": "apps/metrics/fixtures/local-dashboard.json",
+      "sha256": "74058b9b5773a0bdae968c43216c05c05a7abf945e1ce26a257aa8b255f127bc"
+    },
+    {
+      "path": "apps/metrics/fixtures/schema-generated-dashboard.json",
+      "sha256": "58394c9bf70798d469a34f717592c40a91b7bee02810a5193e390258535b33b5"
+    },
+    {
+      "path": "apps/metrics/fixtures/sources.json",
+      "sha256": "08343e7df2f5e9b94bdf02eec340bf9d860b952717cc0cdbc927aaaef499ffc5"
+    },
+    {
+      "path": "apps/metrics/fixtures/vendor/original-textbox.json",
+      "sha256": "1acaa516be8636f344e823e7efe3f931073ae85dcdd8b0cae4831be0c6a754b5"
+    },
+    {
+      "path": "apps/metrics/fixtures/vendor/original-v1-resource.json",
+      "sha256": "4c5a85bedc92785709f47e063aba6b3e517b5a43854327fff3d3c83444cc2da7"
+    },
+    {
+      "path": "apps/metrics/fixtures/vendor/original-v2-text.json",
+      "sha256": "2eced774fb88f8e254443723cba800b0816a6da2b3620d00f9a81b2677afdf15"
+    },
+    {
+      "path": "apps/metrics/fixtures/vendor/schema-package.json",
+      "sha256": "6932a3c595d7d2b00003b7ca76cc52ede05dc7ee1fd58a59645e7b8c528358be"
+    },
+    {
+      "path": "apps/metrics/fixtures/vendor/v1-openapi.json",
+      "sha256": "fb2cc9d4d1f1121bc88a3c0af329c1327060a98d4e1a6847f3ac8da667fb986c"
+    },
+    {
+      "path": "apps/metrics/grafana.integration.test.mjs",
+      "sha256": "b24d618992d10de979a2f3363d6ca20618bd8b2632ea3813f69ffe9bfa0070af"
+    },
+    {
+      "path": "apps/metrics/grafana.test.mjs",
+      "sha256": "27e1a54c7bd183e9caed3192e0aa69d71c3fcb2702dd1b45041be4d8983b5f3f"
+    },
+    {
+      "path": "apps/metrics/results/grafana-schema-verification.json",
+      "sha256": "adfad042180b9f708c648a2af855ecc4b49b30d831069a22400b86f726158e61"
+    },
+    {
+      "path": "apps/metrics/scripts/acquire-grafana-fixtures.mjs",
+      "sha256": "3c0b1d1cc9e684d3888ff2ca412c561618e2671af41fc3768eef1a33dbede9dc"
+    },
+    {
+      "path": "apps/metrics/scripts/verify-grafana-schema.mjs",
+      "sha256": "e6509ed7accf672d7d0bb466f0c3c270013e752866370b04eb29bde60e80d278"
     },
     {
       "path": "apps/metrics/server.mjs",
-      "sha256": "d0ccd92ab5c4e8f8ba1d56789ca53ae3e1623398ff82f589f3ee28cf35161b4a"
+      "sha256": "76e24ad8341059a17ee567aa7f45aa94a654629eba83199a63dfbdabc42809f7"
     },
     {
       "path": "apps/notes/app.integration.test.mjs",
@@ -301,7 +402,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "e04015f19197b0ff04802219550b52e9018d651271b77039a71c1c0d2802ebd9"
+      "sha256": "052285cb92588c60576cb17d86bc56f1b72d85ee647afee63af8f1536e9e4be2"
     },
     {
       "path": "public/index.html",
@@ -337,7 +438,7 @@
     },
     {
       "path": "scripts/verify-development.mjs",
-      "sha256": "0f67c5251177b5159104aa8c86e9eb846c972580a8e4ffc28e5afb45bbbbf218"
+      "sha256": "dbf980fa6dc071007752f5ff9302451913972de55d2bf54464e71ffb026e767f"
     },
     {
       "path": "server.mjs",
@@ -348,7 +449,7 @@
       "sha256": "3d6ef08985f6720956ab6f9adf4efbe206ba6a3c81b299793b3bfdd19b7fbf4a"
     }
   ],
-  "browser_validation": "browser-verification.json (separate human-readable record of interactive checks; not rerun by this script)",
+  "browser_validation": "browser-execution-verification.json (current separate interactive checks), browser-compatibility-verification.json (historical native-exchange checks), browser-verification.json (initial ten-app checks); not rerun by this script",
   "comparison": "editor-comparison.json (separate recorded exploratory component benchmark; not rerun by this script)",
   "full_feature_parity_established": false,
   "universal_superiority_established": false

@@ -298,7 +298,7 @@
           "title": "Execution history and inspection",
           "source": "executions",
           "status": "partial",
-          "implementation": "Last 50 local runs, counts, outputs and errors.",
+          "implementation": "Bounded asynchronous run histories, node/attempt traces, statuses, duration, cancellation and interrupted-restart markers; original data/retention/filter semantics unverified.",
           "acceptance": "Match per-node data, status, duration, filtering, retention and cancellation semantics.",
           "parityVerified": false,
           "documentationSources": [
@@ -418,8 +418,8 @@
           "id": "n8n.logic.subworkflows",
           "title": "Reusable sub-workflow calls and extraction",
           "source": "flowlogic",
-          "status": "missing",
-          "implementation": "No invocation or extraction.",
+          "status": "partial",
+          "implementation": "Saved local workflow calls in all/each modes with cycle/depth budgets; native n8n item-linking/extraction semantics remain open.",
           "acceptance": "Call nested workflows and compare graph extraction with the original study oracle.",
           "parityVerified": false,
           "documentationSources": [
@@ -434,8 +434,8 @@
           "id": "n8n.logic.wait",
           "title": "Durable wait and resume",
           "source": "flowlogic",
-          "status": "missing",
-          "implementation": "No persisted execution continuation.",
+          "status": "partial",
+          "implementation": "Cancellable local delays up to 60000 ms; durable wait/resume and webhook resume are absent.",
           "acceptance": "Wait, restart and resume once with preserved data and credentials.",
           "parityVerified": false,
           "documentationSources": [
@@ -451,7 +451,7 @@
           "title": "Error workflows and retry policies",
           "source": "flowlogic",
           "status": "partial",
-          "implementation": "Failed run records only.",
+          "implementation": "Per-node stop/continue/error-output, bounded retries and failure traces; dedicated original error workflows and retry-data contracts remain open.",
           "acceptance": "Match continue-on-error, retry and error-trigger contracts.",
           "parityVerified": false,
           "documentationSources": [
@@ -520,7 +520,7 @@
           "title": "All bundled integration operations",
           "source": "nodes",
           "status": "inventory-required",
-          "implementation": "No service integrations.",
+          "implementation": "Generic bounded HTTP requests support methods, JSON/raw bodies, headers/query, redirects, response modes, timeout/retry and ephemeral credential references. Full bundled integration operations remain uninventoried/unimplemented.",
           "acceptance": "Enumerate pinned node versions, operations and credential types; record independent service fixtures per operation.",
           "parityVerified": false,
           "documentationSources": [
@@ -617,18 +617,18 @@
       "implementationFiles": [
         {
           "path": "products/rea-studio/apps/automation/core.mjs",
-          "sha256": "0cee883e163557ed741f00f258f21495ad135fe5a4032e469f3a10ced7d33805",
-          "bytes": 8134
+          "sha256": "a3390f9a21dab463622ef841b84880c3e6cb24b60017da8db0e5eb145a495588",
+          "bytes": 14244
         },
         {
           "path": "products/rea-studio/apps/automation/server.mjs",
-          "sha256": "b28eb394783b1e566225cf270f44c0e14368dc8c7fab7d97687a458b05667146",
-          "bytes": 2212
+          "sha256": "1e3775f6835515a6fd6a278605c9880c18a2ee775b911a9f0194d3ab8079960b",
+          "bytes": 8222
         },
         {
           "path": "products/rea-studio/apps/automation/client.mjs",
-          "sha256": "93bd3dc2a4b0ef31e7526b8b479e07be41b154335eea04eb8beb974e43c93aab",
-          "bytes": 8165
+          "sha256": "27aa4fd3d7d8e8783b3f63c8f1d3fe4f7113731ce74a49b433c4c87bac95f3fc",
+          "bytes": 11009
         },
         {
           "path": "products/rea-studio/apps/automation/app.test.mjs",
@@ -637,8 +637,20 @@
         },
         {
           "path": "products/rea-studio/apps/automation/README.md",
-          "sha256": "b48689c98eaa19059f903b7acfeaa910b43924847e89789082bfa82f574e2aab",
-          "bytes": 2746
+          "sha256": "60e3b291766daf6c57c90c83f2d2fe6990541ac9a22a37ceaf8f2449a0d4105a",
+          "bytes": 9242
+        },
+        {
+          "path": "products/rea-studio/apps/automation/engine.mjs",
+          "bytes": 18800,
+          "sha256": "222b56e6da988cd6e3de240679614789f5fe672a5880ff0379fe483dd1f2610a",
+          "scope": "Current implemented subset; no full-product parity assertion."
+        },
+        {
+          "path": "products/rea-studio/apps/automation/execution.test.mjs",
+          "bytes": 22239,
+          "sha256": "9855e46ef1da6c862ad08e2d240cd079aa71e315d688468455b75fa57d290026",
+          "scope": "Current implemented subset; no full-product parity assertion."
         }
       ]
     },

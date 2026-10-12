@@ -1,8 +1,10 @@
 import { randomUUID } from 'node:crypto';
+import { clone, dashboardModel, parseDashboard, projectDashboard, panelEntries, panelAt, validateGrid, selectVariable, variableValues, interpolate, normalizeFrames, transformFrames, hasPrecisionSensitiveNumbers } from './core.mjs';
 
 const datasetKey = id => `metrics-dataset-${id}`;
 const panelKey = id => `metrics-panel-${id}`;
 const alertKey = id => `metrics-alert-${id}`;
+const grafanaKey = id => `metrics-grafana-${id}`;
 const idPattern = /^[a-f0-9-]{36}$/;
 function id(value) { if (typeof value !== 'string' || !idPattern.test(value)) throw new Error('Choose a valid record ID.'); return value; }
 function boundedText(value, name, limit = 200) { if (typeof value !== 'string' || value.length > limit || !value.trim()) throw new Error(`${name} must contain 1–${limit} characters.`); return value.trim(); }
@@ -102,7 +104,124 @@ function metadata(dataset) { const { rows, ...meta } = dataset; return { ...meta
 async function getDataset(store, value) { const dataset = await store.get(datasetKey(id(value)), null); if (!dataset || dataset.deleted) throw new Error('Dataset does not exist.'); return dataset; }
 async function list(store, prefix) { const items = await Promise.all((await store.list(prefix)).map(key => store.get(key, null))); return items.filter(item => item && !item.deleted); }
 
+async function getGrafana(store, value) { const record = await store.get(grafanaKey(id(value)), null); if (!record || record.deleted) throw new Error('Dashboard does not exist.'); return record; }
+function grafanaMetadata(record) { const projection = projectDashboard(record.document); return { id: record.id, title: projection.title, format: projection.format, revision: record.revision, modified: record.modified, importedAt: record.importedAt, panelCount: projection.panels.length }; }
+function editableGrafana(record, revision) { if (revision !== record.revision) throw new Error('Dashboard changed since it was opened. Reload before editing.'); if (record.precisionSensitive) throw new Error('Dashboard numbers exceed lossless local numeric precision; original JSON is retained without editing.'); const { model } = dashboardModel(record.document); if (!model) throw new Error('V2 dashboard resources are retained without local editing.'); if (model.editable === false) throw new Error('This dashboard has editable=false.'); return model; }
+function shortText(value, label, limit = 2000) { if (typeof value !== 'string' || value.length > limit) throw new Error(`${label} must be text up to ${limit} characters.`); return value; }
+async function saveGrafana(store, record, changed = true) { if (changed) { record.modified = true; record.revision++; record.updatedAt = new Date().toISOString(); } await store.set(grafanaKey(record.id), record); return grafanaMetadata(record); }
+function queryFrames(result, refId) {
+  const groups = new Map();
+  for (const point of result.points) { const key = JSON.stringify(point.group); if (!groups.has(key)) groups.set(key, { group: point.group, points: [] }); groups.get(key).points.push(point); }
+  if (!groups.size) groups.set('null', { group: null, points: [] });
+  return [...groups.values()].map(({ group, points }) => {
+    const fields = [];
+    if (points.some(point => point.time !== null)) fields.push({ name: 'Time', type: 'time', values: points.map(point => point.time === null ? null : Date.parse(point.time)) });
+    if (group !== null) fields.push({ name: 'Group', type: 'string', values: points.map(point => point.group) });
+    fields.push({ name: result.metric, type: 'number', values: points.map(point => point.value) });
+    return { name: `${refId}: ${result.aggregate}${group === null ? '' : ` (${group})`}`, refId, fields, length: points.length };
+  });
+}
+export async function renderGrafanaPanel(store, record, entry) {
+  const { model } = dashboardModel(record.document), panel = panelAt(model, entry.path), warnings = [...entry.retained], variables = variableValues(model);
+  if (panel.type === 'row') return { kind: 'row', warnings };
+  if (panel.type === 'text') {
+    const content = panel.options?.content ?? panel.content ?? '', mode = panel.options?.mode ?? panel.mode ?? 'markdown';
+    if (!['markdown', 'code'].includes(mode)) warnings.push(`Text mode ${mode} is shown as literal text; HTML and embedded content are not executed.`);
+    return { kind: 'text', content: interpolate(content, variables, warnings), sourceContent: content, mode, warnings };
+  }
+  if (!['table', 'stat', 'timeseries'].includes(panel.type)) return { kind: 'retained', warnings };
+  const frames = [];
+  try {
+    if (panel.snapshotData) frames.push(...normalizeFrames(panel.snapshotData, 'Snapshot data'));
+    else {
+      const targets = panel.targets ?? [];
+      for (const [index, target] of targets.entries()) {
+        if (!target || typeof target !== 'object' || Array.isArray(target)) { warnings.push('Non-object target metadata is retained without execution.'); continue; }
+        if (target.hide) continue;
+        const refId = target.refId ?? String(index), sourceBindings = record.bindings?.[entry.path], binding = sourceBindings && Object.hasOwn(sourceBindings, refId) ? sourceBindings[refId] : undefined;
+        if (binding) {
+          const options = clone(binding);
+          options.filters = (options.filters ?? []).map(filter => ({ ...filter, value: interpolate(filter.value, variables, warnings) }));
+          frames.push(...queryFrames(query(await getDataset(store, binding.datasetId), options), refId));
+        } else if (Array.isArray(target.data)) frames.push(...normalizeFrames(target.data, `Target ${refId} inline data`).map(frame => ({ ...frame, refId })));
+        else warnings.push(`Target ${refId} query and data-source reference are retained; bind a local CSV query to preview data.`);
+      }
+    }
+    const transformed = transformFrames(frames, panel.transformations);
+    if (!transformed.length) return { kind: 'retained', warnings: [...warnings, 'No saved inline frames or local query bindings are available.'] };
+    if (model.time?.from || model.time?.to) warnings.push('Dashboard time settings are retained. Saved inline frames use their saved range; CSV bindings use their explicit query range.');
+    if (panel.timeFrom || panel.timeShift || panel.relativeTime) warnings.push('Panel time overrides are retained without evaluation.');
+    return { kind: panel.type, frames: transformed, warnings };
+  } catch (error) { return { kind: 'retained', warnings: [...warnings, error.message] }; }
+}
+
+async function grafanaAction({ action, input, store }) {
+  if (action === 'grafana-list') return { dashboards: (await list(store, 'metrics-grafana-')).map(grafanaMetadata) };
+  if (action === 'grafana-import' || action === 'grafana-create') {
+    const text = action === 'grafana-import' ? input.content : JSON.stringify({ title: boundedText(input.title || 'New dashboard', 'Dashboard title'), uid: randomUUID().replaceAll('-', '').slice(0, 12), schemaVersion: 42, version: 0, editable: true, tags: [], panels: [], templating: { list: [] }, time: { from: 'now-6h', to: 'now' }, timezone: 'browser', annotations: { list: [] }, links: [] }, null, 2);
+    const document = parseDashboard(text), record = { id: randomUUID(), document, originalText: text, precisionSensitive: hasPrecisionSensitiveNumbers(text), modified: false, revision: 1, bindings: {}, importedAt: new Date().toISOString() };
+    await saveGrafana(store, record, false); return grafanaMetadata(record);
+  }
+  const record = await getGrafana(store, input.id);
+  if (action === 'grafana-export') return { filename: `${grafanaMetadata(record).title.replace(/[^a-z0-9_-]+/gi, '-') || 'dashboard'}.json`, content: record.modified ? JSON.stringify(record.document, null, 2) : record.originalText, unchanged: !record.modified };
+  if (action === 'grafana-load') {
+    const projection = projectDashboard(record.document);
+    if (record.precisionSensitive) { projection.editable = false; projection.warnings.push('Some number tokens exceed lossless local precision. The original JSON is retained unchanged; editing is unavailable.'); }
+    return { ...grafanaMetadata(record), ...projection, bindings: record.bindings, panels: await Promise.all(projection.panels.map(async entry => ({ ...entry, preview: await renderGrafanaPanel(store, record, entry) }))) };
+  }
+  const model = editableGrafana(record, input.revision);
+  const beforeDocument = JSON.stringify(record.document);
+  if (action === 'grafana-update') {
+    const patch = input.patch; if (!patch || typeof patch !== 'object' || Array.isArray(patch) || Object.keys(patch).some(key => !['title', 'description', 'tags', 'timezone', 'time'].includes(key))) throw new Error('Unsupported dashboard edit.');
+    for (const [key, value] of Object.entries(patch)) {
+      if (key === 'title') model.title = boundedText(value, 'Dashboard title');
+      else if (key === 'tags') { if (!Array.isArray(value) || value.length > 100 || value.some(tag => typeof tag !== 'string' || tag.length > 200)) throw new Error('Use at most 100 text tags.'); model.tags = clone(value); }
+      else if (key === 'time') { if (!value || typeof value !== 'object' || Array.isArray(value) || Object.keys(value).some(field => !['from', 'to'].includes(field))) throw new Error('Time edits allow from and to only.'); model.time = { ...(model.time ?? {}) }; for (const field of Object.keys(value)) model.time[field] = shortText(value[field], 'Time value', 200); }
+      else model[key] = shortText(value, key);
+    }
+  } else if (action === 'grafana-panel-update') {
+    const panel = panelAt(model, input.path), patch = input.patch;
+    if (!patch || typeof patch !== 'object' || Array.isArray(patch) || Object.keys(patch).some(key => !['title', 'description', 'gridPos', 'textContent'].includes(key))) throw new Error('Unsupported panel edit.');
+    for (const [key, value] of Object.entries(patch)) {
+      if (key === 'gridPos') panel.gridPos = { ...(panel.gridPos ?? {}), ...validateGrid(value) };
+      else if (key === 'textContent') { if (panel.type !== 'text') throw new Error('Text content requires a text panel.'); shortText(value, 'Panel content', 100000); if (panel.options) panel.options.content = value; else panel.content = value; }
+      else panel[key] = shortText(value, key);
+    }
+  } else if (action === 'grafana-variable-select') selectVariable(model, input.index, input.value);
+  else if (action === 'grafana-variable-add') {
+    const name = boundedText(input.name, 'Variable name', 64); if (!/^[A-Za-z_]\w*$/.test(name) || (model.templating?.list ?? []).some(variable => variable.name === name)) throw new Error('Variable name must be unique and use letters, digits and underscores.');
+    if (!['textbox', 'constant', 'custom'].includes(input.type)) throw new Error('Choose a custom, constant or textbox variable.');
+    const values = input.values; if (!Array.isArray(values) || !values.length || values.length > 500 || values.some(value => typeof value !== 'string' || value.length > 2000)) throw new Error('Provide 1–500 text values.');
+    const variable = { name, label: name, type: input.type, hide: input.type === 'constant' ? 2 : 0, query: input.type === 'custom' ? values.join(',') : values[0], current: { text: values[0], value: values[0] }, options: values.map((value, index) => ({ text: value, value, selected: index === 0 })), multi: false, includeAll: false, skipUrlSync: false };
+    model.templating ??= {}; model.templating.list ??= []; model.templating.list.push(variable);
+  } else if (action === 'grafana-panel-add') {
+    if (!['text', 'table', 'stat', 'timeseries', 'row'].includes(input.type)) throw new Error('Choose a supported panel type.');
+    model.panels ??= []; if (panelEntries(model).length >= 1000) throw new Error('Dashboard supports at most 1,000 panels.');
+    const numeric = panelEntries(model).map(({ panel }) => panel.id).filter(Number.isSafeInteger), newId = Math.max(0, ...numeric) + 1;
+    const panel = { id: newId, title: boundedText(input.title || 'New panel', 'Panel title'), type: input.type, gridPos: validateGrid(input.gridPos ?? { x: 0, y: Math.max(0, ...panelEntries(model).map(({ panel }) => (panel.gridPos?.y ?? 0) + (panel.gridPos?.h ?? 0))), w: 12, h: 8 }), targets: [] };
+    if (input.type === 'text') panel.options = { mode: 'markdown', content: shortText(input.content ?? '', 'Panel content', 100000) };
+    else if (input.type !== 'row') panel.targets = [{ refId: 'A' }];
+    if (input.type === 'row') { panel.collapsed = false; panel.panels = []; }
+    model.panels.push(panel);
+  } else if (action === 'grafana-panel-remove') {
+    const oldEntries = panelEntries(model), removing = panelAt(model, input.path), parts = input.path.split('/'), at = Number(parts.pop()), parent = parts.length ? panelAt(model, parts.join('/')).panels : model.panels;
+    parent.splice(at, 1);
+    const oldBindings = record.bindings; record.bindings = {};
+    for (const entry of panelEntries(model)) { const old = oldEntries.find(previous => previous.panel === entry.panel); if (old && oldBindings[old.path]) record.bindings[entry.path] = oldBindings[old.path]; }
+    if (!removing) throw new Error('Panel does not exist.');
+  } else if (action === 'grafana-bind') {
+    const panel = panelAt(model, input.path), refId = shortText(input.refId, 'Query reference', 128);
+    if (!(panel.targets ?? []).some(target => (target.refId ?? '') === refId)) throw new Error('Choose an existing target reference.');
+    const dataset = await getDataset(store, input.query?.datasetId); query(dataset, input.query);
+    record.bindings[input.path] ??= {}; Object.defineProperty(record.bindings[input.path], refId, { value: clone(input.query), enumerable: true, configurable: true, writable: true });
+    // Bindings are local sidecar state, so the imported document remains byte-identical.
+    record.revision++; await saveGrafana(store, record, false); return grafanaMetadata(record);
+  } else throw new Error(`Unknown Grafana action: ${action}`);
+  return saveGrafana(store, record, JSON.stringify(record.document) !== beforeDocument);
+}
+
 export async function handle({ action, input = {}, store }) {
+  if (action.startsWith('grafana-')) return grafanaAction({ action, input, store });
   if (action === 'ingest') {
     const parsed = parseCsv(input.csv), dataset = { id: randomUUID(), name: boundedText(input.name, 'Dataset name'), createdAt: new Date().toISOString(), ...parsed };
     await store.set(datasetKey(dataset.id), dataset); return metadata(dataset);

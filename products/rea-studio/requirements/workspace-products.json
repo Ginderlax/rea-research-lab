@@ -14134,21 +14134,7 @@
         "grafana.panels"
       ],
       "status": "partial",
-      "implementation": {
-        "current": "CSV-derived UTC fixed-second buckets and a simple SVG line chart.",
-        "evidence": [
-          "metrics.server.mjs",
-          "metrics.client.mjs",
-          "metrics.README.md"
-        ],
-        "testReferences": [
-          {
-            "path": "products/rea-studio/apps/metrics/app.test.mjs",
-            "testName": "real ingestion persists across handler calls, queries time/category groups and reports invalid timestamps",
-            "scope": "bounded local behavior only"
-          }
-        ]
-      },
+      "implementation": "Saved-frame and local CSV line previews with exact data tables; full original visual/temporal contract remains open.",
       "remaining": [
         "Grafana time series panel options, axes, units, overrides, transformations, interactions and rendering.",
         "Current chart plots sequential points rather than exact proportional time positions and category series."
@@ -14188,14 +14174,8 @@
       "sourceIds": [
         "grafana.panels"
       ],
-      "status": "missing",
-      "implementation": {
-        "current": null,
-        "evidence": [
-          "metrics.README.md"
-        ],
-        "testReferences": []
-      },
+      "status": "partial",
+      "implementation": "Local text/table/stat/time-series previews; remaining imported types are retained without rendering.",
       "remaining": [
         "All documented visualizations beyond the narrow line/table display: individual panel inventories remain open."
       ],
@@ -14286,21 +14266,7 @@
         "grafana.dashboards"
       ],
       "status": "partial",
-      "implementation": {
-        "current": "Persistent named panels bound to dataset, numeric field and query settings.",
-        "evidence": [
-          "metrics.server.mjs",
-          "metrics.client.mjs",
-          "metrics.README.md"
-        ],
-        "testReferences": [
-          {
-            "path": "products/rea-studio/apps/metrics/app.test.mjs",
-            "testName": "saved dashboards and alerts evaluate true, false, no-data and deleted-source error states",
-            "scope": "bounded local behavior only"
-          }
-        ]
-      },
+      "implementation": "Whole JSON/unchanged byte retention for Classic/API-envelope/V1 and retention-only V2; supported panel/layout/settings edits and separate local bindings.",
       "remaining": [
         "Layouts, folders, dashboard JSON/schema, library panels, versions, permissions, sharing, links, snapshots and complete lifecycle."
       ],
@@ -14315,14 +14281,8 @@
       "sourceIds": [
         "grafana.variables"
       ],
-      "status": "missing",
-      "implementation": {
-        "current": null,
-        "evidence": [
-          "metrics.README.md"
-        ],
-        "testReferences": []
-      },
+      "status": "partial",
+      "implementation": "Custom/textbox/constant variable selection and simple text interpolation; full query/repetition/formatter semantics remain open.",
       "remaining": [
         "Query, custom, textbox, constant, datasource, interval, filters and switch variables.",
         "Global variables, URL binding, chained variables, interpolation syntax and repeated panels/rows."
@@ -15218,15 +15178,15 @@
     {
       "id": "metrics.server.mjs",
       "path": "products/rea-studio/apps/metrics/server.mjs",
-      "bytes": 12961,
-      "sha256": "d0ccd92ab5c4e8f8ba1d56789ca53ae3e1623398ff82f589f3ee28cf35161b4a",
+      "bytes": 26112,
+      "sha256": "76e24ad8341059a17ee567aa7f45aa94a654629eba83199a63dfbdabc42809f7",
       "kind": "original-implementation-source"
     },
     {
       "id": "metrics.client.mjs",
       "path": "products/rea-studio/apps/metrics/client.mjs",
-      "bytes": 10654,
-      "sha256": "776c10cc4aa624de20aaf756e0b5d11d15ff4fdde97dbb957e767b5e958b6e65",
+      "bytes": 26731,
+      "sha256": "43ce94873ed9755119c35c28f556965a6a376178a93656d059247996cadee145",
       "kind": "original-implementation-source"
     },
     {
@@ -15246,8 +15206,8 @@
     {
       "id": "metrics.README.md",
       "path": "products/rea-studio/apps/metrics/README.md",
-      "bytes": 4001,
-      "sha256": "d46fa5e54d7a8ae0387aec8191fc47b1892ea525001196769e4782f923d27d9d",
+      "bytes": 6429,
+      "sha256": "115eb30a87185be882281ebff414e27a1534f75e8ecb6a22564fa8217a9400fc",
       "kind": "implementation-limitations"
     },
     {
@@ -15310,15 +15270,15 @@
       "id": "editor.sequence-diff.mjs",
       "path": "products/rea-studio/apps/editor/sequence-diff.mjs",
       "kind": "original-implementation-source",
-      "bytes": 6137,
-      "sha256": "87fe7284ed00d70ccae740d7b148a32b7a9a17e92cdc73c666a299925465aec3"
+      "bytes": 7278,
+      "sha256": "b32b31672184da8ece59b7aae2422216d21f30f994b55f617f33ced9d7b6de71"
     },
     {
       "id": "editor.sequence-diff.test.mjs",
       "path": "products/rea-studio/apps/editor/sequence-diff.test.mjs",
       "kind": "local-development-test",
-      "bytes": 2931,
-      "sha256": "bf2730b040a82223d06f4140181d5f4191110b0f4432f6e5ef92d4deb919836d"
+      "bytes": 6354,
+      "sha256": "68fec683c9aadd9a15797f66eacef5a8abfd0687700eb5bae587b7496b0b5f1b"
     },
     {
       "id": "notes.jex.mjs",
@@ -15361,6 +15321,24 @@
       "kind": "bounded-original-format-verification-receipt",
       "bytes": 4843,
       "sha256": "82b53a9c9c0594b0364f2752e78bef85d374d53a2f4a5b2580daa8edc6079d9f"
+    },
+    {
+      "path": "products/rea-studio/apps/metrics/core.mjs",
+      "bytes": 13012,
+      "sha256": "8d23baeb9c1467f49199bc5735b00c47f4060f3b0ab844f94eb3cf3dfe33b067",
+      "scope": "Current implemented subset; no full-product parity assertion."
+    },
+    {
+      "path": "products/rea-studio/apps/metrics/grafana.test.mjs",
+      "bytes": 10875,
+      "sha256": "27e1a54c7bd183e9caed3192e0aa69d71c3fcb2702dd1b45041be4d8983b5f3f",
+      "scope": "Current implemented subset; no full-product parity assertion."
+    },
+    {
+      "path": "products/rea-studio/apps/metrics/grafana.integration.test.mjs",
+      "bytes": 2306,
+      "sha256": "b24d618992d10de979a2f3363d6ca20618bd8b2632ea3813f69ffe9bfa0070af",
+      "scope": "Current implemented subset; no full-product parity assertion."
     }
   ],
   "catalogueCoverage": {

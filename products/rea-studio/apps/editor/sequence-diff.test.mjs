@@ -4,14 +4,18 @@ import { minimalSequenceDiff, minimalGetterSequenceDiff } from './sequence-diff.
 import { minimalLineDiff } from './server.mjs';
 
 function replay(a, b, result) {
-  let cursor = 0; const output = [];
+  let cursor = 0, nextCursor = 0, cost = 0; const output = [];
   for (const diff of result.diffs) {
     const old = diff.seq1Range, next = diff.seq2Range;
-    assert.ok(old.start >= cursor && old.endExclusive <= a.length);
+    assert.ok(old.start >= cursor && old.endExclusive >= old.start && old.endExclusive <= a.length);
+    assert.ok(next.start >= nextCursor && next.endExclusive >= next.start && next.endExclusive <= b.length);
+    assert.equal(old.start - cursor, next.start - nextCursor);
+    assert.deepEqual(a.slice(cursor, old.start), b.slice(nextCursor, next.start));
     output.push(...a.slice(cursor, old.start), ...b.slice(next.start, next.endExclusive));
-    cursor = old.endExclusive;
+    cost += old.endExclusive - old.start + next.endExclusive - next.start;
+    cursor = old.endExclusive; nextCursor = next.endExclusive;
   }
-  output.push(...a.slice(cursor)); assert.deepEqual(output, b);
+  output.push(...a.slice(cursor)); assert.deepEqual(output, b); assert.equal(result.cost, cost);
 }
 function distance(a, b) {
   let previous = Array.from({ length: b.length + 1 }, (_, i) => i);
@@ -47,4 +51,51 @@ test('10,000 disjoint lines have an exact linear-time replacement and declared l
   const result = minimalSequenceDiff(a, b);
   assert.equal(result.algorithm, 'disjoint-region'); assert.equal(result.cost, 20000); replay(a, b, result);
   assert.throws(() => minimalSequenceDiff([...a, 'overflow'], b), /10,000/);
+});
+
+test('compact frontier preserves exact cost at distances 998, 999 and the 1,000-distance fallback', () => {
+  for (const [length, extra, expectedAlgorithm, expectedCost] of [
+    [500, false, 'myers-shortest-path', 998],
+    [500, true, 'myers-shortest-path', 999],
+    [501, false, 'hirschberg-linear-space', 1000]
+  ]) {
+    const a = Array.from({ length }, (_, i) => i), b = a.slice().reverse();
+    if (extra) b.unshift('extra');
+    const result = minimalGetterSequenceDiff({ length: a.length, getElement: i => a[i] }, { length: b.length, getElement: i => b[i] });
+    // Unique reversed values have an LCS of exactly one element.
+    assert.equal(result.algorithm, expectedAlgorithm); assert.equal(result.cost, expectedCost); replay(a, b, result);
+  }
+});
+
+test('long unchanged runs produce exact sparse spans through bounded receiver-based getters', () => {
+  const a = Array.from({ length: 10000 }, (_, i) => `line ${i}`), b = a.slice();
+  const changes = [0, 2000, 4000, 6000, 8000, 9999];
+  for (const index of changes) b[index] = `updated ${index}`;
+  const getter = values => ({
+    length: values.length, values,
+    getElement(index) { assert.ok(index >= 0 && index < this.length); return this.values[index]; }
+  });
+  const result = minimalGetterSequenceDiff(getter(a), getter(b));
+  assert.equal(result.algorithm, 'myers-shortest-path'); assert.equal(result.cost, changes.length * 2);
+  assert.equal(result.diffs.length, changes.length); replay(a, b, result);
+  assert.deepEqual(result.diffs.map(diff => diff.seq1Range), changes.map(start => ({ start, endExclusive: start + 1 })));
+  for (const invalid of [null, { length: -1, getElement() {} }, { length: 10001, getElement() {} }, { length: 0 }]) {
+    assert.throws(() => minimalGetterSequenceDiff(invalid, getter([])), /bounded getter/);
+  }
+});
+
+test('linear-space fallback replays scattered duplicate matches at independent minimum cost', () => {
+  let seed = 0x1264abcd;
+  const next = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return (seed >>> 16) % 64; };
+  const a = Array.from({ length: 800 }, next), b = Array.from({ length: 780 }, next);
+  const result = minimalGetterSequenceDiff({ length: a.length, getElement: i => a[i] }, { length: b.length, getElement: i => b[i] });
+  assert.equal(result.algorithm, 'hirschberg-linear-space'); assert.equal(result.cost, distance(a, b)); replay(a, b, result);
+});
+
+test('a single changed pair requires only the common-boundary getter comparisons', () => {
+  const a = Array.from({ length: 512 }, (_, i) => i), b = a.slice(); b[256] = 'changed';
+  let beforeReads = 0, afterReads = 0;
+  const result = minimalGetterSequenceDiff({ length: a.length, getElement: i => { beforeReads++; return a[i]; } }, { length: b.length, getElement: i => { afterReads++; return b[i]; } });
+  assert.equal(beforeReads, 513); assert.equal(afterReads, 513);
+  assert.equal(result.cost, 2); assert.equal(result.diffs.length, 1); replay(a, b, result);
 });

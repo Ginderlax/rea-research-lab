@@ -1,0 +1,218 @@
+{
+  "schema": "rea-development-comparison/v1",
+  "checked_at_utc": "2026-10-12T15:02:27.020Z",
+  "scope": "Internal Monaco 0.57.0 sequence algorithm versus Lab Editor minimal line diff; this is not a VS Code product benchmark.",
+  "host": {
+    "platform": "win32",
+    "architecture": "x64",
+    "cpu": "AMD Ryzen 7 9800X3D 8-Core Processor           ",
+    "runtime": "v24.16.0"
+  },
+  "methodology": "Separate fresh worker per algorithm/case; 20 warmups, 100 timed calls including output replay assertions; alternating execution order. Candidate calls include string assembly/tokenization and full line-operation output, while the original accepts token arrays and returns changed spans; these API costs differ. Whole-worker peak RSS includes Node.js, imports and input allocations. Single-machine exploratory timing, no confidence interval or independent replication.",
+  "cases": [
+    {
+      "id": "recorded-nonminimal-witness",
+      "input_sha256": "c29e56843637dab796c3685bafcdf2cfaf4e44189f3f1b9cc3c0eb2eafeede5e",
+      "before_lines": 12,
+      "after_lines": 3,
+      "order": [
+        "original",
+        "candidate"
+      ],
+      "original": {
+        "algorithm": "original",
+        "cost": 11,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "monaco-editor@0.57.0/esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/myersDiffAlgorithm.js",
+          "sha256": "432a33686b495e2aa53a24b7c909c8dfb8cb8817805ac89063d5c53c8014fe7f"
+        },
+        "median_ms": 0.00730000000000075,
+        "p95_ms": 0.015299999999996317,
+        "process_peak_rss_kib": 58360,
+        "runtime": "v24.16.0"
+      },
+      "candidate": {
+        "algorithm": "candidate",
+        "cost": 9,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "products/rea-studio/apps/editor/server.mjs",
+          "sha256": "b7eaab9dcee52394936c415aa3abe4c861c481677349f62880704ca2023fafea",
+          "dependencies": [
+            {
+              "path": "products/rea-studio/apps/editor/sequence-diff.mjs",
+              "sha256": "87fe7284ed00d70ccae740d7b148a32b7a9a17e92cdc73c666a299925465aec3"
+            },
+            {
+              "path": "products/rea-studio/apps/editor/git.mjs",
+              "sha256": "52f9b43507796ff012f6ac9330bde1ccf094bd2315dc6c952e2625465699d6de"
+            }
+          ]
+        },
+        "median_ms": 0.0062999999999959755,
+        "p95_ms": 0.021999999999998465,
+        "process_peak_rss_kib": 57548,
+        "runtime": "v24.16.0"
+      },
+      "candidate_cost_reduction": 2,
+      "candidate_median_time_ratio": 0.863013698629497
+    },
+    {
+      "id": "identical-512-lines",
+      "input_sha256": "a215b0f3d2a45c8d26d899ee751d886defa78faa2378282de000a3bd92813fd9",
+      "before_lines": 512,
+      "after_lines": 512,
+      "order": [
+        "candidate",
+        "original"
+      ],
+      "candidate": {
+        "algorithm": "candidate",
+        "cost": 0,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "products/rea-studio/apps/editor/server.mjs",
+          "sha256": "b7eaab9dcee52394936c415aa3abe4c861c481677349f62880704ca2023fafea",
+          "dependencies": [
+            {
+              "path": "products/rea-studio/apps/editor/sequence-diff.mjs",
+              "sha256": "87fe7284ed00d70ccae740d7b148a32b7a9a17e92cdc73c666a299925465aec3"
+            },
+            {
+              "path": "products/rea-studio/apps/editor/git.mjs",
+              "sha256": "52f9b43507796ff012f6ac9330bde1ccf094bd2315dc6c952e2625465699d6de"
+            }
+          ]
+        },
+        "median_ms": 0.046700000000001296,
+        "p95_ms": 0.129099999999994,
+        "process_peak_rss_kib": 60440,
+        "runtime": "v24.16.0"
+      },
+      "original": {
+        "algorithm": "original",
+        "cost": 0,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "monaco-editor@0.57.0/esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/myersDiffAlgorithm.js",
+          "sha256": "432a33686b495e2aa53a24b7c909c8dfb8cb8817805ac89063d5c53c8014fe7f"
+        },
+        "median_ms": 0.009500000000002728,
+        "p95_ms": 0.020699999999997942,
+        "process_peak_rss_kib": 58168,
+        "runtime": "v24.16.0"
+      },
+      "candidate_cost_reduction": 0,
+      "candidate_median_time_ratio": 4.915789473682935
+    },
+    {
+      "id": "single-change-512-lines",
+      "input_sha256": "707876b43eab117bdb283d1d408c777d50a6f3d23c3d6d3227380f5d93411b56",
+      "before_lines": 512,
+      "after_lines": 512,
+      "order": [
+        "original",
+        "candidate"
+      ],
+      "original": {
+        "algorithm": "original",
+        "cost": 2,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "monaco-editor@0.57.0/esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/myersDiffAlgorithm.js",
+          "sha256": "432a33686b495e2aa53a24b7c909c8dfb8cb8817805ac89063d5c53c8014fe7f"
+        },
+        "median_ms": 0.012000000000000455,
+        "p95_ms": 0.025199999999998113,
+        "process_peak_rss_kib": 58984,
+        "runtime": "v24.16.0"
+      },
+      "candidate": {
+        "algorithm": "candidate",
+        "cost": 2,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "products/rea-studio/apps/editor/server.mjs",
+          "sha256": "b7eaab9dcee52394936c415aa3abe4c861c481677349f62880704ca2023fafea",
+          "dependencies": [
+            {
+              "path": "products/rea-studio/apps/editor/sequence-diff.mjs",
+              "sha256": "87fe7284ed00d70ccae740d7b148a32b7a9a17e92cdc73c666a299925465aec3"
+            },
+            {
+              "path": "products/rea-studio/apps/editor/git.mjs",
+              "sha256": "52f9b43507796ff012f6ac9330bde1ccf094bd2315dc6c952e2625465699d6de"
+            }
+          ]
+        },
+        "median_ms": 0.04650000000000176,
+        "p95_ms": 0.12770000000000437,
+        "process_peak_rss_kib": 60596,
+        "runtime": "v24.16.0"
+      },
+      "candidate_cost_reduction": 0,
+      "candidate_median_time_ratio": 3.875
+    },
+    {
+      "id": "seeded-mixed-128-lines",
+      "input_sha256": "c0e4566cd0312f19cfd0e3491f8d3c974710139f3978c51c0d0d24d251306370",
+      "before_lines": 128,
+      "after_lines": 128,
+      "order": [
+        "candidate",
+        "original"
+      ],
+      "candidate": {
+        "algorithm": "candidate",
+        "cost": 136,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "products/rea-studio/apps/editor/server.mjs",
+          "sha256": "b7eaab9dcee52394936c415aa3abe4c861c481677349f62880704ca2023fafea",
+          "dependencies": [
+            {
+              "path": "products/rea-studio/apps/editor/sequence-diff.mjs",
+              "sha256": "87fe7284ed00d70ccae740d7b148a32b7a9a17e92cdc73c666a299925465aec3"
+            },
+            {
+              "path": "products/rea-studio/apps/editor/git.mjs",
+              "sha256": "52f9b43507796ff012f6ac9330bde1ccf094bd2315dc6c952e2625465699d6de"
+            }
+          ]
+        },
+        "median_ms": 0.17960000000000065,
+        "p95_ms": 0.295499999999997,
+        "process_peak_rss_kib": 66164,
+        "runtime": "v24.16.0"
+      },
+      "original": {
+        "algorithm": "original",
+        "cost": 136,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "monaco-editor@0.57.0/esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/myersDiffAlgorithm.js",
+          "sha256": "432a33686b495e2aa53a24b7c909c8dfb8cb8817805ac89063d5c53c8014fe7f"
+        },
+        "median_ms": 0.08220000000000027,
+        "p95_ms": 0.7584000000000017,
+        "process_peak_rss_kib": 64004,
+        "runtime": "v24.16.0"
+      },
+      "candidate_cost_reduction": 0,
+      "candidate_median_time_ratio": 2.184914841849149
+    }
+  ],
+  "original_artifact_acquisition": "cd projects/01-vscode-monaco && npm run obtain",
+  "conclusion": "A smaller edit script on a known witness is a scoped quality improvement. Other measured costs and all full-product feature, usability, compatibility and reliability claims remain separate.",
+  "full_product_feature_parity_established": false,
+  "universal_superiority_established": false
+}

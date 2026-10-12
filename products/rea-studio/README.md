@@ -20,13 +20,13 @@ The host binds only to this machine. It is a development application for synthet
 | Application | Implemented starting point | Details |
 | --- | --- | --- |
 | Lab Editor | File editing, exact line differences and real local Git operations | [Editor](apps/editor/README.md) |
-| Lab Metrics | CSV data, calculations and dashboard views | [Metrics](apps/metrics/README.md) |
-| Lab Automation | Declarative DAG execution and histories | [Automation](apps/automation/README.md) |
+| Lab Metrics | CSV data, calculations and native Grafana dashboard editing | [Metrics](apps/metrics/README.md) |
+| Lab Automation | HTTP workflows, waits, saved calls, cancellation and histories | [Automation](apps/automation/README.md) |
 | Lab Sketch | Drawing, grouping, freehand and native scene exchange | [Sketch](apps/sketch/README.md) |
 | Lab Notes | Notes, attachments, tags and Joplin JEX exchange | [Notes](apps/notes/README.md) |
 | Lab Flow | Stateful message routing and observation | [Flow](apps/flow/README.md) |
 | Lab Vault | Encrypted entries, utilities and supported KDBX exchange | [Vault](apps/vault/README.md) |
-| Lab Archive | ZIP creation, validation and extraction | [Archive](apps/archive/README.md) |
+| Lab Archive | ZIP/ZIP64, TAR and GZIP creation, validation and extraction | [Archive](apps/archive/README.md) |
 | Lab Backup | Local snapshots, integrity and restore | [Backup](apps/backup/README.md) |
 | Lab Sync | Local comparison and copy synchronization | [Sync](apps/sync/README.md) |
 
@@ -41,11 +41,13 @@ npm run benchmark:sequence
 
 Tests exercise implemented contracts and actual persisted operations. The benchmark needs the original Monaco artifact acquired by `projects/01-vscode-monaco`; follow that study's acquisition instructions. Its [recorded comparison](results/editor-comparison.json) concerns only an internal sequence algorithm and shows both quality differences and costs. It is an exploratory single-machine comparison, with different API payloads, not a product-level superiority certificate.
 
-The additional [getter-sequence comparison](results/sequence-comparison.json) times matching input representations and changed-span payloads over eight recorded cases. It includes wins and regressions. It does not compare whole editors, deadline handling or the original result-class helper API. Git source control requires an installed Git executable.
+The additional [getter-sequence comparison](results/sequence-comparison.json) times matching input representations and changed-span payloads over eight recorded cases. Its current eight-case run records seven faster medians and one tie; the separate line-interface run still has regressions. The [three-run optimization follow-up](results/editor-performance-followup.json) retains the pre-optimization evidence and slight regressions. It does not compare whole editors, deadline handling or the original result-class helper API. Git source control requires an installed Git executable.
 
-`npm run verify` reruns the development tests and records exact source hashes in the [validation receipt](results/development-validation.json). The current record contains 112 passing tests and zero skips. The [native exchange milestone](NATIVE-EXCHANGE-MILESTONE.md) explains the new contracts, original-software evidence, comparative losses and remaining requirements. Separate [initial browser checks](results/browser-verification.json) and [added-workflow browser checks](results/browser-compatibility-verification.json) exercise the local interfaces with synthetic data. These receipts demonstrate the implemented capabilities, while the acceptance requirements and feature gaps remain open.
+`npm run verify` reruns the development tests and records exact source hashes in the [validation receipt](results/development-validation.json). The current record contains 176 passing tests and 0 skips. The [execution and archive milestone](EXECUTION-ARCHIVE-MILESTONE.md) explains the current contracts, original-software evidence, measured improvements and remaining requirements. The [native exchange milestone](NATIVE-EXCHANGE-MILESTONE.md) preserves the prior revision and its comparative losses. Separate [initial browser checks](results/browser-verification.json), [historical native-exchange browser checks](results/browser-compatibility-verification.json) and [current execution/dashboard/archive browser checks](results/browser-execution-verification.json) exercise the local interfaces with synthetic data. These receipts demonstrate the implemented capabilities, while the acceptance requirements and feature gaps remain open.
 
-![REA Studio native drawing exchange with explicit preservation limits](results/compatibility-preview.jpg)
+![REA Studio imported dashboard with local telemetry and explicit unsupported panels](results/execution-preview.jpg)
+
+The [native drawing preview](results/compatibility-preview.jpg) is preserved with the historical native-exchange record.
 
 The [initial interface preview](results/studio-preview.jpg) is preserved with its original browser record.
 

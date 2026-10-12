@@ -33,7 +33,7 @@ const record = {
   test_files: testFiles.map(path => relative(root, path).replaceAll('\\', '/')),
   summary,
   source_files: sourceFiles.map(path => ({ path: relative(root, path).replaceAll('\\', '/'), sha256: createHash('sha256').update(readFileSync(path)).digest('hex') })),
-  browser_validation: 'browser-verification.json (separate human-readable record of interactive checks; not rerun by this script)',
+  browser_validation: 'browser-execution-verification.json (current separate interactive checks), browser-compatibility-verification.json (historical native-exchange checks), browser-verification.json (initial ten-app checks); not rerun by this script',
   comparison: 'editor-comparison.json (separate recorded exploratory component benchmark; not rerun by this script)',
   full_feature_parity_established: false,
   universal_superiority_established: false

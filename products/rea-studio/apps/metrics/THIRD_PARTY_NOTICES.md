@@ -1,0 +1,7 @@
+# Grafana verification materials
+
+`fixtures/vendor/` preserves selected unmodified files from Grafana Labs' public `grafana/grafana` repository at commit `6193dc03311b631b9727b560d24369e683dc396e` (candidate tag `v13.2.3`). [The source receipt](fixtures/sources.json) gives each original path, URL, byte count and SHA-256. These files are documentation, structural types and independent exchange fixtures for verification; none is imported by the application's runtime.
+
+The generated Classic TypeScript schema is part of `@grafana/schema`; the pinned package manifest declares Apache-2.0, and its unmodified `LICENSE_APACHE2` is retained. Grafana's root GNU Affero General Public License version 3 text is retained as `fixtures/vendor/LICENSE` for other repository source/test/documentation materials. This notice does not assign one license to all Grafana packages or to REA Studio. Preserve the applicable upstream license/attribution when reusing vendor materials. The CUE model, OpenAPI and official JSON fixtures remain unmodified upstream references.
+
+`core.mjs`, `server.mjs`, `client.mjs`, the synthetic local dashboard, verifier harnesses and development tests are original REA Studio work. They implement a bounded local exchange/editor contract; they are not a copied Grafana client, data-source plugin or server. The earlier `@grafana/data` reconstruction is not imported into this application.

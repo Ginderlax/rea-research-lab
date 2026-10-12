@@ -1,0 +1,178 @@
+{
+  "schema": "rea-browser-compatibility-verification/v1",
+  "checked_at_utc": "2026-10-12T15:16:36.711Z",
+  "host": "http://127.0.0.1:4312",
+  "browser": "Codex in-app browser",
+  "data_scope": "Separate ignored compatibility-demo workspace; synthetic fixtures only. Existing user workspace and tab retained.",
+  "checks": [
+    {
+      "app": "editor",
+      "passed": true,
+      "operations": [
+        "save synthetic Markdown file",
+        "initialize Git repository",
+        "stage file",
+        "commit",
+        "create and switch branch",
+        "switch back to main"
+      ],
+      "observed": "Commit 9d641d4b5f4e created through the interface; main restored with zero changes and saved file contents retained."
+    },
+    {
+      "app": "notes",
+      "passed": true,
+      "operations": [
+        "import pinned JEX fixture",
+        "open imported note",
+        "follow local note link",
+        "download original attachment",
+        "follow local resource link",
+        "export JEX",
+        "upload three-byte attachment"
+      ],
+      "observed": "Two notes, two notebooks and one original attachment imported with original IDs. Linked note opened; both original downloads equal bytes 00 01 7f 80 ff. Exported native JEX independently parses to two notes and one resource. Upload inserts a local resource link and appears as a three-byte download."
+    },
+    {
+      "app": "sketch",
+      "passed": true,
+      "operations": [
+        "import native Excalidraw fixture",
+        "inspect preservation warnings",
+        "export unchanged native scene",
+        "group selection",
+        "undo",
+        "draw five-point freehand stroke",
+        "group and save",
+        "reopen saved scene",
+        "export edited scene"
+      ],
+      "observed": "Unchanged native export deeply equals every input property. Edited export contains twelve elements including the new grouped freehand stroke; six unsupported/deleted original records and assets remain deeply equal. UI explicitly reports five of eleven original elements have editable projections."
+    },
+    {
+      "app": "vault",
+      "passed": true,
+      "operations": [
+        "unlock an existing synthetic encrypted vault",
+        "open existing entry",
+        "inspect KDBX import/export controls",
+        "lock vault"
+      ],
+      "observed": "Fixture title, group, username and notes retrieved; credential remained masked; lock restored the unlock interface. Native KDBX import/export runs are covered separately by authenticated HTTP and original KeePass tests.",
+      "browser_kdbx_import_export_exercised": false
+    }
+  ],
+  "console_errors_or_warnings_observed": 0,
+  "full_feature_parity_established": false,
+  "every_documented_feature_verified": false,
+  "universal_superiority_established": false,
+  "implementation_fingerprints": [
+    {
+      "path": "products/rea-studio/server.mjs",
+      "sha256": "ed40430c6df3bec60b8d05acd40f5c5ac4d8606cda3bc98f02065b2abe4050f3"
+    },
+    {
+      "path": "products/rea-studio/public/studio.mjs",
+      "sha256": "40ec58330f881f01bae9f26a5610b0fb8abbb79d4ae5258dd16c8f8724e1be20"
+    },
+    {
+      "path": "products/rea-studio/public/index.html",
+      "sha256": "d0d34be9575d78327002baf8383a8a9d7f341a6a4f5dccf22bf9059977f48f2d"
+    },
+    {
+      "path": "products/rea-studio/public/style.css",
+      "sha256": "6e04006894a14b4c68110971f2aae7fad01a1de8f372e9dc20f42148920271c8"
+    },
+    {
+      "path": "products/rea-studio/apps/editor/server.mjs",
+      "sha256": "b7eaab9dcee52394936c415aa3abe4c861c481677349f62880704ca2023fafea"
+    },
+    {
+      "path": "products/rea-studio/apps/editor/client.mjs",
+      "sha256": "6537ed329e48c1b4bb5e72fcec41f4f21bdc4dfecfc87f3bee1f29f6f749ff51"
+    },
+    {
+      "path": "products/rea-studio/apps/notes/server.mjs",
+      "sha256": "1864e92c9a497b5ddfff3ca7ea7d5c7599a066522f4e6324db140dd4eb4f2f33"
+    },
+    {
+      "path": "products/rea-studio/apps/notes/client.mjs",
+      "sha256": "9741bb08e66053610ee3eb87e4fd84547801b3753884f76d290ee752557e954f"
+    },
+    {
+      "path": "products/rea-studio/apps/sketch/server.mjs",
+      "sha256": "165a0010e625679674b4bbac79ee694f014eef2303af9db18b1d76c437ba0e27"
+    },
+    {
+      "path": "products/rea-studio/apps/sketch/client.mjs",
+      "sha256": "e42ce400bfa29791eddb2d63b24923e2288fa0e0acb4196cd6b930e24ed841b2"
+    },
+    {
+      "path": "products/rea-studio/apps/vault/server.mjs",
+      "sha256": "e56d4950aa7864fbdf120402bfa6643ee00c1ab114e962b9de80bceca6327534"
+    },
+    {
+      "path": "products/rea-studio/apps/vault/client.mjs",
+      "sha256": "986487ecdf78b1cfb9bc655c2680725ec06abc06fcb5c8d3aff5600feaea8264"
+    },
+    {
+      "path": "products/rea-studio/apps/editor/git.mjs",
+      "sha256": "52f9b43507796ff012f6ac9330bde1ccf094bd2315dc6c952e2625465699d6de"
+    },
+    {
+      "path": "products/rea-studio/apps/editor/sequence-diff.mjs",
+      "sha256": "87fe7284ed00d70ccae740d7b148a32b7a9a17e92cdc73c666a299925465aec3"
+    },
+    {
+      "path": "products/rea-studio/apps/notes/jex.mjs",
+      "sha256": "02785fd47baad48c2ae34c01fd066ad9efa1b0d1784258bfcdadac0e9c75570f"
+    },
+    {
+      "path": "products/rea-studio/apps/notes/markdown.mjs",
+      "sha256": "409b2bcc489c785e725d3257f21af1c6a3cd4f1f78fa0d0ca74d538876f24915"
+    },
+    {
+      "path": "products/rea-studio/apps/sketch/core.mjs",
+      "sha256": "57eea912cd343ea9aeb68165cde6068627681e727065f18072c3aa63528384c5"
+    },
+    {
+      "path": "products/rea-studio/apps/vault/kdbx.mjs",
+      "sha256": "97d221badd544fa47494ecf586e39974a9a0e45ec9673f3d57a24f3631fd770c"
+    },
+    {
+      "path": "products/rea-studio/apps/vault/xml.mjs",
+      "sha256": "0adfa8ec93cc2cffe7a256a94b896fd9bd815530de79769dccba4762c3c1c0bd"
+    }
+  ],
+  "screenshot": {
+    "path": "products/rea-studio/results/compatibility-preview.jpg",
+    "sha256": "2cb1a9498309067c1cc0fc117d6e7e9441d45deb4f069d41b51f13ddd614898d"
+  },
+  "downloaded_fixture_checks": [
+    {
+      "label": "Original resource via attachment button",
+      "bytes": 5,
+      "sha256": "0150a92bb1212cd00516b65fde0704614760000963874fcbb11eaa734ee87809"
+    },
+    {
+      "label": "Original resource via internal link",
+      "bytes": 5,
+      "sha256": "0150a92bb1212cd00516b65fde0704614760000963874fcbb11eaa734ee87809"
+    },
+    {
+      "label": "Browser JEX export before attachment upload",
+      "sha256": "a36abd0c6b6abf54d4ea08bc3cea4357a0923b2502e3a0ffa43fbeffbd8ac518"
+    },
+    {
+      "label": "Untouched Excalidraw document export",
+      "sha256": "13a8a083ff8597406713d1b90bdbc8846a2cb94a89fcb8b3e71fc1922281c6c0"
+    },
+    {
+      "label": "Saved grouped/freehand Excalidraw document export",
+      "sha256": "6f1dc6ecf7edb5ec64b35051a20f09ca412e5200296d3ce25952f0019d1f02f7"
+    }
+  ],
+  "limitations": [
+    "These interactive checks cover the added workflows in four applications. They supplement the historical ten-app record and are not a full original-product comparison.",
+    "No new authentication credential was entered through the browser. Vault fixture creation used the application API separately. Browser KDBX exchange and UI creation/rotation remain unexercised here."
+  ]
+}

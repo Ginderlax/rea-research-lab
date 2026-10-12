@@ -1275,7 +1275,7 @@
             "7z.hhp"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Classic UTF-8/ASCII ZIP store/DEFLATE with explicit small-data limits.",
+          "current_app_scope": "Bounded classic ZIP/ZIP64 store/DEFLATE with signed/unsigned streaming descriptors, CP437/Unicode path extras and timestamps; original7za/.NET comparisons cover recorded fixtures.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/archive/app.test.mjs",
@@ -1298,8 +1298,8 @@
           "source_ids": [
             "7z.features"
           ],
-          "current_app_status": "not-implemented",
-          "current_app_scope": "XZ, BZIP2, GZIP, TAR and WIM are absent.",
+          "current_app_status": "implemented-local-subset",
+          "current_app_scope": "Bounded TAR/PAX and GZIP/TAR.GZ creation; XZ, BZIP2, WIM and complete format options remain absent.",
           "evidence": [],
           "acceptance_checks": [
             "Enumerate all writable formats from the full 26.04 product/manual and test each method/variant; this row is not that exhaustive enumeration."
@@ -1313,8 +1313,8 @@
           "source_ids": [
             "7z.features"
           ],
-          "current_app_status": "not-implemented",
-          "current_app_scope": "Only limited ZIP input is recognized.",
+          "current_app_status": "implemented-local-subset",
+          "current_app_scope": "Bounded TAR/PAX/GNU longname, GZIP/TAR.GZ and ZIP/ZIP64 reading; complete original format catalog remains absent.",
           "evidence": [],
           "acceptance_checks": [
             "Freeze full-product format listing and manual, then create per-format/variant requirements and malformed-input fixtures.",
@@ -1361,7 +1361,7 @@
             "7z.hhp"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Creation of a new ZIP from a workspace folder; existing ZIPs are refused.",
+          "current_app_scope": "Create new ZIP/ZIP64/TAR/TAR.GZ/GZIP with applicable compression level/comment/layout controls; original add/update CLI contract remains absent.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/archive/app.test.mjs",
@@ -1424,7 +1424,7 @@
             "7z.hhp"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "ZIP list validates size, CRC and supported structure.",
+          "current_app_scope": "ZIP/GZIP content CRC and size verification, TAR header-checksum/structure checks; native CLI listing and full-format failures remain unverified.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/archive/app.test.mjs",
@@ -1478,8 +1478,8 @@
           "source_ids": [
             "7z.hhp"
           ],
-          "current_app_status": "not-implemented",
-          "current_app_scope": "New ZIP timestamps use DOS epoch; source permissions/ACLs/ADS are not retained.",
+          "current_app_status": "implemented-local-subset",
+          "current_app_scope": "Source ZIP NTFS timestamps, TAR/PAX modification/access timestamps, GZIP modification time and file/directory time restoration; permissions/ACLs/ADS and creation-date restoration remain absent.",
           "evidence": [],
           "acceptance_checks": [
             "Inventory original platform-specific preservation switches and round-trip their metadata."
@@ -1539,6 +1539,38 @@
         "Acquire and digest-verify the complete distribution, compare shipped manuals, and record full-product '7z i' format/method listings.",
         "Enumerate each documented format, variant, encryption mode, command, switch and platform condition; grouped capability rows are not exhaustive.",
         "Review every declared manual topic and reconcile source registration/runtime catalogs without equating registration with feature behavior."
+      ],
+      "local_implementation_evidence": [
+        {
+          "path": "products/rea-studio/apps/archive/zip.mjs",
+          "bytes": 19141,
+          "sha256": "16f7fca85cbe81698b1621968bc5281f8e80723b46e27a0ef89028dc14f65b6e",
+          "scope": "Current implemented subset; no full-product parity assertion."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/zip.test.mjs",
+          "bytes": 13831,
+          "sha256": "f7732808c8e734fdfd400a3af56108c0c3e1c0a6abbed3141dda3b86d56cdc66",
+          "scope": "Current implemented subset; no full-product parity assertion."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/tar.mjs",
+          "bytes": 10044,
+          "sha256": "940ce0be9034b8b54813e5290f6b40af4a98b4b89f1ef4e31d07caed38585afd",
+          "scope": "Current implemented subset; no full-product parity assertion."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/gzip.mjs",
+          "bytes": 4384,
+          "sha256": "2d76ed467dbccd9263808d3a7efa9be0dbf78225b8c4d0c0184cd2a29d0e76c6",
+          "scope": "Current implemented subset; no full-product parity assertion."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/formats.test.mjs",
+          "bytes": 31783,
+          "sha256": "7a7847d60b34ead39b597aac54c1612f616ffe69b9a267e193bb01fc78554c98",
+          "scope": "Current implemented subset; no full-product parity assertion."
+        }
       ]
     },
     {

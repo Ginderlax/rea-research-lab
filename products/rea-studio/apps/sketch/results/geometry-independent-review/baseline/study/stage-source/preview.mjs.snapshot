@@ -1,0 +1,14 @@
+import {createServer} from 'node:http';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {randomBytes} from 'node:crypto';
+import {handle} from './apps/sketch/server.mjs';
+import {createStore} from './lib/storage.mjs';
+const root=fileURLToPath(new URL('./',import.meta.url)),token=randomBytes(32).toString('hex'),store=await createStore(path.join(root,'preview-data/records')),allowed=new Set(['/preview-client.mjs','/apps/sketch/client.mjs','/apps/sketch/core.mjs']);let origin;
+const server=createServer(async(req,res)=>{res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; object-src 'none'; frame-ancestors 'none'");const send=(status,value,type='application/json')=>{res.writeHead(status,{'Content-Type':type+'; charset=utf-8'});res.end(type==='application/json'?JSON.stringify(value):value);};try{
+ if(req.method==='GET'&&req.url==='/')return send(200,'<!doctype html><html><head><title>Sketch geometry stage</title><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{font:16px system-ui;margin:24px;background:#f6f8fc;color:#17243a}#sketch-root{max-width:1100px;margin:auto}.row{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}button,input,select{font:inherit;padding:7px;border-radius:5px;border:1px solid #9daab8}button{background:white;cursor:pointer}button[aria-pressed="true"]{background:#164db4;color:white}.card{padding:12px;background:#fff0d5;border-radius:7px}.muted{color:#46566d}textarea{font:12px ui-monospace}</style></head><body><div id="sketch-root"></div><script type="module" src="/preview-client.mjs"></script></body></html>','text/html');
+ if(req.method==='GET'&&req.url==='/session')return send(200,{token});if(req.method==='GET'&&allowed.has(req.url))return send(200,await fs.readFile(path.join(root,req.url.slice(1)),'utf8'),'text/javascript');
+ if(req.method==='POST'&&req.url==='/api'){if(req.headers.origin!==origin||req.headers['x-stage-token']!==token)return send(403,{error:'Use the private stage page.'});const chunks=[];let bytes=0;for await(const chunk of req){bytes+=chunk.length;if(bytes>12*1024*1024)return send(413,{error:'Stage request exceeds 12 MiB.'});chunks.push(chunk);}const {action,input}=JSON.parse(Buffer.concat(chunks).toString('utf8'));return send(200,await handle({action,input,store}));}send(404,{error:'Not found'});
+ }catch(error){send(400,{error:error.message});}});
+await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));origin=`http://127.0.0.1:${server.address().port}`;await fs.writeFile(path.join(root,'preview-host.json'),JSON.stringify({origin,startedAtUtc:new Date().toISOString(),privateDataDir:'preview-data',productionEdits:false},null,2)+'\n');console.log(JSON.stringify({origin,privateStage:true}));

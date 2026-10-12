@@ -1,0 +1,7 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url)),files={};
+async function walk(dir){for(const entry of await fs.readdir(dir,{withFileTypes:true})){const file=path.join(dir,entry.name);if(entry.isDirectory())await walk(file);else{const bytes=await fs.readFile(file);files[path.relative(here,file).replaceAll('\\','/')]=createHash('sha256').update(bytes).digest('hex');}}}
+await walk(path.join(here,'original'));await fs.writeFile(path.join(here,'original-manifest.json'),JSON.stringify({createdAt:new Date().toISOString(),archiveSha256:'64e058ea668bae613b3d040be2bd60f6b21be5d74db2839cf3d7e2ab87c76338',sourceCommit:'6eb2d75670b912bdc0274abd73f4f6e8ca8678c6',scope:'Authenticated archive selectively extracted without running original code; official license preserved.',files},null,2)+'\n');console.log(Object.keys(files).length+' preserved original files');

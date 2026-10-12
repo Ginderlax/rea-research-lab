@@ -1,0 +1,25 @@
+import {spawnSync} from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+const here=path.dirname(fileURLToPath(import.meta.url));
+if(process.argv[2]!=='--quiet-confirmed')throw Error('Coordinator quiet-window confirmation required before formal paired timing.');
+const candidate=process.argv[3]??'candidate-dispatch.mjs';if(!/^candidate-[a-z-]+\.mjs$/.test(candidate))throw Error('Unexpected candidate filename.');
+const quietConfirmedFrom=process.argv[4];if(!quietConfirmedFrom||!Number.isFinite(Date.parse(quietConfirmedFrom)))throw Error('Supply the coordinator-confirmed quiet-window timestamp.');
+const sourceHashesBefore={};for(const file of ['benchmark.mjs','benchmark-worker.mjs','candidate-baseline.mjs',candidate])sourceHashesBefore[file]=createHash('sha256').update(await fs.readFile(path.join(here,file))).digest('hex');
+const startedAt=new Date().toISOString();
+const records=[],caseNames=['smallStandard','largeStandard','singlePercentile','allPercentiles','allCalculations'],orders=[['original','baseline','candidate'],['candidate','original','baseline'],['baseline','candidate','original']];
+for(let run=0;run<7;run++)for(const caseName of caseNames)for(const implementation of orders[run%3]){
+  const start=new Date().toISOString(),child=spawnSync(process.execPath,['--expose-gc',path.join(here,'benchmark-worker.mjs'),implementation,caseName,candidate],{encoding:'utf8',timeout:60000,maxBuffer:2*1024*1024,windowsHide:true});
+  if(child.status!==0){await fs.writeFile(path.join(here,'results',`failed-benchmark-${Date.now()}.json`),JSON.stringify({start,run,caseName,implementation,status:child.status,error:child.error?.message,stdout:child.stdout,stderr:child.stderr,records},null,2)+'\n');throw Error('Paired worker failed; exact attempted run retained.');}
+  const result=JSON.parse(child.stdout);if(result.candidateSha256!==sourceHashesBefore[candidate]||result.baselineSha256!==sourceHashesBefore['candidate-baseline.mjs'])throw Error('Worker executed a different source fingerprint.');
+  records.push({run,start,completedAt:new Date().toISOString(),...result});
+}
+const median=values=>[...values].sort((a,b)=>a-b)[Math.floor(values.length/2)],summary=caseNames.map(caseName=>{
+  const per=impl=>records.filter(row=>row.caseName===caseName&&row.implementation===impl).map(row=>row.millisecondsPerCall),candidateTimes=per('candidate'),originalTimes=per('original'),baselineTimes=per('baseline');
+  return{caseName,originalMilliseconds:median(originalTimes),baselineMilliseconds:median(baselineTimes),candidateMilliseconds:median(candidateTimes),originalOverCandidate:median(originalTimes)/median(candidateTimes),baselineOverCandidate:median(baselineTimes)/median(candidateTimes),ranges:Object.fromEntries(['original','baseline','candidate'].map(impl=>{const times=per(impl);return[impl,{min:Math.min(...times),max:Math.max(...times)}];}))};
+});
+const sourceHashes={};for(const file of ['benchmark.mjs','benchmark-worker.mjs','candidate-baseline.mjs',candidate])sourceHashes[file]=createHash('sha256').update(await fs.readFile(path.join(here,file))).digest('hex');
+for(const file of Object.keys(sourceHashes))if(sourceHashes[file]!==sourceHashesBefore[file])throw Error('Source changed during timing sequence.');
+const output=path.join(here,'results',path.basename(candidate,'.mjs')+'-paired-'+Date.now()+'.json');await fs.writeFile(output,JSON.stringify({schemaVersion:1,checkedAt:new Date().toISOString(),sampleInterval:{start:records[0].start,end:records.at(-1).completedAt},sequenceStartedAt:startedAt,coordinatorQuietWindow:true,coordinatorConfirmedReadOnlyFrom:quietConfirmedFrom,freshProcessSamplesPerImplementationAndWorkload:7,sourceHashesBefore,sourceHashes,executedSourceFingerprintsStable:true,records,summary,scope:'Five fixed synthetic component workloads. Sequential fresh-process samples with rotating implementation order; extensive warmup. All three modules loaded for exact-output checks. Memory includes all three and archive authentication; no isolated memory comparison, statistics significance or whole-product superiority is claimed.',fullProductComplete:false,universalSuperiorityEstablished:false},null,2)+'\n');console.log(JSON.stringify({output,summary}));

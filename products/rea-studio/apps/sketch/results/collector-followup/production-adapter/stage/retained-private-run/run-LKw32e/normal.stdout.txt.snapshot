@@ -1,0 +1,113 @@
+TAP version 13
+# Subtest: normal child returns exact UTF8 raw output and successful completion
+ok 1 - normal child returns exact UTF8 raw output and successful completion
+  ---
+  duration_ms: 44.5544
+  type: 'test'
+  ...
+# Subtest: exact stdout/stderr cap is accepted without truncation
+ok 2 - exact stdout/stderr cap is accepted without truncation
+  ---
+  duration_ms: 44.1724
+  type: 'test'
+  ...
+# Subtest: stdout growth returns bounded partial bytes and terminates the owned process
+ok 3 - stdout growth returns bounded partial bytes and terminates the owned process
+  ---
+  duration_ms: 245.3457
+  type: 'test'
+  ...
+# Subtest: stderr growth is capped independently and terminates the owned process
+ok 4 - stderr growth is capped independently and terminates the owned process
+  ---
+  duration_ms: 194.9735
+  type: 'test'
+  ...
+# Subtest: stalled child hits its active deadline and closes after tree cleanup
+ok 5 - stalled child hits its active deadline and closes after tree cleanup
+  ---
+  duration_ms: 319.438
+  type: 'test'
+  ...
+# Subtest: deadline kills actual owned grandchild as well as the runner
+ok 6 - deadline kills actual owned grandchild as well as the runner
+  ---
+  duration_ms: 428.0393
+  type: 'test'
+  ...
+# Subtest: nonzero exit is diagnosed without inventing a cap/deadline failure
+ok 7 - nonzero exit is diagnosed without inventing a cap/deadline failure
+  ---
+  duration_ms: 44.9302
+  type: 'test'
+  ...
+# Subtest: spawn failure settles with a diagnostic and no cleanup target
+ok 8 - spawn failure settles with a diagnostic and no cleanup target
+  ---
+  duration_ms: 1.1412
+  type: 'test'
+  ...
+# Subtest: child environment clears inherited test context without mutating caller environment
+ok 9 - child environment clears inherited test context without mutating caller environment
+  ---
+  duration_ms: 43.7607
+  type: 'test'
+  ...
+# Subtest: malformed resource limits reject before child execution
+ok 10 - malformed resource limits reject before child execution
+  ---
+  duration_ms: 0.9136
+  type: 'test'
+  ...
+# Subtest: successful collection snapshots caller inputs and records stable source diagnostics
+ok 11 - successful collection snapshots caller inputs and records stable source diagnostics
+  ---
+  duration_ms: 51.3361
+  type: 'test'
+  ...
+# Subtest: stalled collection retains bounded diagnostics and cannot qualify as success
+ok 12 - stalled collection retains bounded diagnostics and cannot qualify as success
+  ---
+  duration_ms: 279.9777
+  type: 'test'
+  ...
+# Subtest: oversized collection writes clipped output and a failure instead of a success receipt
+ok 13 - oversized collection writes clipped output and a failure instead of a success receipt
+  ---
+  duration_ms: 221.3711
+  type: 'test'
+  ...
+# Subtest: successful child that changes a source is rejected with before/after fingerprints
+ok 14 - successful child that changes a source is rejected with before/after fingerprints
+  ---
+  duration_ms: 52.2103
+  type: 'test'
+  ...
+# Subtest: source deletion after execution remains diagnosable and cannot qualify as success
+ok 15 - source deletion after execution remains diagnosable and cannot qualify as success
+  ---
+  duration_ms: 51.1619
+  type: 'test'
+  ...
+# Subtest: exclusive diagnostic writes preserve preexisting evidence bytes
+ok 16 - exclusive diagnostic writes preserve preexisting evidence bytes
+  ---
+  duration_ms: 51.3712
+  type: 'test'
+  ...
+# Subtest: source byte budget rejects before launching a child
+ok 17 - source byte budget rejects before launching a child
+  ---
+  duration_ms: 13.9944
+  type: 'test'
+  ...
+# SKETCH_COLLECTOR_OBSERVATIONS {"groups":17,"recordedChildExecutions":14}
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2147.8921

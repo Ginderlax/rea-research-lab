@@ -1,0 +1,452 @@
+{
+  "createdAt": "2026-10-12T19:49:46.618Z",
+  "url": "http://127.0.0.1:49525/",
+  "scope": "Actual isolated stage editor through browser; synthetic local data only; no production host or full n8n editor comparison",
+  "checks": {
+    "routingExampleLoaded": true,
+    "targetInputOneRemovedAndPreflightRejected": true,
+    "targetInputOneRestoredAndPreflightAccepted": true,
+    "savedRevision": 1,
+    "completed": true,
+    "mergeInputPorts": [
+      1,
+      1
+    ],
+    "mergeExecutedOnce": true,
+    "finishedItems": [
+      {
+        "json": {
+          "amount": 150,
+          "finished": true
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      },
+      {
+        "json": {
+          "amount": 150,
+          "finished": true
+        },
+        "pairedItem": {
+          "item": 1
+        }
+      }
+    ],
+    "switchOutputOneSelected": true,
+    "conflictingFanInRejected": true,
+    "exactSelectedConnectionRemoved": true,
+    "switchCreation": true,
+    "mergeCreation": true,
+    "savedGraphPreserved": true
+  },
+  "run": {
+    "id": "e9b98db4-c3cc-4c60-bacd-fb385b671da8",
+    "status": "completed",
+    "trace": [
+      {
+        "node": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "inputItems": 0,
+        "status": "completed",
+        "outputItems": [
+          1
+        ],
+        "durationMs": 3.076
+      },
+      {
+        "node": "Seed",
+        "type": "n8n-nodes-base.set",
+        "inputItems": 1,
+        "status": "completed",
+        "outputItems": [
+          1
+        ],
+        "durationMs": 3.239
+      },
+      {
+        "node": "Switch",
+        "type": "n8n-nodes-base.switch",
+        "inputItems": 1,
+        "status": "completed",
+        "outputItems": [
+          1,
+          0
+        ],
+        "durationMs": 3.12
+      },
+      {
+        "node": "Wait",
+        "type": "n8n-nodes-base.wait",
+        "inputItems": 1,
+        "status": "completed",
+        "outputItems": [
+          1
+        ],
+        "durationMs": 2.443
+      },
+      {
+        "node": "Merge",
+        "type": "n8n-nodes-base.merge",
+        "inputItems": 2,
+        "inputPorts": [
+          1,
+          1
+        ],
+        "status": "completed",
+        "outputItems": [
+          2
+        ],
+        "durationMs": 3.755
+      },
+      {
+        "node": "Finished",
+        "type": "n8n-nodes-base.set",
+        "inputItems": 2,
+        "status": "completed",
+        "outputItems": [
+          2
+        ],
+        "durationMs": 3.043
+      }
+    ],
+    "outputs": {
+      "Start": [
+        [
+          {
+            "json": {}
+          }
+        ]
+      ],
+      "Seed": [
+        [
+          {
+            "json": {
+              "amount": 150
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          }
+        ]
+      ],
+      "Switch": [
+        [
+          {
+            "json": {
+              "amount": 150
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          }
+        ],
+        []
+      ],
+      "Wait": [
+        [
+          {
+            "json": {
+              "amount": 150
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          }
+        ]
+      ],
+      "Merge": [
+        [
+          {
+            "json": {
+              "amount": 150
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          },
+          {
+            "json": {
+              "amount": 150
+            },
+            "pairedItem": {
+              "item": 0,
+              "input": 1
+            }
+          }
+        ]
+      ],
+      "Finished": [
+        [
+          {
+            "json": {
+              "amount": 150,
+              "finished": true
+            },
+            "pairedItem": {
+              "item": 0
+            }
+          },
+          {
+            "json": {
+              "amount": 150,
+              "finished": true
+            },
+            "pairedItem": {
+              "item": 1
+            }
+          }
+        ]
+      ]
+    },
+    "steps": 6,
+    "requests": 0,
+    "startedAt": "2026-10-12T19:48:37.380Z",
+    "workflowId": "4860aaa2-675c-406c-a87d-81ceb1da5e46",
+    "revision": 1,
+    "finishedAt": "2026-10-12T19:48:37.524Z"
+  },
+  "editor": {
+    "name": "Native routing example",
+    "active": false,
+    "settings": {
+      "executionOrder": "v1"
+    },
+    "nodes": [
+      {
+        "id": "start",
+        "name": "Start",
+        "type": "n8n-nodes-base.manualTrigger",
+        "typeVersion": 1,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {}
+      },
+      {
+        "id": "seed",
+        "name": "Seed",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          200,
+          0
+        ],
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "{\"amount\":150}",
+          "options": {}
+        }
+      },
+      {
+        "id": "switch",
+        "name": "Switch",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          400,
+          0
+        ],
+        "parameters": {
+          "mode": "rules",
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "combinator": "and",
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.amount }}",
+                      "rightValue": 100,
+                      "operator": {
+                        "type": "number",
+                        "operation": "gte"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "options": {
+            "fallbackOutput": "extra",
+            "allMatchingOutputs": false
+          }
+        }
+      },
+      {
+        "id": "wait",
+        "name": "Wait",
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          600,
+          100
+        ],
+        "parameters": {
+          "resume": "timeInterval",
+          "amount": 0.1,
+          "unit": "seconds"
+        }
+      },
+      {
+        "id": "merge",
+        "name": "Merge",
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          800,
+          0
+        ],
+        "parameters": {
+          "mode": "append",
+          "numberInputs": 2,
+          "options": {}
+        }
+      },
+      {
+        "id": "finish",
+        "name": "Finished",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1000,
+          0
+        ],
+        "parameters": {
+          "includeOtherFields": true,
+          "assignments": {
+            "assignments": [
+              {
+                "name": "finished",
+                "value": true,
+                "type": "boolean"
+              }
+            ]
+          },
+          "options": {}
+        }
+      },
+      {
+        "id": "9b539a5b-b77b-4e02-99da-94b34f4b0319",
+        "name": "switch 7",
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "mode": "expression",
+          "numberOutputs": 2,
+          "output": 0,
+          "options": {}
+        }
+      },
+      {
+        "id": "e3946816-bae6-4c58-8a3f-4b6954c00194",
+        "name": "merge 8",
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          0,
+          0
+        ],
+        "parameters": {
+          "mode": "append",
+          "numberInputs": 2,
+          "options": {}
+        }
+      }
+    ],
+    "connections": {
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Seed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Seed": {
+        "main": [
+          [
+            {
+              "node": "Switch",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Wait",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Switch": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "Wait": {
+        "main": [
+          [
+            {
+              "node": "Merge",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Merge": {
+        "main": [
+          [
+            {
+              "node": "Finished",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  },
+  "proofs": [
+    "ui-routing-completed.png",
+    "ui-routing-completed.txt",
+    "ui-routing-controls.txt"
+  ],
+  "failedAttempts": [
+    {
+      "kind": "Browser unavailable",
+      "browser": "iab",
+      "effect": "None; used own new Chrome tab"
+    },
+    {
+      "kind": "Assignment handle missing after unavailable-browser call",
+      "effect": "Own tab opened and then bound by exact returned id"
+    },
+    {
+      "kind": "Exact implicit-label locator found no match",
+      "effect": "No selected control changed; matched observed label without exact option"
+    }
+  ]
+}

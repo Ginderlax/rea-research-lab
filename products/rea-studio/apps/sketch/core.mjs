@@ -5,12 +5,12 @@ export function validateScene(scene) {
   if (!Array.isArray(scene.shapes) || scene.shapes.length > 2000) throw new Error('Use at most 2,000 shapes');
   const ids = new Set(); const shapes = scene.shapes.map(shape => {
     if (!shape || typeof shape.id !== 'string' || !/^[\w-]{1,80}$/.test(shape.id) || ids.has(shape.id)) throw new Error('Shape identifiers must be unique strings'); ids.add(shape.id);
-    if (!['rect', 'ellipse', 'arrow', 'text', 'freedraw'].includes(shape.type)) throw new Error('Unsupported shape type');
+    if (!['rect', 'ellipse', 'diamond', 'line', 'arrow', 'text', 'freedraw'].includes(shape.type)) throw new Error('Unsupported shape type');
     if (!color.test(shape.stroke || '#263238') || shape.fill && shape.fill !== 'none' && !color.test(shape.fill)) throw new Error('Colors must be six-digit hex values or no fill');
     const normalized = { id: shape.id, type: shape.type, x: number(shape.x), y: number(shape.y), w: number(shape.w, 100), h: number(shape.h, 60), stroke: shape.stroke || '#263238', fill: shape.fill || 'none', strokeWidth: number(shape.strokeWidth, 2, 30) };
     if (shape.groupIds !== undefined) { if (!Array.isArray(shape.groupIds) || shape.groupIds.length > 20 || shape.groupIds.some(id => typeof id !== 'string' || !/^[\w-]{1,80}$/.test(id))) throw new Error('Invalid shape groups'); normalized.groupIds = [...shape.groupIds]; }
     if (normalized.strokeWidth < 0.1) throw new Error('Stroke width must be positive');
-    if (shape.type !== 'arrow') { if (normalized.w < 0) { normalized.x += normalized.w; normalized.w = -normalized.w; } if (normalized.h < 0) { normalized.y += normalized.h; normalized.h = -normalized.h; } }
+    if (!isLinearShape(shape)) { if (normalized.w < 0) { normalized.x += normalized.w; normalized.w = -normalized.w; } if (normalized.h < 0) { normalized.y += normalized.h; normalized.h = -normalized.h; } }
     number(normalized.x); number(normalized.y); number(normalized.x + normalized.w); number(normalized.y + normalized.h);
     if (shape.type === 'text') { if (typeof shape.text !== 'string' || shape.text.length > 5000) throw new Error('Text must contain at most 5,000 characters'); normalized.text = shape.text; normalized.fontSize = number(shape.fontSize, 20, 200); if (normalized.fontSize < 6) throw new Error('Font size must be at least six'); }
     if (shape.type === 'freedraw') { if (!Array.isArray(shape.points) || !shape.points.length || shape.points.length > 5000) throw new Error('Freehand strokes need 1–5,000 points'); normalized.points = shape.points.map(point => { if (!Array.isArray(point) || point.length !== 2) throw new Error('Invalid stroke point'); const p = [number(point[0]), number(point[1])]; number(normalized.x + p[0]); number(normalized.y + p[1]); return p; }); }
@@ -31,10 +31,16 @@ export function validateScene(scene) {
   return result;
 }
 export function bounds(shape) { if (shape.type === 'freedraw') { const xs = shape.points.map(p => shape.x + p[0]), ys = shape.points.map(p => shape.y + p[1]); return { x: Math.min(...xs), y: Math.min(...ys), w: Math.max(...xs) - Math.min(...xs), h: Math.max(...ys) - Math.min(...ys) }; } return { x: Math.min(shape.x, shape.x + shape.w), y: Math.min(shape.y, shape.y + shape.h), w: Math.abs(shape.w), h: Math.abs(shape.h) }; }
+export function isLinearShape(shape) { return shape.type === 'line' || shape.type === 'arrow'; }
+// Source-assisted pinned Excalidraw 0.18.1 getDiamondPoints convention (MIT).
+// Sub-pixel/degenerate sizes clamp the upstream +1 offset to their bounds.
+// Full upstream attribution and exact helper/source hashes are retained by this stage.
+export function diamondPoints(shape) { const b = bounds(shape), top = Math.min(b.w, Math.floor(b.w / 2) + 1), side = Math.min(b.h, Math.floor(b.h / 2) + 1); return [[b.x + top, b.y], [b.x + b.w, b.y + side], [b.x + top, b.y + b.h], [b.x, b.y + side]]; }
 export function hitShape(shape, x, y, tolerance = 6) {
   const b = bounds(shape);
   if (shape.type === 'freedraw') { const points = shape.points; if (points.length === 1) return Math.hypot(x - shape.x - points[0][0], y - shape.y - points[0][1]) <= tolerance; return points.slice(1).some((point, i) => hitShape({ type: 'arrow', x: shape.x + points[i][0], y: shape.y + points[i][1], w: point[0] - points[i][0], h: point[1] - points[i][1] }, x, y, tolerance)); }
-  if (shape.type === 'arrow') { const dx = shape.w, dy = shape.h; const t = Math.max(0, Math.min(1, ((x - shape.x) * dx + (y - shape.y) * dy) / (dx * dx + dy * dy || 1))); return Math.hypot(x - shape.x - dx * t, y - shape.y - dy * t) <= tolerance; }
+  if (isLinearShape(shape)) { const dx = shape.w, dy = shape.h; const t = Math.max(0, Math.min(1, ((x - shape.x) * dx + (y - shape.y) * dy) / (dx * dx + dy * dy || 1))); return Math.hypot(x - shape.x - dx * t, y - shape.y - dy * t) <= tolerance; }
+  if (shape.type === 'diamond') { const points = diamondPoints(shape); if (points.some((point, i) => { const next = points[(i + 1) % 4]; return hitShape({ type: 'line', x: point[0], y: point[1], w: next[0] - point[0], h: next[1] - point[1] }, x, y, tolerance); })) return true; if (!b.w || !b.h) return false; return points.every((point, i) => { const next = points[(i + 1) % 4]; return (next[0] - point[0]) * (y - point[1]) - (next[1] - point[1]) * (x - point[0]) >= 0; }); }
   if (shape.type === 'ellipse') { const rx = b.w / 2 + tolerance, ry = b.h / 2 + tolerance; return ((x - b.x - b.w / 2) / rx) ** 2 + ((y - b.y - b.h / 2) / ry) ** 2 <= 1; }
   return x >= b.x - tolerance && x <= b.x + b.w + tolerance && y >= b.y - tolerance && y <= b.y + b.h + tolerance;
 }
@@ -52,6 +58,8 @@ export function svg(scene) {
     const style = `fill="${shape.fill}" stroke="${shape.stroke}" stroke-width="${shape.strokeWidth}"`;
     if (shape.type === 'rect') return `<rect x="${shape.x}" y="${shape.y}" width="${shape.w}" height="${shape.h}" ${style}/>`;
     if (shape.type === 'ellipse') return `<ellipse cx="${shape.x + shape.w / 2}" cy="${shape.y + shape.h / 2}" rx="${shape.w / 2}" ry="${shape.h / 2}" ${style}/>`;
+    if (shape.type === 'diamond') return `<polygon points="${diamondPoints(shape).map(point => point.join(',')).join(' ')}" ${style}/>`;
+    if (shape.type === 'line') return `<line x1="${shape.x}" y1="${shape.y}" x2="${shape.x + shape.w}" y2="${shape.y + shape.h}" fill="none" stroke="${shape.stroke}" stroke-width="${shape.strokeWidth}" stroke-linecap="round"/>`;
     if (shape.type === 'freedraw') { if (shape.points.length === 1) return `<circle cx="${shape.x + shape.points[0][0]}" cy="${shape.y + shape.points[0][1]}" r="${shape.strokeWidth / 2}" fill="${shape.stroke}"/>`; return `<polyline points="${shape.points.map(p => `${shape.x + p[0]},${shape.y + p[1]}`).join(' ')}" fill="none" stroke="${shape.stroke}" stroke-width="${shape.strokeWidth}" stroke-linecap="round" stroke-linejoin="round"/>`; }
     if (shape.type === 'arrow') { const angle = Math.atan2(shape.h, shape.w), endX = shape.x + shape.w, endY = shape.y + shape.h, size = 12; return `<g fill="none" stroke="${shape.stroke}" stroke-width="${shape.strokeWidth}"><line x1="${shape.x}" y1="${shape.y}" x2="${endX}" y2="${endY}"/><path d="M ${endX - size * Math.cos(angle - 0.45)} ${endY - size * Math.sin(angle - 0.45)} L ${endX} ${endY} L ${endX - size * Math.cos(angle + 0.45)} ${endY - size * Math.sin(angle + 0.45)}"/></g>`; }
     return `<text x="${shape.x}" y="${shape.y}" fill="${shape.stroke}" font-family="sans-serif" font-size="${shape.fontSize}" dominant-baseline="text-before-edge">${shape.text.split('\n').map((line, i) => `<tspan x="${shape.x}" dy="${i ? shape.fontSize * 1.25 : 0}">${escape(line)}</tspan>`).join('')}</text>`;
@@ -76,16 +84,18 @@ function displayColor(value, fallback) { if (color.test(value)) return value; if
 export function importExcalidraw(document, name = 'Imported Excalidraw scene') {
   validateDocument(document); const shapes = [], warnings = [];
   for (const element of document.elements) {
-    const type = new Map([['rectangle', 'rect'], ['ellipse', 'ellipse'], ['arrow', 'arrow'], ['text', 'text'], ['freedraw', 'freedraw']]).get(element.type);
+    const type = new Map([['rectangle', 'rect'], ['ellipse', 'ellipse'], ['diamond', 'diamond'], ['line', 'line'], ['arrow', 'arrow'], ['text', 'text'], ['freedraw', 'freedraw']]).get(element.type);
     if (element.isDeleted) continue;
-    if (!type || element.angle || element.locked || type === 'arrow' && (element.elbowed || element.startBinding || element.endBinding || !Array.isArray(element.points) || element.points.length !== 2) || type === 'text' && (element.containerId || element.autoResize === false)) { warnings.push(`${element.id}: ${element.type} preserved without editable rendering`); continue; }
+    if (!type || element.angle || element.locked || ['arrow', 'line'].includes(type) && (element.elbowed || element.startBinding || element.endBinding || !Array.isArray(element.points) || element.points.length !== 2) || type === 'text' && (element.containerId || element.autoResize === false)) { warnings.push(`${element.id}: ${element.type} preserved without editable rendering`); continue; }
     try {
     const shape = { id: element.id, type, x: element.x ?? 0, y: element.y ?? 0, w: element.width ?? 100, h: element.height ?? 60, stroke: displayColor(element.strokeColor, '#263238'), fill: displayColor(element.backgroundColor, 'none'), strokeWidth: element.strokeWidth ?? 2, groupIds: [...(element.groupIds || [])] };
-    if (type === 'arrow') { shape.x += element.points[0][0]; shape.y += element.points[0][1]; shape.w = element.points[1][0] - element.points[0][0]; shape.h = element.points[1][1] - element.points[0][1]; }
+    if (isLinearShape(shape)) { shape.x += element.points[0][0]; shape.y += element.points[0][1]; shape.w = element.points[1][0] - element.points[0][0]; shape.h = element.points[1][1] - element.points[0][1]; }
     if (type === 'text') { shape.text = element.text ?? ''; shape.fontSize = element.fontSize ?? 20; }
     if (type === 'freedraw') shape.points = structuredClone(element.points);
     const safe = validateScene({ name, shapes: [shape] }).shapes[0]; safe.vendorElement = structuredClone(element); safe.vendorBaseline = projected(safe); shapes.push(safe);
     if (element.roughness || element.opacity !== undefined && element.opacity !== 100 || element.fillStyle && element.fillStyle !== 'solid' || element.strokeStyle && element.strokeStyle !== 'solid' || element.roundness || type === 'text' && element.fontFamily !== 2 || type === 'arrow' && (element.startArrowhead || element.endArrowhead !== 'arrow')) warnings.push(`${element.id}: appearance approximated; native appearance metadata retained`);
+    if (type === 'line' && (element.startArrowhead || element.endArrowhead)) warnings.push(`${element.id}: line arrowheads are preserved but not painted`);
+    if (type === 'diamond' && (safe.w < 1 || safe.h < 1)) warnings.push(`${element.id}: sub-pixel diamond vertices are clamped to editable bounds; native metadata retained`);
     if (element.boundElements?.length) warnings.push(`${element.id}: geometry edits do not update its preserved external bindings`);
     } catch (error) { warnings.push(`${element.id}: preserved without editable rendering (${error.message})`); }
   }
@@ -98,9 +108,9 @@ export function importExcalidraw(document, name = 'Imported Excalidraw scene') {
   return validateScene({ name, shapes, view, excalidrawDocument: structuredClone(document), excalidrawEditableIds: shapes.map(s => s.id), excalidrawViewBaseline: view, importWarnings: warnings });
 }
 function newElement(shape) {
-  const base = { id: shape.id, type: ({ rect: 'rectangle', ellipse: 'ellipse', arrow: 'arrow', text: 'text', freedraw: 'freedraw' })[shape.type], x: shape.x, y: shape.y, width: Math.abs(shape.w), height: Math.abs(shape.h), angle: 0, strokeColor: shape.stroke, backgroundColor: shape.fill === 'none' ? 'transparent' : shape.fill, fillStyle: 'solid', strokeWidth: shape.strokeWidth, strokeStyle: 'solid', roughness: 0, opacity: 100, groupIds: shape.groupIds || [], frameId: null, roundness: null, seed: 1, version: 1, versionNonce: 0, index: null, isDeleted: false, boundElements: null, updated: 0, link: null, locked: false };
+  const base = { id: shape.id, type: ({ rect: 'rectangle', ellipse: 'ellipse', diamond: 'diamond', line: 'line', arrow: 'arrow', text: 'text', freedraw: 'freedraw' })[shape.type], x: shape.x, y: shape.y, width: Math.abs(shape.w), height: Math.abs(shape.h), angle: 0, strokeColor: shape.stroke, backgroundColor: shape.fill === 'none' ? 'transparent' : shape.fill, fillStyle: 'solid', strokeWidth: shape.strokeWidth, strokeStyle: 'solid', roughness: 0, opacity: 100, groupIds: shape.groupIds || [], frameId: null, roundness: null, seed: 1, version: 1, versionNonce: 0, index: null, isDeleted: false, boundElements: null, updated: 0, link: null, locked: false };
   if (shape.type === 'text') Object.assign(base, { text: shape.text, originalText: shape.text, fontSize: shape.fontSize, fontFamily: 2, textAlign: 'left', verticalAlign: 'top', containerId: null, autoResize: true, lineHeight: 1.25 });
-  if (shape.type === 'arrow') Object.assign(base, { points: [[0, 0], [shape.w, shape.h]], lastCommittedPoint: null, startBinding: null, endBinding: null, startArrowhead: null, endArrowhead: 'arrow', elbowed: false });
+  if (isLinearShape(shape)) { Object.assign(base, { points: [[0, 0], [shape.w, shape.h]], lastCommittedPoint: null, startBinding: null, endBinding: null, startArrowhead: null, endArrowhead: shape.type === 'arrow' ? 'arrow' : null }); if (shape.type === 'arrow') base.elbowed = false; }
   if (shape.type === 'freedraw') { const b = bounds(shape), points = shape.points.length === 1 ? [shape.points[0], shape.points[0]] : shape.points; Object.assign(base, { width: b.w, height: b.h, points: structuredClone(points), pressures: [], simulatePressure: true, lastCommittedPoint: null }); }
   return base;
 }
@@ -117,7 +127,8 @@ export function exportExcalidraw(input) {
     if (differs('groupIds')) updated.groupIds = changed.groupIds;
     if (differs('stroke')) updated.strokeColor = changed.strokeColor; if (differs('fill')) updated.backgroundColor = changed.backgroundColor; if (differs('strokeWidth')) updated.strokeWidth = changed.strokeWidth;
     if (shape.type === 'text') { if (differs('text')) Object.assign(updated, { text: changed.text, originalText: changed.originalText }); if (differs('fontSize')) updated.fontSize = changed.fontSize; }
-    if (shape.type === 'arrow' && (differs('w') || differs('h') || differs('x') || differs('y'))) { updated.x = changed.x; updated.y = changed.y; updated.points = changed.points; updated.width = changed.width; updated.height = changed.height; }
+    if (isLinearShape(shape) && (differs('w') || differs('h') || differs('x') || differs('y'))) { updated.x = changed.x; updated.y = changed.y; updated.points = changed.points; updated.width = changed.width; updated.height = changed.height; }
+    if (shape.type === 'diamond' && (differs('w') || differs('h') || differs('x') || differs('y'))) { updated.x = changed.x; updated.y = changed.y; updated.width = changed.width; updated.height = changed.height; }
     if (shape.type === 'freedraw' && differs('points')) { updated.points = changed.points; const b = bounds(shape); updated.width = b.w; updated.height = b.h; if (updated.pressures?.length && updated.pressures.length !== changed.points.length) { updated.pressures = []; updated.simulatePressure = true; } }
     return updated;
   });

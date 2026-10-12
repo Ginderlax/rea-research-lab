@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const here=path.dirname(fileURLToPath(import.meta.url)),repo=path.resolve(here,'../../outputs/rea-research-lab');
+for(const[name,target]of [['native.test.mjs','prior-native.test.mjs'],['native-http.test.mjs','prior-native-http.test.mjs'],['native-server.test.mjs','prior-native-server.test.mjs']]){
+ let source=await fs.readFile(path.join(here,'baseline',name),'utf8');source=source.replaceAll("from './native.mjs'","from './candidate/native.mjs'").replaceAll("from './native-server.mjs'","from './candidate/native-server.mjs'").replaceAll("from './original-harness.mjs'","from './prior-original-harness.mjs'").replaceAll("from '../../server.mjs'","from './test-host.mjs'").replaceAll("from '../../lib/storage.mjs'","from './preserved-storage.mjs'").replaceAll("../../../../.local/automation-original/package.json","../../outputs/rea-research-lab/.local/automation-original/package.json");await fs.writeFile(path.join(here,target),source);
+}
+let harness=await fs.readFile(path.join(here,'baseline/original-harness.mjs'),'utf8');harness=harness.replaceAll('../../../../.local/automation-original/','../../outputs/rea-research-lab/.local/automation-original/').replaceAll('./native-original-manifest.json','./baseline/native-original-manifest.json');await fs.writeFile(path.join(here,'prior-original-harness.mjs'),harness);
+await fs.copyFile(path.join(repo,'products/rea-studio/lib/storage.mjs'),path.join(here,'preserved-storage.mjs'));
+console.log('Prepared exact prior test corpus with import destinations changed; separate minimal stage HTTP host, not shared host validation.');

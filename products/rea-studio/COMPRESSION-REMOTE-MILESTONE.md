@@ -1,10 +1,10 @@
-# Compression and remote synchronization checkpoint
+# Historical compression and remote synchronization checkpoint
 
-The current development applications add genuine compressed LZMA/LZMA2 archives, native compressed restic v2 writing, and generic WebDAV synchronization. **Zero of the ten applications is a complete original-product replacement.** The goal remains active: every documented feature and the requested comparisons of speed, resources, usability, compatibility and reliability remain acceptance requirements.
+This records published checkpoint `b9f6b71b215028d786af5eaa3d41ae46cc3ec9ac`. Its [seven exact receipts and 369 source snapshots](results/milestones/compression-remote-20261012/snapshot-manifest.json) preserve the tested implementation, including the fixed chunking described below. Later application changes retain separate receipts. That checkpoint added genuine compressed LZMA/LZMA2 archives, native compressed restic v2 writing, and generic WebDAV synchronization. **Zero of the ten applications was a complete original-product replacement.** Every documented feature and the requested comparisons of speed, resources, usability, compatibility and reliability remain acceptance requirements.
 
 ## Evidence at this checkpoint
 
-The combined [development receipt](results/development-validation.json) records **496 passing implemented-contract tests, 0 failures and 0 skips**, run serially on Node v24.16.0 / win32 x64. It fingerprints the complete collected source before and after execution and requires identical lists and bytes. Exact historical test sources remain integrity checked; they are excluded from current test execution because historical failed experiments are evidence, rather than current acceptance tests.
+The combined [historical development receipt](results/milestones/compression-remote-20261012/receipts/results/development-validation.json) records **496 passing implemented-contract tests, 0 failures and 0 skips**, run serially on Node v24.16.0 / win32 x64. It fingerprints the complete collected source before and after execution and requires identical lists and bytes. Exact historical test sources remain integrity checked; they are excluded from current test execution because historical failed experiments are evidence, rather than current acceptance tests.
 
 | Capability | Reproducible evidence | Limits |
 | --- | --- | --- |

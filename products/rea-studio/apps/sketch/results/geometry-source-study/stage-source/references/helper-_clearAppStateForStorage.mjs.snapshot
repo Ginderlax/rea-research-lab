@@ -1,0 +1,11 @@
+var _clearAppStateForStorage = (appState, exportType) => {
+  const stateForExport = {};
+  for (const key of Object.keys(appState)) {
+    const propConfig = APP_STATE_STORAGE_CONF[key];
+    if (propConfig?.[exportType]) {
+      const nextValue = appState[key];
+      stateForExport[key] = nextValue;
+    }
+  }
+  return stateForExport;
+};

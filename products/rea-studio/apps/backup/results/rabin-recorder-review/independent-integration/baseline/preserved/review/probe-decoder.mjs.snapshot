@@ -1,0 +1,8 @@
+import fs from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {readRabinObservation} from './baseline/recorder/decoder.mjs';
+const run=spawnSync(process.execPath,['--test','--test-reporter=tap',new URL('./marker-fixture.test.mjs',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')],{encoding:'utf8',timeout:30000,maxBuffer:2*1024*1024});
+await fs.writeFile(new URL('./synthetic-marker.stdout.txt',import.meta.url),run.stdout,{flag:'wx'});await fs.writeFile(new URL('./synthetic-marker.stderr.txt',import.meta.url),run.stderr,{flag:'wx'});
+let decoded,error;try{decoded=readRabinObservation(run.stdout,'syntheticRabinObservation');}catch(e){error=e.message;}
+const report={createdAt:new Date().toISOString(),scope:'One synthetic logging test only; no Backup behavioral/oracle test rerun.',node:process.version,status:run.status,stdoutSha256:createHash('sha256').update(run.stdout).digest('hex'),decoded:decoded?{path:decoded.path,payloadLength:decoded.payload.length}:null,error:error??null,expectedPath:'C:\\fixture\\#file.txt'};await fs.writeFile(new URL('./decoder-finding.json',import.meta.url),JSON.stringify(report,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(report));

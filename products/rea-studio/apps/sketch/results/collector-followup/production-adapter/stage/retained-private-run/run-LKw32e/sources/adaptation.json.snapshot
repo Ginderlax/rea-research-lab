@@ -1,0 +1,39 @@
+{
+  "schema": "rea-sketch-collector-production-adapter/v1",
+  "createdAt": "2026-10-12T21:00:12.295Z",
+  "frozenStageSha256": "59629ecca2019b50da247e4226498d583a65d503ae47350a47b0fe7499c88765",
+  "mapping": [
+    {
+      "stagePath": "candidate/verify-sketch-geometry.mjs",
+      "candidatePath": "candidate/scripts/verify-sketch-geometry.mjs",
+      "adaptation": "Exact copy",
+      "sha256": "ef5b156aef48f825b6522bed77a88ab821202147a33f2cffc92ac9e96ae93016"
+    },
+    {
+      "stagePath": "candidate/sketch-collector-process.mjs",
+      "candidatePath": "candidate/scripts/sketch-collector-process.mjs",
+      "adaptation": "Exact copy",
+      "sha256": "ffafa889dd99c201c9a2d9682e9a8e3e7033f88e35ab1ef9498aa48f3319ec61"
+    },
+    {
+      "stagePath": "fixtures/runner.mjs",
+      "candidatePath": "candidate/tests/fixtures/sketch-collector/runner.mjs",
+      "adaptation": "Exact copy",
+      "sha256": "da93f84794e514ce4abcc2d083e94f682db6de9e5b8b9cb524d27282fef23488"
+    },
+    {
+      "stagePath": "fixtures/descendant.mjs",
+      "candidatePath": "candidate/tests/fixtures/sketch-collector/descendant.mjs",
+      "adaptation": "Exact copy",
+      "sha256": "ecd0835b4e2198ba6874b86a435cc0211780c30759bdf31cbc55476499b7ccef"
+    },
+    {
+      "stagePath": "runner.test.mjs",
+      "stageSha256": "8fd8f62d2ba1a49709ee7cadf030fce08e1b888b61e22f3f6cbadf9ffedfbd09",
+      "candidatePath": "candidate/tests/sketch-collector.test.mjs",
+      "sha256": "fd7f055c77b26612c78fc36bce4ec7cbfc31b95b11fda30e1d127ba6309c6144",
+      "adaptation": "Production-relative scripts import and explicit tests/fixtures/sketch-collector path; privately owned os.tmpdir fixtures/observations, bounded caller-selected temp sink, cleanup and small count marker. No assertions changed."
+    }
+  ],
+  "scope": "Staged proposed production paths only, no production edits. Exact frozen collector/helper/fixtures; test adaptation explicit. No geometry28 rerun."
+}

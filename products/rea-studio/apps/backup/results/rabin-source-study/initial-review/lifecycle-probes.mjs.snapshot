@@ -1,0 +1,41 @@
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import {captureRabinFile} from './baseline/capture-file.mjs';
+import {createWorkspace} from './baseline/lib/storage.mjs';
+import {handleNative} from './baseline/apps/backup/restic.mjs';
+
+const root=fileURLToPath(new URL('./',import.meta.url)), digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+const baseline=JSON.parse(await fs.readFile(path.join(root,'baseline-manifest.json'),'utf8'));
+for(const item of baseline.files){const bytes=await fs.readFile(path.join(root,'baseline',item.path));assert.equal(bytes.length,item.bytes);assert.equal(digest(bytes),item.sha256);}
+const output={schema:'rea-rabin-independent-lifecycle-review/v1',startedAtUtc:new Date().toISOString(),stageReceiptSha256:baseline.stageReceiptSha256,baselineUnchangedBeforeRun:true,cases:[],scope:'Finite deterministic lifecycle probes on authenticated exact review copies, with owned synthetic data. No production changes, full parity or security claim.'};
+const mode=process.argv[2]??'all';
+
+if(mode==='all'||mode==='abort'){
+ const fixture=await fs.mkdtemp(path.join(root,'abort-fixture-')), filename=path.join(fixture,'tiny.txt');await fs.writeFile(filename,'ordinary synthetic source');
+ const controller=new AbortController();let resolutions=0,sinkCalls=0,rejected;
+ try{await captureRabinFile({filename,polynomial:'3da3358b4dc173',signal:controller.signal,resolveFilename(){resolutions++;if(resolutions===4)controller.abort(new Error('cancelled while validating the first ready chunk'));return filename;},saveChunk(bytes){sinkCalls++;return digest(bytes);}});}catch(error){rejected=error.message;}
+ assert.equal(rejected,'cancelled while validating the first ready chunk');
+ output.cases.push({name:'cancellation-during-pre-sink-path-stat',fixture,sourceBytes:25,resolutions,observedSinkCalls:sinkCalls,expectedSinkCalls:0,rejected,materialFinding:sinkCalls!==0,explanation:'The resolver aborts after currentPath guards and before its pending lstat completes. unchanged() returns without a final guard; capture invokes the blob sink, then notices cancellation.'});
+ const finalController=new AbortController();let finalResolutions=0,finalSinkCalls=0,finalRejected=null,finalResult=null;
+ try{finalResult=await captureRabinFile({filename,polynomial:'3da3358b4dc173',signal:finalController.signal,resolveFilename(){finalResolutions++;if(finalResolutions===6)finalController.abort(new Error('cancelled during the final source stat'));return filename;},saveChunk(bytes){finalSinkCalls++;return digest(bytes);}});}catch(error){finalRejected=error.message;}
+ output.cases.push({name:'cancellation-during-final-path-stat',fixture,sourceBytes:25,resolutions:finalResolutions,observedSinkCalls:finalSinkCalls,rejected:finalRejected,success:finalResult,expectedRejection:'cancelled during the final source stat',signalAborted:finalController.signal.aborted,materialFinding:finalController.signal.aborted&&finalRejected===null,explanation:'Final unchanged() lacks a guard after its awaited named lstat. An abort during that final check may return capture success.'});
+}
+
+if(mode==='all'||mode==='publication'){
+ const fixture=await fs.mkdtemp(path.join(root,'publication-fixture-')), workspace=await createWorkspace(path.join(fixture,'workspace')), input={repository:'repository',password:'own-independent-rabin-review-data'};
+ await handleNative({action:'nativeInit',input:{...input,version:2},workspace});await fs.mkdir(workspace.resolve('source'));await fs.writeFile(workspace.resolve('source/ordinary.txt'),'ordinary synthetic source');
+ const resolve=workspace.resolve.bind(workspace),realNow=Date.now;let offset=0,snapshotResolutions=0,rejected;
+ workspace.resolve=(name='')=>{const result=resolve(name);if(/^repository\/snapshots\/[a-f0-9]{64}$/.test(name)&&++snapshotResolutions===2)offset=120001;return result;};
+ Date.now=()=>realNow()+offset;
+ try{await handleNative({action:'nativeSnapshot',input:{...input,source:'source',compression:'off'},workspace});}catch(error){rejected=error.message;}finally{Date.now=realNow;workspace.resolve=resolve;}
+ const snapshots=await fs.readdir(workspace.resolve('repository/snapshots')),indexes=await fs.readdir(workspace.resolve('repository/index')),locks=await fs.readdir(workspace.resolve('repository/locks')),pending=await fs.readdir(workspace.resolve('repository/tmp'));
+ assert.match(rejected,/exceeded two minutes/);assert.equal(snapshotResolutions,2);
+ output.cases.push({name:'deadline-expiry-at-snapshot-link-commit',fixture,clockAdvanceMilliseconds:120001,snapshotResolutions,rejected,observedPublishedSnapshots:snapshots,observedIndexes:indexes,observedLocks:locks,observedPendingFiles:pending,expectedPublishedSnapshotsOnFailure:0,materialFinding:snapshots.length!==0,explanation:'Synthetic deadline advancement occurs after the final destination guard before link. atomic links the snapshot, then deadline-guarded temp cleanup throws. The API rejects despite publishing a snapshot and retaining its temp file.'});
+}
+
+for(const item of baseline.files){assert.equal(digest(await fs.readFile(path.join(root,'baseline',item.path))),item.sha256);assert.equal(digest(await fs.readFile(path.resolve(root,'../backup-rabin-next',item.path))),item.sha256);}
+output.completedAtUtc=new Date().toISOString();output.originalStageUnchangedAcrossRun=true;
+const report=path.join(root,`lifecycle-${mode}-observations.json`);await fs.writeFile(report,JSON.stringify(output,null,2)+'\n');console.log(JSON.stringify({report,cases:output.cases.map(({name,materialFinding,observedSinkCalls,observedPublishedSnapshots})=>({name,materialFinding,observedSinkCalls,publishedSnapshotCount:observedPublishedSnapshots?.length})),reportSha256:digest(await fs.readFile(report))}));

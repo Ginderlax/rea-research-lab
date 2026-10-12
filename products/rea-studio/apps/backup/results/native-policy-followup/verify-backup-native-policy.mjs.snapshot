@@ -1,0 +1,47 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+const script=fileURLToPath(import.meta.url),workspace=path.resolve(path.dirname(script),'..'),lab=path.join(workspace,'outputs/rea-research-lab'),studio=path.join(lab,'products/rea-studio');
+const publicRoot=path.join(studio,'apps/backup/results/native-policy-followup'),privateRoot=path.join(workspace,'work/backup-native-policy-root');
+const run=path.join(privateRoot,new Date().toISOString().replaceAll(':','-')),sha=b=>createHash('sha256').update(b).digest('hex');
+await fs.mkdir(run,{recursive:true});
+const save=async(n,b)=>{const p=path.join(run,n);await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,b,{flag:'wx'});};
+const failedPrefix=path.join(studio,'results/full-suite-recovery-followup/failed-607');
+const failureManifestBytes=await fs.readFile(path.join(failedPrefix,'preservation-manifest.json'));
+assert.equal(sha(failureManifestBytes),'dd18296291e1524a0d25281e62d1a9b3cb0befdabd3e49d404292e0daca8ac96');
+const failureManifest=JSON.parse(failureManifestBytes);assert.equal(failureManifest.snapshots.length,14);
+async function verifyFailure(){for(const e of failureManifest.snapshots){assert.ok(e.path&&!path.isAbsolute(e.path)&&!e.path.includes('\\')&&!e.path.split('/').includes('..'));const b=await fs.readFile(path.join(failedPrefix,e.path));assert.equal(b.length,e.bytes);assert.equal(sha(b),e.sha256);}assert.equal(sha(await fs.readFile(path.join(failedPrefix,'preservation-manifest.json'))),sha(failureManifestBytes));}
+await verifyFailure();
+assert.equal(sha(await fs.readFile(path.join(studio,'apps/backup/native-policy-assertions.mjs'))),'2cad61b73ec5542f16e7ce01ac76a80864b78ef64750018262ea36975a8e7169');
+assert.equal(sha(await fs.readFile(path.join(studio,'apps/backup/restic.mjs'))),'9885d1f26ec0a7311c360923279b731fe43d76b292db735b22cf38d6036eec20');
+const names=['server.mjs','catalog.mjs','package.json','scripts/test-all.mjs','scripts/verify-development.mjs'];
+for(const dir of ['apps/backup','lib'])for(const e of await fs.readdir(path.join(studio,dir),{withFileTypes:true}))if(e.isFile()&&/\.(mjs|json|md)$/.test(e.name))names.push(dir+'/'+e.name);
+names.sort();
+const fingerprint=async p=>{const b=await fs.readFile(path.join(studio,p));return{path:p,bytes:b.length,sha256:sha(b)};};
+const before=await Promise.all(names.map(fingerprint));
+for(const e of before)await save('source/'+e.path+'.snapshot',await fs.readFile(path.join(studio,e.path)));
+const runnerBytes=await fs.readFile(script);await save('verify-backup-native-policy.mjs.snapshot',runnerBytes);
+const runtimeSHA=sha(await fs.readFile(process.execPath)),startedAtUtc=new Date().toISOString(),env={...process.env};delete env.NODE_TEST_CONTEXT;
+const args=['--test','--test-concurrency=1','--test-reporter=tap','apps/backup/native.test.mjs'];
+const result=await new Promise(resolve=>{const c=spawn(process.execPath,args,{cwd:studio,env,shell:false,windowsHide:true,stdio:['ignore','pipe','pipe']}),out=[],err=[];let ob=0,eb=0,failure=null;const stop=why=>{failure??=why;c.kill('SIGKILL');};for(const[s,parts,key,cap]of[[c.stdout,out,'out',2*1024*1024],[c.stderr,err,'err',1024*1024]])s.on('data',b=>{const used=key==='out'?ob:eb,take=Math.max(0,Math.min(cap-used,b.length));parts.push(Buffer.from(b.subarray(0,take)));if(key==='out')ob+=take;else eb+=take;if(take<b.length)stop('retained log limit');});c.on('error',e=>failure??=e.message);const timer=setTimeout(()=>stop('600-second owned test child deadline'),600000);c.on('close',(exitCode,signal)=>{clearTimeout(timer);resolve({pid:c.pid,exitCode,signal,failure,stdout:Buffer.concat(out),stderr:Buffer.concat(err)});});});
+const completedAtUtc=new Date().toISOString();await save('stdout.txt',result.stdout);await save('stderr.txt',result.stderr);
+const text=result.stdout.toString('utf8'),summary=Object.fromEntries(['tests','pass','fail','cancelled','skipped','todo'].map(n=>[n,Number(text.match(new RegExp('^# '+n+' (\\d+)$','m'))?.[1]??-1)])),after=await Promise.all(names.map(fingerprint));
+await save('source-before.json',JSON.stringify(before,null,2)+'\n');await save('source-after.json',JSON.stringify(after,null,2)+'\n');
+const attempt={schema:'rea-backup-native-policy-attempt/v1',startedAtUtc,completedAtUtc,summary,exitCode:result.exitCode,signal:result.signal,failure:result.failure,sourceStable:JSON.stringify(before)===JSON.stringify(after),before,after,arguments:args,runtime:{version:process.version,platform:process.platform,sha256:runtimeSHA}};
+await save('attempt.json',JSON.stringify(attempt,null,2)+'\n');assert.deepEqual(after,before);assert.equal(result.exitCode,0);assert.equal(result.failure,null);assert.deepEqual(summary,{tests:30,pass:30,fail:0,cancelled:0,skipped:0,todo:0});
+const observations=[...text.matchAll(/^# (\{"nativePackPolicyObservation":.+\})$/gm)].map(m=>JSON.parse(m[1]).nativePackPolicyObservation);assert.equal(observations.length,4);
+const initial=observations.filter(o=>o.phase==='first-snapshot'),repeat=observations.filter(o=>o.phase==='repeat-snapshot');assert.equal(initial.length,2);assert.equal(repeat.length,2);
+for(const o of initial){assert.equal(o.allStorageHeaderPayloadAndIndexVerified,true);assert.equal(o.dataRows.length,o.uniqueDataBlobs);assert.ok(o.uniqueDataBlobs>=2);assert.equal(o.dataPacks,o.uniqueDataBlobs,'This run retains current one-data-blob-per-pack runtime');}
+for(const o of repeat){assert.equal(o.addedDataPacks,0);assert.equal(o.addedDataRows,0);}
+await verifyFailure();assert.equal(sha(await fs.readFile(script)),sha(runnerBytes));assert.equal(sha(await fs.readFile(process.execPath)),runtimeSHA);
+const receipt={schema:'rea-backup-native-policy-validation/v1',startedAtUtc,completedAtUtc,summary,exitCode:0,sourceStable:true,implementationFingerprints:before,observations,runtime:attempt.runtime,arguments:args,runnerSHA256:sha(runnerBytes),failedCombinedSuite:{manifest:'products/rea-studio/results/full-suite-recovery-followup/failed-607/preservation-manifest.json',sha256:sha(failureManifestBytes),snapshots:14,tests:607,passed:605,failed:2,postFailureSourceCaptureOnly:true,authenticatedBeforeAndAfter:true},adaptation:{obsoleteAssertion:'saved.newPacks >= 7',replacement:'Authenticate stored packs, encrypted headers/payloads, index rows and all snapshot content IDs; verify repeat snapshot preserves exact data-pack/index identities.',existingOriginalCheckRestoreAssertionsRetained:true,packAggregationIntegrated:false,runtimeChanged:false},limits:{childDeadlineMs:600000,stdoutBytes:2097152,stderrBytes:1048576,selectedSourceInventoryOnly:true,hardFingerprintIODedicatedDeadline:false,rootChildKillOnlyNoDescendantIsolationClaim:true},fullParity:false,universalSuperiority:false};
+await save('validation.json',JSON.stringify(receipt,null,2)+'\n');
+await fs.mkdir(publicRoot,{recursive:false});
+const walk=async(dir,prefix='')=>{const result=[];for(const e of await fs.readdir(dir,{withFileTypes:true})){const n=prefix?prefix+'/'+e.name:e.name;if(e.isDirectory())result.push(...await walk(path.join(dir,e.name),n));else result.push(n);}return result;};
+const snapshots=[];for(const n of (await walk(run)).sort()){const b=await fs.readFile(path.join(run,n)),p=path.join(publicRoot,n);await fs.mkdir(path.dirname(p),{recursive:true});await fs.writeFile(p,b,{flag:'wx'});snapshots.push({path:n,bytes:b.length,sha256:sha(b)});}
+const manifest={schema:'rea-backup-native-policy-preservation/v1',createdAtUtc:new Date().toISOString(),snapshots,validationSHA256:sha(await fs.readFile(path.join(publicRoot,'validation.json'))),exactCopies:true,selectedSourceInventoryOnly:true};
+const manifestBytes=JSON.stringify(manifest,null,2)+'\n';await fs.writeFile(path.join(publicRoot,'preservation-manifest.json'),manifestBytes,{flag:'wx'});
+console.log(JSON.stringify({summary,sourceFiles:before.length,sourceStable:true,observations,manifestSHA256:sha(manifestBytes),snapshots:snapshots.length,receiptSHA256:manifest.validationSHA256}));

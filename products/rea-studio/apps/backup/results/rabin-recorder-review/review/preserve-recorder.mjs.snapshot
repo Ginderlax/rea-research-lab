@@ -1,0 +1,9 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+const here=path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')),base=path.resolve(here,'../..'),lab=path.join(base,'outputs/rea-research-lab'),studio=path.join(lab,'products/rea-studio');
+const rows=[['decoder.mjs',path.join(studio,'scripts/read-rabin-tap.mjs')],['verifier.mjs',path.join(studio,'scripts/verify-backup-rabin.mjs')],['storage.mjs',path.join(studio,'lib/storage.mjs')],['host.mjs',path.join(studio,'server.mjs')],['integration-helper.mjs',path.join(base,'work/integrate-backup-rabin.mjs')]];
+await fs.mkdir(path.join(here,'baseline/recorder'),{recursive:true});const files=[];
+for(const [name,source] of rows){const bytes=await fs.readFile(source),target='baseline/recorder/'+name;await fs.writeFile(path.join(here,target),bytes,{flag:'wx'});files.push({source,path:target,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});}
+const tap=process.binding('natives')['internal/test_runner/reporter/tap'];await fs.writeFile(path.join(here,'baseline/recorder/node-tap-reporter.js.snapshot'),tap,{flag:'wx'});
+await fs.writeFile(path.join(here,'recorder-baseline-manifest.json'),JSON.stringify({createdAt:new Date().toISOString(),node:process.version,files,nodeTapReporter:{source:'process.binding(natives):internal/test_runner/reporter/tap',bytes:Buffer.byteLength(tap),sha256:createHash('sha256').update(tap).digest('hex')}},null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({preserved:files.length,node:process.version}));

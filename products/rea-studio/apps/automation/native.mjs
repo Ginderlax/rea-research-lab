@@ -1,8 +1,9 @@
 import { randomUUID } from 'node:crypto';
+import {validateSwitch,switchItems,validateMerge,mergeItems,outputCount,inputCount} from './routing.mjs';
 
 export const LIMITS = Object.freeze({ documentBytes:2*1024*1024, valueBytes:1024*1024, executionBytes:8*1024*1024, nodes:100, connections:300, items:10000, entries:100000, depth:40, steps:500, waitMs:60000, timeoutMs:60000 });
 const blocked = new Set(['__proto__','prototype','constructor']);
-const versions = new Map([['n8n-nodes-base.manualTrigger',[1]],['n8n-nodes-base.set',[3.4]],['n8n-nodes-base.if',[2.3]],['n8n-nodes-base.httpRequest',[4.4]],['n8n-nodes-base.wait',[1.1]]]);
+const versions = new Map([['n8n-nodes-base.manualTrigger',[1]],['n8n-nodes-base.set',[3.4]],['n8n-nodes-base.if',[2.3]],['n8n-nodes-base.httpRequest',[4.4]],['n8n-nodes-base.wait',[1.1]],['n8n-nodes-base.switch',[3.4]],['n8n-nodes-base.merge',[3.2]]]);
 export class NativeError extends Error { constructor(message,code='NATIVE_CONFIG') { super(message); this.code=code; } }
 function fail(message,code) { throw new NativeError(message,code); }
 function object(value,label) { if (!value || typeof value !== 'object' || Array.isArray(value)) fail(`${label} must be an object`); return value; }
@@ -93,7 +94,7 @@ function validateSet(node) {
   const assignments=p.assignments?.assignments??[];if(!Array.isArray(assignments)||assignments.length>100)fail('Use at most 100 Set assignments');for(const assignment of assignments){optionsOnly(assignment,['id','name','value','type'],'Set assignment');if(!['string','number','boolean','object','array'].includes(assignment.type))fail('Unsupported Set assignment type','NATIVE_UNSUPPORTED');fieldParts(assignment.name,options.dotNotation);}
 }
 const operations={string:['exists','notExists','empty','notEmpty','equals','notEquals','contains','notContains','startsWith','notStartsWith','endsWith','notEndsWith'],number:['exists','notExists','empty','notEmpty','equals','notEquals','gt','gte','lt','lte'],boolean:['exists','notExists','empty','notEmpty','true','false','equals','notEquals'],array:['exists','notExists','empty','notEmpty','contains','notContains','lengthEquals','lengthNotEquals','lengthGt','lengthLt','lengthGte','lengthLte'],object:['exists','notExists','empty','notEmpty'],any:['exists','notExists']};
-function validateIf(node) {
+export function validateIf(node) {
   const p=node.parameters;optionsOnly(p,['conditions','options','looseTypeValidation'],'If parameters');bool(p.looseTypeValidation,'Loose type validation');optionsOnly(p.options??{},['ignoreCase'],'If options');bool(p.options?.ignoreCase,'Ignore case');
   const conditions=object(p.conditions,'Conditions');if(conditions.options===undefined)fail('If conditions require an explicit options object','NATIVE_UNSUPPORTED');optionsOnly(conditions,['options','conditions','combinator'],'Conditions');optionsOnly(conditions.options??{},['caseSensitive','typeValidation','version','leftValue'],'Condition options');bool(conditions.options?.caseSensitive,'Case sensitive');if(!['strict','loose',undefined].includes(conditions.options?.typeValidation))fail('Unsupported type validation');if(![1,2,3,undefined].includes(conditions.options?.version))fail('Unsupported condition version');if(!['and','or'].includes(conditions.combinator)||!Array.isArray(conditions.conditions)||conditions.conditions.length>100)fail('Invalid conditions');
   for(const condition of conditions.conditions){optionsOnly(condition,['id','leftValue','rightValue','operator'],'Condition');const op=object(condition.operator,'Operator');optionsOnly(op,['type','operation','rightType','singleValue'],'Operator');if(!operations[op.type]?.includes(op.operation)|| (op.rightType!==undefined&&!['string','number','boolean','array','object','any'].includes(op.rightType)))fail(`Unsupported comparison ${op.type}:${op.operation}`,'NATIVE_UNSUPPORTED');bool(op.singleValue,'Single value');}
@@ -131,8 +132,10 @@ export function preflight(value) {
     const reachable=new Set(),active=new Set(),byName=new Map(workflow.nodes.map(node=>[node.name,node]));
     function visit(name){if(active.has(name))fail('Cycles are unsupported','NATIVE_UNSUPPORTED');if(reachable.has(name))return;reachable.add(name);active.add(name);for(const targets of workflow.connections?.[name]?.main??[])for(const target of targets)visit(target.node);active.delete(name);}
     visit(starts[0].name);
-    for(const node of workflow.nodes){if(!reachable.has(node.name))continue;try{if(!versions.get(node.type)?.includes(node.typeVersion))fail(`Unsupported native type/version ${node.type}@${node.typeVersion}`,'NATIVE_UNSUPPORTED');if(node.credentials && Object.keys(node.credentials).length)fail('Credential references are preserved but cannot execute','NATIVE_UNSUPPORTED');if(node.disabled)fail('Disabled-node execution bypass is unsupported','NATIVE_UNSUPPORTED');for(const option of ['retryOnFail','continueOnFail','alwaysOutputData','executeOnce'])if(node[option])fail(`Unsupported node setting ${option}`,'NATIVE_UNSUPPORTED');if(node.onError!==undefined&&node.onError!=='stopWorkflow')fail('Only stopWorkflow error behavior is supported','NATIVE_UNSUPPORTED');checkExpressions(node.parameters);if(node.type.endsWith('.set'))validateSet(node);if(node.type.endsWith('.if'))validateIf(node);if(node.type.endsWith('.httpRequest'))validateHttp(node);if(node.type.endsWith('.wait'))validateWait(node);if(node.type.endsWith('.manualTrigger'))optionsOnly(node.parameters,[],'Manual Trigger parameters');}catch(error){issues.push({node:node.name,code:error.code??'NATIVE_CONFIG',message:error.message});}}
-    for(const [name,ports]of Object.entries(workflow.connections??{})){if(!reachable.has(name))continue;for(const type of Object.keys(ports))if(type!=='main')fail('Only main connections are executable','NATIVE_UNSUPPORTED');const outputs=ports.main??[];const count=byName.get(name).type==='n8n-nodes-base.if'?2:1;if(outputs.length>count)fail('Unsupported output index');for(const targets of outputs)for(const target of targets)if(target.index!==0||target.node===starts[0].name)fail('Only input index zero is supported');}
+    for(const node of workflow.nodes){if(!reachable.has(node.name))continue;try{if(!versions.get(node.type)?.includes(node.typeVersion))fail(`Unsupported native type/version ${node.type}@${node.typeVersion}`,'NATIVE_UNSUPPORTED');if(node.credentials && Object.keys(node.credentials).length)fail('Credential references are preserved but cannot execute','NATIVE_UNSUPPORTED');if(node.disabled)fail('Disabled-node execution bypass is unsupported','NATIVE_UNSUPPORTED');for(const option of ['retryOnFail','continueOnFail','alwaysOutputData','executeOnce'])if(node[option])fail(`Unsupported node setting ${option}`,'NATIVE_UNSUPPORTED');if(node.onError!==undefined&&node.onError!=='stopWorkflow')fail('Only stopWorkflow error behavior is supported','NATIVE_UNSUPPORTED');checkExpressions(node.parameters);if(node.type.endsWith('.set'))validateSet(node);if(node.type.endsWith('.if'))validateIf(node);if(node.type.endsWith('.httpRequest'))validateHttp(node);if(node.type.endsWith('.wait'))validateWait(node);if(node.type.endsWith('.switch'))validateSwitch(node);if(node.type.endsWith('.merge'))validateMerge(node);if(node.type.endsWith('.manualTrigger'))optionsOnly(node.parameters,[],'Manual Trigger parameters');}catch(error){issues.push({node:node.name,code:error.code??'NATIVE_CONFIG',message:error.message});}}
+    const routing=[...reachable].some(name=>byName.get(name).type==='n8n-nodes-base.merge'),incoming=new Map();
+    for(const [name,ports]of Object.entries(workflow.connections??{})){if(!reachable.has(name))continue;for(const type of Object.keys(ports))if(type!=='main')fail('Only main connections are executable','NATIVE_UNSUPPORTED');const outputs=ports.main??[];if(outputs.length>outputCount(byName.get(name)))fail('Unsupported output index');for(const targets of outputs)for(const target of targets){if(target.index>=inputCount(byName.get(target.node))||target.node===starts[0].name)fail('Unsupported input index');const key=target.node+'\0'+target.index;incoming.set(key,(incoming.get(key)??0)+1);if(routing&&incoming.get(key)>1)fail('Routing joins support one edge per input port','NATIVE_UNSUPPORTED');}}
+    if(routing)for(const name of reachable){const node=byName.get(name);if(node.type==='n8n-nodes-base.merge')for(let index=0;index<inputCount(node);index++)if(incoming.get(name+'\0'+index)!==1)fail('Every configured Merge input must have one reachable connection','NATIVE_UNSUPPORTED');}
   }catch(error){issues.push({code:error.code??'NATIVE_CONFIG',message:error.message});}
   return {executable:issues.length===0,issues,workflow};
 }
@@ -178,7 +181,9 @@ export function filterCondition(condition,options={}) {
 }
 function ifItems(node,items){const outputs=[[],[]];for(const[index,item]of items.entries()){const p=resolve(node.parameters,item),filter=p.conditions;const pass=filter.combinator==='and'?filter.conditions.every(condition=>filterCondition(condition,filter.options)):filter.conditions.some(condition=>filterCondition(condition,filter.options));const result=copy(item);result.pairedItem??={item:index};outputs[pass?0:1].push(result);}return outputs;}
 export async function executeNode(node,items,context={}) {
-  bounded(items,LIMITS.executionBytes,{undefinedValues:true});if(!Array.isArray(items)||items.length>LIMITS.items||items.some(item=>!item||!item.json||typeof item.json!=='object'||Array.isArray(item.json)||item.binary))fail('Only bounded JSON execution items are supported');
+  bounded(items,LIMITS.executionBytes,{undefinedValues:true});if(!Array.isArray(items)||items.length>LIMITS.items||items.some(item=>!item||!item.json||typeof item.json!=='object'||Array.isArray(item.json)||(item.binary&&Object.keys(item.binary).length)))fail('Only bounded JSON execution items are supported');
+  if(node.type==='n8n-nodes-base.merge')return mergeItems(node,context.inputs??[items,[]],context);
+  if(node.type==='n8n-nodes-base.switch')return switchItems(node,items,context);
   if(node.type==='n8n-nodes-base.manualTrigger')return[[{json:{}}]];
   if(!items.length)return node.type==='n8n-nodes-base.if'?[[],[]]:[[]];
   if(node.type==='n8n-nodes-base.set')return[setItems(node,items)];
@@ -187,7 +192,7 @@ export async function executeNode(node,items,context={}) {
   if(node.type==='n8n-nodes-base.httpRequest')return[await httpItems(node,items,context)];
   fail(`Unsupported native node ${node.type}`,'NATIVE_UNSUPPORTED');
 }
-export function createExecution(value){const result=preflight(value);if(!result.executable)fail(result.issues.map(issue=>`${issue.node??'Workflow'}: ${issue.message}`).join(';'),'NATIVE_PREFLIGHT');const start=result.workflow.nodes.find(node=>node.type==='n8n-nodes-base.manualTrigger');return bounded({id:randomUUID(),status:'ready',workflow:result.workflow,pending:[{node:start.name,items:[]}],trace:[],outputs:{},steps:0,requests:0,activeMs:0,startedAt:new Date().toISOString()},LIMITS.executionBytes);}
+export function createExecution(value){const result=preflight(value);if(!result.executable)fail(result.issues.map(issue=>`${issue.node??'Workflow'}: ${issue.message}`).join(';'),'NATIVE_PREFLIGHT');const start=result.workflow.nodes.find(node=>node.type==='n8n-nodes-base.manualTrigger'&&!node.disabled);return bounded({id:randomUUID(),status:'ready',workflow:result.workflow,pending:[{node:start.name,items:[]}],joins:{},trace:[],outputs:{},steps:0,requests:0,activeMs:0,startedAt:new Date().toISOString()},LIMITS.executionBytes);}
 export function validateExecution(state){
   bounded(state,LIMITS.executionBytes,{undefinedValues:true});object(state,'Execution');
   for(const key of ['id','workflowId'])if(typeof state[key]!=='string'||!/^[A-Za-z0-9_-]{1,80}$/.test(state[key]))fail('Invalid persisted execution identifier');
@@ -195,11 +200,65 @@ export function validateExecution(state){
   for(const key of ['steps','requests'])int(state[key],0,500,`Persisted ${key}`);int(state.revision,1,Number.MAX_SAFE_INTEGER,'Persisted revision');
   if(typeof state.activeMs!=='number'||!Number.isFinite(state.activeMs)||state.activeMs<0||state.activeMs>Number.MAX_SAFE_INTEGER)fail('Invalid persisted active duration');
   const checked=preflight(state.workflow);if(!checked.executable)fail('Persisted workflow fails native preflight');
-  const names=new Set(checked.workflow.nodes.map(node=>node.name));
+  const names=new Set(),start=checked.workflow.nodes.find(node=>node.type==='n8n-nodes-base.manualTrigger'&&!node.disabled);function reachable(name){if(names.has(name))return;names.add(name);for(const targets of checked.workflow.connections?.[name]?.main??[])for(const target of targets)reachable(target.node);}reachable(start.name);
   if(!Array.isArray(state.pending)||state.pending.length>LIMITS.connections||!Array.isArray(state.trace)||state.trace.length>LIMITS.steps)fail('Invalid persisted execution structure');
-  for(const invocation of state.pending){object(invocation,'Pending invocation');if(!names.has(invocation.node)||!Array.isArray(invocation.items)||invocation.items.some(item=>!item?.json||typeof item.json!=='object'||Array.isArray(item.json)||item.binary))fail('Invalid persisted invocation');}
+  const byName=new Map(checked.workflow.nodes.map(node=>[node.name,node]));
+  const validItems=items=>Array.isArray(items)&&items.length<=LIMITS.items&&items.every(item=>item?.json&&typeof item.json==='object'&&!Array.isArray(item.json)&&(!item.binary||!Object.keys(item.binary).length));
+  object(state.outputs,'Execution outputs');const queued=new Set(),routing=[...names].some(name=>byName.get(name).type==='n8n-nodes-base.merge');
+  for(const invocation of state.pending){object(invocation,'Pending invocation');if(!names.has(invocation.node)||!validItems(invocation.items))fail('Invalid persisted invocation');if(routing&&(queued.has(invocation.node)||Object.hasOwn(state.outputs,invocation.node)))fail('Conflicting persisted routing invocation');queued.add(invocation.node);if(invocation.inputs!==undefined&&(byName.get(invocation.node).type!=='n8n-nodes-base.merge'||invocation.items.length!==0||!Array.isArray(invocation.inputs)||invocation.inputs.length!==inputCount(byName.get(invocation.node))||!invocation.inputs.every(validItems)||!invocation.inputs.some(input=>input.length)))fail('Invalid persisted Merge invocation');if(byName.get(invocation.node).type==='n8n-nodes-base.merge'&&!invocation.inputs)fail('Merge invocation needs persisted input ports');}
+  object(state.joins??{},'Persisted joins');for(const[name,inputs]of Object.entries(state.joins??{})){const node=byName.get(name);if(!names.has(name)||!node||node.type!=='n8n-nodes-base.merge'||!Array.isArray(inputs)||inputs.length!==inputCount(node)||!inputs.every(input=>input===null||validItems(input))||!inputs.some(input=>input===null)||!inputs.some(input=>input?.length)||Object.hasOwn(state.outputs,name)||queued.has(name))fail('Invalid persisted Merge input queue');}
   if(state.status==='waiting'&&(typeof state.waitUntil!=='string'||!Number.isFinite(Date.parse(state.waitUntil))||new Date(state.waitUntil).toISOString()!==state.waitUntil||Date.parse(state.waitUntil)>Date.now()+LIMITS.waitMs+1000))fail('Invalid persisted wait date');
+  if(state.waitingRoute!==undefined&&(state.status!=='waiting'||!names.has(state.waitingRoute)||byName.get(state.waitingRoute).type!=='n8n-nodes-base.wait'||!Array.isArray(state.outputs[state.waitingRoute])||!state.outputs[state.waitingRoute].every(validItems)))fail('Invalid persisted deferred Wait route');
+  if(routing)validateRoutingQueues(state,checked.workflow,byName,names,start.name,validItems);
   object(state.outputs,'Execution outputs');return state;
+}
+function validateRoutingQueues(state,workflow,byName,names,startName,validItems){
+  // In this acyclic, one-edge-per-input slice each queued batch is a clone of
+  // one completed predecessor output. A Wait marked for deferred routing has
+  // produced its output but has not delivered that batch to downstream queues.
+  for(const[name,outputs]of Object.entries(state.outputs))if(!names.has(name)||!Array.isArray(outputs)||outputs.length>outputCount(byName.get(name))||!outputs.every(validItems))fail('Invalid persisted routing outputs');
+  const incoming=new Map();for(const[from,ports]of Object.entries(workflow.connections??{}))if(names.has(from))for(const[port,targets]of (ports.main??[]).entries())for(const target of targets)incoming.set(target.node+'\0'+target.index,{from,port});
+  function arrivedBatch(name,index){const edge=incoming.get(name+'\0'+index);if(!edge||edge.from===state.waitingRoute||!Object.hasOwn(state.outputs,edge.from))return null;const batch=state.outputs[edge.from][edge.port];return batch?.length?batch:null;}
+  const serialized=new Map();function requireBatch(name,index,items){const arrived=arrivedBatch(name,index);if(!arrived)fail('Contradictory persisted routing batch');if(!serialized.has(arrived))serialized.set(arrived,JSON.stringify(arrived));if(serialized.get(arrived)!==JSON.stringify(items))fail('Contradictory persisted routing batch');}
+  for(const invocation of state.pending){
+    if(invocation.node===startName){if(state.steps!==0||invocation.items.length||Object.keys(state.outputs).length)fail('Contradictory persisted Manual invocation');continue;}
+    const node=byName.get(invocation.node);
+    if(node.type!=='n8n-nodes-base.merge'){requireBatch(invocation.node,0,invocation.items);continue;}
+    if(node.parameters.mode==='chooseBranch'&&(!invocation.inputs[0].length||!invocation.inputs[1].length))fail('Contradictory persisted Choose Branch inputs');
+    for(const[index,items]of invocation.inputs.entries()){if(items.length)requireBatch(invocation.node,index,items);else if(arrivedBatch(invocation.node,index))fail('Contradictory persisted empty Merge input');}
+  }
+  for(const[name,inputs]of Object.entries(state.joins??{}))for(const[index,items]of inputs.entries()){if(items===null){if(arrivedBatch(name,index))fail('Contradictory persisted missing Merge input');}else{if(!items.length)fail('Contradictory persisted empty Merge buffer');requireBatch(name,index,items);}}
+}
+function linkedItems(items,input=0){return items.map((item,index)=>({...copy(item),pairedItem:{item:index,...(input?{input}:{} )}}));}
+function routeOutputs(state,node,outputs){
+ const byName=new Map(state.workflow.nodes.map(node=>[node.name,node])),edges=[];
+ for(const[port,items]of outputs.entries())if(items.length)for(const target of state.workflow.connections?.[node.name]?.main?.[port]??[])edges.push({port,items,target,node:byName.get(target.node)});
+ // Released v1 scheduling sorts targets before prepending each invocation.
+ edges.sort((a,b)=>a.node.position[1]<b.node.position[1]?1:a.node.position[1]>b.node.position[1]?-1:a.node.position[0]>b.node.position[0]?-1:0);
+ state.joins??={};let queuedBytes=Buffer.byteLength(JSON.stringify([state.pending,state.joins]));
+ for(const edge of edges){queuedBytes+=Buffer.byteLength(JSON.stringify(edge.items));if(queuedBytes>LIMITS.executionBytes)fail('Routed output exceeds execution byte bound','NATIVE_LIMIT');
+  if(edge.node.type!=='n8n-nodes-base.merge'){state.pending.unshift({node:edge.target.node,items:copy(edge.items)});continue;}
+  if(Object.hasOwn(state.outputs,edge.target.node)||state.pending.some(invocation=>invocation.node===edge.target.node))fail('Repeated Merge generation is unsupported','NATIVE_UNSUPPORTED');
+  if(!Object.hasOwn(state.joins,edge.target.node))Object.defineProperty(state.joins,edge.target.node,{value:Array.from({length:inputCount(edge.node)},()=>null),enumerable:true,writable:true,configurable:true});
+  const inputs=state.joins[edge.target.node];if(inputs[edge.target.index]!==null)fail('Repeated Merge input batch is unsupported','NATIVE_UNSUPPORTED');inputs[edge.target.index]=copy(edge.items);
+  if(inputs.every(input=>input!==null)){state.pending.unshift({node:edge.target.node,items:[],inputs});delete state.joins[edge.target.node];}
+ }
+}
+function flushPartialJoin(state){
+ const byName=new Map(state.workflow.nodes.map(node=>[node.name,node]));
+ const waiting=new Set(Object.keys(state.joins??{}));
+ function waitingAncestor(name,seen=new Set()){
+  if(seen.has(name))return false;seen.add(name);
+  for(const[from,ports]of Object.entries(state.workflow.connections??{}))if((ports.main??[]).some(targets=>targets.some(target=>target.node===name))&&(waiting.has(from)||waitingAncestor(from,seen)))return true;
+  return false;
+ }
+ for(const[name,inputs]of Object.entries(state.joins??{})){
+  const node=byName.get(name);if(waitingAncestor(name))continue;
+  if(node.parameters.mode==='chooseBranch'&&(inputs[0]===null||inputs[1]===null))continue;
+  if(!inputs.some(input=>input?.length))continue;
+  state.pending.push({node:name,items:[],inputs:inputs.map(input=>input??[])});delete state.joins[name];return true;
+ }
+ return false;
 }
 export async function advanceExecution(state,context={}) {
   if(['completed','failed','cancelled','interrupted'].includes(state.status))return state;
@@ -207,16 +266,18 @@ export async function advanceExecution(state,context={}) {
   const activeStart=performance.now();let failedInvocation,failedStarted;context.deadline=activeStart+120000-(state.activeMs??0);context.executionBudget=state;
   state.status='running';delete state.waitUntil;
   try {
-    while(state.pending.length){if(context.signal?.aborted)throw context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED');if(performance.now()>context.deadline)fail('Execution exceeds 120,000 active milliseconds','NATIVE_LIMIT');if(state.steps>=LIMITS.steps)fail('Execution exceeds 500 node invocations','NATIVE_LIMIT');state.steps++;const invocation=state.pending.shift(),node=state.workflow.nodes.find(value=>value.name===invocation.node),started=performance.now();failedInvocation={node:node.name,type:node.type,inputItems:invocation.items.length};failedStarted=started;state.activeNode=node.name;await context.checkpoint?.(state);if(context.signal?.aborted)throw context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED');const result=await executeNode(node,invocation.items,context),outputs=result.outputs??result;bounded(outputs,LIMITS.executionBytes,{undefinedValues:true});const trace={node:node.name,type:node.type,status:'completed',inputItems:invocation.items.length,outputItems:outputs.map(items=>items.length),durationMs:Math.round((performance.now()-started)*1000)/1000};state.trace.push(trace);failedInvocation=null;Object.defineProperty(state.outputs,node.name,{value:copy(outputs),enumerable:true,writable:true,configurable:true});
-      const next=[];let queuedBytes=Buffer.byteLength(JSON.stringify(state.pending));for(const[port,items]of outputs.entries())if(items.length){const bytes=Buffer.byteLength(JSON.stringify(items));for(const target of state.workflow.connections?.[node.name]?.main?.[port]??[]){queuedBytes+=bytes;if(queuedBytes>LIMITS.executionBytes)fail('Routed output exceeds execution byte bound','NATIVE_LIMIT');next.push({node:target.node,items:copy(items)});}}state.pending.unshift(...next);delete state.activeNode;
-      if(result.waitUntil){state.status='waiting';state.waitUntil=result.waitUntil;state.activeMs=(state.activeMs??0)+performance.now()-activeStart;bounded(state,LIMITS.executionBytes,{undefinedValues:true});await context.checkpoint?.(state);return state;}
+    if(state.waitingRoute!==undefined){const node=state.workflow.nodes.find(node=>node.name===state.waitingRoute);routeOutputs(state,node,state.outputs[node.name]);delete state.waitingRoute;bounded(state,LIMITS.executionBytes,{undefinedValues:true});}
+    while(state.pending.length||flushPartialJoin(state)){if(context.signal?.aborted)throw context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED');if(performance.now()>context.deadline)fail('Execution exceeds 120,000 active milliseconds','NATIVE_LIMIT');if(state.steps>=LIMITS.steps)fail('Execution exceeds 500 node invocations','NATIVE_LIMIT');state.steps++;const invocation=state.pending.shift(),node=state.workflow.nodes.find(value=>value.name===invocation.node),started=performance.now(),inputs=invocation.inputs?.map((items,index)=>linkedItems(items,index)),items=inputs?.[0]??linkedItems(invocation.items),inputItems=inputs?inputs.reduce((sum,input)=>sum+input.length,0):items.length;failedInvocation={node:node.name,type:node.type,inputItems,...(inputs?{inputPorts:inputs.map(input=>input.length)}:{})};failedStarted=started;state.activeNode=node.name;await context.checkpoint?.(state);if(context.signal?.aborted)throw context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED');if(performance.now()>context.deadline)fail('Execution exceeds 120,000 active milliseconds after checkpoint','NATIVE_LIMIT');const result=await executeNode(node,items,{...context,...(inputs?{inputs}:{} )}),outputs=result.outputs??result;bounded(outputs,LIMITS.executionBytes,{undefinedValues:true});const trace={...failedInvocation,status:'completed',outputItems:outputs.map(items=>items.length),durationMs:Math.round((performance.now()-started)*1000)/1000};state.trace.push(trace);failedInvocation=null;Object.defineProperty(state.outputs,node.name,{value:copy(outputs),enumerable:true,writable:true,configurable:true});
+      delete state.activeNode;
+      if(result.waitUntil){state.status='waiting';state.waitUntil=result.waitUntil;state.waitingRoute=node.name;state.activeMs=(state.activeMs??0)+performance.now()-activeStart;bounded(state,LIMITS.executionBytes,{undefinedValues:true});await context.checkpoint?.(state);return state;}
+      routeOutputs(state,node,outputs);
       bounded(state,LIMITS.executionBytes,{undefinedValues:true});await context.checkpoint?.(state);
     }
     state.status='completed';state.finishedAt=new Date().toISOString();
-  }catch(error){state.status=error.code==='NATIVE_CANCELLED'?'cancelled':error.code==='NATIVE_INTERRUPTED'?'interrupted':'failed';state.error={code:error.code??'NATIVE_NODE_ERROR',message:String(error.message).slice(0,4096),node:state.activeNode};if(failedInvocation)state.trace.push({...failedInvocation,status:state.status,error:state.error,durationMs:Math.round((performance.now()-failedStarted)*1000)/1000});state.pending=[];delete state.activeNode;state.finishedAt=new Date().toISOString();}
+  }catch(error){state.status=error.code==='NATIVE_CANCELLED'?'cancelled':error.code==='NATIVE_INTERRUPTED'?'interrupted':'failed';state.error={code:error.code??'NATIVE_NODE_ERROR',message:String(error.message).slice(0,4096),node:state.activeNode};if(failedInvocation)state.trace.push({...failedInvocation,status:state.status,error:state.error,durationMs:Math.round((performance.now()-failedStarted)*1000)/1000});state.pending=[];state.joins={};delete state.waitingRoute;delete state.activeNode;state.finishedAt=new Date().toISOString();}
   state.activeMs=(state.activeMs??0)+performance.now()-activeStart;
   // A rejected aggregate must still produce a bounded failure checkpoint.
-  try{bounded(state,LIMITS.executionBytes,{undefinedValues:true});}catch(error){state.status='failed';state.error={code:'NATIVE_LIMIT',message:error.message};state.outputs={};state.pending=[];state.trace=state.trace.map(({node,type,status,inputItems,outputItems,durationMs,error})=>({node,type,status,inputItems,outputItems,durationMs,...(error?{error:{code:error.code,message:error.message}}:{})}));}
+  try{bounded(state,LIMITS.executionBytes,{undefinedValues:true});}catch(error){state.status='failed';state.error={code:'NATIVE_LIMIT',message:error.message};state.outputs={};state.pending=[];state.joins={};state.trace=state.trace.map(({node,type,status,inputItems,inputPorts,outputItems,durationMs,error})=>({node,type,status,inputItems,...(inputPorts?{inputPorts}:{}),outputItems,durationMs,...(error?{error:{code:error.code,message:error.message}}:{})}));}
   await context.checkpoint?.(state);return state;
 }
 function sensitive(name){return /authorization|cookie|password|secret|token|api[-_]?key/i.test(name);}
@@ -242,12 +303,16 @@ function prepareHttp(p){
 async function httpItems(node,items,context){
   // Resolve and validate every request before starting this node's effects.
   context.executionBudget??={requests:0};if(context.executionBudget.requests+items.length>500)fail('Execution exceeds 500 HTTP requests','NATIVE_LIMIT');const requests=[],outputs=[];let totalBytes=0,requestBytes=0;for(const item of items){const request=prepareHttp(resolve(node.parameters,item));requestBytes+=Buffer.byteLength(request.body??'')+Buffer.byteLength(request.url.href)+Buffer.byteLength(JSON.stringify(Object.fromEntries(request.headers)));if(requestBytes>LIMITS.executionBytes)fail('HTTP request preparation exceeds execution bounds','NATIVE_LIMIT');requests.push(request);}
+  function guardHttp(controller){if(context.signal?.aborted)throw context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED');if(context.deadline!==undefined&&performance.now()>context.deadline)fail('Execution active deadline exceeded before HTTP effect','NATIVE_LIMIT');if(controller?.signal.aborted)throw controller.signal.reason;}
   for(const[index,request]of requests.entries()){
-    if(++context.executionBudget.requests>500)fail('Execution exceeds 500 HTTP requests','NATIVE_LIMIT');if(context.signal?.aborted)throw context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED');
+    // Preserve per-input-item attempt accounting, including an item rejected by
+    // the cooperative guard. Redirect hops retain their separate existing cap.
+    if(++context.executionBudget.requests>500)fail('Execution exceeds 500 HTTP requests','NATIVE_LIMIT');guardHttp();
     const timeout=Math.min(request.timeout,context.deadline===undefined?request.timeout:Math.max(1,context.deadline-performance.now()));const controller=new AbortController(),abort=()=>controller.abort(context.signal.reason),timer=setTimeout(()=>controller.abort(new NativeError('HTTP request timed out','NATIVE_HTTP_TIMEOUT')),timeout);context.signal?.addEventListener('abort',abort,{once:true});
     try{
       let url=request.url,method=request.method,body=request.body,response;
       for(let redirects=0;;redirects++){
+        guardHttp(controller);
         response=await fetch(url,{method,headers:request.headers,body,redirect:'manual',signal:controller.signal});const location=response.headers.get('location');if(!request.redirect.followRedirects||![301,302,303,307,308].includes(response.status)||!location)break;
         await response.body?.cancel();if(redirects>=request.maxRedirects)fail('HTTP redirect limit exceeded','NATIVE_HTTP_REDIRECT');url=new URL(location,url);if(!['http:','https:'].includes(url.protocol)||url.username||url.password)fail('Unsupported redirect URL');if((response.status===303&&method!=='HEAD')||([301,302].includes(response.status)&&method==='POST')){method='GET';body=undefined;request.headers.delete('content-type');}
       }
@@ -261,7 +326,7 @@ async function httpItems(node,items,context){
       else if(format==='text')result=[{json:{[r.outputPropertyName??'data']:data},pairedItem}];
       else result=(Array.isArray(data)?data:[data]).map(json=>{object(json,'HTTP JSON item');return{json,pairedItem};});
       bounded(result,LIMITS.executionBytes,{undefinedValues:true});totalBytes+=Buffer.byteLength(JSON.stringify(result));if(outputs.length+result.length>LIMITS.items||totalBytes>LIMITS.executionBytes)fail('HTTP output exceeds execution bounds','NATIVE_LIMIT');outputs.push(...result);
-    }catch(error){if(controller.signal.aborted)throw context.signal?.aborted?(context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED')):controller.signal.reason;throw error;}
+    }catch(error){if(context.signal?.aborted)throw context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED');if(error.code==='NATIVE_LIMIT')throw error;if(controller.signal.aborted)throw controller.signal.reason;throw error;}
     finally{clearTimeout(timer);context.signal?.removeEventListener('abort',abort);}
   }
   return outputs;

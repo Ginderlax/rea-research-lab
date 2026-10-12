@@ -13,6 +13,7 @@ import { hash,seal,open,randomKey,validPolynomial,passwordKey,masterKey,base64 }
 import { decodeName,limits,resticTime } from './restic.mjs';
 import { start } from '../../server.mjs';
 import { zstdDecompressSync,zstdCompressSync } from 'node:zlib';
+import { verifyStructure,verifyUnchanged } from './native-policy-assertions.mjs';
 
 const exec = promisify(execFile), repositoryRoot = fileURLToPath(new URL('../../../../',import.meta.url));
 const artifact = path.join(repositoryRoot,'projects/09-restic/artifacts');
@@ -104,7 +105,7 @@ for (const version of [1,2]) test(`app writes genuine native v${version} reposit
   const { workspace,call,original } = await fixture(t,true), binary = await treeFixture(workspace);
   const initialized = await call('nativeInit',{ version }); assert.equal(initialized.format,'restic'); assert.equal(initialized.version,version);
   assert.equal(JSON.parse(await original('cat','config')).version,version);
-  const saved = await call('nativeSnapshot',{ source:'source',label:'native-fixture' }); assert.equal(saved.files,3); assert.ok(saved.newPacks >= 7);
+  const saved = await call('nativeSnapshot',{ source:'source',label:'native-fixture' }); assert.equal(saved.files,3); await verifyStructure({ workspace,snapshot:saved,password:PASSWORD });
   const snapshots = JSON.parse(await original('snapshots','--json')); assert.equal(snapshots[0].id,saved.id); assert.deepEqual(snapshots[0].tags,['native-fixture']);
   assert.match(await original('check','--read-data'),/no errors were found/);
   await original('restore',saved.id,'--target',workspace.resolve('oracle-restored'));
@@ -114,6 +115,7 @@ for (const version of [1,2]) test(`app writes genuine native v${version} reposit
   await call('nativeRestore',{ id:saved.id,destination:'app-restored',confirm:true }); assert.deepEqual(await filesAt(workspace.resolve('app-restored/source')),await filesAt(workspace.resolve('source')));
   assert.ok(Math.abs((await fs.stat(workspace.resolve('app-restored/source/binary.bin'))).mtimeMs - Date.parse('2023-04-05T06:07:08.123Z')) < 1);
   const second = await call('nativeSnapshot',{ source:'source',label:'second' }); assert.ok(second.newPacks < saved.newPacks,'Existing native data blobs are reused.'); assert.equal((await call('nativeList')).snapshots.length,2);
+  await verifyUnchanged({ workspace,password:PASSWORD });
   assert.match(await original('check','--read-data'),/no errors were found/);
   await assert.rejects(call('nativeRestore',{ id:saved.id,destination:'app-restored',confirm:true }),/EEXIST/);
   assert.deepEqual(await filesAt(workspace.resolve('app-restored/source')),await filesAt(workspace.resolve('source')));

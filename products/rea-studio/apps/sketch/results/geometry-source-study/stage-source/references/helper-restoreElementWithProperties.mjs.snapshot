@@ -1,0 +1,48 @@
+var restoreElementWithProperties = (element, extra) => {
+  const base = {
+    type: extra.type || element.type,
+    // all elements must have version > 0 so getSceneVersion() will pick up
+    // newly added elements
+    version: element.version || 1,
+    versionNonce: element.versionNonce ?? 0,
+    index: element.index ?? null,
+    isDeleted: element.isDeleted ?? false,
+    id: element.id || randomId(),
+    fillStyle: element.fillStyle || DEFAULT_ELEMENT_PROPS.fillStyle,
+    strokeWidth: element.strokeWidth || DEFAULT_ELEMENT_PROPS.strokeWidth,
+    strokeStyle: element.strokeStyle ?? DEFAULT_ELEMENT_PROPS.strokeStyle,
+    roughness: element.roughness ?? DEFAULT_ELEMENT_PROPS.roughness,
+    opacity: element.opacity == null ? DEFAULT_ELEMENT_PROPS.opacity : element.opacity,
+    angle: element.angle || 0,
+    x: extra.x ?? element.x ?? 0,
+    y: extra.y ?? element.y ?? 0,
+    strokeColor: element.strokeColor || DEFAULT_ELEMENT_PROPS.strokeColor,
+    backgroundColor: element.backgroundColor || DEFAULT_ELEMENT_PROPS.backgroundColor,
+    width: element.width || 0,
+    height: element.height || 0,
+    seed: element.seed ?? 1,
+    groupIds: element.groupIds ?? [],
+    frameId: element.frameId ?? null,
+    roundness: element.roundness ? element.roundness : element.strokeSharpness === "round" ? {
+      // for old elements that would now use adaptive radius algo,
+      // use legacy algo instead
+      type: isUsingAdaptiveRadius(element.type) ? ROUNDNESS.LEGACY : ROUNDNESS.PROPORTIONAL_RADIUS
+    } : null,
+    boundElements: element.boundElementIds ? element.boundElementIds.map((id) => ({ type: "arrow", id })) : element.boundElements ?? [],
+    updated: element.updated ?? getUpdatedTimestamp(),
+    link: element.link ? normalizeLink(element.link) : null,
+    locked: element.locked ?? false
+  };
+  if ("customData" in element || "customData" in extra) {
+    base.customData = "customData" in extra ? extra.customData : element.customData;
+  }
+  return {
+    // spread the original element properties to not lose unknown ones
+    // for forward-compatibility
+    ...element,
+    // normalized properties
+    ...base,
+    ...getNormalizedDimensions(base),
+    ...extra
+  };
+};

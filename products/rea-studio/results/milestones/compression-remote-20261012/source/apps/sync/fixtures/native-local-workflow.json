@@ -1,0 +1,37 @@
+{
+  "synthetic": true,
+  "putFile": [
+    { "path": "native-demo/source/report.txt", "content": "fresh" },
+    { "path": "native-demo/target/report.txt", "content": "stale" },
+    { "path": "native-demo/target/extra.txt", "content": "remove" },
+    { "path": "native-demo/target/private/keep.txt", "content": "retained" }
+  ],
+  "rclone-plan": {
+    "source": "native-demo/source",
+    "target": "native-demo/target",
+    "mode": "sync",
+    "comparison": { "checksum": true },
+    "filters": { "filterFrom": [ "- /private/**\n" ] }
+  },
+  "expected": {
+    "copies": 1,
+    "removals": 1,
+    "excludedTargetFiles": 1,
+    "preservedBytes": [ "stale", "remove" ],
+    "retainedTarget": "native-demo/target/private/keep.txt"
+  },
+  "browserSelectors": {
+    "card": "[data-testid=rclone-controls]",
+    "source": "[data-testid=rclone-source]",
+    "target": "[data-testid=rclone-target]",
+    "mode": "[data-testid=rclone-mode]",
+    "comparison": "[data-testid=rclone-comparison]",
+    "filter": "[data-testid=rclone-filter]",
+    "confirm": "[data-testid=rclone-confirm]",
+    "delete": "[data-testid=rclone-delete]",
+    "plan": "[data-testid=rclone-plan]",
+    "result": "[data-testid=rclone-result]"
+  },
+  "fullProductComplete": false,
+  "universalSuperiorityEstablished": false
+}

@@ -1,0 +1,358 @@
+{
+  "schema": "rea-automation-recovery-browser-observations/v1",
+  "url": "http://127.0.0.1:59765/#automation",
+  "observations": [
+    {
+      "kind": "supported-graph",
+      "observedAtUtc": "2026-10-12T21:14:37.941Z",
+      "dom": "- banner:\n  - text: REA\n  - strong: Studio\n  - generic: Local applications · development\n- complementary:\n  - paragraph: YOUR WORKSPACE\n  - navigation \"Applications\":\n    - button \"Lab Editor\"\n    - button \"Lab Metrics\"\n    - button \"Lab Automation\"\n    - button \"Lab Sketch\"\n    - button \"Lab Notes\"\n    - button \"Lab Flow\"\n    - button \"Lab Vault\"\n    - button \"Lab Archive\"\n    - button \"Lab Backup\"\n    - button \"Lab Sync\"\n  - generic: Files and records are stored on this machine.\n- main:\n  - heading \"Lab Automation\" [level=1]\n  - paragraph: Native workflows, resumable waits and run history\n  - paragraph: Development version. Full product feature parity and comparative improvements are still being evaluated.\n  - heading \"Automation · workflows\" [level=2]\n  - paragraph: Connect JSON transformations, HTTP requests, delays and saved workflows. Save, run, cancel and inspect execution history.\n  - status: Ready\n  - combobox:\n    - option \"Choose saved workflow\" [selected]\n  - button \"New\"\n  - button \"Save\"\n  - button \"Delete saved workflow\"\n  - text: Name\n  - textbox \"Name\":\n    - /placeholder: Workflow name\n    - text: Qualified order totals\n  - heading \"orders · input\" [level=3]\n  - generic: \"{}\"\n  - paragraph: → qualify\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"qualify · filter\" [level=3]\n  - generic: \"{ \\\"field\\\": \\\"amount\\\", \\\"op\\\": \\\"gte\\\", \\\"value\\\": 100 }\"\n  - paragraph: → total\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"total · aggregate\" [level=3]\n  - generic: \"{ \\\"field\\\": \\\"amount\\\", \\\"op\\\": \\\"sum\\\", \\\"as\\\": \\\"total\\\" }\"\n  - paragraph: → result\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"result · output\" [level=3]\n  - generic: \"{}\"\n  - paragraph: No outgoing connections\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"Visual authoring\" [level=3]\n  - text: Node identifier\n  - textbox \"Node identifier\":\n    - /placeholder: Node id e.g. qualify\n  - text: Node type\n  - combobox \"Node type\":\n    - option \"input\" [selected]\n    - option \"map\"\n    - option \"filter\"\n    - option \"branch\"\n    - option \"aggregate\"\n    - option \"http\"\n    - option \"wait\"\n    - option \"call\"\n    - option \"output\"\n  - button \"Use configuration example\"\n  - text: Node configuration\n  - textbox \"Node configuration\":\n    - /placeholder: Node configuration JSON\n    - text: \"{}\"\n  - text: Error and retry settings\n  - textbox \"Error and retry settings\": \"{\\\"onError\\\":\\\"stop\\\",\\\"retry\\\":{\\\"maxAttempts\\\":1,\\\"delayMs\\\":0}}\"\n  - button \"Add or update node\"\n  - text: Connect from\n  - combobox \"Connect from\":\n    - option \"orders\" [selected]\n    - option \"qualify\"\n    - option \"total\"\n    - option \"result\"\n  - text: Connect to\n  - combobox \"Connect to\":\n    - option \"orders\" [selected]\n    - option \"qualify\"\n    - option \"total\"\n    - option \"result\"\n  - text: Output port\n  - combobox \"Output port\":\n    - option \"out\" [selected]\n    - option \"true\"\n    - option \"false\"\n    - option \"error\"\n  - button \"Add connection\"\n  - button \"Remove this connection\"\n  - paragraph: \"HTTP supports JSON/raw bodies, scalar headers/query parameters, and {\\\"from\\\":\\\"field\\\"} or {\\\"secret\\\":\\\"name\\\"} references. Wait accepts 0–60,000 ms. On Error: stop, continue, or error-output; connect error-output through the error port. Attempts: 1–5; retry delay: 0–10,000 ms. Calls use saved workflow IDs shown in exported JSON.\"\n  - generic \"Workflow JSON · import and export\"\n  - heading \"Run input\" [level=3]\n  - textbox: \"[ { \\\"customer\\\": \\\"A\\\", \\\"amount\\\": 125 }, { \\\"customer\\\": \\\"B\\\", \\\"amount\\\": 25 }, { \\\"customer\\\": \\\"C\\\", \\\"amount\\\": 250 } ]\"\n  - text: Run secrets JSON · used for this execution only\n  - textbox \"Run secrets JSON · used for this execution only\": \"{}\"\n  - paragraph: Use secret references for request credentials. Secret values and authorization/cookie headers are redacted in execution records. A retry can repeat a request or saved workflow that already caused a side effect.\n  - button \"Run saved workflow\"\n  - button \"Cancel execution\" [disabled]\n  - heading \"Execution history\" [level=3]\n  - paragraph: Save a workflow to retain execution history.\n  - heading \"Native n8n workflows\" [level=2]\n  - paragraph: Import and preserve n8n workflow JSON. Run the supported Manual Trigger, Edit Fields, If, HTTP Request, Wait, Switch 3.4 and Merge 3.2 versions locally. Unknown nodes stay in the document; execution checks the reachable graph first.\n  - status: Supported graph\n  - combobox:\n    - option \"Choose a saved native workflow\" [selected]\n  - button \"New routing example\"\n  - button \"New native example\"\n  - button \"Save native workflow\"\n  - button \"Check supported graph\" [active]\n  - text: Native workflow name\n  - textbox \"Native workflow name\": Owned current recovery browser verification\n  - heading \"Workflow diagram\" [level=3]\n  - img \"Native workflow nodes and main connections\":\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 1\n    - generic: 0 → input 0\n    - button \"Edit Start\":\n      - generic: Start\n      - generic: manualTrigger\n      - generic: Version 1\n    - button \"Edit Seed\":\n      - generic: Seed\n      - generic: set\n      - generic: Version 3.4\n    - button \"Edit Switch\":\n      - generic: Switch\n      - generic: switch\n      - generic: Version 3.4\n    - button \"Edit Wait\":\n      - generic: Wait\n      - generic: wait\n      - generic: Version 1.1\n    - button \"Edit Merge\":\n      - generic: Merge\n      - generic: merge\n      - generic: Version 3.2\n    - button \"Edit Finished\":\n      - generic: Finished\n      - generic: set\n      - generic: Version 3.4\n  - generic: Supported graph · ready to run\n  - heading \"Edit a native node\" [level=3]\n  - paragraph\n  - text: Node name\n  - textbox \"Node name\"\n  - text: Saved position [x, y]\n  - textbox \"Saved position [x, y]\"\n  - text: Native parameters JSON\n  - textbox \"Native parameters JSON\"\n  - button \"Apply node changes\"\n  - text: Add node type\n  - combobox \"Add node type\":\n    - option \"Edit Fields 3.4\" [selected]\n    - option \"If 2.3\"\n    - option \"HTTP Request 4.4\"\n    - option \"Wait 1.1\"\n    - option \"Switch 3.4\"\n    - option \"Merge 3.2\"\n  - button \"Add native node\"\n  - text: Connect from\n  - combobox \"Connect from\":\n    - option \"Start\" [selected]\n    - option \"Seed\"\n    - option \"Switch\"\n    - option \"Wait\"\n    - option \"Merge\"\n    - option \"Finished\"\n  - text: Connect to\n  - combobox \"Connect to\":\n    - option \"Start\" [selected]\n    - option \"Seed\"\n    - option \"Switch\"\n    - option \"Wait\"\n    - option \"Merge\"\n    - option \"Finished\"\n  - text: Output\n  - combobox \"Output\":\n    - option \"Output 0\" [selected]\n  - text: Target input\n  - combobox \"Target input\":\n    - option \"Input 0\" [selected]\n  - button \"Add native connection\"\n  - button \"Remove native connection\"\n  - generic \"Native workflow JSON · import and export\"\n  - heading \"Run native workflow\" [level=3]\n  - paragraph: Runs use the saved revision, beginning with one empty item from Manual Trigger. Wait saves a continuation for up to 60 seconds; after a host restart, opening this panel starts due waits again. Interrupted HTTP operations are recorded and are not automatically replayed. History hides sensitive field names and observed secret strings; unfinished continuation files retain working data locally.\n  - button \"Run saved native revision\"\n  - button \"Cancel native execution\" [disabled]"
+    },
+    {
+      "kind": "saved-revision",
+      "observedAtUtc": "2026-10-12T21:14:41.340Z",
+      "dom": "- banner:\n  - text: REA\n  - strong: Studio\n  - generic: Local applications · development\n- complementary:\n  - paragraph: YOUR WORKSPACE\n  - navigation \"Applications\":\n    - button \"Lab Editor\"\n    - button \"Lab Metrics\"\n    - button \"Lab Automation\"\n    - button \"Lab Sketch\"\n    - button \"Lab Notes\"\n    - button \"Lab Flow\"\n    - button \"Lab Vault\"\n    - button \"Lab Archive\"\n    - button \"Lab Backup\"\n    - button \"Lab Sync\"\n  - generic: Files and records are stored on this machine.\n- main:\n  - heading \"Lab Automation\" [level=1]\n  - paragraph: Native workflows, resumable waits and run history\n  - paragraph: Development version. Full product feature parity and comparative improvements are still being evaluated.\n  - heading \"Automation · workflows\" [level=2]\n  - paragraph: Connect JSON transformations, HTTP requests, delays and saved workflows. Save, run, cancel and inspect execution history.\n  - status: Ready\n  - combobox:\n    - option \"Choose saved workflow\" [selected]\n  - button \"New\"\n  - button \"Save\"\n  - button \"Delete saved workflow\"\n  - text: Name\n  - textbox \"Name\":\n    - /placeholder: Workflow name\n    - text: Qualified order totals\n  - heading \"orders · input\" [level=3]\n  - generic: \"{}\"\n  - paragraph: → qualify\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"qualify · filter\" [level=3]\n  - generic: \"{ \\\"field\\\": \\\"amount\\\", \\\"op\\\": \\\"gte\\\", \\\"value\\\": 100 }\"\n  - paragraph: → total\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"total · aggregate\" [level=3]\n  - generic: \"{ \\\"field\\\": \\\"amount\\\", \\\"op\\\": \\\"sum\\\", \\\"as\\\": \\\"total\\\" }\"\n  - paragraph: → result\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"result · output\" [level=3]\n  - generic: \"{}\"\n  - paragraph: No outgoing connections\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"Visual authoring\" [level=3]\n  - text: Node identifier\n  - textbox \"Node identifier\":\n    - /placeholder: Node id e.g. qualify\n  - text: Node type\n  - combobox \"Node type\":\n    - option \"input\" [selected]\n    - option \"map\"\n    - option \"filter\"\n    - option \"branch\"\n    - option \"aggregate\"\n    - option \"http\"\n    - option \"wait\"\n    - option \"call\"\n    - option \"output\"\n  - button \"Use configuration example\"\n  - text: Node configuration\n  - textbox \"Node configuration\":\n    - /placeholder: Node configuration JSON\n    - text: \"{}\"\n  - text: Error and retry settings\n  - textbox \"Error and retry settings\": \"{\\\"onError\\\":\\\"stop\\\",\\\"retry\\\":{\\\"maxAttempts\\\":1,\\\"delayMs\\\":0}}\"\n  - button \"Add or update node\"\n  - text: Connect from\n  - combobox \"Connect from\":\n    - option \"orders\" [selected]\n    - option \"qualify\"\n    - option \"total\"\n    - option \"result\"\n  - text: Connect to\n  - combobox \"Connect to\":\n    - option \"orders\" [selected]\n    - option \"qualify\"\n    - option \"total\"\n    - option \"result\"\n  - text: Output port\n  - combobox \"Output port\":\n    - option \"out\" [selected]\n    - option \"true\"\n    - option \"false\"\n    - option \"error\"\n  - button \"Add connection\"\n  - button \"Remove this connection\"\n  - paragraph: \"HTTP supports JSON/raw bodies, scalar headers/query parameters, and {\\\"from\\\":\\\"field\\\"} or {\\\"secret\\\":\\\"name\\\"} references. Wait accepts 0–60,000 ms. On Error: stop, continue, or error-output; connect error-output through the error port. Attempts: 1–5; retry delay: 0–10,000 ms. Calls use saved workflow IDs shown in exported JSON.\"\n  - generic \"Workflow JSON · import and export\"\n  - heading \"Run input\" [level=3]\n  - textbox: \"[ { \\\"customer\\\": \\\"A\\\", \\\"amount\\\": 125 }, { \\\"customer\\\": \\\"B\\\", \\\"amount\\\": 25 }, { \\\"customer\\\": \\\"C\\\", \\\"amount\\\": 250 } ]\"\n  - text: Run secrets JSON · used for this execution only\n  - textbox \"Run secrets JSON · used for this execution only\": \"{}\"\n  - paragraph: Use secret references for request credentials. Secret values and authorization/cookie headers are redacted in execution records. A retry can repeat a request or saved workflow that already caused a side effect.\n  - button \"Run saved workflow\"\n  - button \"Cancel execution\" [disabled]\n  - heading \"Execution history\" [level=3]\n  - paragraph: Save a workflow to retain execution history.\n  - heading \"Native n8n workflows\" [level=2]\n  - paragraph: Import and preserve n8n workflow JSON. Run the supported Manual Trigger, Edit Fields, If, HTTP Request, Wait, Switch 3.4 and Merge 3.2 versions locally. Unknown nodes stay in the document; execution checks the reachable graph first.\n  - status: Saved revision 1\n  - combobox:\n    - option \"Choose a saved native workflow\"\n    - option \"Owned current recovery browser verification · revision 1\" [selected]\n  - button \"New routing example\"\n  - button \"New native example\"\n  - button \"Save native workflow\" [active]\n  - button \"Check supported graph\"\n  - text: Native workflow name\n  - textbox \"Native workflow name\": Owned current recovery browser verification\n  - heading \"Workflow diagram\" [level=3]\n  - img \"Native workflow nodes and main connections\":\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 1\n    - generic: 0 → input 0\n    - button \"Edit Start\":\n      - generic: Start\n      - generic: manualTrigger\n      - generic: Version 1\n    - button \"Edit Seed\":\n      - generic: Seed\n      - generic: set\n      - generic: Version 3.4\n    - button \"Edit Switch\":\n      - generic: Switch\n      - generic: switch\n      - generic: Version 3.4\n    - button \"Edit Wait\":\n      - generic: Wait\n      - generic: wait\n      - generic: Version 1.1\n    - button \"Edit Merge\":\n      - generic: Merge\n      - generic: merge\n      - generic: Version 3.2\n    - button \"Edit Finished\":\n      - generic: Finished\n      - generic: set\n      - generic: Version 3.4\n  - generic: Supported graph · ready to run\n  - heading \"Edit a native node\" [level=3]\n  - paragraph\n  - text: Node name\n  - textbox \"Node name\"\n  - text: Saved position [x, y]\n  - textbox \"Saved position [x, y]\"\n  - text: Native parameters JSON\n  - textbox \"Native parameters JSON\"\n  - button \"Apply node changes\"\n  - text: Add node type\n  - combobox \"Add node type\":\n    - option \"Edit Fields 3.4\" [selected]\n    - option \"If 2.3\"\n    - option \"HTTP Request 4.4\"\n    - option \"Wait 1.1\"\n    - option \"Switch 3.4\"\n    - option \"Merge 3.2\"\n  - button \"Add native node\"\n  - text: Connect from\n  - combobox \"Connect from\":\n    - option \"Start\" [selected]\n    - option \"Seed\"\n    - option \"Switch\"\n    - option \"Wait\"\n    - option \"Merge\"\n    - option \"Finished\"\n  - text: Connect to\n  - combobox \"Connect to\":\n    - option \"Start\" [selected]\n    - option \"Seed\"\n    - option \"Switch\"\n    - option \"Wait\"\n    - option \"Merge\"\n    - option \"Finished\"\n  - text: Output\n  - combobox \"Output\":\n    - option \"Output 0\" [selected]\n  - text: Target input\n  - combobox \"Target input\":\n    - option \"Input 0\" [selected]\n  - button \"Add native connection\"\n  - button \"Remove native connection\"\n  - generic \"Native workflow JSON · import and export\"\n  - heading \"Run native workflow\" [level=3]\n  - paragraph: Runs use the saved revision, beginning with one empty item from Manual Trigger. Wait saves a continuation for up to 60 seconds; after a host restart, opening this panel starts due waits again. Interrupted HTTP operations are recorded and are not automatically replayed. History hides sensitive field names and observed secret strings; unfinished continuation files retain working data locally.\n  - button \"Run saved native revision\"\n  - button \"Cancel native execution\" [disabled]\n  - heading \"Native execution history\" [level=3]"
+    },
+    {
+      "kind": "completed-run",
+      "observedAtUtc": "2026-10-12T21:15:05.702Z",
+      "result": {
+        "finishedAt": "2026-10-12T21:14:41.515Z",
+        "id": "e9e00f63-76d2-48a3-a401-b447a677dbdf",
+        "outputs": {
+          "Finished": [
+            [
+              {
+                "json": {
+                  "amount": 150,
+                  "finished": true
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "amount": 150,
+                  "finished": true
+                },
+                "pairedItem": {
+                  "item": 1
+                }
+              }
+            ]
+          ],
+          "Merge": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "input": 1,
+                  "item": 0
+                }
+              }
+            ]
+          ],
+          "Seed": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              }
+            ]
+          ],
+          "Start": [
+            [
+              {
+                "json": {}
+              }
+            ]
+          ],
+          "Switch": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              }
+            ],
+            []
+          ],
+          "Wait": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              }
+            ]
+          ]
+        },
+        "requests": 0,
+        "revision": 1,
+        "startedAt": "2026-10-12T21:14:41.377Z",
+        "status": "completed",
+        "steps": 6,
+        "trace": [
+          {
+            "durationMs": 2.522,
+            "inputItems": 0,
+            "node": "Start",
+            "outputItems": [
+              1
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.manualTrigger"
+          },
+          {
+            "durationMs": 2.734,
+            "inputItems": 1,
+            "node": "Seed",
+            "outputItems": [
+              1
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.set"
+          },
+          {
+            "durationMs": 2.784,
+            "inputItems": 1,
+            "node": "Switch",
+            "outputItems": [
+              1,
+              0
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.switch"
+          },
+          {
+            "durationMs": 2.428,
+            "inputItems": 1,
+            "node": "Wait",
+            "outputItems": [
+              1
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.wait"
+          },
+          {
+            "durationMs": 3.367,
+            "inputItems": 2,
+            "inputPorts": [
+              1,
+              1
+            ],
+            "node": "Merge",
+            "outputItems": [
+              2
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.merge"
+          },
+          {
+            "durationMs": 2.675,
+            "inputItems": 2,
+            "node": "Finished",
+            "outputItems": [
+              2
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.set"
+          }
+        ],
+        "workflowId": "e1e55265-f39b-4bae-bba1-b05993689518"
+      },
+      "dom": "- banner:\n  - text: REA\n  - strong: Studio\n  - generic: Local applications · development\n- complementary:\n  - paragraph: YOUR WORKSPACE\n  - navigation \"Applications\":\n    - button \"Lab Editor\"\n    - button \"Lab Metrics\"\n    - button \"Lab Automation\"\n    - button \"Lab Sketch\"\n    - button \"Lab Notes\"\n    - button \"Lab Flow\"\n    - button \"Lab Vault\"\n    - button \"Lab Archive\"\n    - button \"Lab Backup\"\n    - button \"Lab Sync\"\n  - generic: Files and records are stored on this machine.\n- main:\n  - heading \"Lab Automation\" [level=1]\n  - paragraph: Native workflows, resumable waits and run history\n  - paragraph: Development version. Full product feature parity and comparative improvements are still being evaluated.\n  - heading \"Automation · workflows\" [level=2]\n  - paragraph: Connect JSON transformations, HTTP requests, delays and saved workflows. Save, run, cancel and inspect execution history.\n  - status: Ready\n  - combobox:\n    - option \"Choose saved workflow\" [selected]\n  - button \"New\"\n  - button \"Save\"\n  - button \"Delete saved workflow\"\n  - text: Name\n  - textbox \"Name\":\n    - /placeholder: Workflow name\n    - text: Qualified order totals\n  - heading \"orders · input\" [level=3]\n  - generic: \"{}\"\n  - paragraph: → qualify\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"qualify · filter\" [level=3]\n  - generic: \"{ \\\"field\\\": \\\"amount\\\", \\\"op\\\": \\\"gte\\\", \\\"value\\\": 100 }\"\n  - paragraph: → total\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"total · aggregate\" [level=3]\n  - generic: \"{ \\\"field\\\": \\\"amount\\\", \\\"op\\\": \\\"sum\\\", \\\"as\\\": \\\"total\\\" }\"\n  - paragraph: → result\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"result · output\" [level=3]\n  - generic: \"{}\"\n  - paragraph: No outgoing connections\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"Visual authoring\" [level=3]\n  - text: Node identifier\n  - textbox \"Node identifier\":\n    - /placeholder: Node id e.g. qualify\n  - text: Node type\n  - combobox \"Node type\":\n    - option \"input\" [selected]\n    - option \"map\"\n    - option \"filter\"\n    - option \"branch\"\n    - option \"aggregate\"\n    - option \"http\"\n    - option \"wait\"\n    - option \"call\"\n    - option \"output\"\n  - button \"Use configuration example\"\n  - text: Node configuration\n  - textbox \"Node configuration\":\n    - /placeholder: Node configuration JSON\n    - text: \"{}\"\n  - text: Error and retry settings\n  - textbox \"Error and retry settings\": \"{\\\"onError\\\":\\\"stop\\\",\\\"retry\\\":{\\\"maxAttempts\\\":1,\\\"delayMs\\\":0}}\"\n  - button \"Add or update node\"\n  - text: Connect from\n  - combobox \"Connect from\":\n    - option \"orders\" [selected]\n    - option \"qualify\"\n    - option \"total\"\n    - option \"result\"\n  - text: Connect to\n  - combobox \"Connect to\":\n    - option \"orders\" [selected]\n    - option \"qualify\"\n    - option \"total\"\n    - option \"result\"\n  - text: Output port\n  - combobox \"Output port\":\n    - option \"out\" [selected]\n    - option \"true\"\n    - option \"false\"\n    - option \"error\"\n  - button \"Add connection\"\n  - button \"Remove this connection\"\n  - paragraph: \"HTTP supports JSON/raw bodies, scalar headers/query parameters, and {\\\"from\\\":\\\"field\\\"} or {\\\"secret\\\":\\\"name\\\"} references. Wait accepts 0–60,000 ms. On Error: stop, continue, or error-output; connect error-output through the error port. Attempts: 1–5; retry delay: 0–10,000 ms. Calls use saved workflow IDs shown in exported JSON.\"\n  - generic \"Workflow JSON · import and export\"\n  - heading \"Run input\" [level=3]\n  - textbox: \"[ { \\\"customer\\\": \\\"A\\\", \\\"amount\\\": 125 }, { \\\"customer\\\": \\\"B\\\", \\\"amount\\\": 25 }, { \\\"customer\\\": \\\"C\\\", \\\"amount\\\": 250 } ]\"\n  - text: Run secrets JSON · used for this execution only\n  - textbox \"Run secrets JSON · used for this execution only\": \"{}\"\n  - paragraph: Use secret references for request credentials. Secret values and authorization/cookie headers are redacted in execution records. A retry can repeat a request or saved workflow that already caused a side effect.\n  - button \"Run saved workflow\"\n  - button \"Cancel execution\" [disabled]\n  - heading \"Execution history\" [level=3]\n  - paragraph: Save a workflow to retain execution history.\n  - heading \"Native n8n workflows\" [level=2]\n  - paragraph: Import and preserve n8n workflow JSON. Run the supported Manual Trigger, Edit Fields, If, HTTP Request, Wait, Switch 3.4 and Merge 3.2 versions locally. Unknown nodes stay in the document; execution checks the reachable graph first.\n  - status: Execution completed\n  - combobox:\n    - option \"Choose a saved native workflow\"\n    - option \"Owned current recovery browser verification · revision 1\" [selected]\n  - button \"New routing example\"\n  - button \"New native example\"\n  - button \"Save native workflow\"\n  - button \"Check supported graph\"\n  - text: Native workflow name\n  - textbox \"Native workflow name\": Owned current recovery browser verification\n  - heading \"Workflow diagram\" [level=3]\n  - img \"Native workflow nodes and main connections\":\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 1\n    - generic: 0 → input 0\n    - button \"Edit Start\":\n      - generic: Start\n      - generic: manualTrigger\n      - generic: Version 1\n    - button \"Edit Seed\":\n      - generic: Seed\n      - generic: set\n      - generic: Version 3.4\n    - button \"Edit Switch\":\n      - generic: Switch\n      - generic: switch\n      - generic: Version 3.4\n    - button \"Edit Wait\":\n      - generic: Wait\n      - generic: wait\n      - generic: Version 1.1\n    - button \"Edit Merge\":\n      - generic: Merge\n      - generic: merge\n      - generic: Version 3.2\n    - button \"Edit Finished\":\n      - generic: Finished\n      - generic: set\n      - generic: Version 3.4\n  - generic: Supported graph · ready to run\n  - heading \"Edit a native node\" [level=3]\n  - paragraph\n  - text: Node name\n  - textbox \"Node name\"\n  - text: Saved position [x, y]\n  - textbox \"Saved position [x, y]\"\n  - text: Native parameters JSON\n  - textbox \"Native parameters JSON\"\n  - button \"Apply node changes\"\n  - text: Add node type\n  - combobox \"Add node type\":\n    - option \"Edit Fields 3.4\" [selected]\n    - option \"If 2.3\"\n    - option \"HTTP Request 4.4\"\n    - option \"Wait 1.1\"\n    - option \"Switch 3.4\"\n    - option \"Merge 3.2\"\n  - button \"Add native node\"\n  - text: Connect from\n  - combobox \"Connect from\":\n    - option \"Start\" [selected]\n    - option \"Seed\"\n    - option \"Switch\"\n    - option \"Wait\"\n    - option \"Merge\"\n    - option \"Finished\"\n  - text: Connect to\n  - combobox \"Connect to\":\n    - option \"Start\" [selected]\n    - option \"Seed\"\n    - option \"Switch\"\n    - option \"Wait\"\n    - option \"Merge\"\n    - option \"Finished\"\n  - text: Output\n  - combobox \"Output\":\n    - option \"Output 0\" [selected]\n  - text: Target input\n  - combobox \"Target input\":\n    - option \"Input 0\" [selected]\n  - button \"Add native connection\"\n  - button \"Remove native connection\"\n  - generic \"Native workflow JSON · import and export\"\n  - heading \"Run native workflow\" [level=3]\n  - paragraph: Runs use the saved revision, beginning with one empty item from Manual Trigger. Wait saves a continuation for up to 60 seconds; after a host restart, opening this panel starts due waits again. Interrupted HTTP operations are recorded and are not automatically replayed. History hides sensitive field names and observed secret strings; unfinished continuation files retain working data locally.\n  - button \"Run saved native revision\"\n  - button \"Cancel native execution\" [disabled]\n  - generic: \"{ \\\"id\\\": \\\"e9e00f63-76d2-48a3-a401-b447a677dbdf\\\", \\\"status\\\": \\\"completed\\\", \\\"trace\\\": [ { \\\"node\\\": \\\"Start\\\", \\\"type\\\": \\\"n8n-nodes-base.manualTrigger\\\", \\\"inputItems\\\": 0, \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 1 ], \\\"durationMs\\\": 2.522 }, { \\\"node\\\": \\\"Seed\\\", \\\"type\\\": \\\"n8n-nodes-base.set\\\", \\\"inputItems\\\": 1, \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 1 ], \\\"durationMs\\\": 2.734 }, { \\\"node\\\": \\\"Switch\\\", \\\"type\\\": \\\"n8n-nodes-base.switch\\\", \\\"inputItems\\\": 1, \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 1, 0 ], \\\"durationMs\\\": 2.784 }, { \\\"node\\\": \\\"Wait\\\", \\\"type\\\": \\\"n8n-nodes-base.wait\\\", \\\"inputItems\\\": 1, \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 1 ], \\\"durationMs\\\": 2.428 }, { \\\"node\\\": \\\"Merge\\\", \\\"type\\\": \\\"n8n-nodes-base.merge\\\", \\\"inputItems\\\": 2, \\\"inputPorts\\\": [ 1, 1 ], \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 2 ], \\\"durationMs\\\": 3.367 }, { \\\"node\\\": \\\"Finished\\\", \\\"type\\\": \\\"n8n-nodes-base.set\\\", \\\"inputItems\\\": 2, \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 2 ], \\\"durationMs\\\": 2.675 } ], \\\"outputs\\\": { \\\"Start\\\": [ [ { \\\"json\\\": {} } ] ], \\\"Seed\\\": [ [ { \\\"json\\\": { \\\"amount\\\": 150 }, \\\"pairedItem\\\": { \\\"item\\\": 0 } } ] ], \\\"Switch\\\": [ [ { \\\"json\\\": { \\\"amount\\\": 150 }, \\\"pairedItem\\\": { \\\"item\\\": 0 } } ], [] ], \\\"Wait\\\": [ [ { \\\"json\\\": { \\\"amount\\\": 150 }, \\\"pairedItem\\\": { \\\"item\\\": 0 } } ] ], \\\"Merge\\\": [ [ { \\\"json\\\": { \\\"amount\\\": 150 }, \\\"pairedItem\\\": { \\\"item\\\": 0 } }, { \\\"json\\\": { \\\"amount\\\": 150 }, \\\"pairedItem\\\": { \\\"item\\\": 0, \\\"input\\\": 1 } } ] ], \\\"Finished\\\": [ [ { \\\"json\\\": { \\\"amount\\\": 150, \\\"finished\\\": true }, \\\"pairedItem\\\": { \\\"item\\\": 0 } }, { \\\"json\\\": { \\\"amount\\\": 150, \\\"finished\\\": true }, \\\"pairedItem\\\": { \\\"item\\\": 1 } } ] ] }, \\\"steps\\\": 6, \\\"requests\\\": 0, \\\"startedAt\\\": \\\"2026-10-12T21:14:41.377Z\\\", \\\"workflowId\\\": \\\"e1e55265-f39b-4bae-bba1-b05993689518\\\", \\\"revision\\\": 1, \\\"finishedAt\\\": \\\"2026-10-12T21:14:41.515Z\\\" }\"\n  - heading \"Native execution history\" [level=3]\n  - button \"2026-10-12T21:14:41.377Z · completed · revision 1\""
+    },
+    {
+      "kind": "reloaded-history",
+      "observedAtUtc": "2026-10-12T21:15:29.844Z",
+      "result": {
+        "finishedAt": "2026-10-12T21:14:41.515Z",
+        "id": "e9e00f63-76d2-48a3-a401-b447a677dbdf",
+        "outputs": {
+          "Finished": [
+            [
+              {
+                "json": {
+                  "amount": 150,
+                  "finished": true
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "amount": 150,
+                  "finished": true
+                },
+                "pairedItem": {
+                  "item": 1
+                }
+              }
+            ]
+          ],
+          "Merge": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "input": 1,
+                  "item": 0
+                }
+              }
+            ]
+          ],
+          "Seed": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              }
+            ]
+          ],
+          "Start": [
+            [
+              {
+                "json": {}
+              }
+            ]
+          ],
+          "Switch": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              }
+            ],
+            []
+          ],
+          "Wait": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              }
+            ]
+          ]
+        },
+        "requests": 0,
+        "revision": 1,
+        "startedAt": "2026-10-12T21:14:41.377Z",
+        "status": "completed",
+        "steps": 6,
+        "trace": [
+          {
+            "durationMs": 2.522,
+            "inputItems": 0,
+            "node": "Start",
+            "outputItems": [
+              1
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.manualTrigger"
+          },
+          {
+            "durationMs": 2.734,
+            "inputItems": 1,
+            "node": "Seed",
+            "outputItems": [
+              1
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.set"
+          },
+          {
+            "durationMs": 2.784,
+            "inputItems": 1,
+            "node": "Switch",
+            "outputItems": [
+              1,
+              0
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.switch"
+          },
+          {
+            "durationMs": 2.428,
+            "inputItems": 1,
+            "node": "Wait",
+            "outputItems": [
+              1
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.wait"
+          },
+          {
+            "durationMs": 3.367,
+            "inputItems": 2,
+            "inputPorts": [
+              1,
+              1
+            ],
+            "node": "Merge",
+            "outputItems": [
+              2
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.merge"
+          },
+          {
+            "durationMs": 2.675,
+            "inputItems": 2,
+            "node": "Finished",
+            "outputItems": [
+              2
+            ],
+            "status": "completed",
+            "type": "n8n-nodes-base.set"
+          }
+        ],
+        "workflowId": "e1e55265-f39b-4bae-bba1-b05993689518"
+      },
+      "dom": "- banner:\n  - text: REA\n  - strong: Studio\n  - generic: Local applications · development\n- complementary:\n  - paragraph: YOUR WORKSPACE\n  - navigation \"Applications\":\n    - button \"Lab Editor\"\n    - button \"Lab Metrics\"\n    - button \"Lab Automation\"\n    - button \"Lab Sketch\"\n    - button \"Lab Notes\"\n    - button \"Lab Flow\"\n    - button \"Lab Vault\"\n    - button \"Lab Archive\"\n    - button \"Lab Backup\"\n    - button \"Lab Sync\"\n  - generic: Files and records are stored on this machine.\n- main:\n  - heading \"Lab Automation\" [level=1]\n  - paragraph: Native workflows, resumable waits and run history\n  - paragraph: Development version. Full product feature parity and comparative improvements are still being evaluated.\n  - heading \"Automation · workflows\" [level=2]\n  - paragraph: Connect JSON transformations, HTTP requests, delays and saved workflows. Save, run, cancel and inspect execution history.\n  - status: Ready\n  - combobox:\n    - option \"Choose saved workflow\" [selected]\n  - button \"New\"\n  - button \"Save\"\n  - button \"Delete saved workflow\"\n  - text: Name\n  - textbox \"Name\":\n    - /placeholder: Workflow name\n    - text: Qualified order totals\n  - heading \"orders · input\" [level=3]\n  - generic: \"{}\"\n  - paragraph: → qualify\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"qualify · filter\" [level=3]\n  - generic: \"{ \\\"field\\\": \\\"amount\\\", \\\"op\\\": \\\"gte\\\", \\\"value\\\": 100 }\"\n  - paragraph: → total\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"total · aggregate\" [level=3]\n  - generic: \"{ \\\"field\\\": \\\"amount\\\", \\\"op\\\": \\\"sum\\\", \\\"as\\\": \\\"total\\\" }\"\n  - paragraph: → result\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"result · output\" [level=3]\n  - generic: \"{}\"\n  - paragraph: No outgoing connections\n  - button \"Edit\"\n  - button \"Remove\"\n  - heading \"Visual authoring\" [level=3]\n  - text: Node identifier\n  - textbox \"Node identifier\":\n    - /placeholder: Node id e.g. qualify\n  - text: Node type\n  - combobox \"Node type\":\n    - option \"input\" [selected]\n    - option \"map\"\n    - option \"filter\"\n    - option \"branch\"\n    - option \"aggregate\"\n    - option \"http\"\n    - option \"wait\"\n    - option \"call\"\n    - option \"output\"\n  - button \"Use configuration example\"\n  - text: Node configuration\n  - textbox \"Node configuration\":\n    - /placeholder: Node configuration JSON\n    - text: \"{}\"\n  - text: Error and retry settings\n  - textbox \"Error and retry settings\": \"{\\\"onError\\\":\\\"stop\\\",\\\"retry\\\":{\\\"maxAttempts\\\":1,\\\"delayMs\\\":0}}\"\n  - button \"Add or update node\"\n  - text: Connect from\n  - combobox \"Connect from\":\n    - option \"orders\" [selected]\n    - option \"qualify\"\n    - option \"total\"\n    - option \"result\"\n  - text: Connect to\n  - combobox \"Connect to\":\n    - option \"orders\" [selected]\n    - option \"qualify\"\n    - option \"total\"\n    - option \"result\"\n  - text: Output port\n  - combobox \"Output port\":\n    - option \"out\" [selected]\n    - option \"true\"\n    - option \"false\"\n    - option \"error\"\n  - button \"Add connection\"\n  - button \"Remove this connection\"\n  - paragraph: \"HTTP supports JSON/raw bodies, scalar headers/query parameters, and {\\\"from\\\":\\\"field\\\"} or {\\\"secret\\\":\\\"name\\\"} references. Wait accepts 0–60,000 ms. On Error: stop, continue, or error-output; connect error-output through the error port. Attempts: 1–5; retry delay: 0–10,000 ms. Calls use saved workflow IDs shown in exported JSON.\"\n  - generic \"Workflow JSON · import and export\"\n  - heading \"Run input\" [level=3]\n  - textbox: \"[ { \\\"customer\\\": \\\"A\\\", \\\"amount\\\": 125 }, { \\\"customer\\\": \\\"B\\\", \\\"amount\\\": 25 }, { \\\"customer\\\": \\\"C\\\", \\\"amount\\\": 250 } ]\"\n  - text: Run secrets JSON · used for this execution only\n  - textbox \"Run secrets JSON · used for this execution only\": \"{}\"\n  - paragraph: Use secret references for request credentials. Secret values and authorization/cookie headers are redacted in execution records. A retry can repeat a request or saved workflow that already caused a side effect.\n  - button \"Run saved workflow\"\n  - button \"Cancel execution\" [disabled]\n  - heading \"Execution history\" [level=3]\n  - paragraph: Save a workflow to retain execution history.\n  - heading \"Native n8n workflows\" [level=2]\n  - paragraph: Import and preserve n8n workflow JSON. Run the supported Manual Trigger, Edit Fields, If, HTTP Request, Wait, Switch 3.4 and Merge 3.2 versions locally. Unknown nodes stay in the document; execution checks the reachable graph first.\n  - status: Execution completed\n  - combobox:\n    - option \"Choose a saved native workflow\"\n    - option \"Owned current recovery browser verification · revision 1\" [selected]\n  - button \"New routing example\"\n  - button \"New native example\"\n  - button \"Save native workflow\"\n  - button \"Check supported graph\"\n  - text: Native workflow name\n  - textbox \"Native workflow name\": Owned current recovery browser verification\n  - heading \"Workflow diagram\" [level=3]\n  - img \"Native workflow nodes and main connections\":\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 0\n    - generic: 0 → input 1\n    - generic: 0 → input 0\n    - button \"Edit Start\":\n      - generic: Start\n      - generic: manualTrigger\n      - generic: Version 1\n    - button \"Edit Seed\":\n      - generic: Seed\n      - generic: set\n      - generic: Version 3.4\n    - button \"Edit Switch\":\n      - generic: Switch\n      - generic: switch\n      - generic: Version 3.4\n    - button \"Edit Wait\":\n      - generic: Wait\n      - generic: wait\n      - generic: Version 1.1\n    - button \"Edit Merge\":\n      - generic: Merge\n      - generic: merge\n      - generic: Version 3.2\n    - button \"Edit Finished\":\n      - generic: Finished\n      - generic: set\n      - generic: Version 3.4\n  - generic: Supported graph · ready to run\n  - heading \"Edit a native node\" [level=3]\n  - paragraph\n  - text: Node name\n  - textbox \"Node name\"\n  - text: Saved position [x, y]\n  - textbox \"Saved position [x, y]\"\n  - text: Native parameters JSON\n  - textbox \"Native parameters JSON\"\n  - button \"Apply node changes\"\n  - text: Add node type\n  - combobox \"Add node type\":\n    - option \"Edit Fields 3.4\" [selected]\n    - option \"If 2.3\"\n    - option \"HTTP Request 4.4\"\n    - option \"Wait 1.1\"\n    - option \"Switch 3.4\"\n    - option \"Merge 3.2\"\n  - button \"Add native node\"\n  - text: Connect from\n  - combobox \"Connect from\":\n    - option \"Start\" [selected]\n    - option \"Seed\"\n    - option \"Switch\"\n    - option \"Wait\"\n    - option \"Merge\"\n    - option \"Finished\"\n  - text: Connect to\n  - combobox \"Connect to\":\n    - option \"Start\" [selected]\n    - option \"Seed\"\n    - option \"Switch\"\n    - option \"Wait\"\n    - option \"Merge\"\n    - option \"Finished\"\n  - text: Output\n  - combobox \"Output\":\n    - option \"Output 0\" [selected]\n  - text: Target input\n  - combobox \"Target input\":\n    - option \"Input 0\" [selected]\n  - button \"Add native connection\"\n  - button \"Remove native connection\"\n  - generic \"Native workflow JSON · import and export\"\n  - heading \"Run native workflow\" [level=3]\n  - paragraph: Runs use the saved revision, beginning with one empty item from Manual Trigger. Wait saves a continuation for up to 60 seconds; after a host restart, opening this panel starts due waits again. Interrupted HTTP operations are recorded and are not automatically replayed. History hides sensitive field names and observed secret strings; unfinished continuation files retain working data locally.\n  - button \"Run saved native revision\"\n  - button \"Cancel native execution\" [disabled]\n  - generic: \"{ \\\"id\\\": \\\"e9e00f63-76d2-48a3-a401-b447a677dbdf\\\", \\\"status\\\": \\\"completed\\\", \\\"trace\\\": [ { \\\"node\\\": \\\"Start\\\", \\\"type\\\": \\\"n8n-nodes-base.manualTrigger\\\", \\\"inputItems\\\": 0, \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 1 ], \\\"durationMs\\\": 2.522 }, { \\\"node\\\": \\\"Seed\\\", \\\"type\\\": \\\"n8n-nodes-base.set\\\", \\\"inputItems\\\": 1, \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 1 ], \\\"durationMs\\\": 2.734 }, { \\\"node\\\": \\\"Switch\\\", \\\"type\\\": \\\"n8n-nodes-base.switch\\\", \\\"inputItems\\\": 1, \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 1, 0 ], \\\"durationMs\\\": 2.784 }, { \\\"node\\\": \\\"Wait\\\", \\\"type\\\": \\\"n8n-nodes-base.wait\\\", \\\"inputItems\\\": 1, \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 1 ], \\\"durationMs\\\": 2.428 }, { \\\"node\\\": \\\"Merge\\\", \\\"type\\\": \\\"n8n-nodes-base.merge\\\", \\\"inputItems\\\": 2, \\\"inputPorts\\\": [ 1, 1 ], \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 2 ], \\\"durationMs\\\": 3.367 }, { \\\"node\\\": \\\"Finished\\\", \\\"type\\\": \\\"n8n-nodes-base.set\\\", \\\"inputItems\\\": 2, \\\"status\\\": \\\"completed\\\", \\\"outputItems\\\": [ 2 ], \\\"durationMs\\\": 2.675 } ], \\\"outputs\\\": { \\\"Start\\\": [ [ { \\\"json\\\": {} } ] ], \\\"Seed\\\": [ [ { \\\"json\\\": { \\\"amount\\\": 150 }, \\\"pairedItem\\\": { \\\"item\\\": 0 } } ] ], \\\"Switch\\\": [ [ { \\\"json\\\": { \\\"amount\\\": 150 }, \\\"pairedItem\\\": { \\\"item\\\": 0 } } ], [] ], \\\"Wait\\\": [ [ { \\\"json\\\": { \\\"amount\\\": 150 }, \\\"pairedItem\\\": { \\\"item\\\": 0 } } ] ], \\\"Merge\\\": [ [ { \\\"json\\\": { \\\"amount\\\": 150 }, \\\"pairedItem\\\": { \\\"item\\\": 0 } }, { \\\"json\\\": { \\\"amount\\\": 150 }, \\\"pairedItem\\\": { \\\"item\\\": 0, \\\"input\\\": 1 } } ] ], \\\"Finished\\\": [ [ { \\\"json\\\": { \\\"amount\\\": 150, \\\"finished\\\": true }, \\\"pairedItem\\\": { \\\"item\\\": 0 } }, { \\\"json\\\": { \\\"amount\\\": 150, \\\"finished\\\": true }, \\\"pairedItem\\\": { \\\"item\\\": 1 } } ] ] }, \\\"steps\\\": 6, \\\"requests\\\": 0, \\\"startedAt\\\": \\\"2026-10-12T21:14:41.377Z\\\", \\\"workflowId\\\": \\\"e1e55265-f39b-4bae-bba1-b05993689518\\\", \\\"revision\\\": 1, \\\"finishedAt\\\": \\\"2026-10-12T21:14:41.515Z\\\" }\"\n  - heading \"Native execution history\" [level=3]\n  - button \"2026-10-12T21:14:41.377Z · completed · revision 1\""
+    }
+  ]
+}

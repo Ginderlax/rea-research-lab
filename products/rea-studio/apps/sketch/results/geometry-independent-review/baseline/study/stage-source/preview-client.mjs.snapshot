@@ -1,0 +1,3 @@
+import {render} from './apps/sketch/client.mjs';
+const {token}=await(await fetch('/session')).json();
+await render(document.querySelector('#sketch-root'),async(action,input)=>{const response=await fetch('/api',{method:'POST',headers:{'Content-Type':'application/json','X-Stage-Token':token},body:JSON.stringify({action,input})});const result=await response.json();if(!response.ok)throw new Error(result.error);return result;});

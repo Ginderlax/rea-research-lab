@@ -1,0 +1,75 @@
+TAP version 13
+# Subtest: recorder reconstructs four retained first47 observations without rerunning Backup
+ok 1 - recorder reconstructs four retained first47 observations without rerunning Backup
+  ---
+  duration_ms: 10.9646
+  type: 'test'
+  ...
+# Subtest: recorder reconstructs four retained latest47 observations without rerunning Backup
+ok 2 - recorder reconstructs four retained latest47 observations without rerunning Backup
+  ---
+  duration_ms: 5.0377
+  type: 'test'
+  ...
+# Subtest: recorder reconstructs four retained final47 observations without rerunning Backup
+ok 3 - recorder reconstructs four retained final47 observations without rerunning Backup
+  ---
+  duration_ms: 4.748
+  type: 'test'
+  ...
+# Subtest: recorder decodes the retained actual Node logger escapes and 90KiB split message
+ok 4 - recorder decodes the retained actual Node logger escapes and 90KiB split message
+  ---
+  duration_ms: 4.6118
+  type: 'test'
+  ...
+# Subtest: recorder reconstructs every split position across escape pairs
+ok 5 - recorder reconstructs every split position across escape pairs
+  ---
+  duration_ms: 2.1431
+  type: 'test'
+  ...
+# Subtest: recorder rejects truncated interrupted duplicate and mislabeled observations
+ok 6 - recorder rejects truncated interrupted duplicate and mislabeled observations
+  ---
+  duration_ms: 0.4538
+  type: 'test'
+  ...
+# Subtest: recorder bounds message allocation and comment fragments
+ok 7 - recorder bounds message allocation and comment fragments
+  ---
+  duration_ms: 74.6793
+  type: 'test'
+  ...
+# Subtest: current Node process produces a compatible actual escaped and chunked TAP message
+not ok 8 - current Node process produces a compatible actual escaped and chunked TAP message
+  ---
+  duration_ms: 55.4488
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\products\\rea-studio\\tests\\rabin-recorder.test.mjs:26:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Exactly one observation marker required
+    
+    0 !== 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 1
+  actual: 0
+  operator: 'strictEqual'
+  stack: |-
+    collect (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/outputs/rea-research-lab/products/rea-studio/scripts/read-rabin-tap.mjs:6:194)
+    TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/outputs/rea-research-lab/products/rea-studio/tests/rabin-recorder.test.mjs:29:281)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 7
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 220.1728

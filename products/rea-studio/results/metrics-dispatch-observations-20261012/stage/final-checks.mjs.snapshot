@@ -1,0 +1,11 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {spawnSync} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {here,sha} from './authenticate-original.mjs';
+const candidate='candidate-invariant-dispatch.mjs',names=['verify-standard-heldout.mjs','verify-heldout-selection.mjs','verify-adversarial-selection.mjs','authenticate-original.mjs','canonical.mjs',candidate],before={},steps=[];
+for(const name of names)before[name]=sha(await fs.readFile(path.join(here,name)));
+await fs.mkdir(path.join(here,'results/first-pass'),{recursive:true});
+for(const suffix of ['-standard-heldout.json','-selection-heldout.json','-adversarial-selection.json']){const name=candidate.slice(0,-4)+suffix;await fs.copyFile(path.join(here,'results',name),path.join(here,'results/first-pass',name));}
+for(const script of names.slice(0,3)){const startedAt=new Date().toISOString(),child=spawnSync(process.execPath,[path.join(here,script),path.join(here,candidate)],{encoding:'utf8',timeout:120000,maxBuffer:4*1024*1024,windowsHide:true}),completedAt=new Date().toISOString();await fs.writeFile(path.join(here,'results',script+'.stdout.txt'),child.stdout??'');await fs.writeFile(path.join(here,'results',script+'.stderr.txt'),child.stderr??'');steps.push({script,startedAt,completedAt,exitCode:child.status,signal:child.signal,error:child.error?.message,stdoutSHA256:sha(child.stdout??''),stderrSHA256:sha(child.stderr??'')});console.log(JSON.stringify(steps.at(-1)));if(child.status!==0)break;}
+const after={};for(const name of names)after[name]=sha(await fs.readFile(path.join(here,name)));assert.deepEqual(after,before);const bytes=JSON.stringify({schemaVersion:1,checkedAt:new Date().toISOString(),reason:'Repeat supplementary checks against the final shared canonical module after adding metadata normalization for isolated harness preflight. Candidate/full replay unchanged; first passing receipts preserved.',sourcesBefore:before,sourcesAfter:after,steps,formalPerformance:false},null,2)+'\n';await fs.writeFile(path.join(here,'results/final-supplementary-checks.json'),bytes);if(steps.length!==3||steps.some(step=>step.exitCode!==0))process.exitCode=1;

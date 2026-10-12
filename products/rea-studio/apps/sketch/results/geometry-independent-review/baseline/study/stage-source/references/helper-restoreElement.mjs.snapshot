@@ -1,0 +1,124 @@
+var restoreElement = (element) => {
+  element = { ...element };
+  switch (element.type) {
+    case "text":
+      delete element.rawText;
+      let fontSize = element.fontSize;
+      let fontFamily = element.fontFamily;
+      if ("font" in element) {
+        const [fontPx, _fontFamily] = element.font.split(" ");
+        fontSize = parseFloat(fontPx);
+        fontFamily = getFontFamilyByName(_fontFamily);
+      }
+      const text = typeof element.text === "string" && element.text || "";
+      const lineHeight = element.lineHeight || (element.height ? (
+        // detect line-height from current element height and font-size
+        detectLineHeight(element)
+      ) : (
+        // no element height likely means programmatic use, so default
+        // to a fixed line height
+        getLineHeight(element.fontFamily)
+      ));
+      element = restoreElementWithProperties(element, {
+        fontSize,
+        fontFamily,
+        text,
+        textAlign: element.textAlign || DEFAULT_TEXT_ALIGN,
+        verticalAlign: element.verticalAlign || DEFAULT_VERTICAL_ALIGN,
+        containerId: element.containerId ?? null,
+        originalText: element.originalText || text,
+        autoResize: element.autoResize ?? true,
+        lineHeight
+      });
+      if (!text && !element.isDeleted) {
+        element = { ...element, originalText: text, isDeleted: true };
+        element = bumpVersion(element);
+      }
+      return element;
+    case "freedraw": {
+      return restoreElementWithProperties(element, {
+        points: element.points,
+        lastCommittedPoint: null,
+        simulatePressure: element.simulatePressure,
+        pressures: element.pressures
+      });
+    }
+    case "image":
+      return restoreElementWithProperties(element, {
+        status: element.status || "pending",
+        fileId: element.fileId,
+        scale: element.scale || [1, 1],
+        crop: element.crop ?? null
+      });
+    case "line":
+    case "draw":
+      const { startArrowhead = null, endArrowhead = null } = element;
+      let x = element.x;
+      let y = element.y;
+      let points = (
+        // migrate old arrow model to new one
+        !Array.isArray(element.points) || element.points.length < 2 ? [pointFrom(0, 0), pointFrom(element.width, element.height)] : element.points
+      );
+      if (points[0][0] !== 0 || points[0][1] !== 0) {
+        ({ points, x, y } = LinearElementEditor.getNormalizedPoints(element));
+      }
+      return restoreElementWithProperties(element, {
+        type: element.type === "draw" ? "line" : element.type,
+        startBinding: repairBinding(element, element.startBinding),
+        endBinding: repairBinding(element, element.endBinding),
+        lastCommittedPoint: null,
+        startArrowhead,
+        endArrowhead,
+        points,
+        x,
+        y,
+        ...getSizeFromPoints(points)
+      });
+    case "arrow": {
+      const { startArrowhead: startArrowhead2 = null, endArrowhead: endArrowhead2 = "arrow" } = element;
+      let x2 = element.x;
+      let y2 = element.y;
+      let points2 = (
+        // migrate old arrow model to new one
+        !Array.isArray(element.points) || element.points.length < 2 ? [pointFrom(0, 0), pointFrom(element.width, element.height)] : element.points
+      );
+      if (points2[0][0] !== 0 || points2[0][1] !== 0) {
+        ({ points: points2, x: x2, y: y2 } = LinearElementEditor.getNormalizedPoints(element));
+      }
+      const base = {
+        type: element.type,
+        startBinding: repairBinding(element, element.startBinding),
+        endBinding: repairBinding(element, element.endBinding),
+        lastCommittedPoint: null,
+        startArrowhead: startArrowhead2,
+        endArrowhead: endArrowhead2,
+        points: points2,
+        x: x2,
+        y: y2,
+        elbowed: element.elbowed,
+        ...getSizeFromPoints(points2)
+      };
+      return isElbowArrow(element) ? restoreElementWithProperties(element, {
+        ...base,
+        elbowed: true,
+        startBinding: repairBinding(element, element.startBinding),
+        endBinding: repairBinding(element, element.endBinding),
+        fixedSegments: element.fixedSegments,
+        startIsSpecial: element.startIsSpecial,
+        endIsSpecial: element.endIsSpecial
+      }) : restoreElementWithProperties(element, base);
+    }
+    case "ellipse":
+    case "rectangle":
+    case "diamond":
+    case "iframe":
+    case "embeddable":
+      return restoreElementWithProperties(element, {});
+    case "magicframe":
+    case "frame":
+      return restoreElementWithProperties(element, {
+        name: element.name ?? null
+      });
+  }
+  return null;
+};

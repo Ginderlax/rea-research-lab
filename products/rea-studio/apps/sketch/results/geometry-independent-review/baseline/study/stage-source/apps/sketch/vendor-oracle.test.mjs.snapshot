@@ -1,0 +1,3 @@
+import test from 'node:test'; import assert from 'node:assert/strict'; import { existsSync } from 'node:fs'; import { runOracle } from './vendor-oracle.mjs';
+const available = existsSync(new URL('../../../../outputs/rea-research-lab/projects/04-excalidraw/artifacts/package.tgz', import.meta.url));
+test('exact released v0.18.1 envelope, individual restoration and local serializer oracles', { skip: available ? false : 'Retained original archive is absent; run vendor-oracle.mjs after restoring it. This is not a parity pass.' }, async () => { const result = await runOracle(); assert.equal(result.status, 'passed'); assert.equal(result.assertions.originalIndividualElementRestoration.count, 6); });

@@ -1,0 +1,87 @@
+TAP version 13
+# Subtest: expired active deadline after awaited checkpoint rejects before HTTP invocation
+ok 1 - expired active deadline after awaited checkpoint rejects before HTTP invocation
+  ---
+  duration_ms: 99.244
+  type: 'test'
+  ...
+# Subtest: abort during checkpoint retains cancellation precedence and issues no HTTP
+ok 2 - abort during checkpoint retains cancellation precedence and issues no HTTP
+  ---
+  duration_ms: 0.7906
+  type: 'test'
+  ...
+# Subtest: reachable premature downstream invocation rejects before persisted recovery effects
+ok 3 - reachable premature downstream invocation rejects before persisted recovery effects
+  ---
+  duration_ms: 2.6974
+  type: 'test'
+  ...
+# Subtest: genuine JSON serialized partial join and deferred Wait validate and resume exactly once
+ok 4 - genuine JSON serialized partial join and deferred Wait validate and resume exactly once
+  ---
+  duration_ms: 4.3901
+  type: 'test'
+  ...
+# Subtest: buffers must match completed source outputs and cannot omit arrived batches
+ok 5 - buffers must match completed source outputs and cannot omit arrived batches
+  ---
+  duration_ms: 1.5824
+  type: 'test'
+  ...
+# Subtest: genuine full Merge invocation queued behind an independent Wait remains valid
+ok 6 - genuine full Merge invocation queued behind an independent Wait remains valid
+  ---
+  duration_ms: 1.5606
+  type: 'test'
+  ...
+# Subtest: queued Merge substituted batches, missing arrived inputs and incomplete Choose Branch reject
+ok 7 - queued Merge substituted batches, missing arrived inputs and incomplete Choose Branch reject
+  ---
+  duration_ms: 1.3114
+  type: 'test'
+  ...
+# Subtest: genuine source fan-out pending beside a deferred Wait stays valid; altered item rejects
+not ok 8 - genuine source fan-out pending beside a deferred Wait stays valid; altered item rejects
+  ---
+  duration_ms: 2.8056
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\automation-routing-recovery-next\\recovery.test.mjs:34:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The expression evaluated to a falsy value:
+    
+      assert.ok(state.pending.some(invocation=>invocation.node==='Side'))
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/automation-routing-recovery-next/recovery.test.mjs:35:236)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: routing output shape and deferred Wait output ports are validated before recovery
+ok 9 - routing output shape and deferred Wait output ports are validated before recovery
+  ---
+  duration_ms: 1.1293
+  type: 'test'
+  ...
+# Subtest: actual staged shared HTTP recovery rejects premature reachable pending effect with zero requests and no record change
+ok 10 - actual staged shared HTTP recovery rejects premature reachable pending effect with zero requests and no record change
+  ---
+  duration_ms: 82.7658
+  type: 'test'
+  ...
+# RECOVERY_OBSERVATIONS [{"name":"expired-checkpoint","calls":0,"status":"failed","code":"NATIVE_LIMIT","activeMs":120046.2951,"scope":"Cooperative recheck after awaited IO; elapsed IO is not preempted"},{"name":"premature-Effect-rejected","status":"waiting","fixture":{"name":"Owned preserved Wait/Merge fixture","nodes":[{"name":"Start","id":"Start","type":"n8n-nodes-base.manualTrigger","typeVersion":1,"parameters":{},"position":[0,0]},{"name":"Left","id":"Left","type":"n8n-nodes-base.set","typeVersion":3.4,"parameters":{"mode":"manual","assignments":{"assignments":[{"name":"left","value":1,"type":"number"}]}},"position":[0,0]},{"name":"Wait","id":"Wait","type":"n8n-nodes-base.wait","typeVersion":1.1,"parameters":{"resume":"timeInterval","amount":0.01,"unit":"seconds"},"position":[0,100]},{"name":"Merge","id":"Merge","type":"n8n-nodes-base.merge","typeVersion":3.2,"parameters":{"mode":"chooseBranch","numberInputs":2,"chooseBranchMode":"waitForAll","output":"specifiedInput","useDataOfInput":1},"position":[0,0]},{"name":"Effect","id":"Effect","type":"n8n-nodes-base.httpRequest","typeVersion":4.4,"parameters":{"url":"http://127.0.0.1:1/owned","options":{"timeout":1000}},"position":[0,0]}],"connections":{"Start":{"main":[[{"node":"Left","type":"main","index":0},{"node":"Wait","type":"main","index":0}]]},"Left":{"main":[[{"node":"Merge","type":"main","index":0}]]},"Wait":{"main":[[{"node":"Merge","type":"main","index":1}]]},"Merge":{"main":[[{"node":"Effect","type":"main","index":0}]]}}}},{"name":"genuine-partial-join-resume","calls":1,"status":"completed"},{"name":"genuine-ready-Merge-behind-Wait","calls":2,"status":"completed"},{"name":"actual-shared-host-malformed-recovery","httpStatus":400,"requests":0,"recordUnchanged":true}]
+1..10
+# tests 10
+# suites 0
+# pass 9
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 265.7485

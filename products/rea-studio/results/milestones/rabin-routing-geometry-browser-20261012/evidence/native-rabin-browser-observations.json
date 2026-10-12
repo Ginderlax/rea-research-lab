@@ -1,0 +1,146 @@
+{
+  "recordedAtUtc": "2026-10-12T20:02:27.842Z",
+  "url": "http://127.0.0.1:54465/#backup",
+  "observations": [
+    {
+      "operation": "nativeInit",
+      "result": {
+        "format": "restic",
+        "version": 2,
+        "repository": "native-rabin-v2",
+        "id": "1ea63a7fc1b718476790f0529f5b2fef93bccfcab0fa2c66e98c22c8b3e2fc6f",
+        "keyID": "915e3985fedce99f28aff180c6765fdc8dc38e594aaf9aeb38f0d69eac168f94",
+        "encrypted": true,
+        "passwordDerivation": {
+          "N": 32768,
+          "r": 8,
+          "p": 13,
+          "minimumP": 13,
+          "calibrationTargetMilliseconds": 500
+        }
+      },
+      "passwordCleared": true
+    },
+    {
+      "operation": "nativeSnapshot",
+      "result": {
+        "format": "restic",
+        "id": "0117f3a840641b9318907ed2ebc7a62af3cb6d9adaa1c6ad144ab9b40fb5cd50",
+        "tree": "89edb4b95c045f913fd5e4883d144b78cb4e1590d6e2de4b8022b0cb062e021a",
+        "files": 4,
+        "bytes": 18874552,
+        "entries": 6,
+        "newPacks": 7,
+        "repository": "native-rabin-v2",
+        "compression": {
+          "repositoryVersion": 2,
+          "mode": "auto",
+          "implementation": "Node/libzstd; original encoder byte equivalence and performance are unproven."
+        },
+        "chunking": "Source-assisted Rabin: 64-byte window, average20, min512KiB, max8MiB."
+      },
+      "passwordCleared": true
+    },
+    {
+      "operation": "nativeInspect",
+      "result": {
+        "format": "restic",
+        "snapshot": {
+          "time": "2026-10-12T19:55:11.477Z",
+          "tree": "89edb4b95c045f913fd5e4883d144b78cb4e1590d6e2de4b8022b0cb062e021a",
+          "paths": [
+            "/native-source"
+          ],
+          "hostname": "EvanH",
+          "username": "rea-studio",
+          "uid": 0,
+          "gid": 0,
+          "tags": []
+        },
+        "entries": [
+          {
+            "path": "native-source",
+            "type": "dir",
+            "mtime": "2026-10-12T19:53:05.247Z",
+            "mode": 438,
+            "subtree": "8309e1a5cca32230582763ed829d2a83ed37365c6f59ae8466d89aef23fee442"
+          },
+          {
+            "path": "native-source/empty.bin",
+            "type": "file",
+            "mtime": "2026-10-12T19:53:05.247Z",
+            "mode": 438,
+            "size": 0,
+            "content": []
+          },
+          {
+            "path": "native-source/forced.bin",
+            "type": "file",
+            "mtime": "2026-10-12T19:53:05.232Z",
+            "mode": 438,
+            "size": 16777343,
+            "content": [
+              "b16bd32b101132fd0102461bc75ea65442c37293ac881ae953486c8ac26a7388",
+              "b16bd32b101132fd0102461bc75ea65442c37293ac881ae953486c8ac26a7388",
+              "026134f6117e45a37c5c2dc2f330bdd274c6dc087526b91ecec4d6dac9bb7346"
+            ]
+          },
+          {
+            "path": "native-source/nested",
+            "type": "dir",
+            "mtime": "2026-10-12T19:53:05.248Z",
+            "mode": 438,
+            "subtree": "129bf9240c23a78383cc8c9b26c4a141bdf833434ad83174c9807ef680bd5097"
+          },
+          {
+            "path": "native-source/nested/雪.txt",
+            "type": "file",
+            "mtime": "2026-10-12T19:53:05.248Z",
+            "mode": 438,
+            "size": 57,
+            "content": [
+              "1d6ba816b2599a832f1f53e455c4d0d5b0bc20d3aec71e99b62cb345c49f7b6d"
+            ]
+          },
+          {
+            "path": "native-source/zero.bin",
+            "type": "file",
+            "mtime": "2026-10-12T19:53:05.245Z",
+            "mode": 438,
+            "size": 2097152,
+            "content": [
+              "07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541",
+              "07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541",
+              "07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541",
+              "07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541"
+            ]
+          }
+        ]
+      },
+      "passwordCleared": true
+    },
+    {
+      "operation": "nativeCheck",
+      "result": {
+        "format": "restic",
+        "verified": true,
+        "files": 4,
+        "checkedBytes": 18874552,
+        "uniqueDataBlobs": 4,
+        "scope": "Selected snapshot: referenced trees and data, authenticated packs, storage/plaintext hashes and index agreement."
+      },
+      "passwordCleared": true
+    },
+    {
+      "operation": "nativeRestore",
+      "result": {
+        "format": "restic",
+        "restored": 4,
+        "destination": "native-rabin-restored",
+        "verified": true,
+        "metadata": "Names, directory structure, file bytes and modification times; ACLs, ownership, hardlinks and other metadata are not restored."
+      },
+      "passwordCleared": true
+    }
+  ]
+}

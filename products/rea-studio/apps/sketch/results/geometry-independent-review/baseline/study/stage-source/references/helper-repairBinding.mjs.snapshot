@@ -1,0 +1,18 @@
+var repairBinding = (element, binding) => {
+  if (!binding) {
+    return null;
+  }
+  const focus = binding.focus || 0;
+  if (isElbowArrow(element)) {
+    const fixedPointBinding = isFixedPointBinding(binding) ? {
+      ...binding,
+      focus,
+      fixedPoint: normalizeFixedPoint(binding.fixedPoint ?? [0, 0])
+    } : null;
+    return fixedPointBinding;
+  }
+  return {
+    ...binding,
+    focus
+  };
+};

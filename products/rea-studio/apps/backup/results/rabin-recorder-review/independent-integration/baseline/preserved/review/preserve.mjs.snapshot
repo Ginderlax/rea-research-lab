@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+const here=path.dirname(fileURLToPath(import.meta.url)),workspace=path.resolve(here,'../..'),app=path.join(workspace,'outputs/rea-research-lab/products/rea-studio/apps/backup'),hash=bytes=>createHash('sha256').update(bytes).digest('hex'),files=[];
+await fs.mkdir(path.join(here,'baseline'),{recursive:true});
+async function copy(source,destination,label){const bytes=await fs.readFile(source);await fs.mkdir(path.dirname(path.join(here,destination)),{recursive:true});await fs.writeFile(path.join(here,destination),bytes,{flag:'wx'});files.push({source,path:destination,label,bytes:bytes.length,sha256:hash(bytes)});}
+for(const file of (await fs.readdir(app)).filter(file=>/\.(mjs|md|json)$/i.test(file)).sort())await copy(path.join(app,file),'baseline/production/'+file,'Frozen production app source/docs/receipts');
+for(const[source,destination]of [[path.join(workspace,'work/rabin-integration.pre-tap-decoding.stdout.txt'),'baseline/raw/first47.stdout.txt'],[path.join(app,'results/rabin-integration.stdout.txt'),'baseline/raw/latest47.stdout.txt'],[path.join(workspace,'work/backup-rabin-final-review/review-validation.json'),'baseline/accepted-review.json'],[path.join(workspace,'work/backup-rabin-fixed-next/rabin-validation.json'),'baseline/accepted-stage.json'],[path.join(workspace,'work/backup-rabin-fixed-next/author-baseline-manifest.json'),'baseline/author-stage-manifest.json']])await copy(source,destination,'Historical accepted stage/review or exact existing raw TAP');
+await fs.writeFile(path.join(here,'baseline-manifest.json'),JSON.stringify({createdAt:new Date().toISOString(),scope:'Read-only production source preservation and pre-existing raw logs; no behavioral tests or measurements rerun.',app,files},null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({files:files.length,app}));

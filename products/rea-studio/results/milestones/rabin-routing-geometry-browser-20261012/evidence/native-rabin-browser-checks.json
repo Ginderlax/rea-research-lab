@@ -1,0 +1,283 @@
+{
+  "schema": "rea-rabin-backup-browser-verification/v1",
+  "recordedAtUtc": "2026-10-12T20:03:21.279Z",
+  "passed": true,
+  "url": "http://127.0.0.1:54465/#backup",
+  "observations": [
+    {
+      "operation": "nativeInit",
+      "result": {
+        "format": "restic",
+        "version": 2,
+        "repository": "native-rabin-v2",
+        "id": "1ea63a7fc1b718476790f0529f5b2fef93bccfcab0fa2c66e98c22c8b3e2fc6f",
+        "keyID": "915e3985fedce99f28aff180c6765fdc8dc38e594aaf9aeb38f0d69eac168f94",
+        "encrypted": true,
+        "passwordDerivation": {
+          "N": 32768,
+          "r": 8,
+          "p": 13,
+          "minimumP": 13,
+          "calibrationTargetMilliseconds": 500
+        }
+      },
+      "passwordCleared": true
+    },
+    {
+      "operation": "nativeSnapshot",
+      "result": {
+        "format": "restic",
+        "id": "0117f3a840641b9318907ed2ebc7a62af3cb6d9adaa1c6ad144ab9b40fb5cd50",
+        "tree": "89edb4b95c045f913fd5e4883d144b78cb4e1590d6e2de4b8022b0cb062e021a",
+        "files": 4,
+        "bytes": 18874552,
+        "entries": 6,
+        "newPacks": 7,
+        "repository": "native-rabin-v2",
+        "compression": {
+          "repositoryVersion": 2,
+          "mode": "auto",
+          "implementation": "Node/libzstd; original encoder byte equivalence and performance are unproven."
+        },
+        "chunking": "Source-assisted Rabin: 64-byte window, average20, min512KiB, max8MiB."
+      },
+      "passwordCleared": true
+    },
+    {
+      "operation": "nativeInspect",
+      "result": {
+        "format": "restic",
+        "snapshot": {
+          "time": "2026-10-12T19:55:11.477Z",
+          "tree": "89edb4b95c045f913fd5e4883d144b78cb4e1590d6e2de4b8022b0cb062e021a",
+          "paths": [
+            "/native-source"
+          ],
+          "hostname": "EvanH",
+          "username": "rea-studio",
+          "uid": 0,
+          "gid": 0,
+          "tags": []
+        },
+        "entries": [
+          {
+            "path": "native-source",
+            "type": "dir",
+            "mtime": "2026-10-12T19:53:05.247Z",
+            "mode": 438,
+            "subtree": "8309e1a5cca32230582763ed829d2a83ed37365c6f59ae8466d89aef23fee442"
+          },
+          {
+            "path": "native-source/empty.bin",
+            "type": "file",
+            "mtime": "2026-10-12T19:53:05.247Z",
+            "mode": 438,
+            "size": 0,
+            "content": []
+          },
+          {
+            "path": "native-source/forced.bin",
+            "type": "file",
+            "mtime": "2026-10-12T19:53:05.232Z",
+            "mode": 438,
+            "size": 16777343,
+            "content": [
+              "b16bd32b101132fd0102461bc75ea65442c37293ac881ae953486c8ac26a7388",
+              "b16bd32b101132fd0102461bc75ea65442c37293ac881ae953486c8ac26a7388",
+              "026134f6117e45a37c5c2dc2f330bdd274c6dc087526b91ecec4d6dac9bb7346"
+            ]
+          },
+          {
+            "path": "native-source/nested",
+            "type": "dir",
+            "mtime": "2026-10-12T19:53:05.248Z",
+            "mode": 438,
+            "subtree": "129bf9240c23a78383cc8c9b26c4a141bdf833434ad83174c9807ef680bd5097"
+          },
+          {
+            "path": "native-source/nested/雪.txt",
+            "type": "file",
+            "mtime": "2026-10-12T19:53:05.248Z",
+            "mode": 438,
+            "size": 57,
+            "content": [
+              "1d6ba816b2599a832f1f53e455c4d0d5b0bc20d3aec71e99b62cb345c49f7b6d"
+            ]
+          },
+          {
+            "path": "native-source/zero.bin",
+            "type": "file",
+            "mtime": "2026-10-12T19:53:05.245Z",
+            "mode": 438,
+            "size": 2097152,
+            "content": [
+              "07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541",
+              "07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541",
+              "07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541",
+              "07854d2fef297a06ba81685e660c332de36d5d18d546927d30daad6d7fda1541"
+            ]
+          }
+        ]
+      },
+      "passwordCleared": true
+    },
+    {
+      "operation": "nativeCheck",
+      "result": {
+        "format": "restic",
+        "verified": true,
+        "files": 4,
+        "checkedBytes": 18874552,
+        "uniqueDataBlobs": 4,
+        "scope": "Selected snapshot: referenced trees and data, authenticated packs, storage/plaintext hashes and index agreement."
+      },
+      "passwordCleared": true
+    },
+    {
+      "operation": "nativeRestore",
+      "result": {
+        "format": "restic",
+        "restored": 4,
+        "destination": "native-rabin-restored",
+        "verified": true,
+        "metadata": "Names, directory structure, file bytes and modification times; ACLs, ownership, hardlinks and other metadata are not restored."
+      },
+      "passwordCleared": true
+    }
+  ],
+  "restores": [
+    {
+      "name": "forced.bin",
+      "bytes": 16777343,
+      "sha256": "c0be0fcc32e2696808ad1da21bd5935e107689b4608e35a4afbae2c11fd6324d",
+      "applicationRestoreExact": true,
+      "appliedMtimeDifferenceMilliseconds": 0.234130859375,
+      "originalRestoreExact": true
+    },
+    {
+      "name": "zero.bin",
+      "bytes": 2097152,
+      "sha256": "5647f05ec18958947d32874eeb788fa396a05d0bab7c1b71f112ceb7e9b31eee",
+      "applicationRestoreExact": true,
+      "appliedMtimeDifferenceMilliseconds": 0.232666015625,
+      "originalRestoreExact": true
+    },
+    {
+      "name": "empty.bin",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "applicationRestoreExact": true,
+      "appliedMtimeDifferenceMilliseconds": 0.231689453125,
+      "originalRestoreExact": true
+    },
+    {
+      "name": "nested/雪.txt",
+      "bytes": 57,
+      "sha256": "1d6ba816b2599a832f1f53e455c4d0d5b0bc20d3aec71e99b62cb345c49f7b6d",
+      "applicationRestoreExact": true,
+      "appliedMtimeDifferenceMilliseconds": 0.2333984375,
+      "originalRestoreExact": true
+    }
+  ],
+  "chunkAssertions": {
+    "forcedLengths": [
+      8388608,
+      8388608,
+      127
+    ],
+    "zeroLengths": [
+      524288,
+      524288,
+      524288,
+      524288
+    ],
+    "actualOrderedIdsVerified": true
+  },
+  "originalObservations": [
+    {
+      "args": [
+        "check",
+        "--read-data"
+      ],
+      "exitCode": 0,
+      "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  1 / 1 snapshots\nread all data\n[0:00] 100.00%  7 / 7 packs\nno errors were found\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "restore",
+        "0117f3a840641b9318907ed2ebc7a62af3cb6d9adaa1c6ad144ab9b40fb5cd50",
+        "--target",
+        "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\.local\\rea-studio-rabin-routing-demo\\backup\\workspace\\original-rabin-browser-restored"
+      ],
+      "exitCode": 0,
+      "stdout": "restoring snapshot 0117f3a8 of [/native-source] at 2026-10-12 19:55:11.477 +0000 UTC by rea-studio@EvanH to C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\.local\\rea-studio-rabin-routing-demo\\backup\\workspace\\original-rabin-browser-restored\nSummary: Restored 6 files/dirs (18.000 MiB) in 0:00\n",
+      "stderr": ""
+    }
+  ],
+  "authenticatedOriginalBeforeEveryExecution": true,
+  "passwordClearedAfterEveryObservedOperation": true,
+  "passwordAbsentFromInspectedWorkspaceAndRecords": true,
+  "inspectedFiles": 23,
+  "sourceBytesStableAcrossOriginalChecks": true,
+  "implementationFingerprints": [
+    {
+      "path": "products/rea-studio/server.mjs",
+      "bytes": 7741,
+      "sha256": "807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f"
+    },
+    {
+      "path": "products/rea-studio/catalog.mjs",
+      "bytes": 1836,
+      "sha256": "a99fcd3ae135fa1533d24f2de95a712267e34289767c2df30a1e83a91dc3ae71"
+    },
+    {
+      "path": "products/rea-studio/lib/storage.mjs",
+      "bytes": 3085,
+      "sha256": "729c2f9700b1239f04294b11c42bfd2754478b227e39ab03ec49a1be9141b633"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/server.mjs",
+      "bytes": 15107,
+      "sha256": "9d31285d5302a04c6bd67c1bbda5992e7b49f4db79c2576b35f09d3b0db44fa9"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/client.mjs",
+      "bytes": 7695,
+      "sha256": "c16f934846241f37f1a05dffbf8c516b5ab16fe6fde1d72f9b645e561a088f9a"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic.mjs",
+      "bytes": 32780,
+      "sha256": "9885d1f26ec0a7311c360923279b731fe43d76b292db735b22cf38d6036eec20"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic-crypto.mjs",
+      "bytes": 5262,
+      "sha256": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic-kdf-policy.mjs",
+      "bytes": 1923,
+      "sha256": "6118dcace475d83a77e5d7362316268893ef126387aae22e93601a73876620f1"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic-compression.mjs",
+      "bytes": 2494,
+      "sha256": "843bb88384548859a4c5155ef9f181f6d037183819eda6512b9f02f6410810a0"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/capture-rabin-file.mjs",
+      "bytes": 6000,
+      "sha256": "c827d4c160cb3d57ba09717396d9ac44eebabf4aeaaaa64296a3ce65d94bbfa6"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/rabin.mjs",
+      "bytes": 2652,
+      "sha256": "aeb182af6de35863aa8ff2406ee2a3ec114e8f393875ec98bb3b8163a5cdc144"
+    }
+  ],
+  "fullFeatureParityEstablished": false,
+  "universalSuperiorityEstablished": false,
+  "scope": "Five actual shared-host rendered UI operations and exact synthetic disk restores; two additional authenticated original check/restore commands. No full-feature or security/usability/performance equivalence."
+}

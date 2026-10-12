@@ -1,0 +1,348 @@
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { zstdDecompressSync } from 'node:zlib';
+import { hash, seal, open, base64, password, passwordKey, masterKey, masterJSON, randomKey, randomPolynomial, validPolynomial } from './restic-crypto.mjs';
+import { calibrateWriter } from './restic-kdf-policy.mjs';
+import { compressionMode, encodeBlob, encodeMetadata } from './restic-compression.mjs';
+import { captureRabinFile } from '../../capture-file.mjs';
+
+const MiB = 1024 * 1024;
+export const limits = { file: 64 * MiB,total: 512 * MiB,pack: 96 * MiB,metadata: 16 * MiB,metadataTotal: 64 * MiB,entries: 10000,blobs: 100000,packs: 4096,depth: 100,keys: 16,milliseconds: 120000 };
+const id = value => { if (typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)) throw new Error('Use a full 64-character restic object ID.'); return value; };
+// Bounded Go time.Time JSON acceptance, including its permissive comma/hour/
+// zone forms. Validate the Gregorian date before converting it: Date.parse
+// alone coerces non-strings and normalizes impossible dates. Null is Go's zero.
+const ZERO_TIME = '0001-01-01T00:00:00Z';
+const timeText = value => value === null ? ZERO_TIME:value;
+export function resticTime(value) {
+  value = timeText(value);
+  if (typeof value !== 'string' || value.length > 128) throw new Error('Invalid restic RFC3339 timestamp.');
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{1,2}):(\d{2}):(\d{2})(?:[.,](\d+))?(Z|([+-])(\d{2}):(\d{2}))$/.exec(value);
+  if (!match) throw new Error('Invalid restic RFC3339 timestamp.');
+  const [,y,m,d,h,min,s,fraction = '',zone,sign,zh,zm] = match;
+  const year = Number(y), month = Number(m), day = Number(d), hour = Number(h), minute = Number(min), second = Number(s);
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const days = [31,leap ? 29:28,31,30,31,30,31,31,30,31,30,31];
+  if (month < 1 || month > 12 || day < 1 || day > days[month-1] || hour > 23 || minute > 59 || second > 59 || (zone !== 'Z' && (Number(zh) > 24 || Number(zm) > 60))) throw new Error('Invalid restic RFC3339 calendar or time.');
+  const time = new Date(0); time.setUTCFullYear(year,month-1,day); time.setUTCHours(hour,minute,second,Number(fraction.slice(0,3).padEnd(3,'0')));
+  return time.getTime() - (zone === 'Z' ? 0:(sign === '-' ? -1:1) * (Number(zh) * 60 + Number(zm)) * 60000);
+}
+function snapshotMetadata(doc) {
+  if (!doc || typeof doc !== 'object' || Array.isArray(doc)) throw new Error('Invalid restic snapshot metadata.');
+  id(doc.tree); resticTime(doc.time);
+  if (!Array.isArray(doc.paths) || doc.paths.some(p => typeof p !== 'string') || (doc.tags !== undefined && (!Array.isArray(doc.tags) || doc.tags.some(p => typeof p !== 'string')))) throw new Error('Invalid restic snapshot metadata.');
+  doc.time = timeText(doc.time);
+  return doc;
+}
+export function clean(value) {
+  if (typeof value !== 'string' || !value || value.length > 2048 || value.startsWith('/') || value.includes('\\') || !value.isWellFormed()) throw new Error('Use a relative workspace path with forward slashes.');
+  for (const part of value.split('/')) if (!part || part === '.' || part === '..' || /[:<>"|?*\x00-\x1f\x7f]/.test(part) || /[. ]$/.test(part) || /^(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i.test(part)) throw new Error('Unsafe or unsupported restic path.');
+  return value;
+}
+const overlap = (a,b) => a.toLowerCase() === b.toLowerCase() || a.toLowerCase().startsWith(`${b.toLowerCase()}/`) || b.toLowerCase().startsWith(`${a.toLowerCase()}/`);
+function json(bytes) { return JSON.parse(new TextDecoder('utf-8',{ fatal: true }).decode(bytes)); }
+function encode(document, newline = false) { return Buffer.from(JSON.stringify(document).replace(/[\u2028\u2029<>&]/g,c => `\\u${c.charCodeAt(0).toString(16).padStart(4,'0')}`) + (newline ? '\n' : '')); }
+function unpack(bytes, version, account = () => {}) {
+  let decoded;
+  if (bytes[0] === 123 || bytes[0] === 91) decoded = bytes;
+  else if (version === 2 && bytes[0] === 2) decoded = zstdDecompressSync(bytes.subarray(1),{ maxOutputLength: limits.metadata });
+  else throw new Error('Unsupported restic metadata encoding.');
+  account(decoded.length); return json(decoded);
+}
+// restic stores an extra Go quoted-string layer in node names. Windows-safe
+// names can use Unicode escapes; arbitrary Unix byte names remain unsupported.
+export function decodeName(name) {
+  if (typeof name !== 'string' || name.length > 4096) throw new Error('Invalid restic node name.');
+  let out = '';
+  for (let i = 0; i < name.length; i++) {
+    if (name[i] !== '\\') { out += name[i]; continue; }
+    const c = name[++i], simple = { a:'\x07',b:'\b',f:'\f',n:'\n',r:'\r',t:'\t',v:'\x0b','\\':'\\','"':'"' };
+    if (Object.hasOwn(simple,c)) { out += simple[c]; continue; }
+    let count, radix;
+    if (c === 'u') { count = 4; radix = 16; } else if (c === 'U') { count = 8; radix = 16; }
+    else if (c === 'x') { count = 2; radix = 16; } else if (/[0-7]/.test(c ?? '')) { count = 3; radix = 8; i--; }
+    else throw new Error('Invalid Go quoted restic filename.');
+    const digits = name.slice(i+1,i+1+count);
+    if (digits.length !== count || !(radix === 16 ? /^[a-f0-9]+$/i : /^[0-7]+$/).test(digits)) throw new Error('Invalid Go quoted restic filename.');
+    const point = Number.parseInt(digits,radix); if (point > 0x10ffff || (point >= 0xd800 && point <= 0xdfff) || (radix === 8 && point > 255) || (c === 'x' && point > 127) || (radix === 8 && point > 127)) throw new Error('Non-Unicode restic filenames are unsupported.');
+    out += String.fromCodePoint(point); i += count;
+  }
+  clean(out); if (out.includes('/')) throw new Error('Restic node names cannot contain a path separator.'); return out;
+}
+function encodeName(name) { clean(name); return JSON.stringify(name).slice(1,-1); }
+
+class Repository {
+  constructor(workspace, relative) { this.workspace = workspace; this.relative = clean(relative); if (this.relative.split('/').some(p => p.toLowerCase() === '.rea-backup')) throw new Error('Choose a separate native restic repository folder.'); this.started = Date.now(); this.metadataBytes = 0; this.packReads = 0; this.lastPack = null; }
+  guard() { if (Date.now() - this.started > limits.milliseconds) throw new Error('The bounded native operation exceeded two minutes.'); }
+  accountMetadata(size) { this.metadataBytes += size; if (this.metadataBytes > limits.metadataTotal) throw new Error('Restic metadata exceeds the operation budget.'); }
+  location(relative = '') { this.guard(); return this.workspace.resolve(relative ? `${this.relative}/${clean(relative)}` : this.relative); }
+  async read(relative, maximum, storageID) {
+    const filename = this.location(relative), before = await fs.lstat(filename);
+    if (!before.isFile() || before.isSymbolicLink() || before.size > maximum) throw new Error('Restic object exceeds its size limit or is not a regular file.');
+    const bytes = await fs.readFile(filename), after = await fs.lstat(this.location(relative));
+    if (bytes.length !== before.size || after.size !== before.size || after.mtimeMs !== before.mtimeMs || after.ino !== before.ino) throw new Error('Restic object changed while being read.');
+    if (storageID && hash(bytes) !== id(storageID)) throw new Error('Restic storage SHA-256 verification failed.');
+    return bytes;
+  }
+  async names(directory, maximum = limits.entries) {
+    const children = await fs.readdir(this.location(directory),{ withFileTypes: true });
+    if (children.length > maximum || children.some(child => !child.isFile() || !/^[a-f0-9]{64}$/.test(child.name))) throw new Error('Unexpected or excessive objects in the restic repository.');
+    return children.map(child => child.name).sort();
+  }
+  async object(directory, objectID) {
+    const bytes = await this.read(`${directory}/${id(objectID)}`,limits.metadata + 32,objectID);
+    this.accountMetadata(bytes.length);
+    return unpack(open(this.key,bytes),this.config.version,size => this.accountMetadata(size));
+  }
+  async unlock(value) {
+    password(value); const keys = await this.names('keys',limits.keys);
+    for (const keyID of keys) {
+      this.guard(); const doc = json(await this.read(`keys/${keyID}`,64 * 1024,keyID));
+      const user = await passwordKey(doc,value); let plain;
+      try { plain = open(user,base64(doc.data)); } catch (error) { if (error.message.startsWith('Restic authentication failed')) continue; throw error; }
+      this.key = masterKey(json(plain)); this.keyID = keyID; break;
+    }
+    if (!this.key) throw new Error('Restic authentication failed: wrong password or no usable key.');
+    const config = unpack(open(this.key,await this.read('config',64 * 1024)),2,size => this.accountMetadata(size));
+    if (![1,2].includes(config.version) || !validPolynomial(config.chunker_polynomial)) throw new Error('Unsupported restic repository version or invalid degree-53 chunker polynomial.');
+    id(config.id); this.config = config;
+    for (const directory of ['data','index','snapshots','locks']) if (!(await fs.lstat(this.location(directory))).isDirectory()) throw new Error('Invalid restic local repository layout.');
+    return this;
+  }
+  async atomic(relative, bytes) {
+    const target = this.location(relative), tempRelative = `tmp/${randomUUID()}.pending`, temp = this.location(tempRelative);
+    await fs.mkdir(this.location('tmp'),{ recursive: true });
+    await fs.mkdir(path.dirname(target),{ recursive: true });
+    const handle = await fs.open(temp,'wx',0o600);
+    try { await handle.writeFile(bytes); await handle.sync(); } finally { await handle.close(); }
+    try { await fs.link(this.location(tempRelative),this.location(relative)); }
+    catch (error) { if (error.code !== 'EEXIST') throw error; if (hash(await this.read(relative,bytes.length)) !== hash(bytes)) throw new Error('Existing restic object differs from the immutable object being written.'); }
+    finally { await fs.unlink(this.location(tempRelative)); }
+    return hash(bytes);
+  }
+  async saveObject(directory, document) { const bytes = seal(this.key,encodeMetadata(encode(document),this.config.version,this.compression)), objectID = hash(bytes); await this.atomic(`${directory}/${objectID}`,bytes); return objectID; }
+  async lock() {
+    if ((await this.names('locks')).length) throw new Error('Restic repository is locked. Existing locks, including stale locks, are never removed by this app.');
+    const lockID = await this.saveObject('locks',{ time:new Date().toISOString(),exclusive:true,hostname:os.hostname(),username:'rea-studio',pid:process.pid }); this.lockID = lockID;
+    await new Promise(resolve => setTimeout(resolve,200));
+    const others = (await this.names('locks')).filter(name => name !== lockID);
+    if (others.length) { await this.release(); throw new Error('Another client acquired a restic lock. Retry after it finishes.'); }
+  }
+  async assertLock() { if (!this.lockID) throw new Error('No native repository lock.'); await this.read(`locks/${this.lockID}`,64 * 1024,this.lockID); }
+  async release() { if (this.lockID) { const lockID = this.lockID; this.lockID = null; await fs.unlink(this.workspace.resolve(`${this.relative}/locks/${lockID}`)); } }
+  async snapshots() {
+    const results = [];
+    for (const snapshotID of await this.names('snapshots')) {
+      const doc = snapshotMetadata(await this.object('snapshots',snapshotID));
+      results.push({ id:snapshotID,tree:doc.tree,time:doc.time,paths:doc.paths,tags:doc.tags ?? [],hostname:doc.hostname ?? '' });
+    }
+    return results.sort((a,b) => resticTime(b.time) - resticTime(a.time) || a.id.localeCompare(b.id));
+  }
+  async indexes() {
+    this.blobs = new Map(); this.packs = new Map(); const documents = new Map(), superseded = new Set(); let records = 0;
+    for (const indexID of await this.names('index',limits.packs)) {
+      const doc = await this.object('index',indexID); if (!Array.isArray(doc.packs) || (doc.supersedes !== undefined && !Array.isArray(doc.supersedes))) throw new Error('Invalid restic index.');
+      for (const older of doc.supersedes ?? []) superseded.add(id(older)); documents.set(indexID,doc);
+    }
+    for (const [indexID,doc] of documents) {
+      if (superseded.has(indexID)) continue;
+      for (const pack of doc.packs) {
+        id(pack.id); if (!Array.isArray(pack.blobs) || !pack.blobs.length) throw new Error('Invalid restic pack index.');
+        this.packs.set(pack.id,true); if (this.packs.size > limits.packs) throw new Error('Restic pack count exceeds the limit.');
+        for (const blob of pack.blobs) {
+          id(blob.id);
+          if (!['tree','data'].includes(blob.type) || !Number.isSafeInteger(blob.offset) || blob.offset < 0 || !Number.isSafeInteger(blob.length) || blob.length < 32 || blob.length > limits.file + 32 || blob.offset + blob.length > limits.pack || (blob.uncompressed_length !== undefined && (!Number.isSafeInteger(blob.uncompressed_length) || blob.uncompressed_length < 1 || blob.uncompressed_length > limits.file || this.config.version !== 2))) throw new Error('Invalid or excessive restic blob index.');
+          if (++records > limits.blobs) throw new Error('Restic index exceeds the blob limit.');
+          const identity = `${blob.type}:${blob.id}`; const existing = this.blobs.get(identity);
+          if (!existing) this.blobs.set(identity,{ ...blob,pack:pack.id });
+        }
+      }
+    }
+  }
+  async pack(packID) {
+    if (this.lastPack?.id === packID) return this.lastPack;
+    const bytes = await this.read(`data/${id(packID).slice(0,2)}/${packID}`,limits.pack,packID);
+    this.packReads += bytes.length; if (this.packReads > 4 * 1024 * MiB) throw new Error('Restic pack reads exceed the operation budget.');
+    if (bytes.length < 105) throw new Error('Invalid restic pack length.');
+    const length = bytes.readUInt32LE(bytes.length - 4), start = bytes.length - 4 - length;
+    if (length < 69 || length > limits.metadata + 32 || start < 32) throw new Error('Invalid restic pack header length.');
+    const header = open(this.key,bytes.subarray(start,-4)), entries = []; let offset = 0;
+    for (let pos = 0; pos < header.length;) {
+      const type = header[pos], width = type < 2 ? 37 : 41;
+      if (type > 3 || pos + width > header.length || (type >= 2 && this.config.version !== 2)) throw new Error('Invalid restic pack header record.');
+      const length = header.readUInt32LE(pos+1), uncompressed_length = type >= 2 ? header.readUInt32LE(pos+5) : undefined;
+      if (length < 32 || length > limits.file + 32 || offset + length > start || (type >= 2 && (!uncompressed_length || uncompressed_length > limits.file))) throw new Error('Invalid restic pack blob length.');
+      entries.push({ type:type % 2 ? 'tree':'data',id:header.subarray(pos + (type >= 2 ? 9:5),pos+width).toString('hex'),offset,length,uncompressed_length });
+      offset += length; pos += width; if (entries.length > limits.blobs) throw new Error('Restic pack exceeds the blob limit.');
+    }
+    if (offset !== start || !entries.length || (this.config.version === 2 && entries.some(e => e.type !== entries[0].type))) throw new Error('Restic pack payload and header disagree.');
+    this.lastPack = { id:packID,bytes,entries }; return this.lastPack;
+  }
+  async blob(type, blobID) {
+    this.guard();
+    const record = this.blobs.get(`${type}:${id(blobID)}`); if (!record) throw new Error('Restic snapshot references an unindexed blob.');
+    const pack = await this.pack(record.pack), actual = pack.entries.find(e => e.offset === record.offset);
+    if (!actual || actual.id !== record.id || actual.type !== record.type || actual.length !== record.length || (actual.uncompressed_length ?? 0) !== (record.uncompressed_length ?? 0)) throw new Error('Restic index and authenticated pack header disagree.');
+    let bytes = open(this.key,pack.bytes.subarray(actual.offset,actual.offset+actual.length));
+    if (actual.uncompressed_length) { bytes = zstdDecompressSync(bytes,{ maxOutputLength:actual.uncompressed_length }); if (bytes.length !== actual.uncompressed_length) throw new Error('Restic decompressed blob length mismatch.'); }
+    if (hash(bytes) !== blobID) throw new Error('Restic plaintext blob SHA-256 verification failed.');
+    if (type === 'tree') { this.metadataBytes += bytes.length; if (bytes.length > limits.metadata || this.metadataBytes > limits.metadataTotal) throw new Error('Restic tree exceeds the metadata budget.'); }
+    return bytes;
+  }
+  async entries(treeID) {
+    const entries = [], seen = new Set(); let total = 0;
+    const walk = async (treeID,prefix,ancestors) => {
+      if (ancestors.size >= limits.depth || ancestors.has(treeID)) throw new Error('Restic tree is cyclic or too deep.');
+      const doc = json(await this.blob('tree',treeID)); if (!Array.isArray(doc.nodes) || doc.nodes.length > limits.entries) throw new Error('Invalid restic tree.');
+      let previous = null; const next = new Set([...ancestors,treeID]);
+      for (const node of doc.nodes) {
+        const name = decodeName(node.name), relative = prefix ? `${prefix}/${name}` : name; clean(relative);
+        if (previous !== null && Buffer.compare(Buffer.from(previous),Buffer.from(name)) >= 0) throw new Error('Restic tree names are unordered or duplicated.'); previous = name;
+        if (seen.has(relative.toLowerCase())) throw new Error('Restic paths collide on this filesystem.'); seen.add(relative.toLowerCase());
+        if (entries.length >= limits.entries || !['file','dir'].includes(node.type) || node.error) throw new Error('Unsupported or excessive restic tree entry.');
+        for (const field of ['mtime','atime','ctime']) if (node[field] !== undefined) resticTime(node[field]);
+        const entry = { path:relative,type:node.type,mtime:timeText(node.mtime),mode:node.mode ?? 0 };
+        if (node.type === 'dir') { id(node.subtree); entry.subtree = node.subtree; entries.push(entry); await walk(node.subtree,relative,next); }
+        else {
+          const size = node.size ?? 0, content = node.content ?? [];
+          if (!Number.isSafeInteger(size) || size < 0 || size > limits.file || !Array.isArray(content) || content.length > 1024 || (node.subtree !== undefined && node.subtree !== null)) throw new Error('Invalid restic file entry.');
+          content.forEach(id); total += size; if (total > limits.total) throw new Error('Restic snapshot exceeds the total restore size limit.');
+          entries.push({ ...entry,size,content });
+        }
+      }
+    };
+    await walk(id(treeID),'',new Set()); return entries;
+  }
+  async verify(entries) {
+    let files = 0, checkedBytes = 0; const blobs = new Set();
+    for (const entry of entries) if (entry.type === 'file') {
+      let size = 0; for (const blobID of entry.content) { size += (await this.blob('data',blobID)).length; blobs.add(blobID); if (size > entry.size) throw new Error('Restic file content exceeds the declared size.'); }
+      if (size !== entry.size) throw new Error('Restic file content does not match the declared size.'); files++; checkedBytes += size;
+    }
+    return { verified:true,files,checkedBytes,uniqueDataBlobs:blobs.size,scope:'Selected snapshot: referenced trees and data, authenticated packs, storage/plaintext hashes and index agreement.' };
+  }
+  async saveBlob(type, bytes, newPacks) {
+    const blobID = hash(bytes), identity = `${type}:${blobID}`;
+    if (this.blobs.has(identity)) { await this.blob(type,blobID); return blobID; }
+    if (this.packs.size + newPacks.length >= limits.packs || this.blobs.size >= limits.blobs) throw new Error('Native repository exceeds the bounded pack or blob limit.');
+    // One independently authenticated blob per pack is valid, although less
+    // space-efficient than restic's multi-blob pack batching.
+    const encoded = encodeBlob(bytes,type,this.config.version,this.compression), payload = seal(this.key,encoded.bytes), record = Buffer.alloc(encoded.uncompressedLength ? 41:37); record[0] = (type === 'tree' ? 1:0) + (encoded.uncompressedLength ? 2:0); record.writeUInt32LE(payload.length,1); if (encoded.uncompressedLength) record.writeUInt32LE(encoded.uncompressedLength,5); Buffer.from(blobID,'hex').copy(record,encoded.uncompressedLength ? 9:5);
+    const header = seal(this.key,record), trailer = Buffer.alloc(4); trailer.writeUInt32LE(header.length);
+    const packed = Buffer.concat([payload,header,trailer]), packID = hash(packed);
+    await this.atomic(`data/${packID.slice(0,2)}/${packID}`,packed);
+    const blob = { id:blobID,type,offset:0,length:payload.length,...(encoded.uncompressedLength ? {uncompressed_length:encoded.uncompressedLength}:{}) }; newPacks.push({ id:packID,blobs:[blob] }); this.blobs.set(identity,{ ...blob,pack:packID }); return blobID;
+  }
+}
+
+async function initialize(repo,input) {
+  password(input.password); const version = input.version ?? 1; if (![1,2].includes(version)) throw new Error('Native restic repository version must be 1 or 2.');
+  const calibrated = await calibrateWriter();
+  const key = randomKey(), salt = randomBytes(64), keyDoc = { created:new Date().toISOString(),username:'rea-studio',hostname:os.hostname(),kdf:'scrypt',N:calibrated.N,r:calibrated.r,p:calibrated.p,salt:salt.toString('base64') };
+  keyDoc.data = seal(await passwordKey(keyDoc,input.password),encode(masterJSON(key))).toString('base64');
+  const config = { version,id:randomBytes(32).toString('hex'),chunker_polynomial:randomPolynomial() };
+  const root = repo.location(); await fs.mkdir(path.dirname(root),{ recursive:true }); await fs.mkdir(root);
+  for (const directory of ['data','index','keys','locks','snapshots','tmp']) await fs.mkdir(repo.location(directory));
+  repo.key = key; repo.config = config;
+  const keyBytes = encode(keyDoc), keyID = hash(keyBytes); await repo.atomic(`keys/${keyID}`,keyBytes); await repo.atomic('config',seal(key,encode(config)));
+  return { format:'restic',version,repository:repo.relative,id:config.id,keyID,encrypted:true,passwordDerivation:{ N:keyDoc.N,r:keyDoc.r,p:keyDoc.p,minimumP:calibrated.minimumP,calibrationTargetMilliseconds:calibrated.targetMilliseconds } };
+}
+async function snapshot(repo,input) {
+  const source = clean(input.source);
+  if (overlap(source,repo.relative) || source.split('/').some(p => p.toLowerCase() === '.rea-backup')) throw new Error('Source and repositories must be separate folders.');
+  if (input.label !== undefined && (typeof input.label !== 'string' || input.label.length > 256)) throw new Error('Snapshot label must contain at most 256 characters.');
+  const sourceRoot = repo.workspace.resolve(source); if (!(await fs.lstat(sourceRoot)).isDirectory()) throw new Error('Snapshot source must be a directory.');
+  await repo.indexes(); const newPacks = []; let files = 0, bytes = 0, entries = 1;
+  const capture = async (relative,depth) => {
+    if (depth + 2 > limits.depth) throw new Error('Source exceeds the directory depth limit.');
+    const location = repo.workspace.resolve(relative), beforeDir = await fs.lstat(location);
+    const children = await fs.readdir(location,{ withFileTypes:true }); children.sort((a,b) => Buffer.compare(Buffer.from(a.name),Buffer.from(b.name)));
+    const nodes = [], seen = new Set();
+    for (const child of children) {
+      repo.guard(); clean(child.name); if (++entries > limits.entries || seen.has(child.name.toLowerCase())) throw new Error('Source exceeds entry limits or contains case-colliding names.'); seen.add(child.name.toLowerCase());
+      const fileRelative = `${relative}/${child.name}`, filename = repo.workspace.resolve(fileRelative), before = await fs.lstat(filename);
+      if (before.isSymbolicLink()) throw new Error('Symbolic links are unsupported by the bounded native slice.');
+      const node = { name:encodeName(child.name),type:before.isDirectory() ? 'dir':'file',mode:before.mode & 0o777,mtime:before.mtime.toISOString(),atime:before.atime.toISOString(),ctime:before.ctime.toISOString(),uid:0,gid:0,content:null };
+      if (before.isDirectory()) node.subtree = await capture(fileRelative,depth+1);
+      else if (before.isFile()) {
+        if (before.size > limits.file || bytes + before.size > limits.total) throw new Error('Source exceeds native file or total byte limits.');
+        const remaining = limits.milliseconds - (Date.now() - repo.started); if (remaining < 1) throw new Error('The bounded native operation exceeded two minutes.');
+        const captured = await captureRabinFile({ filename,resolveFilename:()=>repo.workspace.resolve(fileRelative),expected:before,polynomial:repo.config.chunker_polynomial,timeoutMilliseconds:Math.min(limits.milliseconds,remaining),saveChunk:chunk=>repo.saveBlob('data',chunk,newPacks) });
+        node.content = captured.content; node.size = captured.size; node.links = 1;
+        bytes += node.size; files++;
+      } else throw new Error('Only regular files and directories are supported by the native slice.');
+      nodes.push(node);
+    }
+    const afterDir = await fs.lstat(repo.workspace.resolve(relative)); if (beforeDir.mtimeMs !== afterDir.mtimeMs || beforeDir.ino !== afterDir.ino) throw new Error('Source directory changed while being captured.');
+    const treeBytes = encode({ nodes },true); if (treeBytes.length > limits.metadata) throw new Error('Source tree exceeds the metadata limit.');
+    return repo.saveBlob('tree',treeBytes,newPacks);
+  };
+  const subtree = await capture(source,0), stat = await fs.lstat(repo.workspace.resolve(source));
+  const name = source.split('/').at(-1), tree = await repo.saveBlob('tree',encode({ nodes:[{ name:encodeName(name),type:'dir',mode:stat.mode & 0o777,mtime:stat.mtime.toISOString(),atime:stat.atime.toISOString(),ctime:stat.ctime.toISOString(),uid:0,gid:0,content:null,subtree }] },true),newPacks);
+  // Apply the same tree limits before publication that future readers enforce.
+  await repo.entries(tree);
+  await repo.assertLock();
+  if (newPacks.length) await repo.saveObject('index',{ packs:newPacks });
+  await repo.assertLock();
+  const snapshotID = await repo.saveObject('snapshots',{ time:new Date().toISOString(),tree,paths:[`/${name}`],hostname:os.hostname(),username:'rea-studio',uid:0,gid:0,tags:input.label ? [input.label]:[] });
+  return { format:'restic',id:snapshotID,tree,files,bytes,entries,newPacks:newPacks.length,repository:repo.relative,chunking:'Source-assisted Rabin: 64-byte window, average20, min512KiB, max8MiB.' };
+}
+async function selected(repo,input) {
+  // Read snapshot first, then indexes, as required by the native ordering contract.
+  const doc = snapshotMetadata(await repo.object('snapshots',id(input.id))); await repo.indexes();
+  return { document:doc,entries:await repo.entries(doc.tree) };
+}
+async function restore(repo,input,entries) {
+  if (input.confirm !== true) throw new Error('Restoring requires confirmation.');
+  const destination = clean(input.destination); if (overlap(destination,repo.relative) || destination.split('/').some(p => p.toLowerCase() === '.rea-backup')) throw new Error('Restore outside both repositories.');
+  const times = new Map();
+  for (const entry of entries) if (entry.mtime !== undefined) {
+    const time = resticTime(entry.mtime);
+    // The current Windows Node/libuv utimes binding wraps seconds outside this
+    // interval. Refuse before output rather than report incorrect metadata.
+    if (process.platform === 'win32' && (time < 0 || time > 4294967295999)) throw new Error('Restic modification time is outside the supported Windows restore interval (1970 through 2106-02-07T06:28:15.999Z).');
+    times.set(entry.path,time);
+  }
+  const setTime = async entry => {
+    if (!times.has(entry.path)) return;
+    const target = repo.workspace.resolve(`${destination}/${entry.path}`), time = times.get(entry.path);
+    await fs.utimes(target,new Date(),new Date(time));
+    if (Math.abs((await fs.stat(repo.workspace.resolve(`${destination}/${entry.path}`))).mtimeMs - time) >= 1) throw new Error('Restic modification time was not preserved by this filesystem.');
+  };
+  const checked = await repo.verify(entries); await repo.assertLock();
+  const root = repo.workspace.resolve(destination); await fs.mkdir(path.dirname(root),{ recursive:true }); await fs.mkdir(root); let restored = 0;
+  try {
+    for (const entry of entries) {
+      const target = repo.workspace.resolve(`${destination}/${entry.path}`);
+      if (entry.type === 'dir') await fs.mkdir(target,{ recursive:true });
+      else {
+        await fs.mkdir(path.dirname(target),{ recursive:true }); const handle = await fs.open(target,'wx');
+        try { for (const blobID of entry.content) await handle.writeFile(await repo.blob('data',blobID)); } finally { await handle.close(); }
+        await setTime(entry); restored++;
+      }
+    }
+    for (const entry of entries.toReversed()) if (entry.type === 'dir') await setTime(entry);
+  } catch (error) { throw new Error(`Native restore stopped after ${restored} files; partial output remains in ${destination}. ${error.message}`); }
+  return { format:'restic',restored,destination,verified:checked.verified,metadata:'Names, directory structure, file bytes and modification times; ACLs, ownership, hardlinks and other metadata are not restored.' };
+}
+export async function handleNative({ action,input,workspace }) {
+  const repo = new Repository(workspace,input.repository);
+  if (action === 'nativeInit') return initialize(repo,input);
+  await repo.unlock(input.password);
+  repo.compression = compressionMode(input.compression);
+  try {
+    await repo.lock();
+    if (action === 'nativeInfo') return { format:'restic',repository:repo.relative,version:repo.config.version,id:repo.config.id,chunker_polynomial:repo.config.chunker_polynomial,keyID:repo.keyID,encrypted:true };
+    if (action === 'nativeList') return { format:'restic',version:repo.config.version,snapshots:await repo.snapshots() };
+    if (action === 'nativeSnapshot') return await snapshot(repo,input);
+    if (['nativeInspect','nativeCheck','nativeRestore'].includes(action)) {
+      const result = await selected(repo,input);
+      if (action === 'nativeInspect') return { format:'restic',snapshot:result.document,entries:result.entries };
+      if (action === 'nativeCheck') return { format:'restic',...await repo.verify(result.entries) };
+      return await restore(repo,input,result.entries);
+    }
+    throw new Error('Unknown native backup action.');
+  } finally { await repo.release(); }
+}

@@ -1,0 +1,311 @@
+import { randomUUID } from 'node:crypto';
+import {validateSwitch,switchItems,validateMerge,mergeItems,outputCount,inputCount} from './routing.mjs';
+
+export const LIMITS = Object.freeze({ documentBytes:2*1024*1024, valueBytes:1024*1024, executionBytes:8*1024*1024, nodes:100, connections:300, items:10000, entries:100000, depth:40, steps:500, waitMs:60000, timeoutMs:60000 });
+const blocked = new Set(['__proto__','prototype','constructor']);
+const versions = new Map([['n8n-nodes-base.manualTrigger',[1]],['n8n-nodes-base.set',[3.4]],['n8n-nodes-base.if',[2.3]],['n8n-nodes-base.httpRequest',[4.4]],['n8n-nodes-base.wait',[1.1]],['n8n-nodes-base.switch',[3.4]],['n8n-nodes-base.merge',[3.2]]]);
+export class NativeError extends Error { constructor(message,code='NATIVE_CONFIG') { super(message); this.code=code; } }
+function fail(message,code) { throw new NativeError(message,code); }
+function object(value,label) { if (!value || typeof value !== 'object' || Array.isArray(value)) fail(`${label} must be an object`); return value; }
+export function bounded(value,maxBytes=LIMITS.valueBytes,{ undefinedValues=false }={}) {
+  const seen = new Set(); let count=0,lowerBytes=0;
+  function account(bytes){lowerBytes+=bytes;if(lowerBytes>maxBytes)fail('Data exceeds byte bound','NATIVE_LIMIT');}
+  function visit(current,depth) {
+    if (++count > LIMITS.entries || depth > LIMITS.depth) fail('Data exceeds structural bounds','NATIVE_LIMIT');
+    if (current === undefined && undefinedValues) return;
+    if (current === null || typeof current === 'boolean') {account(4);return;}
+    if (typeof current === 'string') {account(Buffer.byteLength(current)+2);return;}
+    if (typeof current === 'number') { if (!Number.isFinite(current)) fail('Data contains a non-finite number','NATIVE_LIMIT');account(1);return; }
+    if (typeof current !== 'object' || seen.has(current)) fail('Use acyclic JSON data','NATIVE_LIMIT');
+    const prototype=Object.getPrototypeOf(current);
+    if (!Array.isArray(current) && prototype!==Object.prototype && prototype!==null) fail('Use plain JSON objects','NATIVE_LIMIT');
+    if (Array.isArray(current) && current.length>LIMITS.items) fail('Array exceeds 10,000 elements','NATIVE_LIMIT');
+    account(Array.isArray(current)?Math.max(2,current.length):2);
+    seen.add(current);
+    for (const key of Object.keys(current)) { const descriptor=Object.getOwnPropertyDescriptor(current,key); if (!Object.hasOwn(descriptor,'value')) fail('Accessors are unsupported','NATIVE_LIMIT'); if (key.length>4096) fail('Property name exceeds bound','NATIVE_LIMIT');account(Buffer.byteLength(key)+3);visit(descriptor.value,depth+1); }
+    seen.delete(current);
+  }
+  visit(value,0);
+  const bytes=Buffer.byteLength(JSON.stringify(value)); if (bytes>maxBytes) fail('Data exceeds byte bound','NATIVE_LIMIT'); return value;
+}
+function copy(value) { return structuredClone(value); }
+export function pathParts(value) {
+  if (typeof value!=='string' || !value || value.length>512) fail('Use a bounded property path');
+  const parts=[]; let index=0;
+  while(index<value.length) {
+    if (value[index]==='[') {
+      const match=value.slice(index).match(/^\[(?:(\d+)|"((?:[^"\\]|\\.)*)"|'((?:[^'\\]|\\.)*)')\]/);
+      if(!match) fail('Unsupported property path syntax');
+      let part;
+      if(match[1]!==undefined) part=Number(match[1]);
+      else if(match[2]!==undefined) {try {part=JSON.parse(`"${match[2]}"`);}catch{fail('Invalid quoted property');}}
+      else {if(match[3].includes('\\')) fail('Escapes in single-quoted paths are unsupported'); part=match[3];}
+      parts.push(part); index+=match[0].length;
+    } else {
+      const match=value.slice(index).match(/^[A-Za-z_$][A-Za-z0-9_$-]*/); if(!match) fail('Unsupported property path syntax'); parts.push(match[0]); index+=match[0].length;
+    }
+    if(index<value.length) { if(value[index]==='.') {index++;if(index===value.length || value[index]==='[') fail('Invalid property path');} else if(value[index]!=='[') fail('Invalid property path'); }
+  }
+  if(parts.length>LIMITS.depth || parts.some(part=>blocked.has(part) || (typeof part==='number' && (!Number.isSafeInteger(part)||part>=LIMITS.items)) || (typeof part==='string' && /^\d+$/.test(part) && Number(part)>=LIMITS.items))) fail('Unsafe or excessive property path','NATIVE_LIMIT');
+  return parts;
+}
+function read(value,parts) { for(const part of parts) { if(value===null || value===undefined || typeof value!=='object' || !Object.hasOwn(value,part)) return undefined; value=value[part]; } return value; }
+function write(value,parts,data) {
+  let current=value;
+  for(let index=0;index<parts.length-1;index++) {const part=parts[index]; if(!Object.hasOwn(current,part) || !current[part] || typeof current[part]!=='object') current[part]=typeof parts[index+1]==='number'||/^(0|[1-9]\d*)$/.test(parts[index+1])?[]:{}; current=current[part];}
+  const key=parts.at(-1); if(Array.isArray(current) && key==='length') fail('Array length writes are unsupported','NATIVE_LIMIT'); current[key]=copy(data);
+}
+function remove(value,parts) {const parent=read(value,parts.slice(0,-1));if(parent && typeof parent==='object') delete parent[parts.at(-1)];}
+function fieldParts(name,dotNotation) {if(dotNotation!==false)return pathParts(name);if(typeof name!=='string'||!name||name.length>512||blocked.has(name))fail('Unsafe field name');return[name];}
+function expressionParts(value) {
+  if(typeof value!=='string' || !value.startsWith('=')) return null;
+  const match=value.match(/^=\{\{\s*\$json((?:\.[\s\S]+|\[[\s\S]+)?)\s*\}\}$/); if(!match) fail('Only whole-value $json property expressions are supported','NATIVE_EXPRESSION');
+  const suffix=match[1].trim(); return suffix?pathParts(suffix.startsWith('.')?suffix.slice(1):suffix):[];
+}
+export function resolve(value,item) {
+  const parts=expressionParts(value); if(parts!==null)return copy(read(item.json,parts));
+  if(Array.isArray(value))return value.map(entry=>resolve(entry,item));
+  if(value && typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,entry])=>[key,resolve(entry,item)]));
+  return value;
+}
+function checkExpressions(value) { if(typeof value==='string'){expressionParts(value);return;} if(value && typeof value==='object')for(const entry of Object.values(value))checkExpressions(entry); }
+function optionsOnly(value,allowed,label) { object(value,label);for(const key of Object.keys(value))if(!allowed.includes(key))fail(`${label}: unsupported option ${key}`,'NATIVE_UNSUPPORTED'); }
+function bool(value,label) {if(value!==undefined && typeof value!=='boolean')fail(`${label} must be boolean`);}
+function strings(value,label) {if(typeof value!=='string'||value.length>4096)fail(`${label} must be bounded text`);return value;}
+function int(value,min,max,label) {if(!Number.isInteger(value)||value<min||value>max)fail(`${label} must be an integer from ${min} through ${max}`,'NATIVE_LIMIT');return value;}
+export function importWorkflow(value) {
+  if(typeof value==='string'){if(Buffer.byteLength(value)>LIMITS.documentBytes)fail('Workflow JSON exceeds 2 MiB','NATIVE_LIMIT');try{value=JSON.parse(value);}catch{fail('Invalid workflow JSON');}}
+  bounded(value,LIMITS.documentBytes); object(value,'Workflow'); strings(value.name,'Workflow name');
+  if(!value.name.trim() || !Array.isArray(value.nodes) || !value.nodes.length || value.nodes.length>LIMITS.nodes)fail('Workflow needs a name and 1–100 nodes');
+  const names=new Set(),ids=new Set();
+  for(const node of value.nodes){object(node,'Node');strings(node.name,'Node name');strings(node.type,'Node type');if(!node.name||names.has(node.name))fail('Node names must be unique');names.add(node.name);if(node.id!==undefined){strings(node.id,'Node ID');if(ids.has(node.id))fail('Node IDs must be unique');ids.add(node.id);}object(node.parameters,'Node parameters');if(typeof node.typeVersion!=='number'||!Number.isFinite(node.typeVersion))fail('Node version is required');if(!Array.isArray(node.position)||node.position.length!==2||node.position.some(p=>typeof p!=='number'||!Number.isFinite(p)))fail('Node position needs two finite coordinates');}
+  object(value.connections??{},'Connections'); let connections=0;
+  for(const [from,ports] of Object.entries(value.connections??{})){if(!names.has(from))fail('Connection source does not exist');object(ports,'Connection types');for(const [type,outputs] of Object.entries(ports)){if(!Array.isArray(outputs))fail('Connection outputs must be arrays');for(const targets of outputs){if(!Array.isArray(targets))fail('Connection targets must be arrays');for(const target of targets){object(target,'Connection');if(!names.has(target.node)||target.type!==type||!Number.isInteger(target.index)||target.index<0)fail('Connection target is invalid');if(++connections>LIMITS.connections)fail('Workflow exceeds 300 connections','NATIVE_LIMIT');}}}}
+  return copy(value);
+}
+export function exportWorkflow(value) {return JSON.stringify(importWorkflow(value),null,2);}
+function validateSet(node) {
+  const p=node.parameters; optionsOnly(p,['mode','assignments','jsonOutput','includeOtherFields','include','includeFields','excludeFields','options','duplicateItem','duplicateCount'],'Set parameters');
+  if(!['manual','raw',undefined].includes(p.mode))fail('Unsupported Set mode');if(p.duplicateItem)fail('Set duplicate-item mode is unsupported','NATIVE_UNSUPPORTED');bool(p.includeOtherFields,'Include other fields');
+  if(!['all','none','selected','except',undefined].includes(p.include))fail('Unsupported Set include mode');
+  const options=p.options??{};optionsOnly(options,['dotNotation','ignoreConversionErrors','stripBinary'],'Set options');for(const key of Object.keys(options))bool(options[key],key);
+  if(p.include==='selected'||p.include==='except'){const value=strings(p.include==='selected'?p.includeFields:p.excludeFields,'Field list');for(const name of value.split(',').map(x=>x.trim()).filter(Boolean))fieldParts(name,options.dotNotation);}
+  if(p.mode==='raw'){if(p.jsonOutput===undefined)fail('Set JSON output is required');let parsed=p.jsonOutput;if(typeof parsed==='string' && !parsed.startsWith('=')){try{parsed=JSON.parse(parsed);}catch{fail('Only strict JSON output is supported','NATIVE_UNSUPPORTED');}}if(typeof parsed!=='string'){object(parsed,'Set JSON output');for(const name of Object.keys(parsed))fieldParts(name,options.dotNotation);}return;}
+  const assignments=p.assignments?.assignments??[];if(!Array.isArray(assignments)||assignments.length>100)fail('Use at most 100 Set assignments');for(const assignment of assignments){optionsOnly(assignment,['id','name','value','type'],'Set assignment');if(!['string','number','boolean','object','array'].includes(assignment.type))fail('Unsupported Set assignment type','NATIVE_UNSUPPORTED');fieldParts(assignment.name,options.dotNotation);}
+}
+const operations={string:['exists','notExists','empty','notEmpty','equals','notEquals','contains','notContains','startsWith','notStartsWith','endsWith','notEndsWith'],number:['exists','notExists','empty','notEmpty','equals','notEquals','gt','gte','lt','lte'],boolean:['exists','notExists','empty','notEmpty','true','false','equals','notEquals'],array:['exists','notExists','empty','notEmpty','contains','notContains','lengthEquals','lengthNotEquals','lengthGt','lengthLt','lengthGte','lengthLte'],object:['exists','notExists','empty','notEmpty'],any:['exists','notExists']};
+export function validateIf(node) {
+  const p=node.parameters;optionsOnly(p,['conditions','options','looseTypeValidation'],'If parameters');bool(p.looseTypeValidation,'Loose type validation');optionsOnly(p.options??{},['ignoreCase'],'If options');bool(p.options?.ignoreCase,'Ignore case');
+  const conditions=object(p.conditions,'Conditions');if(conditions.options===undefined)fail('If conditions require an explicit options object','NATIVE_UNSUPPORTED');optionsOnly(conditions,['options','conditions','combinator'],'Conditions');optionsOnly(conditions.options??{},['caseSensitive','typeValidation','version','leftValue'],'Condition options');bool(conditions.options?.caseSensitive,'Case sensitive');if(!['strict','loose',undefined].includes(conditions.options?.typeValidation))fail('Unsupported type validation');if(![1,2,3,undefined].includes(conditions.options?.version))fail('Unsupported condition version');if(!['and','or'].includes(conditions.combinator)||!Array.isArray(conditions.conditions)||conditions.conditions.length>100)fail('Invalid conditions');
+  for(const condition of conditions.conditions){optionsOnly(condition,['id','leftValue','rightValue','operator'],'Condition');const op=object(condition.operator,'Operator');optionsOnly(op,['type','operation','rightType','singleValue'],'Operator');if(!operations[op.type]?.includes(op.operation)|| (op.rightType!==undefined&&!['string','number','boolean','array','object','any'].includes(op.rightType)))fail(`Unsupported comparison ${op.type}:${op.operation}`,'NATIVE_UNSUPPORTED');bool(op.singleValue,'Single value');}
+}
+function validateWait(node) {const p=node.parameters;optionsOnly(p,['resume','amount','unit'],'Wait parameters');if(!['timeInterval',undefined].includes(p.resume))fail('Only time-interval Wait is supported','NATIVE_UNSUPPORTED');if(!['seconds','minutes','hours','days',undefined].includes(p.unit))fail('Invalid wait unit');if(typeof p.amount==='number')waitMilliseconds(p);else if(typeof p.amount!=='string'||!p.amount.startsWith('='))fail('Wait amount must be numeric');}
+function waitMilliseconds(p) {const factor={seconds:1000,minutes:60000,hours:3600000,days:86400000}[p.unit??'hours'];const result=p.amount*factor;if(typeof p.amount!=='number'||!Number.isFinite(result)||result<0||result>LIMITS.waitMs)fail('Wait interval must be from 0 through 60,000 milliseconds','NATIVE_LIMIT');return result;}
+function validateHttp(node) {
+  const p=node.parameters;optionsOnly(p,['authentication','method','url','sendQuery','specifyQuery','queryParameters','jsonQuery','sendHeaders','specifyHeaders','headerParameters','jsonHeaders','sendBody','contentType','specifyBody','bodyParameters','jsonBody','body','rawContentType','options'],'HTTP parameters');
+  if(!['none',undefined].includes(p.authentication))fail('HTTP authentication is unsupported','NATIVE_UNSUPPORTED');if(!['GET','POST','PUT','PATCH','DELETE','HEAD','OPTIONS',undefined].includes(p.method))fail('Unsupported HTTP method');for(const key of ['sendQuery','sendHeaders','sendBody'])bool(p[key],key);
+  if(p.sendBody && ['GET','HEAD'].includes(p.method??'GET'))fail('Bodies on GET/HEAD are unsupported','NATIVE_UNSUPPORTED');if(p.sendBody&&!['json','raw',undefined].includes(p.contentType))fail('Only JSON/raw request bodies are supported','NATIVE_UNSUPPORTED');
+  for(const key of ['Query','Headers']) {const specify=p[`specify${key}`];if(!['keypair','json',undefined].includes(specify))fail(`Unsupported ${key} mode`);}
+  if(p.sendBody && !['keypair','json',undefined].includes(p.specifyBody)&&p.contentType!=='raw')fail('Unsupported body specification');
+  const o=p.options??{};optionsOnly(o,['timeout','response','redirect','lowercaseHeaders'],'HTTP options');if(o.timeout===undefined)fail('Set an explicit HTTP timeout of at most 60,000 ms; original default is 300,000 ms','NATIVE_UNSUPPORTED');int(o.timeout,1,LIMITS.timeoutMs,'HTTP timeout');bool(o.lowercaseHeaders,'Lowercase headers');
+  const r=o.response?.response??{};optionsOnly(o.response??{},['response'],'Response wrapper');optionsOnly(r,['responseFormat','fullResponse','neverError','outputPropertyName'],'Response options');if(!['json','text','autodetect',undefined].includes(r.responseFormat))fail('Binary response formats are unsupported','NATIVE_UNSUPPORTED');bool(r.fullResponse,'Full response');bool(r.neverError,'Never error');if(r.outputPropertyName!==undefined)fieldParts(r.outputPropertyName,false);
+  const d=o.redirect?.redirect??{};optionsOnly(o.redirect??{},['redirect'],'Redirect wrapper');optionsOnly(d,['followRedirects','maxRedirects'],'Redirect options');bool(d.followRedirects,'Follow redirects');if(d.maxRedirects!==undefined)int(d.maxRedirects,0,10,'Maximum redirects');
+  if(p.url===undefined)fail('HTTP URL is required');
+  // Validate known literal request fields during whole-workflow preflight. Expressions
+  // remain data dependent and are validated again for all items before this node sends.
+  const hasExpression=value=>typeof value==='string'?value.startsWith('='):value&&typeof value==='object'?Object.values(value).some(hasExpression):false;
+  if(!hasExpression(p))prepareHttp(p);
+  if(typeof p.url!=='string')fail('HTTP URL must be text or a whole-value $json expression');
+  if(!p.url.startsWith('='))prepareHttp({...p,sendHeaders:false,sendQuery:false,sendBody:false});
+  if(p.sendHeaders){
+    let entries;
+    if(p.specifyHeaders==='json'){if(!hasExpression(p.jsonHeaders)||typeof p.jsonHeaders!=='string'||!p.jsonHeaders.startsWith('='))entries=Object.entries(jsonObject(p.jsonHeaders,'HTTP headers'));}
+    else{const source=p.headerParameters?.parameters??[];if(!Array.isArray(source)||source.length>100)fail('HTTP headers requires at most 100 pairs');entries=source.map(pair=>{optionsOnly(pair,['name','value'],'HTTP headers');return[pair.name,pair.value];});}
+    if(entries){const parameters=entries.map(([key,value],index)=>({name:typeof key==='string'&&key.startsWith('=')?'x-native-preflight-'+index:key,value:hasExpression(value)?'native-preflight':value}));prepareHttp({...p,url:'http://native-preflight.invalid',sendBody:false,sendQuery:false,specifyHeaders:'keypair',headerParameters:{parameters}});}
+  }
+}
+export function preflight(value) {
+  const workflow=importWorkflow(value), issues=[];
+  try {
+    const settings=workflow.settings??{};optionsOnly(settings,['executionOrder','timezone'],'Workflow settings');if(settings.executionOrder!==undefined&&settings.executionOrder!=='v1')fail('Legacy execution order is unsupported','NATIVE_UNSUPPORTED');if(workflow.pinData && Object.keys(workflow.pinData).length)fail('Pinned execution data is unsupported','NATIVE_UNSUPPORTED');
+    const starts=workflow.nodes.filter(node=>node.type==='n8n-nodes-base.manualTrigger'&&!node.disabled);if(starts.length!==1)fail('Use exactly one enabled native Manual Trigger');
+    const reachable=new Set(),active=new Set(),byName=new Map(workflow.nodes.map(node=>[node.name,node]));
+    function visit(name){if(active.has(name))fail('Cycles are unsupported','NATIVE_UNSUPPORTED');if(reachable.has(name))return;reachable.add(name);active.add(name);for(const targets of workflow.connections?.[name]?.main??[])for(const target of targets)visit(target.node);active.delete(name);}
+    visit(starts[0].name);
+    for(const node of workflow.nodes){if(!reachable.has(node.name))continue;try{if(!versions.get(node.type)?.includes(node.typeVersion))fail(`Unsupported native type/version ${node.type}@${node.typeVersion}`,'NATIVE_UNSUPPORTED');if(node.credentials && Object.keys(node.credentials).length)fail('Credential references are preserved but cannot execute','NATIVE_UNSUPPORTED');if(node.disabled)fail('Disabled-node execution bypass is unsupported','NATIVE_UNSUPPORTED');for(const option of ['retryOnFail','continueOnFail','alwaysOutputData','executeOnce'])if(node[option])fail(`Unsupported node setting ${option}`,'NATIVE_UNSUPPORTED');if(node.onError!==undefined&&node.onError!=='stopWorkflow')fail('Only stopWorkflow error behavior is supported','NATIVE_UNSUPPORTED');checkExpressions(node.parameters);if(node.type.endsWith('.set'))validateSet(node);if(node.type.endsWith('.if'))validateIf(node);if(node.type.endsWith('.httpRequest'))validateHttp(node);if(node.type.endsWith('.wait'))validateWait(node);if(node.type.endsWith('.switch'))validateSwitch(node);if(node.type.endsWith('.merge'))validateMerge(node);if(node.type.endsWith('.manualTrigger'))optionsOnly(node.parameters,[],'Manual Trigger parameters');}catch(error){issues.push({node:node.name,code:error.code??'NATIVE_CONFIG',message:error.message});}}
+    const routing=[...reachable].some(name=>byName.get(name).type==='n8n-nodes-base.merge'),incoming=new Map();
+    for(const [name,ports]of Object.entries(workflow.connections??{})){if(!reachable.has(name))continue;for(const type of Object.keys(ports))if(type!=='main')fail('Only main connections are executable','NATIVE_UNSUPPORTED');const outputs=ports.main??[];if(outputs.length>outputCount(byName.get(name)))fail('Unsupported output index');for(const targets of outputs)for(const target of targets){if(target.index>=inputCount(byName.get(target.node))||target.node===starts[0].name)fail('Unsupported input index');const key=target.node+'\0'+target.index;incoming.set(key,(incoming.get(key)??0)+1);if(routing&&incoming.get(key)>1)fail('Routing joins support one edge per input port','NATIVE_UNSUPPORTED');}}
+    if(routing)for(const name of reachable){const node=byName.get(name);if(node.type==='n8n-nodes-base.merge')for(let index=0;index<inputCount(node);index++)if(incoming.get(name+'\0'+index)!==1)fail('Every configured Merge input must have one reachable connection','NATIVE_UNSUPPORTED');}
+  }catch(error){issues.push({code:error.code??'NATIVE_CONFIG',message:error.message});}
+  return {executable:issues.length===0,issues,workflow};
+}
+function convert(value,type,{strict=false,ignore=false,filter=false,version=3}={}) {
+  if(value===undefined||value===null)return filter?value:null;
+  try {
+    if(type==='any')return value;
+    if(type==='number'&&filter&&version>=3&&((typeof value==='string'&&!value.trim())||(Array.isArray(value)&&!value.length)))return null;
+    if(strict&&typeof value!==(type==='array'||type==='object'?'object':type))fail('Wrong comparison type','NATIVE_TYPE');
+    if(type==='string')return typeof value==='object'?JSON.stringify(value):String(value);
+    if(type==='number'){const result=Number(value);if(!Number.isFinite(result))fail('Cannot convert value to a finite number','NATIVE_TYPE');return result;}
+    if(type==='boolean'){if(filter&&!strict&&version===1)return Boolean(value);if(typeof value==='boolean')return value;if(typeof value==='string'&&['true','false'].includes(value.toLowerCase()))return value.toLowerCase()==='true';if(!(typeof value==='string'&&!value.trim())&&[0,1].includes(Number(value)))return Number(value)===1;if(filter&&!strict)return Boolean(value);fail('Cannot convert value to boolean','NATIVE_TYPE');}
+    if(type==='object'||type==='array'){let result=value;if(typeof result==='string'){try{result=JSON.parse(result);}catch{if(type==='array')try{result=JSON.parse(result.replace(/'/g,'"'));}catch{fail('Invalid array JSON','NATIVE_TYPE');}else fail('Only strict object JSON is supported','NATIVE_UNSUPPORTED');}}if(type==='array'?!Array.isArray(result):!result||typeof result!=='object'||Array.isArray(result))fail(`Cannot convert value to ${type}`,'NATIVE_TYPE');return result;}
+    fail('Unsupported conversion','NATIVE_UNSUPPORTED');
+  }catch(error){if(ignore)return value??null;throw error;}
+}
+function setItems(node,items) {
+  const outputs=[];let bytes=0;
+  const assignOwn=(target,source)=>{for(const[key,value]of Object.entries(source))Object.defineProperty(target,key,{value,enumerable:true,writable:true,configurable:true});};
+  for(const [index,item]of items.entries()){
+    const p=resolve(node.parameters,item),o=p.options??{},include=p.includeOtherFields?(p.include??'all'):'none',json={};
+    if(include==='all')assignOwn(json,copy(item.json));
+    if(include==='except'){assignOwn(json,copy(item.json));for(const name of p.excludeFields.split(',').map(x=>x.trim()).filter(Boolean))remove(json,fieldParts(name,o.dotNotation));}
+    if(include==='selected')for(const name of p.includeFields.split(',').map(x=>x.trim()).filter(Boolean)){const parts=fieldParts(name,o.dotNotation),key=o.dotNotation!==false&&name.includes('.')?name.split('.').at(-1):name;write(json,fieldParts(key,o.dotNotation),read(item.json,parts));}
+    let fields;
+    if(p.mode==='raw'){let raw=p.jsonOutput;if(typeof raw==='string'){try{raw=JSON.parse(raw);}catch{fail('Invalid Set JSON output','NATIVE_TYPE');}}fields=object(raw,'Set JSON output');}
+    else fields=Object.fromEntries((p.assignments?.assignments??[]).map(assignment=>[assignment.name,convert(assignment.value,assignment.type,{ignore:o.ignoreConversionErrors})]));
+    for(const [name,value]of Object.entries(fields))write(json,fieldParts(name,o.dotNotation),value);
+    bounded(json,LIMITS.valueBytes,{undefinedValues:true});const output={json,pairedItem:{item:index}};bytes+=Buffer.byteLength(JSON.stringify(output));if(bytes>LIMITS.executionBytes)fail('Set output exceeds execution byte limit','NATIVE_LIMIT');outputs.push(output);
+  }
+  return outputs;
+}
+export function filterCondition(condition,options={}) {
+  const operator=condition.operator,strict=options.typeValidation==='strict',version=options.version??1;
+  let left=convert(condition.leftValue,operator.type,{strict,filter:true,version}),right=operator.singleValue?undefined:convert(condition.rightValue,operator.rightType??operator.type,{strict,filter:true,version});
+  const exists=left!==undefined&&left!==null,op=operator.operation;if(op==='exists')return exists;if(op==='notExists')return!exists;
+  if(operator.type==='string'){left=left??'';right=right??'';if(!options.caseSensitive){left=left.toLocaleLowerCase();right=right.toLocaleLowerCase();}const results={empty:()=>left.length===0,notEmpty:()=>left.length!==0,equals:()=>left===right,notEquals:()=>left!==right,contains:()=>left.includes(right),notContains:()=>!left.includes(right),startsWith:()=>left.startsWith(right),notStartsWith:()=>!left.startsWith(right),endsWith:()=>left.endsWith(right),notEndsWith:()=>!left.endsWith(right)};return results[op]();}
+  if(operator.type==='number'){const results={empty:()=>!exists,notEmpty:()=>exists,equals:()=>left===right,notEquals:()=>left!==right,gt:()=>left>right,lt:()=>left<right,gte:()=>left>=right,lte:()=>left<=right};return results[op]();}
+  if(operator.type==='boolean'){const results={empty:()=>!exists,notEmpty:()=>exists,true:()=>left,false:()=>!left,equals:()=>left===right,notEquals:()=>left!==right};return results[op]();}
+  if(operator.type==='object')return op==='empty'?!left||Object.keys(left).length===0:!!left&&Object.keys(left).length!==0;
+  if(operator.type==='array'){const array=left??[],contains=()=>array.some(value=>!options.caseSensitive&&typeof right==='string'?typeof value==='string'&&value.toLocaleLowerCase()===right.toLocaleLowerCase():value===right);const results={empty:()=>array.length===0,notEmpty:()=>array.length!==0,contains,notContains:()=>!contains(),lengthEquals:()=>array.length===right,lengthNotEquals:()=>array.length!==right,lengthGt:()=>array.length>right,lengthLt:()=>array.length<right,lengthGte:()=>array.length>=right,lengthLte:()=>array.length<=right};return results[op]();}
+  fail('Unsupported comparison','NATIVE_UNSUPPORTED');
+}
+function ifItems(node,items){const outputs=[[],[]];for(const[index,item]of items.entries()){const p=resolve(node.parameters,item),filter=p.conditions;const pass=filter.combinator==='and'?filter.conditions.every(condition=>filterCondition(condition,filter.options)):filter.conditions.some(condition=>filterCondition(condition,filter.options));const result=copy(item);result.pairedItem??={item:index};outputs[pass?0:1].push(result);}return outputs;}
+export async function executeNode(node,items,context={}) {
+  bounded(items,LIMITS.executionBytes,{undefinedValues:true});if(!Array.isArray(items)||items.length>LIMITS.items||items.some(item=>!item||!item.json||typeof item.json!=='object'||Array.isArray(item.json)||(item.binary&&Object.keys(item.binary).length)))fail('Only bounded JSON execution items are supported');
+  if(node.type==='n8n-nodes-base.merge')return mergeItems(node,context.inputs??[items,[]],context);
+  if(node.type==='n8n-nodes-base.switch')return switchItems(node,items,context);
+  if(node.type==='n8n-nodes-base.manualTrigger')return[[{json:{}}]];
+  if(!items.length)return node.type==='n8n-nodes-base.if'?[[],[]]:[[]];
+  if(node.type==='n8n-nodes-base.set')return[setItems(node,items)];
+  if(node.type==='n8n-nodes-base.if')return ifItems(node,items);
+  if(node.type==='n8n-nodes-base.wait'){const p=resolve(node.parameters,items[0]);return{waitUntil:new Date((context.now??Date.now())+waitMilliseconds(p)).toISOString(),outputs:[copy(items)]};}
+  if(node.type==='n8n-nodes-base.httpRequest')return[await httpItems(node,items,context)];
+  fail(`Unsupported native node ${node.type}`,'NATIVE_UNSUPPORTED');
+}
+export function createExecution(value){const result=preflight(value);if(!result.executable)fail(result.issues.map(issue=>`${issue.node??'Workflow'}: ${issue.message}`).join(';'),'NATIVE_PREFLIGHT');const start=result.workflow.nodes.find(node=>node.type==='n8n-nodes-base.manualTrigger');return bounded({id:randomUUID(),status:'ready',workflow:result.workflow,pending:[{node:start.name,items:[]}],joins:{},trace:[],outputs:{},steps:0,requests:0,activeMs:0,startedAt:new Date().toISOString()},LIMITS.executionBytes);}
+export function validateExecution(state){
+  bounded(state,LIMITS.executionBytes,{undefinedValues:true});object(state,'Execution');
+  for(const key of ['id','workflowId'])if(typeof state[key]!=='string'||!/^[A-Za-z0-9_-]{1,80}$/.test(state[key]))fail('Invalid persisted execution identifier');
+  if(!['ready','running','waiting','completed','failed','cancelled','interrupted'].includes(state.status))fail('Invalid persisted execution status');
+  for(const key of ['steps','requests'])int(state[key],0,500,`Persisted ${key}`);int(state.revision,1,Number.MAX_SAFE_INTEGER,'Persisted revision');
+  if(typeof state.activeMs!=='number'||!Number.isFinite(state.activeMs)||state.activeMs<0||state.activeMs>Number.MAX_SAFE_INTEGER)fail('Invalid persisted active duration');
+  const checked=preflight(state.workflow);if(!checked.executable)fail('Persisted workflow fails native preflight');
+  const names=new Set(),start=checked.workflow.nodes.find(node=>node.type==='n8n-nodes-base.manualTrigger'&&!node.disabled);function reachable(name){if(names.has(name))return;names.add(name);for(const targets of checked.workflow.connections?.[name]?.main??[])for(const target of targets)reachable(target.node);}reachable(start.name);
+  if(!Array.isArray(state.pending)||state.pending.length>LIMITS.connections||!Array.isArray(state.trace)||state.trace.length>LIMITS.steps)fail('Invalid persisted execution structure');
+  const byName=new Map(checked.workflow.nodes.map(node=>[node.name,node]));
+  const validItems=items=>Array.isArray(items)&&items.length<=LIMITS.items&&items.every(item=>item?.json&&typeof item.json==='object'&&!Array.isArray(item.json)&&(!item.binary||!Object.keys(item.binary).length));
+  object(state.outputs,'Execution outputs');const queued=new Set(),routing=[...names].some(name=>byName.get(name).type==='n8n-nodes-base.merge');
+  for(const invocation of state.pending){object(invocation,'Pending invocation');if(!names.has(invocation.node)||!validItems(invocation.items))fail('Invalid persisted invocation');if(routing&&(queued.has(invocation.node)||Object.hasOwn(state.outputs,invocation.node)))fail('Conflicting persisted routing invocation');queued.add(invocation.node);if(invocation.inputs!==undefined&&(byName.get(invocation.node).type!=='n8n-nodes-base.merge'||invocation.items.length!==0||!Array.isArray(invocation.inputs)||invocation.inputs.length!==inputCount(byName.get(invocation.node))||!invocation.inputs.every(validItems)||!invocation.inputs.some(input=>input.length)))fail('Invalid persisted Merge invocation');if(byName.get(invocation.node).type==='n8n-nodes-base.merge'&&!invocation.inputs)fail('Merge invocation needs persisted input ports');}
+  object(state.joins??{},'Persisted joins');for(const[name,inputs]of Object.entries(state.joins??{})){const node=byName.get(name);if(!names.has(name)||!node||node.type!=='n8n-nodes-base.merge'||!Array.isArray(inputs)||inputs.length!==inputCount(node)||!inputs.every(input=>input===null||validItems(input))||!inputs.some(input=>input===null)||!inputs.some(input=>input?.length)||Object.hasOwn(state.outputs,name)||queued.has(name))fail('Invalid persisted Merge input queue');}
+  if(state.status==='waiting'&&(typeof state.waitUntil!=='string'||!Number.isFinite(Date.parse(state.waitUntil))||new Date(state.waitUntil).toISOString()!==state.waitUntil||Date.parse(state.waitUntil)>Date.now()+LIMITS.waitMs+1000))fail('Invalid persisted wait date');
+  if(state.waitingRoute!==undefined&&(state.status!=='waiting'||!names.has(state.waitingRoute)||byName.get(state.waitingRoute).type!=='n8n-nodes-base.wait'||!Array.isArray(state.outputs[state.waitingRoute])||!state.outputs[state.waitingRoute].every(validItems)))fail('Invalid persisted deferred Wait route');
+  object(state.outputs,'Execution outputs');return state;
+}
+function linkedItems(items,input=0){return items.map((item,index)=>({...copy(item),pairedItem:{item:index,...(input?{input}:{} )}}));}
+function routeOutputs(state,node,outputs){
+ const byName=new Map(state.workflow.nodes.map(node=>[node.name,node])),edges=[];
+ for(const[port,items]of outputs.entries())if(items.length)for(const target of state.workflow.connections?.[node.name]?.main?.[port]??[])edges.push({port,items,target,node:byName.get(target.node)});
+ // Released v1 scheduling sorts targets before prepending each invocation.
+ edges.sort((a,b)=>a.node.position[1]<b.node.position[1]?1:a.node.position[1]>b.node.position[1]?-1:a.node.position[0]>b.node.position[0]?-1:0);
+ state.joins??={};let queuedBytes=Buffer.byteLength(JSON.stringify([state.pending,state.joins]));
+ for(const edge of edges){queuedBytes+=Buffer.byteLength(JSON.stringify(edge.items));if(queuedBytes>LIMITS.executionBytes)fail('Routed output exceeds execution byte bound','NATIVE_LIMIT');
+  if(edge.node.type!=='n8n-nodes-base.merge'){state.pending.unshift({node:edge.target.node,items:copy(edge.items)});continue;}
+  if(Object.hasOwn(state.outputs,edge.target.node)||state.pending.some(invocation=>invocation.node===edge.target.node))fail('Repeated Merge generation is unsupported','NATIVE_UNSUPPORTED');
+  if(!Object.hasOwn(state.joins,edge.target.node))Object.defineProperty(state.joins,edge.target.node,{value:Array.from({length:inputCount(edge.node)},()=>null),enumerable:true,writable:true,configurable:true});
+  const inputs=state.joins[edge.target.node];if(inputs[edge.target.index]!==null)fail('Repeated Merge input batch is unsupported','NATIVE_UNSUPPORTED');inputs[edge.target.index]=copy(edge.items);
+  if(inputs.every(input=>input!==null)){state.pending.unshift({node:edge.target.node,items:[],inputs});delete state.joins[edge.target.node];}
+ }
+}
+function flushPartialJoin(state){
+ const byName=new Map(state.workflow.nodes.map(node=>[node.name,node]));
+ const waiting=new Set(Object.keys(state.joins??{}));
+ function waitingAncestor(name,seen=new Set()){
+  if(seen.has(name))return false;seen.add(name);
+  for(const[from,ports]of Object.entries(state.workflow.connections??{}))if((ports.main??[]).some(targets=>targets.some(target=>target.node===name))&&(waiting.has(from)||waitingAncestor(from,seen)))return true;
+  return false;
+ }
+ for(const[name,inputs]of Object.entries(state.joins??{})){
+  const node=byName.get(name);if(waitingAncestor(name))continue;
+  if(node.parameters.mode==='chooseBranch'&&(inputs[0]===null||inputs[1]===null))continue;
+  if(!inputs.some(input=>input?.length))continue;
+  state.pending.push({node:name,items:[],inputs:inputs.map(input=>input??[])});delete state.joins[name];return true;
+ }
+ return false;
+}
+export async function advanceExecution(state,context={}) {
+  if(['completed','failed','cancelled','interrupted'].includes(state.status))return state;
+  if(state.status==='waiting' && Date.parse(state.waitUntil)>(context.now??Date.now()))return state;
+  const activeStart=performance.now();let failedInvocation,failedStarted;context.deadline=activeStart+120000-(state.activeMs??0);context.executionBudget=state;
+  state.status='running';delete state.waitUntil;
+  try {
+    if(state.waitingRoute!==undefined){const node=state.workflow.nodes.find(node=>node.name===state.waitingRoute);routeOutputs(state,node,state.outputs[node.name]);delete state.waitingRoute;bounded(state,LIMITS.executionBytes,{undefinedValues:true});}
+    while(state.pending.length||flushPartialJoin(state)){if(context.signal?.aborted)throw context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED');if(performance.now()>context.deadline)fail('Execution exceeds 120,000 active milliseconds','NATIVE_LIMIT');if(state.steps>=LIMITS.steps)fail('Execution exceeds 500 node invocations','NATIVE_LIMIT');state.steps++;const invocation=state.pending.shift(),node=state.workflow.nodes.find(value=>value.name===invocation.node),started=performance.now(),inputs=invocation.inputs?.map((items,index)=>linkedItems(items,index)),items=inputs?.[0]??linkedItems(invocation.items),inputItems=inputs?inputs.reduce((sum,input)=>sum+input.length,0):items.length;failedInvocation={node:node.name,type:node.type,inputItems,...(inputs?{inputPorts:inputs.map(input=>input.length)}:{})};failedStarted=started;state.activeNode=node.name;await context.checkpoint?.(state);if(context.signal?.aborted)throw context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED');const result=await executeNode(node,items,{...context,...(inputs?{inputs}:{} )}),outputs=result.outputs??result;bounded(outputs,LIMITS.executionBytes,{undefinedValues:true});const trace={...failedInvocation,status:'completed',outputItems:outputs.map(items=>items.length),durationMs:Math.round((performance.now()-started)*1000)/1000};state.trace.push(trace);failedInvocation=null;Object.defineProperty(state.outputs,node.name,{value:copy(outputs),enumerable:true,writable:true,configurable:true});
+      delete state.activeNode;
+      if(result.waitUntil){state.status='waiting';state.waitUntil=result.waitUntil;state.waitingRoute=node.name;state.activeMs=(state.activeMs??0)+performance.now()-activeStart;bounded(state,LIMITS.executionBytes,{undefinedValues:true});await context.checkpoint?.(state);return state;}
+      routeOutputs(state,node,outputs);
+      bounded(state,LIMITS.executionBytes,{undefinedValues:true});await context.checkpoint?.(state);
+    }
+    state.status='completed';state.finishedAt=new Date().toISOString();
+  }catch(error){state.status=error.code==='NATIVE_CANCELLED'?'cancelled':error.code==='NATIVE_INTERRUPTED'?'interrupted':'failed';state.error={code:error.code??'NATIVE_NODE_ERROR',message:String(error.message).slice(0,4096),node:state.activeNode};if(failedInvocation)state.trace.push({...failedInvocation,status:state.status,error:state.error,durationMs:Math.round((performance.now()-failedStarted)*1000)/1000});state.pending=[];state.joins={};delete state.waitingRoute;delete state.activeNode;state.finishedAt=new Date().toISOString();}
+  state.activeMs=(state.activeMs??0)+performance.now()-activeStart;
+  // A rejected aggregate must still produce a bounded failure checkpoint.
+  try{bounded(state,LIMITS.executionBytes,{undefinedValues:true});}catch(error){state.status='failed';state.error={code:'NATIVE_LIMIT',message:error.message};state.outputs={};state.pending=[];state.joins={};state.trace=state.trace.map(({node,type,status,inputItems,inputPorts,outputItems,durationMs,error})=>({node,type,status,inputItems,...(inputPorts?{inputPorts}:{}),outputItems,durationMs,...(error?{error:{code:error.code,message:error.message}}:{})}));}
+  await context.checkpoint?.(state);return state;
+}
+function sensitive(name){return /authorization|cookie|password|secret|token|api[-_]?key/i.test(name);}
+export function redact(value){
+  const secrets=new Set();
+  function collect(entry,marked=false){if(typeof entry==='string'&&marked&&entry.length>=4&&entry.length<=8192&&secrets.size<128)secrets.add(entry);else if(entry&&typeof entry==='object')for(const[key,item]of Object.entries(entry))collect(item,marked||sensitive(key));}
+  collect(value);
+  function clean(entry){if(typeof entry==='string'){for(const secret of secrets)entry=entry.replaceAll(secret,'[redacted]');return entry;}if(Array.isArray(entry))return entry.map(clean);if(entry&&typeof entry==='object')return Object.fromEntries(Object.entries(entry).map(([key,item])=>[key,sensitive(key)?'[redacted]':clean(item)]));return entry;}
+  return clean(value);
+}
+function pairs(value,label){if(!Array.isArray(value)||value.length>100)fail(`${label} requires at most 100 pairs`);const result={};for(const pair of value){optionsOnly(pair,['name','value'],label);if(typeof pair.name!=='string'||pair.name.length>200||!['string','number','boolean'].includes(typeof pair.value)||String(pair.value).length>8192)fail(`Invalid ${label} pair`);if(Object.hasOwn(result,pair.name))fail('Duplicate HTTP parameter names are unsupported','NATIVE_UNSUPPORTED');if(pair.name)Object.defineProperty(result,pair.name,{value:pair.value,enumerable:true,writable:true,configurable:true});}return result;}
+function jsonObject(value,label){if(typeof value==='string'){try{value=JSON.parse(value);}catch{fail(`${label} requires strict JSON`);}}return object(value,label);}
+function prepareHttp(p){
+  let url;try{url=new URL(p.url);}catch{fail('HTTP URL must be absolute');}if(!['http:','https:'].includes(url.protocol)||url.username||url.password||url.href.length>8192)fail('Use bounded HTTP(S) URLs without embedded credentials');
+  const o=p.options??{},r=o.response?.response??{},headers=new Headers(),method=p.method??'GET';
+  if(p.sendHeaders){const values=p.specifyHeaders==='json'?jsonObject(p.jsonHeaders,'HTTP headers'):pairs(p.headerParameters?.parameters??[],'HTTP headers');for(const[key,value]of Object.entries(values)){if(sensitive(key))fail('Credential/cookie headers are preserved but cannot execute','NATIVE_UNSUPPORTED');if(!/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/.test(key)||['host','content-length','connection','transfer-encoding','upgrade'].includes(key.toLowerCase())||!['string','number','boolean'].includes(typeof value)||/[\r\n]/.test(String(value)))fail('Unsupported HTTP header');headers.set(key,String(value));}}
+  if(!headers.has('accept'))headers.set('accept',r.responseFormat==='json'?'application/json,text/*;q=0.99':r.responseFormat==='text'?'application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, */*;q=0.1':'application/json,text/html,application/xhtml+xml,application/xml,text/*;q=0.9, image/*;q=0.8, */*;q=0.7');
+  if(p.sendQuery){const values=p.specifyQuery==='json'?jsonObject(p.jsonQuery,'HTTP query'):pairs(p.queryParameters?.parameters??[],'HTTP query');for(const[key,value]of Object.entries(values)){if(!['string','number','boolean'].includes(typeof value))fail('HTTP query arrays/objects are unsupported','NATIVE_UNSUPPORTED');url.searchParams.append(key,String(value));}}
+  let body;if(p.sendBody){if(p.contentType==='raw'){if(typeof p.body!=='string')fail('Raw request body must be text');body=p.body;headers.set('content-type',p.rawContentType??'text/plain');}else{const value=p.specifyBody==='json'?jsonObject(p.jsonBody,'HTTP body'):pairs(p.bodyParameters?.parameters??[],'HTTP body');body=JSON.stringify(value);if(!headers.has('content-type'))headers.set('content-type','application/json');}}
+  if(Buffer.byteLength(body??'')>LIMITS.valueBytes||Buffer.byteLength(JSON.stringify(Object.fromEntries(headers)))>16384||url.href.length>8192)fail('HTTP request exceeds bounds','NATIVE_LIMIT');
+  return {url,method,headers,body,timeout:o.timeout,response:r,redirect:o.redirect?.redirect??{followRedirects:true},maxRedirects:o.redirect?.redirect?.maxRedirects??10};
+}
+async function httpItems(node,items,context){
+  // Resolve and validate every request before starting this node's effects.
+  context.executionBudget??={requests:0};if(context.executionBudget.requests+items.length>500)fail('Execution exceeds 500 HTTP requests','NATIVE_LIMIT');const requests=[],outputs=[];let totalBytes=0,requestBytes=0;for(const item of items){const request=prepareHttp(resolve(node.parameters,item));requestBytes+=Buffer.byteLength(request.body??'')+Buffer.byteLength(request.url.href)+Buffer.byteLength(JSON.stringify(Object.fromEntries(request.headers)));if(requestBytes>LIMITS.executionBytes)fail('HTTP request preparation exceeds execution bounds','NATIVE_LIMIT');requests.push(request);}
+  for(const[index,request]of requests.entries()){
+    if(++context.executionBudget.requests>500)fail('Execution exceeds 500 HTTP requests','NATIVE_LIMIT');if(context.signal?.aborted)throw context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED');
+    const timeout=Math.min(request.timeout,context.deadline===undefined?request.timeout:Math.max(1,context.deadline-performance.now()));const controller=new AbortController(),abort=()=>controller.abort(context.signal.reason),timer=setTimeout(()=>controller.abort(new NativeError('HTTP request timed out','NATIVE_HTTP_TIMEOUT')),timeout);context.signal?.addEventListener('abort',abort,{once:true});
+    try{
+      let url=request.url,method=request.method,body=request.body,response;
+      for(let redirects=0;;redirects++){
+        response=await fetch(url,{method,headers:request.headers,body,redirect:'manual',signal:controller.signal});const location=response.headers.get('location');if(!request.redirect.followRedirects||![301,302,303,307,308].includes(response.status)||!location)break;
+        await response.body?.cancel();if(redirects>=request.maxRedirects)fail('HTTP redirect limit exceeded','NATIVE_HTTP_REDIRECT');url=new URL(location,url);if(!['http:','https:'].includes(url.protocol)||url.username||url.password)fail('Unsupported redirect URL');if((response.status===303&&method!=='HEAD')||([301,302].includes(response.status)&&method==='POST')){method='GET';body=undefined;request.headers.delete('content-type');}
+      }
+      const chunks=[];let length=0;if(response.body){const reader=response.body.getReader();try{for(;;){const next=await reader.read();if(next.done)break;length+=next.value.byteLength;if(length>LIMITS.valueBytes){await reader.cancel();fail('HTTP response exceeds 1 MiB','NATIVE_LIMIT');}chunks.push(next.value);}}finally{reader.releaseLock();}}
+      const text=Buffer.concat(chunks).toString('utf8'),contentType=response.headers.get('content-type')??'',r=request.response;let format=r.responseFormat??'autodetect',data=text;
+      if(/charset\s*=\s*"?(?!utf-?8\b)[A-Za-z0-9-]+/i.test(contentType))fail('Only UTF-8 HTTP responses are supported','NATIVE_UNSUPPORTED');if(format==='autodetect'){if(contentType.includes('application/json'))format='json';else if(/image\/|audio\/|video\/|application\/(?:pdf|octet-stream|zip)/i.test(contentType))fail('Binary response storage is unsupported','NATIVE_UNSUPPORTED');else{format='text';if(!text)data=undefined;}}
+      if(format==='json'){try{data=JSON.parse(text);}catch{if((r.responseFormat??'autodetect')==='autodetect'&&r.neverError)data={};else fail('HTTP response is not valid JSON','NATIVE_HTTP_JSON');}}
+      if(!response.ok&&!r.neverError)fail(`HTTP status ${response.status}`,'NATIVE_HTTP_STATUS');
+      const headers=Object.fromEntries(response.headers),pairedItem={item:index};let result;
+      if(r.fullResponse){const json={headers,statusCode:response.status,statusMessage:response.statusText};json[format==='text'?(r.outputPropertyName??'data'):'body']=data;result=[{json,pairedItem}];}
+      else if(format==='text')result=[{json:{[r.outputPropertyName??'data']:data},pairedItem}];
+      else result=(Array.isArray(data)?data:[data]).map(json=>{object(json,'HTTP JSON item');return{json,pairedItem};});
+      bounded(result,LIMITS.executionBytes,{undefinedValues:true});totalBytes+=Buffer.byteLength(JSON.stringify(result));if(outputs.length+result.length>LIMITS.items||totalBytes>LIMITS.executionBytes)fail('HTTP output exceeds execution bounds','NATIVE_LIMIT');outputs.push(...result);
+    }catch(error){if(controller.signal.aborted)throw context.signal?.aborted?(context.signal.reason instanceof NativeError?context.signal.reason:new NativeError('Execution cancelled','NATIVE_CANCELLED')):controller.signal.reason;throw error;}
+    finally{clearTimeout(timer);context.signal?.removeEventListener('abort',abort);}
+  }
+  return outputs;
+}

@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: capture rejects resolver cancellation at pre-sink boundary
+ok 1 - capture rejects resolver cancellation at pre-sink boundary
+  ---
+  duration_ms: 68.9156
+  type: 'test'
+  ...
+# Subtest: capture rejects named-stat cancellation at pre-sink boundary
+ok 2 - capture rejects named-stat cancellation at pre-sink boundary
+  ---
+  duration_ms: 75.8952
+  type: 'test'
+  ...
+# Subtest: capture rejects resolver cancellation at final boundary
+ok 3 - capture rejects resolver cancellation at final boundary
+  ---
+  duration_ms: 65.5781
+  type: 'test'
+  ...
+# Subtest: capture rejects named-stat cancellation at final boundary
+ok 4 - capture rejects named-stat cancellation at final boundary
+  ---
+  duration_ms: 63.4718
+  type: 'test'
+  ...
+# Subtest: capture cancellation after successful open still closes the source handle
+ok 5 - capture cancellation after successful open still closes the source handle
+  ---
+  duration_ms: 54.7377
+  type: 'test'
+  ...
+# Subtest: deadline immediately before snapshot link rejects without a snapshot or temporary file
+ok 6 - deadline immediately before snapshot link rejects without a snapshot or temporary file
+  ---
+  duration_ms: 895.093
+  type: 'test'
+  ...
+# Subtest: deadline after successful snapshot link retains committed success and cleans temp/own lock
+ok 7 - deadline after successful snapshot link retains committed success and cleans temp/own lock
+  ---
+  duration_ms: 872.298
+  type: 'test'
+  ...
+# Subtest: data-pack write failure preserves primary cause and cleans the owned temp
+ok 8 - data-pack write failure preserves primary cause and cleans the owned temp
+  ---
+  duration_ms: 806.553
+  type: 'test'
+  ...
+# Subtest: data-pack sync failure preserves primary cause and cleans the owned temp
+ok 9 - data-pack sync failure preserves primary cause and cleans the owned temp
+  ---
+  duration_ms: 820.6804
+  type: 'test'
+  ...
+# Subtest: write plus temporary-unlink failure preserves both primary cause and cleanup warning
+ok 10 - write plus temporary-unlink failure preserves both primary cause and cleanup warning
+  ---
+  duration_ms: 856.6682
+  type: 'test'
+  ...
+# Subtest: write plus close failure preserves primary cause and exposes the secondary handle error
+ok 11 - write plus close failure preserves primary cause and exposes the secondary handle error
+  ---
+  duration_ms: 885.2781
+  type: 'test'
+  ...
+# Subtest: committed snapshot temp cleanup failure returns its ID and an observable warning
+ok 12 - committed snapshot temp cleanup failure returns its ID and an observable warning
+  ---
+  duration_ms: 902.1608
+  type: 'test'
+  ...
+# Subtest: successful snapshot with failed own-lock removal retains result and exact remaining lock
+ok 13 - successful snapshot with failed own-lock removal retains result and exact remaining lock
+  ---
+  duration_ms: 889.031
+  type: 'test'
+  ...
+# Subtest: primary operation failure with failed own-lock removal preserves both causes and exact lock
+ok 14 - primary operation failure with failed own-lock removal preserves both causes and exact lock
+  ---
+  duration_ms: 798.5318
+  type: 'test'
+  ...
+# Subtest: already-missing own lock is an observable warning without a remaining lock
+ok 15 - already-missing own lock is an observable warning without a remaining lock
+  ---
+  duration_ms: 795.3182
+  type: 'test'
+  ...
+# Subtest: initializer key write failure closes handle and cleans temp
+ok 16 - initializer key write failure closes handle and cleans temp
+  ---
+  duration_ms: 558.2998
+  type: 'test'
+  ...
+# Subtest: initializer key sync failure closes handle and cleans temp
+ok 17 - initializer key sync failure closes handle and cleans temp
+  ---
+  duration_ms: 582.363
+  type: 'test'
+  ...
+# Subtest: initializer committed key cleanup warning is observable on nativeInit result
+ok 18 - initializer committed key cleanup warning is observable on nativeInit result
+  ---
+  duration_ms: 575.9841
+  type: 'test'
+  ...
+# Subtest: lock writer committed temp cleanup warning is observable after ordinary own-lock release
+ok 19 - lock writer committed temp cleanup warning is observable after ordinary own-lock release
+  ---
+  duration_ms: 823.3032
+  type: 'test'
+  ...
+# Subtest: failed exclusive temp open does not delete a pre-existing file owned by someone else
+ok 20 - failed exclusive temp open does not delete a pre-existing file owned by someone else
+  ---
+  duration_ms: 587.821
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 13210.5827

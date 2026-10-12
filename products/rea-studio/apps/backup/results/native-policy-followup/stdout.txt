@@ -1,0 +1,199 @@
+TAP version 13
+# Subtest: native AES-CTR/Poly1305-AES rejects altered nonce, ciphertext and tag before decrypting
+ok 1 - native AES-CTR/Poly1305-AES rejects altered nonce, ciphertext and tag before decrypting
+  ---
+  duration_ms: 3.3027
+  type: 'test'
+  ...
+# {"nativePackPolicyObservation":{"phase":"first-snapshot","snapshot":"f8de03da9e018b8222c78b1e6cef704cc0e1cf8fdab8f59ca0fbed86ebafeb9c","totalPacks":6,"dataPacks":2,"uniqueDataBlobs":2,"dataRows":[{"id":"ab6e5bc4241af3c9ec1e009c14d127ba88f63d9bd835da470ddb01bb53ef2fe3","type":"data","offset":0,"length":67},{"id":"3a21bff172ed1f427f9ee97d000ebdc6157f62595383d81215d9328f28381bf4","type":"data","offset":0,"length":2097231}],"allStorageHeaderPayloadAndIndexVerified":true}}
+# {"nativePackPolicyObservation":{"phase":"repeat-snapshot","dataPacks":2,"dataRows":2,"addedDataPacks":0,"addedDataRows":0}}
+# Subtest: app writes genuine native v1 repositories; original opens, checks, restores and app appends
+ok 2 - app writes genuine native v1 repositories; original opens, checks, restores and app appends
+  ---
+  duration_ms: 12673.9166
+  type: 'test'
+  ...
+# {"nativePackPolicyObservation":{"phase":"first-snapshot","snapshot":"8221c0aec68a42ef04e4f2a2072882b3fa50a0882e831e8603be672bd8fb2406","totalPacks":6,"dataPacks":2,"uniqueDataBlobs":2,"dataRows":[{"id":"3a21bff172ed1f427f9ee97d000ebdc6157f62595383d81215d9328f28381bf4","type":"data","offset":0,"length":4850,"uncompressed_length":2097199},{"id":"ab6e5bc4241af3c9ec1e009c14d127ba88f63d9bd835da470ddb01bb53ef2fe3","type":"data","offset":0,"length":76,"uncompressed_length":35}],"allStorageHeaderPayloadAndIndexVerified":true}}
+# {"nativePackPolicyObservation":{"phase":"repeat-snapshot","dataPacks":2,"dataRows":2,"addedDataPacks":0,"addedDataRows":0}}
+# Subtest: app writes genuine native v2 repositories; original opens, checks, restores and app appends
+ok 3 - app writes genuine native v2 repositories; original opens, checks, restores and app appends
+  ---
+  duration_ms: 11892.483
+  type: 'test'
+  ...
+# Subtest: original v1 snapshots including compressed v2 blobs are listed, checked, restored and extended by app
+ok 4 - original v1 snapshots including compressed v2 blobs are listed, checked, restored and extended by app
+  ---
+  duration_ms: 9624.3198
+  type: 'test'
+  ...
+# Original calibrated scrypt parameters: N=32768, r=8, p=11
+# Subtest: original v2 snapshots including compressed v2 blobs are listed, checked, restored and extended by app
+ok 5 - original v2 snapshots including compressed v2 blobs are listed, checked, restored and extended by app
+  ---
+  duration_ms: 8603.1809
+  type: 'test'
+  ...
+# Original calibrated scrypt parameters: N=32768, r=8, p=9
+# Subtest: wrong password, damaged native key/config and excessive KDF are refused without persistent credentials
+ok 6 - wrong password, damaged native key/config and excessive KDF are refused without persistent credentials
+  ---
+  duration_ms: 3604.8842
+  type: 'test'
+  ...
+# Subtest: native restore refuses storage hash before creating its destination
+ok 7 - native restore refuses storage hash before creating its destination
+  ---
+  duration_ms: 2690.2013
+  type: 'test'
+  ...
+# Subtest: native restore refuses blob MAC before creating its destination
+ok 8 - native restore refuses blob MAC before creating its destination
+  ---
+  duration_ms: 2827.7745
+  type: 'test'
+  ...
+# Subtest: native restore refuses header MAC before creating its destination
+ok 9 - native restore refuses header MAC before creating its destination
+  ---
+  duration_ms: 2732.218
+  type: 'test'
+  ...
+# Subtest: native restore refuses header type before creating its destination
+ok 10 - native restore refuses header type before creating its destination
+  ---
+  duration_ms: 2790.85
+  type: 'test'
+  ...
+# Subtest: native restore refuses footer length before creating its destination
+ok 11 - native restore refuses footer length before creating its destination
+  ---
+  duration_ms: 2708.4402
+  type: 'test'
+  ...
+# Subtest: native restore refuses plaintext hash before creating its destination
+ok 12 - native restore refuses plaintext hash before creating its destination
+  ---
+  duration_ms: 2799.0564
+  type: 'test'
+  ...
+# Subtest: native restore refuses index mismatch before creating its destination
+ok 13 - native restore refuses index mismatch before creating its destination
+  ---
+  duration_ms: 2733.4061
+  type: 'test'
+  ...
+# Subtest: snapshot MAC, unknown v2 metadata, and zstd expansion budgets fail before tree processing
+ok 14 - snapshot MAC, unknown v2 metadata, and zstd expansion budgets fail before tree processing
+  ---
+  duration_ms: 5336.8641
+  type: 'test'
+  ...
+# Subtest: authenticated malformed mtime, atime and ctime are rejected before output; original rejects those trees too
+ok 15 - authenticated malformed mtime, atime and ctime are rejected before output; original rejects those trees too
+  ---
+  duration_ms: 55547.8774
+  type: 'test'
+  ...
+# 14 authenticated bad tree timestamp cases compared with the released original.
+# Subtest: malformed snapshot time is rejected by list and every selected action before output, matching original parsing
+ok 16 - malformed snapshot time is rejected by list and every selected action before output, matching original parsing
+  ---
+  duration_ms: 24141.5785
+  type: 'test'
+  ...
+# 5 authenticated bad snapshot time cases compared with the released original.
+# Subtest: valid Go time boundaries and permissive encodings match original acceptance and safe Windows mtime restoration
+ok 17 - valid Go time boundaries and permissive encodings match original acceptance and safe Windows mtime restoration
+  ---
+  duration_ms: 81147.3771
+  type: 'test'
+  ...
+# 17 authenticated valid tree time cases; original restore compared within the supported platform interval. Null snapshot time also matched original zero-time normalization.
+# Subtest: snapshot listing orders timestamps by their instant rather than textual offset or fractional form
+ok 18 - snapshot listing orders timestamps by their instant rather than textual offset or fractional form
+  ---
+  duration_ms: 4344.6981
+  type: 'test'
+  ...
+# Subtest: authenticated native tree traversal is rejected before restore output
+ok 19 - authenticated native tree traversal is rejected before restore output
+  ---
+  duration_ms: 2787.206
+  type: 'test'
+  ...
+# Subtest: authenticated native tree case collision is rejected before restore output
+ok 20 - authenticated native tree case collision is rejected before restore output
+  ---
+  duration_ms: 3153.0107
+  type: 'test'
+  ...
+# Subtest: authenticated native tree duplicate is rejected before restore output
+ok 21 - authenticated native tree duplicate is rejected before restore output
+  ---
+  duration_ms: 2868.5475
+  type: 'test'
+  ...
+# Subtest: authenticated native tree unordered is rejected before restore output
+ok 22 - authenticated native tree unordered is rejected before restore output
+  ---
+  duration_ms: 2659.8463
+  type: 'test'
+  ...
+# Subtest: authenticated native tree symlink is rejected before restore output
+ok 23 - authenticated native tree symlink is rejected before restore output
+  ---
+  duration_ms: 2926.6626
+  type: 'test'
+  ...
+# Subtest: authenticated native tree excessive size is rejected before restore output
+ok 24 - authenticated native tree excessive size is rejected before restore output
+  ---
+  duration_ms: 2717.6738
+  type: 'test'
+  ...
+# Subtest: authenticated native tree content size is rejected before restore output
+ok 25 - authenticated native tree content size is rejected before restore output
+  ---
+  duration_ms: 2675.5555
+  type: 'test'
+  ...
+# Subtest: native paths, overlapping folders, existing destinations, invalid IDs and confirmations preserve existing data
+ok 26 - native paths, overlapping folders, existing destinations, invalid IDs and confirmations preserve existing data
+  ---
+  duration_ms: 8936.5262
+  type: 'test'
+  ...
+# Subtest: native app and original honor authenticated exclusive locks; app never deletes an existing stale lock
+ok 27 - native app and original honor authenticated exclusive locks; app never deletes an existing stale lock
+  ---
+  duration_ms: 3325.7127
+  type: 'test'
+  ...
+# Subtest: oversized source files are rejected before native snapshot publication
+ok 28 - oversized source files are rejected before native snapshot publication
+  ---
+  duration_ms: 1564.3061
+  type: 'test'
+  ...
+# Subtest: source mutation during native capture aborts publication and releases the app lock
+ok 29 - source mutation during native capture aborts publication and releases the app lock
+  ---
+  duration_ms: 1681.0173
+  type: 'test'
+  ...
+# Subtest: native HTTP repository, encrypted snapshot and restore persist across host restarts without password records
+ok 30 - native HTTP repository, encrypted snapshot and restore persist across host restarts without password records
+  ---
+  duration_ms: 5743.1721
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 277340.9683

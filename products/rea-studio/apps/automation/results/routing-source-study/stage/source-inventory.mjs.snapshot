@@ -1,0 +1,12 @@
+// Read-only static inventory of authenticated released node definitions.
+import fs from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+import {verifyOriginalIntegrity} from './original-harness.mjs';
+const require=createRequire(new URL('../../outputs/rea-research-lab/.local/automation-original/package.json',import.meta.url)),acorn=require('acorn'),manifest=JSON.parse(await fs.readFile(new URL('original-manifest.json',import.meta.url),'utf8')),records=[];
+const literal=value=>value?.type==='Literal'?value.value:undefined;
+for(const file of Object.keys(manifest.files).filter(file=>/\/nodes\/(Switch|Merge)\/.+\.js$/.test(file))){const bytes=await fs.readFile(new URL(file,import.meta.url)),source=bytes.toString(),tree=acorn.parse(source,{ecmaVersion:'latest',locations:true});
+ function visit(value){if(!value||typeof value!=='object')return;if(value.type==='ObjectExpression'){const properties=new Map(value.properties.filter(p=>p.type==='Property').map(p=>[p.key.name??p.key.value,p.value])),name=literal(properties.get('name')),displayName=literal(properties.get('displayName')),type=literal(properties.get('type'));if(name&&displayName&&type)records.push({file,line:value.loc.start.line,sha256:createHash('sha256').update(bytes).digest('hex'),name,displayName,type,...Object.fromEntries(['default','displayOptions','typeOptions','options'].filter(key=>properties.has(key)).map(key=>[key,source.slice(properties.get(key).start,properties.get(key).end)]))});}for(const data of Object.values(value)){if(Array.isArray(data))data.forEach(visit);else if(data&&typeof data==='object')visit(data);}}
+ visit(tree);
+}
+await verifyOriginalIntegrity();await fs.writeFile(new URL('source-option-inventory.json',import.meta.url),JSON.stringify({createdAt:new Date().toISOString(),scope:'Static object definitions with literal name/displayName/type from every retained Switch/Merge released JavaScript version/helper. Defaults/conditions/options retain exact source expressions. Dynamic spreads, generated filter operator schemas and UI helper evaluation are not reconstructed by this inventory.',sourceCommit:manifest.sourceCommit,archiveSha256:manifest.archiveSha256,definitions:records.length,records},null,2)+'\n');console.log(JSON.stringify({definitions:records.length}));

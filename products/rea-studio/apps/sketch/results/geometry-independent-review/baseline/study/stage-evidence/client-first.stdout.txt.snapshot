@@ -1,0 +1,63 @@
+TAP version 13
+# Subtest: UI Line preserves signed draw/resize endpoints and paints no arrowhead or fill
+ok 1 - UI Line preserves signed draw/resize endpoints and paints no arrowhead or fill
+  ---
+  duration_ms: 4.2024
+  type: 'test'
+  ...
+# Subtest: UI Diamond reverse drag normalizes geometry and paints the exact bounded polygon
+not ok 2 - UI Diamond reverse drag normalizes geometry and paints the exact bounded polygon
+  ---
+  duration_ms: 1.1489
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\sketch-geometry-next\\apps\\sketch\\geometry-client.test.mjs:21:1'
+  failureType: 'testCodeFailure'
+  error: `The "regexp" argument must be an instance of RegExp. Received type string ('No shape selected')`
+  code: 'ERR_INVALID_ARG_TYPE'
+  name: 'TypeError'
+  stack: |-
+    internalMatch (node:assert:855:11)
+    strict.match (node:assert:897:3)
+    file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-geometry-next/apps/sketch/geometry-client.test.mjs:23:144
+    async harness (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-geometry-next/apps/sketch/geometry-client.test.mjs:14:563)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: UI line/diamond/freehand grouping, group dragging, undo/redo, save/reload preserve real scene data
+ok 3 - UI line/diamond/freehand grouping, group dragging, undo/redo, save/reload preserve real scene data
+  ---
+  duration_ms: 3.0727
+  type: 'test'
+  ...
+# Subtest: UI imported native line/diamond export retains unknown metadata after geometry edit
+not ok 4 - UI imported native line/diamond export retains unknown metadata after geometry edit
+  ---
+  duration_ms: 2.866
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\sketch-geometry-next\\apps\\sketch\\geometry-client.test.mjs:28:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    50 !== 60
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 60
+  actual: 50
+  operator: 'strictEqual'
+  stack: |-
+    file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-geometry-next/apps/sketch/geometry-client.test.mjs:29:1022
+    async harness (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-geometry-next/apps/sketch/geometry-client.test.mjs:14:563)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 2
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 86.2141

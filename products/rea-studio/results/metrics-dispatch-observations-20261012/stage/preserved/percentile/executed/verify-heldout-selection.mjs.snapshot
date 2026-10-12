@@ -1,0 +1,33 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {isDeepStrictEqual} from 'node:util';
+const here=path.dirname(fileURLToPath(import.meta.url)),lab=path.resolve(here,'../../outputs/rea-research-lab'),app=path.join(lab,'products/rea-studio/apps/metrics'),artifacts=path.join(lab,'projects/02-grafana/artifacts'),candidate=path.resolve(process.argv[2]),native=await import(pathToFileURL(candidate).href),sources=JSON.parse(await fs.readFile(path.join(here,'preserved/sources.json'))),digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+assert.equal(digest(await fs.readFile(path.join(artifacts,'release.tgz'))),sources.archiveSha256);
+for(const source of sources.sources.filter(row=>!row.path.startsWith('docs/'))){const original=await fs.readFile(path.join(artifacts,'package',source.path));assert.equal(digest(original),source.sha256);assert.ok(original.equals(execFileSync('tar',['-xOf',path.join(artifacts,'release.tgz'),'package/'+source.path],{maxBuffer:4*1024*1024})));}
+assert.equal(digest(await fs.readFile(path.join(artifacts,'lodash-4.17.23.tgz'))),sources.oracleDependency.sha256);assert.ok((await fs.readFile(path.join(artifacts,'node_modules/lodash/lodash.js'))).equals(execFileSync('tar',['-xOf',path.join(artifacts,'lodash-4.17.23.tgz'),'package/lodash.js'],{maxBuffer:4*1024*1024})));
+const originalPath=path.join(artifacts,'package/dist/cjs/transformations/fieldReducer.cjs'),require=createRequire(originalPath);assert.equal(path.resolve(require.resolve('lodash')),path.resolve(artifacts,'node_modules/lodash/lodash.js'));const original=require(originalPath);
+let state=0xe2719acb;const random=()=>{state^=state<<13;state^=state>>>17;state^=state<<5;return state>>>0;};
+const cases=[];
+for(const n of [1,2,3,17,128,1009,25000]){
+  cases.push(['ascending-'+n,Array.from({length:n},(_,i)=>i-31.125)]);
+  cases.push(['descending-'+n,Array.from({length:n},(_,i)=>n-i-31.125)]);
+  cases.push(['duplicates-'+n,Array.from({length:n},(_,i)=>((i*3571)%13)-7.625)]);
+  cases.push(['organ-pipe-'+n,Array.from({length:n},(_,i)=>i<Math.floor(n/2)?i+0.125:n-i+0.125)]);
+  cases.push(['constant-'+n,Array(n).fill(7.625)]);
+  cases.push(['heldout-random-'+n,Array.from({length:n},()=>((random()%700003)-350001)/16)]);
+  cases.push(['nulls-'+n,Array.from({length:n},(_,i)=>i%7===0?null:((i*3571)%307)-153.625)]);
+}
+cases.push(['signed-zero',[0,-0,0,-0,-0,1,-1,0,-0]],['undefined-sparse',Object.assign(Array(19),{1:3,7:undefined,13:null,17:1})],['mixed-coercions',[true,false,'2','bad',null,undefined,3,-0,NaN,Infinity,-Infinity]],['nan-infinities',[NaN,Infinity,-Infinity,NaN,3,0,-0,NaN]],['extremes',[Number.MIN_VALUE,Number.MAX_VALUE,-Number.MAX_VALUE,-Number.MIN_VALUE,0]]);
+const corpus=createHash('sha256'),outputs=createHash('sha256'),failures=[];let comparisons=0,registryComparisons=0;
+for(const [label,values]of cases){corpus.update(JSON.stringify(native.encodeCalculation({label,values}))+'\n');for(const mode of ['connected','null','null as zero'])for(const type of ['number','time','string'])for(const id of ['p1','p2','p25','p50','p75','p95','p98','p99']){
+  const expectedField={type,config:{nullValueMode:mode},values:values.slice(),state:{calcs:{retained:'untouched'}}},actualField=structuredClone(expectedField),before=actualField.values.slice(),expected=original.reduceField({field:expectedField,reducers:[id]}),actual=native.reduceField({field:actualField,reducers:[id]});comparisons++;outputs.update(JSON.stringify(native.encodeCalculation(expected))+'\n');if(!isDeepStrictEqual(expected,actual)||!isDeepStrictEqual(expectedField.state,actualField.state)||!isDeepStrictEqual(before,actualField.values))failures.push({label,type,mode,id});
+}for(const [ignore,zero]of [[false,false],[false,true],[true,false],[true,true]])for(const id of ['p1','p50','p95','p99']){
+  const expectedField={type:'number',config:{},values:values.slice()},actualField={...expectedField,values:values.slice()},before=actualField.values.slice(),expected=original.fieldReducers.get(id).reduce(expectedField,ignore,zero),actual=native.fieldReducers.get(id).reduce(actualField,ignore,zero);registryComparisons++;if(!isDeepStrictEqual(expected,actual)||!isDeepStrictEqual(before,actualField.values))failures.push({label,ignore,zero,id,registry:true});
+}}
+const receipt={schemaVersion:1,checkedAt:new Date().toISOString(),candidate:path.basename(candidate),sourceSHA256:digest(await fs.readFile(candidate)),originalArchiveSHA256:sources.archiveSha256,originalArchiveAndActualDependencyBytesVerified:true,seed:'0xe2719acb',distinctInputs:cases.length,comparisons,registryComparisons,inputSHA256:corpus.digest('hex'),expectedOutputSHA256:outputs.digest('hex'),failureCount:failures.length,failures:failures.slice(0,20),scope:'Held-out large single-percentile and registry-call differential; primitive finite/tied/adversarial partitions plus stable-sort fallback values. Input arrays and cache states compared exactly.',formalPerformance:false,fullProductComplete:false,universalSuperiorityEstablished:false};
+const output=path.join(here,'results',path.basename(candidate,'.mjs')+'-selection-heldout.json');await fs.writeFile(output,JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));if(failures.length)process.exitCode=1;

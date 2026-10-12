@@ -1,0 +1,21 @@
+# Independent finite Rabin stage review — probes pending
+
+The reviewed stage is `work/backup-rabin-next`, receipt SHA-256 `5db924be34d1b7d211a7ab9205b26e0218120593470f32f6169b591b71863fdc`. Before review, all 50 files (501,780 bytes) were copied to `baseline/`; exact hashes are in `baseline-manifest.json`. Stage and production source were not edited.
+
+Read-only review covers rolling polynomial arithmetic, tables, window seeding, minimum preskip, reset and EOF; private input/assembly/output buffers; capture controls; file identity and mutation checks; file-handle cleanup; per-file and aggregate snapshot bounds; elapsed deadlines and abort; immutable pack/index/snapshot publication. The fixed degree-53, average20, min512KiB, max8MiB algorithm matches the retained `references/chunker.go` source on inspection. Independent execution remains pending and this is not a full parity/security/performance claim.
+
+The root combined publication run passed 496/496 tests. Review probes remain unexecuted while Metrics has its quiet timing window, as requested by root.
+
+## Open hypotheses, not reproduced findings
+
+1. **Abort/deadline crossing an awaited source stat.** `capture-file.mjs:32` checks controls before file stats and through `currentPath()`, but has no guard after the last `await fs.lstat(...)`. Line 34 can consequently invoke a sink after cancellation during that pending stat; line 35 can return success when cancellation occurs during the final stat. `lifecycle-probes.mjs abort` uses a 25-byte ordinary synthetic source, a real `AbortSignal` and deterministic aborts from the documented resolver callback at those boundaries. Expected behavior is rejection without a new post-abort sink call; the final-stat case must reject instead of returning success. This is an API lifecycle edge, not a claim that I/O or sink promises can be forcibly preempted.
+
+2. **Snapshot commit followed by guarded cleanup failure.** In staged `apps/backup/restic.mjs:114–123`, `atomic()` performs `fs.link(...)` at line 120, then resolves the temporary pathname through deadline-guarded `location()` in line 122. Expiry following the link can reject after the snapshot is visible. `lifecycle-probes.mjs publication` uses a tiny owned repository and source and deterministically advances only the child process's clock by 120,001 ms at the final destination resolution. Expected operation semantics need an explicit commit boundary: cleanup should not turn a committed snapshot into an ambiguous failure. If the predicted failure occurs, snapshot/index/lock/pending-file counts will be retained. This edge is inherited from the staged compression writer, not introduced by the Rabin arithmetic.
+
+## Planned independent finite original subset
+
+`original-subset.mjs` authenticates the exact original restic 0.19.1 executable and archive before every command and uses only a private synthetic repository. Five files exercise SHA-derived data, an 8MiB forced cut plus 127-byte tail, zero cuts plus tail, an ordinary tiny file and an empty file. Original backup/tree/index plaintext chunk IDs and lengths will be compared in order against direct staged captures. Each candidate sink deliberately overwrites its isolated output buffer after hashing, verifying future chunks still match original. This original CLI does not expose Cut fingerprints; no Cut runtime comparison is claimed.
+
+The original executable SHA-256 is `b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830`; archive SHA-256 is `da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d`. Retained dependency binding is restic commit `6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf` to restic/chunker v0.4.0, with BSD-2-Clause source/license bytes preserved in the baseline. The stage's existing comparison receipt is prior author evidence; this review's planned fresh execution is separate.
+
+No other material defect is confirmed from the read-only inspection. Failure can leave immutable unindexed packs, source capture is not an atomic filesystem snapshot, 17MiB is a calculated live capture-buffer figure rather than an RSS cap, and blocked I/O/callbacks are not force-preempted; those limitations are already stated in the stage README.

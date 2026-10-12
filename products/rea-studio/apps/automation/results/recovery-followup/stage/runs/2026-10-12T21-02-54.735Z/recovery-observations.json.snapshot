@@ -1,0 +1,170 @@
+{
+  "schema": "rea-automation-routing-recovery-finite-regressions/v1",
+  "observations": [
+    {
+      "name": "expired-checkpoint",
+      "calls": 0,
+      "status": "failed",
+      "code": "NATIVE_LIMIT",
+      "activeMs": 120041.17020000001,
+      "scope": "Cooperative recheck after awaited IO; elapsed IO is not preempted"
+    },
+    {
+      "name": "premature-Effect-rejected",
+      "status": "waiting",
+      "fixture": {
+        "name": "Owned preserved Wait/Merge fixture",
+        "nodes": [
+          {
+            "name": "Start",
+            "id": "Start",
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "parameters": {},
+            "position": [
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Left",
+            "id": "Left",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "parameters": {
+              "mode": "manual",
+              "assignments": {
+                "assignments": [
+                  {
+                    "name": "left",
+                    "value": 1,
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "position": [
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Wait",
+            "id": "Wait",
+            "type": "n8n-nodes-base.wait",
+            "typeVersion": 1.1,
+            "parameters": {
+              "resume": "timeInterval",
+              "amount": 0.01,
+              "unit": "seconds"
+            },
+            "position": [
+              0,
+              100
+            ]
+          },
+          {
+            "name": "Merge",
+            "id": "Merge",
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "parameters": {
+              "mode": "chooseBranch",
+              "numberInputs": 2,
+              "chooseBranchMode": "waitForAll",
+              "output": "specifiedInput",
+              "useDataOfInput": 1
+            },
+            "position": [
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Effect",
+            "id": "Effect",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.4,
+            "parameters": {
+              "url": "http://127.0.0.1:1/owned",
+              "options": {
+                "timeout": 1000
+              }
+            },
+            "position": [
+              0,
+              0
+            ]
+          }
+        ],
+        "connections": {
+          "Start": {
+            "main": [
+              [
+                {
+                  "node": "Left",
+                  "type": "main",
+                  "index": 0
+                },
+                {
+                  "node": "Wait",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Left": {
+            "main": [
+              [
+                {
+                  "node": "Merge",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Wait": {
+            "main": [
+              [
+                {
+                  "node": "Merge",
+                  "type": "main",
+                  "index": 1
+                }
+              ]
+            ]
+          },
+          "Merge": {
+            "main": [
+              [
+                {
+                  "node": "Effect",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "genuine-partial-join-resume",
+      "calls": 1,
+      "status": "completed"
+    },
+    {
+      "name": "genuine-ready-Merge-behind-Wait",
+      "calls": 2,
+      "status": "completed"
+    },
+    {
+      "name": "actual-shared-host-malformed-recovery",
+      "httpStatus": 400,
+      "requests": 0,
+      "recordUnchanged": true
+    }
+  ]
+}

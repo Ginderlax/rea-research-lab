@@ -1,0 +1,28 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+const here=path.dirname(fileURLToPath(import.meta.url));
+const repo=path.resolve(here,'../../outputs/rea-research-lab');
+const app=path.join(repo,'products/rea-studio/apps/automation');
+const source=path.join(repo,'.local/automation-original');
+const archive='n8n-nodes-base-2.16.0.tgz';
+const expected='64e058ea668bae613b3d040be2bd60f6b21be5d74db2839cf3d7e2ab87c76338';
+const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+const archiveBytes=await fs.readFile(path.join(source,archive));
+if(hash(archiveBytes)!==expected)throw new Error('Original archive authentication failed');
+await fs.mkdir(path.join(here,'original'),{recursive:true});
+await fs.copyFile(path.join(source,archive),path.join(here,'original',archive));
+execFileSync('tar',['-xf',path.join(here,'original',archive),'-C',path.join(here,'original'),'package/dist/nodes/Switch','package/dist/nodes/Merge','package/dist/utils','package/LICENSE.md','package/package.json'],{stdio:'pipe'});
+try{await fs.access(path.join(here,'baseline'));}catch{await fs.cp(app,path.join(here,'baseline'),{recursive:true,errorOnExist:true,force:false});}
+await fs.mkdir(path.join(here,'candidate'),{recursive:true});
+for(const name of ['native.mjs','native-server.mjs','core.mjs','engine.mjs','server.mjs'])await fs.copyFile(path.join(app,name),path.join(here,'candidate',name));
+const fingerprints=[];
+for(const name of (await fs.readdir(app)).sort()){
+  const stat=await fs.stat(path.join(app,name));
+  if(stat.isFile()){const bytes=await fs.readFile(path.join(app,name)),preserved=await fs.readFile(path.join(here,'baseline',name));if(!bytes.equals(preserved))throw new Error('Baseline changed before staging: '+name);fingerprints.push({path:name,bytes:bytes.length,sha256:hash(bytes)});}
+}
+await fs.writeFile(path.join(here,'baseline-validation.json'),JSON.stringify({createdAt:new Date().toISOString(),scope:'Exact read-only production baseline preserved before staging changes; no execution results claimed.',source:app,originalArchive:{path:'original/'+archive,bytes:archiveBytes.length,sha256:expected},fingerprints},null,2)+'\n');
+console.log(JSON.stringify({files:fingerprints.length,archiveSha256:expected}));

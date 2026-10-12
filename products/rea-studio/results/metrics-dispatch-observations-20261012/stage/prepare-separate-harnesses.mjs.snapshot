@@ -1,0 +1,15 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {here,sha} from './authenticate-original.mjs';
+const old=path.resolve(here,'../metrics-standard-next'),copied={};
+async function copy(source,target,expected){const bytes=await fs.readFile(path.join(old,source));if(expected)assert.equal(sha(bytes),expected);await fs.mkdir(path.dirname(path.join(here,target)),{recursive:true});await fs.writeFile(path.join(here,target),bytes);copied[target]={originalPath:path.join(old,source),sha256:sha(bytes),bytes:bytes.length};}
+await copy('candidate-isolated.mjs','candidate-percentile-isolated.mjs','6ac1153c008d960de23766af1e4325cc0e77a5ab10c49be604d4d6e203f6e26f');
+await copy('benchmark.mjs','benchmark.mjs','21614846781e3bf309adbf9a429d741180d80e53675c2a8e29272c7e4bce72eb');
+await copy('benchmark-worker.mjs','benchmark-worker.mjs','96083400915fb452fb93ed23032d215c00f229f8456938d83fc69c9648954ffe');
+const reviewBytes=await fs.readFile(path.join(old,'isolated-review.json'));assert.equal(sha(reviewBytes),'eb2b3742621f5567a6fdeb008726de97ee3fe6cc685f8f51d7e224507bc685d2');
+const review=JSON.parse(reviewBytes);await copy('isolated-review.json','preserved/percentile/isolated-review.json');
+for(const [name,record]of Object.entries(review.evidence))await copy('results/'+name,'preserved/percentile/results/'+name,record.sha256);
+for(const [name,hash]of Object.entries(review.sources)){if(name==='candidate-baseline.mjs'||name==='candidate-isolated.mjs')continue;await copy(name,'preserved/percentile/executed/'+name,hash);}
+for(const filename of ['memory-preflight.json','results/memory-harness-checks.json']){const bytes=await fs.readFile(path.join(here,filename));await fs.mkdir(path.join(here,'preserved/harness-drafts'),{recursive:true});await fs.writeFile(path.join(here,'preserved/harness-drafts',path.basename(filename)),bytes);}
+const output={schemaVersion:1,checkedAt:new Date().toISOString(),copied,scope:'Exact frozen timing v2 scripts and source-identical percentile candidate with unchanged historical execution receipts. Historical implementation paths remain unchanged; no timing or memory measurement executed.',timingMeasurementsRun:false,memoryMeasurementsRun:false};await fs.writeFile(path.join(here,'harness-preservation.json'),JSON.stringify(output,null,2)+'\n');console.log(JSON.stringify({copied:Object.keys(copied).length,scope:output.scope}));

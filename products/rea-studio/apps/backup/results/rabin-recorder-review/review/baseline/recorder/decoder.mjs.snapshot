@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+// Node's TAP reporter escapes backslashes and prefixes individual stdout
+// chunks, including splits within a single JSON console message. Join the
+// original contiguous comment chunks before reversing the escaping once.
+export function readRabinObservation(stdout,label){
+ const lines=stdout.split(/\r?\n/),prefix='# {"'+label+'":',start=lines.findIndex(line=>line.startsWith(prefix));
+ assert.ok(start>=0,`Missing observation ${label}`);let encoded='',lastError;
+ for(let index=start;index<lines.length&&index<start+4096;index++){
+  const line=lines[index];if(!line.startsWith('# ')||line.startsWith('# Subtest:'))break;
+  encoded+=line.slice(2);assert.ok(encoded.length<=1024*1024,`Observation exceeds the bounded recorder size: ${label}`);
+  try{const value=JSON.parse(encoded.replaceAll('\\\\','\\'));assert.ok(Object.hasOwn(value,label));return value[label];}catch(error){lastError=error;}
+ }
+ throw new Error(`Incomplete TAP observation ${label}: ${lastError?.message??'missing comment content'}`);
+}

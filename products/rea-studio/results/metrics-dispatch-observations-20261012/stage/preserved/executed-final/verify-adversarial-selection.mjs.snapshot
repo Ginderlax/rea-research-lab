@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+import {authenticateOriginal,here,sha} from './authenticate-original.mjs';
+import {canonical,packet} from './canonical.mjs';
+const candidate=path.resolve(process.argv[2]),authority=await authenticateOriginal(),original=createRequire(authority.entry)(authority.entry),native=await import(pathToFileURL(candidate).href),n=25000,cases=[['organ-pipe',Array.from({length:n},(_,i)=>i<n/2?i+.125:n-i+.125)],['alternating-ends',Array.from({length:n},(_,i)=>i%2?n-Math.floor(i/2):Math.floor(i/2))],['repeated-bands',Array.from({length:n},(_,i)=>Math.floor(i/17)%113)]];
+let comparisons=0;for(const [label,values]of cases)for(const id of ['p1','p25','p50','p75','p95','p99']){const make=()=>({type:'number',config:{nullValueMode:'connected'},values:values.slice(),state:{}}),expected=make(),actual=make(),result=native.reduceField({field:actual,reducers:[id]}),wanted=original.reduceField({field:expected,reducers:[id]});assert.equal(canonical(packet(actual,result)),canonical(packet(expected,wanted)),label+':'+id);assert.deepEqual(actual.values,values);comparisons++;}
+const receipt={schemaVersion:1,checkedAt:new Date().toISOString(),candidate:path.basename(candidate),sourceSHA256:sha(await fs.readFile(candidate)),authority,cases:cases.map(([name,values])=>({name,samples:values.length})),comparisons,outputInputStateAndAliasExact:true,selectionAlgorithmUnchanged:true,partitionGuardNotApplicable:true,scope:'Adversarial bounded original selection comparisons for a standard-only candidate. No finite partition selector is introduced; original stable-sort path is retained.',formalPerformance:false,fullProductComplete:false,universalSuperiorityEstablished:false};await fs.writeFile(path.join(here,'results',path.basename(candidate,'.mjs')+'-adversarial-selection.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify({comparisons,sourceSHA256:receipt.sourceSHA256}));

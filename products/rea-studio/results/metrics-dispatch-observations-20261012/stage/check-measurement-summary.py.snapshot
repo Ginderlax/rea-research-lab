@@ -1,0 +1,68 @@
+"""Independent post-window replay of summary arithmetic and figure fingerprints."""
+from pathlib import Path
+import json, statistics, hashlib
+BASE = Path(__file__).resolve().parent
+read = lambda name: json.loads((BASE / name).read_text(encoding='utf-8'))
+digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+report = read('measurement-review.json')
+checks = 0
+negative_samples = {}
+
+def same(stats, values):
+    global checks
+    assert len(values) == 7
+    assert stats['samples'] == values
+    assert stats['median'] == statistics.median(values)
+    assert stats['min'] == min(values)
+    assert stats['max'] == max(values)
+    checks += 1
+
+for variant in ['standard', 'percentile']:
+    timing = report['timing'][variant]
+    raw = read(timing['raw']['path'])
+    assert len(raw['records']) == 105
+    assert len({(r['run'], r['caseName'], r['implementation']) for r in raw['records']}) == 105
+    assert digest(BASE / timing['raw']['path']) == timing['raw']['sha256']
+    assert all(raw['records'][i]['completedAt'] <= raw['records'][i+1]['start'] for i in range(104))
+    for row in timing['summary']:
+        for role, stats in row['millisecondsPerCall'].items():
+            same(stats, [r['millisecondsPerCall'] for r in raw['records'] if r['caseName'] == row['caseName'] and r['implementation'] == role])
+    trial = report['memory'][variant]
+    raw = read(trial['receipt']['path'])
+    assert len(raw['samples']) == 105
+    assert len({(r['runNumber'], r['caseName'], r['implementation']) for r in raw['samples']}) == 105
+    assert digest(BASE / trial['receipt']['path']) == trial['receipt']['sha256']
+    assert all(raw['samples'][i]['completedAt'] <= raw['samples'][i+1]['startedAt'] for i in range(104))
+    negative = 0
+    for row in trial['summary']:
+        for role, summary in row['implementations'].items():
+            samples = [r for r in raw['samples'] if r['caseName'] == row['caseName'] and r['implementation'] == role]
+            snapshots = [{p['name']: p for p in r['result']['checkpoints']} for r in samples]
+            for name, metrics in summary['checkpoints'].items():
+                for field, stats in metrics.items():
+                    same(stats, [snapshot[name][field] for snapshot in snapshots])
+            pairs = {'moduleInitialization': ('afterSelectedInitialization', 'beforeSelectedImport'), 'sharedInput': ('afterSharedInput', 'afterSelectedInitialization'), 'warmup': ('warmBase', 'afterSharedInput'), 'transientEnd': ('afterTransient', 'warmBase'), 'retained': ('retainedAfterGC', 'beforeRetention'), 'released': ('releasedAfterGC', 'beforeRetention'), 'retainedMinusReleased': ('retainedAfterGC', 'releasedAfterGC')}
+            for name, metrics in summary['deltas'].items():
+                end, start = pairs[name]
+                for field, stats in metrics.items():
+                    values = [snapshot[end][field] - snapshot[start][field] for snapshot in snapshots]
+                    same(stats, values)
+                    negative += sum(value < 0 for value in values)
+            for field, stats in summary['sampledTransientMaximum'].items():
+                same(stats, [max(p[field] for name, p in snapshot.items() if name.startswith('transientBlock-')) for snapshot in snapshots])
+            for field, stats in summary['sampledTransientMaximumMinusWarmBase'].items():
+                same(stats, [max(p[field] for name, p in snapshot.items() if name.startswith('transientBlock-')) - snapshot['warmBase'][field] for snapshot in snapshots])
+            same(summary['ownedPIDObserverPeakRSS'], [r['ownedPIDObserver']['peakRSS'] for r in samples])
+            same(summary['lifetimeMaxRSSKiB'], [max(p['lifetimePeakResidentKiB'] for p in r['result']['checkpoints']) for r in samples])
+            same(summary['observerSampleCount'], [r['ownedPIDObserver']['samples'] for r in samples])
+    negative_samples[variant] = negative
+
+figures = read('results/figures-validation.json')
+assert figures['input']['sha256'] == digest(BASE / 'measurement-review.json')
+assert figures['source']['sha256'] == digest(BASE / 'plot-measurements.py')
+for output in figures['outputs']:
+    assert digest(BASE / output['path']) == output['sha256']
+    assert (BASE / output['path']).stat().st_size == output['bytes']
+result = {'schemaVersion': 1, 'status': 'passed', 'summaryGroupsIndependentlyRecomputed': checks, 'timingRows': 210, 'memoryRows': 210, 'negativePairedSampleDeltasPreserved': negative_samples, 'measurementReviewSHA256': digest(BASE / 'measurement-review.json'), 'checkerSourceSHA256': digest(Path(__file__)), 'figuresSHA256': digest(BASE / 'results/figures-validation.json'), 'figureFilesVerified': 6, 'measurementWorkloadsRun': False, 'scope': 'Independent Python statistics replay over recorded raw rows; sequential identities and all medians/min/max/paired memory differences checked without executing reducers.'}
+(BASE / 'results' / 'summary-arithmetic-validation.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+print(json.dumps(result))

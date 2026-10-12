@@ -6,10 +6,10 @@ import { zstdDecompressSync } from 'node:zlib';
 import { hash, seal, open, base64, password, passwordKey, masterKey, masterJSON, randomKey, randomPolynomial, validPolynomial } from './restic-crypto.mjs';
 import { calibrateWriter } from './restic-kdf-policy.mjs';
 import { compressionMode, encodeBlob, encodeMetadata } from './restic-compression.mjs';
+import { captureRabinFile } from './capture-rabin-file.mjs';
 
 const MiB = 1024 * 1024;
 export const limits = { file: 64 * MiB,total: 512 * MiB,pack: 96 * MiB,metadata: 16 * MiB,metadataTotal: 64 * MiB,entries: 10000,blobs: 100000,packs: 4096,depth: 100,keys: 16,milliseconds: 120000 };
-const CHUNK = MiB;
 const id = value => { if (typeof value !== 'string' || !/^[a-f0-9]{64}$/.test(value)) throw new Error('Use a full 64-character restic object ID.'); return value; };
 // Bounded Go time.Time JSON acceptance, including its permissive comma/hour/
 // zone forms. Validate the Gregorian date before converting it: Date.parse
@@ -74,7 +74,7 @@ export function decodeName(name) {
 function encodeName(name) { clean(name); return JSON.stringify(name).slice(1,-1); }
 
 class Repository {
-  constructor(workspace, relative) { this.workspace = workspace; this.relative = clean(relative); if (this.relative.split('/').some(p => p.toLowerCase() === '.rea-backup')) throw new Error('Choose a separate native restic repository folder.'); this.started = Date.now(); this.metadataBytes = 0; this.packReads = 0; this.lastPack = null; }
+  constructor(workspace, relative) { this.workspace = workspace; this.relative = clean(relative); if (this.relative.split('/').some(p => p.toLowerCase() === '.rea-backup')) throw new Error('Choose a separate native restic repository folder.'); this.started = Date.now(); this.metadataBytes = 0; this.packReads = 0; this.lastPack = null; this.cleanupWarnings = []; }
   guard() { if (Date.now() - this.started > limits.milliseconds) throw new Error('The bounded native operation exceeded two minutes.'); }
   accountMetadata(size) { this.metadataBytes += size; if (this.metadataBytes > limits.metadataTotal) throw new Error('Restic metadata exceeds the operation budget.'); }
   location(relative = '') { this.guard(); return this.workspace.resolve(relative ? `${this.relative}/${clean(relative)}` : this.relative); }
@@ -113,13 +113,40 @@ class Repository {
   }
   async atomic(relative, bytes) {
     const target = this.location(relative), tempRelative = `tmp/${randomUUID()}.pending`, temp = this.location(tempRelative);
-    await fs.mkdir(this.location('tmp'),{ recursive: true });
-    await fs.mkdir(path.dirname(target),{ recursive: true });
-    const handle = await fs.open(temp,'wx',0o600);
-    try { await handle.writeFile(bytes); await handle.sync(); } finally { await handle.close(); }
-    try { await fs.link(this.location(tempRelative),this.location(relative)); }
-    catch (error) { if (error.code !== 'EEXIST') throw error; if (hash(await this.read(relative,bytes.length)) !== hash(bytes)) throw new Error('Existing restic object differs from the immutable object being written.'); }
-    finally { await fs.unlink(this.location(tempRelative)); }
+    let handle, created = false, committed = false, failure;
+    try {
+      await fs.mkdir(this.location('tmp'),{ recursive: true });
+      this.guard();
+      await fs.mkdir(path.dirname(target),{ recursive: true });
+      this.guard();
+      handle = await fs.open(temp,'wx',0o600); created = true;
+      this.guard();
+      await handle.writeFile(bytes); this.guard();
+      await handle.sync(); this.guard();
+      await handle.close(); handle = null;
+      const linkTemp = this.location(tempRelative), linkTarget = this.location(relative);
+      this.guard();
+      try { await fs.link(linkTemp,linkTarget); committed = true; }
+      catch (error) {
+        if (error.code !== 'EEXIST') throw error;
+        if (hash(await this.read(relative,bytes.length)) !== hash(bytes)) throw new Error('Existing restic object differs from the immutable object being written.');
+        committed = true;
+      }
+    } catch (error) { failure = error; }
+    finally {
+      if (handle) try { await handle.close(); } catch (error) {
+        if (!failure) failure = error;
+        else this.cleanupWarnings.push({ scope:'temporary-handle',path:tempRelative,message:error.message });
+      }
+      if (created) try {
+        // Cleanup still validates confinement, but elapsed deadlines cannot
+        // turn an already committed immutable object into an ambiguous failure.
+        await fs.unlink(this.workspace.resolve(`${this.relative}/${tempRelative}`));
+      } catch (error) {
+        if (error.code !== 'ENOENT') this.cleanupWarnings.push({ scope:'temporary-object',path:tempRelative,committedObject:committed ? relative:null,message:error.message });
+      }
+    }
+    if (failure) throw failure;
     return hash(bytes);
   }
   async saveObject(directory, document) { const bytes = seal(this.key,encodeMetadata(encode(document),this.config.version,this.compression)), objectID = hash(bytes); await this.atomic(`${directory}/${objectID}`,bytes); return objectID; }
@@ -131,7 +158,16 @@ class Repository {
     if (others.length) { await this.release(); throw new Error('Another client acquired a restic lock. Retry after it finishes.'); }
   }
   async assertLock() { if (!this.lockID) throw new Error('No native repository lock.'); await this.read(`locks/${this.lockID}`,64 * 1024,this.lockID); }
-  async release() { if (this.lockID) { const lockID = this.lockID; this.lockID = null; await fs.unlink(this.workspace.resolve(`${this.relative}/locks/${lockID}`)); } }
+  async release() {
+    if (!this.lockID) return;
+    const lockID = this.lockID;
+    try { await fs.unlink(this.workspace.resolve(`${this.relative}/locks/${lockID}`)); }
+    catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      this.cleanupWarnings.push({ scope:'own-lock',lockID,message:'Own lock was already missing during release.' });
+    }
+    this.lockID = null;
+  }
   async snapshots() {
     const results = [];
     for (const snapshotID of await this.names('snapshots')) {
@@ -268,17 +304,9 @@ async function snapshot(repo,input) {
       if (before.isDirectory()) node.subtree = await capture(fileRelative,depth+1);
       else if (before.isFile()) {
         if (before.size > limits.file || bytes + before.size > limits.total) throw new Error('Source exceeds native file or total byte limits.');
-        const handle = await fs.open(repo.workspace.resolve(fileRelative),'r'); node.content = []; node.size = 0; node.links = 1;
-        try {
-          for (;;) {
-            const buffer = Buffer.alloc(CHUNK); let filled = 0;
-            while (filled < CHUNK) { const { bytesRead } = await handle.read(buffer,filled,CHUNK-filled,null); if (!bytesRead) break; filled += bytesRead; }
-            if (!filled) break; node.size += filled;
-            if (node.size > limits.file || bytes + node.size > limits.total) throw new Error('Source grew beyond native byte limits.');
-            node.content.push(await repo.saveBlob('data',buffer.subarray(0,filled),newPacks));
-          }
-          const after = await handle.stat(); if (node.size !== before.size || after.size !== before.size || after.mtimeMs !== before.mtimeMs || after.ino !== before.ino) throw new Error('Source file changed while being captured.');
-        } finally { await handle.close(); }
+        const remaining = limits.milliseconds - (Date.now() - repo.started); if (remaining < 1) throw new Error('The bounded native operation exceeded two minutes.');
+        const captured = await captureRabinFile({ filename,resolveFilename:()=>repo.workspace.resolve(fileRelative),expected:before,polynomial:repo.config.chunker_polynomial,timeoutMilliseconds:Math.min(limits.milliseconds,remaining),saveChunk:chunk=>repo.saveBlob('data',chunk,newPacks) });
+        node.content = captured.content; node.size = captured.size; node.links = 1;
         bytes += node.size; files++;
       } else throw new Error('Only regular files and directories are supported by the native slice.');
       nodes.push(node);
@@ -295,7 +323,7 @@ async function snapshot(repo,input) {
   if (newPacks.length) await repo.saveObject('index',{ packs:newPacks });
   await repo.assertLock();
   const snapshotID = await repo.saveObject('snapshots',{ time:new Date().toISOString(),tree,paths:[`/${name}`],hostname:os.hostname(),username:'rea-studio',uid:0,gid:0,tags:input.label ? [input.label]:[] });
-  return { format:'restic',id:snapshotID,tree,files,bytes,entries,newPacks:newPacks.length,repository:repo.relative,compression:{repositoryVersion:repo.config.version,mode:repo.config.version===2?repo.compression:'uncompressed-v1',implementation:'Node/libzstd; original encoder byte equivalence and performance are unproven.'},chunking:'Fixed 1 MiB blobs; no Rabin chunk-boundary parity.' };
+  return { format:'restic',id:snapshotID,tree,files,bytes,entries,newPacks:newPacks.length,repository:repo.relative,compression:{repositoryVersion:repo.config.version,mode:repo.config.version===2?repo.compression:'uncompressed-v1',implementation:'Node/libzstd; original encoder byte equivalence and performance are unproven.'},chunking:'Source-assisted Rabin: 64-byte window, average20, min512KiB, max8MiB.' };
 }
 async function selected(repo,input) {
   // Read snapshot first, then indexes, as required by the native ordering contract.
@@ -337,20 +365,34 @@ async function restore(repo,input,entries) {
 }
 export async function handleNative({ action,input,workspace }) {
   const repo = new Repository(workspace,input.repository);
-  if (action === 'nativeInit') return initialize(repo,input);
-  await repo.unlock(input.password);
-  repo.compression = compressionMode(input.compression);
+  let result, failure;
   try {
-    await repo.lock();
-    if (action === 'nativeInfo') return { format:'restic',repository:repo.relative,version:repo.config.version,id:repo.config.id,chunker_polynomial:repo.config.chunker_polynomial,keyID:repo.keyID,encrypted:true };
-    if (action === 'nativeList') return { format:'restic',version:repo.config.version,snapshots:await repo.snapshots() };
-    if (action === 'nativeSnapshot') return await snapshot(repo,input);
-    if (['nativeInspect','nativeCheck','nativeRestore'].includes(action)) {
-      const result = await selected(repo,input);
-      if (action === 'nativeInspect') return { format:'restic',snapshot:result.document,entries:result.entries };
-      if (action === 'nativeCheck') return { format:'restic',...await repo.verify(result.entries) };
-      return await restore(repo,input,result.entries);
+    if (action === 'nativeInit') result = await initialize(repo,input);
+    else {
+      await repo.unlock(input.password);
+      repo.compression = compressionMode(input.compression);
+      await repo.lock();
+      if (action === 'nativeInfo') result = { format:'restic',repository:repo.relative,version:repo.config.version,id:repo.config.id,chunker_polynomial:repo.config.chunker_polynomial,keyID:repo.keyID,encrypted:true };
+      else if (action === 'nativeList') result = { format:'restic',version:repo.config.version,snapshots:await repo.snapshots() };
+      else if (action === 'nativeSnapshot') result = await snapshot(repo,input);
+      else if (['nativeInspect','nativeCheck','nativeRestore'].includes(action)) {
+        const selectedResult = await selected(repo,input);
+        if (action === 'nativeInspect') result = { format:'restic',snapshot:selectedResult.document,entries:selectedResult.entries };
+        else if (action === 'nativeCheck') result = { format:'restic',...await repo.verify(selectedResult.entries) };
+        else result = await restore(repo,input,selectedResult.entries);
+      } else throw new Error('Unknown native backup action.');
     }
-    throw new Error('Unknown native backup action.');
-  } finally { await repo.release(); }
+  } catch (error) { failure = error instanceof Error ? error:new Error(String(error)); }
+  try { await repo.release(); }
+  catch (error) { repo.cleanupWarnings.push({ scope:'own-lock',lockID:repo.lockID,message:error.message }); }
+  if (failure) {
+    if (repo.cleanupWarnings.length) {
+      failure.cleanupWarnings = repo.cleanupWarnings;
+      failure.message += ` Cleanup requires attention: ${repo.cleanupWarnings.map(row=>`${row.scope} ${row.path ?? row.lockID}: ${row.message}`).join('; ')}`;
+    }
+    throw failure;
+  }
+  if (repo.cleanupWarnings.length) result.cleanupWarnings = repo.cleanupWarnings;
+  if (repo.lockID) result.remainingOwnLock = repo.lockID;
+  return result;
 }

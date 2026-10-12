@@ -1,0 +1,26 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+import {Session} from 'node:inspector';
+import assert from 'node:assert/strict';
+const here=path.dirname(fileURLToPath(import.meta.url)),candidate=path.resolve(process.argv[2]),candidateURL=pathToFileURL(candidate).href,source=await fs.readFile(candidate,'utf8'),native=await import(candidateURL),originalPath=path.resolve(here,'../../outputs/rea-research-lab/projects/02-grafana/artifacts/package/dist/cjs/transformations/fieldReducer.cjs'),original=createRequire(originalPath)(originalPath),session=new Session();session.connect();
+const post=(method,params={})=>new Promise((resolve,reject)=>session.post(method,params,(error,result)=>error?reject(error):resolve(result)));
+await post('Profiler.enable');await post('Profiler.startPreciseCoverage',{callCount:true,detailed:true});
+const cases=[],n=25000;
+cases.push(['organ-pipe',Array.from({length:n},(_,i)=>i<n/2?i+0.125:n-i+0.125)]);
+cases.push(['alternating-ends',Array.from({length:n},(_,i)=>i%2? n-Math.floor(i/2):Math.floor(i/2))]);
+cases.push(['repeated-bands',Array.from({length:n},(_,i)=>Math.floor(i/17)%113)]);
+let comparisons=0;
+for(const [label,values]of cases)for(const id of ['p1','p25','p50','p75','p95','p99']){
+  const build=()=>({type:'number',config:{nullValueMode:'connected'},values:values.slice(),state:{}}),expectedField=build(),actualField=build();
+  assert.deepEqual(native.reduceField({field:actualField,reducers:[id]}),original.reduceField({field:expectedField,reducers:[id]}),label+':'+id);assert.deepEqual(actualField.values,values);assert.deepEqual(actualField.state,expectedField.state);comparisons++;
+}
+const {result}=await post('Profiler.takePreciseCoverage');await post('Profiler.stopPreciseCoverage');session.disconnect();
+const entry=result.find(row=>row.url===candidateURL),selector=entry?.functions.find(row=>row.functionName==='selectFinitePercentile'),marker=source.indexOf('return selectionUnavailable;',source.indexOf('if (++work > budget)'));
+// Detailed coverage proves whether the independently checked corpus entered the
+// bounded-work fallback. It is supplementary path evidence, not the output oracle.
+const containing=selector?.ranges.filter(range=>range.startOffset<=marker&&range.endOffset>marker).sort((a,b)=>(a.endOffset-a.startOffset)-(b.endOffset-b.startOffset))??[],guardCount=containing[0]?.count??0;
+const receipt={schemaVersion:1,checkedAt:new Date().toISOString(),candidate:path.basename(candidate),sourceSHA256:createHash('sha256').update(source).digest('hex'),cases:cases.map(([name,values])=>({name,samples:values.length})),comparisons,outputAndInputAndStateExact:true,selectionFunctionCoverage:selector,boundedFallbackMarker:marker,boundedFallbackContainingRanges:containing,boundedFallbackExecutionCount:guardCount,scope:'Original execution equality over independently shaped 25000-sample adversarial inputs, with exact-source V8 coverage proving the work-cap fallback branch. Original authentication is separately recorded by full and held-out source verification for this unchanged candidate.',formalPerformance:false};
+await fs.writeFile(path.join(here,'results',path.basename(candidate,'.mjs')+'-budget.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify({comparisons,guardCount,sourceSHA256:receipt.sourceSHA256}));

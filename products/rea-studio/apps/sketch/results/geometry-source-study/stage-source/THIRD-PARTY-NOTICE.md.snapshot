@@ -1,0 +1,21 @@
+# Excalidraw source assistance
+
+The new bounded line/diamond stage is source-assisted, not clean-room. It follows
+the published `@excalidraw/excalidraw` 0.18.1 linear-element restoration and point-size
+contracts and its diamond vertex convention. The original npm archive and emitted
+bundle are authenticated by pinned digests; source-map bytes were matched to the
+authenticated archive entry. Type-only definitions absent from the emitted map
+were obtained from the exact official source commit.
+
+Upstream copyright (c) 2020 Excalidraw. The full upstream MIT license is retained in
+`references/EXCALIDRAW-LICENSE.txt`. New stage additions use MIT conservatively.
+Attribution is required when carrying these source-assisted additions forward.
+
+Pinned source commit: `a2ec2889babf7d2295469c6d90ebe77fae57df84`. Exact retained sources,
+unchanged test-only helper byte offsets/lines/hashes and acquisition methods are
+recorded in `source-provenance.json`. The application uses no original runtime or
+historical reconstruction wrapper. Original helpers execute only in test VMs.
+
+Sub-pixel/degenerate diamond dimensions deliberately clamp the original helper's
+`floor(size/2)+1` anchor to the bounded preview rectangle. This is documented as
+a limited geometric-preview difference rather than original renderer parity.

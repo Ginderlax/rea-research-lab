@@ -1,0 +1,233 @@
+/** Source-assisted, newly written compatibility implementation. No original runtime imports.
+ * See GRAFANA-CALCULATIONS.md and fixtures/reducers/sources.json for the pinned contract. */
+export const NullValueMode = Object.freeze({ Null: 'null', Ignore: 'connected', AsZero: 'null as zero' });
+const rows = [
+  ['lastNotNull', 'Last *', 'Last non-null value (also excludes NaNs)', true, true, 'current'],
+  ['last', 'Last', 'Last value', true, true],
+  ['firstNotNull', 'First *', 'First non-null value (also excludes NaNs)', true, true],
+  ['first', 'First', 'First Value', true, true],
+  ['min', 'Min', 'Minimum Value', true, true],
+  ['max', 'Max', 'Maximum Value', true, true],
+  ['mean', 'Mean', 'Average Value', true, true, 'avg'],
+  ['median', 'Median', 'Median Value', false, true, 'median'],
+  ['variance', 'Variance', 'Variance of all values in a field', false, true],
+  ['stdDev', 'StdDev', 'Standard deviation of all values in a field', false, true],
+  ['sum', 'Total', 'The sum of all values', true, true, 'total', 0],
+  ['count', 'Count', 'Number of values in response', true, false, undefined, 0],
+  ['countAll', 'Count all', 'Number of values (including empty)', false, false, undefined, 0],
+  ['range', 'Range', 'Difference between minimum and maximum values', true, true],
+  ['delta', 'Delta', 'Cumulative change in value', true, true],
+  ['step', 'Step', 'Minimum interval between values', true, true],
+  ['diff', 'Difference', 'Difference between first and last values', true, true],
+  ['logmin', 'Min (above zero)', 'Used for log min scale', true, true],
+  ['allIsZero', 'All Zeros', 'All values are zero', true, true, undefined, false],
+  ['allIsNull', 'All Nulls', 'All values are null', true, false, undefined, true],
+  ['changeCount', 'Change Count', 'Number of times the value changes', false, false],
+  ['distinctCount', 'Distinct Count', 'Number of distinct values', false, false],
+  ['diffperc', 'Difference percent', 'Percentage difference between first and last values', true, false],
+  ['allValues', 'All values', 'Returns an array with all values', false, false],
+  ['uniqueValues', 'All unique values', 'Returns an array with all unique values', false, false],
+];
+const ordinal = value => value > 3 && value < 21 ? 'th' : ['th', 'st', 'nd', 'rd'][value % 10] ?? 'th';
+export const calculationDefinitions = Object.freeze([
+  ...rows.map(([id, name, description, standard, preservesUnits, alias, empty], index) => Object.freeze({ id, name, description, standard, preservesUnits, ...(alias ? { aliasIds: [alias] } : {}), ...(rows[index].length === 7 ? { emptyInputResult: empty } : {}) })),
+  ...Array.from({ length: 99 }, (_, index) => { const p = index + 1; return Object.freeze({ id: `p${p}`, name: `${p}${ordinal(p)} %`, description: `${p}${ordinal(p)} percentile value`, standard: false, preservesUnits: true }); }),
+]);
+const definitions = new Map();
+for (const definition of calculationDefinitions) { definitions.set(definition.id, definition); for (const alias of definition.aliasIds ?? []) if (!definitions.has(alias)) definitions.set(alias, definition); }
+const enumOrder = ['sum', 'max', 'min', 'logmin', 'mean', 'variance', 'stdDev', 'last', 'median', 'first', 'count', 'countAll', 'range', 'diff', 'diffperc', 'delta', 'step', 'firstNotNull', 'lastNotNull', 'changeCount', 'distinctCount', 'allIsZero', 'allIsNull', 'allValues', 'uniqueValues', ...Array.from({ length: 99 }, (_, index) => `p${index + 1}`)];
+export const ReducerID = Object.freeze(Object.fromEntries(enumOrder.map(id => [id, id])));
+export function isReducerID(id) { return typeof id === 'string' && Object.hasOwn(ReducerID, id); }
+export function getFieldTypeForReducer(id, fallback) { return ['count', 'countAll', 'distinctCount', 'changeCount'].includes(id) ? 'number' : ['allIsNull', 'allIsZero'].includes(id) ? 'boolean' : fallback; }
+export const defaultCalcs = Object.freeze({ sum: 0, max: -Number.MAX_VALUE, min: Number.MAX_VALUE, logmin: Number.MAX_VALUE, mean: null, last: null, first: null, lastNotNull: null, firstNotNull: null, count: 0, nonNullCount: 0, allIsNull: true, allIsZero: true, range: null, diff: null, delta: 0, step: Number.MAX_VALUE, diffperc: 0, previousDeltaUp: true });
+const numericField = field => field.type === 'number' || field.type === 'time';
+const isNumber = value => typeof value === 'number' || Object.prototype.toString.call(value) === '[object Number]';
+
+function updateNumericIgnoringNulls(result, values) {
+  for (let index = 0; index < values.length; index++) {
+    const value = values[index];
+    if (!index) result.first = value;
+    result.last = value;
+    if (value == null) continue;
+    result.count++;
+    if (Number.isNaN(value)) continue;
+    const first = result.firstNotNull === null;
+    if (first) result.firstNotNull = value;
+    result.sum += value || 0;
+    result.allIsNull = false; result.nonNullCount++;
+    if (!first) {
+      const difference = value - result.lastNotNull;
+      if (difference < result.step) result.step = difference;
+      if (result.lastNotNull > value) result.previousDeltaUp = false;
+      else { if (result.previousDeltaUp) result.delta += difference; result.previousDeltaUp = true; }
+    }
+    if (value > result.max) result.max = value;
+    if (value < result.min) result.min = value;
+    if (value > 0 && value < result.logmin) result.logmin = value;
+    if (value !== 0) result.allIsZero = false;
+    result.lastNotNull = value;
+  }
+}
+
+export function doStandardCalcs(field, ignoreNulls, nullAsZero) {
+  const result = { ...defaultCalcs }, values = field.values;
+  if (!values) return result;
+  const numeric = numericField(field);
+  if (numeric && ignoreNulls) updateNumericIgnoringNulls(result, values);
+  else {
+  for (let index = 0; index < values.length; index++) {
+    let value = values[index];
+    if (!index) result.first = value;
+    result.last = value;
+    if (value == null) { if (ignoreNulls) continue; if (nullAsZero) value = 0; }
+    result.count++;
+    if (value == null || Number.isNaN(value)) continue;
+    const first = result.firstNotNull === null;
+    if (first) result.firstNotNull = value;
+    if (numeric) {
+      result.sum += value || 0;
+      result.allIsNull = false; result.nonNullCount++;
+      if (!first) {
+        const difference = value - result.lastNotNull;
+        if (difference < result.step) result.step = difference;
+        if (result.lastNotNull > value) result.previousDeltaUp = false;
+        else { if (result.previousDeltaUp) result.delta += difference; result.previousDeltaUp = true; }
+      }
+      if (value > result.max) result.max = value;
+      if (value < result.min) result.min = value;
+      if (value > 0 && value < result.logmin) result.logmin = value;
+    }
+    if (value !== 0) result.allIsZero = false;
+    result.lastNotNull = value;
+  }
+  }
+  if (result.max === -Number.MAX_VALUE) result.max = null;
+  if (result.min === Number.MAX_VALUE) result.min = null;
+  if (result.step === Number.MAX_VALUE) result.step = null;
+  if (result.nonNullCount) result.mean = result.sum / result.nonNullCount;
+  if (result.allIsNull) result.allIsZero = false;
+  if (result.max !== null && result.min !== null) result.range = result.max - result.min;
+  if (isNumber(result.firstNotNull) && isNumber(result.lastNotNull)) result.diff = result.lastNotNull - result.firstNotNull;
+  if (isNumber(result.firstNotNull) && isNumber(result.diff)) result.diffperc = result.diff / result.firstNotNull * 100;
+  return result;
+}
+
+function special(id, field, ignore, zero, shared) {
+  const values = field.values;
+  if (id === 'first') return { first: values[0] };
+  if (id === 'last') return { last: values[values.length - 1] };
+  if (id === 'firstNotNull' || id === 'lastNotNull') {
+    let found = null;
+    for (let index = id === 'firstNotNull' ? 0 : values.length - 1; index >= 0 && index < values.length; index += id === 'firstNotNull' ? 1 : -1) {
+      if (values[index] != null && !Number.isNaN(values[index])) { found = values[index]; break; }
+    }
+    return { [id]: found };
+  }
+  if (id === 'countAll') return { countAll: values.length };
+  if (id === 'allValues') return { allValues: [...values] };
+  if (id === 'uniqueValues') return { uniqueValues: [...new Set(values)] };
+  if (id === 'variance' || id === 'stdDev') {
+    if (!numericField(field)) return { variance: 0, stdDev: 0 };
+    let count = 0, mean = 0, squared = 0;
+    for (const value of values) if (value != null) { const previous = mean; count++; mean += (value - previous) / count; squared += (value - previous) * (value - mean); }
+    const variance = count ? squared / count : 0;
+    return { variance, stdDev: Math.sqrt(variance) };
+  }
+  if (id === 'changeCount' || id === 'distinctCount') {
+    const distinct = new Set(); let changes = 0, started = false, previous = null;
+    for (let value of values) {
+      // These two released reducers deliberately treat undefined differently from null.
+      if (value === null) { if (ignore) continue; if (zero) value = 0; }
+      if (started && previous !== value) changes++;
+      started = true; previous = value; distinct.add(value);
+    }
+    return { [id]: id === 'changeCount' ? changes : distinct.size };
+  }
+  if (id === 'median') {
+    const sorted = [];
+    for (let value of values) { if (value == null) { if (ignore) continue; if (zero) value = 0; } sorted.push(value); }
+    sorted.sort((a, b) => a - b);
+    const middle = Math.floor(sorted.length / 2);
+    return { median: sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2 };
+  }
+  if (/^p\d+$/.test(id)) {
+    let sorted = shared?.percentiles;
+    if (!sorted) {
+      let candidates = values;
+      if (ignore) candidates = candidates.filter(value => value !== null);
+      if (zero) candidates = candidates.map(value => value === null ? 0 : value);
+      sorted = candidates.slice().sort((a, b) => a - b);
+      if (shared) shared.percentiles = sorted;
+    }
+    return { [id]: sorted[Math.round((sorted.length - 1) * (Number(id.slice(1)) / 100))] };
+  }
+  return null;
+}
+const specialIds = new Set(['first', 'last', 'firstNotNull', 'lastNotNull', 'median', 'variance', 'stdDev', 'countAll', 'changeCount', 'distinctCount', 'allValues', 'uniqueValues', ...Array.from({ length: 99 }, (_, index) => `p${index + 1}`)]);
+const registryEntries = calculationDefinitions.map(definition => ({ ...definition, ...(specialIds.has(definition.id) ? { reduce: (field, ignore, zero) => special(definition.id, field, ignore, zero) } : {}) }));
+const registryById = new Map();
+for (const definition of registryEntries) { registryById.set(definition.id, definition); for (const alias of definition.aliasIds ?? []) if (!registryById.has(alias)) registryById.set(alias, definition); }
+/** Fixed built-in registry lookup surface. Custom registration and initialization are outside this contract. */
+export const fieldReducers = Object.freeze({
+  list: ids => ids ? ids.map(id => registryById.get(id)).filter(Boolean) : registryEntries,
+  getIfExists: id => id ? registryById.get(id) : undefined,
+  get: id => { const found = registryById.get(id); if (!found) throw new Error(`"${id}" not found in: ${registryEntries.map(item => item.id)}`); return found; },
+  isEmpty: () => false,
+  selectOptions: (current, filter, formatLabel = item => item.name) => {
+    const selected = {};
+    for (const id of current ?? []) selected[id] = {};
+    const options = [];
+    for (const definition of registryEntries) {
+      if (filter && !filter(definition)) continue;
+      const option = { value: definition.id, label: formatLabel(definition), description: definition.description };
+      options.push(option); if (selected[definition.id]) selected[definition.id] = option;
+    }
+    return { options, current: current ? Object.values(selected) : [] };
+  },
+});
+
+/** Matches fixed released built-in reducers, including state cache and selected-path behavior. */
+export function reduceField({ field, reducers }) {
+  if (!field || !reducers || !reducers.length) return {};
+  if (field.state?.calcs && reducers.every(id => field.state.calcs.hasOwnProperty(id))) return { ...field.state.calcs };
+  field.state ||= {};
+  const queue = [];
+  for (const id of reducers) { const definition = definitions.get(id); if (definition) queue.push(definition); }
+  if (field.values && !field.values.length) {
+    const result = { ...field.state.calcs };
+    for (const definition of queue) result[definition.id] = definition.emptyInputResult !== null ? definition.emptyInputResult : null;
+    field.state.calcs = result; return result;
+  }
+  const { nullValueMode = NullValueMode.Ignore } = field.config;
+  const ignore = nullValueMode === NullValueMode.Ignore, zero = nullValueMode === NullValueMode.AsZero;
+  if (queue.length === 1 && specialIds.has(queue[0].id)) {
+    const result = special(queue[0].id, field, ignore, zero);
+    field.state.calcs = { ...field.state.calcs, ...result }; return result;
+  }
+  const result = doStandardCalcs(field, ignore, zero), shared = {};
+  for (const { id } of queue) if (!Object.hasOwn(result, id) && specialIds.has(id)) Object.assign(result, special(id, field, ignore, zero, shared));
+  field.state.calcs = { ...field.state.calcs, ...result }; return result;
+}
+
+/** Lossless JSON transport for IEEE special numbers and undefined, including object keys. */
+export function encodeCalculation(value) {
+  if (value === undefined) return { $undefined: true };
+  if (typeof value === 'number' && (!Number.isFinite(value) || Object.is(value, -0))) return { $number: Object.is(value, -0) ? '-0' : String(value) };
+  if (Array.isArray(value)) return value.map(encodeCalculation);
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, encodeCalculation(item)]));
+  return value;
+}
+export function decodeCalculation(value, depth = 0) {
+  if (depth > 16) throw new Error('Calculation transport nesting exceeds 16 levels.');
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const keys = Object.keys(value);
+    if (keys.length === 1 && keys[0] === '$undefined' && value.$undefined === true) return undefined;
+    if (keys.length === 1 && keys[0] === '$number') {
+      if (!['NaN', 'Infinity', '-Infinity', '-0'].includes(value.$number)) throw new Error('Unknown tagged calculation number.');
+      return value.$number === '-0' ? -0 : Number(value.$number);
+    }
+    throw new Error('Calculation samples must be primitives or exact special-value tags.');
+  }
+  if (Array.isArray(value)) return value.map(item => decodeCalculation(item, depth + 1));
+  return value;
+}

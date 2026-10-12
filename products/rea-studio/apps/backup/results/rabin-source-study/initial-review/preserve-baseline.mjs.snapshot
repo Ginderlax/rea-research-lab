@@ -1,0 +1,19 @@
+import { readFileSync, writeFileSync, copyFileSync, readdirSync, statSync, mkdirSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
+import assert from 'node:assert/strict';
+const root=dirname(fileURLToPath(import.meta.url)), source=join(root,'../backup-rabin-next'), expected='5db924be34d1b7d211a7ab9205b26e0218120593470f32f6169b591b71863fdc';
+const sha=b=>createHash('sha256').update(b).digest('hex');
+assert.equal(sha(readFileSync(join(source,'rabin-validation.json'))),expected);
+const rows=[];
+function walk(path, prefix='') {
+  for (const name of readdirSync(path).sort()) {
+    const p=join(path,name), relative=prefix+name;
+    if(statSync(p).isDirectory())walk(p,relative+'/');
+    else { const data=readFileSync(p), out=join(root,'baseline',relative); mkdirSync(dirname(out),{recursive:true}); copyFileSync(p,out); rows.push({path:relative,bytes:data.length,sha256:sha(data)}); }
+  }
+}
+walk(source);
+writeFileSync(join(root,'baseline-manifest.json'),JSON.stringify({schema:1,purpose:'Independent read-only finite Rabin capture review; exact stage baseline before review probes',stageReceiptSha256:expected,capturedAtUtc:new Date().toISOString(),files:rows},null,2));
+console.log(JSON.stringify({receiptSha256:expected,files:rows.length,totalBytes:rows.reduce((n,r)=>n+r.bytes,0)},null,2));

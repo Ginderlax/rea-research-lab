@@ -1,0 +1,16 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const here=path.dirname(fileURLToPath(import.meta.url)),workspace=path.resolve(here,'../..'),previous=path.join(workspace,'work/metrics-standard-next'),plan=path.join(workspace,'work/metrics-standard-next-next'),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const planBytes=await fs.readFile(path.join(plan,'plan-validation.json'));assert.equal(sha(planBytes),'208ab8495e904e03aa67051ff4c9d0b04c0c83f888424f96a290be1846a46207');const frozenPlan=JSON.parse(planBytes);
+for(const [name,record]of Object.entries(frozenPlan.inventory))assert.equal(sha(await fs.readFile(path.join(plan,name))),record.sha256);
+const previousBytes=await fs.readFile(path.join(previous,'optimization-stage.json'));assert.equal(sha(previousBytes),frozenPlan.frozenPreviousStage.sha256);const frozenPrevious=JSON.parse(previousBytes);for(const [name,record]of Object.entries(frozenPrevious.inventory))assert.equal(sha(await fs.readFile(path.join(previous,name))),record.sha256);
+const files={};async function copy(name,source){const bytes=await fs.readFile(source),target=path.join(here,name);await fs.mkdir(path.dirname(target),{recursive:true});try{assert.ok((await fs.readFile(target)).equals(bytes),'Existing evidence changed: '+name);}catch(error){if(error.code!=='ENOENT')throw error;await fs.writeFile(target,bytes);}files[name]={source:path.relative(workspace,source).replaceAll('\\','/'),bytes:bytes.length,sha256:sha(bytes)};}
+for(const name of ['STANDARD-PLAN.md','MEMORY-PLAN.md','source-inspection.json','plan-validation.json'])await copy('preserved/plans/'+name,path.join(plan,name));
+await copy('candidate-baseline.mjs',path.join(plan,'preserved/current-native-calculations.mjs'));
+await copy('preserved/sources.json',path.join(previous,'preserved/sources.json'));
+await copy('preserved/previous-stage.json',path.join(previous,'optimization-stage.json'));
+for(const name of ['verify-candidate.mjs','run-validation.mjs','verify-heldout-selection.mjs'])await copy(name,path.join(previous,name));
+const bytes=JSON.stringify({schemaVersion:1,checkedAt:new Date().toISOString(),files,frozenPlanSHA256:sha(planBytes),frozenPreviousStageSHA256:sha(previousBytes),productionSHA256:frozenPlan.productionSourceSHA256,previousStagesUnchanged:true,benchmarksRun:false},null,2)+'\n';await fs.writeFile(path.join(here,'preservation.json'),bytes);console.log(JSON.stringify({receipt:path.join(here,'preservation.json'),sha256:sha(bytes),files:Object.keys(files).length}));

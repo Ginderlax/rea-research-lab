@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
@@ -11,6 +11,7 @@ const index = JSON.parse(readFileSync(join(root, 'PROJECT-INDEX.json'), 'utf8'))
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const historicalMilestone = 'products/rea-studio/results/milestones/execution-archive-20261012/';
 function safeRecordPath(path) { assert.ok(typeof path === 'string' && path.length && !path.startsWith('/') && !path.split('/').includes('..') && !path.includes('\\'), `Invalid record path: ${path}`); }
+function currentPublicFingerprint(entry,label){safeRecordPath(entry.path);const bytes=readFileSync(join(root,entry.path));if(entry.bytes!==undefined)assert.equal(bytes.length,entry.bytes,`${label} size changed: ${entry.path}`);assert.equal(sha(bytes),entry.sha256,`${label} source changed: ${entry.path}`);}
 function loadHistoricalMilestone() {
   const record = JSON.parse(readFileSync(join(root, historicalMilestone, 'snapshot-manifest.json'), 'utf8'));
   assert.equal(record.schema, 'rea-historical-milestone-snapshot/v1');
@@ -46,6 +47,100 @@ for (const entry of [...nativeWorkflowsHistory.receipts, ...nativeWorkflowsHisto
   const bytes = readFileSync(join(root, entry.snapshot_path)); assert.equal(bytes.length, entry.bytes); assert.equal(sha(bytes), entry.sha256, `Native workflows historical snapshot changed: ${entry.path}`);
 }
 for (const entry of nativeWorkflowsHistory.source_snapshots) { assert.ok(!nativeWorkflowsSources.has(entry.path)); nativeWorkflowsSources.set(entry.path, entry); }
+const compressionRemoteMilestone = 'products/rea-studio/results/milestones/compression-remote-20261012/';
+const compressionRemoteHistory = JSON.parse(readFileSync(join(root, compressionRemoteMilestone, 'snapshot-manifest.json'), 'utf8'));
+assert.equal(compressionRemoteHistory.schema, 'rea-compression-remote-checkpoint-snapshot/v1');
+assert.equal(compressionRemoteHistory.source_revision, 'b9f6b71b215028d786af5eaa3d41ae46cc3ec9ac');
+assert.equal(compressionRemoteHistory.receipts.length, 7); assert.equal(compressionRemoteHistory.source_snapshots.length, 369);
+const compressionRemoteSources = new Map();
+for (const entry of [...compressionRemoteHistory.receipts, ...compressionRemoteHistory.source_snapshots]) {
+  safeRecordPath(entry.path); safeRecordPath(entry.snapshot_path); assert.ok(entry.snapshot_path.startsWith(compressionRemoteMilestone));
+  const bytes = readFileSync(join(root, entry.snapshot_path)); assert.equal(bytes.length, entry.bytes); assert.equal(sha(bytes), entry.sha256, `Compression/remote historical snapshot changed: ${entry.path}`);
+}
+for (const entry of compressionRemoteHistory.source_snapshots) { assert.ok(!compressionRemoteSources.has(entry.path)); compressionRemoteSources.set(entry.path, entry); }
+function compressionRemoteFingerprint(entry, label) {
+  safeRecordPath(entry.path);
+  const bytes = readFileSync(join(root, entry.path));
+  if (sha(bytes) === entry.sha256) { if (entry.bytes !== undefined) assert.equal(bytes.length, entry.bytes); return; }
+  const snapshot = compressionRemoteSources.get(entry.path);
+  assert.ok(snapshot, `Missing historical compression/remote ${label} source: ${entry.path}`);
+  assert.equal(snapshot.sha256, entry.sha256, `Historical compression/remote ${label} receipt disagrees: ${entry.path}`);
+  if (entry.bytes !== undefined) assert.equal(snapshot.bytes, entry.bytes);
+}
+const routingGeometryBrowserMilestone = 'products/rea-studio/results/milestones/rabin-routing-geometry-browser-20261012/';
+const routingGeometryBrowserManifestBytes = readFileSync(join(root, routingGeometryBrowserMilestone, 'snapshot-manifest.json'));
+assert.equal(sha(routingGeometryBrowserManifestBytes), '309c999ec5ed7c0ae82f87f83774e336874f1e600c2197d343f581f0d069b835');
+const routingGeometryBrowserHistory = JSON.parse(routingGeometryBrowserManifestBytes);
+assert.equal(routingGeometryBrowserHistory.schema, 'rea-rabin-routing-geometry-browser-checkpoint/v1');
+assert.equal(routingGeometryBrowserHistory.sourceSnapshots.length, 82); assert.equal(routingGeometryBrowserHistory.receipts.length, 3); assert.equal(routingGeometryBrowserHistory.artifacts.length, 14);
+assert.equal(routingGeometryBrowserHistory.fullFeatureParity, false); assert.equal(routingGeometryBrowserHistory.universalSuperiority, false);
+assert.deepEqual(routingGeometryBrowserHistory.checks.map(e=>e.application), ['backup','automation','sketch']);
+assert.ok(routingGeometryBrowserHistory.checks.every(e=>e.passed === true));
+const routingGeometryBrowserSources = new Map();
+for (const entry of [...routingGeometryBrowserHistory.sourceSnapshots,...routingGeometryBrowserHistory.receipts,...routingGeometryBrowserHistory.artifacts]) {
+  safeRecordPath(entry.path); safeRecordPath(entry.sourcePath);
+  const bytes = readFileSync(join(root,routingGeometryBrowserMilestone,entry.path)); assert.equal(bytes.length,entry.bytes); assert.equal(sha(bytes),entry.sha256,`Frozen routing/geometry browser artifact changed: ${entry.path}`);
+}
+for (const entry of routingGeometryBrowserHistory.sourceSnapshots) { assert.ok(!routingGeometryBrowserSources.has(entry.sourcePath)); routingGeometryBrowserSources.set(entry.sourcePath,entry); }
+function routingGeometryCheckpointFingerprint(entry,label) {
+  safeRecordPath(entry.path); const bytes=readFileSync(join(root,entry.path));
+  if (sha(bytes)===entry.sha256) { if (entry.bytes!==undefined) assert.equal(bytes.length,entry.bytes); return; }
+  const snapshot=routingGeometryBrowserSources.get(entry.path); assert.ok(snapshot,`Missing frozen routing/geometry ${label} source: ${entry.path}`); assert.equal(snapshot.sha256,entry.sha256,`Frozen routing/geometry ${label} source disagrees: ${entry.path}`); if(entry.bytes!==undefined)assert.equal(snapshot.bytes,entry.bytes);
+}
+function strictIndependentReview(prefix,count,digest) {
+  const manifestBytes=readFileSync(join(root,prefix,'preservation-manifest.json')); assert.equal(sha(manifestBytes),digest);
+  const record=JSON.parse(manifestBytes); assert.equal(record.schema,'rea-independent-integration-review-preservation/v1'); assert.equal(record.snapshots.length,count);
+  const paths=new Set(); for(const entry of record.snapshots){safeRecordPath(entry.path);safeRecordPath(entry.sourcePath);assert.ok(!paths.has(entry.path));paths.add(entry.path);const b=readFileSync(join(root,prefix,entry.path));assert.equal(b.length,entry.bytes);assert.equal(sha(b),entry.sha256);}
+  const reviewed=record.snapshots.find(e=>e.sourcePath==='review-validation.json'); assert.ok(reviewed); assert.equal(reviewed.sha256,record.reviewReceiptSha256); return record;
+}
+const routingIndependentReview=strictIndependentReview('products/rea-studio/apps/automation/results/routing-independent-review',53,'a20637baddf880f1ac6a5abe60fb9d0c789002b39ef257514742cb40fd8bf6ce');
+const geometryIndependentReview=strictIndependentReview('products/rea-studio/apps/sketch/results/geometry-independent-review',118,'41beb403231ce3eabd55b65b56e02f5dfc2c03362919eb3733058d9a71e8a2f0');
+const sketchCollectorIndependentReview=strictIndependentReview('products/rea-studio/apps/sketch/results/collector-followup/independent-review',21,'cddda4394e9951e2fc0b469feb5145bceb1df842bea147c5fb89c6ad86061b83');
+const automationRecoveryIndependentReview=strictIndependentReview('products/rea-studio/apps/automation/results/recovery-followup/independent-review',57,'770d9baed9b3784597d37b04621ec8c3fe3a8674066e75ecbf01e5f74c3b7d25');
+function strictFollowupPreservation(prefix,count,digest,schema) {
+  const bytes=readFileSync(join(root,prefix,'preservation-manifest.json'));assert.equal(sha(bytes),digest);
+  const record=JSON.parse(bytes);assert.equal(record.schema,schema);assert.equal(record.snapshots.length,count);
+  const paths=new Set(),sources=new Map();for(const entry of record.snapshots){safeRecordPath(entry.path);safeRecordPath(entry.sourcePath);assert.ok(!paths.has(entry.path));assert.ok(!sources.has(entry.sourcePath));paths.add(entry.path);sources.set(entry.sourcePath,entry);const b=readFileSync(join(root,prefix,entry.path));assert.equal(b.length,entry.bytes);assert.equal(sha(b),entry.sha256,`Frozen followup artifact changed: ${entry.path}`);}
+  return {...record,sources};
+}
+const sketchCollectorStage=strictFollowupPreservation('products/rea-studio/apps/sketch/results/collector-followup',54,'b5346f5d96e41a707823bef3be721f0d8427576f39bdd52d480d980988661bb9','rea-sketch-collector-followup-preservation/v1');
+const sketchCollectorAdapter=strictFollowupPreservation('products/rea-studio/apps/sketch/results/collector-followup/production-adapter',27,'8117c71aa9e7c6650092f6fff85a72ca3a6c0d5817aec4b65bc222a934f9ee62','rea-sketch-collector-production-adapter-preservation/v1');
+const automationRecoveryStage=strictFollowupPreservation('products/rea-studio/apps/automation/results/recovery-followup',340,'585f80b40c72d6968c4e678d7e7282b2a73e70bd29e92ed36a24c8209038f0a8','rea-automation-recovery-followup-preservation/v1');
+const failedCombinedPrefix='products/rea-studio/results/full-suite-recovery-followup/failed-607';
+const failedCombinedPreservation=strictFollowupPreservation(failedCombinedPrefix,14,'dd18296291e1524a0d25281e62d1a9b3cb0befdabd3e49d404292e0daca8ac96','rea-failed-combined-suite-source-preservation/v1');
+const failedCombined=JSON.parse(readFileSync(join(root,failedCombinedPrefix,'failure-validation.json')));
+assert.equal(failedCombined.schema,'rea-failed-combined-suite-preservation/v1');assert.equal(failedCombined.exitCode,1);assert.deepEqual(failedCombined.summary,{tests:607,pass:605,fail:2,cancelled:0,skipped:0,todo:0,duration_ms:484894.5263});assert.equal(failedCombined.passingDevelopmentReceiptOverwritten,false);assert.equal(failedCombined.fullFeatureParity,false);assert.equal(failedCombined.universalSuperiority,false);assert.match(failedCombined.sourceCaptureRole,/post-failure/);assert.match(failedCombined.sourceCaptureRole,/does NOT claim full source stability/);
+const keepassSupplementPrefix='products/rea-studio/requirements/keepass-manual-supplement';
+const keepassSupplementManifestBytes=readFileSync(join(root,keepassSupplementPrefix,'preservation-manifest.json'));assert.equal(sha(keepassSupplementManifestBytes),'9516c137138a29567e4aaff9dfe9428b1471922db586a7b341281916cfe285b2');
+const keepassSupplementManifest=JSON.parse(keepassSupplementManifestBytes);assert.equal(keepassSupplementManifest.schema,'rea-keepass-public-supplement-preservation/v1');assert.equal(keepassSupplementManifest.files.length,9);
+const keepassSupplementPaths=new Set();for(const e of keepassSupplementManifest.files){safeRecordPath(e.path);assert.ok(!keepassSupplementPaths.has(e.path));keepassSupplementPaths.add(e.path);const b=readFileSync(join(root,keepassSupplementPrefix,e.path));assert.equal(b.length,e.bytes);assert.equal(sha(b),e.sha256);}
+assert.deepEqual(readdirSync(join(root,keepassSupplementPrefix)).sort(),[...keepassSupplementPaths,'preservation-manifest.json'].sort());
+assert.equal(keepassSupplementManifest.fullManualOrCarriersIncluded,false);assert.equal(keepassSupplementManifest.quotedSelectorsIncluded,false);assert.equal(keepassSupplementManifest.originalRuntimeExecutions,0);assert.equal(keepassSupplementManifest.candidateAcceptanceExecutions,0);
+const keepassSupplement=JSON.parse(readFileSync(join(root,keepassSupplementPrefix,'manual-contracts.json'))),keepassSupplementBinding=JSON.parse(readFileSync(join(root,keepassSupplementPrefix,'existing-requirements-binding.json'))),keepassCensus=JSON.parse(readFileSync(join(root,keepassSupplementPrefix,'carrier-census-manifest.json'))),keepassSupplementLicense=JSON.parse(readFileSync(join(root,keepassSupplementPrefix,'license-provenance.json')));
+assert.equal(keepassSupplement.requirements.length,199);assert.equal(new Set(keepassSupplement.requirements.map(e=>e.id)).size,199);assert.deepEqual(keepassSupplement.requirements.map(e=>e.id),keepassSupplementManifest.stableIds);assert.equal(keepassSupplement.counts.selectedTopics,10);assert.equal(keepassSupplement.accounting.independentFeatureCountClaimed,false);assert.equal(keepassSupplementBinding.originalSourceFingerprintCount,159);assert.equal(keepassSupplementBinding.capabilityAreaIdCount,232);assert.equal(keepassSupplementBinding.existingRecordsModified,false);assert.equal(keepassCensus.files.length,139);assert.equal(keepassCensus.htmlTopics.length,45);assert.equal(keepassCensus.fullManualRedistributed,false);assert.equal(keepassSupplementLicense.documentationRedistributionGrantEstablished,false);
+const keepassSupplementValidationBytes=readFileSync(join(root,keepassSupplementPrefix,'public-subset-validation.json'));assert.equal(sha(keepassSupplementValidationBytes),'0a6a55197a153c23b71f1d3e5666073f8e51091870a6c78717141c48ac4c9154');const keepassSupplementValidation=JSON.parse(keepassSupplementValidationBytes);assert.equal(keepassSupplementValidation.schema,'rea-keepass-public-supplement-validation/v1');assert.equal(keepassSupplementValidation.passed,true);assert.deepEqual(keepassSupplementValidation.documentationIntegrityChecks,{localManual:9,publicSupplement:6,total:15,pass:15,skips:0});assert.equal(keepassSupplementValidation.originalKeePassExecutions,0);assert.equal(keepassSupplementValidation.candidateAcceptanceExecutions,0);assert.equal(keepassSupplementValidation.exhaustiveAtomicDiscovery,false);assert.equal(keepassSupplementValidation.sourceBytesStable,true);assert.equal(keepassSupplementValidation.manualBytesStable,true);
+const nativePolicyPrefix='products/rea-studio/apps/backup/results/native-policy-followup';
+const keepassIndependentPrefix='products/rea-studio/requirements/keepass-manual-independent-review';const keepassIndependentManifestBytes=readFileSync(join(root,keepassIndependentPrefix,'preservation-manifest.json'));assert.equal(sha(keepassIndependentManifestBytes),'d7f9bd9150692ee3886a18a5da3ddd59f8fb9eb4d059311eff43d097e8589a18');const keepassIndependentManifest=JSON.parse(keepassIndependentManifestBytes);assert.equal(keepassIndependentManifest.schema,'rea-keepass-independent-review-public-subset/v1');assert.equal(keepassIndependentManifest.files.length,4);assert.equal(keepassIndependentManifest.originalFrozenReviewInventoryFiles,24);assert.deepEqual(readdirSync(join(root,keepassIndependentPrefix)).sort(),[...keepassIndependentManifest.files.map(e=>e.path),'preservation-manifest.json'].sort());for(const e of keepassIndependentManifest.files)currentPublicFingerprint({...e,path:keepassIndependentPrefix+'/'+e.path},'Independent KeePass documentary subset');const keepassIndependentBytes=readFileSync(join(root,keepassIndependentPrefix,'review-validation.json'));assert.equal(sha(keepassIndependentBytes),'d199c4bfacc2a7ca6c3d85dfc11a6cdae9d6b98fb385f8be15ea4bff2a049bd2');const keepassIndependent=JSON.parse(keepassIndependentBytes);assert.equal(keepassIndependent.status,'passed');assert.equal(keepassIndependent.publicSubsetManifestSHA256,sha(keepassSupplementManifestBytes));assert.equal(keepassIndependent.selectedRecords,199);assert.equal(keepassIndependent.citationsAndContextsChecked,207);assert.equal(keepassIndependent.carrierFilesAuthenticated,139);assert.equal(keepassIndependent.historicalSourceFingerprintBindings,159);assert.equal(keepassIndependent.historicalCapabilityIdBindings,232);assert.deepEqual(keepassIndependent.integrationBlockersFound,[]);assert.equal(keepassIndependent.subsetSourceBeforeAndAfterStable,true);assert.equal(keepassIndependent.referencedSourcesStable,true);assert.equal(keepassIndependent.originalKeePassExecutions,0);assert.equal(keepassIndependent.candidateAcceptanceExecutions,0);assert.equal(keepassIndependent.fullProductComplete,false);assert.equal(keepassIndependent.exhaustiveCoverage,false);
+const nativePolicyManifestBytes=readFileSync(join(root,nativePolicyPrefix,'preservation-manifest.json'));assert.equal(sha(nativePolicyManifestBytes),'b1fc5e21691dbcaf7f08225b17d7f9fc723fad6e2cd3053ebb15554720264031');const nativePolicyManifest=JSON.parse(nativePolicyManifestBytes);assert.equal(nativePolicyManifest.schema,'rea-backup-native-policy-preservation/v1');assert.equal(nativePolicyManifest.snapshots.length,43);const nativePolicyPaths=new Set();for(const e of nativePolicyManifest.snapshots){safeRecordPath(e.path);assert.ok(!nativePolicyPaths.has(e.path));nativePolicyPaths.add(e.path);const b=readFileSync(join(root,nativePolicyPrefix,e.path));assert.equal(b.length,e.bytes);assert.equal(sha(b),e.sha256);}
+const nativePolicyBytes=readFileSync(join(root,nativePolicyPrefix,'validation.json'));assert.equal(sha(nativePolicyBytes),'b3cf4b627f73a13da8a20511a4c6a6381b9a47291d70ec561d945aa8436584d1');assert.equal(sha(nativePolicyBytes),nativePolicyManifest.validationSHA256);const nativePolicy=JSON.parse(nativePolicyBytes);assert.equal(nativePolicy.schema,'rea-backup-native-policy-validation/v1');assert.deepEqual(nativePolicy.summary,{tests:30,pass:30,fail:0,cancelled:0,skipped:0,todo:0});assert.equal(nativePolicy.exitCode,0);assert.equal(nativePolicy.sourceStable,true);assert.equal(nativePolicy.implementationFingerprints.length,36);
+for(const e of nativePolicy.implementationFingerprints){currentPublicFingerprint({...e,path:'products/rea-studio/'+e.path},'Current Backup native policy source');const frozen=nativePolicyManifest.snapshots.find(item=>item.path==='source/'+e.path+'.snapshot');assert.ok(frozen);assert.equal(frozen.bytes,e.bytes);assert.equal(frozen.sha256,e.sha256);}
+assert.equal(nativePolicy.adaptation.runtimeChanged,false);assert.equal(nativePolicy.adaptation.packAggregationIntegrated,false);assert.equal(nativePolicy.adaptation.existingOriginalCheckRestoreAssertionsRetained,true);assert.equal(nativePolicy.fullParity,false);assert.equal(nativePolicy.universalSuperiority,false);assert.equal(nativePolicy.failedCombinedSuite.sha256,'dd18296291e1524a0d25281e62d1a9b3cb0befdabd3e49d404292e0daca8ac96');assert.equal(nativePolicy.failedCombinedSuite.postFailureSourceCaptureOnly,true);
+const nativePolicyAttempt=JSON.parse(readFileSync(join(root,nativePolicyPrefix,'attempt.json')));assert.deepEqual(nativePolicyAttempt.before,nativePolicyAttempt.after);assert.deepEqual(nativePolicyAttempt.before,nativePolicy.implementationFingerprints);assert.equal(nativePolicyAttempt.exitCode,0);assert.equal(nativePolicyAttempt.failure,null);assert.equal(sha(readFileSync(join(root,nativePolicyPrefix,'verify-backup-native-policy.mjs.snapshot'))),nativePolicy.runnerSHA256);assert.equal(nativePolicy.observations.length,4);for(const e of nativePolicy.observations.filter(e=>e.phase==='first-snapshot')){assert.equal(e.totalPacks,6);assert.equal(e.dataPacks,2);assert.equal(e.uniqueDataBlobs,2);assert.equal(e.dataRows.length,2);assert.equal(e.allStorageHeaderPayloadAndIndexVerified,true);}for(const e of nativePolicy.observations.filter(e=>e.phase==='repeat-snapshot')){assert.equal(e.addedDataPacks,0);assert.equal(e.addedDataRows,0);}
+const recoveryBrowserPrefix='products/rea-studio/results/browser-automation-recovery-20261012/';
+const recoveryBrowserPreservation=strictFollowupPreservation(recoveryBrowserPrefix,45,'073b6026cc188ce17af4577efe8d1cde04010e1a8714d79b221e46434ae566b2','rea-automation-recovery-browser-preservation/v1');
+const recoveryBrowserBytes=readFileSync(join(root,recoveryBrowserPrefix,recoveryBrowserPreservation.receipt.path));assert.equal(recoveryBrowserBytes.length,recoveryBrowserPreservation.receipt.bytes);assert.equal(sha(recoveryBrowserBytes),recoveryBrowserPreservation.receipt.sha256);assert.equal(sha(recoveryBrowserBytes),'e5108900362a9473fc9958a38ba5cdf0eb96fbf9d53f4495d0d3f17569683bd1');
+const recoveryBrowser=JSON.parse(recoveryBrowserBytes);assert.equal(recoveryBrowser.schema,'rea-automation-recovery-browser-validation/v1');assert.deepEqual(recoveryBrowser.summary,{checks:5,passed:5,failed:0});assert.equal(recoveryBrowser.sourceFingerprints.length,41);assert.ok(recoveryBrowser.checks.every(e=>e.passed));assert.equal(recoveryBrowser.sourceBytesStable,true);for(const e of recoveryBrowser.sourceFingerprints)currentPublicFingerprint(e,'Current recovery browser source');for(const e of recoveryBrowser.artifacts)currentPublicFingerprint({...e,path:recoveryBrowserPrefix+e.path},'Current recovery browser artifact');assert.equal(recoveryBrowser.fullFeatureParity,false);assert.equal(recoveryBrowser.universalSuperiority,false);
+const metricsDispatchPrefix='products/rea-studio/results/metrics-dispatch-observations-20261012/';
+const metricsDispatchBytes=readFileSync(join(root,metricsDispatchPrefix,'preservation-manifest.json'));assert.equal(sha(metricsDispatchBytes),'e46c6daa1a6366d1fec1651fb0760ebfdd827ff1317b231cc32e346fbc7fe9d5');
+const metricsDispatchPreservation=JSON.parse(metricsDispatchBytes);assert.equal(metricsDispatchPreservation.schema,'rea-metrics-dispatch-measurement-preservation/v1');assert.equal(metricsDispatchPreservation.frozenInventoryFiles,1069);assert.equal(metricsDispatchPreservation.preservedMeasuredFiles,1067);assert.equal(metricsDispatchPreservation.snapshots.length,1071);assert.equal(metricsDispatchPreservation.excludedLocalArchives.length,2);
+assert.equal(metricsDispatchPreservation.selectedForIntegration,null);for(const gate of ['productionChanged','fullProductComplete','universalSuperiority'])assert.equal(metricsDispatchPreservation[gate],false);
+const metricsDispatchPaths=new Set();for(const entry of metricsDispatchPreservation.snapshots){safeRecordPath(entry.path);assert.ok(!metricsDispatchPaths.has(entry.path));metricsDispatchPaths.add(entry.path);const b=readFileSync(join(root,metricsDispatchPrefix,entry.path));assert.equal(b.length,entry.bytes);assert.equal(sha(b),entry.sha256,`Metrics frozen measurement artifact changed: ${entry.path}`);}
+const metricsDispatchReceiptBytes=readFileSync(join(root,metricsDispatchPrefix,'measurement-validation.json'));assert.equal(sha(metricsDispatchReceiptBytes),metricsDispatchPreservation.frozenLocalReceiptSha256);assert.equal(metricsDispatchPreservation.frozenLocalReceiptSha256,'8a7abd6333e050ed838fdde07415d26485b58b31452d8ed6d561d40f374bca9d');
+const metricsDispatchReceipt=JSON.parse(metricsDispatchReceiptBytes);assert.equal(Object.keys(metricsDispatchReceipt.inventory).length,1069);assert.equal(metricsDispatchReceipt.timingChildren,210);assert.equal(metricsDispatchReceipt.isolatedMemoryChildren,210);assert.equal(metricsDispatchReceipt.outputCacheChecks,852516);assert.equal(metricsDispatchReceipt.measurementFailures,0);assert.equal(metricsDispatchReceipt.censoredLimitHitTrials,0);assert.equal(metricsDispatchReceipt.rawMemoryLogsVerified,840);assert.equal(metricsDispatchReceipt.summaryGroupsIndependentlyRecomputed,5790);assert.equal(metricsDispatchReceipt.figuresVerified,6);assert.equal(metricsDispatchReceipt.machineLevelIsolationEstablished,false);assert.equal(metricsDispatchReceipt.selectedForIntegration,null);assert.equal(metricsDispatchReceipt.productionChanged,false);
+assert.deepEqual(metricsDispatchReceipt.negativePairedSampleDeltas,{standard:123,percentile:133});
+for(const[sourcePath,entry]of Object.entries(metricsDispatchReceipt.inventory)){
+ const retained=metricsDispatchPreservation.snapshots.find(e=>e.sourcePath===sourcePath),excluded=metricsDispatchPreservation.excludedLocalArchives.find(e=>e.sourcePath===sourcePath);assert.ok(Boolean(retained)!==Boolean(excluded));const matched=retained??excluded;assert.equal(matched.bytes,entry.bytes);assert.equal(matched.sha256,entry.sha256);
+}
 function nativeWorkflowsFingerprint(entry, label) {
   safeRecordPath(entry.path);
   const bytes = readFileSync(join(root, entry.path));
@@ -140,6 +235,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(status.completion_status, 'incomplete');
   assert.equal(validation.summary.tests, validation.summary.pass + validation.summary.skipped);
   assert.equal(validation.summary.fail + validation.summary.cancelled + validation.summary.todo, 0);
+  assert.equal(validation.summary.skipped,0);
   assert.equal(validation.full_feature_parity_established, false);
   assert.equal(validation.universal_superiority_established, false);
   for (const entry of validation.source_files) {
@@ -197,7 +293,55 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(backupCompression.summary.fail + backupCompression.summary.cancelled + backupCompression.summary.skipped + backupCompression.summary.todo, 0);
   assert.equal(backupCompression.exitCode, 0); assert.equal(backupCompression.sourceBytesStableAcrossRun, true);
   for (const gate of ['fullFeatureParityEstablished', 'universalSuperiorityEstablished', 'productionSecurityVerified', 'compressionPerformanceCompared']) assert.equal(backupCompression[gate], false);
-  for (const entry of [...backupCompression.implementationFingerprints, ...backupCompression.rawEvidence]) currentFingerprint(entry, 'Backup compression');
+  for (const entry of [...backupCompression.implementationFingerprints, ...backupCompression.rawEvidence]) compressionRemoteFingerprint(entry, 'Backup compression');
+  const backupRabin = JSON.parse(readFileSync(join(developmentRoot, 'apps/backup/results/rabin-validation.json'), 'utf8'));
+  assert.equal(backupRabin.schema, 'rea-restic-rabin-integration-validation/v1');
+  assert.equal(backupRabin.summary.tests, 47); assert.equal(backupRabin.summary.pass, 47);
+  assert.equal(backupRabin.summary.fail + backupRabin.summary.cancelled + backupRabin.summary.skipped + backupRabin.summary.todo, 0);
+  assert.equal(backupRabin.exitCode, 0); assert.equal(backupRabin.sourceBytesStableAcrossRun, true);
+  for (const gate of ['fullFeatureParityEstablished','universalSuperiorityEstablished','productionSecurityVerified','originalPerformanceCompared','historicalEvidenceReboundToCurrentSource']) assert.equal(backupRabin[gate], false);
+  const recorderPrefix = 'products/rea-studio/apps/backup/results/rabin-recorder-review/';
+  const recorderHistory = JSON.parse(readFileSync(join(root, recorderPrefix, 'preservation-manifest.json'), 'utf8'));
+  assert.equal(recorderHistory.schema, 'rea-rabin-recorder-review-preservation/v1');
+  assert.equal(recorderHistory.independentReviewSha256, 'fea82158b9a74ffc68193f27ecbe6a67fd202ec08e627e520bdbda805d93d4ee');
+  assert.equal(recorderHistory.parentBehaviorReceiptSha256, sha(readFileSync(join(developmentRoot, 'apps/backup/results/rabin-validation.json'))));
+  assert.equal(recorderHistory.historicalBehaviorEvidenceReboundToCurrentCollector, false);
+  assert.equal(recorderHistory.snapshots.length, 73);
+  for (const entry of recorderHistory.snapshots) { assert.ok(entry.path.startsWith(recorderPrefix)); currentFingerprint(entry, 'Preserved recorder review'); }
+  const oldCollector = recorderHistory.historicalCollector;
+  assert.equal(oldCollector.path, 'products/rea-studio/scripts/read-rabin-tap.mjs');
+  assert.equal(oldCollector.sha256, 'e87af08715677ce3d663837ef12275627311b2d0dd2844ae38c8d96782e6fe39');
+  currentFingerprint({ ...oldCollector, path: oldCollector.snapshotPath }, 'Historical 47-case recorder');
+  currentFingerprint(recorderHistory.currentCollector, 'Current recorder');
+  assert.equal(recorderHistory.currentCollector.sha256, 'a7068f3e4d8db328636e2daa1e9cd55a7c5d7327320f19edeedc88ed28466dba');
+  for (const entry of [...backupRabin.implementationFingerprints, ...backupRabin.rawEvidence, backupRabin.preservation]) {
+    if (entry.path === oldCollector.path) { assert.equal(entry.sha256, oldCollector.sha256); assert.equal(entry.bytes, oldCollector.bytes); }
+    else if(entry.path==='products/rea-studio/apps/backup/native.test.mjs') routingGeometryCheckpointFingerprint(entry,'Historical Backup Rabin test adapter');
+    else currentFingerprint(entry, 'Backup Rabin integration');
+  }
+  const recorderIntegration = JSON.parse(readFileSync(join(root, recorderPrefix, 'integration-validation.json'), 'utf8'));
+  assert.equal(recorderIntegration.schema, 'rea-rabin-recorder-integration-validation/v1');
+  assert.equal(recorderIntegration.summary.tests, 8); assert.equal(recorderIntegration.summary.pass, 8);
+  assert.equal(recorderIntegration.summary.fail + recorderIntegration.summary.cancelled + recorderIntegration.summary.skipped + recorderIntegration.summary.todo, 0);
+  assert.equal(recorderIntegration.exitCode, 0); assert.equal(recorderIntegration.sourceBytesStableAcrossRun, true);
+  assert.equal(recorderIntegration.historicalBehaviorTestsRerun, 0); assert.equal(recorderIntegration.currentSyntheticLiveLoggerTests, 1);
+  assert.equal(recorderIntegration.historicalBehaviorEvidenceReboundToCurrentCollector, false);
+  for (const entry of [...recorderIntegration.implementationFingerprints, ...recorderIntegration.rawEvidence]) currentFingerprint(entry, 'Current recorder verification');
+  const recorderFailure = JSON.parse(readFileSync(join(root, recorderPrefix, 'production-failed-livelogger/manifest.json'), 'utf8'));
+  assert.equal(recorderFailure.summary.tests, 8); assert.equal(recorderFailure.summary.pass, 7); assert.equal(recorderFailure.summary.fail, 1);
+  for (const entry of recorderFailure.entries) { assert.ok(entry.path.startsWith(recorderPrefix + 'production-failed-livelogger/')); currentFingerprint(entry, 'Preserved failed live logger'); }
+  const recorderIndependent = JSON.parse(readFileSync(join(root, recorderPrefix, 'independent-integration/preservation-manifest.json'), 'utf8'));
+  assert.equal(recorderIndependent.schema,'rea-rabin-recorder-integration-review-preservation/v1');
+  assert.equal(recorderIndependent.reviewReceiptSha256,'a0abf10cfaa97534df6c182bdb576e44032de1451a42f5f086b0570ed586244f');
+  for (const entry of recorderIndependent.snapshots) { assert.ok(entry.path.startsWith(recorderPrefix + 'independent-integration/')); currentFingerprint(entry, 'Independent recorder integration review'); }
+  assert.equal(backupRabin.original.fileCases, 30); assert.equal(backupRabin.original.orderedChunkEntries, 126);
+  assert.equal(backupRabin.original.boundaryExecutions, 30); assert.equal(backupRabin.original.additionalCandidateSnapshotCheckAndRestoreExecutions, 4); assert.equal(backupRabin.original.authenticatedBeforeEveryExecution, true);
+  assert.equal(backupRabin.lifecycle.productionModuleObservations, 20); assert.equal(backupRabin.lifecycle.strictExpiredIOCases, 3); assert.equal(backupRabin.lifecycle.subsequentIOAfterExpiry, 0);
+  const rabinPreservation = JSON.parse(readFileSync(join(root, backupRabin.preservation.path), 'utf8'));
+  assert.equal(rabinPreservation.schema, 'rea-restic-rabin-source-preservation/v1'); assert.equal(rabinPreservation.snapshots.length, backupRabin.preservation.exactSnapshots);
+  assert.equal(rabinPreservation.acceptedReviewSha256, '5a86c3e557408f985dfaf8c4d187fc8a9b1afd1a910d59aaadcfd190a9cfc7ac');
+  assert.equal(rabinPreservation.stageReceiptSha256, 'e50f1858132f6af08709f64a9d47e022c2303c060820d62cdfedf63daa535ab6');
+  for (const entry of rabinPreservation.snapshots) { assert.ok(entry.path.startsWith('products/rea-studio/apps/backup/results/rabin-source-study/')); currentFingerprint(entry, 'Preserved Backup Rabin study'); }
   assert.equal(backupCompression.original.version, '0.19.1'); assert.equal(backupCompression.original.sourceCommit, '6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf'); assert.equal(backupCompression.original.writerConfigurations, 6);
   const compressionPreservation = JSON.parse(readFileSync(join(root, backupCompression.sourcePreservationManifest), 'utf8'));
   assert.equal(compressionPreservation.schema, 'rea-restic-compression-source-preservation/v1');
@@ -242,7 +386,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   const compressionBrowser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-compression-remote-verification.json'), 'utf8'));
   assert.equal(compressionBrowser.schema, 'rea-compression-remote-browser-verification/v1'); assert.deepEqual(compressionBrowser.checks.map(v=>v.app).sort(), ['archive','backup','sync']); assert.ok(compressionBrowser.checks.every(v=>v.passed));
   for (const gate of ['every_documented_feature_verified','full_feature_parity_established','universal_superiority_established']) assert.equal(compressionBrowser[gate], false);
-  for (const entry of [...compressionBrowser.implementation_fingerprints,...compressionBrowser.screenshots]) currentFingerprint(entry, 'Compression/remote browser');
+  for (const entry of [...compressionBrowser.implementation_fingerprints,...compressionBrowser.screenshots]) compressionRemoteFingerprint(entry, 'Compression/remote browser');
   for (const [app,path] of [['archive','apps/archive/lzma-validation.json'],['backup','apps/backup/results/compression-validation.json'],['sync','apps/sync/results/webdav-validation.json']]) assert.equal(compressionBrowser.checks.find(v=>v.app===app).receipt_sha256, sha(readFileSync(join(developmentRoot,path))));
   const remoteBrowser = compressionBrowser.checks.find(v=>v.app==='sync'); assert.equal(remoteBrowser.previewAndRefusedApplyChangedRemoteFiles, false); assert.equal(remoteBrowser.afterApply.priorBytesRetained, true); assert.equal(remoteBrowser.afterApply.passwordAbsentFromWorkspaceAndRecords, true); assert.equal(remoteBrowser.beforeApply.downloadHasNoCredentials, true);
   const compressedBackupBrowser = compressionBrowser.checks.find(v=>v.app==='backup'); assert.equal(compressedBackupBrowser.filesystemAssertions.applicationRestoreExact, true); assert.equal(compressedBackupBrowser.filesystemAssertions.originalRestoreExact, true); assert.equal(compressedBackupBrowser.filesystemAssertions.allNewIndexedBlobsCompressed, true); assert.ok(compressedBackupBrowser.observations.every(v=>v.passwordCleared));
@@ -264,7 +408,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(metricsPerformance.schema, 'rea-native-calculation-performance-followup/v1');
   assert.equal(metricsPerformance.fullFeatureParityEstablished, false); assert.equal(metricsPerformance.universalSuperiorityEstablished, false);
   assert.equal(metricsPerformance.differential.comparisons, 2910751); assert.equal(metricsPerformance.differential.failures, 0);
-  for (const entry of [...metricsPerformance.artifacts, metricsPerformance.implementation]) currentFingerprint(entry, 'Metrics performance');
+  for (const entry of [...metricsPerformance.artifacts, metricsPerformance.implementation]) compressionRemoteFingerprint(entry, 'Metrics performance');
   const pairedMetrics = JSON.parse(readFileSync(join(developmentRoot, 'results/metrics-performance-followup/shared-sort.json'), 'utf8'));
   assert.equal(pairedMetrics.records.length, 30);
   assert.ok(pairedMetrics.records.every(entry => entry.exactOutputEqual && entry.candidateSha256 === metricsPerformance.implementation.sha256));
@@ -303,6 +447,49 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   for (const entry of nativeAutomation.sourceFiles) nativeWorkflowsFingerprint({ ...entry, path:'products/rea-studio/apps/automation/' + entry.path }, 'Native Automation');
   for (const entry of nativeAutomation.sharedValidatedFiles) nativeWorkflowsFingerprint(entry, 'Native Automation host');
   for (const name of ['stdout','stderr']) assert.equal(sha(Buffer.from(nativeAutomation.rawTestEvidence[name])), nativeAutomation.rawTestEvidence[name+'Sha256']);
+  const automationRouting = JSON.parse(readFileSync(join(developmentRoot, 'apps/automation/results/routing-validation.json'), 'utf8'));
+  assert.equal(automationRouting.schema, 'rea-automation-routing-integration-validation/v1');
+  assert.equal(automationRouting.sourceStable, true);
+  assert.deepEqual(automationRouting.summary, {nativeAndOriginal:56,passed:56,failed:0,skipped:0,priorEditorRegressions:3});
+  for (const entry of automationRouting.implementationFingerprints) routingGeometryCheckpointFingerprint({...entry,path:'products/rea-studio/'+entry.path}, 'First Automation routing integration');
+  const routingPreservation = JSON.parse(readFileSync(join(developmentRoot, automationRouting.preservationManifest.path), 'utf8'));
+  assert.equal(routingPreservation.schema, 'rea-automation-routing-preservation/v1');
+  assert.equal(sha(readFileSync(join(developmentRoot, automationRouting.preservationManifest.path))), automationRouting.preservationManifest.sha256);
+  assert.equal(routingPreservation.entries.length, 721); assert.equal(routingPreservation.entries.length, automationRouting.preservationManifest.entries);
+  assert.equal(routingPreservation.stageReceiptSha256, '2a50a9723ef9a3903843f75dc24eaa4d0f12ffb21e9e17bda882ac539202fac8');
+  assert.equal(routingPreservation.baselineFiles,25); assert.equal(routingPreservation.stageFingerprints,29); assert.equal(routingPreservation.historicalRunFolders,15); assert.equal(routingPreservation.selectedOriginalPublicFiles,201);
+  for (const entry of routingPreservation.entries) { assert.ok(entry.snapshot.startsWith('apps/automation/results/routing-source-study/')); currentFingerprint({...entry,path:'products/rea-studio/'+entry.snapshot}, 'Preserved Automation routing study'); }
+  for (const command of automationRouting.commands) {
+    assert.equal(command.exitCode,0); assert.equal(command.error,null); assert.equal(command.tests,command.pass);
+    assert.equal(command.fail+command.cancelled+command.skipped+command.todo,0);
+    for (const stream of ['stdout','stderr']) assert.equal(sha(readFileSync(join(developmentRoot, automationRouting.runPath,command.label+'.'+stream+'.txt'))),command[stream+'Sha256']);
+  }
+  const routingBefore = JSON.parse(readFileSync(join(developmentRoot,automationRouting.runPath,'source-before.json'),'utf8'));
+  assert.deepEqual(routingBefore,automationRouting.implementationFingerprints);
+  assert.deepEqual(JSON.parse(readFileSync(join(developmentRoot,automationRouting.runPath,'source-after.json'),'utf8')),routingBefore);
+  for (const entry of routingBefore) currentFingerprint({...entry,path:'products/rea-studio/'+automationRouting.runPath+'/source/'+entry.path+'.snapshot'}, 'Automation tested source snapshot');
+  const routingRaw = readFileSync(join(developmentRoot,automationRouting.original.publicObservation));
+  assert.equal(routingRaw.length,automationRouting.original.bytes); assert.equal(sha(routingRaw),automationRouting.original.sha256);
+  const routingOriginal = JSON.parse(routingRaw);
+  assert.deepEqual(routingOriginal.observations,automationRouting.original.observations); assert.deepEqual(routingOriginal.counts,automationRouting.original.counts);
+  assert.deepEqual(automationRouting.original.counts,{exactOutputMatches:1812,rejectionOutcomeMatches:10,deliberateSafetyDeviations:3,boundedRepresentationDeviations:48});
+  assert.equal(automationRouting.original.nodeAndModeExecutions,1873); assert.equal(automationRouting.original.observations.switchNodeExecutions,114); assert.equal(automationRouting.original.observations.mergeModeExecutions,1759);
+  assert.equal(automationRouting.original.observations.coreEnqueueHelperExecutions,7); assert.equal(automationRouting.original.observations.corePartialDrainExecutions,4);
+  assert.equal(automationRouting.original.fullReleasedSchedulerExecutions,0); assert.equal(automationRouting.original.fullReleasedServerExecutions,0); assert.equal(automationRouting.original.authenticatedBeforeAndAfter,true);
+  assert.equal(automationRouting.sharedHostEvidence.observations[0].mergeExecutions,1); assert.equal(automationRouting.sharedHostEvidence.observations[0].downstreamRequests,2);
+  assert.equal(automationRouting.sharedHostEvidence.observations[1].httpStatus,400); assert.equal(automationRouting.sharedHostEvidence.observations[1].downstreamRequests,0);
+  for (const gate of ['fullParity','securityCertified','performanceSuperiority']) assert.equal(automationRouting[gate],false);
+  const automationRecoveryBytes=readFileSync(join(developmentRoot,'apps/automation/results/recovery-followup/integration-validation.json'));assert.equal(sha(automationRecoveryBytes),'915e4c14ed5185029e75171d1e7197f3d6ec61cff66541fea4803f08b1637d33');
+  const automationRecovery=JSON.parse(automationRecoveryBytes);assert.equal(automationRecovery.schema,'rea-automation-recovery-integration-validation/v1');assert.deepEqual(automationRecovery.summary,{tests:74,pass:74,fail:0,cancelled:0,skipped:0,todo:0});assert.equal(automationRecovery.sourceStable,true);assert.equal(automationRecovery.implementationFingerprints.length,43);assert.equal(automationRecovery.sourceCapture.completeDirectAppFileCoverage,true);
+  for(const e of [...automationRecovery.implementationFingerprints,...automationRecovery.artifacts])currentFingerprint({...e,path:'products/rea-studio/'+e.path},'Current Automation recovery evidence');
+  assert.equal(automationRecovery.preservation.current.sha256,'585f80b40c72d6968c4e678d7e7282b2a73e70bd29e92ed36a24c8209038f0a8');assert.equal(automationRecovery.preservation.current.snapshots,340);assert.equal(automationRecovery.preservation.historical.sha256,automationRouting.preservationManifest.sha256);assert.equal(automationRecovery.preservation.historical.snapshots,721);
+  assert.equal(automationRecovery.historicalRoutingReceipt.sha256,sha(readFileSync(join(developmentRoot,automationRecovery.historicalRoutingReceipt.path))));assert.equal(automationRecovery.historicalRoutingReceipt.untouched,true);
+  assert.deepEqual(JSON.parse(readFileSync(join(developmentRoot,automationRecovery.runPath,'source-before.json'))),automationRecovery.implementationFingerprints);assert.deepEqual(JSON.parse(readFileSync(join(developmentRoot,automationRecovery.runPath,'source-after.json'))),automationRecovery.implementationFingerprints);
+  for(const e of automationRecovery.implementationFingerprints)currentFingerprint({...e,path:'products/rea-studio/'+automationRecovery.runPath+'/source/'+e.path+'.snapshot'},'Current Automation tested source snapshot');
+  assert.equal(sha(readFileSync(join(developmentRoot,automationRecovery.runner.publicSnapshot))),automationRecovery.runner.sha256);
+  const recoveryOriginalBytes=readFileSync(join(developmentRoot,automationRecovery.original.publicObservation));assert.equal(recoveryOriginalBytes.length,4303977);assert.equal(recoveryOriginalBytes.length,automationRecovery.original.bytes);assert.equal(sha(recoveryOriginalBytes),automationRecovery.original.sha256);const recoveryOriginal=JSON.parse(recoveryOriginalBytes);assert.deepEqual(recoveryOriginal.counts,automationRecovery.original.counts);assert.deepEqual(recoveryOriginal.observations,automationRecovery.original.observations);assert.deepEqual(automationRecovery.original.counts,{exactOutputMatches:1812,rejectionOutcomeMatches:10,deliberateSafetyDeviations:3,boundedRepresentationDeviations:48});assert.equal(automationRecovery.original.nodeAndModeExecutions,1873);assert.equal(automationRecovery.original.separateEnqueueHelperExecutions,7);assert.equal(automationRecovery.original.separatePartialDrainExecutions,4);assert.equal(automationRecovery.original.completeReleasedSchedulerExecutions,0);assert.equal(automationRecovery.original.completeReleasedServerExecutions,0);assert.equal(automationRecovery.original.authenticatedByUnchangedTestHarnessBeforeAndAfter,true);
+  assert.equal(automationRecovery.independentReviewFindings.newReproducedDefects,0);for(const gate of ['fullParity','securityCertified','performanceSuperiority'])assert.equal(automationRecovery[gate],false);
+  const recoveryIndependent=JSON.parse(readFileSync(join(developmentRoot,'apps/automation/results/recovery-followup/independent-review/review-validation.json')));assert.equal(recoveryIndependent.schema,'rea-automation-recovery-independent-review/v1');assert.deepEqual(recoveryIndependent.summary,automationRecovery.summary);assert.equal(recoveryIndependent.currentPublicReceipt.sha256,sha(automationRecoveryBytes));assert.equal(recoveryIndependent.currentSourceIdentityCount,43);assert.equal(recoveryIndependent.currentSourcesVerifiedUnchangedAtFreeze,true);assert.equal(recoveryIndependent.old721AndNew340SnapshotsAuthenticatedAtFreeze,true);assert.equal(recoveryIndependent.publicFingerprints.length,55);for(const e of recoveryIndependent.publicFingerprints)currentFingerprint({...e,path:'products/rea-studio/'+e.path},'Independent Automation reviewed public artifact');assert.equal(recoveryIndependent.newReproducedDefects,0);
   const nativeWorkflowsBrowser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-native-workflows-verification.json'), 'utf8'));
   assert.equal(nativeWorkflowsBrowser.schema, 'rea-native-workflows-browser-verification/v1');
   assert.deepEqual(nativeWorkflowsBrowser.checks.map(check => check.app).sort(), ['archive','automation','backup','metrics','sync']);
@@ -370,7 +557,34 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(sha(readFileSync(join(developmentRoot, 'apps/notes/fixtures/pinned-joplin.jex'))), joplinOracle.fixtureSha256);
   const sketchOracle = JSON.parse(readFileSync(join(developmentRoot, 'apps/sketch/results/excalidraw-compatibility.json'), 'utf8'));
   assert.equal(sketchOracle.status, 'passed');
-  for (const [path, digest] of Object.entries(sketchOracle.implementationSha256)) assert.equal(sha(readFileSync(join(developmentRoot, 'apps/sketch', path))), digest, `Excalidraw-compared file changed: ${path}`);
+  for (const [path, digest] of Object.entries(sketchOracle.implementationSha256)) compressionRemoteFingerprint({path:'products/rea-studio/apps/sketch/'+path,sha256:digest}, 'Historical Excalidraw compared source');
+  const sketchGeometry=JSON.parse(readFileSync(join(developmentRoot,'apps/sketch/results/geometry-validation.json'),'utf8'));
+  assert.equal(sketchGeometry.schema,'rea-sketch-geometry-integration-validation/v1'); assert.deepEqual(sketchGeometry.summary,{tests:28,pass:28,fail:0,cancelled:0,skipped:0,todo:0});
+  assert.equal(sketchGeometry.sourceBytesStableAcrossRun,true);assert.equal(sketchGeometry.collectorBytesStableAcrossRun,true);
+  assert.equal(sketchGeometry.reviewedStageReceiptSha256,'af35be8567f3e60f3f980538d53bcae4f89c7165b19c6f5288b310bda3f0a8f3');assert.equal(sketchGeometry.reviewedStageSourceFiles,51);assert.equal(sketchGeometry.preservedProductionBaselineFiles,11);
+  assert.equal(sketchGeometry.sourceFingerprints.length,13);for(const entry of sketchGeometry.sourceFingerprints)routingGeometryCheckpointFingerprint({...entry,path:'products/rea-studio/apps/sketch/'+entry.path},'First Sketch geometry integration');
+  for(const entry of sketchGeometry.evidence)currentFingerprint({...entry,path:'products/rea-studio/apps/sketch/'+entry.path},'Sketch geometry original observation');
+  const geometryStudyPrefix='products/rea-studio/apps/sketch/results/geometry-source-study/';
+  const geometryStudyBytes=readFileSync(join(root,geometryStudyPrefix,'manifest.json'));assert.equal(sha(geometryStudyBytes),sketchGeometry.studyManifestSha256);assert.equal(sketchGeometry.studyManifestSha256,'73e5206e093c2a610117509ebb57508534b48a30cf77ea793577812b49e63bf9');
+  const geometryStudy=JSON.parse(geometryStudyBytes);assert.equal(geometryStudy.schema,'rea-sketch-geometry-source-study/v1');assert.equal(geometryStudy.files.length,90);assert.equal(geometryStudy.sourceFiles,51);assert.equal(geometryStudy.productionBaseline.length,11);
+  const geometryPaths=new Set();for(const entry of geometryStudy.files){safeRecordPath(entry.path);assert.ok(!geometryPaths.has(entry.path));geometryPaths.add(entry.path);currentFingerprint({...entry,path:geometryStudyPrefix+entry.path},'Preserved Sketch geometry source');}
+  assert.equal(geometryStudy.snapshotMapping.length,90);for(const entry of geometryStudy.snapshotMapping){safeRecordPath(entry.originalPath);safeRecordPath(entry.snapshotPath);assert.ok(geometryPaths.has(entry.snapshotPath));}
+  assert.equal(sketchGeometry.originalComparativeContexts,17);assert.deepEqual(sketchGeometry.originalDirectCalls,{getDiamondPoints:8,getSizeFromPoints:8,getNormalizedDimensions:0,restoreElement:18,serializeAsJSON:1});assert.equal(sketchGeometry.totalDirectOriginalCalls,35);assert.equal(sketchGeometry.legacyOracleIndividualRestorations,6);
+  assert.deepEqual(sketchGeometry.originalPins,{archive:'b280d4b364b65cba264c5aa4e7435cc2ce6421eabbbef9765a56997a0fadf534',bundle:'3cfe278cb537fde73b42bbd4697b392946517d3dc02d3f3cf8487d8476f63ba2',map:'3df41b92bd8c248f482c3d5b163349e02a506c6807a638a38ff722d7e4c98552'});
+  for(const gate of ['fullFeatureParity','productionSecurityVerified','universalSuperiority'])assert.equal(sketchGeometry[gate],false);
+  assert.equal(sketchGeometry.collectorSha256,'cf044f4be673201b19247cb9bc9d31c86d713aef70d51fdb6c3508332a49621d');
+  assert.equal(sketchCollectorStage.sources.get('baseline/scripts/verify-sketch-geometry.mjs')?.sha256,sketchGeometry.collectorSha256);
+  const collectorIntegrationPath='products/rea-studio/apps/sketch/results/collector-followup/integration-validation.json';
+  const collectorIntegrationBytes=readFileSync(join(root,collectorIntegrationPath));assert.equal(sha(collectorIntegrationBytes),'9f2af4ee3ffa9fc3ddd5fd5b2467e2e222725f02e39e0b165427e235f954191d');
+  const sketchCollectorIntegration=JSON.parse(collectorIntegrationBytes);assert.equal(sketchCollectorIntegration.schema,'rea-sketch-collector-integration-validation/v1');assert.deepEqual(sketchCollectorIntegration.summary,{tests:17,pass:17,fail:0,cancelled:0,skipped:0,todo:0});assert.equal(sketchCollectorIntegration.sourceBytesStable,true);assert.equal(sketchCollectorIntegration.sourceFingerprints.length,5);assert.equal(sketchCollectorIntegration.distinctRegressionGroups,17);assert.equal(sketchCollectorIntegration.recordedChildExecutions,14);assert.equal(sketchCollectorIntegration.geometryBehaviorRerun,false);assert.equal(sketchCollectorIntegration.originalHelperExecutions,0);
+  assert.equal(sketchCollectorIntegration.historicalGeometryReceiptSha256,sha(readFileSync(join(developmentRoot,'apps/sketch/results/geometry-validation.json'))));assert.equal(sketchCollectorIntegration.historicalGeometryEvidenceUnchanged,true);
+  for(const entry of [...sketchCollectorIntegration.sourceFingerprints,...sketchCollectorIntegration.artifacts])currentFingerprint(entry,'Current Sketch collector integration');
+  assert.deepEqual(sketchCollectorIntegration.sourceFingerprints,sketchCollectorAdapter.copied);
+  for(const entry of sketchCollectorAdapter.copied){const snapshot=sketchCollectorAdapter.sources.get(entry.exactAdapterSource);assert.ok(snapshot);assert.equal(snapshot.sha256,entry.sha256);assert.equal(snapshot.bytes,entry.bytes);}
+  assert.equal(sketchCollectorIntegration.stagePreservation.sha256,'b5346f5d96e41a707823bef3be721f0d8427576f39bdd52d480d980988661bb9');assert.equal(sketchCollectorIntegration.adapterPreservation.sha256,'8117c71aa9e7c6650092f6fff85a72ca3a6c0d5817aec4b65bc222a934f9ee62');
+  const collectorChild=JSON.parse(readFileSync(join(developmentRoot,'apps/sketch/results/collector-followup/integration-child-run.json')));assert.equal(collectorChild.execution.exitCode,0);assert.equal(collectorChild.execution.failure,null);assert.equal(collectorChild.execution.closed,true);assert.equal(collectorChild.sourceBytesStable,true);assert.deepEqual(collectorChild.sourceBefore,collectorChild.sourceAfter);assert.deepEqual(collectorChild.sourceBefore,sketchCollectorIntegration.sourceFingerprints.map(e=>({name:e.path,bytes:e.bytes,sha256:e.sha256})));
+  const collectorIndependent=JSON.parse(readFileSync(join(developmentRoot,'apps/sketch/results/collector-followup/independent-review/review-validation.json')));assert.equal(collectorIndependent.schema,'rea-sketch-collector-independent-review/v1');assert.deepEqual(collectorIndependent.summary,sketchCollectorIntegration.summary);assert.equal(collectorIndependent.sourceIdentityCount,111);assert.equal(collectorIndependent.productionSourcesVerifiedUnchanged,true);assert.equal(collectorIndependent.allRecordedOwnedRootAndDescendantPidsAbsent,true);assert.equal(collectorIndependent.currentIntegrationReceiptSHA256,sha(collectorIntegrationBytes));assert.equal(collectorIndependent.geometry28Executed,false);assert.equal(collectorIndependent.originalExcalidrawHelpersExecuted,false);assert.equal(collectorIndependent.newReproducedDefects,0);
+  for(const gate of ['fullFeatureParity','universalSuperiority'])assert.equal(sketchCollectorIntegration[gate],false);
   const vaultOracle = JSON.parse(readFileSync(join(developmentRoot, 'apps/vault/compatibility-evidence.json'), 'utf8'));
   assert.equal(vaultOracle.result.exitCode, 0);
   assert.equal(vaultOracle.result.failed + vaultOracle.result.skipped, 0);
@@ -415,6 +629,8 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     }
     assert.equal(rows.length, registry.capability_area_rows);
     assert.equal(record.sources.length, registry.source_fingerprints);
+    for(const source of record.sources){const retained=keepassSupplementBinding.originalSources.filter(e=>e.registry===registry.file&&e.id===source.id);assert.equal(retained.length,1,'Supplement must retain each historical source identity exactly once');assert.equal(retained[0].sha256,source.sha256);}
+    for(const row of rows)assert.equal(keepassSupplementBinding.capabilityIds.filter(e=>e.registry===registry.file&&e.id===row.id).length,1,'Supplement must retain each capability identity exactly once');
     const localEvidence = registry.file === 'workspace-products.json' ? record.localImplementationEvidence
       : registry.file === 'visual-products.json' ? record.baselineProducts.flatMap(product => product.implementationFiles ?? [])
       : record.products.flatMap(product => product.local_implementation_evidence ?? []);
@@ -428,22 +644,43 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     sourceFingerprints += record.sources.length;
   }
   assert.equal(applications.size, 10);
+  assert.equal(sourceFingerprints,keepassSupplementBinding.originalSources.length);assert.equal(capabilityIds.size,keepassSupplementBinding.capabilityIds.length);
   assert.equal(capabilityIds.size, requirementIndex.capability_area_rows);
   assert.equal(requirementIndex.exhaustive_feature_inventory_established, false);
   assert.equal(requirementIndex.full_product_parity_rows_passed, 0);
   productDevelopment = { applications: 10, recorded_tests_passed: validation.summary.pass, tested_source_hashes_checked: validation.source_files.length, browser_workflow_records: browser.checks.length, historical_native_browser_workflow_records: currentBrowser.checks.length, historical_execution_browser_workflow_records: executionBrowser.checks.length, historical_execution_archive_source_hashes_checked: historicalExecution.sources.size, historical_execution_archive_source_revision: historicalExecution.source_revision, joplin_original_method_checks: joplinOracle.passed, keepass_interoperability_test_collection: vaultOracle.result.passed, automation_execution_test_collection: automationExecution.summary.pass, historical_archive_zip_test_collection: archiveZip.checks.successful_result.passed, historical_archive_format_test_collection: archiveFormats.summary.pass, current_archive_test_collection: archiveZstd.checks.result.passed, grafana_unchanged_original_fixtures: grafanaSchema.fixtureChecks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
   Object.assign(productDevelopment, {
-    current_backup_compression_tests_passed: backupCompression.summary.pass,
-    current_backup_compression_source_hashes_checked: backupCompression.implementationFingerprints.length,
+    historical_backup_compression_tests_passed: backupCompression.summary.pass,
+    historical_backup_compression_source_hashes_checked: backupCompression.implementationFingerprints.length,
     preserved_backup_compression_study_artifacts: compressionPreservation.snapshots.length,
+    current_backup_rabin_and_compression_tests_passed: backupRabin.summary.pass,
+    current_backup_rabin_source_hashes_checked: backupRabin.implementationFingerprints.length,
+    current_backup_rabin_original_file_cases: backupRabin.original.fileCases,
+    current_backup_rabin_ordered_chunk_entries: backupRabin.original.orderedChunkEntries,
+    current_recorder_tests_passed: recorderIntegration.summary.pass,
+    keepass_manual_selected_contracts: keepassSupplement.requirements.length,
+    keepass_manual_html_topics_censused: keepassCensus.htmlTopics.length,
+    keepass_manual_documentation_integrity_checks: keepassSupplementValidation.documentationIntegrityChecks.pass,
+    keepass_manual_original_behavior_executions: 0,
+    keepass_manual_candidate_acceptance_executions: 0,
+    preserved_failed_combined_suite_artifacts: failedCombinedPreservation.snapshots.length,
+    current_backup_native_policy_tests_passed: nativePolicy.summary.pass,
+    current_backup_native_policy_source_hashes_checked: nativePolicy.implementationFingerprints.length,
+    preserved_backup_native_policy_artifacts: nativePolicyManifest.snapshots.length,
+    preserved_independent_recorder_review_artifacts: recorderHistory.snapshots.length,
+    current_backup_lifecycle_tests_passed: backupRabin.lifecycle.productionModuleObservations,
+    current_backup_strict_expired_io_cases: backupRabin.lifecycle.strictExpiredIOCases,
+    preserved_backup_rabin_study_artifacts: rabinPreservation.snapshots.length,
     current_sync_test_collection: webdav.testRun.pass,
     current_webdav_test_collection: webdav.testRun.newWebDAVTests,
     current_webdav_original_executions: webdav.oracle.authenticatedOriginalExecutions,
     current_webdav_original_comparison_decisions: webdav.oracle.comparisonDecisions,
     current_archive_test_collection: archiveLzma.test_run.passed,
     current_archive_source_and_proof_hashes_checked: lzmaIntegrityResult.fingerprints,
-    current_native_browser_workflow_records: compressionBrowser.checks.length,
-    current_native_browser_source_hashes_checked: compressionBrowser.implementation_fingerprints.length,
+    historical_compression_remote_browser_workflow_records: compressionBrowser.checks.length,
+    historical_compression_remote_browser_source_hashes_checked: compressionBrowser.implementation_fingerprints.length,
+    historical_compression_remote_source_revision: compressionRemoteHistory.source_revision,
+    historical_compression_remote_source_hashes_checked: compressionRemoteSources.size,
     historical_native_core_browser_workflow_records: nativeBrowser.checks.length,
     historical_native_workflows_browser_workflow_records: nativeWorkflowsBrowser.checks.length,
     historical_native_workflows_browser_source_hashes_checked: nativeWorkflowsBrowser.implementation_fingerprints.length,
@@ -451,6 +688,26 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     historical_native_workflows_source_hashes_checked: nativeWorkflowsSources.size,
     historical_sevenzip_test_collection: sevenzip.test_run.passed,
     historical_native_automation_test_collection: nativeAutomation.summary.pass,
+    first_native_automation_routing_tests_passed: automationRouting.summary.passed,
+    first_native_automation_editor_regressions_passed: automationRouting.summary.priorEditorRegressions,
+    current_native_automation_recovery_tests_passed: automationRecovery.summary.pass,
+    current_native_automation_routing_exact_output_matches: automationRecovery.original.counts.exactOutputMatches,
+    preserved_automation_recovery_stage_artifacts: automationRecoveryStage.snapshots.length,
+    preserved_automation_recovery_independent_review_artifacts: automationRecoveryIndependentReview.snapshots.length,
+    current_automation_browser_checks_passed: recoveryBrowser.summary.passed,
+    preserved_automation_routing_artifacts: routingPreservation.entries.length,
+    first_sketch_geometry_tests_passed: sketchGeometry.summary.pass,
+    first_sketch_geometry_direct_original_calls: sketchGeometry.totalDirectOriginalCalls,
+    preserved_sketch_geometry_artifacts: geometryStudy.files.length,
+    preserved_automation_independent_review_artifacts: routingIndependentReview.snapshots.length,
+    preserved_sketch_independent_review_artifacts: geometryIndependentReview.snapshots.length,
+    current_sketch_collector_tests_passed: sketchCollectorIntegration.summary.pass,
+    preserved_sketch_collector_followup_artifacts: sketchCollectorStage.snapshots.length+sketchCollectorAdapter.snapshots.length,
+    preserved_sketch_collector_independent_review_artifacts: sketchCollectorIndependentReview.snapshots.length,
+    preserved_rabin_routing_geometry_browser_source_hashes: routingGeometryBrowserSources.size,
+    unaccepted_metrics_measurement_children: metricsDispatchReceipt.timingChildren+metricsDispatchReceipt.isolatedMemoryChildren,
+    unaccepted_metrics_output_cache_checks: metricsDispatchReceipt.outputCacheChecks,
+    preserved_unaccepted_metrics_measurement_artifacts: metricsDispatchPreservation.snapshots.length,
     native_n8n_original_exact_outputs: accounting.exactOutputMatches,
     native_n8n_original_rejection_outcomes: accounting.rejectionOutcomeMatches,
     native_n8n_normalized_http_outputs: accounting.normalizedHttpOutputMatches,

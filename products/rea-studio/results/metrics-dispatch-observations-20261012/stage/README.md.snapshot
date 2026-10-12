@@ -1,0 +1,59 @@
+# Separate Metrics dispatch and memory experiments
+
+This ignored stage is ready for a future coordinated quiet interval. Production Metrics, Sync, both earlier Metrics stages and their historical receipts remain unchanged. No timing or memory measurement has run in this stage. All full-product, exhaustive-feature and universal-superiority gates remain false; neither candidate is selected for integration.
+
+The standard candidate changes only the standard helper. Number/time fields with truthy ignore-null mode dispatch once to a loop that uses the existing result object and preserves the existing arithmetic/coercion order. Raw first/last, NaN counts, null/undefined/sparse skips, delta reset behavior, extrema, nineteen result members, finalization and complete generic fallback remain intact. There is no primitive-value guard, scalar accumulator rewrite, derived count or selection/cache/registry change. The complete source after the standard helper is byte-identical to the frozen application baseline.
+
+| Implementation | SHA-256 | Scope |
+| --- | --- | --- |
+| Frozen baseline | `9269cf8c32be9bf2c075b67019e82e41272d9495f0321fefc17b2c5695a91371` | Current production module |
+| `candidate-invariant-dispatch.mjs` | `e30ab8a663a22b43f384ec1de689175d81bdc7e1076b81fc5cca6083964e9e29` | Only numeric/ignore-null standard dispatch |
+| `candidate-percentile-isolated.mjs` | `6ac1153c008d960de23766af1e4325cc0e77a5ab10c49be604d4d6e203f6e26f` | Unchanged copy of the prior separately validated bounded single-percentile trial |
+
+The two changes are deliberately separate. The percentile candidate's standard helper and complete shared special-calculation source are unchanged from baseline. Its historical receipts retain their actual earlier execution paths and fingerprints; exact copying does not create a new full replay. Both candidates have fresh current-stage single-module checks for the five fixed fixtures.
+
+The authority is the actual released `@grafana/data@13.2.3` archive (`954a03a68fa122ebe74c0c318dc801e434c17294c5374ef593cf491f73c81c41`, npm gitHead `8ea0d7e31a25f84c2b5a1c173070d8cde8740924`), with independently byte-verified lodash 4.17.23 archive and actual resolution. Test preflight authenticates SHA-256, registry SHA-512 integrity, original modules against archive members and the actual lodash runtime against its archive. Original runtime is used only by independent test processes. The staged application candidates import no vendor runtime. Pinned official source/Node contracts, exact source locations and source SHA values are preserved in `preserved/plans/source-inspection.json`; the frozen prospective contracts are in `preserved/plans/STANDARD-PLAN.md` and `MEMORY-PLAN.md`.
+
+## Correctness before measurement
+
+The standard candidate passed:
+
+- 2,910,751 full original reducer comparisons, including 48,240 cache comparisons; 14,240 separate standard-helper comparisons. Corpus/output hashes match the frozen original replay.
+- 9,600 independently shaped long standard reducer comparisons, 1,920 helper comparisons and 24 caller-mutation/cache-alias scenarios, including primitive strings/booleans in numeric fields, null/NaN/sparse runs, resets, sentinels and truthy helper flags.
+- 3,888 held-out percentile reducer comparisons, 864 direct registry calls and 18 independently shaped 25,000-sample adversarial selections. The standard candidate retains the baseline sort algorithm, so a partition fallback guard is not applicable to this candidate.
+- Five harness tests for canonical IEEE/undefined/hole and cache alias distinctions, stale/non-ISO/future authorization rejection in both variants, unknown-manifest rejection and parsing the owned-PID observer without starting it.
+- Thirty fresh fixture comparisons in six separate children: original/baseline/candidate for each separate manifest, five comparisons per child, exactly one reducer implementation loaded per child. These run no warmups, transient/retention loops, memory snapshots or observer processes.
+
+The unchanged percentile candidate has separate preserved historical full 2,910,751 + 14,240 verification, 3,888 + 864 held-out comparisons and 18 adversarial comparisons with exact-source coverage showing five work-cap fallback executions. Its historical source identity and failed-builder evidence remain in the frozen prior stage and copied provenance.
+
+Current acceptance intervals are separate from any future performance interval. Full standard replay ran 19:48:44.659–19:49:24.600 UTC; final supplementary checks ran 20:00:38.598–20:00:51.658 UTC; final harness checks ran 20:13:19.683–20:13:23.099 UTC on 2026-10-12. Root/other-agent activity was allowed during these correctness runs. Acceptance durations are not benchmark results. Raw outputs, first-pass/draft receipts, all original historical regressions/rejections and earlier confounded timing disclosures are retained without rebinding.
+
+Ordinary field/config/state objects, primitive array samples and fixed built-in metadata/aliases are the supported compatibility boundary. Arbitrary proxies/accessors/classes/vectors, mutable custom registries and global metadata changes remain unverified. Error classes are compared; engine-specific messages/stacks are excluded. Finite differential evidence does not prove every input or Grafana product parity.
+
+## Future paired timing
+
+Only root may establish the quiet interval. From this directory, with its newly supplied UTC timestamp, run the standard sequence and then the percentile sequence separately:
+
+```powershell
+node timing-runner.mjs --quiet-confirmed 2026-10-12T00:00:00.000Z standard
+node timing-runner.mjs --quiet-confirmed 2026-10-12T00:00:00.000Z percentile
+```
+
+The timestamp above is a placeholder and is rejected because it predates the preflight. The wrapper requires passing exact-source semantic and fresh fixture evidence, authenticates original source bytes and freezes selected identities before invoking the byte-identical earlier v2 timing scripts. Seven sequential fresh processes per implementation/workload rotate original/baseline/candidate order (105 children per candidate). These timing children load all three implementations for correctness checks, so their incidental memory values cannot establish isolated implementation memory. Preserve original/baseline/candidate medians and all ranges for all five cases, including regressions. There is no statistical significance, causality or universal-speed conclusion from seven finite samples. Prediction from earlier sequences: 65–85 seconds per candidate, approximately 2.5 minutes for both. This is an estimate, not an executed result.
+
+## Future isolated memory observations
+
+`memory-preflight.standard.json` and `.percentile.json` bind separate candidates to identical fixed specifications and complete expected original graph outputs. A separate original-only preflight calculated five fresh outputs once for both manifests, authenticating sources and Node executable first. Measured workers read only selected source hashes, their small selected manifest and common test helper; they do not load another reducer, decompress archives or read complete expected-result files.
+
+```powershell
+node memory-runner.mjs --quiet-confirmed 2026-10-12T00:00:00.000Z standard
+node memory-runner.mjs --quiet-confirmed 2026-10-12T00:00:00.000Z percentile
+```
+
+Again the placeholder timestamp is rejected. Each candidate gets a separate 105-child sequence. Every worker loads exactly one reducer. Original-only processes legitimately load released registry/lodash dependencies; native-only processes load their selected single ESM module and test helper. Compare inclusive component footprint, not a whole application. Record the actual Node v24.16.0 executable hash/version/V8, Windows/architecture, source/manifest identities, PIDs, command lines, intervals and raw memory observations.
+
+Each child starts only after its separate owned-PID Windows RSS observer returns a first sample. It records cold pre-import/initialized/shared-input snapshots, same-GC warm base, sixteen transient block-tail snapshots, retained results after GC and released results after GC. All workers use fresh field/state/cache objects with shared input; returned/cache top objects remain separate, and original shallow array aliases remain intact. Warmup/transient/retained counts are frozen prospectively in MEMORY-PLAN and both manifests. Exactly three explicit GCs plus event-loop turns occur for settling snapshots. Actual observer handshake/measurement execution has not yet been tested: any execution failure will be retained as a failed trial and cannot become a selected result.
+
+Limits are 120 seconds per owned child, 256 MiB old-space, 512 MiB observed RSS, bounded logs and 100 ms independent owned-PID RSS samples. Old-space is not total process memory. RSS/heap/external/arrayBuffers are bytes; lifetime maxRSS is KiB and cannot be subtracted as a resettable peak. Sampling may miss short peaks and establishes no allocation totals. Result/cache validation occurs after the retained snapshot and before the released snapshot; temporary serializer objects are dropped before release GC, but heap-capacity/RSS pressure may persist. The released observation is a diagnostic, not pure allocator/leak evidence. The retained sample count may be too small to resolve percentile output-object differences; shared inputs do not model separately owned field inputs. GC and the observer add work and do not represent normal application behavior. Record medians, complete ranges, negative/noisy deltas and censored failures without favorable count changes.
+
+Estimated duration is 2–3 minutes per isolated-memory candidate sequence, including original all-99/all-124 work and observer/startup/validation overhead. The estimate is unmeasured. Do not run profiles, correctness corpora, other app tests or publication verification concurrently with selected timings/observations. If any overlap occurs, preserve and disclose the trial as exploratory and rerun only after a new coordinated quiet interval.

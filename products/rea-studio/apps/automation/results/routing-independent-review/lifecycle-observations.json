@@ -1,0 +1,298 @@
+{
+  "schema": "rea-automation-routing-independent-lifecycle-observations/v1",
+  "observations": [
+    {
+      "name": "post-checkpoint-expired-deadline",
+      "fixture": {
+        "name": "Owned deadline boundary",
+        "nodes": [
+          {
+            "name": "Start",
+            "id": "Start",
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "parameters": {},
+            "position": [
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Effect",
+            "id": "Effect",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.4,
+            "parameters": {
+              "url": "http://127.0.0.1:1/owned",
+              "options": {
+                "timeout": 1000
+              }
+            },
+            "position": [
+              0,
+              0
+            ]
+          }
+        ],
+        "connections": {
+          "Start": {
+            "main": [
+              [
+                {
+                  "node": "Effect",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          }
+        }
+      },
+      "initialActiveMs": 119950,
+      "checkpointDelayMs": 85,
+      "observed": {
+        "effectCalls": 1,
+        "status": "completed",
+        "activeMs": 120052.665,
+        "trace": [
+          {
+            "node": "Start",
+            "type": "n8n-nodes-base.manualTrigger",
+            "inputItems": 0,
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 0.256
+          },
+          {
+            "node": "Effect",
+            "type": "n8n-nodes-base.httpRequest",
+            "inputItems": 1,
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 101.897
+          }
+        ]
+      },
+      "expected": "Fail NATIVE_LIMIT after the awaited checkpoint before issuing an expired HTTP effect",
+      "scope": "Actual production import; owned synthetic data and test-only Fetch replacement; no remote request"
+    },
+    {
+      "name": "premature-persisted-downstream-invocation",
+      "fixture": {
+        "name": "Owned persisted fan-in contradiction",
+        "nodes": [
+          {
+            "name": "Start",
+            "id": "Start",
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "parameters": {},
+            "position": [
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Left",
+            "id": "Left",
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "parameters": {
+              "mode": "manual",
+              "assignments": {
+                "assignments": [
+                  {
+                    "name": "left",
+                    "value": 1,
+                    "type": "number"
+                  }
+                ]
+              }
+            },
+            "position": [
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Wait",
+            "id": "Wait",
+            "type": "n8n-nodes-base.wait",
+            "typeVersion": 1.1,
+            "parameters": {
+              "resume": "timeInterval",
+              "amount": 0.01,
+              "unit": "seconds"
+            },
+            "position": [
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Merge",
+            "id": "Merge",
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "parameters": {
+              "mode": "chooseBranch",
+              "numberInputs": 2,
+              "chooseBranchMode": "waitForAll",
+              "output": "specifiedInput",
+              "useDataOfInput": 1
+            },
+            "position": [
+              0,
+              0
+            ]
+          },
+          {
+            "name": "Effect",
+            "id": "Effect",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.4,
+            "parameters": {
+              "url": "http://127.0.0.1:1/owned",
+              "options": {
+                "timeout": 1000
+              }
+            },
+            "position": [
+              0,
+              0
+            ]
+          }
+        ],
+        "connections": {
+          "Start": {
+            "main": [
+              [
+                {
+                  "node": "Left",
+                  "type": "main",
+                  "index": 0
+                },
+                {
+                  "node": "Wait",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Left": {
+            "main": [
+              [
+                {
+                  "node": "Merge",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Wait": {
+            "main": [
+              [
+                {
+                  "node": "Merge",
+                  "type": "main",
+                  "index": 1
+                }
+              ]
+            ]
+          },
+          "Merge": {
+            "main": [
+              [
+                {
+                  "node": "Effect",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          }
+        }
+      },
+      "mutation": "Append reachable Effect invocation before waiting Merge predecessor has executed",
+      "acceptedByValidateExecution": true,
+      "observed": {
+        "effectCalls": 2,
+        "status": "completed",
+        "trace": [
+          {
+            "node": "Start",
+            "type": "n8n-nodes-base.manualTrigger",
+            "inputItems": 0,
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 0.062
+          },
+          {
+            "node": "Wait",
+            "type": "n8n-nodes-base.wait",
+            "inputItems": 1,
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 0.054
+          },
+          {
+            "node": "Left",
+            "type": "n8n-nodes-base.set",
+            "inputItems": 1,
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 0.364
+          },
+          {
+            "node": "Merge",
+            "type": "n8n-nodes-base.merge",
+            "inputItems": 2,
+            "inputPorts": [
+              1,
+              1
+            ],
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 0.499
+          },
+          {
+            "node": "Effect",
+            "type": "n8n-nodes-base.httpRequest",
+            "inputItems": 1,
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 0.377
+          },
+          {
+            "node": "Effect",
+            "type": "n8n-nodes-base.httpRequest",
+            "inputItems": 1,
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 0.201
+          }
+        ]
+      },
+      "expected": "Reject contradictory pending execution during recovery before issuing effects",
+      "scope": "Actual production import; owned synthetic serialized Wait state and test-only Fetch replacement; no remote request"
+    }
+  ]
+}

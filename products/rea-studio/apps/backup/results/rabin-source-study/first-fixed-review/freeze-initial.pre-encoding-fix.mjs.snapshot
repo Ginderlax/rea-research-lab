@@ -1,0 +1,12 @@
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const root=fileURLToPath(new URL('./',import.meta.url)),hash=bytes=>createHash('sha256').update(bytes).digest('hex'),manifest=JSON.parse(await fs.readFile(path.join(root,'baseline-manifest.json'),'utf8'));
+for(const item of manifest.copiedFiles)assert.equal(hash(await fs.readFile(path.join(root,'baseline',item.path))),item.sha256);for(const item of manifest.sourceFingerprints)assert.equal(hash(await fs.readFile(path.join(manifest.stage,item.path))),item.sha256);
+const sources=[];for(const name of ['baseline-manifest.json','preserve-baseline.mjs','lifecycle.test.mjs','lifecycle-observations.json','lifecycle.stdout.txt','lifecycle.stderr.txt','freeze-initial.mjs']){const bytes=await fs.readFile(path.join(root,name));sources.push({path:name,bytes:bytes.length,sha256:hash(bytes)});}
+const observations=JSON.parse(await fs.readFile(path.join(root,'lifecycle-observations.json'),'utf8'));assert.equal(observations.observations.length,20);
+const tap=await fs.readFile(path.join(root,'lifecycle.stdout.txt'),'utf16le');assert.match(tap,/# pass 20/);assert.match(tap,/# fail 0/);
+const output={schema:'rea-rabin-fixed-independent-review-initial/v1',checkedAtUtc:new Date().toISOString(),summary:{tests:20,pass:20,fail:0,cancelled:0,skipped:0,todo:0},sourceBytesStableAcrossRun:true,sourceFingerprints:manifest.sourceFingerprints,reviewFingerprints:sources,scope:'Twenty finite lifecycle regressions against exact frozen root fixed-stage source copies. Root author verifier outputs may update separately. No original stage or production edits and no full parity/security/performance claim.'};
+const receipt=path.join(root,'initial-validation.json');await fs.writeFile(receipt,JSON.stringify(output,null,2)+'\n');console.log(JSON.stringify({receipt,sha256:hash(await fs.readFile(receipt)),tests:20,sourceFiles:manifest.sourceFingerprints.length}));

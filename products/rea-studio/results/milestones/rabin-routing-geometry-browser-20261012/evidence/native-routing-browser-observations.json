@@ -1,0 +1,187 @@
+{
+  "createdAtUtc": "2026-10-12T20:17:19.338Z",
+  "observations": [
+    {
+      "name": "conflictingInputRejected",
+      "visible": "Workflow: Routing joins support one edge per input port"
+    },
+    {
+      "name": "savedValidGraph",
+      "visible": "Saved revision 1"
+    },
+    {
+      "name": "sixStepRoutingCompleted",
+      "result": {
+        "id": "cc7498de-7d04-440e-8c10-d2ce0cbc9a8c",
+        "status": "completed",
+        "trace": [
+          {
+            "node": "Start",
+            "type": "n8n-nodes-base.manualTrigger",
+            "inputItems": 0,
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 4.149
+          },
+          {
+            "node": "Seed",
+            "type": "n8n-nodes-base.set",
+            "inputItems": 1,
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 4.132
+          },
+          {
+            "node": "Switch",
+            "type": "n8n-nodes-base.switch",
+            "inputItems": 1,
+            "status": "completed",
+            "outputItems": [
+              1,
+              0
+            ],
+            "durationMs": 4.814
+          },
+          {
+            "node": "Wait",
+            "type": "n8n-nodes-base.wait",
+            "inputItems": 1,
+            "status": "completed",
+            "outputItems": [
+              1
+            ],
+            "durationMs": 3.663
+          },
+          {
+            "node": "Merge",
+            "type": "n8n-nodes-base.merge",
+            "inputItems": 2,
+            "inputPorts": [
+              1,
+              1
+            ],
+            "status": "completed",
+            "outputItems": [
+              2
+            ],
+            "durationMs": 4.714
+          },
+          {
+            "node": "Finished",
+            "type": "n8n-nodes-base.set",
+            "inputItems": 2,
+            "status": "completed",
+            "outputItems": [
+              2
+            ],
+            "durationMs": 3.739
+          }
+        ],
+        "outputs": {
+          "Start": [
+            [
+              {
+                "json": {}
+              }
+            ]
+          ],
+          "Seed": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              }
+            ]
+          ],
+          "Switch": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              }
+            ],
+            []
+          ],
+          "Wait": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              }
+            ]
+          ],
+          "Merge": [
+            [
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "amount": 150
+                },
+                "pairedItem": {
+                  "item": 0,
+                  "input": 1
+                }
+              }
+            ]
+          ],
+          "Finished": [
+            [
+              {
+                "json": {
+                  "amount": 150,
+                  "finished": true
+                },
+                "pairedItem": {
+                  "item": 0
+                }
+              },
+              {
+                "json": {
+                  "amount": 150,
+                  "finished": true
+                },
+                "pairedItem": {
+                  "item": 1
+                }
+              }
+            ]
+          ]
+        },
+        "steps": 6,
+        "requests": 0,
+        "startedAt": "2026-10-12T20:16:26.602Z",
+        "workflowId": "5a85e4c3-2092-4a9f-9bc5-e60ff28e3052",
+        "revision": 1,
+        "finishedAt": "2026-10-12T20:16:26.754Z"
+      }
+    },
+    {
+      "name": "savedWorkflowAndHistoryAfterReload",
+      "visible": "2026-10-12T20:16:26.602Z · completed · revision 1"
+    }
+  ],
+  "scope": "Actual shared production host native routing UI, synthetic owned workflow, no released n8n editor or universal parity comparison"
+}

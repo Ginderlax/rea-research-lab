@@ -1,0 +1,17 @@
+file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-standard-dispatch-next/consolidate-measurements.mjs:17
+  const rows=caseNames.map(caseName=>({caseName,implementations:Object.fromEntries(['original','baseline','candidate'].map(implementation=>{const samples=observations.samples.filter(sample=>sample.caseName===caseName&&sample.implementation===implementation);assert.equal(samples.length,7);const checkpoints=Object.fromEntries(snapshotNames.map(name=>[name,Object.fromEntries(checkpointFields.map(field=>[field,summarize(samples.map(sample=>sample.result.checkpoints.find(row=>row.name===name)[field]))]))])),deltas=Object.fromEntries(Object.entries(deltaPairs).map(([name,[end,start]])=>[name,Object.fromEntries(deltaFields.map(field=>[field,summarize(samples.map(sample=>{const selected=Object.fromEntries(sample.result.checkpoints.map(row=>[row.name,row]));return selected[end][field]-selected[start][field];}))]))]));return [implementation,{checkpoints,deltas,sampledTransientMaximum:Object.fromEntries(deltaFields.map(field=>[field,summarize(samples.map(sample=>Math.max(...sample.result.checkpoints.filter(row=>row.name.startsWith('transientBlock-')).map(row=>row[field]))))])),sampledTransientMaximumMinusWarmBase:Object.fromEntries(deltaFields.map(field=>[field,summarize(samples.map(sample=>Math.max(...sample.result.checkpoints.filter(row=>row.name.startsWith('transientBlock-')).map(row=>row[field]))-sample.result.checkpoints.find(row=>row.name==='warmBase')[field]))])),ownedPIDObserverPeakRSS:summarize(samples.map(sample=>sample.ownedPIDObserver.peakRSS)),lifetimeMaxRSSKiB:summarize(samples.map(sample=>Math.max(...sample.result.checkpoints.map(row=>row.lifetimePeakResidentKiB)))),observerSampleCount:summarize(samples.map(sample=>sample.ownedPIDObserver.samples))}];}))}));
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            ^
+
+TypeError: Cannot read properties of undefined (reading 'rss')
+    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-standard-dispatch-next/consolidate-measurements.mjs:17:493
+    at Array.map (<anonymous>)
+    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-standard-dispatch-next/consolidate-measurements.mjs:17:429
+    at Array.map (<anonymous>)
+    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-standard-dispatch-next/consolidate-measurements.mjs:17:393
+    at Array.map (<anonymous>)
+    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-standard-dispatch-next/consolidate-measurements.mjs:17:341
+    at Array.map (<anonymous>)
+    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-standard-dispatch-next/consolidate-measurements.mjs:17:120
+    at Array.map (<anonymous>)
+
+Node.js v24.16.0

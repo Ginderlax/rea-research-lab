@@ -1,0 +1,44 @@
+{
+  "schema": "rea-rabin-independent-lifecycle-review/v1",
+  "startedAtUtc": "2026-10-12T19:27:10.165Z",
+  "stageReceiptSha256": "5db924be34d1b7d211a7ab9205b26e0218120593470f32f6169b591b71863fdc",
+  "baselineUnchangedBeforeRun": true,
+  "cases": [
+    {
+      "name": "cancellation-during-pre-sink-path-stat",
+      "fixture": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\backup-rabin-review\\abort-fixture-D1QqB1",
+      "sourceBytes": 25,
+      "resolutions": 4,
+      "observedSinkCalls": 1,
+      "expectedSinkCalls": 0,
+      "rejected": "cancelled while validating the first ready chunk",
+      "materialFinding": true,
+      "explanation": "The resolver aborts after currentPath guards and before its pending lstat completes. unchanged() returns without a final guard; capture invokes the blob sink, then notices cancellation."
+    },
+    {
+      "name": "cancellation-during-final-path-stat",
+      "fixture": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\backup-rabin-review\\abort-fixture-D1QqB1",
+      "sourceBytes": 25,
+      "resolutions": 6,
+      "observedSinkCalls": 1,
+      "rejected": null,
+      "success": {
+        "size": 25,
+        "content": [
+          "b8ca0f74f012e407331c3ef6d689eb05cac13b1efe65654c44ac4be55728b966"
+        ],
+        "chunks": 1,
+        "polynomial": "3da3358b4dc173",
+        "chunking": "Rabin 64-byte window, average20, min512KiB, max8MiB",
+        "maximumLiveCaptureBufferBytes": 17825792
+      },
+      "expectedRejection": "cancelled during the final source stat",
+      "signalAborted": true,
+      "materialFinding": true,
+      "explanation": "Final unchanged() lacks a guard after its awaited named lstat. An abort during that final check may return capture success."
+    }
+  ],
+  "scope": "Finite deterministic lifecycle probes on authenticated exact review copies, with owned synthetic data. No production changes, full parity or security claim.",
+  "completedAtUtc": "2026-10-12T19:27:10.243Z",
+  "originalStageUnchangedAcrossRun": true
+}

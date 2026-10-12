@@ -1,0 +1,14 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const root=fileURLToPath(new URL('./',import.meta.url)),stage=path.resolve(root,'../backup-rabin-fixed-next'),prior=path.resolve(root,'../backup-rabin-fixed-review'),hash=bytes=>createHash('sha256').update(bytes).digest('hex'),old=JSON.parse(await fs.readFile(path.join(prior,'review-validation.json'),'utf8'));
+assert.equal(hash(await fs.readFile(path.join(prior,'review-validation.json'))),'741879c49af974703e218858f678c629f25b3dc6b3d49bbee7b8f11b1bd40f63');
+async function inventory(folder,prefix=''){const result=[];for(const item of await fs.readdir(folder,{withFileTypes:true})){const name=prefix+item.name;if(item.isDirectory())result.push(...await inventory(path.join(folder,item.name),name+'/'));else{const bytes=await fs.readFile(path.join(folder,item.name));result.push({path:name,bytes:bytes.length,sha256:hash(bytes)});}}return result.sort((a,b)=>a.path.localeCompare(b.path));}
+const priorFingerprints=await inventory(prior),files=await inventory(stage);for(const item of files){const destination=path.join(root,'baseline',item.path);await fs.mkdir(path.dirname(destination),{recursive:true});const bytes=await fs.readFile(path.join(stage,item.path));assert.equal(hash(bytes),item.sha256);await fs.writeFile(destination,bytes);}
+const sourceFingerprints=files.filter(item=>/\.(mjs|go|md)$/.test(item.path)||item.path==='source-provenance.json'||item.path.startsWith('references/')||item.path==='author-baseline-manifest.json');
+const changed=old.sourceFingerprints.filter(item=>sourceFingerprints.find(row=>row.path===item.path)?.sha256!==item.sha256).map(item=>item.path).sort();assert.deepEqual(changed,['README.md','apps/backup/restic.mjs'].sort());
+for(const name of ['lifecycle.test.mjs','precommit-deadline-probe.mjs'])await fs.copyFile(path.join(prior,name),path.join(root,name));
+const report={schema:'rea-rabin-final-review-baseline/v1',capturedAtUtc:new Date().toISOString(),stage,copiedFiles:files,sourceFingerprints,expectedModifiedSources:changed,priorReviewRoot:prior,priorReviewReceiptSha256:hash(await fs.readFile(path.join(prior,'review-validation.json'))),priorReviewFingerprints:priorFingerprints,excludedLiveAuthorEvidence:'Root verifier runs separately and can replace its receipt/output/measurement. Immutable source binding covers implementation/reference/docs; all copied baseline bytes are retained.'};
+const output=path.join(root,'baseline-manifest.json');await fs.writeFile(output,JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({manifestSha256:hash(await fs.readFile(output)),sourceFiles:sourceFingerprints.length,baselineFiles:files.length,preservedPriorFiles:priorFingerprints.length,modified:sourceFingerprints.filter(item=>changed.includes(item.path))}));

@@ -2,6 +2,14 @@
 
 This collection welcomes independent replication and critical review. Start with the relevant project's report, `study.json` and claim ledger, then consult [the methodology](METHODOLOGY.md) for the distinction between observation, inference and reconstruction.
 
+On Windows, the exact historical evidence has paths longer than the legacy 260-character limit. Enable Git's long-path support when cloning:
+
+```text
+git -c core.longpaths=true clone https://github.com/Ginderlax/rea-research-lab.git
+```
+
+For an existing checkout, run `git config --local core.longpaths true` inside it. This changes that checkout's Git setting and preserves the evidence paths and bytes.
+
 The most useful feedback is a reproducible result:
 
 - A documented command that fails on the stated environment, or a successful run on another environment.

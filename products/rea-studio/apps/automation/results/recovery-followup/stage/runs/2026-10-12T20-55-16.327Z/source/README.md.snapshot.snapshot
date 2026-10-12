@@ -1,0 +1,13 @@
+# Prospective Automation routing recovery corrections
+
+This isolated stage starts from the frozen production routing receipt `b85b20796ca6c029ff37cc955e91b62b547ec493721dad4a6342413ddfa03801`. Its independent read-only review and exact original defect observations remain preserved under `review-before/`; production source and historical receipts are untouched.
+
+The prospective native core rechecks the cooperative active deadline after the awaited pre-node checkpoint, before executing the node. A checkpoint or blocked I/O is allowed to finish; this does not preempt blocked I/O or impose an elapsed wall-clock deadline. Existing cancellation precedence is retained.
+
+For the bounded acyclic graph containing Merge, recovery also validates that persisted routing outputs have supported port/item shapes and that each pending invocation or arrived Merge buffer equals its completed predecessor's output batch. A deferred Wait output has not arrived. Already-arrived nonempty batches cannot disappear into empty/null input slots. The enabled Manual invocation retains its initial empty-input form. This is local state consistency checking, not authentication against coordinated rewriting of a complete checkpoint or an integrity/durability guarantee.
+
+Genuine serialized partial joins, full Merge invocations queued behind an independent Wait and fan-out pending beside a deferred Wait are covered explicitly. Original Switch and Merge primitive code remains byte-identical to production. The focused run includes the existing 56 native/routing/original groups, three existing editor groups and ten new finite recovery regressions, including actual isolated shared-host rejection with zero downstream requests. Original comparison accounting remains separate from test-group counts.
+
+The shared original development cache is referenced read-only by an ignored stage junction. The selected routing originals are copied into the stage's own ignored cache; synthetic oracle observations are stage-owned. Do not run acquisition through the shared cache junction. No production app/results, shared runner, metadata or user browser ports are modified.
+
+Remaining limits include the previously documented finite node/version/expression subset, no full released scheduler/server/database/editor/SQL execution, no arbitrary queue generations or cycles, no whole-product parity, no elapsed I/O preemption and no broad security/reliability/performance claim. Historical and failed source versions stay exact; failed test setup is distinguished from runtime behavior.

@@ -1,0 +1,9 @@
+var filterOutDeletedFiles = (elements, files) => {
+  const nextFiles = {};
+  for (const element of elements) {
+    if (!element.isDeleted && "fileId" in element && element.fileId && files[element.fileId]) {
+      nextFiles[element.fileId] = files[element.fileId];
+    }
+  }
+  return nextFiles;
+};

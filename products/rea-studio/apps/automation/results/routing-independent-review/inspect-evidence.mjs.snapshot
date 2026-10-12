@@ -1,0 +1,9 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const app=path.resolve('outputs/rea-research-lab/products/rea-studio/apps/automation');
+const receipt=JSON.parse(await fs.readFile(path.join(app,'results/routing-validation.json')));
+const manifest=JSON.parse(await fs.readFile(path.join(app,'results/routing-source-study/preservation-manifest.json')));
+const own=JSON.parse(await fs.readFile(path.join(app,'routing-original-manifest.json')));
+const resultPath=path.resolve('outputs/rea-research-lab/products/rea-studio',receipt.original.publicObservation);
+const results=JSON.parse(await fs.readFile(resultPath));
+console.log(JSON.stringify({preservation:receipt.preservationManifest,implementationFingerprints:receipt.implementationFingerprints,manifestKeys:Object.keys(manifest),firstEntries:(manifest.files??manifest.entries)?.slice?.(0,3),ownKeys:Object.keys(own),ownManifestCount:Object.keys(own.files).length,ownManifestFirst:Object.entries(own.files).slice(0,3),originalKeys:Object.keys(results),originalCounts:results.counts,originalObservations:results.observations,recordCount:results.records.length,recordKinds:results.records.reduce((s,x)=>(s[x.kind]=(s[x.kind]??0)+1,s),{}),currentRunPath:receipt.runPath}));

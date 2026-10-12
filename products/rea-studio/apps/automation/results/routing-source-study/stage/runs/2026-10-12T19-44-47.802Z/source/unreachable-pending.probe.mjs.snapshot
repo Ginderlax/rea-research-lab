@@ -1,0 +1,11 @@
+// Existing-source regression only, run before stage comparisons after quiet window.
+import fs from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {createExecution,validateExecution} from './baseline/native.mjs';
+const file=new URL('./baseline/native.mjs',import.meta.url),sha256=createHash('sha256').update(await fs.readFile(file)).digest('hex');
+if(sha256!=='56219ace2735545b3c3ec198e729e1d53e38faacf789bf5a6701fcc7b9791bb0')throw new Error('Frozen baseline authentication failed');
+const document={name:'Synthetic unreachable continuation',nodes:[{id:'Start',name:'Start',type:'n8n-nodes-base.manualTrigger',typeVersion:1,parameters:{},position:[0,0]},{id:'Preserved',name:'Preserved',type:'n8n-nodes-base.httpRequest',typeVersion:99,parameters:{url:'http://127.0.0.1:1',options:{timeout:1}},position:[0,0]}],connections:{}},state={...createExecution(document),workflowId:'synthetic',revision:1,pending:[{node:'Preserved',items:[{json:{}}]}]};
+let accepted=false,error;try{validateExecution(state);accepted=true;}catch(cause){error=cause.message;}
+const receipt={createdAt:new Date().toISOString(),baselineSha256:sha256,scope:'Validate persisted state only; no HTTP request or unsupported node execution performed.',finding:'Frozen validator checks all imported node names rather than the same validated Manual-trigger reachable graph.',actualAccepted:accepted,expectedAccepted:false,...(error?{error}:{})};
+await fs.writeFile(new URL('./unreachable-pending.baseline.json',import.meta.url),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));
+if(!accepted)throw new Error('Historical finding was not reproduced; investigate rather than silently passing');

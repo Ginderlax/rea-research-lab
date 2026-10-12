@@ -1,0 +1,32 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+const review=path.dirname(fileURLToPath(import.meta.url)),app=path.resolve(review,'../../outputs/rea-research-lab/products/rea-studio/apps/automation');
+const {createExecution,advanceExecution,validateExecution}=await import(pathToFileURL(path.join(app,'native.mjs')));
+const node=(type,name,parameters={})=>({name,id:name,type:'n8n-nodes-base.'+type,typeVersion:{manualTrigger:1,httpRequest:4.4,wait:1.1,merge:3.2,set:3.4}[type],parameters,position:[0,0]});
+const target=(name,index=0)=>({node:name,type:'main',index}),item=json=>({json,pairedItem:{item:0}});
+const effect=node('httpRequest','Effect',{url:'http://127.0.0.1:1/owned',options:{timeout:1000}});
+const ownedState=document=>({...createExecution(document),workflowId:'owned',revision:1});
+const observations=[];
+test('diagnostic: expired awaited checkpoint still issues HTTP and reports completed',async()=>{
+ const fixture={name:'Owned deadline boundary',nodes:[node('manualTrigger','Start'),effect],connections:{Start:{main:[[target('Effect')]]}}};
+ const state=ownedState(fixture);state.activeMs=119950;
+ let effectCalls=0,delayApplied=false;const oldFetch=globalThis.fetch;
+ globalThis.fetch=async()=>{effectCalls++;return new Response('{}',{headers:{'content-type':'application/json'}});};
+ try{await advanceExecution(state,{checkpoint:async s=>{if(s.activeNode==='Effect'&&!delayApplied){delayApplied=true;await new Promise(done=>setTimeout(done,85));}}});}finally{globalThis.fetch=oldFetch;}
+ assert.equal(delayApplied,true);assert.equal(effectCalls,1);assert.equal(state.status,'completed');assert.ok(state.activeMs>120000);
+ observations.push({name:'post-checkpoint-expired-deadline',fixture,initialActiveMs:119950,checkpointDelayMs:85,observed:{effectCalls,status:state.status,activeMs:state.activeMs,trace:state.trace},expected:'Fail NATIVE_LIMIT after the awaited checkpoint before issuing an expired HTTP effect',scope:'Actual production import; owned synthetic data and test-only Fetch replacement; no remote request'});
+});
+test('diagnostic: persisted premature downstream invocation passes validation and duplicates joined HTTP',async()=>{
+ const fixture={name:'Owned persisted fan-in contradiction',nodes:[node('manualTrigger','Start'),node('set','Left',{mode:'manual',assignments:{assignments:[{name:'left',value:1,type:'number'}]}}),node('wait','Wait',{resume:'timeInterval',amount:.01,unit:'seconds'}),node('merge','Merge',{mode:'chooseBranch',numberInputs:2,chooseBranchMode:'waitForAll',output:'specifiedInput',useDataOfInput:1}),effect],connections:{Start:{main:[[target('Left'),target('Wait')]]},Left:{main:[[target('Merge',0)]]},Wait:{main:[[target('Merge',1)]]},Merge:{main:[[target('Effect')]]}}};
+ const state=ownedState(fixture);await advanceExecution(state);assert.equal(state.status,'waiting');
+ state.pending.push({node:'Effect',items:[item({injected:true})]});const persisted=JSON.parse(JSON.stringify(state));
+ assert.doesNotThrow(()=>validateExecution(persisted));let effectCalls=0;const oldFetch=globalThis.fetch;
+ globalThis.fetch=async()=>{effectCalls++;return new Response('{}',{headers:{'content-type':'application/json'}});};
+ try{await advanceExecution(persisted,{now:Date.parse(persisted.waitUntil)+1});}finally{globalThis.fetch=oldFetch;}
+ assert.equal(persisted.status,'completed');assert.equal(effectCalls,2);assert.equal(persisted.trace.filter(t=>t.node==='Merge').length,1);assert.equal(persisted.trace.filter(t=>t.node==='Effect').length,2);
+ observations.push({name:'premature-persisted-downstream-invocation',fixture,mutation:'Append reachable Effect invocation before waiting Merge predecessor has executed',acceptedByValidateExecution:true,observed:{effectCalls,status:persisted.status,trace:persisted.trace},expected:'Reject contradictory pending execution during recovery before issuing effects',scope:'Actual production import; owned synthetic serialized Wait state and test-only Fetch replacement; no remote request'});
+});
+test.after(async()=>{await fs.writeFile(path.join(review,'lifecycle-observations.json'),JSON.stringify({schema:'rea-automation-routing-independent-lifecycle-observations/v1',observations},null,2)+'\n');console.log('INDEPENDENT_ROUTING_DIAGNOSTICS '+JSON.stringify(observations.map(({name,observed})=>({name,...observed}))));});

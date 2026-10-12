@@ -1,0 +1,97 @@
+- main:
+  - heading "Native n8n workflows" [level=2]
+  - paragraph: Import and preserve n8n workflow JSON. Run the supported Manual Trigger, Edit Fields, If, HTTP Request, Wait, Switch 3.4 and Merge 3.2 versions locally. Unknown nodes stay in the document; execution checks the reachable graph first.
+  - status: Execution completed
+  - combobox:
+    - option "Choose a saved native workflow"
+    - option "Native routing example · revision 1" [selected]
+  - button "New routing example"
+  - button "New native example"
+  - button "Save native workflow"
+  - button "Check supported graph"
+  - text: Native workflow name
+  - textbox "Native workflow name": Native routing example
+  - heading "Workflow diagram" [level=3]
+  - img "Native workflow nodes and main connections":
+    - generic: 0 → input 0
+    - generic: 0 → input 0
+    - generic: 0 → input 0
+    - generic: 0 → input 0
+    - generic: 0 → input 1
+    - generic: 0 → input 0
+    - button "Edit Start":
+      - generic: Start
+      - generic: manualTrigger
+      - generic: Version 1
+    - button "Edit Seed":
+      - generic: Seed
+      - generic: set
+      - generic: Version 3.4
+    - button "Edit Switch":
+      - generic: Switch
+      - generic: switch
+      - generic: Version 3.4
+    - button "Edit Wait":
+      - generic: Wait
+      - generic: wait
+      - generic: Version 1.1
+    - button "Edit Merge":
+      - generic: Merge
+      - generic: merge
+      - generic: Version 3.2
+    - button "Edit Finished":
+      - generic: Finished
+      - generic: set
+      - generic: Version 3.4
+  - generic: Supported graph · ready to run
+  - heading "Edit a native node" [level=3]
+  - paragraph
+  - text: Node name
+  - textbox "Node name"
+  - text: Saved position [x, y]
+  - textbox "Saved position [x, y]"
+  - text: Native parameters JSON
+  - textbox "Native parameters JSON"
+  - button "Apply node changes"
+  - text: Add node type
+  - combobox "Add node type":
+    - option "Edit Fields 3.4" [selected]
+    - option "If 2.3"
+    - option "HTTP Request 4.4"
+    - option "Wait 1.1"
+    - option "Switch 3.4"
+    - option "Merge 3.2"
+  - button "Add native node"
+  - text: Connect from
+  - combobox "Connect from":
+    - option "Start"
+    - option "Seed"
+    - option "Switch"
+    - option "Wait" [selected]
+    - option "Merge"
+    - option "Finished"
+  - text: Connect to
+  - combobox "Connect to":
+    - option "Start"
+    - option "Seed"
+    - option "Switch"
+    - option "Wait"
+    - option "Merge" [selected]
+    - option "Finished"
+  - text: Output
+  - combobox "Output":
+    - option "Output 0" [selected]
+  - text: Target input
+  - combobox "Target input":
+    - option "Input 0"
+    - option "Input 1" [selected]
+  - button "Add native connection"
+  - button "Remove native connection"
+  - generic "Native workflow JSON · import and export"
+  - heading "Run native workflow" [level=3]
+  - paragraph: Runs use the saved revision, beginning with one empty item from Manual Trigger. Wait saves a continuation for up to 60 seconds; after a host restart, opening this panel starts due waits again. Interrupted HTTP operations are recorded and are not automatically replayed. History hides sensitive field names and observed secret strings; unfinished continuation files retain working data locally.
+  - button "Run saved native revision"
+  - button "Cancel native execution" [disabled]
+  - generic: "{ \"id\": \"e9b98db4-c3cc-4c60-bacd-fb385b671da8\", \"status\": \"completed\", \"trace\": [ { \"node\": \"Start\", \"type\": \"n8n-nodes-base.manualTrigger\", \"inputItems\": 0, \"status\": \"completed\", \"outputItems\": [ 1 ], \"durationMs\": 3.076 }, { \"node\": \"Seed\", \"type\": \"n8n-nodes-base.set\", \"inputItems\": 1, \"status\": \"completed\", \"outputItems\": [ 1 ], \"durationMs\": 3.239 }, { \"node\": \"Switch\", \"type\": \"n8n-nodes-base.switch\", \"inputItems\": 1, \"status\": \"completed\", \"outputItems\": [ 1, 0 ], \"durationMs\": 3.12 }, { \"node\": \"Wait\", \"type\": \"n8n-nodes-base.wait\", \"inputItems\": 1, \"status\": \"completed\", \"outputItems\": [ 1 ], \"durationMs\": 2.443 }, { \"node\": \"Merge\", \"type\": \"n8n-nodes-base.merge\", \"inputItems\": 2, \"inputPorts\": [ 1, 1 ], \"status\": \"completed\", \"outputItems\": [ 2 ], \"durationMs\": 3.755 }, { \"node\": \"Finished\", \"type\": \"n8n-nodes-base.set\", \"inputItems\": 2, \"status\": \"completed\", \"outputItems\": [ 2 ], \"durationMs\": 3.043 } ], \"outputs\": { \"Start\": [ [ { \"json\": {} } ] ], \"Seed\": [ [ { \"json\": { \"amount\": 150 }, \"pairedItem\": { \"item\": 0 } } ] ], \"Switch\": [ [ { \"json\": { \"amount\": 150 }, \"pairedItem\": { \"item\": 0 } } ], [] ], \"Wait\": [ [ { \"json\": { \"amount\": 150 }, \"pairedItem\": { \"item\": 0 } } ] ], \"Merge\": [ [ { \"json\": { \"amount\": 150 }, \"pairedItem\": { \"item\": 0 } }, { \"json\": { \"amount\": 150 }, \"pairedItem\": { \"item\": 0, \"input\": 1 } } ] ], \"Finished\": [ [ { \"json\": { \"amount\": 150, \"finished\": true }, \"pairedItem\": { \"item\": 0 } }, { \"json\": { \"amount\": 150, \"finished\": true }, \"pairedItem\": { \"item\": 1 } } ] ] }, \"steps\": 6, \"requests\": 0, \"startedAt\": \"2026-10-12T19:48:37.380Z\", \"workflowId\": \"4860aaa2-675c-406c-a87d-81ceb1da5e46\", \"revision\": 1, \"finishedAt\": \"2026-10-12T19:48:37.524Z\" }"
+  - heading "Native execution history" [level=3]
+  - button "2026-10-12T19:48:37.380Z · completed · revision 1"

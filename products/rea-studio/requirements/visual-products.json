@@ -99,7 +99,7 @@
           "title": "Create and edit workflows",
           "source": "create",
           "status": "partial",
-          "implementation": "Saved local DAGs; forms and cards, no baseline canvas contract.",
+          "implementation": "Native workflow JSON and editable diagram/forms support bounded Manual Trigger, Set, If, HTTP, Wait, Switch3.4 and Merge3.2; numeric source/target ports and exact connection removal. Full released editor contract remains open.",
           "acceptance": "Author, arrange, connect and reopen native workflows without losing node settings.",
           "parityVerified": false,
           "documentationSources": [
@@ -108,7 +108,10 @@
           "implementationEvidence": [
             "products/rea-studio/apps/automation/core.mjs",
             "products/rea-studio/apps/automation/server.mjs",
-            "products/rea-studio/apps/automation/client.mjs"
+            "products/rea-studio/apps/automation/client.mjs",
+            "products/rea-studio/apps/automation/native.mjs",
+            "products/rea-studio/apps/automation/routing.mjs",
+            "products/rea-studio/apps/automation/results/routing-validation.json"
           ],
           "testEvidence": [
             {
@@ -123,7 +126,7 @@
           "title": "Node connection data flow",
           "source": "connections",
           "status": "partial",
-          "implementation": "Concatenation and explicit branch ports; original item-linking semantics unverified.",
+          "implementation": "Bounded acyclic v1 graph execution, native ports, immediate item/input links and persisted Merge input buffers; one edge per input restriction. Full scheduler/item-link/loop/batch semantics remain open.",
           "acceptance": "Compare fan-in, branches, multiple-output wires and item linking against the pinned engine.",
           "parityVerified": false,
           "documentationSources": [
@@ -132,7 +135,10 @@
           "implementationEvidence": [
             "products/rea-studio/apps/automation/core.mjs",
             "products/rea-studio/apps/automation/server.mjs",
-            "products/rea-studio/apps/automation/client.mjs"
+            "products/rea-studio/apps/automation/client.mjs",
+            "products/rea-studio/apps/automation/native.mjs",
+            "products/rea-studio/apps/automation/routing.mjs",
+            "products/rea-studio/apps/automation/results/routing-validation.json"
           ],
           "testEvidence": [
             {
@@ -185,15 +191,18 @@
           "id": "n8n.workflow.import",
           "title": "Native workflow JSON import/export",
           "source": "import",
-          "status": "missing",
-          "implementation": "Own JSON schema only.",
+          "status": "partial",
+          "implementation": "Native JSON import/export preserves unknown nodes/options/metadata while preflight rejects reachable unsupported behavior.",
           "acceptance": "Round-trip original workflow files, preserving types, versions, connections and metadata.",
           "parityVerified": false,
           "documentationSources": [
             "n8n.import"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/automation/README.md"
+            "products/rea-studio/apps/automation/README.md",
+            "products/rea-studio/apps/automation/native.mjs",
+            "products/rea-studio/apps/automation/routing.mjs",
+            "products/rea-studio/apps/automation/results/routing-validation.json"
           ],
           "testEvidence": []
         },
@@ -233,15 +242,18 @@
           "id": "n8n.workflow.templates",
           "title": "Template discovery and instantiation",
           "source": "templates",
-          "status": "missing",
-          "implementation": "One local example, no template ecosystem.",
+          "status": "partial",
+          "implementation": "Native five-node and six-node routing examples plus custom local example; full template ecosystem remains open.",
           "acceptance": "Instantiate supported original templates, identifying required settings and credentials.",
           "parityVerified": false,
           "documentationSources": [
             "n8n.templates"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/automation/README.md"
+            "products/rea-studio/apps/automation/README.md",
+            "products/rea-studio/apps/automation/native.mjs",
+            "products/rea-studio/apps/automation/routing.mjs",
+            "products/rea-studio/apps/automation/results/routing-validation.json"
           ],
           "testEvidence": []
         },
@@ -361,7 +373,7 @@
           "title": "Conditional routing",
           "source": "flowlogic",
           "status": "partial",
-          "implementation": "Strict scalar predicates and true/false branches.",
+          "implementation": "Source-assisted native If2.3 and Switch3.4 rules/expression-index first/all/fallback behavior with selected JSON scalar/array/object filters; date/regex/general expressions remain open.",
           "acceptance": "Match original operators, coercion, missing values and typed outputs.",
           "parityVerified": false,
           "documentationSources": [
@@ -370,7 +382,10 @@
           "implementationEvidence": [
             "products/rea-studio/apps/automation/core.mjs",
             "products/rea-studio/apps/automation/server.mjs",
-            "products/rea-studio/apps/automation/client.mjs"
+            "products/rea-studio/apps/automation/client.mjs",
+            "products/rea-studio/apps/automation/native.mjs",
+            "products/rea-studio/apps/automation/routing.mjs",
+            "products/rea-studio/apps/automation/results/routing-validation.json"
           ],
           "testEvidence": [
             {
@@ -385,7 +400,7 @@
           "title": "Stream merging and joining",
           "source": "flowlogic",
           "status": "partial",
-          "implementation": "Edge-order concatenation only.",
+          "implementation": "Source-assisted Merge3.2 append/branch/position/cartesian/field joins and selected clash modes; 1,759 released mode-helper executions, finite exact/rejection/deviation accounting. Full Merge class/defaults/SQL/scheduler remain open.",
           "acceptance": "Compare append, position and key joins, clash handling and empty data.",
           "parityVerified": false,
           "documentationSources": [
@@ -394,7 +409,10 @@
           "implementationEvidence": [
             "products/rea-studio/apps/automation/core.mjs",
             "products/rea-studio/apps/automation/server.mjs",
-            "products/rea-studio/apps/automation/client.mjs"
+            "products/rea-studio/apps/automation/client.mjs",
+            "products/rea-studio/apps/automation/native.mjs",
+            "products/rea-studio/apps/automation/routing.mjs",
+            "products/rea-studio/apps/automation/results/routing-validation.json"
           ],
           "testEvidence": []
         },
@@ -435,14 +453,17 @@
           "title": "Durable wait and resume",
           "source": "flowlogic",
           "status": "partial",
-          "implementation": "Cancellable local delays up to 60000 ms; durable wait/resume and webhook resume are absent.",
+          "implementation": "Native interval Wait stores continuation and routing buffers across restart; cancellation remains terminal. Webhook/form waits and full released orchestration remain open.",
           "acceptance": "Wait, restart and resume once with preserved data and credentials.",
           "parityVerified": false,
           "documentationSources": [
             "n8n.flowlogic"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/automation/README.md"
+            "products/rea-studio/apps/automation/README.md",
+            "products/rea-studio/apps/automation/native.mjs",
+            "products/rea-studio/apps/automation/routing.mjs",
+            "products/rea-studio/apps/automation/results/routing-validation.json"
           ],
           "testEvidence": []
         },
@@ -475,7 +496,7 @@
           "title": "Field editing, filtering and aggregation",
           "source": "nodes",
           "status": "partial",
-          "implementation": "Safe original transforms with different schemas.",
+          "implementation": "Bounded source-assisted native Set/If/Switch/Merge JSON transformations plus separate custom transforms; full released versions/options remain open.",
           "acceptance": "Compare versioned node fixtures and number, null, item-linking and binary behavior.",
           "parityVerified": false,
           "documentationSources": [
@@ -484,7 +505,10 @@
           "implementationEvidence": [
             "products/rea-studio/apps/automation/core.mjs",
             "products/rea-studio/apps/automation/server.mjs",
-            "products/rea-studio/apps/automation/client.mjs"
+            "products/rea-studio/apps/automation/client.mjs",
+            "products/rea-studio/apps/automation/native.mjs",
+            "products/rea-studio/apps/automation/routing.mjs",
+            "products/rea-studio/apps/automation/results/routing-validation.json"
           ],
           "testEvidence": [
             {
@@ -637,8 +661,8 @@
         },
         {
           "path": "products/rea-studio/apps/automation/README.md",
-          "sha256": "9c6a10b4517cdfd4d5dd081098295dc7c2e843906dbd71efe7c2a41f2d25dac4",
-          "bytes": 9705
+          "sha256": "e0dd2465dbaeb9ee0bc654aa90f8e9de27d78031f7199e7aa1aad7fbb64e07fb",
+          "bytes": 11029
         },
         {
           "path": "products/rea-studio/apps/automation/engine.mjs",
@@ -654,26 +678,26 @@
         },
         {
           "path": "products/rea-studio/apps/automation/native.mjs",
-          "bytes": 42250,
-          "sha256": "56219ace2735545b3c3ec198e729e1d53e38faacf789bf5a6701fcc7b9791bb0",
+          "bytes": 51433,
+          "sha256": "3d793bf9a9c7152be6c1248005d6c637f29ff52af148bd2305bcb965cb224c59",
           "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
         },
         {
           "path": "products/rea-studio/apps/automation/native-server.mjs",
-          "bytes": 10268,
-          "sha256": "f886800f1f0627939c10891a6819e7c528fe4f3c02f1c038b05500f558a9c5ec",
+          "bytes": 10323,
+          "sha256": "6a670256ed2911a3764dac0f8fb171e748af7ea2a524e08a99c31d810b4944f2",
           "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
         },
         {
           "path": "products/rea-studio/apps/automation/native-client.mjs",
-          "bytes": 15060,
-          "sha256": "30de3b3079b3fcc44504cee521b8ac1360e2368dbf5cd3b40a7f498d1ca4da5f",
+          "bytes": 16955,
+          "sha256": "8f9d36ad055dd1b9695cc05a0f21ed96cacd5e37331cbe69d5b4c213ffb9ff19",
           "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
         },
         {
           "path": "products/rea-studio/apps/automation/native-example.mjs",
-          "bytes": 1362,
-          "sha256": "3d32795062ef4dd6c263bd881acae6624ecebcbbbf0b4e9f2a096aaf73b8dfce",
+          "bytes": 2960,
+          "sha256": "0ee6d636ac6e3946037ce217d6212f90a45d827d5789507b0bb5968a4085acc1",
           "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
         },
         {
@@ -711,6 +735,66 @@
           "bytes": 6422,
           "sha256": "fd5bcf425b22b682b732ad826def54af3835dbd4ca7ef3413b29a0abc4f6cd28",
           "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/automation/routing.mjs",
+          "bytes": 18421,
+          "sha256": "c2b5cc236b10d30c02603e1f16271329e8635016ccf1f99959c7e5b292b90fc2"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/routing.test.mjs",
+          "bytes": 19633,
+          "sha256": "531ba1773e1f5919c54ff3e8195e71d1d95ca04033eed07abd37023fd3f9b950"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/routing-original.test.mjs",
+          "bytes": 16888,
+          "sha256": "ba0ddf660b17607b61c2d5616d8fc1f218ba1228fc919a82fa8237f1d8c4f2ca"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/routing-original-harness.mjs",
+          "bytes": 9951,
+          "sha256": "2bcbe0b8bd0ee219f50a0c37fc9f41c20f60a2a80decbb4bd74dda3799e5e233"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/routing-contracts.json",
+          "bytes": 4220,
+          "sha256": "d48976fc0551ebbf103cd7a867a424cf9c6e65a607f7b11275fe90681afe368a"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/ROUTING.md",
+          "bytes": 12889,
+          "sha256": "610128822766ec7cb114a4b147c99fe98fe367e3a78565a10f01e3b30c130a2e"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/routing-recovery.test.mjs",
+          "bytes": 10290,
+          "sha256": "5c5a2355ba8708fb9f2ab202cdaf36c956a89f4241d86e4ce441295564909c02"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/http-boundary.test.mjs",
+          "bytes": 2593,
+          "sha256": "4d80e687c7336fa3500d0ced0f55026b405052da84410a1c8c3223458e1e2aa2"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/results/routing-validation.json",
+          "bytes": 19433,
+          "sha256": "b85b20796ca6c029ff37cc955e91b62b547ec493721dad4a6342413ddfa03801"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/results/routing-independent-review/preservation-manifest.json",
+          "bytes": 13036,
+          "sha256": "a20637baddf880f1ac6a5abe60fb9d0c789002b39ef257514742cb40fd8bf6ce"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/results/recovery-followup/preservation-manifest.json",
+          "bytes": 112153,
+          "sha256": "585f80b40c72d6968c4e678d7e7282b2a73e70bd29e92ed36a24c8209038f0a8"
+        },
+        {
+          "path": "products/rea-studio/apps/automation/results/recovery-followup/integration-validation.json",
+          "bytes": 23522,
+          "sha256": "915e4c14ed5185029e75171d1e7197f3d6ec61cff66541fea4803f08b1637d33"
         }
       ],
       "currentNativeMilestone": {
@@ -719,6 +803,37 @@
         "scope": "Native JSON retention and selected Manual Trigger, Edit Fields, If, HTTP Request and interval Wait execution with durable bounded checkpoints.",
         "evidenceAccounting": "The referenced receipt separates exact matches, matching rejection outcomes, normalized HTTP results and intentional safe-property deviations.",
         "fullFeatureParity": false
+      },
+      "firstRoutingMilestone": {
+        "record": "products/rea-studio/apps/automation/results/routing-validation.json",
+        "evidence_role": "first-integration-before-recovery-fixes",
+        "test_groups": 56,
+        "editor_regressions": 3,
+        "original_node_and_mode_calls": 1873,
+        "exact": 1812,
+        "error_presence": 10,
+        "safety_deviations": 3,
+        "representation_deviations": 48,
+        "core_enqueue_helpers": 7,
+        "core_drain_blocks": 4,
+        "full_product_parity": false
+      },
+      "currentRecoveryMilestone": {
+        "record": "products/rea-studio/apps/automation/results/recovery-followup/integration-validation.json",
+        "test_groups": 74,
+        "additional_recovery_groups": 10,
+        "additional_http_boundary_groups": 5,
+        "source_fingerprints": 43,
+        "original_node_and_mode_calls": 1873,
+        "exact": 1812,
+        "error_presence": 10,
+        "safety_deviations": 3,
+        "representation_deviations": 48,
+        "core_enqueue_helpers": 7,
+        "core_drain_blocks": 4,
+        "scope": "Saved queues must match immediate completed predecessor outputs for reachable-Merge graphs. Deadline recheck follows awaited checkpoint writes; HTTP guards run before each input/redirect. Structural consistency does not authenticate checkpoints; cooperative guards do not preempt blocked I/O or guarantee remote delivery.",
+        "browser_record": "products/rea-studio/results/browser-automation-recovery-20261012/validation.json",
+        "full_product_parity": false
       }
     },
     {
@@ -783,7 +898,7 @@
           "title": "Interactive canvas editing",
           "source": "readme",
           "status": "partial",
-          "implementation": "Rectangle, ellipse, unbound straight arrow, text and freehand tools; multi-selection, grouped move/delete/style, single supported shape resize, undo/redo and bounded viewport. Imported unsupported or approximate content stays preserved with persistent warnings.",
+          "implementation": "Plain rectangle/ellipse/arrow/text/freehand plus signed straight line and unrotated diamond projections; selection/group actions/history/viewport retained. Native rough appearance and unsupported records remain explicitly preserved/approximate.",
           "acceptance": "Compare original gestures, tools, selection and editing operations.",
           "parityVerified": false,
           "documentationSources": [
@@ -793,7 +908,8 @@
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
             "products/rea-studio/apps/sketch/client.mjs",
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/results/geometry-validation.json"
           ],
           "testEvidence": [
             {
@@ -808,7 +924,7 @@
           "title": "Rectangle and ellipse tools",
           "source": "readme",
           "status": "partial",
-          "implementation": "Draw, move and resize unrotated editable rectangles and ellipses. Native appearance fields survive geometry edits; rendering approximates roughness, opacity, hatch and corner styles.",
+          "implementation": "Draw/select/move/resize plain unrotated rectangles, ellipses and diamonds. Diamond polygon hit tests use original +1/floor anchors within explicit tiny-dimension clamping deviation; full rough/native rendering remains open.",
           "acceptance": "Match shape properties, rotation, styles and pointer edge cases.",
           "parityVerified": false,
           "documentationSources": [
@@ -818,7 +934,8 @@
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
             "products/rea-studio/apps/sketch/client.mjs",
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/results/geometry-validation.json"
           ],
           "testEvidence": [
             {
@@ -833,7 +950,7 @@
           "title": "Lines, arrows, binding and labels",
           "source": "readme",
           "status": "partial",
-          "implementation": "Unbound straight two-point arrows; native points normalize only on geometry edits. Bound/curved/multiline/elbow arrows and their metadata are preserved without editable rendering; external bindings are not recalculated.",
+          "implementation": "Unbound straight arrows and signed two-point lines; native signed endpoint vectors preserved through edit/export. Curved/bound/multiline/elbow/rotated cases remain preserved without compatible editing.",
           "acceptance": "Support original variants, labels, bindings and rerouting during edits.",
           "parityVerified": false,
           "documentationSources": [
@@ -843,7 +960,8 @@
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
             "products/rea-studio/apps/sketch/client.mjs",
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/results/geometry-validation.json"
           ],
           "testEvidence": []
         },
@@ -852,7 +970,7 @@
           "title": "Remaining drawing tools",
           "source": "readme",
           "status": "partial",
-          "implementation": "Freehand strokes draw, select, move, style and export safe SVG/native points. Imported pressures remain preserved on moves, while pressure rendering, point-level editing/resizing, eraser, diamond and remaining tools are absent.",
+          "implementation": "Freehand draw/select/move/style/native/SVG output; pressure metadata retained, full pressure/point/eraser behavior remains open.",
           "acceptance": "Enumerate every tool and replay pointer fixtures including pressure and eraser behavior.",
           "parityVerified": false,
           "documentationSources": [
@@ -862,7 +980,8 @@
             "products/rea-studio/apps/sketch/README.md",
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
-            "products/rea-studio/apps/sketch/client.mjs"
+            "products/rea-studio/apps/sketch/client.mjs",
+            "products/rea-studio/apps/sketch/results/geometry-validation.json"
           ],
           "testEvidence": [
             {
@@ -1011,7 +1130,7 @@
           "title": "SVG export",
           "source": "export",
           "status": "partial",
-          "implementation": "Safe geometric SVG with escaped text and freehand paths for editable projections only. Opaque imported content and native rough/font/pressure appearance are omitted from the SVG preview.",
+          "implementation": "Safe escaped SVG of editable geometric projections including signed lines, diamonds and freehand. Opaque imported/native rough/font/pressure appearance remains omitted.",
           "acceptance": "Compare fonts, options, binary files, metadata, bounds and rendered output.",
           "parityVerified": false,
           "documentationSources": [
@@ -1021,7 +1140,8 @@
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
             "products/rea-studio/apps/sketch/client.mjs",
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/results/geometry-validation.json"
           ],
           "testEvidence": [
             {
@@ -1233,7 +1353,7 @@
           "title": "Programmatic element construction",
           "source": "elements",
           "status": "partial",
-          "implementation": "New editable rectangles, ellipses, straight arrows, text and freehand export native element records; six fully specified synthetic elements were checked with original individual restoration. Remaining skeleton/default/binding contracts and full original programmatic element API remain absent.",
+          "implementation": "Bounded native projections plus original individual restoration/serializer and line/diamond helper matrices; full released renderer/restoration/binding/API remain open.",
           "acceptance": "Construct every supported element skeleton and compare defaults and bindings.",
           "parityVerified": false,
           "documentationSources": [
@@ -1243,7 +1363,8 @@
             "products/rea-studio/apps/sketch/README.md",
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
-            "products/rea-studio/apps/sketch/client.mjs"
+            "products/rea-studio/apps/sketch/client.mjs",
+            "products/rea-studio/apps/sketch/results/geometry-validation.json"
           ],
           "testEvidence": []
         },
@@ -1371,8 +1492,8 @@
       "implementationFiles": [
         {
           "path": "products/rea-studio/apps/sketch/core.mjs",
-          "sha256": "57eea912cd343ea9aeb68165cde6068627681e727065f18072c3aa63528384c5",
-          "bytes": 20927
+          "sha256": "f5bbf3bb0eb277eefee3595e4ce01dac3ed758f14161500fbf08515e75c7b12c",
+          "bytes": 23087
         },
         {
           "path": "products/rea-studio/apps/sketch/server.mjs",
@@ -1381,8 +1502,8 @@
         },
         {
           "path": "products/rea-studio/apps/sketch/client.mjs",
-          "sha256": "e42ce400bfa29791eddb2d63b24923e2288fa0e0acb4196cd6b930e24ed841b2",
-          "bytes": 20991
+          "sha256": "08066fce201ca8620204801c672a39261586e17544d61652e09effae1713cb16",
+          "bytes": 21385
         },
         {
           "path": "products/rea-studio/apps/sketch/app.test.mjs",
@@ -1391,8 +1512,8 @@
         },
         {
           "path": "products/rea-studio/apps/sketch/README.md",
-          "sha256": "c4671a8fded6962864101222cebdf6012013e71e387cdafb17771a6545ca2f03",
-          "bytes": 8455
+          "sha256": "356f973de3e23ab82b2bb4d13cc054cb00b01f1bbdd69f529b83fcebaf26aa4f",
+          "bytes": 12990
         },
         {
           "path": "products/rea-studio/apps/sketch/client.test.mjs",
@@ -1406,18 +1527,68 @@
         },
         {
           "path": "products/rea-studio/apps/sketch/vendor-oracle.mjs",
-          "bytes": 7596,
-          "sha256": "6f5eee0cf8a0624a9363a2395167f7e3413b804d6891a472f96cfb8f0b2c13df"
+          "bytes": 7525,
+          "sha256": "73c2bdd7cd2641a44203fef5f845da40167bd336f3d5f012467546cc74abdec9"
         },
         {
           "path": "products/rea-studio/apps/sketch/vendor-oracle.test.mjs",
-          "bytes": 676,
-          "sha256": "a28079d2e3ecb7eaf9c1ecda82c0fc8237ae9a58e23e3ca7b78e15184569b6dd"
+          "bytes": 616,
+          "sha256": "afb4079482bdd1df1b33868bfeb4a71644680990dc9f51b1de2fe8772cbb4f30"
         },
         {
           "path": "products/rea-studio/apps/sketch/results/excalidraw-compatibility.json",
           "bytes": 5845,
           "sha256": "26467ce1c6367e550515e110da95f396db76bfe794955a61baa4ebddcd823e08"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/geometry-oracle.mjs",
+          "bytes": 2819,
+          "sha256": "3486df690d364e7460bf783e55241588b66f015be070f52d7579ccceebe67ebb"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/geometry.test.mjs",
+          "bytes": 10085,
+          "sha256": "343354a4172bd88d0dc8ae9894e7ee1b49915c45e5fda159b3daee7954529729"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/geometry-client.test.mjs",
+          "bytes": 7235,
+          "sha256": "ff5626737e1dcfe583bd18acd7ada85f251213691373ea3bb7fb56523be5871c"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/THIRD-PARTY-NOTICE.md",
+          "bytes": 1422,
+          "sha256": "1c80cc93fae247e60ec830c5014e9957989d5f36dc1b39693caf9cd9e6366c7c"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/results/geometry-validation.json",
+          "bytes": 6287,
+          "sha256": "728f28d2aa5d7ebf1155db9a553f60d67029df46ddb512c15135ddf431333a91"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/results/geometry-independent-review/preservation-manifest.json",
+          "bytes": 33237,
+          "sha256": "41beb403231ce3eabd55b65b56e02f5dfc2c03362919eb3733058d9a71e8a2f0"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/results/collector-followup/integration-validation.json",
+          "bytes": 3377,
+          "sha256": "9f2af4ee3ffa9fc3ddd5fd5b2467e2e222725f02e39e0b165427e235f954191d"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/results/collector-followup/preservation-manifest.json",
+          "bytes": 14858,
+          "sha256": "b5346f5d96e41a707823bef3be721f0d8427576f39bdd52d480d980988661bb9"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/results/collector-followup/production-adapter/preservation-manifest.json",
+          "bytes": 9173,
+          "sha256": "8117c71aa9e7c6650092f6fff85a72ca3a6c0d5817aec4b65bc222a934f9ee62"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/results/collector-followup/independent-review/preservation-manifest.json",
+          "bytes": 5448,
+          "sha256": "cddda4394e9951e2fc0b469feb5145bceb1df842bea147c5fb89c6ad86061b83"
         }
       ],
       "localImplementationMilestone": {
@@ -1433,6 +1604,19 @@
           "testsSkipped": 0,
           "scope": "Current combined development suite, not a full original-product acceptance suite."
         }
+      },
+      "currentGeometryMilestone": {
+        "record": "products/rea-studio/apps/sketch/results/geometry-validation.json",
+        "scope": "Signed two-point native lines and unrotated diamonds; finite original geometry/restoration comparisons with explicit tiny-diamond clamping deviation.",
+        "full_product_parity": false
+      },
+      "currentCollectorMilestone": {
+        "record": "products/rea-studio/apps/sketch/results/collector-followup/integration-validation.json",
+        "test_groups": 17,
+        "owned_child_executions": 14,
+        "independent_review": "products/rea-studio/apps/sketch/results/collector-followup/independent-review/preservation-manifest.json",
+        "scope": "Bounded child execution/logs, copied caller arguments/environment, endpoint source hashes and owned PID/tree cleanup. Exited-parent descendant cleanup and bootstrap/fingerprint/publication I/O hard deadlines remain gaps.",
+        "full_product_parity": false
       }
     },
     {
@@ -2311,7 +2495,7 @@
     "nextStep": "Acquire complete pinned products, extract every documented option/operation into keyed requirements, and create original-product fixtures before recording parity or improvements.",
     "originalFormatSubset": "node products/rea-studio/apps/sketch/vendor-oracle.mjs; verifies preserved released archive/bundle hashes and uses isolated unchanged helpers only. A skipped original oracle is not compatibility evidence."
   },
-  "recordedAt": "2026-10-12T13:53:55.251Z",
+  "recordedAt": "2026-10-12T21:44:39.507Z",
   "sources": [
     {
       "id": "n8n.create",

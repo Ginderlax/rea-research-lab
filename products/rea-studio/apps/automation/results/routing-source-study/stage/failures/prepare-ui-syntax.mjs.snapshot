@@ -1,0 +1,34 @@
+import fs from 'node:fs/promises';
+const here=new URL('./',import.meta.url);let source=await fs.readFile(new URL('baseline/native-client.mjs',here),'utf8');
+function replace(old,next){if(!source.includes(old))throw new Error('Missing frozen UI replacement anchor: '+old);source=source.replace(old,next);}
+replace("import {nativeExample}","import {nativeExample,nativeRoutingExample}");
+replace('Manual Trigger, Edit Fields, If, HTTP Request and Wait versions','Manual Trigger, Edit Fields, If, HTTP Request, Wait, Switch 3.4 and Merge 3.2 versions');
+replace("port=choose([['0','Output 0 · If true'],['1','Output 1 · If false']]),kind=choose", "port=el('select'),inputPort=el('select'),kind=choose");
+replace("['wait','Wait 1.1']]);", "['wait','Wait 1.1'],['switch','Switch 3.4'],['merge','Merge 3.2']]);");
+replace(' function redraw(){name.value=',` function ports(node,input=false){if(input)return node?.type==='n8n-nodes-base.merge'?Math.min(10,Math.max(2,Number(node.parameters.numberInputs)||2)):1;if(node?.type==='n8n-nodes-base.if')return 2;if(node?.type==='n8n-nodes-base.switch')return node.parameters.mode==='expression'?Math.min(100,Math.max(1,Number(node.parameters.numberOutputs)||4)):Math.min(100,Math.max(1,(node.parameters.rules?.values?.length??0)+(node.parameters.options?.fallbackOutput==='extra'?1:0)));return 1;}
+ function refreshPorts(){for(const[select,node,input]of[[port,workflow.nodes.find(node=>node.name===from.value),false],[inputPort,workflow.nodes.find(node=>node.name===to.value),true]]){const previous=select.value;select.replaceChildren();for(let index=0;index<ports(node,input);index++)select.append(el('option',`${input?'Input':'Output'} ${index}`,{value:String(index)}));select.value=Number(previous)<ports(node,input)?previous:'0';}}
+ from.addEventListener('change',refreshPorts);to.addEventListener('change',refreshPorts);
+ function redraw(){const priorFrom=from.value,priorTo=to.value;name.value=`);
+replace("const height=Math.max", "if(workflow.nodes.some(node=>node.name===priorFrom))from.value=priorFrom;if(workflow.nodes.some(node=>node.name===priorTo))to.value=priorTo;refreshPorts();\n  const height=Math.max");
+replace('label.textContent=`${index} →`;', 'label.textContent=`${index} → input ${target.index}`;');
+replace("actions.append(picker,button('New native example'", "actions.append(picker,button('New routing example',()=>{workflow=nativeRoutingExample();recordId='';revision=0;selectedName='';check=null;refreshPicker();redraw();history.replaceChildren();mark('New routing example · unsaved');}),button('New native example'");
+replace("const defaults={set:", "const defaults={switch:{mode:'expression',numberOutputs:2,output:0,options:{}},merge:{mode:'append',numberInputs:2,options:{}},set:");
+replace('httpRequest:4.4}[kind.value]', 'httpRequest:4.4,switch:3.4,merge:3.2}[kind.value]');
+replace("field('Output',port),button('Add native connection'", "field('Output',port),field('Target input',inputPort),button('Add native connection'");
+replace("const output=Number(port.value);if(output>0&&source.type!=='n8n-nodes-base.if')throw new Error('Only If has output 1');", "const output=Number(port.value),input=Number(inputPort.value),destination=draft.nodes.find(node=>node.name===to.value);if(!Number.isInteger(output)||output<0||output>=ports(source)||!Number.isInteger(input)||input<0||input>=ports(destination,true))throw new Error('Choose current output and input ports');");
+replace("target.index===0&&target.type==='main'))types.main[output].push({node:to.value,type:'main',index:0})", "target.index===input&&target.type==='main'))types.main[output].push({node:to.value,type:'main',index:input})");
+replace("target.index===0&&target.type==='main'));check=", "target.index===Number(inputPort.value)&&target.type==='main'));check=");
+await fs.writeFile(new URL('candidate/native-client.mjs',here),source);await fs.copyFile(new URL('baseline/native-example.mjs',here),new URL('candidate/native-example.mjs',here));
+await fs.appendFile(new URL('candidate/native-example.mjs',here),`
+export function nativeRoutingExample(){return{
+ name:'Native routing example',active:false,settings:{executionOrder:'v1'},nodes:[
+ {id:'start',name:'Start',type:'n8n-nodes-base.manualTrigger',typeVersion:1,position:[0,0],parameters:{}},
+ {id:'seed',name:'Seed',type:'n8n-nodes-base.set',typeVersion:3.4,position:[200,0],parameters:{mode:'raw',jsonOutput:'{"amount":150}',options:{}}},
+ {id:'switch',name:'Switch',type:'n8n-nodes-base.switch',typeVersion:3.4,position:[400,0],parameters:{mode:'rules',rules:{values:[{conditions:{options:{caseSensitive:true,typeValidation:'strict',version:3},combinator:'and',conditions:[{leftValue:'={{ $json.amount }}',rightValue:100,operator:{type:'number',operation:'gte'}}]}}]},options:{fallbackOutput:'extra',allMatchingOutputs:false}}},
+ {id:'wait',name:'Wait',type:'n8n-nodes-base.wait',typeVersion:1.1,position:[600,100],parameters:{resume:'timeInterval',amount:.1,unit:'seconds'}},
+ {id:'merge',name:'Merge',type:'n8n-nodes-base.merge',typeVersion:3.2,position:[800,0],parameters:{mode:'append',numberInputs:2,options:{}}},
+ {id:'finish',name:'Finished',type:'n8n-nodes-base.set',typeVersion:3.4,position:[1000,0],parameters:{includeOtherFields:true,assignments:{assignments:[{name:'finished',value:true,type:'boolean'}]},options:{}}}
+ ],connections:{Start:{main:[[{node:'Seed',type:'main',index:0}]]},Seed:{main:[[{node:'Switch',type:'main',index:0},{node:'Wait',type:'main',index:0}]]},Switch:{main:[[{node:'Merge',type:'main',index:0}],[]]},Wait:{main:[[{node:'Merge',type:'main',index:1}]]},Merge:{main:[[{node:'Finished',type:'main',index:0}]]}}
+};}
+`);
+console.log('Prepared staged UI from frozen baseline; production unchanged.');

@@ -1,0 +1,20 @@
+// Test-only host for the preserved native app suite. It exercises the stage
+// backend, API/token handling and exact persisted storage; no shared host claim.
+import {createServer} from 'node:http';
+import {randomUUID} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import {once} from 'node:events';
+import {createStore} from './preserved-storage.mjs';
+import {handleNative,disposeNative} from './candidate/native-server.mjs';
+export async function start({port=0,dataDir}){
+ const token=randomUUID(),store=await createStore(join(dataDir,'automation','records')),workspace={dataDir};let closed=false;
+ const server=createServer(async(req,res)=>{try{
+  const url=new URL(req.url,'http://stage');if(req.method==='GET'){
+   const name=url.pathname.split('/').at(-1);if(!['native-client.mjs','native-example.mjs'].includes(name)){res.writeHead(404);res.end();return;}res.writeHead(200,{'content-type':'application/javascript'});res.end(await readFile(new URL('./baseline/'+name,import.meta.url)));return;
+  }
+  if(req.headers['x-rea-token']!==token){res.writeHead(403);res.end();return;}let text='';for await(const part of req){text+=part;if(Buffer.byteLength(text)>2*1024*1024+4096)throw new Error('Test request exceeds body bound');}
+  const input=JSON.parse(text),action=url.pathname.split('/').at(-1),result=await handleNative({action,input,store,workspace});res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify({result}));
+ }catch(error){res.writeHead(400,{'content-type':'application/json'});res.end(JSON.stringify({error:error.message}));}});
+ server.listen(port,'127.0.0.1');await once(server,'listening');return{token,url:`http://127.0.0.1:${server.address().port}`,async close(){if(closed)return;closed=true;await disposeNative(workspace);server.closeAllConnections();await new Promise(done=>server.close(done));}};
+}

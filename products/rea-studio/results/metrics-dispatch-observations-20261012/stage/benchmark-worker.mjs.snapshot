@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {createRequire} from 'node:module';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {join,dirname,resolve} from 'node:path';
+import {performance} from 'node:perf_hooks';
+const here=dirname(fileURLToPath(import.meta.url)),lab=resolve(here,'../../outputs/rea-research-lab'),artifacts=join(lab,'projects/02-grafana/artifacts');
+const [implementation,caseName,candidateName]=process.argv.slice(2),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const sources=JSON.parse(readFileSync(join(here,'preserved/sources.json'),'utf8'));
+assert.equal(sha(readFileSync(join(artifacts,'release.tgz'))),sources.archiveSha256);
+for(const row of sources.sources.filter(row=>!row.path.startsWith('docs/'))){const bytes=readFileSync(join(artifacts,'package',row.path));assert.equal(sha(bytes),row.sha256);assert.ok(bytes.equals(execFileSync('tar',['-xOf',join(artifacts,'release.tgz'),'package/'+row.path],{maxBuffer:4*1024*1024,windowsHide:true})));}
+assert.equal(sha(readFileSync(join(artifacts,'lodash-4.17.23.tgz'))),sources.oracleDependency.sha256);assert.ok(readFileSync(join(artifacts,'node_modules/lodash/lodash.js')).equals(execFileSync('tar',['-xOf',join(artifacts,'lodash-4.17.23.tgz'),'package/lodash.js'],{maxBuffer:4*1024*1024,windowsHide:true})));
+const originalPath=join(artifacts,'package/dist/cjs/transformations/fieldReducer.cjs'),require=createRequire(originalPath);assert.equal(resolve(require.resolve('lodash')),resolve(artifacts,'node_modules/lodash/lodash.js'));
+const candidatePath=join(here,candidateName),baselinePath=join(here,'candidate-baseline.mjs'),baseline=await import(pathToFileURL(baselinePath).href),candidate=await import(pathToFileURL(candidatePath).href),original=require(originalPath);
+assert.equal(sha(readFileSync(baselinePath)),'9269cf8c32be9bf2c075b67019e82e41272d9495f0321fefc17b2c5695a91371');
+const all=baseline.calculationDefinitions.map(row=>row.id),percentiles=all.filter(id=>/^p\d+$/.test(id));
+const cases={smallStandard:{n:100,reducers:['mean','min','max','sum','delta'],iterations:100000,warmup:20000},largeStandard:{n:25000,reducers:['mean','min','max','sum','delta'],iterations:2000,warmup:500},singlePercentile:{n:25000,reducers:['p95'],iterations:200,warmup:100},allPercentiles:{n:25000,reducers:percentiles,iterations:3,warmup:2},allCalculations:{n:25000,reducers:all,iterations:3,warmup:2}};
+const spec=cases[caseName];assert.ok(spec);assert.ok(['original','baseline','candidate'].includes(implementation));
+const values=Array.from({length:spec.n},(_,i)=>i%23===0?null:((i*7879)%7919)-3959.25),field=()=>({name:'synthetic',type:'number',config:{nullValueMode:'connected'},values,state:{}}),expected=original.reduceField({field:field(),reducers:spec.reducers});
+assert.deepEqual(baseline.reduceField({field:field(),reducers:spec.reducers}),expected);assert.deepEqual(candidate.reduceField({field:field(),reducers:spec.reducers}),expected);
+const fn={original:original.reduceField,baseline:baseline.reduceField,candidate:candidate.reduceField}[implementation];for(let i=0;i<spec.warmup;i++)fn({field:field(),reducers:spec.reducers});
+global.gc?.();const beforeMemory=process.memoryUsage(),beforeCpu=process.cpuUsage(),start=performance.now();let actual;
+for(let i=0;i<spec.iterations;i++)actual=fn({field:field(),reducers:spec.reducers});
+const elapsedMilliseconds=performance.now()-start,cpu=process.cpuUsage(beforeCpu),afterMemory=process.memoryUsage();assert.deepEqual(actual,expected);
+console.log(JSON.stringify({implementation,caseName,iterations:spec.iterations,warmup:spec.warmup,samples:values.length,selectionCount:spec.reducers.length,elapsedMilliseconds,millisecondsPerCall:elapsedMilliseconds/spec.iterations,cpuMicroseconds:cpu.user+cpu.system,beforeMemory,afterMemory,peakResidentKiB:process.resourceUsage().maxRSS,exactOutputEqual:true,inputSha256:sha(Buffer.from(JSON.stringify(values))),outputSha256:sha(Buffer.from(JSON.stringify(expected))),candidateSha256:sha(readFileSync(candidatePath)),baselineSha256:sha(readFileSync(baselinePath)),originalArchiveSha256:sources.archiveSha256,actualDependencyBytesVerified:true}));

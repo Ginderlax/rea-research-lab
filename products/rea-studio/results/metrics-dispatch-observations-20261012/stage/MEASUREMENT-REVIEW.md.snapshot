@@ -1,0 +1,66 @@
+# Metrics component observations, 2026-10-12
+
+The separate standard dispatch and percentile candidates passed their source-bound timing and isolated-memory sequences. Neither is selected for production. The standard candidate recorded lower small/large-standard medians but a p95 regression. The percentile candidate recorded a substantially lower single-p95 median but regressions in large standard, all percentiles and all calculations. These are finite component observations, with overlapping ranges in several controls; they establish no statistical significance, whole-product result or universal superiority.
+
+The complete arithmetic/raw-data report is `measurement-review.json`, SHA-256 `e6bbe2b3f6d4c55ad7eadc4fe466d83de42b367fb7c993c1539d8691a16e7e3c`. `results/timing-summary.csv` and `memory-summary.csv` retain all medians/minima/maxima; JSON also retains every seven-sample vector. Original raw 105-child receipts and the 840 raw memory worker/observer logs remain unchanged. Six static SVG/PNG figures are bound to exact input/source/runtime identities in `results/figures-validation.json` and were visually inspected. A separate Python statistics replay checked 5,790 summary groups, all medians/minima/maxima/paired differences, sequential unique sample identities and figure fingerprints without executing reducers.
+
+## Quiet coordination and durations
+
+Root established and explicitly closed a coordinated interval from **20:26:14.000 to 20:38:55.000 UTC**. Root reported that it and the other agents performed no tests, builds, browser interactions, publication or source scans during this interval. Each sequence had a fresh explicit timestamp. The acknowledgments and instructions are preserved in four authorization JSON files and `results/quiet-window-close.json`. Unrelated Windows/background work remained uncontrolled; no machine-level isolation is established. Idle app servers continued running. Consolidation, figures and their checks happened after closure, while root resumed other work.
+
+| Sequence | Actual interval UTC | Duration | Prior estimate |
+| --- | --- | ---: | ---: |
+| Standard timing, sample rows | 20:27:05.132–20:28:15.960 | 70.828 s | 65–85 s |
+| Percentile timing, sample rows | 20:29:09.978–20:30:20.398 | 70.420 s | 65–85 s |
+| Standard isolated memory | 20:31:16.711–20:34:25.057 | 188.346 s | 120–180 s; exceeded |
+| Percentile isolated memory | 20:35:28.755–20:38:30.637 | 181.882 s | 120–180 s; exceeded |
+
+Timing wrapper intervals were 20:27:05.089–20:28:15.976 and 20:29:09.935–20:30:20.413. The JSON records wrapper and sample intervals distinctly. There were 210 timing children and 210 isolated-memory children, with seven fresh sequential samples per implementation/workload and rotating order. All 852,516 fresh/last/retained memory output/cache checks passed. There were **zero actual measurement failures or limit-hit/censored trials**. All owned workers and RSS observers ended before closure. No counts, thresholds, sources or candidates changed during measurement.
+
+## Timing medians and full ranges
+
+Times are milliseconds per call. Brackets contain full seven-process min–max ranges, not confidence intervals. Each trial compares released original, frozen baseline and its own separate candidate. All three implementations were loaded in timing children for correctness, so their incidental memory values cannot establish isolated implementation memory. Lower times are faster.
+
+| Standard dispatch trial | Original | Baseline | Standard candidate |
+| --- | --- | --- | --- |
+| Small standard | 0.000860132 [0.000837212, 0.000942177] | 0.000898681 [0.000812629, 0.001283599] | 0.000759162 [0.000742612, 0.000785367] |
+| Large standard | 0.13821905 [0.12987530, 0.14976110] | 0.14453620 [0.13404005, 0.15305275] | 0.11527480 [0.11192025, 0.13706090] |
+| Single p95 | 1.6059125 [1.5894175, 1.7147820] | 1.6324165 [1.5452830, 2.0286000] | 1.6556015 [1.5357365, 1.8784080] |
+| All 99 percentiles | 159.586267 [155.282133, 170.573267] | 1.904800 [1.805333, 3.149800] | 1.826633 [1.775700, 3.016233] |
+| All 124 calculations | 166.782833 [156.729967, 187.014033] | 6.316433 [5.919967, 8.106200] | 6.151200 [5.529833, 9.345700] |
+
+The standard candidate's small/large medians were approximately 15.52%/20.25% below baseline and 11.74%/16.60% below original. Its p95 median was **1.42% above baseline and 3.09% above original**, with overlapping ranges. Shared/percentile source after the standard helper is unchanged; causality for small differences in those controls is unproven. The large original-versus-native bulk-percentile difference already exists in baseline and must not be attributed to this new dispatch change.
+
+| Isolated percentile trial | Original | Baseline | Percentile candidate |
+| --- | --- | --- | --- |
+| Small standard | 0.000917628 [0.000864755, 0.001463975] | 0.000926578 [0.000797857, 0.001330485] | 0.000892994 [0.000837996, 0.001009390] |
+| Large standard | 0.13400915 [0.12896860, 0.14928260] | 0.13885545 [0.12961425, 0.15369955] | 0.13912630 [0.13554740, 0.15078630] |
+| Single p95 | 1.6761505 [1.6098695, 1.8085105] | 1.6414095 [1.5358225, 1.9033330] | 0.3540600 [0.3257970, 0.4195500] |
+| All 99 percentiles | 165.187567 [152.757533, 181.391467] | 1.944533 [1.822367, 2.314600] | 2.143300 [1.800933, 3.181200] |
+| All 124 calculations | 169.053133 [158.441533, 215.860300] | 6.457433 [6.099200, 8.005767] | 6.744533 [6.246967, 7.549200] |
+
+For this fixed workload, baseline/original p95 medians were about 4.64×/4.73× the percentile candidate's median, with separated observed ranges. Its large-standard median regressed approximately 0.20% against baseline and 3.82% against original; all-99/all-124 medians regressed **10.22%/4.45% against baseline**. Those control ranges overlap. Its complete standard and shared-special bodies are byte-identical to baseline; source identity alone does not establish why the timing controls differ.
+
+## Isolated memory observations
+
+Each memory child loaded exactly one reducer. Original children legitimately loaded released registry/lodash dependencies; native children loaded their single selected ESM reducer and common test helper. A separate authenticated original-only preflight generated five complete expected graphs shared across both manifests. Measured children read only selected source hashes/small manifest/helper, not full archives or another reducer. Actual owned-PID observer startup/handshake succeeded. Sampling was 100 ms; some short children had only one/two observer samples, so sampled maxima may miss brief peaks. Worker checkpoints and inclusive lifetime high-water RSS are separate retained views.
+
+The maximum independent-observer RSS was 184,811,520 bytes in the standard sequence and 185,757,696 bytes in the percentile sequence, below the unchanged 512 MiB limit. Both used a 256 MiB old-space limit and 120-second per-child bound. Old-space is not total RSS. JSON/CSV preserve cold initialized/input/warm snapshots, sixteen transient block tails, retained/released snapshots, their within-child differences and all ranges. RSS/heap/external/arrayBuffers are bytes; lifetime maxRSS is KiB, not a resettable allocation counter.
+
+In the percentile trial, p95 sampled transient RSS median was 89,288,704 bytes for candidate versus 91,529,216 for baseline. Retained-versus-beforeRetention heap-used medians were 90,184 versus 97,672 bytes, while released-versus-beforeRetention medians were 21,392 versus 28,880. The **within-child retained-minus-released heap median was exactly 68,792 bytes for both**. This does not support a lower retained-result-object-footprint claim. The common validation/GC context contributes to the other deltas.
+
+Release-time RSS often increased after serializer validation despite heap reclamation. The report preserves **123 standard and 133 percentile negative paired sample deltas**, including 16/18 groups with negative medians; none are clipped or treated as negative allocation totals. For example, percentile original all-124 released heap delta ranged from −11,320 to 14,824 bytes. Returned/cache serialization happens after retained observation and before release/GC, and its temporary heap-capacity/RSS pressure may persist. These are diagnostic process observations, not allocator totals, leak proof or guaranteed lower memory. Fixed shared inputs and small percentile-retention counts limit generalization. Memory observations do not override unresolved timing regressions.
+
+## Source and evidence identity
+
+The frozen readiness receipt remains `dispatch-validation.json`, SHA-256 `6ef6d6ef1f79159391469df09b527485fecb62b9284b11da9a6ff888832525e3`; all 167 inventoried files were verified unchanged. Candidate/baseline/actual released original/archive/lodash and harness identities remain bound in the report. Exact measurement sources and original runtime/archive bytes are separately preserved in `preserved/measurement-sources/`. The percentile candidate's earlier full semantic/held-out/work-cap receipts retain their original execution paths and were not rebound. Production and both older stages remain unchanged.
+
+Actual original authority is `@grafana/data@13.2.3` released archive `954a03a68fa122ebe74c0c318dc801e434c17294c5374ef593cf491f73c81c41`, with actual lodash archive/runtime/resolution authentication. Native baseline is `9269cf8c32be9bf2c075b67019e82e41272d9495f0321fefc17b2c5695a91371`; standard candidate is `e30ab8a663a22b43f384ec1de689175d81bdc7e1076b81fc5cca6083964e9e29`; separate percentile candidate is `6ac1153c008d960de23766af1e4325cc0e77a5ab10c49be604d4d6e203f6e26f`. Node executable/version/V8/platform/architecture and complete source fingerprints are in JSON. Plotting used separate post-window Matplotlib 3.10.8 libraries in ignored `.plot-libs`; application runtime dependencies were unchanged.
+
+One post-window summarizer attempt reused small-workload checkpoint names across cases and failed. Its source and exact stdout/stderr are preserved under `preserved/consolidation-attempts/` and `results/consolidation-attempt-1791837710944.*`; only the new unfrozen summarizer was corrected, then it passed as `consolidation-attempt-1791837721347.*`. This was not a measured reducer/observer failure. Earlier rejected/confounded optimization trials and disclosures remain untouched in the prior frozen stage.
+
+## Prospective next experiment
+
+First isolate shared-control overhead of the percentile selector: a separate compact module-boundary/dispatch experiment can retain baseline standard and multi-selection bodies byte-for-byte while isolating the single-selector code footprint. Source layout/inlining is a hypothesis, not an established cause of the current regressions; module-loading overhead must remain an explicit cold-footprint control. Preserve ordinary primitive coercions, signed-zero/nonfinite/sparse stable-sort fallbacks, partition work cap and caller/cache aliases. Re-run full/held-out/adversarial acceptance before another newly coordinated measurement interval. Independently shaped p95 inputs and existing shared-calculation controls are required. Do not combine this with the standard candidate or infer that a profile establishes speed. No new candidate, workload or integration is authorized by this recommendation.
+
+All exhaustive-feature, full-product and universal-superiority gates remain false. No integration/publication occurred in this stage.

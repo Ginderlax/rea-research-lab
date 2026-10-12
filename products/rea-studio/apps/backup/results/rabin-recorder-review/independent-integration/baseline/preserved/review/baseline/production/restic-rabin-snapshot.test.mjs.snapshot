@@ -1,0 +1,27 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import {fileURLToPath} from 'node:url';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {createHash} from 'node:crypto';
+import {createWorkspace} from '../../lib/storage.mjs';
+import {handleNative} from './restic.mjs';
+import {hash,open,seal,passwordKey,masterKey} from './restic-crypto.mjs';
+import {RabinBoundaries,MAX,MIN} from './rabin.mjs';
+const exec=promisify(execFile),MiB=1024*1024,artifact=fileURLToPath(new URL('../../../../projects/09-restic/artifacts/',import.meta.url)),exe=path.join(artifact,'unpacked/restic_0.19.1_windows_amd64.exe'),testPassword='only-own-rabin-snapshot-stage-data',polynomial='206d5c685139e5',observations=[];
+function randomBytes(size){const out=Buffer.alloc(size);for(let offset=0;offset<size;offset+=32)createHash('sha256').update(`rabin-snapshot:${offset}`).digest().copy(out,offset,0,Math.min(32,size-offset));return out;}
+function wanted(bytes){const splitter=new RabinBoundaries(polynomial);return [...splitter.push(bytes),...splitter.finish()].map(row=>hash(bytes.subarray(row.start,row.start+row.length)));}
+async function fixture(t){const root=await fs.mkdtemp(path.join(os.tmpdir(),'rea-rabin-snapshot-')),workspace=await createWorkspace(path.join(root,'workspace'));t.after(async()=>{assert.equal(path.dirname(root),path.resolve(os.tmpdir()));assert.ok(path.basename(root).startsWith('rea-rabin-snapshot-'));await fs.rm(root,{recursive:true,force:true});});return{root,workspace,api:(action,input={})=>handleNative({action,input:{repository:'repository',password:testPassword,...input},workspace})};}
+async function original(f,args){assert.equal(hash(await fs.readFile(exe)),'b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830');assert.equal(hash(await fs.readFile(path.join(artifact,'restic_0.19.1_windows_amd64.zip'))),'da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d');const result=await exec(exe,['--no-cache','-r',f.workspace.resolve('repository'),...args],{env:{...process.env,RESTIC_PASSWORD:testPassword,RESTIC_PASSWORD_FILE:'',RESTIC_PASSWORD_COMMAND:'',RESTIC_REPOSITORY:''},windowsHide:true,timeout:60000,maxBuffer:MiB});observations.push({args,exitCode:0,stdout:result.stdout,stderr:result.stderr});return result;}
+test('staged Rabin snapshot writes original-readable compressed packs and reuses exact data IDs across modes',async t=>{
+ const f=await fixture(t);await f.api('nativeInit',{version:2});const keys=await fs.readdir(f.workspace.resolve('repository/keys')),keyDoc=JSON.parse(await fs.readFile(f.workspace.resolve(`repository/keys/${keys[0]}`),'utf8')),key=masterKey(JSON.parse(open(await passwordKey(keyDoc,testPassword),Buffer.from(keyDoc.data,'base64')))),configPath=f.workspace.resolve('repository/config'),config=JSON.parse(open(key,await fs.readFile(configPath)));config.chunker_polynomial=polynomial;await fs.writeFile(configPath,seal(key,Buffer.from(JSON.stringify(config))));await fs.mkdir(f.workspace.resolve('source/nested'),{recursive:true});const files={'random.bin':randomBytes(6*MiB),'forced.bin':Buffer.alloc(2*MAX+127,0x41),'zero.bin':Buffer.alloc(4*MIN),'empty.bin':Buffer.alloc(0),'nested/\u96ea.txt':Buffer.from('Rabin native Unicode')};for(const[name,bytes]of Object.entries(files))await fs.writeFile(f.workspace.resolve(`source/${name}`),bytes);
+ let previous;
+ for(const mode of ['auto','off']){const snapshot=await f.api('nativeSnapshot',{source:'source',compression:mode});assert.match(snapshot.chunking,/Rabin/);const inspected=await f.api('nativeInspect',{id:snapshot.id});for(const[name,bytes]of Object.entries(files)){const entry=inspected.entries.find(entry=>entry.path===`source/${name}`);assert.equal(entry.size,bytes.length);assert.deepEqual(entry.content,wanted(bytes));}const identities=Object.fromEntries(inspected.entries.filter(entry=>entry.type==='file').map(entry=>[entry.path,entry.content]));if(previous)assert.deepEqual(identities,previous);previous=identities;await original(f,['check','--read-data']);const target=path.join(f.root,`original-${mode}`);await original(f,['restore',snapshot.id,'--target',target]);for(const[name,bytes]of Object.entries(files))assert.deepEqual(await fs.readFile(path.join(target,'source',name)),bytes);assert.equal((await f.api('nativeCheck',{id:snapshot.id})).verified,true);assert.deepEqual(await fs.readdir(f.workspace.resolve('repository/locks')),[]);}
+});
+test('staged Rabin source-file size rejection leaves no snapshot/index publication and no app-owned lock',async t=>{
+ const f=await fixture(t);await f.api('nativeInit',{version:2});await fs.mkdir(f.workspace.resolve('source'));const handle=await fs.open(f.workspace.resolve('source/excessive'),'wx');await handle.truncate(64*MiB+1);await handle.close();await assert.rejects(f.api('nativeSnapshot',{source:'source',compression:'auto'}),/file or total byte limits/);assert.deepEqual(await fs.readdir(f.workspace.resolve('repository/snapshots')),[]);assert.deepEqual(await fs.readdir(f.workspace.resolve('repository/index')),[]);assert.deepEqual(await fs.readdir(f.workspace.resolve('repository/locks')),[]);
+});
+test.after(()=>console.log(JSON.stringify({rabinSnapshotOriginalObservations:observations})));

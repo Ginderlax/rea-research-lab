@@ -1,0 +1,64 @@
+# Sketch line/diamond stage
+
+This isolated stage adds usable plain two-point **Line** and **Diamond** tools to
+the frozen Sketch baseline. Draw, select, move, resize, group, undo/redo, save/load,
+SVG and native `.excalidraw` projection work with the new types. Reverse line
+drags preserve signed endpoint directions. Diamond painting and hit selection use
+the same bounded polygon, excluding the rectangle's corners. Existing freehand,
+group and native unknown-field behavior stays covered by the original tests.
+
+Production was copied before work to `production-baseline/`; its exact 11-file
+source/evidence/store-dependency manifest is `production-baseline-manifest.json`.
+No production, shared host, prior stage/history, package or registry was edited.
+
+The source-assisted MIT bindings are in `source-provenance.json` and
+`THIRD-PARTY-NOTICE.md`. Exact official npm archive, emitted bundle and source-map
+digests were authenticated; the map entry matched the official archive. Four
+retained source files bind linear types/restoration/point size and diamond bounds.
+Twenty-five unchanged original helper slices carry byte offsets, lines and hashes.
+The application never executes original vendor helpers. Test-only VMs compare
+eight signed line configurations and eight diamond dimensions/restorations plus
+original local serializer roundtrip; unknown native fields and negative imported
+diamond canonicalization are covered separately.
+
+The additional diamond helper follows original `floor(size/2)+1` anchors for normal
+dimensions. Sub-pixel/degenerate dimensions clamp those anchors within editable
+bounds; this differs from upstream and is warned/documented. Polygon interiors are
+selectable even when no fill is painted, consistent with this editor's geometric
+selection; original transparent-shape hit semantics were not compared. Native diamond raw
+negative dimensions stay untouched until geometry editing, when canonical positive
+dimensions are exported once. Line-head metadata stays preserved with a warning
+but no painted heads. Curved/multi-point/bound linear elements, rotated/locked
+objects, images and unsupported types remain inert native records. Rough rendering,
+pressure rendering, bindings repair, polygon editing, rotation, snapping, typography,
+collaboration and full original UI behavior remain gaps. Existing 4MiB native JSON,
+2,000 elements/shapes, 5,000 freehand points/text characters, coordinate magnitude
+1,000,000 and other editor limits are retained. No full parity, renderer pixel
+equivalence, security certification or performance-superiority claim is made.
+
+From the workspace root, run `node work/sketch-geometry-next/verify-stage.mjs` for
+the complete focused slice. `node work/sketch-geometry-next/preview.mjs` starts a
+private loopback preview on an ephemeral port; its records stay in `preview-data`.
+The actual browser proof/observations cover negative line drawing, diamond hit
+selection, freehand, grouping, undo/redo, group dragging, Save, page reload and Load.
+The private browser tab/host were closed after capturing unchanged JPEG proof.
+Original full-app rendering and native import/export through original UI were not
+claimed; original helper comparisons and API persistence are separate evidence.
+
+Failure history remains under `failures/`: a reference-preparation assumption
+about erased type-only map content (fixed using exact official commit types),
+two client-test harness errors (a string passed to assert.match and incorrect
+assumption of a25px native viewport; fixed assertions/coordinates with unchanged
+runtime), one documentation patch validation failure, and a clipped screenshot
+timeout (full native screenshot succeeded). Exact available failed source/raw
+output is retained. No compression/performance threshold or behavior assertion
+was relaxed. Earlier passing runs and original production receipt bytes remain
+historical; the final receipt binds the actual final source.
+
+For integration, runtime changes are in `apps/sketch/core.mjs` and `client.mjs`;
+the server API and shared storage source are unchanged. The stage adds two focused
+test files. Original-oracle paths and new test evidence/fixture output paths are
+stage-specific and must be adapted to an app-owned evidence location during
+integration, then tests and receipts regenerated. Preserve MIT attribution and
+older receipt/source snapshots instead of reattributing them to new production
+bytes. The preview host is a test harness, not a production host replacement.

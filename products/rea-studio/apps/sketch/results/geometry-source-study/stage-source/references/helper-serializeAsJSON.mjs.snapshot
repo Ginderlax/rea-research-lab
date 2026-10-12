@@ -1,0 +1,14 @@
+var serializeAsJSON = (elements, appState, files, type) => {
+  const data = {
+    type: EXPORT_DATA_TYPES.excalidraw,
+    version: VERSIONS.excalidraw,
+    source: EXPORT_SOURCE,
+    elements: type === "local" ? clearElementsForExport(elements) : clearElementsForDatabase(elements),
+    appState: type === "local" ? cleanAppStateForExport(appState) : clearAppStateForDatabase(appState),
+    files: type === "local" ? filterOutDeletedFiles(elements, files) : (
+      // will be stripped from JSON
+      void 0
+    )
+  };
+  return JSON.stringify(data, null, 2);
+};

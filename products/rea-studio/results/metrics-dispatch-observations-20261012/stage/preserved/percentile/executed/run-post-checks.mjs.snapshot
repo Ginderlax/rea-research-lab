@@ -1,0 +1,15 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const here=path.dirname(fileURLToPath(import.meta.url)),name=process.argv[2];assert.match(name,/^candidate-[a-z-]+\.mjs$/);const candidate=path.join(here,name),sha=bytes=>createHash('sha256').update(bytes).digest('hex'),beforeSHA256=sha(await fs.readFile(candidate)),steps=[];
+const fullPath=path.join(here,'results',name.slice(0,-4)+'.json'),full=JSON.parse(await fs.readFile(fullPath));assert.equal(full.status,'passed');assert.equal(full.implementationSha256,beforeSHA256);
+for(const script of ['verify-heldout-selection.mjs','verify-budget.mjs']){
+  const startedAt=new Date().toISOString(),child=spawnSync(process.execPath,[path.join(here,script),candidate],{encoding:'utf8',timeout:60000,maxBuffer:2*1024*1024,windowsHide:true}),completedAt=new Date().toISOString();
+  const step={script,startedAt,completedAt,exitCode:child.status,signal:child.signal,error:child.error?.message,scriptSHA256:sha(await fs.readFile(path.join(here,script))),stdoutSHA256:sha(Buffer.from(child.stdout??'')),stderrSHA256:sha(Buffer.from(child.stderr??''))};steps.push(step);
+  await fs.writeFile(path.join(here,'results',name.slice(0,-4)+'-'+script+'.stdout.txt'),child.stdout??'');await fs.writeFile(path.join(here,'results',name.slice(0,-4)+'-'+script+'.stderr.txt'),child.stderr??'');console.log(JSON.stringify(step));
+  if(child.status!==0)break;
+}
+const report={schemaVersion:1,candidate:name,beforeSHA256,afterSHA256:sha(await fs.readFile(candidate)),fullReceiptSHA256:sha(await fs.readFile(fullPath)),steps,separateFromFormalTiming:true};await fs.writeFile(path.join(here,'results',name.slice(0,-4)+'-post-checks.interval.json'),JSON.stringify(report,null,2)+'\n');assert.equal(report.afterSHA256,beforeSHA256);if(steps.some(step=>step.exitCode!==0))process.exitCode=1;

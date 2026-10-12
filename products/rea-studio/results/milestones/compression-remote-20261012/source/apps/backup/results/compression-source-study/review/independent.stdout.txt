@@ -1,0 +1,48 @@
+TAP version 13
+# Subtest: independent compression boundaries, frame windows and incompressible growth remain bounded
+ok 1 - independent compression boundaries, frame windows and incompressible growth remain bounded
+  ---
+  duration_ms: 84.852
+  type: 'test'
+  ...
+# Subtest: mixed legacy v2 plaintext and compressed candidate snapshots preserve old blobs and deduplicate across modes
+ok 2 - mixed legacy v2 plaintext and compressed candidate snapshots preserve old blobs and deduplicate across modes
+  ---
+  duration_ms: 11859.8459
+  type: 'test'
+  ...
+# Subtest: candidate appends compressed data to an independently original-created v2 off repository
+ok 3 - candidate appends compressed data to an independently original-created v2 off repository
+  ---
+  duration_ms: 7714.4082
+  type: 'test'
+  ...
+# Subtest: authenticated compressed corruption and pack/index disagreements reject before restore output, including original reader
+ok 4 - authenticated compressed corruption and pack/index disagreements reject before restore output, including original reader
+  ---
+  duration_ms: 16707.3671
+  type: 'test'
+  ...
+# {"case":"index-length","candidateError":"Restic index and authenticated pack header disagree.","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"case":"payload-mac","candidateError":"Restic authentication failed: wrong password or damaged data.","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"case":"header-mac","candidateError":"Restic authentication failed: wrong password or damaged data.","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"case":"frame-magic","candidateError":"Unknown frame descriptor","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"case":"frame-truncated-tree","candidateError":"Restic decompressed blob length mismatch.","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"case":"decoded-budget","candidateError":"Cannot create a Buffer larger than 25 bytes","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# Subtest: authenticated unsupported metadata marker and compressed metadata output budget reject without restore output
+ok 5 - authenticated unsupported metadata marker and compressed metadata output budget reject without restore output
+  ---
+  duration_ms: 6627.3261
+  type: 'test'
+  ...
+# {"case":"unknown-marker","originalAccepts":false,"candidateAccepts":false,"documentedBoundary":null}
+# {"case":"decoded-metadata-budget","originalAccepts":true,"candidateAccepts":false,"documentedBoundary":"16 MiB metadata subset"}
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 43051.4989

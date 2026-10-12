@@ -1,0 +1,5 @@
+import fs from 'node:fs/promises';
+import {start} from './test-host.mjs';
+const here=new URL('./',import.meta.url),host=await start({port:0,dataDir:new URL('ui-workspace',here).pathname.replace(/^\/([A-Za-z]:)/,'$1')});
+await fs.writeFile(new URL('ui-host.json',here),JSON.stringify({url:host.url,createdAt:new Date().toISOString(),scope:'Synthetic isolated stage test host, not production host'},null,2)+'\n');console.log(host.url);
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,async()=>{await host.close();process.exit(0);});

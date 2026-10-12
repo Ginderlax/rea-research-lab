@@ -1,0 +1,30 @@
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import assert from 'node:assert/strict';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import {createHash} from 'node:crypto';
+import {captureRabinFile} from './baseline/capture-file.mjs';
+import {MIN,MAX} from './baseline/rabin.mjs';
+import {open,seal,passwordKey,masterKey} from './baseline/restic-crypto.mjs';
+const root=fileURLToPath(new URL('./',import.meta.url)), baseline=JSON.parse(await fs.readFile(path.join(root,'baseline-manifest.json'),'utf8')),hash=bytes=>createHash('sha256').update(bytes).digest('hex'),exec=promisify(execFile),polynomial='3da3358b4dc173',password='own-independent-rabin-oracle-review';
+const originalFolder=path.resolve('outputs/rea-research-lab/projects/09-restic/artifacts'),exe=path.join(originalFolder,'unpacked/restic_0.19.1_windows_amd64.exe'),archive=path.join(originalFolder,'restic_0.19.1_windows_amd64.zip'),exeSha='b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830',archiveSha='da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d';
+async function stable(){for(const item of baseline.files){assert.equal(hash(await fs.readFile(path.join(root,'baseline',item.path))),item.sha256);assert.equal(hash(await fs.readFile(path.resolve(root,'../backup-rabin-next',item.path))),item.sha256);}}
+await stable();const fixture=await fs.mkdtemp(path.join(root,'original-subset-fixture-')),repo=path.join(fixture,'repository'),corpus=path.join(fixture,'corpus');await fs.mkdir(corpus);
+const random=Buffer.alloc(2*1024*1024+127);for(let offset=0;offset<random.length;offset+=32)createHash('sha256').update(`independent-rabin-review:${offset}`).digest().copy(random,offset,0,Math.min(32,random.length-offset));
+const files={'ordinary.bin':random,'forced.bin':Buffer.alloc(MAX+127,0x41),'zero.bin':Buffer.alloc(2*MIN+127),'tiny.txt':Buffer.from('ordinary synthetic source'),'empty.txt':Buffer.alloc(0)};
+for(const[name,bytes]of Object.entries(files))await fs.writeFile(path.join(corpus,name),bytes);
+const report={schema:'rea-rabin-independent-original-subset/v1',stageReceiptSha256:baseline.stageReceiptSha256,startedAtUtc:new Date().toISOString(),fixture,original:{version:'restic 0.19.1',sourceCommit:'6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf',chunkerVersion:'v0.4.0',executableSha256:exeSha,archiveSha256:archiveSha},polynomial,cases:[],commands:[],scope:'Five finite synthetic file cases, original ordered plaintext chunk IDs/lengths versus direct adapter captures whose sink deliberately mutates its received output. Original CLI rolling Cut values are not compared. No full feature, security or performance parity claim.'};
+async function original(args){assert.equal(hash(await fs.readFile(exe)),exeSha);assert.equal(hash(await fs.readFile(archive)),archiveSha);const result=await exec(exe,['--no-cache','-r',repo,...args],{cwd:fixture,env:{...process.env,RESTIC_PASSWORD:password,RESTIC_PASSWORD_FILE:'',RESTIC_PASSWORD_COMMAND:'',RESTIC_REPOSITORY:''},windowsHide:true,timeout:60000,maxBuffer:2*1024*1024});report.commands.push({args,exitCode:0,stdout:result.stdout,stderr:result.stderr});return result.stdout;}
+let failure;
+try{
+ await original(['version']);await original(['init','--repository-version','2']);
+ const keys=await fs.readdir(path.join(repo,'keys')),keyDoc=JSON.parse(await fs.readFile(path.join(repo,'keys',keys[0]),'utf8')),key=masterKey(JSON.parse(open(await passwordKey(keyDoc,password),Buffer.from(keyDoc.data,'base64')))),configPath=path.join(repo,'config'),config=JSON.parse(open(key,await fs.readFile(configPath)));config.chunker_polynomial=polynomial;await fs.writeFile(configPath,seal(key,Buffer.from(JSON.stringify(config))));assert.equal(JSON.parse(await original(['cat','config'])).chunker_polynomial,polynomial);
+ const backup=(await original(['backup','corpus','--compression','off','--json'])).trim().split(/\r?\n/),snapshotID=JSON.parse(backup.at(-1)).snapshot_id,snapshot=JSON.parse(await original(['cat','snapshot',snapshotID])),nodes=new Map();
+ async function walk(id){const tree=JSON.parse(await original(['cat','blob',id]));for(const node of tree.nodes){if(node.type==='dir')await walk(node.subtree);else nodes.set(node.name,node);}}await walk(snapshot.tree);
+ const lengths=new Map();for(const id of await fs.readdir(path.join(repo,'index'))){const index=JSON.parse(await original(['cat','index',id]));for(const pack of index.packs)for(const blob of pack.blobs)if(blob.type==='data'){assert.ok(!blob.uncompressed_length);lengths.set(blob.id,blob.length-32);}}
+ for(const[name,bytes]of Object.entries(files)){const expected=(nodes.get(name).content??[]).map(sha256=>({sha256,length:lengths.get(sha256)})),rows=[];const captured=await captureRabinFile({filename:path.join(corpus,name),polynomial,saveChunk(chunk,row){const id=hash(chunk);assert.equal(id,row.sha256);rows.push({...row,sha256:id});chunk.fill(0x99);return id;}});assert.equal(captured.size,bytes.length);assert.deepEqual(rows.map(({sha256,length})=>({sha256,length})),expected);assert.deepEqual(captured.content,expected.map(row=>row.sha256));report.cases.push({name,bytes:bytes.length,sha256:hash(bytes),originalChunks:expected,candidateChunks:rows,exactOrderedLengthsAndIds:true});}
+ await original(['check','--read-data']);
+}catch(error){failure={message:error.message,stack:error.stack};throw error;}finally{await stable();report.completedAtUtc=new Date().toISOString();report.failure=failure??null;report.stageAndBaselineBytesStableAcrossRun=true;await fs.writeFile(path.join(root,'original-subset-observations.json'),JSON.stringify(report,null,2)+'\n');}
+console.log(JSON.stringify({files:report.cases.length,orderedChunks:report.cases.reduce((sum,row)=>sum+row.originalChunks.length,0),executions:report.commands.length,receiptSha256:hash(await fs.readFile(path.join(root,'original-subset-observations.json')))}));

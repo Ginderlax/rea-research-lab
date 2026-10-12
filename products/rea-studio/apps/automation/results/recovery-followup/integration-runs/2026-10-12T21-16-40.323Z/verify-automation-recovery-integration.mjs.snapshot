@@ -1,0 +1,107 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {spawn} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {collect} from '../outputs/rea-research-lab/products/rea-studio/scripts/read-rabin-tap.mjs';
+
+const script=fileURLToPath(import.meta.url),workspace=path.resolve(path.dirname(script),'..'),lab=path.join(workspace,'outputs/rea-research-lab');
+const studio=path.join(lab,'products/rea-studio'),app=path.join(studio,'apps/automation'),publicRoot=path.join(app,'results/recovery-followup');
+const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+const runName=new Date().toISOString().replaceAll(':','-'),privateRoot=path.join(workspace,'work/automation-recovery-independent-review'),run=path.join(privateRoot,'runs',runName);
+const startedAtUtc=new Date().toISOString();
+await fs.mkdir(path.join(run,'source'),{recursive:true});
+const save=async(name,bytes)=>{const target=path.join(run,name);await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes,{flag:'wx'});};
+const readRelative=relative=>fs.readFile(path.join(studio,relative));
+const stamp=async relative=>{const bytes=await readRelative(relative);return{path:relative,bytes:bytes.length,sha256:hash(bytes)};};
+const oldManifest='apps/automation/results/routing-source-study/preservation-manifest.json';
+const newManifest='apps/automation/results/recovery-followup/preservation-manifest.json';
+const oldReceipt='apps/automation/results/routing-validation.json';
+const pins={
+ [oldManifest]:'b4f9d3044eb5c60a9b312ba83cb6c17cdec3521be5c88e62fda8464722b58721',
+ [newManifest]:'585f80b40c72d6968c4e678d7e7282b2a73e70bd29e92ed36a24c8209038f0a8',
+ [oldReceipt]:'b85b20796ca6c029ff37cc955e91b62b547ec493721dad4a6342413ddfa03801',
+ 'apps/automation/native.mjs':'3d793bf9a9c7152be6c1248005d6c637f29ff52af148bd2305bcb965cb224c59',
+ 'apps/automation/routing-recovery.test.mjs':'5c5a2355ba8708fb9f2ab202cdaf36c956a89f4241d86e4ce441295564909c02',
+ 'apps/automation/http-boundary.test.mjs':'4d80e687c7336fa3500d0ced0f55026b405052da84410a1c8c3223458e1e2aa2',
+};
+const oldBytes=await readRelative(oldManifest),newBytes=await readRelative(newManifest);
+const old=JSON.parse(oldBytes),current=JSON.parse(newBytes);
+const pathInside=(folder,relative)=>{assert.ok(typeof relative==='string'&&relative&&!relative.includes('\\')&&!relative.split('/').includes('..')&&!path.isAbsolute(relative));const output=path.resolve(folder,relative),difference=path.relative(folder,output);assert.ok(difference&&!path.isAbsolute(difference)&&difference!=='..'&&!difference.startsWith('..'+path.sep));return output;};
+async function verifyPreservation(){
+ for(const[relative,expected]of Object.entries(pins))assert.equal(hash(await readRelative(relative)),expected,relative);
+ assert.equal(old.entries.length,721);assert.equal(current.snapshots.length,340);assert.equal(current.selectedProductionBaselineFiles,39);
+ for(const item of old.entries){assert.ok(item.snapshot.startsWith('apps/automation/results/routing-source-study/'));const bytes=await fs.readFile(pathInside(studio,item.snapshot));assert.equal(bytes.length,item.bytes,item.snapshot);assert.equal(hash(bytes),item.sha256,item.snapshot);}
+ for(const item of current.snapshots){assert.ok(item.path.startsWith('stage/'));const bytes=await fs.readFile(pathInside(publicRoot,item.path));assert.equal(bytes.length,item.bytes,item.path);assert.equal(hash(bytes),item.sha256,item.path);}
+}
+await verifyPreservation();
+const baseline=JSON.parse(await fs.readFile(path.join(publicRoot,'stage/production-baseline.json.snapshot')));
+assert.equal(baseline.selectedFiles.length,39);
+const sourceSet=new Set(baseline.selectedFiles.map(item=>item.path));
+for(const item of ['apps/automation/routing-recovery.test.mjs','apps/automation/http-boundary.test.mjs','scripts/read-rabin-tap.mjs',newManifest])sourceSet.add(item);
+const appNames=(await fs.readdir(app,{withFileTypes:true})).filter(item=>item.isFile()).map(item=>'apps/automation/'+item.name);
+for(const name of appNames)sourceSet.add(name);
+const sourceNames=[...sourceSet].sort();assert.equal(sourceNames.length,43,'Expected current baseline39+four additions and complete direct app-file coverage');
+const before=await Promise.all(sourceNames.map(stamp));
+for(const item of before)await save('source/'+item.path+'.snapshot',await readRelative(item.path));
+const scriptBytes=await fs.readFile(script);await save('source/verify-automation-recovery-integration.mjs.snapshot',scriptBytes);
+await save('source-before.json',JSON.stringify(before,null,2)+'\n');
+const runtimeBefore=hash(await fs.readFile(process.execPath));
+const testNames=['native.test.mjs','native-http.test.mjs','native-server.test.mjs','routing.test.mjs','routing-original.test.mjs','native-client.test.mjs','routing-recovery.test.mjs','http-boundary.test.mjs'];
+const args=['--test','--test-concurrency=1','--test-reporter=tap',...testNames.map(name=>'apps/automation/'+name)];
+const env={...process.env};delete env.NODE_TEST_CONTEXT;
+const runStartedAtUtc=new Date().toISOString();
+const result=await new Promise(resolve=>{
+ const child=spawn(process.execPath,args,{cwd:studio,env,shell:false,windowsHide:true,stdio:['ignore','pipe','pipe']});
+ const stdout=[],stderr=[];let out=0,err=0,failure=null,done=false;
+ const stop=reason=>{failure??=reason;child.kill('SIGKILL');};
+ for(const[stream,rows,key,limit]of [[child.stdout,stdout,'stdout',8*1024*1024],[child.stderr,stderr,'stderr',2*1024*1024]])stream.on('data',bytes=>{const count=key==='stdout'?out:err,take=Math.max(0,Math.min(limit-count,bytes.length));if(take)rows.push(Buffer.from(bytes.subarray(0,take)));if(key==='stdout')out+=take;else err+=take;if(bytes.length>take)stop(key+' retention limit');});
+ child.on('error',error=>{failure??=error.message;});
+ child.on('close',(exitCode,signal)=>{if(done)return;done=true;clearTimeout(timer);resolve({pid:child.pid??null,exitCode,signal,failure,stdout:Buffer.concat(stdout),stderr:Buffer.concat(stderr),stdoutBytes:out,stderrBytes:err});});
+ const timer=setTimeout(()=>stop('90-second focused execution deadline'),90000);
+});
+const runCompletedAtUtc=new Date().toISOString();
+await save('tests.stdout.txt',result.stdout);await save('tests.stderr.txt',result.stderr);
+const after=await Promise.all(sourceNames.map(stamp));await save('source-after.json',JSON.stringify(after,null,2)+'\n');
+const sourceStable=JSON.stringify(before)===JSON.stringify(after);
+const summary=Object.fromEntries(['tests','pass','fail','cancelled','skipped','todo'].map(name=>[name,Number(result.stdout.toString('utf8').match(new RegExp(`^# ${name} (\\d+)$`,'m'))?.[1]??-1)]));
+const attempt={schema:'rea-automation-recovery-current-independent-attempt/v1',startedAtUtc,runStartedAtUtc,runCompletedAtUtc,sourceStable,summary,run:{...result,stdout:undefined,stderr:undefined},runtime:{version:process.version,platform:process.platform,exe:process.execPath,exeSHA256:runtimeBefore},arguments:args,sourceBefore:before,sourceAfter:after,runnerSHA256:hash(scriptBytes),preservation:{currentSnapshots:340,oldSnapshots:721,newManifestSHA256:hash(newBytes),oldManifestSHA256:hash(oldBytes)},publicEvidenceWritten:false};
+await save('attempt.json',JSON.stringify(attempt,null,2)+'\n');
+assert.ok(sourceStable,'Source changed during current74 run');assert.equal(result.exitCode,0);assert.equal(result.failure,null);assert.deepEqual(summary,{tests:74,pass:74,fail:0,cancelled:0,skipped:0,todo:0});
+await verifyPreservation();assert.equal(hash(await fs.readFile(script)),hash(scriptBytes));assert.equal(hash(await fs.readFile(process.execPath)),runtimeBefore);
+const stdout=result.stdout.toString('utf8');
+const original=collect(stdout,'automationRoutingOriginalObservations'),host=collect(stdout,'automationRoutingHostObservations');
+assert.deepEqual(original.counts,{exactOutputMatches:1812,rejectionOutcomeMatches:10,deliberateSafetyDeviations:3,boundedRepresentationDeviations:48});
+assert.equal(original.observations.switchNodeExecutions,114);assert.equal(original.observations.mergeModeExecutions,1759);assert.equal(original.observations.coreEnqueueHelperExecutions,7);assert.equal(original.observations.corePartialDrainExecutions,4);
+assert.ok(Number.isSafeInteger(original.bytes)&&original.bytes>0&&original.bytes<=8*1024*1024,'Bounded original raw observation size');
+assert.match(original.sha256,/^[0-9a-f]{64}$/);
+const originalRoot=path.join(lab,'.local/automation-routing-original/observations'),originalPath=path.resolve(original.path),difference=path.relative(originalRoot,originalPath);
+assert.ok(difference&&!path.isAbsolute(difference)&&difference!=='..'&&!difference.startsWith('..'+path.sep));assert.match(difference,/^run-[^\\/]+[\\/]original-results\.json$/);
+const actualOriginalRoot=await fs.realpath(originalRoot),actualOriginalPath=await fs.realpath(originalPath),actualDifference=path.relative(actualOriginalRoot,actualOriginalPath);assert.ok(actualDifference&&!path.isAbsolute(actualDifference)&&actualDifference!=='..'&&!actualDifference.startsWith('..'+path.sep));assert.match(actualDifference,/^run-[^\\/]+[\\/]original-results\.json$/);
+const originalStat=await fs.stat(originalPath);assert.ok(originalStat.isFile());assert.equal(originalStat.size,original.bytes);assert.ok(originalStat.mtimeMs>=Date.parse(runStartedAtUtc)-1000);
+const originalBytes=await fs.readFile(originalPath);assert.equal(originalBytes.length,original.bytes);assert.equal(hash(originalBytes),original.sha256);
+const parsed=JSON.parse(originalBytes);assert.deepEqual(parsed.observations,original.observations);assert.deepEqual(parsed.counts,original.counts);await save('original-results.json',originalBytes);
+const synthetic=[];
+for(const name of ['recovery-observations.json','http-boundary-observations.json']){
+ const filename=path.join(app,'.local/recovery-observations',name),stat=await fs.stat(filename);assert.ok(stat.isFile()&&stat.size<=128*1024);assert.ok(stat.mtimeMs>=Date.parse(runStartedAtUtc)-1000,'Fresh current synthetic observation '+name);
+ const bytes=await fs.readFile(filename),value=JSON.parse(bytes);await save(name,bytes);synthetic.push({name,bytes:bytes.length,sha256:hash(bytes),observations:value.observations});
+}
+const recovery=synthetic[0].observations,http=synthetic[1].observations;
+assert.equal(recovery.length,5);assert.equal(http.length,5);
+const hostile=recovery.find(item=>item.name==='actual-shared-host-malformed-recovery');assert.deepEqual(hostile,{name:'actual-shared-host-malformed-recovery',httpStatus:400,requests:0,recordUnchanged:true});
+const expired=recovery.find(item=>item.name==='expired-checkpoint');assert.equal(expired.calls,0);assert.equal(expired.code,'NATIVE_LIMIT');assert.ok(expired.activeMs>120000);
+assert.deepEqual(http.map(item=>[item.kind,item.calls,item.chargedItemAttempts,item.errorCode]),[['expired-before-first',0,1,'NATIVE_LIMIT'],['expired-between-items',1,2,'NATIVE_LIMIT'],['expired-before-redirect',1,1,'NATIVE_LIMIT'],['cancel-before-redirect',1,1,'NATIVE_CANCELLED'],['timeout-before-redirect',1,1,'NATIVE_HTTP_TIMEOUT']]);
+assert.equal(host.observations.length,2);assert.equal(host.observations[0].downstreamRequests,2);assert.equal(host.observations[1].downstreamRequests,0);
+const priorAccounting=[...stdout.matchAll(/^# Original comparison accounting: (.+)$/gm)].map(match=>JSON.parse(match[1]));
+await save('independent-observation-audit.json',JSON.stringify({original,host,synthetic,priorAccounting},null,2)+'\n');
+// Only this new follow-up run is public. Prior receipts and manifests are never rewritten.
+const publicRun=path.join(publicRoot,'integration-runs',runName);await fs.mkdir(path.dirname(publicRun),{recursive:true});await fs.mkdir(publicRun,{recursive:false});
+const artifactNames=['tests.stdout.txt','tests.stderr.txt','original-results.json','recovery-observations.json','http-boundary-observations.json','independent-observation-audit.json','source-before.json','source-after.json','attempt.json'];
+const artifacts=[];for(const name of artifactNames){const bytes=await fs.readFile(path.join(run,name));await fs.writeFile(path.join(publicRun,name),bytes,{flag:'wx'});artifacts.push({path:path.relative(studio,path.join(publicRun,name)).replaceAll('\\','/'),bytes:bytes.length,sha256:hash(bytes)});}
+for(const item of before){const target=path.join(publicRun,'source',item.path+'.snapshot');await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,await fs.readFile(path.join(run,'source',item.path+'.snapshot')),{flag:'wx'});}
+await fs.writeFile(path.join(publicRun,'verify-automation-recovery-integration.mjs.snapshot'),scriptBytes,{flag:'wx'});
+const finalSource=await Promise.all(sourceNames.map(stamp));assert.deepEqual(finalSource,before);await verifyPreservation();
+const receipt={schema:'rea-automation-recovery-integration-validation/v1',completedAtUtc:new Date().toISOString(),runStartedAtUtc,runCompletedAtUtc,summary,runtime:attempt.runtime,sourceStable:true,sourceCapture:{baselineCurrentPaths:39,additions:['apps/automation/routing-recovery.test.mjs','apps/automation/http-boundary.test.mjs','scripts/read-rabin-tap.mjs',newManifest],completeDirectAppFileCoverage:true,excluded:['vendor/.local runtimes','app-owned .local data','results generated by this current run'],sourceFingerprintCount:before.length},implementationFingerprints:before,runner:{path:'work/verify-automation-recovery-integration.mjs',sha256:hash(scriptBytes),publicSnapshot:path.relative(studio,path.join(publicRun,'verify-automation-recovery-integration.mjs.snapshot')).replaceAll('\\','/')},historicalRoutingReceipt:{path:oldReceipt,sha256:pins[oldReceipt],untouched:true,tests:56,editorTests:3},preservation:{current:{path:newManifest,sha256:hash(newBytes),snapshots:340,authenticatedBeforeAndAfter:true,stageReceiptSHA256:current.stageValidationSha256},historical:{path:oldManifest,sha256:hash(oldBytes),snapshots:721,authenticatedBeforeAndAfter:true}},original:{...original,publicObservation:artifacts.find(item=>item.path.endsWith('/original-results.json')).path,binding:'n8n/n8n-workflow/n8n-core/n8n-nodes-base2.16.0',nodeAndModeExecutions:1873,separateEnqueueHelperExecutions:7,separatePartialDrainExecutions:4,authenticatedByUnchangedTestHarnessBeforeAndAfter:true,sharedDependencyFiles:4350,ownManifestEntries:202,countsAreSeparateFromTestGroups:true,errorEquality:'Presence only; no class/message/code equality claim',serializedRawBoundary:'JSON observation normalizes undefined and signed zero; exact comparisons occur in memory in the authenticated captured test code.',completeReleasedSchedulerExecutions:0,completeReleasedServerExecutions:0},syntheticObservations:synthetic,sharedHostEvidence:host,priorRegressionComparisonAccounting:priorAccounting,independentReviewFindings:{newReproducedDefects:0,checkpointGuards:'Cancellation/deadline checks before dispatch and after awaited checkpoint prevent a subsequent node HTTP effect. Checkpoint storage IO remains cooperative, not preempted.',httpGuards:'Each prepared input-item attempt is charged, then cancellation/active-deadline checked. Every initial/redirect fetch has another guard, sharing one per-item abort timeout.500 input-item attempts; redirects separately0–10per item.',recoveryStructure:'With a reachable Merge, queued batches and buffered inputs must match completed immediate predecessor output; missing arrived batches, premature effects and incomplete Choose Branch reject. Deferred Wait output is routed only upon resume.',authenticationBoundary:'Local checkpoint consistency is not a signature, MAC, full graph-prefix proof or exact item-link/trace-history proof. Coordinated state rewriting is not authenticated. The additional predecessor-batch checks are gated to workflows with a reachable Merge.',hostRecovery:'Production shared-host malformed recovery fixture returned400, issued0 downstream requests and left its persisted record unchanged.',remaining:'No complete n8n scheduler/database/server/editor, providers/credentials, SQL/general expressions/binary items, arbitrary graph generations, rollback or exactly-once remote-effect guarantees.'},runPath:path.relative(studio,publicRun).replaceAll('\\','/'),artifacts,limits:{childDeadlineMs:90000,retainedStdoutBytes:8*1024*1024,retainedStderrBytes:2*1024*1024,rawOriginalObservationBytes:8*1024*1024,syntheticObservationBytesEach:128*1024,outerFailureCleanup:'Owned root signal only; no failure branch was exercised; no atomic Windows descendant isolation claim',fingerprintIODedicatedDeadline:false},productionRuntimeChanged:false,historicalEvidenceRebound:false,browserExecuted:false,geometryExecuted:false,performanceMeasured:false,fullParity:false,securityCertified:false,performanceSuperiority:false};
+const receiptBytes=JSON.stringify(receipt,null,2)+'\n';await save('integration-validation.json',receiptBytes);await fs.writeFile(path.join(publicRun,'validation.json'),receiptBytes,{flag:'wx'});await fs.writeFile(path.join(publicRoot,'integration-validation.json'),receiptBytes,{flag:'wx'});
+console.log(JSON.stringify({summary,sourceStable:true,sourceFiles:before.length,originalCounts:original.counts,originalExecutions:original.observations,rawOriginalBytes:originalBytes.length,publicReceipt:'apps/automation/results/recovery-followup/integration-validation.json',receiptSHA256:hash(receiptBytes),privateRun:path.relative(workspace,run).replaceAll('\\','/')}));

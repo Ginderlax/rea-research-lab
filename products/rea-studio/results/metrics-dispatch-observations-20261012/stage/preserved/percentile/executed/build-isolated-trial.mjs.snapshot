@@ -1,0 +1,29 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+const here=path.dirname(fileURLToPath(import.meta.url)),baseline=await fs.readFile(path.join(here,'candidate-baseline.mjs'),'utf8'),selection=await fs.readFile(path.join(here,'candidate-selection.mjs'),'utf8');
+const begin=selection.indexOf("const selectionUnavailable = Symbol("),end=selection.indexOf('function special(',begin);if(begin<0||end<0)throw Error('Selection helper boundary absent.');
+const helper=selection.slice(begin,end)+`function singlePercentile(id, field, ignore, zero) {
+  let candidates = field.values;
+  if (ignore) candidates = candidates.filter(value => value !== null);
+  if (zero) candidates = candidates.map(value => value === null ? 0 : value);
+  const privateValues = candidates.slice();
+  const index = Math.round((privateValues.length - 1) * (Number(id.slice(1)) / 100));
+  const selected = selectFinitePercentile(privateValues, index);
+  if (selected !== selectionUnavailable) return { [id]: selected };
+  privateValues.sort((a, b) => a - b);
+  return { [id]: privateValues[index] };
+}
+
+`;
+let candidate=baseline.replace('function special(id, field, ignore, zero, shared) {',helper+'function special(id, field, ignore, zero, shared) {');
+const oldRegistry='reduce: (field, ignore, zero) => special(definition.id, field, ignore, zero)',newRegistry="reduce: (field, ignore, zero) => definition.id[0] === 'p' ? singlePercentile(definition.id, field, ignore, zero) : special(definition.id, field, ignore, zero)";
+if(!candidate.includes(oldRegistry))throw Error('Registry reducer source absent.');candidate=candidate.replace(oldRegistry,newRegistry);
+const oldSingle='const result = special(queue[0].id, field, ignore, zero);',newSingle="const result = queue[0].id[0] === 'p' ? singlePercentile(queue[0].id, field, ignore, zero) : special(queue[0].id, field, ignore, zero);";
+if(!candidate.includes(oldSingle))throw Error('Single-specialized dispatch source absent.');candidate=candidate.replace(oldSingle,newSingle);
+const functionSection=(source,start,stop)=>source.slice(source.indexOf(start),source.indexOf(stop,source.indexOf(start)));
+const originalSpecial=functionSection(baseline,'function special(','\nconst specialIds'),actualSpecial=functionSection(candidate,'function special(','\nconst specialIds');if(originalSpecial!==actualSpecial)throw Error('Existing shared-special reducer body changed.');
+const originalStandard=functionSection(baseline,'export function doStandardCalcs(','\nfunction special('),actualStandard=functionSection(candidate,'export function doStandardCalcs(',"const selectionUnavailable = Symbol(");if(originalStandard.trimEnd()!==actualStandard.trimEnd())throw Error('Existing standard body changed.');
+const name='candidate-isolated.mjs',sha=bytes=>createHash('sha256').update(bytes).digest('hex');await fs.writeFile(path.join(here,name),candidate);
+const trials=JSON.parse(await fs.readFile(path.join(here,'trials.json')));if(trials.trials.some(trial=>trial.file===name))throw Error('Existing trial must be preserved under a separate name.');trials.trials.push({file:name,sha256:sha(candidate),change:'Separate bounded single-percentile function and specialized/registry routing. Standard and complete existing shared-special function are source-identical; original generic queue/cache dispatch changes only its single-specialized expression.',unchangedStandardSectionSHA256:sha(originalStandard.trimEnd()),unchangedSharedSpecialSectionSHA256:sha(originalSpecial),status:'unvalidated',formalPairedTiming:false,selectionPlanning:'Created after clean lean trial showed an all-percentile median regression; causal explanation is unproven and the prior receipt is retained.'});await fs.writeFile(path.join(here,'trials.json'),JSON.stringify(trials,null,2)+'\n');console.log(JSON.stringify(trials.trials.at(-1)));

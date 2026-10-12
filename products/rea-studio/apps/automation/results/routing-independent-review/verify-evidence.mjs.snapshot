@@ -1,0 +1,40 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import assert from 'node:assert/strict';
+const review=path.dirname(fileURLToPath(import.meta.url)),product=path.resolve(review,'../../outputs/rea-research-lab/products/rea-studio'),app=path.join(product,'apps/automation'),hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+const receiptBytes=await fs.readFile(path.join(app,'results/routing-validation.json')),receipt=JSON.parse(receiptBytes);
+assert.equal(hash(receiptBytes),'b85b20796ca6c029ff37cc955e91b62b547ec493721dad4a6342413ddfa03801');
+for(const entry of receipt.implementationFingerprints){const bytes=await fs.readFile(path.join(product,entry.path));assert.equal(bytes.length,entry.bytes);assert.equal(hash(bytes),entry.sha256,entry.path);}
+const manifestBytes=await fs.readFile(path.join(product,receipt.preservationManifest.path)),manifest=JSON.parse(manifestBytes);
+assert.equal(hash(manifestBytes),'b4f9d3044eb5c60a9b312ba83cb6c17cdec3521be5c88e62fda8464722b58721');
+assert.equal(manifest.entries.length,721);assert.equal(manifest.stageFingerprints.length??manifest.stageFingerprints,29);
+assert.equal(hash(await fs.readFile(path.join(review,'baseline/preservation-manifest.json.snapshot'))),hash(manifestBytes));
+const preserved=[];
+for(const entry of manifest.entries){const filename=path.resolve(product,entry.snapshot);assert.ok(filename.startsWith(path.join(app,'results/routing-source-study')+path.sep));const bytes=await fs.readFile(filename);assert.equal(bytes.length,entry.bytes);assert.equal(hash(bytes),entry.sha256,entry.snapshot);preserved.push({...entry});}
+const originalManifest=JSON.parse(await fs.readFile(path.join(app,'routing-original-manifest.json'))),selected=Object.entries(originalManifest.files).filter(([name])=>!name.endsWith('.tgz'));
+assert.equal(selected.length,201);
+const publicSelected=manifest.entries.filter(entry=>entry.snapshot.includes('/selected-original/'));
+for(const[name,sha256]of selected)assert.ok(publicSelected.some(entry=>entry.source.endsWith(name)&&entry.sha256===sha256),'Original source missing '+name);
+const licenses=publicSelected.filter(entry=>/license/i.test(entry.source));assert.ok(licenses.length>0);
+const detailedBytes=await fs.readFile(path.join(product,receipt.original.publicObservation)),detailed=JSON.parse(detailedBytes);
+assert.deepEqual(detailed.counts,{exactOutputMatches:1812,rejectionOutcomeMatches:10,deliberateSafetyDeviations:3,boundedRepresentationDeviations:48});
+const records=detailed.records.filter(record=>['switch','merge','deliberate-safety-deviation'].includes(record.kind));assert.equal(records.length,1873);
+const recount={exact:0,errors:0,safety:0,array:0};
+for(const record of records){if(record.kind==='deliberate-safety-deviation'){assert.equal(record.original.ok,true);assert.equal(record.candidate.ok,false);assert.equal(record.candidate.error.code,'NATIVE_LIMIT');recount.safety++;}else if(!record.original.ok){assert.equal(record.candidate.ok,false);recount.errors++;}else if(!record.candidate.ok){assert.equal(record.candidate.error.code,'NATIVE_LIMIT');recount.array++;}else{assert.deepEqual(record.candidate.value,record.original.value);recount.exact++;}}
+assert.deepEqual(recount,{exact:1812,errors:10,safety:3,array:48});
+assert.equal(detailed.observations.switchNodeExecutions+detailed.observations.mergeModeExecutions,1873);
+assert.equal(detailed.observations.coreEnqueueHelperExecutions,7);assert.equal(detailed.observations.corePartialDrainExecutions,4);
+assert.equal(detailed.records.filter(record=>record.kind==='core-enqueue-helper').length,1);assert.equal(detailed.records.filter(record=>record.kind==='core-partial-drain-block').length,4);
+const {verifyOriginalIntegrity,executeOriginalSwitch,executeOriginalMerge,observations}=await import(pathToFileURL(path.join(app,'routing-original-harness.mjs')));
+const {executeNode}=await import(pathToFileURL(path.join(app,'native.mjs')));
+const item=json=>({json,pairedItem:{item:0}}),node=(type,parameters)=>({id:type,name:type,type:'n8n-nodes-base.'+type,typeVersion:type==='switch'?3.4:3.2,parameters,position:[0,0]}),inputs=[[item({key:1,left:'A'})],[{json:{key:1,right:'B'},pairedItem:{item:0,input:1}}]],finite=[];
+const switchNode=node('switch',{mode:'expression',numberOutputs:2,output:'={{ $json.port }}'}),switchItems=[item({port:0}),item({port:1})];
+const originalSwitch=await executeOriginalSwitch(switchNode,structuredClone(switchItems)),candidateSwitch=await executeNode(switchNode,switchItems);assert.deepEqual(candidateSwitch,originalSwitch);finite.push({name:'Switch expression',original:originalSwitch,candidate:candidateSwitch});
+const filterNode=node('switch',{mode:'rules',rules:{values:[{conditions:{options:{caseSensitive:true,typeValidation:'strict',version:3},combinator:'and',conditions:[{leftValue:'={{ $json.amount }}',rightValue:3,operator:{type:'number',operation:'gte'}}]}}]},options:{fallbackOutput:'extra'}}),filterItems=[item({amount:2}),item({amount:4})];
+const originalFilter=await executeOriginalSwitch(filterNode,structuredClone(filterItems)),candidateFilter=await executeNode(filterNode,filterItems);assert.deepEqual(candidateFilter,originalFilter);finite.push({name:'Switch rules with actual released filter extraction',original:originalFilter,candidate:candidateFilter});assert.ok(observations.filterExtractions>0);
+for(const parameters of [{mode:'append',numberInputs:2},{mode:'chooseBranch',numberInputs:2,chooseBranchMode:'waitForAll',output:'specifiedInput',useDataOfInput:1},{mode:'combine',numberInputs:2,combineBy:'combineByPosition',options:{}},{mode:'combine',numberInputs:2,combineBy:'combineAll',options:{}},{mode:'combine',numberInputs:2,combineBy:'combineByFields',advanced:false,fieldsToMatchString:'key',joinMode:'keepMatches',outputDataFrom:'both',options:{}}]){const fixture=node('merge',parameters),original=await executeOriginalMerge(fixture,structuredClone(inputs)),candidate=await executeNode(fixture,inputs[0],{inputs});assert.deepEqual(candidate,original);finite.push({name:parameters.combineBy??parameters.mode,original,candidate});}
+await verifyOriginalIntegrity();
+await fs.writeFile(path.join(review,'evidence-observations.json'),JSON.stringify({schema:'rea-automation-routing-independent-evidence-review/v1',receiptSha256:hash(receiptBytes),manifestSha256:hash(manifestBytes),implementationFiles:receipt.implementationFingerprints.length,preservedEntries:preserved.length,originalPublicFiles:selected.length,licenses,recount,serializedObservationLimits:'JSON records can normalize undefined/signed zero; their original in-memory assertions are authenticated source evidence. This audit does not reconstruct those values from JSON.',originalHelperCountsSeparate:{enqueue:7,drain:4},independentFiniteOriginalCases:finite.length,independentOriginalExecutions:{...observations},finite,reviewLimits:'Finite actual released Switch expression and five Merge mode helpers; no full scheduler/class/router/server/UI/SQL or 1873 replay'},null,2)+'\n');
+console.log(JSON.stringify({strictManifest:721,originalPublicFiles:201,licenseFiles:licenses.length,recount,originalHelperCountsSeparate:{enqueue:7,drain:4},independentFiniteOriginalCases:finite.length,independentOriginalExecutions:observations}));

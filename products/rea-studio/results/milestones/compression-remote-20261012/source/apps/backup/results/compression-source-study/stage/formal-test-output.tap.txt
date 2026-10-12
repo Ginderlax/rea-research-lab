@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: source-selected mode/version/blob contracts and independent native decoding
+ok 1 - source-selected mode/version/blob contracts and independent native decoding
+  ---
+  duration_ms: 16.2737
+  type: 'test'
+  ...
+# Subtest: unsupported modes, types, versions and excessive inputs reject
+ok 2 - unsupported modes, types, versions and excessive inputs reject
+  ---
+  duration_ms: 0.2285
+  type: 'test'
+  ...
+# Subtest: original restic check/read/restore accepts candidate v1 max writing
+ok 3 - original restic check/read/restore accepts candidate v1 max writing
+  ---
+  duration_ms: 5156.822
+  type: 'test'
+  ...
+# {"version":1,"mode":"max","blobs":[{"type":"data","length":49,"uncompressedLength":0},{"type":"tree","length":308,"uncompressedLength":0},{"type":"data","length":65568,"uncompressedLength":0},{"type":"data","length":108032,"uncompressedLength":0},{"type":"tree","length":1039,"uncompressedLength":0},{"type":"tree","length":299,"uncompressedLength":0}],"fixtureFiles":[{"name":"repeat.txt","bytes":108000,"sha256":"955c9b22ddae0780804b7e71b9bcdb4feba23aacdca8eb03ecae4c634998529e"},{"name":"random.bin","bytes":65536,"sha256":"bc8dd95e812bee30952c33a800e1e4606b570f5fcaa3ce26806ae7290b2ee067"},{"name":"empty.txt","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"name":"nested/雪.txt","bytes":17,"sha256":"65fbdd37f487a0c5afc1a89376484d5e02a76d275a28dff98f63cd25daf9a518"}]}
+# Subtest: original restic check/read/restore accepts candidate v2 off writing
+ok 4 - original restic check/read/restore accepts candidate v2 off writing
+  ---
+  duration_ms: 4582.8338
+  type: 'test'
+  ...
+# {"version":2,"mode":"off","blobs":[{"type":"data","length":49,"uncompressedLength":0},{"type":"tree","length":222,"uncompressedLength":276},{"type":"data","length":65568,"uncompressedLength":0},{"type":"data","length":108032,"uncompressedLength":0},{"type":"tree","length":389,"uncompressedLength":1007},{"type":"tree","length":214,"uncompressedLength":267}],"fixtureFiles":[{"name":"repeat.txt","bytes":108000,"sha256":"955c9b22ddae0780804b7e71b9bcdb4feba23aacdca8eb03ecae4c634998529e"},{"name":"random.bin","bytes":65536,"sha256":"bc8dd95e812bee30952c33a800e1e4606b570f5fcaa3ce26806ae7290b2ee067"},{"name":"empty.txt","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"name":"nested/雪.txt","bytes":17,"sha256":"65fbdd37f487a0c5afc1a89376484d5e02a76d275a28dff98f63cd25daf9a518"}]}
+# Subtest: original restic check/read/restore accepts candidate v2 fastest writing
+ok 5 - original restic check/read/restore accepts candidate v2 fastest writing
+  ---
+  duration_ms: 4963.45
+  type: 'test'
+  ...
+# {"version":2,"mode":"fastest","blobs":[{"type":"data","length":58,"uncompressedLength":17},{"type":"tree","length":222,"uncompressedLength":276},{"type":"data","length":65578,"uncompressedLength":65536},{"type":"data","length":90,"uncompressedLength":108000},{"type":"tree","length":389,"uncompressedLength":1007},{"type":"tree","length":214,"uncompressedLength":267}],"fixtureFiles":[{"name":"repeat.txt","bytes":108000,"sha256":"955c9b22ddae0780804b7e71b9bcdb4feba23aacdca8eb03ecae4c634998529e"},{"name":"random.bin","bytes":65536,"sha256":"bc8dd95e812bee30952c33a800e1e4606b570f5fcaa3ce26806ae7290b2ee067"},{"name":"empty.txt","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"name":"nested/雪.txt","bytes":17,"sha256":"65fbdd37f487a0c5afc1a89376484d5e02a76d275a28dff98f63cd25daf9a518"}]}
+# Subtest: original restic check/read/restore accepts candidate v2 auto writing
+ok 6 - original restic check/read/restore accepts candidate v2 auto writing
+  ---
+  duration_ms: 4820.6444
+  type: 'test'
+  ...
+# {"version":2,"mode":"auto","blobs":[{"type":"data","length":58,"uncompressedLength":17},{"type":"tree","length":222,"uncompressedLength":276},{"type":"data","length":65578,"uncompressedLength":65536},{"type":"data","length":90,"uncompressedLength":108000},{"type":"tree","length":388,"uncompressedLength":1007},{"type":"tree","length":213,"uncompressedLength":267}],"fixtureFiles":[{"name":"repeat.txt","bytes":108000,"sha256":"955c9b22ddae0780804b7e71b9bcdb4feba23aacdca8eb03ecae4c634998529e"},{"name":"random.bin","bytes":65536,"sha256":"bc8dd95e812bee30952c33a800e1e4606b570f5fcaa3ce26806ae7290b2ee067"},{"name":"empty.txt","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"name":"nested/雪.txt","bytes":17,"sha256":"65fbdd37f487a0c5afc1a89376484d5e02a76d275a28dff98f63cd25daf9a518"}]}
+# Subtest: original restic check/read/restore accepts candidate v2 better writing
+ok 7 - original restic check/read/restore accepts candidate v2 better writing
+  ---
+  duration_ms: 4580.357
+  type: 'test'
+  ...
+# {"version":2,"mode":"better","blobs":[{"type":"data","length":58,"uncompressedLength":17},{"type":"tree","length":222,"uncompressedLength":276},{"type":"data","length":65578,"uncompressedLength":65536},{"type":"data","length":90,"uncompressedLength":108000},{"type":"tree","length":376,"uncompressedLength":1007},{"type":"tree","length":210,"uncompressedLength":267}],"fixtureFiles":[{"name":"repeat.txt","bytes":108000,"sha256":"955c9b22ddae0780804b7e71b9bcdb4feba23aacdca8eb03ecae4c634998529e"},{"name":"random.bin","bytes":65536,"sha256":"bc8dd95e812bee30952c33a800e1e4606b570f5fcaa3ce26806ae7290b2ee067"},{"name":"empty.txt","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"name":"nested/雪.txt","bytes":17,"sha256":"65fbdd37f487a0c5afc1a89376484d5e02a76d275a28dff98f63cd25daf9a518"}]}
+# Subtest: original restic check/read/restore accepts candidate v2 max writing
+ok 8 - original restic check/read/restore accepts candidate v2 max writing
+  ---
+  duration_ms: 4492.5249
+  type: 'test'
+  ...
+# {"version":2,"mode":"max","blobs":[{"type":"data","length":58,"uncompressedLength":17},{"type":"tree","length":217,"uncompressedLength":276},{"type":"data","length":65578,"uncompressedLength":65536},{"type":"data","length":90,"uncompressedLength":108000},{"type":"tree","length":384,"uncompressedLength":1007},{"type":"tree","length":207,"uncompressedLength":267}],"fixtureFiles":[{"name":"repeat.txt","bytes":108000,"sha256":"955c9b22ddae0780804b7e71b9bcdb4feba23aacdca8eb03ecae4c634998529e"},{"name":"random.bin","bytes":65536,"sha256":"bc8dd95e812bee30952c33a800e1e4606b570f5fcaa3ce26806ae7290b2ee067"},{"name":"empty.txt","bytes":0,"sha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"},{"name":"nested/雪.txt","bytes":17,"sha256":"65fbdd37f487a0c5afc1a89376484d5e02a76d275a28dff98f63cd25daf9a518"}]}
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 28670.6543

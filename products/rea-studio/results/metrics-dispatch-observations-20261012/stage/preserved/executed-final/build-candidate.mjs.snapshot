@@ -1,0 +1,40 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const here=path.dirname(fileURLToPath(import.meta.url)),sha=bytes=>createHash('sha256').update(bytes).digest('hex'),baseline=await fs.readFile(path.join(here,'candidate-baseline.mjs'),'utf8');
+assert.equal(sha(baseline),'9269cf8c32be9bf2c075b67019e82e41272d9495f0321fefc17b2c5695a91371');
+const start=baseline.indexOf('export function doStandardCalcs('),stop=baseline.indexOf('\nfunction special(',start);assert.ok(start>=0&&stop>start);const standard=baseline.slice(start,stop),loopStart=standard.indexOf('  for (let index = 0;'),loopEnd=standard.indexOf('  if (result.max ===',loopStart);assert.ok(loopStart>=0&&loopEnd>loopStart);
+const loop=standard.slice(loopStart,loopEnd),helper=`function updateNumericIgnoringNulls(result, values) {
+  for (let index = 0; index < values.length; index++) {
+    const value = values[index];
+    if (!index) result.first = value;
+    result.last = value;
+    if (value == null) continue;
+    result.count++;
+    if (Number.isNaN(value)) continue;
+    const first = result.firstNotNull === null;
+    if (first) result.firstNotNull = value;
+    result.sum += value || 0;
+    result.allIsNull = false; result.nonNullCount++;
+    if (!first) {
+      const difference = value - result.lastNotNull;
+      if (difference < result.step) result.step = difference;
+      if (result.lastNotNull > value) result.previousDeltaUp = false;
+      else { if (result.previousDeltaUp) result.delta += difference; result.previousDeltaUp = true; }
+    }
+    if (value > result.max) result.max = value;
+    if (value < result.min) result.min = value;
+    if (value > 0 && value < result.logmin) result.logmin = value;
+    if (value !== 0) result.allIsZero = false;
+    result.lastNotNull = value;
+  }
+}
+
+`;
+const changed=standard.slice(0,loopStart)+'  if (numeric && ignoreNulls) updateNumericIgnoringNulls(result, values);\n  else {\n'+loop+'  }\n'+standard.slice(loopEnd),candidate=baseline.slice(0,start)+helper+changed+baseline.slice(stop),name='candidate-invariant-dispatch.mjs';
+assert.equal(candidate.slice(candidate.indexOf('\nfunction special(')),baseline.slice(stop));assert.ok(changed.includes(loop));assert.equal(changed.slice(changed.indexOf('  if (result.max ===')),standard.slice(loopEnd));
+try{await fs.access(path.join(here,name));throw Error('Existing candidate must be retained under a distinct trial name.');}catch(error){if(error.code!=='ENOENT')throw error;}
+await fs.writeFile(path.join(here,name),candidate);
+const receipt={schemaVersion:1,createdAt:new Date().toISOString(),candidate:name,candidateSHA256:sha(candidate),baselineSHA256:sha(baseline),scope:'Only standard-helper invariant number/time plus ignore-null dispatch. Existing result-object arithmetic, generic loop, finalization and all code after standard helper retained.',preservedGenericLoopSHA256:sha(loop),preservedFinalizationSHA256:sha(standard.slice(loopEnd)),allSpecialRegistryDispatchTransportSourceUnchanged:true,perSamplePrimitiveGuard:false,scalarAccumulatorRewrite:false,derivedCount:false,benchmarksRun:false,status:'unvalidated',selectedForIntegration:null};await fs.writeFile(path.join(here,'candidate-contract.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));

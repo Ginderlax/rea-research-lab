@@ -1,0 +1,23 @@
+TAP version 13
+# Subtest: diagnostic: expired awaited checkpoint still issues HTTP and reports completed
+ok 1 - diagnostic: expired awaited checkpoint still issues HTTP and reports completed
+  ---
+  duration_ms: 117.4926
+  type: 'test'
+  ...
+# Subtest: diagnostic: persisted premature downstream invocation passes validation and duplicates joined HTTP
+ok 2 - diagnostic: persisted premature downstream invocation passes validation and duplicates joined HTTP
+  ---
+  duration_ms: 4.5526
+  type: 'test'
+  ...
+# INDEPENDENT_ROUTING_DIAGNOSTICS [{"name":"post-checkpoint-expired-deadline","effectCalls":1,"status":"completed","activeMs":120052.665,"trace":[{"node":"Start","type":"n8n-nodes-base.manualTrigger","inputItems":0,"status":"completed","outputItems":[1],"durationMs":0.256},{"node":"Effect","type":"n8n-nodes-base.httpRequest","inputItems":1,"status":"completed","outputItems":[1],"durationMs":101.897}]},{"name":"premature-persisted-downstream-invocation","effectCalls":2,"status":"completed","trace":[{"node":"Start","type":"n8n-nodes-base.manualTrigger","inputItems":0,"status":"completed","outputItems":[1],"durationMs":0.062},{"node":"Wait","type":"n8n-nodes-base.wait","inputItems":1,"status":"completed","outputItems":[1],"durationMs":0.054},{"node":"Left","type":"n8n-nodes-base.set","inputItems":1,"status":"completed","outputItems":[1],"durationMs":0.364},{"node":"Merge","type":"n8n-nodes-base.merge","inputItems":2,"inputPorts":[1,1],"status":"completed","outputItems":[1],"durationMs":0.499},{"node":"Effect","type":"n8n-nodes-base.httpRequest","inputItems":1,"status":"completed","outputItems":[1],"durationMs":0.377},{"node":"Effect","type":"n8n-nodes-base.httpRequest","inputItems":1,"status":"completed","outputItems":[1],"durationMs":0.201}]}]
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 190.039

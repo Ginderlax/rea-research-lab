@@ -90,8 +90,8 @@ export function projectDashboard(document) {
       if (panel.alert) retained.push('Legacy alert definition is retained without evaluation.');
       if (panel.links?.length) retained.push('Panel links are retained without navigation.');
       if (panel.fieldConfig?.overrides?.length) retained.push('Field overrides are retained without evaluation.');
-      if (panel.fieldConfig?.defaults && Object.keys(panel.fieldConfig.defaults).length) retained.push('Field units, thresholds, mappings and style settings are retained; this preview uses plain values.');
-      if (panel.options && panel.type !== 'text') retained.push('Visualization options are retained; this preview uses the local renderer defaults.');
+      if (panel.fieldConfig?.defaults && Object.keys(panel.fieldConfig.defaults).length) retained.push('Field units, thresholds, mappings and style settings are retained; this preview uses plain values. Stat calculations use the saved null mode.');
+      if (panel.options && panel.type !== 'text') retained.push(panel.type === 'stat' ? 'Stat calculation IDs are evaluated with the pinned native contract; other visualization options are retained with local renderer defaults.' : 'Visualization options are retained; this preview uses the local renderer defaults.');
       if (panel.targets !== undefined && !Array.isArray(panel.targets)) retained.push('Non-array target metadata is retained without execution.');
       if (panel.transformations !== undefined && !Array.isArray(panel.transformations)) retained.push('Non-array transformation metadata is retained without execution.');
       if (panel.type === 'row' || path.includes('/')) retained.push('Row nesting and collapsed state are retained; this preview displays saved panels in the absolute grid.');

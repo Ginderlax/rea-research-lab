@@ -24,7 +24,8 @@ function frameView(preview) {
       view.append(el('h4', frame.name ?? frame.refId ?? 'Saved data frame'));
       if (preview.kind === 'stat') {
         const stats = el('div', undefined, 'row');
-        for (const field of frame.fields.filter(field => field.type === 'number')) { const value = field.values.findLast(value => typeof value === 'number' && Number.isFinite(value)); const cell = el('div'); cell.append(el('strong', `${field.name}: ${format(value)}`), el('p', 'Last numeric value', 'muted')); stats.append(cell); }
+        const computed = preview.calculations?.[preview.frames.indexOf(frame)];
+        for (const field of computed?.fields ?? []) for (const [calculation, value] of Object.entries(field.values)) { const cell = el('div'); cell.append(el('strong', `${field.name} · ${calculation}`), el('pre', JSON.stringify(value))); stats.append(cell); }
         view.append(stats);
       }
       const table = el('table'), head = el('thead'), headings = el('tr'); for (const field of frame.fields) headings.append(el('th', field.name)); head.append(headings); table.append(head); const body = el('tbody');
@@ -68,8 +69,9 @@ export async function render(root, api) {
   const buttons = el('div', undefined, 'row'), queryButton = el('button', 'Run query', 'button'), title = el('input'), panelButton = el('button', 'Save panel', 'button'), exportButton = el('button', 'Export data', 'button'); title.placeholder = 'Panel or alert title'; title.setAttribute('aria-label', 'Panel or alert title'); buttons.append(queryButton, title, panelButton, exportButton);
   const alertRow = el('div', undefined, 'row'), operator = select('Alert comparison', [['gt', '>'], ['gte', '≥'], ['lt', '<'], ['lte', '≤'], ['eq', '='], ['ne', '≠']]), threshold = el('input'); threshold.type = 'number'; threshold.step = 'any'; threshold.placeholder = 'Threshold'; threshold.setAttribute('aria-label', 'Alert threshold'); const alertSave = el('button', 'Save alert', 'button'), evaluate = el('button', 'Evaluate alerts now', 'button'); alertRow.append(operator, threshold, alertSave, evaluate);
   queryCard.append(el('h3', 'Query and save'), fields, el('p', 'Filters: [{"column":"service","operator":"eq","value":"web"}]', 'muted'), filters, range, buttons, alertRow);
-  const result = el('div'), dashboard = el('div'), alerts = el('div'), exchange = el('div', undefined, 'card'); root.append(importCard, queryCard, result, dashboard, exchange, alerts, status);
+  const result = el('div'), dashboard = el('div'), alerts = el('div'), exchange = el('div', undefined, 'card'), nativeCard = el('div', undefined, 'card'); root.append(importCard, queryCard, result, nativeCard, dashboard, exchange, alerts, status);
   let data = { datasets: [], panels: [], alerts: [] };
+  let nativeCatalog = { calculations: [] };
   async function run(operation) { try { await operation(); } catch (error) { status.textContent = error.message; } }
   function populate() {
     const selected = data.datasets.find(item => item.id === datasets.value); metric.replaceChildren(); time.replaceChildren(); group.replaceChildren();
@@ -78,6 +80,25 @@ export async function render(root, api) {
     const numeric = selected?.columns.find(column => column.numeric); if (numeric) metric.value = numeric.name;
   }
   function options() { return { datasetId: datasets.value, metric: metric.value, aggregate: aggregate.value, timeColumn: time.value, groupColumn: group.value, intervalSeconds: Number(interval.value), filters: JSON.parse(filters.value), from: from.value, to: to.value }; }
+  const nativeValues = el('textarea'); nativeValues.rows = 4; nativeValues.value = '[10, 20, null, 1, 3, 8]'; nativeValues.setAttribute('aria-label', 'Native calculation values JSON');
+  const nativeType = select('Native calculation field type', ['number', 'time', 'string', 'boolean', 'trace', 'geo', 'enum', 'other', 'frame', 'nestedFrames'].map(value => [value, value]));
+  const nativeMode = select('Native calculation null mode', [['connected', 'Ignore nulls (default)'], ['null', 'Keep nulls'], ['null as zero', 'Treat nulls as zero']]);
+  const nativeSelect = select('Native calculation selectors'); nativeSelect.multiple = true; nativeSelect.size = 8;
+  const nativeRun = el('button', 'Calculate values'), nativeDataset = el('button', 'Calculate CSV column'), nativeAll = el('button', 'Select all calculations'), nativeReset = el('button', 'Clear calculation cache'), nativeReuse = input('', 'Reuse previous calculation cache', 'checkbox'), nativeOutput = el('div');
+  let nativeState;
+  nativeCard.append(el('h3', 'Grafana native calculations'), el('p', 'Use the released @grafana/data 13.2.3 calculation contract. CSV calculations use the selected column and filters above, before grouping. Existing query statistics keep their own rules.', 'muted'), nativeValues, nativeType, nativeMode, nativeSelect, el('p', 'Select several calculations with Ctrl/Command. Special values use {"$number":"NaN"}, "Infinity", "-Infinity", "-0", or {"$undefined":true}. Results preserve these tags.', 'muted'), nativeRun, nativeDataset, nativeAll, labeled('Reuse previous calculation cache (may return stale values until cleared)', nativeReuse), nativeReset, nativeOutput);
+  function nativeOptions() { return { reducers: [...nativeSelect.selectedOptions].map(option => option.value), config: { nullValueMode: nativeMode.value }, type: nativeType.value }; }
+  function showNative(response) {
+    nativeState = response.state;
+    nativeOutput.replaceChildren(el('p', `${response.samples ?? 'Missing'} samples · ${response.fieldType} · ${response.nullValueMode}`));
+    const table = el('table'), heading = el('tr'); heading.append(el('th', 'Calculation'), el('th', 'Exact result')); table.append(heading);
+    for (const reducer of response.reducers) { const id = reducer === 'avg' ? 'mean' : reducer === 'total' ? 'sum' : reducer === 'current' ? 'lastNotNull' : reducer; const row = el('tr'); row.append(el('td', reducer), el('td', Object.hasOwn(response.result, id) ? JSON.stringify(response.result[id]) : 'Not returned')); table.append(row); }
+    const details = el('details'); details.append(el('summary', 'Returned calculation object and cache'), el('pre', JSON.stringify(response, null, 2))); nativeOutput.append(table, details); status.textContent = 'Native calculations complete.';
+  }
+  nativeRun.onclick = () => run(async () => { const selected = nativeOptions(); showNative(await api('native-reduce', { reducers: selected.reducers, field: { type: selected.type, config: selected.config, values: JSON.parse(nativeValues.value), ...(nativeReuse.checked && nativeState && !nativeState.$undefined ? { state: nativeState } : {}) } })); });
+  nativeDataset.onclick = () => run(async () => { nativeReuse.checked = false; showNative(await api('native-reduce-dataset', { datasetId: datasets.value, metric: metric.value, filters: JSON.parse(filters.value), ...nativeOptions() })); });
+  nativeAll.onclick = () => { for (const option of nativeSelect.options) option.selected = true; };
+  nativeReset.onclick = () => { nativeState = undefined; nativeReuse.checked = false; status.textContent = 'Calculation cache cleared.'; };
   async function refresh() {
     const previous = datasets.value; data = await api('list', {}); datasets.replaceChildren(); for (const item of data.datasets) datasets.append(Object.assign(el('option', `${item.name} (${item.rowCount} rows)`), { value: item.id })); if (data.datasets.some(item => item.id === previous)) datasets.value = previous; populate();
     await showDashboard(); status.textContent = `${data.datasets.length} datasets stored locally.`;
@@ -98,7 +119,7 @@ export async function render(root, api) {
     if (response.dashboards.some(item => item.id === selectedId)) chooseDashboard.value = selectedId;
     await openDashboard();
   }
-  async function mutate(action, fields) { await api(action, { id: opened.id, revision: opened.revision, ...fields }); await refreshExchange(opened.id); }
+  async function mutate(action, fields) { await api(action, { id: opened.id, revision: opened.revision, ...fields }); await refreshExchange(opened.id); status.textContent = `Dashboard changes saved. Revision ${opened.revision}.`; }
   async function openDashboard() {
     documentView.replaceChildren(); opened = undefined;
     if (!chooseDashboard.value) { exportDashboard.disabled = true; documentView.append(el('p', 'Import or create a dashboard to begin.', 'muted')); return; }
@@ -135,7 +156,8 @@ export async function render(root, api) {
       const save = el('button', 'Save panel layout'), remove = el('button', 'Remove panel'); save.disabled = remove.disabled = !opened.editable;
       details.append(labeled('Title', panelTitle), labeled('Description', panelDescription), dimensions);
       let textContent; if (panel.preview.kind === 'text') { textContent = el('textarea'); textContent.value = panel.preview.sourceContent; textContent.setAttribute('aria-label', `Panel ${panel.path} text content`); details.append(textContent); }
-      details.append(save, remove); save.onclick = () => run(() => { const patch = {}; if (panelTitle.value !== panel.rawTitle) patch.title = panelTitle.value; if (panelDescription.value !== panel.description) patch.description = panelDescription.value; const gridPos = Object.fromEntries(Object.entries(controls).map(([key, node]) => [key, Number(node.value)])); if (Object.keys(gridPos).some(key => gridPos[key] !== position[key])) patch.gridPos = gridPos; if (textContent && textContent.value !== panel.preview.sourceContent) patch.textContent = textContent.value; return mutate('grafana-panel-update', { path: panel.path, patch }); }); remove.onclick = () => run(() => mutate('grafana-panel-remove', { path: panel.path }));
+      let calculations; if (panel.type === 'stat') { calculations = select(`Panel ${panel.path} calculations`, nativeCatalog.calculations.map(item => [item.id, `${item.name} (${item.id})`])); calculations.multiple = true; calculations.size = 5; for (const saved of panel.preview.reducers ?? []) if (![...calculations.options].some(option => option.value === saved)) calculations.append(Object.assign(el('option', `${saved} (retained)`), { value: saved })); for (const option of calculations.options) option.selected = (panel.preview.reducers ?? []).includes(option.value); calculations.onchange = () => { calculations.dataset.changed = 'true'; }; details.append(labeled('Stat calculations', calculations)); }
+      details.append(save, remove); save.onclick = () => run(() => { const patch = {}; if (panelTitle.value !== panel.rawTitle) patch.title = panelTitle.value; if (panelDescription.value !== panel.description) patch.description = panelDescription.value; const gridPos = Object.fromEntries(Object.entries(controls).map(([key, node]) => [key, Number(node.value)])); if (Object.keys(gridPos).some(key => gridPos[key] !== position[key])) patch.gridPos = gridPos; if (textContent && textContent.value !== panel.preview.sourceContent) patch.textContent = textContent.value; if (calculations?.dataset.changed === 'true') patch.calculations = [...calculations.selectedOptions].map(option => option.value); return mutate('grafana-panel-update', { path: panel.path, patch }); }); remove.onclick = () => run(() => mutate('grafana-panel-remove', { path: panel.path }));
       if (panel.targets.length && ['table', 'stat', 'timeseries'].includes(panel.type)) { const target = select(`Panel ${panel.path} target`, panel.targets.map((item, index) => [item.refId ?? String(index), item.refId ?? String(index)])), bind = el('button', 'Bind current CSV query'); bind.disabled = !opened.editable; details.append(el('p', 'Use the dataset and query controls above to bind this target locally. Original query JSON remains unchanged.', 'muted'), target, bind); bind.onclick = () => run(() => mutate('grafana-bind', { path: panel.path, refId: target.value, query: options() })); }
       const retainedJson = el('details'); retainedJson.append(el('summary', 'Retained queries, sources and transformations'), el('pre', JSON.stringify({ datasource: panel.datasource, targets: panel.retainedTargets, transformations: panel.transformations }, null, 2))); details.append(retainedJson); card.append(details); grid.append(card);
     }
@@ -155,5 +177,5 @@ export async function render(root, api) {
   exportButton.onclick = () => run(async () => { const exported = await api('export', { datasetId: datasets.value }); download(exported.filename, exported.content); status.textContent = 'Dataset export downloaded.'; });
   alertSave.onclick = () => run(async () => { if (threshold.value === '') throw new Error('Enter a threshold.'); await api('alert-save', { ...options(), title: title.value, operator: operator.value, threshold: Number(threshold.value) }); status.textContent = 'Alert saved. Evaluation runs when requested.'; });
   evaluate.onclick = () => run(async () => { const response = await api('alerts-evaluate', {}); alerts.replaceChildren(el('h3', 'On-demand alert evaluation')); for (const item of response.alerts) { const card = el('div', undefined, 'card'), remove = el('button', 'Remove alert', 'button'); card.append(el('strong', `${item.title}: ${item.state}`), el('p', item.error ?? `Value ${format(item.value)} ${item.operator} threshold ${item.threshold}`)); remove.onclick = () => run(async () => { await api('alert-delete', { id: item.id }); card.remove(); }); card.append(remove); alerts.append(card); } status.textContent = `Alerts evaluated at ${response.evaluatedAt}. No notifications are sent.`; });
-  await run(async () => { await refresh(); await refreshExchange(); });
+  await run(async () => { nativeCatalog = await api('native-calculations', {}); for (const item of nativeCatalog.calculations) nativeSelect.append(Object.assign(el('option', `${item.name} (${item.id})`), { value: item.id, selected: ['mean', 'delta', 'lastNotNull'].includes(item.id) })); await refresh(); await refreshExchange(); });
 }

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { clone, dashboardModel, parseDashboard, projectDashboard, panelEntries, panelAt, validateGrid, selectVariable, variableValues, interpolate, normalizeFrames, transformFrames, hasPrecisionSensitiveNumbers } from './core.mjs';
+import { calculationDefinitions, NullValueMode, reduceField, isReducerID, encodeCalculation, decodeCalculation } from './native-calculations.mjs';
 
 const datasetKey = id => `metrics-dataset-${id}`;
 const panelKey = id => `metrics-panel-${id}`;
@@ -104,6 +105,35 @@ function metadata(dataset) { const { rows, ...meta } = dataset; return { ...meta
 async function getDataset(store, value) { const dataset = await store.get(datasetKey(id(value)), null); if (!dataset || dataset.deleted) throw new Error('Dataset does not exist.'); return dataset; }
 async function list(store, prefix) { const items = await Promise.all((await store.list(prefix)).map(key => store.get(key, null))); return items.filter(item => item && !item.deleted); }
 
+function validateReducers(reducers, strict = false) {
+  if (!Array.isArray(reducers) || reducers.length > 256 || reducers.some(value => typeof value !== 'string' || value.length > 128 || (strict && !isReducerID(value) && !['current', 'avg', 'total'].includes(value)))) throw new Error('Choose at most 256 calculation IDs.');
+  return reducers;
+}
+function calculationField(input) {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Provide a calculation field.');
+  if (Buffer.byteLength(JSON.stringify(input)) > 1024 * 1024) throw new Error('Calculation input exceeds 1 MiB.');
+  if (!['number', 'time', 'string', 'boolean', 'trace', 'geo', 'enum', 'other', 'frame', 'nestedFrames'].includes(input.type)) throw new Error('Choose a released Grafana field type.');
+  const values = decodeCalculation(input.values);
+  if (values !== undefined && (!Array.isArray(values) || values.length > 25000 || values.some(value => Array.isArray(value) || (typeof value === 'string' && value.length > 4096)))) throw new Error('Use at most 25,000 primitive samples; text samples allow 4,096 characters.');
+  const config = input.config === undefined ? {} : input.config;
+  if (!config || typeof config !== 'object' || Array.isArray(config) || Object.keys(config).some(key => key !== 'nullValueMode') || (config.nullValueMode !== undefined && config.nullValueMode !== null && (typeof config.nullValueMode !== 'string' || config.nullValueMode.length > 128))) throw new Error('Use a text null mode, null, or the default null mode.');
+  const field = { type: input.type, config, values };
+  if (input.state !== undefined) {
+    if (!input.state || typeof input.state !== 'object' || Array.isArray(input.state) || Object.keys(input.state).some(key => key !== 'calcs')) throw new Error('Calculation state accepts a calcs cache only.');
+    field.state = {};
+    if (input.state.calcs !== undefined) {
+      const calcs = input.state.calcs;
+      if (!calcs || typeof calcs !== 'object' || Array.isArray(calcs) || Object.keys(calcs).length > 256 || Object.keys(calcs).some(key => ['__proto__', 'constructor', 'prototype', 'hasOwnProperty'].includes(key))) throw new Error('Use a plain calculation cache with at most 256 safe keys.');
+      field.state.calcs = Object.fromEntries(Object.entries(calcs).map(([key, value]) => [key, decodeCalculation(value)]));
+    }
+  }
+  return field;
+}
+function nativeReduction(field, reducers) {
+  const result = reduceField({ field, reducers });
+  return { contract: '@grafana/data@13.2.3/reduceField', result: encodeCalculation(result), state: encodeCalculation(field.state), samples: field.values?.length ?? null, fieldType: field.type, nullValueMode: field.config.nullValueMode === undefined ? NullValueMode.Ignore : field.config.nullValueMode, reducers, encoding: 'special-values-v1' };
+}
+
 async function getGrafana(store, value) { const record = await store.get(grafanaKey(id(value)), null); if (!record || record.deleted) throw new Error('Dashboard does not exist.'); return record; }
 function grafanaMetadata(record) { const projection = projectDashboard(record.document); return { id: record.id, title: projection.title, format: projection.format, revision: record.revision, modified: record.modified, importedAt: record.importedAt, panelCount: projection.panels.length }; }
 function editableGrafana(record, revision) { if (revision !== record.revision) throw new Error('Dashboard changed since it was opened. Reload before editing.'); if (record.precisionSensitive) throw new Error('Dashboard numbers exceed lossless local numeric precision; original JSON is retained without editing.'); const { model } = dashboardModel(record.document); if (!model) throw new Error('V2 dashboard resources are retained without local editing.'); if (model.editable === false) throw new Error('This dashboard has editable=false.'); return model; }
@@ -151,7 +181,20 @@ export async function renderGrafanaPanel(store, record, entry) {
     if (!transformed.length) return { kind: 'retained', warnings: [...warnings, 'No saved inline frames or local query bindings are available.'] };
     if (model.time?.from || model.time?.to) warnings.push('Dashboard time settings are retained. Saved inline frames use their saved range; CSV bindings use their explicit query range.');
     if (panel.timeFrom || panel.timeShift || panel.relativeTime) warnings.push('Panel time overrides are retained without evaluation.');
-    return { kind: panel.type, frames: transformed, warnings };
+    let calculations;
+    if (panel.type === 'stat') {
+      const reducers = validateReducers(panel.options?.reduceOptions?.calcs ?? ['lastNotNull']);
+      const work = transformed.reduce((total, frame) => total + frame.fields.filter(field => field.type === 'number').reduce((count, field) => count + field.values.length, 0), 0) * Math.max(1, reducers.length);
+      if (work > 4_000_000) throw new Error('Stat calculation preview exceeds 4,000,000 sample/calculation pairs. Reduce fields or calculations; the original dashboard is retained.');
+      if (panel.options?.reduceOptions?.values) warnings.push('Stat values mode is retained; local preview shows calculations.');
+      for (const reducer of reducers) if (!isReducerID(reducer) && !['current', 'avg', 'total'].includes(reducer)) warnings.push(`Calculation ${reducer} is retained but is not a released built-in reducer.`);
+      calculations = transformed.map(frame => ({ name: frame.name ?? frame.refId ?? 'Saved frame', fields: frame.fields.filter(field => field.type === 'number').map(field => {
+        if (field.values.some(value => value && typeof value === 'object')) throw new Error('Stat previews require primitive samples; object-valued fields are retained.');
+        const result = reduceField({ field: { ...field, state: undefined, config: { ...(panel.fieldConfig?.defaults ?? {}), ...(field.config ?? {}) } }, reducers });
+        return { name: field.name, values: encodeCalculation(Object.fromEntries(reducers.map(id => [id, result[id === 'current' ? 'lastNotNull' : id === 'avg' ? 'mean' : id === 'total' ? 'sum' : id]]))) };
+      }) }));
+    }
+    return { kind: panel.type, frames: transformed, warnings, calculations, reducers: panel.type === 'stat' ? panel.options?.reduceOptions?.calcs ?? ['lastNotNull'] : undefined };
   } catch (error) { return { kind: 'retained', warnings: [...warnings, error.message] }; }
 }
 
@@ -181,10 +224,11 @@ async function grafanaAction({ action, input, store }) {
     }
   } else if (action === 'grafana-panel-update') {
     const panel = panelAt(model, input.path), patch = input.patch;
-    if (!patch || typeof patch !== 'object' || Array.isArray(patch) || Object.keys(patch).some(key => !['title', 'description', 'gridPos', 'textContent'].includes(key))) throw new Error('Unsupported panel edit.');
+    if (!patch || typeof patch !== 'object' || Array.isArray(patch) || Object.keys(patch).some(key => !['title', 'description', 'gridPos', 'textContent', 'calculations'].includes(key))) throw new Error('Unsupported panel edit.');
     for (const [key, value] of Object.entries(patch)) {
       if (key === 'gridPos') panel.gridPos = { ...(panel.gridPos ?? {}), ...validateGrid(value) };
       else if (key === 'textContent') { if (panel.type !== 'text') throw new Error('Text content requires a text panel.'); shortText(value, 'Panel content', 100000); if (panel.options) panel.options.content = value; else panel.content = value; }
+      else if (key === 'calculations') { if (panel.type !== 'stat') throw new Error('Calculation selection requires a stat panel.'); validateReducers(value, true); if (!value.length || value.length > 124) throw new Error('Choose 1–124 stat calculations.'); panel.options = { ...(panel.options ?? {}), reduceOptions: { ...(panel.options?.reduceOptions ?? {}), calcs: clone(value) } }; }
       else panel[key] = shortText(value, key);
     }
   } else if (action === 'grafana-variable-select') selectVariable(model, input.index, input.value);
@@ -221,6 +265,15 @@ async function grafanaAction({ action, input, store }) {
 }
 
 export async function handle({ action, input = {}, store }) {
+  if (action === 'native-calculations') return { contract: '@grafana/data@13.2.3/reduceField', calculations: calculationDefinitions, nullValueModes: NullValueMode, maxSamples: 25000, maxInputBytes: 1024 * 1024, types: ['number', 'time', 'string', 'boolean', 'trace', 'geo', 'enum', 'other', 'frame', 'nestedFrames'], encoding: 'special-values-v1' };
+  if (action === 'native-reduce') return nativeReduction(calculationField(input.field), validateReducers(input.reducers));
+  if (action === 'native-reduce-dataset') {
+    const dataset = await getDataset(store, input.datasetId);
+    if (!dataset.columns.some(column => column.name === input.metric)) throw new Error('Choose an existing metric column.');
+    const filters = input.filters ?? []; if (!Array.isArray(filters) || filters.length > 10 || filters.some(filter => !filter || !dataset.columns.some(column => column.name === filter.column) || !Object.hasOwn(comparators, filter.operator))) throw new Error('Use at most 10 valid filters.');
+    const values = dataset.rows.filter(row => filters.every(filter => comparators[filter.operator](row[filter.column], filter.value))).map(row => row[input.metric]);
+    return nativeReduction(calculationField({ type: input.type ?? 'number', values, config: input.config }), validateReducers(input.reducers));
+  }
   if (action.startsWith('grafana-')) return grafanaAction({ action, input, store });
   if (action === 'ingest') {
     const parsed = parseCsv(input.csv), dataset = { id: randomUUID(), name: boundedText(input.name, 'Dataset name'), createdAt: new Date().toISOString(), ...parsed };

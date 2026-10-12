@@ -1,6 +1,6 @@
 {
   "schema": "rea-development-validation/v1",
-  "checked_at_utc": "2026-10-12T15:58:10.225Z",
+  "checked_at_utc": "2026-10-12T17:14:09.617Z",
   "scope": "Implemented development application contracts; does not establish every documented original-product feature or comparative superiority.",
   "runtime": "v24.16.0",
   "platform": "win32",
@@ -11,19 +11,25 @@
     "apps/archive/app.test.mjs",
     "apps/archive/formats.test.mjs",
     "apps/archive/zip.test.mjs",
+    "apps/archive/zstd.test.mjs",
     "apps/automation/app.test.mjs",
     "apps/automation/execution.test.mjs",
     "apps/backup/app.integration.test.mjs",
     "apps/backup/app.test.mjs",
+    "apps/backup/native.test.mjs",
     "apps/editor/app.integration.test.mjs",
     "apps/editor/app.test.mjs",
     "apps/editor/git.test.mjs",
     "apps/editor/sequence-diff.test.mjs",
     "apps/flow/app.test.mjs",
+    "apps/flow/native-original.test.mjs",
+    "apps/flow/native.test.mjs",
     "apps/metrics/app.integration.test.mjs",
     "apps/metrics/app.test.mjs",
     "apps/metrics/grafana.integration.test.mjs",
     "apps/metrics/grafana.test.mjs",
+    "apps/metrics/native-calculations.integration.test.mjs",
+    "apps/metrics/native-calculations.test.mjs",
     "apps/notes/app.integration.test.mjs",
     "apps/notes/app.test.mjs",
     "apps/notes/jex.test.mjs",
@@ -39,13 +45,13 @@
     "tests/host.test.mjs"
   ],
   "summary": {
-    "tests": 176,
-    "pass": 176,
+    "tests": 252,
+    "pass": 252,
     "fail": 0,
     "cancelled": 0,
     "skipped": 0,
     "todo": 0,
-    "duration_ms": 50708.0003
+    "duration_ms": 148879.0265
   },
   "source_files": [
     {
@@ -57,12 +63,28 @@
       "sha256": "5c30d065062125f67927681f95d4d4479d40372e6916915a495acd8176487dbc"
     },
     {
+      "path": "apps/archive/bootstrap-original.mjs",
+      "sha256": "da65b62b349b5f4f3f69422244d21ddf1686998bc0f6aa54df8365ca72f3c22e"
+    },
+    {
       "path": "apps/archive/client.mjs",
-      "sha256": "889fbff75760334c19785767c83efffc0b3a8c337b57dfaefafdc08e8b302227"
+      "sha256": "facc172c925229a191b974c1b34476fe67eb953ae37240ca478d6da5bdc335e9"
     },
     {
       "path": "apps/archive/compatibility-evidence.json",
       "sha256": "42da73a58a9ac571cba78e05f3dd47272d2a373c48e55a4c00748babdc1beaf8"
+    },
+    {
+      "path": "apps/archive/fixtures/generate-zstd-fixtures.mjs",
+      "sha256": "de9ea3d00d5695b6509132888843c81f3e77249a234de8d2b7c0e991d5abc4ea"
+    },
+    {
+      "path": "apps/archive/fixtures/references/node-24.16.0-zlib.html",
+      "sha256": "3c7de2a1cbd599b7aac5cb63b3521bb964ecbf166589d45e04a0e8e09220a44f"
+    },
+    {
+      "path": "apps/archive/fixtures/zstd/provenance.json",
+      "sha256": "987ee02241ceebb7fdce414f39eb3531b3cb96c51b2ca499f0eed015e46b2342"
     },
     {
       "path": "apps/archive/formats-validation.json",
@@ -82,7 +104,7 @@
     },
     {
       "path": "apps/archive/server.mjs",
-      "sha256": "73f5f2cf1a232a0e954067bc28c6cde954dc64ec0b9aa390c1c670aaa5bc55b5"
+      "sha256": "80dc67e6ce27045aac6193aeb0fc862bdd92fd8a902b4d5ff6c37c5de4bc8c2a"
     },
     {
       "path": "apps/archive/tar.mjs",
@@ -90,11 +112,23 @@
     },
     {
       "path": "apps/archive/zip.mjs",
-      "sha256": "16f7fca85cbe81698b1621968bc5281f8e80723b46e27a0ef89028dc14f65b6e"
+      "sha256": "a59b2cf92a5d83638beb238a3ffcb39796ff1a59aab0d241d1161f448ddd232d"
     },
     {
       "path": "apps/archive/zip.test.mjs",
       "sha256": "f7732808c8e734fdfd400a3af56108c0c3e1c0a6abbed3141dda3b86d56cdc66"
+    },
+    {
+      "path": "apps/archive/zstd-validation.json",
+      "sha256": "9500028a9423e8295cefd178b049ee0033e4518e3555363292618b54384aa6e1"
+    },
+    {
+      "path": "apps/archive/zstd.mjs",
+      "sha256": "3413aa08a4c1b21df2a4ff6b68ee3bb0c1d456031ed4d85d921883469b102ec8"
+    },
+    {
+      "path": "apps/archive/zstd.test.mjs",
+      "sha256": "b50927498b32b96dd40096618a0a412b7a9a54a9548a40cd76fe23c0fba6dbaa"
     },
     {
       "path": "apps/automation/app.test.mjs",
@@ -130,15 +164,35 @@
     },
     {
       "path": "apps/backup/app.test.mjs",
-      "sha256": "19e27ea9ca17272a6d21315b2ce3120d08de75358cbb2e33117d5d1002eb0e59"
+      "sha256": "4da30b71d1f0610dcb47e8fe5c8c5514d6db8fb576d92f0697ddf5246b4aa4db"
     },
     {
       "path": "apps/backup/client.mjs",
-      "sha256": "05ad9b7ea25ddf905855f4c8e59c5f79c4564f7d2128c0be74738bb17b1dfed0"
+      "sha256": "04c56655e166dd47f79530eac9e5d324360e6234be4184c8a15e7ff4878a3083"
+    },
+    {
+      "path": "apps/backup/native-source-references.json",
+      "sha256": "310dd650b87d08cbe324a969d8f909383fec5a6ba60d799ff6f10050e2e2390a"
+    },
+    {
+      "path": "apps/backup/native-validation.json",
+      "sha256": "eba5fd9214ad07011b708b2833a98f8d5e913c25333a990ab331161769ba49a5"
+    },
+    {
+      "path": "apps/backup/native.test.mjs",
+      "sha256": "d665da4f65ff7c61d788935467234991a379fb32a1a1a6796c416de747de7b63"
+    },
+    {
+      "path": "apps/backup/restic-crypto.mjs",
+      "sha256": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c"
+    },
+    {
+      "path": "apps/backup/restic.mjs",
+      "sha256": "efa23b18a99f012bf15bcb59ee8a06cecb41c98838d71bb9e8dc31e9d872c3d6"
     },
     {
       "path": "apps/backup/server.mjs",
-      "sha256": "ffc59d39c9a3bba364a4ba1347b7c55c9b6f2499a6c30386e5076387e819a9eb"
+      "sha256": "9d31285d5302a04c6bd67c1bbda5992e7b49f4db79c2576b35f09d3b0db44fa9"
     },
     {
       "path": "apps/editor/app.integration.test.mjs",
@@ -178,15 +232,51 @@
     },
     {
       "path": "apps/flow/client.mjs",
-      "sha256": "58b455511c2ad2b9e60559191417f140d71ec894c12f519007c08dd6173856eb"
+      "sha256": "8099ea7a96cb35aef20cd2f8610a6a346ee965a01804ebb45ef6657c3cfebb2e"
+    },
+    {
+      "path": "apps/flow/compare-original.mjs",
+      "sha256": "8ad51146d6cdbe91e04275e7d8cfff2b0cc07fa7d8cad9e8500bd78b49063ed7"
     },
     {
       "path": "apps/flow/core.mjs",
       "sha256": "5771ae63e83b3771e08b5166a9e0d00aa41ccea103c17c441529c0af18fa2730"
     },
     {
+      "path": "apps/flow/fixtures/native-demo.json",
+      "sha256": "2e6924dd3d640e486128092b7b8401dd8d94d7ed4eae207fe823e6474c816b66"
+    },
+    {
+      "path": "apps/flow/fixtures/oracle/package-lock.json",
+      "sha256": "75f9e5c0448cb753d2fd4b735698dbb2dc8bb310534ac8e4548618baca612de1"
+    },
+    {
+      "path": "apps/flow/fixtures/oracle/package.json",
+      "sha256": "6b3f16ed6b508f4cdd424198405d47443385d16d6b5ee4e5df370dd880bd4301"
+    },
+    {
+      "path": "apps/flow/native-original.test.mjs",
+      "sha256": "01dc5ea39f3cd77e6349bdfb2ed60ca2aa6d8f38ca854277dc344e7152dee227"
+    },
+    {
+      "path": "apps/flow/native-regex-worker.mjs",
+      "sha256": "97c74921b0755902d8cb8251fa3c954b90ad734488a24915cc10d6ee733d9a81"
+    },
+    {
+      "path": "apps/flow/native.mjs",
+      "sha256": "dcbbc436ab79df77607eead8eefd0d6fdbc1d9623e2d28e75afc2b05292800fb"
+    },
+    {
+      "path": "apps/flow/native.test.mjs",
+      "sha256": "2173b15bfe1d8c80af23a2fcf1ebe040ba526b9f2786c934db84b8d437cf560f"
+    },
+    {
+      "path": "apps/flow/results/native-original-comparison.json",
+      "sha256": "e7454a8037b65ae0157bc5a70e9876ad17a1bd35b78fb7aea70e20134d60e698"
+    },
+    {
       "path": "apps/flow/server.mjs",
-      "sha256": "fdfcbdbce671fd41feecef5db839a62d29db057919a083f9dd0baa2f05fd5ff4"
+      "sha256": "2299540b737274a75eba9e76a829ef49c7469a6d9345b2641f3891a9c24d7e34"
     },
     {
       "path": "apps/metrics/app.integration.test.mjs",
@@ -198,15 +288,31 @@
     },
     {
       "path": "apps/metrics/client.mjs",
-      "sha256": "43ce94873ed9755119c35c28f556965a6a376178a93656d059247996cadee145"
+      "sha256": "e98be632996e7e4f2adeebb4cbcdb840d85b4d5b645e0da0b9bef67f7adb74f5"
     },
     {
       "path": "apps/metrics/core.mjs",
-      "sha256": "8d23baeb9c1467f49199bc5735b00c47f4060f3b0ab844f94eb3cf3dfe33b067"
+      "sha256": "8c65a58e6be1ffcc684b457f9fb176e0972ead6143ac0ca77aaebbfce87fa0a1"
     },
     {
       "path": "apps/metrics/fixtures/local-dashboard.json",
       "sha256": "74058b9b5773a0bdae968c43216c05c05a7abf945e1ce26a257aa8b255f127bc"
+    },
+    {
+      "path": "apps/metrics/fixtures/native-calculation-field.json",
+      "sha256": "337275b8e3e95d729800064baed300d4faa756e6e7f58555f05ea2d9a71f4331"
+    },
+    {
+      "path": "apps/metrics/fixtures/native-stat-dashboard.json",
+      "sha256": "c155e81cf4cb9904b4cf583a55785c7d483fa9102232abaaed8ad28635635189"
+    },
+    {
+      "path": "apps/metrics/fixtures/reducers/package.json",
+      "sha256": "9a7c716acde6fb2cccc5420d0273a34f661582236cc66640ed024c28fd9d80d8"
+    },
+    {
+      "path": "apps/metrics/fixtures/reducers/sources.json",
+      "sha256": "e1a79b21512ca5497fc14b9fa243f1b1dfa3565be94521499c7cc92315cb01de"
     },
     {
       "path": "apps/metrics/fixtures/schema-generated-dashboard.json",
@@ -245,20 +351,44 @@
       "sha256": "27e1a54c7bd183e9caed3192e0aa69d71c3fcb2702dd1b45041be4d8983b5f3f"
     },
     {
+      "path": "apps/metrics/native-calculations.integration.test.mjs",
+      "sha256": "718a10fcb44fa1311583152644a5b85e352d295f5cc1855b7009f90e640913c2"
+    },
+    {
+      "path": "apps/metrics/native-calculations.mjs",
+      "sha256": "bd92695aaf7f7a473e01b9ff2a6d38dc0c650efda777686a6d18816422e22d1d"
+    },
+    {
+      "path": "apps/metrics/native-calculations.test.mjs",
+      "sha256": "145cb0b3cdf55135def211696d5518be5d9f16b9927bd3e399a217fb4e6e3faa"
+    },
+    {
       "path": "apps/metrics/results/grafana-schema-verification.json",
       "sha256": "adfad042180b9f708c648a2af855ecc4b49b30d831069a22400b86f726158e61"
+    },
+    {
+      "path": "apps/metrics/results/native-calculations-verification.json",
+      "sha256": "c3b0d42a174ee8f1083896cb4193f4c294d4ea7fc145596ac095e0f19b82eca2"
     },
     {
       "path": "apps/metrics/scripts/acquire-grafana-fixtures.mjs",
       "sha256": "3c0b1d1cc9e684d3888ff2ca412c561618e2671af41fc3768eef1a33dbede9dc"
     },
     {
+      "path": "apps/metrics/scripts/acquire-native-calculation-sources.mjs",
+      "sha256": "ab7b29d9d4ec617dcad89cf891a2e5cb8501356e004f90be1671ed6c9e5d6681"
+    },
+    {
       "path": "apps/metrics/scripts/verify-grafana-schema.mjs",
       "sha256": "e6509ed7accf672d7d0bb466f0c3c270013e752866370b04eb29bde60e80d278"
     },
     {
+      "path": "apps/metrics/scripts/verify-native-calculations.mjs",
+      "sha256": "4a8592950ad0db582bb742fc0ec52d3c1b3e4dbbacc52794a47f163c16207ce0"
+    },
+    {
       "path": "apps/metrics/server.mjs",
-      "sha256": "76e24ad8341059a17ee567aa7f45aa94a654629eba83199a63dfbdabc42809f7"
+      "sha256": "e954442cbc4bb30e87a9c21cd84615cac33cc1b84e593cab9e25e11cb88353f3"
     },
     {
       "path": "apps/notes/app.integration.test.mjs",
@@ -394,7 +524,7 @@
     },
     {
       "path": "catalog.mjs",
-      "sha256": "b8aa89eb14fc18e95e3a48df750d970d0aca8e1e6b072d939090e71fa02a549b"
+      "sha256": "ecfcc0dc2ac500aa7c2439de8de589e08f178cb9f054cc1ccef2843d3814b1a1"
     },
     {
       "path": "lib/storage.mjs",
@@ -402,7 +532,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "052285cb92588c60576cb17d86bc56f1b72d85ee647afee63af8f1536e9e4be2"
+      "sha256": "c2b15746da97272b75791eedd501b37ef2da52b500250291c2e43ef67193d9fb"
     },
     {
       "path": "public/index.html",
@@ -425,6 +555,10 @@
       "sha256": "637d3efa1afd74f194ac7c7fedcf3e6bedf454642f95937f4c5e1eb9d7b2a7fb"
     },
     {
+      "path": "scripts/bootstrap-node-red-oracle.mjs",
+      "sha256": "2e1a2f9d3eee0a0a5d3cc5295fd8101b2120eca3ab95583cf3b4f351c3f05870"
+    },
+    {
       "path": "scripts/sequence-benchmark-worker.mjs",
       "sha256": "9553c9885cc696a09d0d5c22ec1d645b1d835254a844cb80af441c10ddf3a52e"
     },
@@ -438,7 +572,7 @@
     },
     {
       "path": "scripts/verify-development.mjs",
-      "sha256": "dbf980fa6dc071007752f5ff9302451913972de55d2bf54464e71ffb026e767f"
+      "sha256": "14101229431dd5d7fcdc3536e00c8031d90465a62b1296294d4bdb54a455d06a"
     },
     {
       "path": "server.mjs",

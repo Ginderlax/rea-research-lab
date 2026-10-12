@@ -1,0 +1,57 @@
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { createWorkspace } from '../outputs/rea-research-lab/products/rea-studio/lib/storage.mjs';
+import { handle } from '../outputs/rea-research-lab/products/rea-studio/apps/backup/server.mjs';
+import { hash, seal, open, passwordKey, masterKey, base64 } from '../outputs/rea-research-lab/products/rea-studio/apps/backup/restic-crypto.mjs';
+const exec = promisify(execFile), repo = 'C:/Users/evanh/Documents/Codex/2026-10-12/go/outputs/rea-research-lab';
+const PASSWORD = 'independent-review-synthetic-only-2026';
+const root = await fs.mkdtemp(path.join(os.tmpdir(), 'rea-restic-time-review-'));
+const observations = [];
+const capture = async operation => { try { return { success: true, value: await operation() }; } catch (error) { return { success: false, code: error.code, error: String(error.stderr ?? '') + String(error.message) }; } };
+const inputs = [
+  ['year-zero', '0000-01-01T00:00:00Z'], ['year-9999', '9999-12-31T23:59:59.999999999Z'],
+  ['nanoseconds-leap-day', '2024-02-29T12:34:56.123456789Z'], ['long-fraction', '2024-02-29T12:34:56.1234567890123456789Z'],
+  ['comma-fraction', '2024-02-29T12:34:56,123456789Z'], ['positive-offset', '2024-02-29T12:34:56.123456789+05:45'],
+  ['negative-offset', '2024-02-29T12:34:56.123456789-08:00'], ['zero-offset', '2024-02-29T12:34:56-00:00'],
+  ['single-hour', '2024-02-29T2:34:56Z'], ['zone-hour-24', '2024-02-29T12:34:56+24:00'],
+  ['zone-minute-60', '2024-02-29T12:34:56+00:60'], ['hour-24', '2024-02-29T24:00:00Z'],
+  ['leap-second', '2024-02-29T12:34:60Z'], ['invalid-leap-day', '2023-02-29T12:34:56Z'],
+  ['invalid-april-day', '2023-04-31T12:34:56Z'], ['space-separator', '2024-02-29 12:34:56Z'],
+  ['lowercase-tz', '2024-02-29t12:34:56z'], ['numeric-time', 0], ['null-time', null],
+];
+try {
+  const bytes = await fs.readFile(path.join(repo, 'projects/09-restic/artifacts/unpacked/restic_0.19.1_windows_amd64.exe'));
+  const executableSHA256 = hash(bytes);
+  if (executableSHA256 !== 'b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830') throw Error('Original executable digest mismatch.');
+  const executable = path.join(root, 'original-restic.exe'); await fs.writeFile(executable, bytes, { flag: 'wx' });
+  const original = async (workspace, ...args) => (await exec(executable, ['--no-cache', '-r', workspace.resolve('native'), ...args], { cwd: workspace.root, env: { ...process.env, RESTIC_PASSWORD: PASSWORD, RESTIC_REPOSITORY: '', RESTIC_PASSWORD_FILE: '', RESTIC_PASSWORD_COMMAND: '' }, windowsHide: true, timeout: 30000, maxBuffer: 1024 * 1024 })).stdout;
+  for (const [label, value] of inputs) {
+    const workspace = await createWorkspace(path.join(root, label));
+    const call = (action, input = {}) => handle({ action, input: { repository: 'native', password: PASSWORD, ...input }, workspace });
+    await call('nativeInit'); await fs.mkdir(workspace.resolve('source')); const snapshot = await call('nativeSnapshot', { source: 'source' });
+    const names = await fs.readdir(workspace.resolve('native/keys')), keyDocument = JSON.parse(await fs.readFile(workspace.resolve(`native/keys/${names[0]}`)));
+    const master = masterKey(JSON.parse(open(await passwordKey(keyDocument, PASSWORD), base64(keyDocument.data))));
+    const plaintext = Buffer.from(JSON.stringify({ nodes: [{ name: 'a.txt', type: 'file', size: 0, content: [], uid: 0, gid: 0, mtime: value }] }) + '\n'), treeID = hash(plaintext);
+    const payload = seal(master, plaintext), record = Buffer.alloc(37); record[0] = 1; record.writeUInt32LE(payload.length, 1); Buffer.from(treeID, 'hex').copy(record, 5);
+    const header = seal(master, record), footer = Buffer.alloc(4); footer.writeUInt32LE(header.length);
+    const pack = Buffer.concat([payload, header, footer]), packID = hash(pack);
+    await fs.mkdir(workspace.resolve(`native/data/${packID.slice(0, 2)}`), { recursive: true }); await fs.writeFile(workspace.resolve(`native/data/${packID.slice(0, 2)}/${packID}`), pack, { flag: 'wx' });
+    const index = seal(master, Buffer.from(JSON.stringify({ packs: [{ id: packID, blobs: [{ id: treeID, type: 'tree', offset: 0, length: payload.length }] }] })));
+    await fs.writeFile(workspace.resolve(`native/index/${hash(index)}`), index, { flag: 'wx' });
+    const doc = JSON.parse(open(master, await fs.readFile(workspace.resolve(`native/snapshots/${snapshot.id}`)))); doc.tree = treeID;
+    const snapshotBytes = seal(master, Buffer.from(JSON.stringify(doc))), id = hash(snapshotBytes);
+    await fs.writeFile(workspace.resolve(`native/snapshots/${id}`), snapshotBytes, { flag: 'wx' }); await fs.unlink(workspace.resolve(`native/snapshots/${snapshot.id}`));
+    const appCheck = await capture(() => call('nativeCheck', { id })), appLockFilesAfter = await fs.readdir(workspace.resolve('native/locks'));
+    const originalCheck = await capture(() => original(workspace, 'check', '--read-data'));
+    observations.push({ label, value, jsDateMilliseconds: Number.isFinite(Date.parse(value)) ? Date.parse(value) : null, appCheck, appLockFilesAfter, originalCheck });
+    console.log(JSON.stringify({ label, appAccepted: appCheck.success, originalAccepted: originalCheck.success }));
+  }
+  const result = { checkedAt: new Date().toISOString(), appSourcesReadOnly: true, executableSHA256, originalVersion: await capture(() => exec(executable, ['version'], { windowsHide: true })), node: process.version, observations };
+  await fs.writeFile(new URL('./restic-time-oracle-review.json', import.meta.url), JSON.stringify(result, null, 2) + '\n');
+} finally {
+  if (path.dirname(path.resolve(root)) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('rea-restic-time-review-')) throw Error('Unsafe private-fixture cleanup target.');
+  await fs.rm(root, { recursive: true, force: true });
+}

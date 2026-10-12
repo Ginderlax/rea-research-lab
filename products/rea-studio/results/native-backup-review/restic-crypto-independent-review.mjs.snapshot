@@ -1,0 +1,21 @@
+import * as fs from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { hash, seal, open } from '../outputs/rea-research-lab/products/rea-studio/apps/backup/restic-crypto.mjs';
+const vector = (label, size) => {
+  const blocks = [];
+  for (let i = 0; blocks.length * 32 < size; i++) blocks.push(createHash('sha256').update(`${label}:${i}`).digest());
+  return Buffer.concat(blocks).subarray(0, size);
+};
+const records = [];
+for (let k = 0; k < 16; k++) {
+  const key = { encrypt: vector(`encrypt-${k}`,32), k: vector(`mac-k-${k}`,16), r: k < 3 ? Buffer.alloc(16,[255,1,128][k]) : vector(`mac-r-${k}`,16) };
+  const nonce = vector(`nonce-${k}`,16);
+  for (const length of [0,1,7,15,16,17,31,32,33,1024,4097]) {
+    const plaintext = vector(`plaintext-${k}`, length), encrypted = seal(key,plaintext,nonce);
+    if (!open(key,encrypted).equals(plaintext)) throw Error('Native round trip failed.');
+    records.push({ key: Object.fromEntries(Object.entries(key).map(([name,bytes]) => [name, bytes.toString('hex')])), nonce: nonce.toString('hex'), plaintext: plaintext.toString('base64'), encrypted: encrypted.toString('base64') });
+  }
+}
+const serialized = JSON.stringify({ syntheticOnly: true, primitiveBaseline: 'AES-256-CTR + raw Poly1305 with AES-128-ECB(nonce) additive pad', records },null,2) + '\n';
+await fs.writeFile(new URL('./restic-crypto-independent-vectors.json',import.meta.url),serialized);
+console.log(JSON.stringify({ vectors: records.length, sha256: hash(Buffer.from(serialized)) }));

@@ -1543,8 +1543,8 @@
       "local_implementation_evidence": [
         {
           "path": "products/rea-studio/apps/archive/zip.mjs",
-          "bytes": 19141,
-          "sha256": "16f7fca85cbe81698b1621968bc5281f8e80723b46e27a0ef89028dc14f65b6e",
+          "bytes": 19556,
+          "sha256": "a59b2cf92a5d83638beb238a3ffcb39796ff1a59aab0d241d1161f448ddd232d",
           "scope": "Current implemented subset; no full-product parity assertion."
         },
         {
@@ -1570,8 +1570,43 @@
           "bytes": 31783,
           "sha256": "7a7847d60b34ead39b597aac54c1612f616ffe69b9a267e193bb01fc78554c98",
           "scope": "Current implemented subset; no full-product parity assertion."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/zstd.mjs",
+          "bytes": 5330,
+          "sha256": "3413aa08a4c1b21df2a4ff6b68ee3bb0c1d456031ed4d85d921883469b102ec8",
+          "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/zstd.test.mjs",
+          "bytes": 19409,
+          "sha256": "b50927498b32b96dd40096618a0a412b7a9a54a9548a40cd76fe23c0fba6dbaa",
+          "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/bootstrap-original.mjs",
+          "bytes": 3119,
+          "sha256": "da65b62b349b5f4f3f69422244d21ddf1686998bc0f6aa54df8365ca72f3c22e",
+          "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/zstd-validation.json",
+          "bytes": 20024,
+          "sha256": "9500028a9423e8295cefd178b049ee0033e4518e3555363292618b54384aa6e1",
+          "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/fixtures/zstd/provenance.json",
+          "bytes": 1075,
+          "sha256": "987ee02241ceebb7fdce414f39eb3531b3cb96c51b2ca499f0eed015e46b2342",
+          "scope": "Current implemented subset; full-product parity gate remains open."
         }
-      ]
+      ],
+      "current_zstandard_milestone": {
+        "scope": "Bounded .zst,TAR.ZST/.tzst,ZIP93+ZIP64, frame walking and cumulative decompression limits.",
+        "full_product_parity": false,
+        "record": "products/rea-studio/apps/archive/zstd-validation.json"
+      }
     },
     {
       "inventory_status": "initial-traceable-crosswalk; not-an-exhaustive-feature-inventory",
@@ -2042,7 +2077,50 @@
         "Expand all 29 observed Windows root commands into subcommands, flags, output contracts and conditional behavior.",
         "Convert all 23 observed RST documents and included/generated content into atomic testable requirements; file enumeration is not feature completion.",
         "Enumerate backends, repository formats, metadata and supported platforms; acquire original behavioral fixtures for every row."
-      ]
+      ],
+      "local_implementation_evidence": [
+        {
+          "path": "products/rea-studio/apps/backup/restic.mjs",
+          "bytes": 29982,
+          "sha256": "efa23b18a99f012bf15bcb59ee8a06cecb41c98838d71bb9e8dc31e9d872c3d6",
+          "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/backup/restic-crypto.mjs",
+          "bytes": 5262,
+          "sha256": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c",
+          "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/backup/native.test.mjs",
+          "bytes": 34994,
+          "sha256": "d665da4f65ff7c61d788935467234991a379fb32a1a1a6796c416de747de7b63",
+          "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/backup/native-validation.json",
+          "bytes": 17716,
+          "sha256": "eba5fd9214ad07011b708b2833a98f8d5e913c25333a990ab331161769ba49a5",
+          "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/backup/native-source-references.json",
+          "bytes": 5245,
+          "sha256": "310dd650b87d08cbe324a969d8f909383fec5a6ba60d799ff6f10050e2e2390a",
+          "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/backup/SOURCE-COMPARISON.md",
+          "bytes": 7562,
+          "sha256": "6ef9c83dabbf6cf790e81e392cf4d7b86531829d4081003a713882178dcf01c5",
+          "scope": "Current implemented subset; full-product parity gate remains open."
+        }
+      ],
+      "current_native_milestone": {
+        "scope": "Bounded encrypted native resticv1/v2 init/read/write/check/restore, bidirectional original CLI fixtures, time/metadata validation and independent cipher/MAC vectors.",
+        "full_product_parity": false,
+        "record": "products/rea-studio/apps/backup/native-validation.json"
+      }
     },
     {
       "inventory_status": "initial-traceable-crosswalk; not-an-exhaustive-feature-inventory",
@@ -4865,7 +4943,8 @@
         "Expand 55 Windows root commands into all nested commands/flags/backend actions and compare other platform builds.",
         "Parse all 193 observed Markdown files, their links/generated docs and runtime help. A file tree or overview table alone does not establish every documented feature.",
         "Remote service interoperability, OAuth, quotas, object metadata, mount behavior and operational failure/recovery tests remain entirely unverified."
-      ]
+      ],
+      "local_implementation_evidence": []
     }
   ],
   "source_tree_observations": [

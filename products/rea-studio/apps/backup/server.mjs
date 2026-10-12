@@ -1,6 +1,7 @@
 import * as fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
+import { handleNative } from './restic.mjs';
 
 const REPOSITORY = '.rea-backup';
 const CHUNK = 1024 * 1024;
@@ -60,7 +61,7 @@ async function load(workspace, hash) {
     if (seen.has(identity)) throw new Error('Duplicate snapshot path.'); seen.add(identity);
     if (!['file','directory'].includes(entry.type)) throw new Error('Invalid snapshot entry.');
     if (entry.type === 'file') {
-      if (!Number.isSafeInteger(entry.size) || entry.size < 0 || entry.size > MAX_FILE || !Array.isArray(entry.chunks) || entry.chunks.length !== Math.ceil(entry.size / CHUNK) || !Number.isFinite(entry.mtimeMs)) throw new Error('Invalid snapshot file.');
+      if (!Number.isSafeInteger(entry.size) || entry.size < 0 || entry.size > MAX_FILE || !Array.isArray(entry.chunks) || entry.chunks.length !== Math.ceil(entry.size / CHUNK) || !Number.isFinite(entry.mtimeMs) || !Number.isFinite(new Date(entry.mtimeMs).getTime())) throw new Error('Invalid snapshot file.');
       id(entry.hash); entry.chunks.forEach(id); total += entry.size;
     }
   }
@@ -138,6 +139,18 @@ async function verify(workspace, doc) {
   }
   return { verified: true, files, checkedBytes, uniqueChunks: checked.size };
 }
+function restoreTimes(doc) {
+  const times = new Map();
+  for (const entry of doc.entries) {
+    if (entry.type !== 'file') continue;
+    // Date supplies the format's represented millisecond precision. Windows
+    // Node utimes silently wraps Unix seconds outside this verified interval.
+    const modified = new Date(entry.mtimeMs).getTime();
+    if (!Number.isFinite(modified) || (process.platform === 'win32' && (modified < 0 || modified > 4294967295999))) throw new Error(`File ${entry.path} has a modification time that cannot be restored accurately on this platform.`);
+    times.set(entry.path, modified);
+  }
+  return times;
+}
 async function retention(workspace, keepLast) {
   if (!Number.isInteger(keepLast) || keepLast < 1 || keepLast > 10000) throw new Error('Keep at least one and at most 10,000 snapshots.');
   const snapshots = await list(workspace), keep = snapshots.slice(0,keepLast), remove = snapshots.slice(keepLast), used = new Set();
@@ -154,6 +167,7 @@ async function retention(workspace, keepLast) {
   return { ...state, token: digest(JSON.stringify(state)) };
 }
 async function run({ action, input = {}, workspace }) {
+  if (action.startsWith('native')) return handleNative({ action,input,workspace });
   if (action === 'putFile') {
     if (clean(input.path).split('/').includes(REPOSITORY)) throw new Error('Use a source folder outside the backup repository.');
     if (typeof input.content !== 'string' || Buffer.byteLength(input.content) > MAX_FILE) throw new Error('File content exceeds the local size limit.');
@@ -167,6 +181,7 @@ async function run({ action, input = {}, workspace }) {
   if (action === 'restore') {
     if (input.confirm !== true) throw new Error('Restoring requires confirmation.');
     const doc = await load(workspace, input.id); await verify(workspace, doc);
+    const times = restoreTimes(doc);
     if (clean(input.destination).split('/').includes(REPOSITORY)) throw new Error('Restore outside the backup repository.');
     const destination = await safe(workspace, input.destination); await fs.mkdir(path.dirname(destination), { recursive: true });
     // Exclusive creation refuses every existing destination, including empty folders.
@@ -180,7 +195,11 @@ async function run({ action, input = {}, workspace }) {
           await fs.mkdir(path.dirname(target), { recursive: true }); const handle = await fs.open(target, 'wx');
           try { for (const hash of entry.chunks) await handle.writeFile(await readChunk(workspace, hash)); }
           finally { await handle.close(); }
-          await fs.utimes(target, new Date(), new Date(entry.mtimeMs)); restored++;
+          const modified = times.get(entry.path);
+          await fs.utimes(target, new Date(), new Date(modified));
+          const actual = await fs.stat(await safe(workspace, `${input.destination}/${entry.path}`));
+          if (Math.abs(actual.mtimeMs - modified) >= 1) throw new Error(`File ${entry.path} modification time did not restore accurately.`);
+          restored++;
         }
       }
     } catch (error) { throw new Error(`Restore stopped after ${restored} files. Partial output remains in ${input.destination}; no existing destination was overwritten. ${error.message}`); }

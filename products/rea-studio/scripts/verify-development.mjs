@@ -13,7 +13,7 @@ function files(directory) {
 const sourceFiles = [...['apps', 'lib', 'public', 'scripts', 'tests'].flatMap(directory => files(join(root, directory))), ...['server.mjs', 'catalog.mjs', 'package.json'].map(name => join(root, name))]
   .filter(path => /\.(mjs|json|html|css|ps1)$/.test(path)).sort();
 const testFiles = sourceFiles.filter(path => path.endsWith('.test.mjs'));
-const run = spawnSync(process.execPath, ['--test', '--test-reporter=tap', '--test-concurrency=1', ...testFiles], { cwd: root, encoding: 'utf8', timeout: 120000, maxBuffer: 8 * 1024 * 1024 });
+const run = spawnSync(process.execPath, ['--test', '--test-reporter=tap', '--test-concurrency=1', ...testFiles], { cwd: root, encoding: 'utf8', timeout: 300000, maxBuffer: 8 * 1024 * 1024 });
 process.stdout.write(run.stdout ?? '');
 process.stderr.write(run.stderr ?? '');
 const count = label => {

@@ -1,0 +1,176 @@
+{
+  "checkedAt": "2026-10-12T17:03:20.397Z",
+  "status": "completed-targeted-independent-review",
+  "sourceAssisted": true,
+  "appSourcesModifiedByReviewer": false,
+  "allFixturesSynthetic": true,
+  "baseline": {
+    "version": "restic0.19.1",
+    "commit": "6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf",
+    "executableSHA256": "b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830",
+    "compiledGo": "1.26.4"
+  },
+  "reviewedScope": [
+    "AES-CTR/Poly1305-AES/key/KDF source contracts",
+    "bounded input/allocation/work guards",
+    "native v1/v2 pack/header/index/tree consistency",
+    "lock acquisition and finally cleanup",
+    "restore validation-before-output and exclusive no-overwrite writes",
+    "snapshot immutable pack/index/snapshot publication order",
+    "HTTP serialization and persistence test code"
+  ],
+  "concreteFindings": [
+    {
+      "status": "fixed-and-independently-retested",
+      "finding": "Numeric or impossible-calendar node mtime and numeric snapshot time were accepted by selected-snapshot check/restore despite original rejection.",
+      "before": "Three authenticated malformed fixtures returned verified:true; restore created output.",
+      "after": "All three check and restore calls reject before output; own locks empty.",
+      "additionalBoundaryEvidence": "Nineteen accepted/refused timestamp controls now match original, including permissive Go/null forms."
+    }
+  ],
+  "independentExecutions": {
+    "timestampAcceptance": 19,
+    "closedTimestampRestoreFailures": 3,
+    "exactCipherAndMACVectors": 176,
+    "filesystemCaseCandidatePairs": 24,
+    "validOffsetOrderingAndOriginalWholeRepositoryCheck": true
+  },
+  "cryptoScope": "Exact ciphertext and MAC bytes across 16 key cases including full-width r bits, 11 plaintext boundary lengths; no security equivalence or constant-time assessment.",
+  "cryptoIndependentImplementation": "cryptography 50.0.2 Cipher AES CTR/ECB + raw Poly1305 (Rust/OpenSSL bindings)",
+  "rejectedHypotheses": [
+    "Sigma variants were distinct Windows paths on this host; no repository overlap bypass or actual filename collision occurred. BMP case probe found only ASCII A/a alias among 24 candidate pairs, already covered by lowercase checks."
+  ],
+  "lockAttribution": "appLockFilesAfter is measured before original execution. Original malformed-tree panic can leave its own lock; final lockFilesAfter in historical/retest artifacts must not be attributed to app.",
+  "sourceFingerprints": {
+    "products/rea-studio/apps/backup/restic.mjs": "efa23b18a99f012bf15bcb59ee8a06cecb41c98838d71bb9e8dc31e9d872c3d6",
+    "products/rea-studio/apps/backup/restic-crypto.mjs": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c",
+    "products/rea-studio/apps/backup/native.test.mjs": "d665da4f65ff7c61d788935467234991a379fb32a1a1a6796c416de747de7b63",
+    "products/rea-studio/apps/backup/server.mjs": "b33c1842c4ebce2aecc8b4583cfb05c726cda1164a2866683b31fd537c269807"
+  },
+  "independentlyVerifiedUpstreamSources": [
+    {
+      "path": "doc/design.rst",
+      "url": "https://raw.githubusercontent.com/restic/restic/6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf/doc/design.rst",
+      "bytes": 36828,
+      "sha256": "c482724583b0630cdd45a2b2f37d87b228bea6efbebe3b3d737271c152c53524"
+    },
+    {
+      "path": "internal/crypto/crypto.go",
+      "url": "https://raw.githubusercontent.com/restic/restic/6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf/internal/crypto/crypto.go",
+      "bytes": 7978,
+      "sha256": "5fd9373938be2416ecd6a66e0b065617c6501e98177ec82cc486a560a0e91f15"
+    },
+    {
+      "path": "internal/crypto/kdf.go",
+      "url": "https://raw.githubusercontent.com/restic/restic/6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf/internal/crypto/kdf.go",
+      "bytes": 2657,
+      "sha256": "fd112d791d05cfad51a8957cdcace5d4fbc1b195c6b07a386fbb9ddb009ba3ec"
+    },
+    {
+      "path": "internal/repository/key.go",
+      "url": "https://raw.githubusercontent.com/restic/restic/6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf/internal/repository/key.go",
+      "bytes": 7392,
+      "sha256": "4975833726a532a43ea7eb3d1caa7d4b3b4d6ac3d365618ab1133c6d2edb53af"
+    },
+    {
+      "path": "internal/restic/config.go",
+      "url": "https://raw.githubusercontent.com/restic/restic/6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf/internal/restic/config.go",
+      "bytes": 2236,
+      "sha256": "d3f53446dca29334da29a79dc2e50c0d57633e36d60cc7b11a8bf36c1ebd69be"
+    },
+    {
+      "path": "internal/repository/pack/pack.go",
+      "url": "https://raw.githubusercontent.com/restic/restic/6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf/internal/repository/pack/pack.go",
+      "bytes": 12655,
+      "sha256": "def4d7b7e055455de052178cd24bcb515ac3c3c42f9dbc5b6ddf5502e964ff21"
+    },
+    {
+      "path": "internal/restic/lock.go",
+      "url": "https://raw.githubusercontent.com/restic/restic/6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf/internal/restic/lock.go",
+      "bytes": 11632,
+      "sha256": "11a86c76f89e32a63b6283edb51087f723e69056e38a0c0943dcdf1427c17bb9"
+    },
+    {
+      "path": "internal/data/node.go",
+      "url": "https://raw.githubusercontent.com/restic/restic/6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf/internal/data/node.go",
+      "bytes": 16143,
+      "sha256": "c6d2a4d695f528add86ef1bd392b69896e82866163bbcebde758aaa5a36ba035"
+    },
+    {
+      "path": "internal/data/tree.go",
+      "url": "https://raw.githubusercontent.com/restic/restic/6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf/internal/data/tree.go",
+      "bytes": 9890,
+      "sha256": "1bde2a72b43a1d5a7fa18b91cf69c5c04cdfdbd66775c829445922ad4f06dcdc"
+    }
+  ],
+  "artifacts": {
+    "restic-adversarial-review.mjs": {
+      "bytes": 8068,
+      "sha256": "ca9289ec840a9dc20f42d3603fabd5ef1574d44b1014a25a44fb0c2fe69fee04"
+    },
+    "restic-adversarial-review.json": {
+      "bytes": 9225,
+      "sha256": "0f5446a78b4e65b7cdc5e3ef6a5ad4100fcc84a4ad4a07b9309f2d1f45410b7d"
+    },
+    "restic-adversarial-review.postfix.mjs": {
+      "bytes": 8255,
+      "sha256": "a6c540b6bffa658ef6cc27c63c2d674a4cc295a552a72b1a6b5df4da1d25f60a"
+    },
+    "restic-adversarial-review.postfix.json": {
+      "bytes": 7970,
+      "sha256": "aa09fb8dc6f03098f9e87aefb931af3c318c721f7d6d2a7051cf930b5a4cffde"
+    },
+    "restic-time-oracle-review.mjs": {
+      "bytes": 5932,
+      "sha256": "46fb196e97fd246f92bbab235428edb995d2149c24f7c84d5380979b1f8dde83"
+    },
+    "restic-time-oracle-review.json": {
+      "bytes": 25613,
+      "sha256": "1930df3e52085215992f03f2ea87283745685954a7c397ee27ec48974a131580"
+    },
+    "restic-time-oracle-review.postfix.mjs": {
+      "bytes": 5942,
+      "sha256": "2bb59a9cbeeab60ece4583a32fd48be5e40b5b451c70e2bb13feff6c14b58781"
+    },
+    "restic-time-oracle-review.postfix.json": {
+      "bytes": 25381,
+      "sha256": "f79803ea2d61bb4016d863083107636e0daa71af4cd1431d0b95b8bd5d5609c8"
+    },
+    "restic-crypto-independent-review.mjs": {
+      "bytes": 1518,
+      "sha256": "f63721aecca6ba00c5e302f563c184554dababb648da63b623c204676febbb7d"
+    },
+    "restic-crypto-independent-review.py": {
+      "bytes": 1878,
+      "sha256": "2ecd35bceed393e945428a3298b2cf92313234cede4ca19ff4578ed687d42e87"
+    },
+    "restic-crypto-independent-vectors.json": {
+      "bytes": 288889,
+      "sha256": "a7f21b1aaddb0f63402533a2041b3d875be11dafb6eb2c08b11dba3b543cfd22"
+    },
+    "restic-crypto-independent-review.json": {
+      "bytes": 616,
+      "sha256": "d040f9ce49f7832a3f7be30e03f9b468d58d341477845a2c39e1b5a61e623d2e"
+    },
+    "restic-list-order-review.mjs": {
+      "bytes": 3341,
+      "sha256": "8e5eef0337a7135241dea4e74d6c2c2ec8bcf646b4196a79be7bcd0d44ed49fb"
+    },
+    "restic-list-order-review.json": {
+      "bytes": 1115,
+      "sha256": "462e629177d197b059edff716cac2b542218f627f86ddab30ae7015cf0aaee34"
+    },
+    "windows-path-aliases.json": {
+      "bytes": 143,
+      "sha256": "e466ae475e3db67d65e37f7159af66ee8dc9b560484b8ab3ed57b7e66691444a"
+    }
+  },
+  "limitations": [
+    "Targeted review and finite differential/primitive vectors are not a full security audit or universal restic acceptance proof.",
+    "Original CLI whole-repository check is additional fixture validation; app check remains selected-snapshot only.",
+    "Fixed writer KDF/chunks/packs, variable-time BigInt MAC, metadata/FS-race and trusted-host boundaries are retained documented limitations.",
+    "Native restore intentionally refuses unrepresentable Windows mtime before output; full owner tests exercise accepted/rejected Windows date ranges.",
+    "HTTP persistence/overwrite/source-change/pack/KDF tests were read; the owner full test receipt and root combined run provide their execution evidence.",
+    "No CPU, memory or speed comparison exists."
+  ]
+}

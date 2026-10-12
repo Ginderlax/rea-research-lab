@@ -9,12 +9,47 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(readFileSync(join(root, 'PUBLICATION-MANIFEST.json'), 'utf8'));
 const index = JSON.parse(readFileSync(join(root, 'PROJECT-INDEX.json'), 'utf8'));
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+const historicalMilestone = 'products/rea-studio/results/milestones/execution-archive-20261012/';
+function safeRecordPath(path) { assert.ok(typeof path === 'string' && path.length && !path.startsWith('/') && !path.split('/').includes('..') && !path.includes('\\'), `Invalid record path: ${path}`); }
+function loadHistoricalMilestone() {
+  const record = JSON.parse(readFileSync(join(root, historicalMilestone, 'snapshot-manifest.json'), 'utf8'));
+  assert.equal(record.schema, 'rea-historical-milestone-snapshot/v1');
+  assert.equal(record.source_revision, '43194058e774ae56858a2a24f784a961156d4c51');
+  const sources = new Map(), receipts = new Map();
+  for (const [entries, map, kind] of [[record.source_snapshots, sources, 'source'], [record.receipts, receipts, 'receipt']]) for (const entry of entries) {
+    safeRecordPath(entry.path); safeRecordPath(entry.snapshot_path); assert.ok(!map.has(entry.path), `Duplicate historical ${kind}: ${entry.path}`);
+    assert.ok(entry.snapshot_path.startsWith(historicalMilestone + (kind === 'source' ? 'source/' : '')), `Wrong historical snapshot location: ${entry.snapshot_path}`);
+    const bytes = readFileSync(join(root, entry.snapshot_path)); assert.equal(bytes.length, entry.bytes, `Historical ${kind} size changed: ${entry.path}`); assert.equal(sha(bytes), entry.sha256, `Historical ${kind} changed: ${entry.path}`); map.set(entry.path, entry);
+  }
+  assert.ok(sources.size > 0 && receipts.size > 0);
+  return { sources, receipts, source_revision: record.source_revision };
+}
+const historicalExecution = loadHistoricalMilestone();
+function historicalReceipt(path) { const entry = historicalExecution.receipts.get(path); assert.ok(entry, `Missing historical receipt: ${path}`); return JSON.parse(readFileSync(join(root, entry.snapshot_path), 'utf8')); }
+function historicalFingerprint(entry, label) {
+  const snapshot = historicalExecution.sources.get(entry.path); assert.ok(snapshot, `Missing historical ${label} source: ${entry.path}`); assert.equal(snapshot.sha256, entry.sha256, `Historical ${label} receipt disagrees with its source: ${entry.path}`);
+}
+const historicalBrowser = historicalReceipt('products/rea-studio/results/browser-execution-verification.json');
+for (const entry of [...historicalBrowser.implementation_fingerprints, historicalBrowser.screenshot]) historicalFingerprint(entry, 'browser');
+const historicalZip = historicalReceipt('products/rea-studio/apps/archive/compatibility-evidence.json');
+for (const entry of historicalZip.implementation_fingerprints) historicalFingerprint(entry, 'ZIP');
+const historicalFormats = historicalReceipt('products/rea-studio/apps/archive/formats-validation.json');
+for (const entry of historicalFormats.sourceFiles) historicalFingerprint(entry, 'formats');
+const historicalAutomation = historicalReceipt('products/rea-studio/apps/automation/execution-validation.json');
+for (const entry of historicalAutomation.sourceFiles) historicalFingerprint({ ...entry, path: 'products/rea-studio/apps/automation/' + entry.path }, 'automation');
+const historicalDevelopment = historicalReceipt('products/rea-studio/results/development-validation.json');
+for (const entry of historicalDevelopment.source_files) historicalFingerprint({ ...entry, path: 'products/rea-studio/' + entry.path }, 'development');
+if (process.argv.includes('--historical-only')) {
+  assert.ok(!process.argv.includes('--write'), 'Historical-only checks do not write current validation metadata.');
+  console.log(JSON.stringify({ status: 'passed', scope: 'Historical receipt/source integrity only; no current behavioral or publication validation claim.', source_revision: historicalExecution.source_revision, receipt_hashes_checked: historicalExecution.receipts.size, source_hashes_checked: historicalExecution.sources.size })); process.exit(0);
+}
 let checkedBytes = 0, parsedJson = 0, checkedScripts = 0;
 const forbidden = /(^|\/)(artifacts|node_modules|tooling|__pycache__|work|\.local)(\/|$)|\.(exe|dll|zip|tgz|bundle|tar|7z|pyc)$/i;
+const syntheticZip = { path: 'products/rea-studio/apps/archive/fixtures/zstd/native-zip93.zip', sha256: 'e9282f76dbd3c080d0e12ef95489458523ebbc65c2951f4b8f3cb880a16c5d8b' };
 const credentialPattern = /\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/;
 for (const entry of manifest.files) {
   assert.ok(!entry.path.startsWith('/') && !entry.path.split('/').includes('..') && !entry.path.includes('\\'));
-  assert.ok(!forbidden.test(entry.path), `Excluded vendor/runtime material found in publication: ${entry.path}`);
+  assert.ok(!forbidden.test(entry.path) || entry.path === syntheticZip.path && entry.sha256 === syntheticZip.sha256, `Excluded vendor/runtime material found in publication: ${entry.path}`);
   const target = join(root, entry.path), bytes = readFileSync(target);
   assert.equal(bytes.length, entry.bytes, `Size mismatch: ${entry.path}`);
   assert.equal(sha(bytes), entry.sha256, `Digest mismatch: ${entry.path}`);
@@ -86,22 +121,69 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     const snapshot = historicalSnapshots.get(entry.path); if (snapshot) { assert.equal(snapshot.sha256, entry.sha256); assert.ok(snapshot.snapshot_path.startsWith('products/rea-studio/results/milestones/native-exchange-20261012/source/') && !snapshot.snapshot_path.split('/').includes('..')); }
     assert.equal(sha(readFileSync(join(root, snapshot?.snapshot_path ?? entry.path))), entry.sha256, `Browser-tested file changed: ${entry.path}`);
   }
-  const executionBrowser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-execution-verification.json'), 'utf8'));
+  const executionBrowser = historicalBrowser;
   assert.deepEqual([...new Set(executionBrowser.checks.map(check => check.app))].sort(), ['archive', 'automation', 'editor', 'metrics']);
   assert.ok(executionBrowser.checks.every(check => check.passed));
   assert.equal(executionBrowser.every_documented_feature_verified, false); assert.equal(executionBrowser.full_feature_parity_established, false); assert.equal(executionBrowser.universal_superiority_established, false);
-  for (const entry of [...executionBrowser.implementation_fingerprints, executionBrowser.screenshot]) assert.equal(sha(readFileSync(join(root, entry.path))), entry.sha256, `Current browser-tested file changed: ${entry.path}`);
+  for (const entry of [...executionBrowser.implementation_fingerprints, executionBrowser.screenshot]) historicalFingerprint(entry, 'browser');
   const automationExecution = JSON.parse(readFileSync(join(developmentRoot, 'apps/automation/execution-validation.json'), 'utf8'));
   assert.equal(automationExecution.summary.tests, automationExecution.summary.pass); assert.equal(automationExecution.summary.fail + automationExecution.summary.skipped, 0);
   assert.equal(automationExecution.originalProductParityVerified, false); assert.equal(automationExecution.universalSuperiorityVerified, false);
   for (const entry of automationExecution.sourceFiles) { assert.ok(!entry.path.startsWith('/') && !entry.path.split('/').includes('..')); assert.equal(sha(readFileSync(join(developmentRoot, 'apps/automation', entry.path))), entry.sha256, `Automation execution-tested file changed: ${entry.path}`); }
-  const archiveZip = JSON.parse(readFileSync(join(developmentRoot, 'apps/archive/compatibility-evidence.json'), 'utf8'));
+  const archiveZip = historicalZip;
   assert.equal(archiveZip.checks.successful_result.tests, archiveZip.checks.successful_result.passed); assert.equal(archiveZip.checks.successful_result.failed + archiveZip.checks.successful_result.skipped, 0);
-  for (const entry of archiveZip.implementation_fingerprints) assert.equal(sha(readFileSync(join(root, entry.path))), entry.sha256, `ZIP-tested file changed: ${entry.path}`);
-  const archiveFormats = JSON.parse(readFileSync(join(developmentRoot, 'apps/archive/formats-validation.json'), 'utf8'));
+  for (const entry of archiveZip.implementation_fingerprints) historicalFingerprint(entry, 'ZIP');
+  const archiveFormats = historicalFormats;
   assert.equal(archiveFormats.summary.tests, archiveFormats.summary.pass); assert.equal(archiveFormats.summary.fail + archiveFormats.summary.skipped, 0);
-  for (const entry of archiveFormats.sourceFiles) assert.equal(sha(readFileSync(join(root, entry.path))), entry.sha256, `Format-tested file changed: ${entry.path}`);
+  for (const entry of archiveFormats.sourceFiles) historicalFingerprint(entry, 'formats');
+  const archiveZstd = JSON.parse(readFileSync(join(developmentRoot, 'apps/archive/zstd-validation.json'), 'utf8'));
+  assert.equal(archiveZstd.checks.result.tests, archiveZstd.checks.result.passed); assert.equal(archiveZstd.checks.result.failed + archiveZstd.checks.result.skipped, 0);
+  for (const entry of archiveZstd.implementation_and_fixture_fingerprints) { safeRecordPath(entry.path); const bytes = readFileSync(join(root, entry.path)); assert.equal(bytes.length, entry.bytes, `Zstandard-tested size changed: ${entry.path}`); assert.equal(sha(bytes), entry.sha256, `Zstandard-tested file changed: ${entry.path}`); }
+  assert.equal(archiveZstd.publication_policy.vendor_executables_and_archive_packages_excluded, true);
+  assert.equal(archiveZstd.publication_policy.synthetic_ZIP_fixture_exception.path, syntheticZip.path); assert.equal(archiveZstd.publication_policy.synthetic_ZIP_fixture_exception.sha256, syntheticZip.sha256);
+  const zstdProvenance = JSON.parse(readFileSync(join(root, archiveZstd.publication_policy.synthetic_ZIP_fixture_exception.provenance), 'utf8'));
+  assert.equal(zstdProvenance.application_imported, false); assert.equal(zstdProvenance.files.find(entry => entry.name === 'native-zip93.zip')?.sha256, syntheticZip.sha256);
   const grafanaSchema = JSON.parse(readFileSync(join(developmentRoot, 'apps/metrics/results/grafana-schema-verification.json'), 'utf8'));
+  const nativeBrowser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-native-core-verification.json'), 'utf8'));
+  assert.equal(nativeBrowser.schema, 'rea-native-core-browser-verification/v1');
+  assert.deepEqual(nativeBrowser.checks.map(check => check.app).sort(), ['archive', 'backup', 'flow', 'metrics']);
+  assert.ok(nativeBrowser.checks.every(check => check.passed === true));
+  for (const gate of ['every_documented_feature_verified', 'full_feature_parity_established', 'universal_superiority_established']) assert.equal(nativeBrowser[gate], false);
+  for (const entry of [...nativeBrowser.implementation_fingerprints, ...nativeBrowser.screenshots]) {
+    safeRecordPath(entry.path); const bytes = readFileSync(join(root, entry.path));
+    assert.equal(bytes.length, entry.bytes); assert.equal(sha(bytes), entry.sha256, `Native browser source/proof changed: ${entry.path}`);
+  }
+  assert.equal(nativeBrowser.checks.find(check => check.app === 'archive').receipt_sha256, sha(readFileSync(join(developmentRoot, 'apps/archive/zstd-validation.json'))));
+  const backupBrowser = nativeBrowser.checks.find(check => check.app === 'backup');
+  assert.equal(backupBrowser.password_cleared_after_every_observed_operation, true);
+  assert.equal(backupBrowser.request_password_absent_from_application_records, true);
+  assert.ok(backupBrowser.observations.every(check => check.passwordCleared === true));
+  const nativeFlow = JSON.parse(readFileSync(join(developmentRoot, 'apps/flow/results/native-original-comparison.json'), 'utf8'));
+  assert.equal(nativeFlow.original.version, '5.0.8'); assert.equal(nativeFlow.original.originalRuntimeExecuted, true); assert.equal(nativeFlow.original.originalEditorExecuted, false);
+  for (const cases of [nativeFlow.runtimeCases, nativeFlow.scalarSwitchCases]) { assert.equal(cases.total, cases.passed); assert.equal(cases.failed, 0); }
+  assert.equal(nativeFlow.fullFeatureParity, false); assert.equal(nativeFlow.allWaysBetter, false);
+  for (const [path, digest] of Object.entries(nativeFlow.implementationSha256)) { safeRecordPath(path); assert.equal(sha(readFileSync(join(developmentRoot, 'apps/flow', path))), digest, `Native flow source changed: ${path}`); }
+  const nativeMetrics = JSON.parse(readFileSync(join(developmentRoot, 'apps/metrics/results/native-calculations-verification.json'), 'utf8'));
+  assert.equal(nativeMetrics.status, 'passed'); assert.equal(nativeMetrics.failures.length, 0); assert.equal(nativeMetrics.canonicalIds, 124);
+  assert.equal(nativeMetrics.comparisons, 2910751); assert.equal(nativeMetrics.standardHelperComparisons, 14240); assert.equal(nativeMetrics.originalDependencyVerified, true);
+  safeRecordPath(nativeMetrics.implementationFile); assert.equal(sha(readFileSync(join(developmentRoot, 'apps/metrics', nativeMetrics.implementationFile))), nativeMetrics.implementationSha256);
+  const nativeBackup = JSON.parse(readFileSync(join(developmentRoot, 'apps/backup/native-validation.json'), 'utf8'));
+  assert.equal(nativeBackup.status, 'passed-bounded-native-interoperability'); assert.equal(nativeBackup.baseline.version, '0.19.1'); assert.equal(nativeBackup.baseline.publisherDigestReverified, true);
+  assert.equal(nativeBackup.validation.tests, nativeBackup.validation.passed); assert.equal(nativeBackup.validation.failed + nativeBackup.validation.skipped + nativeBackup.validation.cancelled, 0);
+  assert.equal(nativeBackup.customTimestampValidation.tests, nativeBackup.customTimestampValidation.passed); assert.equal(nativeBackup.customTimestampValidation.failed + nativeBackup.customTimestampValidation.skipped + nativeBackup.customTimestampValidation.cancelled, 0);
+  for (const [path, digest] of Object.entries(nativeBackup.frozenHashes)) {
+    const target = resolve(developmentRoot, 'apps/backup', path); assert.ok(target.startsWith(developmentRoot + '\\') || target.startsWith(developmentRoot + '/'));
+    assert.equal(sha(readFileSync(target)), digest, `Current encrypted backup source changed: ${path}`);
+  }
+  const backupReviewRoot = 'products/rea-studio/results/native-backup-review/';
+  const backupPreservation = JSON.parse(readFileSync(join(root, backupReviewRoot, 'preservation-manifest.json'), 'utf8'));
+  assert.equal(backupPreservation.schema, 'rea-independent-review-preservation/v1'); assert.equal(backupPreservation.fullFeatureParityEstablished, false); assert.equal(backupPreservation.universalSuperiorityEstablished, false);
+  for (const entry of backupPreservation.snapshots) { safeRecordPath(entry.path); assert.ok(entry.path.startsWith(backupReviewRoot)); const bytes = readFileSync(join(root, entry.path)); assert.equal(bytes.length, entry.bytes); assert.equal(sha(bytes), entry.sha256, `Backup review artifact changed: ${entry.path}`); }
+  for (const entry of backupPreservation.reviewedSources) { safeRecordPath(entry.path); if (entry.snapshot_path) { safeRecordPath(entry.snapshot_path); assert.ok(entry.snapshot_path.startsWith(backupReviewRoot)); } assert.equal(sha(readFileSync(join(root, entry.snapshot_path ?? entry.path))), entry.sha256); }
+  const independentBackup = JSON.parse(readFileSync(join(root, backupReviewRoot, 'restic-independent-review-receipt.json'), 'utf8'));
+  assert.equal(independentBackup.independentExecutions.exactCipherAndMACVectors, 176); assert.equal(independentBackup.independentExecutions.timestampAcceptance, 19);
+  assert.equal(sha(readFileSync(join(root, backupReviewRoot, 'restic-independent-review-receipt.json'))), nativeBackup.independentReview.sha256);
+  assert.equal(sha(readFileSync(join(root, backupReviewRoot, 'backup-native-validation.full34.pre-custom.json'))), nativeBackup.validation.historicalReceipt.sha256);
   assert.equal(grafanaSchema.failed, 0); assert.ok(Object.values(grafanaSchema.checks).every(value => value === true));
   assert.equal(sha(readFileSync(join(developmentRoot, 'apps/metrics/fixtures/vendor/classic-schema.ts'))), grafanaSchema.schemaSha256);
   for (const fixture of grafanaSchema.fixtureChecks) { assert.ok(/^[a-z0-9-]+\.json$/.test(fixture.fixture)); assert.equal(fixture.byteIdentical, true); assert.equal(sha(readFileSync(join(developmentRoot, 'apps/metrics/fixtures/vendor', fixture.fixture))), fixture.sha256); }
@@ -175,7 +257,18 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(capabilityIds.size, requirementIndex.capability_area_rows);
   assert.equal(requirementIndex.exhaustive_feature_inventory_established, false);
   assert.equal(requirementIndex.full_product_parity_rows_passed, 0);
-  productDevelopment = { applications: 10, recorded_tests_passed: validation.summary.pass, tested_source_hashes_checked: validation.source_files.length, browser_workflow_records: browser.checks.length, historical_native_browser_workflow_records: currentBrowser.checks.length, current_execution_browser_workflow_records: executionBrowser.checks.length, joplin_original_method_checks: joplinOracle.passed, keepass_interoperability_test_collection: vaultOracle.result.passed, automation_execution_test_collection: automationExecution.summary.pass, archive_zip_test_collection: archiveZip.checks.successful_result.passed, archive_format_test_collection: archiveFormats.summary.pass, grafana_unchanged_original_fixtures: grafanaSchema.fixtureChecks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
+  productDevelopment = { applications: 10, recorded_tests_passed: validation.summary.pass, tested_source_hashes_checked: validation.source_files.length, browser_workflow_records: browser.checks.length, historical_native_browser_workflow_records: currentBrowser.checks.length, historical_execution_browser_workflow_records: executionBrowser.checks.length, historical_execution_archive_source_hashes_checked: historicalExecution.sources.size, historical_execution_archive_source_revision: historicalExecution.source_revision, joplin_original_method_checks: joplinOracle.passed, keepass_interoperability_test_collection: vaultOracle.result.passed, automation_execution_test_collection: automationExecution.summary.pass, historical_archive_zip_test_collection: archiveZip.checks.successful_result.passed, historical_archive_format_test_collection: archiveFormats.summary.pass, current_archive_test_collection: archiveZstd.checks.result.passed, grafana_unchanged_original_fixtures: grafanaSchema.fixtureChecks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
+  Object.assign(productDevelopment, {
+    current_native_browser_workflow_records: nativeBrowser.checks.length,
+    current_native_browser_source_hashes_checked: nativeBrowser.implementation_fingerprints.length,
+    node_red_original_runtime_cases: nativeFlow.runtimeCases.passed,
+    node_red_original_scalar_switch_cases: nativeFlow.scalarSwitchCases.passed,
+    grafana_original_native_calculation_comparisons: nativeMetrics.comparisons,
+    grafana_original_standard_helper_comparisons: nativeMetrics.standardHelperComparisons,
+    encrypted_backup_independent_cipher_mac_vectors: independentBackup.independentExecutions.exactCipherAndMACVectors,
+    encrypted_backup_preserved_review_artifacts: backupPreservation.snapshots.length
+  });
+  assert.equal(status.goal_status, 'active');
 }
 const receipt = {
   status: 'passed', checked_at_utc: new Date().toISOString(), projects: index.projects.length,

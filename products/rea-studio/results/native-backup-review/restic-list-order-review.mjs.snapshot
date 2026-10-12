@@ -1,0 +1,34 @@
+import * as fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { createWorkspace } from '../outputs/rea-research-lab/products/rea-studio/lib/storage.mjs';
+import { handle } from '../outputs/rea-research-lab/products/rea-studio/apps/backup/server.mjs';
+import { hash, seal, open, passwordKey, masterKey, base64 } from '../outputs/rea-research-lab/products/rea-studio/apps/backup/restic-crypto.mjs';
+const root = await fs.mkdtemp(path.join(os.tmpdir(),'rea-restic-order-review-')), exec = promisify(execFile);
+const PASSWORD = 'independent-review-synthetic-only-2026';
+try {
+  const workspace = await createWorkspace(path.join(root,'workspace'));
+  const call = (action,input = {}) => handle({ action,input:{ repository:'native',password:PASSWORD,...input },workspace });
+  await call('nativeInit'); await fs.mkdir(workspace.resolve('source'));
+  const initial = [await call('nativeSnapshot',{ source:'source' }),await call('nativeSnapshot',{ source:'source' })];
+  const names = await fs.readdir(workspace.resolve('native/keys')), keyDoc = JSON.parse(await fs.readFile(workspace.resolve(`native/keys/${names[0]}`)));
+  const key = masterKey(JSON.parse(open(await passwordKey(keyDoc,PASSWORD),base64(keyDoc.data))));
+  const times = ['2024-01-01T00:30:00+01:00','2023-12-31T23:45:00Z'];
+  for (let i = 0; i < 2; i++) {
+    const doc = JSON.parse(open(key,await fs.readFile(workspace.resolve(`native/snapshots/${initial[i].id}`)))); doc.time = times[i];
+    const bytes = seal(key,Buffer.from(JSON.stringify(doc))), id = hash(bytes);
+    await fs.writeFile(workspace.resolve(`native/snapshots/${id}`),bytes,{ flag:'wx' }); await fs.unlink(workspace.resolve(`native/snapshots/${initial[i].id}`));
+  }
+  const appList = await call('nativeList'), appLockFilesAfter = await fs.readdir(workspace.resolve('native/locks'));
+  const executableBytes = await fs.readFile(new URL('../outputs/rea-research-lab/projects/09-restic/artifacts/unpacked/restic_0.19.1_windows_amd64.exe',import.meta.url));
+  if (hash(executableBytes) !== 'b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830') throw Error('Original executable digest mismatch.');
+  const executable = path.join(root,'restic.exe'); await fs.writeFile(executable,executableBytes,{ flag:'wx' });
+  const originalCheck = await exec(executable,['--no-cache','-r',workspace.resolve('native'),'check','--read-data'],{ env:{ ...process.env,RESTIC_PASSWORD:PASSWORD,RESTIC_REPOSITORY:'',RESTIC_PASSWORD_FILE:'',RESTIC_PASSWORD_COMMAND:'' },windowsHide:true,timeout:30000,maxBuffer:1024*1024 });
+  const result = { checkedAt:new Date().toISOString(),readOnlyAppSources:true,syntheticOnly:true,appList,appLockFilesAfter,originalCheck:originalCheck.stdout,newestListedFirst:Date.parse(appList.snapshots[0].time) > Date.parse(appList.snapshots[1].time) };
+  await fs.writeFile(new URL('./restic-list-order-review.json',import.meta.url),JSON.stringify(result,null,2)+'\n'); console.log(JSON.stringify(result,null,2));
+} finally {
+  if (path.dirname(path.resolve(root)) !== path.resolve(os.tmpdir()) || !path.basename(root).startsWith('rea-restic-order-review-')) throw Error('Unsafe private-fixture cleanup target.');
+  await fs.rm(root,{ recursive:true,force:true });
+}

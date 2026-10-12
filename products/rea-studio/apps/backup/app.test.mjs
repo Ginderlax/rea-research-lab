@@ -13,6 +13,11 @@ async function fixture(t) {
   t.after(async () => { assert.equal(path.dirname(root),path.resolve(os.tmpdir())); assert.ok(path.basename(root).startsWith('rea-backup-test-')); await fs.rm(root,{ recursive: true,force: true }); });
   return { root: workspace.root,call: (action,input = {}) => handle({ action,input,workspace }) };
 }
+async function publishManifest(root, doc) {
+  const bytes = Buffer.from(JSON.stringify(doc)), id = createHash('sha256').update(bytes).digest('hex');
+  await fs.writeFile(path.join(root,'.rea-backup','snapshots',`${id}.json`),bytes,{ flag: 'wx' });
+  return id;
+}
 test('content-addressed snapshots deduplicate chunks and faithfully restore multi-chunk binary and empty directories',async t => {
   const { root,call } = await fixture(t); const source = path.join(root,'source'); await fs.mkdir(path.join(source,'empty'),{ recursive: true });
   const bytes = Buffer.concat([Buffer.alloc(1024 * 1024,42),Buffer.alloc(1024 * 1024,43),Buffer.from([0,1,255])]);
@@ -53,4 +58,43 @@ test('snapshot and restore paths cannot traverse outside the workspace or replac
   await call('putFile',{ path: 'source/file',content: 'first' }); await assert.rejects(call('putFile',{ path: 'source/file',content: 'second' }),/EEXIST/);
   const { id } = await call('snapshot',{ source: 'source' }); await assert.rejects(call('restore',{ id,destination: 'restore' }),/confirmation/);
   await assert.rejects(call('restore',{ id,destination: '../escape',confirm: true }),/Unsafe|workspace/);
+});
+test('authenticated custom manifests reject unrepresentable file times before output and preserve existing destinations',async t => {
+  const { root,call } = await fixture(t);
+  await call('putFile',{ path:'source/a-good.txt',content:'first file must not be written' });
+  await call('putFile',{ path:'source/z-bad.txt',content:'last entry carries invalid time' });
+  const snapshot = await call('snapshot',{ source:'source' }), original = (await call('inspect',{ id:snapshot.id })).snapshot;
+  await fs.mkdir(path.join(root,'existing')); await fs.writeFile(path.join(root,'existing','keep.txt'),'preserve');
+  const cases = process.platform === 'win32' ? [-1,4294967296000,9e23] : [9e23];
+  for (const [index,modified] of cases.entries()) {
+    const doc = structuredClone(original); doc.entries.find(entry => entry.path === 'z-bad.txt').mtimeMs = modified;
+    const id = await publishManifest(root,doc), destination = `invalid-time-${index}`;
+    // The first two times are valid custom metadata and data-checkable, but
+    // cannot be represented by this Windows utimes implementation.
+    if (modified !== 9e23) assert.equal((await call('check',{ id })).verified,true);
+    else await assert.rejects(call('check',{ id }),/Invalid snapshot file/);
+    await assert.rejects(call('restore',{ id,destination,confirm:true }),/cannot be restored accurately|Invalid snapshot file/);
+    await assert.rejects(fs.stat(path.join(root,destination)),/ENOENT/);
+    await assert.rejects(call('restore',{ id,destination:'existing',confirm:true }),/cannot be restored accurately|Invalid snapshot file/);
+    assert.equal(await fs.readFile(path.join(root,'existing','keep.txt'),'utf8'),'preserve');
+    assert.deepEqual(await fs.readdir(path.join(root,'existing')),['keep.txt']);
+  }
+});
+test('custom restore reads back represented modification times at epoch, 2038 and Windows upper boundaries',async t => {
+  const { root,call } = await fixture(t), bytes = Buffer.from([0,128,255]);
+  await fs.mkdir(path.join(root,'source')); await fs.writeFile(path.join(root,'source','a.bin'),bytes);
+  const snapshot = await call('snapshot',{ source:'source' }), original = (await call('inspect',{ id:snapshot.id })).snapshot;
+  for (const [index,modified] of [0,1,2147483647999,4294967295999,2023.875].entries()) {
+    const doc = structuredClone(original); doc.entries[0].mtimeMs = modified;
+    const id = await publishManifest(root,doc), destination = `time-boundary-${index}`;
+    const result = await call('restore',{ id,destination,confirm:true });
+    assert.equal(result.verified,true); assert.equal(result.restored,1);
+    const target = path.join(root,destination,'a.bin');
+    assert.deepEqual(await fs.readFile(target),bytes);
+    const actual = (await fs.stat(target)).mtimeMs, expected = new Date(modified).getTime();
+    assert.ok(Math.abs(actual - expected) < 1,`${modified} represented as ${expected} but read back ${actual}`);
+    await assert.rejects(call('restore',{ id,destination,confirm:true }),/EEXIST/);
+    assert.deepEqual(await fs.readFile(target),bytes);
+    assert.ok(Math.abs((await fs.stat(target)).mtimeMs - expected) < 1);
+  }
 });

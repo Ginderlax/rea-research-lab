@@ -5,6 +5,7 @@ import { randomUUID } from 'node:crypto';
 import { MAX_TOTAL, MAX_FILE, MAX_ENTRIES, clean, makeZip, readZip } from './zip.mjs';
 import { MAX_CONTAINER, makeTar, readTar } from './tar.mjs';
 import { makeGzip, readGzip } from './gzip.mjs';
+import { isZstd, makeZstd, readZstd } from './zstd.mjs';
 export { makeZip, readZip, crc32 } from './zip.mjs';
 const queues = new Map();
 async function safe(workspace, relative) {
@@ -55,6 +56,12 @@ function readArchive(bytes, relative, includeData = false) {
     const name = inflated.members[0].name || path.posix.basename(relative).replace(/\.gz$/i, '') || 'content.bin'; clean(name); if (name.includes('/')) throw new Error('GZIP contains an unsafe filename.');
     return { format: 'gzip', members: inflated.members, entries: [{ name, directory: false, size: inflated.data.length, compressedSize: bytes.length, method: 'gzip', modifiedAt: inflated.members[0].modifiedAt, ...(includeData ? { data: inflated.data } : {}) }] };
   }
+  if (isZstd(bytes)) {
+    const tar = /\.(?:tzst|tar\.zst)$/i.test(relative), decoded = readZstd(bytes, tar ? MAX_CONTAINER : MAX_FILE);
+    if (tar) return { format: 'tzst', entries: readTar(decoded.data, includeData), frames: decoded.frames };
+    const name = path.posix.basename(relative).replace(/\.zst$/i, '') || 'content.bin'; clean(name);
+    return { format: 'zstd', frames: decoded.frames, entries: [{ name, directory: false, size: decoded.data.length, compressedSize: bytes.length, method: 'zstd', ...(includeData ? { data: decoded.data } : {}) }] };
+  }
   return { format: 'tar', entries: readTar(bytes, includeData) };
 }
 async function run({ action, input = {}, workspace }) {
@@ -65,15 +72,17 @@ async function run({ action, input = {}, workspace }) {
     return { created: true, path: input.path };
   }
   if (action === 'create') {
-    const format = input.format ?? 'zip', extensions = { zip: /\.zip$/i, tar: /\.tar$/i, tgz: /\.(?:tar\.gz|tgz)$/i, gzip: /\.gz$/i };
-    if (!Object.hasOwn(extensions, format) || !extensions[format].test(input.output ?? '') || format === 'gzip' && /\.(?:tgz|tar\.gz)$/i.test(input.output)) throw new Error('Choose ZIP (.zip), TAR (.tar), TAR.GZ (.tar.gz/.tgz), or GZIP (.gz) with its matching output extension.');
+    const format = input.format ?? 'zip', extensions = { zip: /\.zip$/i, tar: /\.tar$/i, tgz: /\.(?:tar\.gz|tgz)$/i, gzip: /\.gz$/i, zstd: /\.zst$/i, tzst: /\.(?:tar\.zst|tzst)$/i };
+    if (!Object.hasOwn(extensions, format) || !extensions[format].test(input.output ?? '') || format === 'gzip' && /\.(?:tgz|tar\.gz)$/i.test(input.output) || format === 'zstd' && /\.(?:tzst|tar\.zst)$/i.test(input.output)) throw new Error('Choose ZIP (.zip), TAR (.tar), TAR.GZ (.tar.gz/.tgz), GZIP (.gz), Zstandard (.zst), or TAR.ZST (.tar.zst/.tzst) with its matching output extension.');
     const location = await safe(workspace, input.output); let entries;
-    if (format === 'gzip') { const source = await safe(workspace, input.source), stat = await fs.lstat(source); if (!stat.isFile() || stat.size > MAX_FILE) throw new Error('GZIP source must be one regular file within the local size limit.'); entries = [{ name: path.basename(source), data: await fs.readFile(source), modifiedAt: stat.mtime.toISOString() }]; }
+    if (['gzip','zstd'].includes(format)) { const source = await safe(workspace, input.source), stat = await fs.lstat(source); if (!stat.isFile() || stat.size > MAX_FILE) throw new Error('Single-file compression needs one regular file within the local size limit.'); entries = [{ name: path.basename(source), data: await fs.readFile(source), modifiedAt: stat.mtime.toISOString() }]; }
     else entries = await collect(workspace, input.source);
     let archive;
     if (format === 'zip') archive = makeZip(entries, input.compression ?? 'deflate', { zip64: input.zip64 === true, level: input.level, comment: input.comment });
     else if (format === 'tar') archive = makeTar(entries);
     else if (format === 'tgz') archive = makeGzip(makeTar(entries), { level: input.level, maxOutput: MAX_CONTAINER });
+    else if (format === 'tzst') archive = makeZstd(makeTar(entries), { level: input.level, maxOutput: MAX_CONTAINER });
+    else if (format === 'zstd') archive = makeZstd(entries[0].data, { level: input.level });
     else archive = makeGzip(entries[0].data, { level: input.level, name: /[^\x01-\xff]/.test(entries[0].name) ? undefined : entries[0].name, modifiedAt: entries[0].modifiedAt, comment: input.comment });
     readArchive(archive, input.output); await fs.mkdir(path.dirname(location), { recursive: true }); await fs.writeFile(location, archive, { flag: 'wx' });
     return { path: input.output, format, entries: entries.length, bytes: archive.length, originalBytes: entries.reduce((n,e) => n + e.data.length, 0) };

@@ -1,7 +1,7 @@
 function node(tag,text,className) { const n = document.createElement(tag); if (text !== undefined) n.textContent = text; if (className) n.className = className; return n; }
 function field(parent,label,value = '',type = 'text') { const wrapper = node('label',label), input = type === 'textarea' ? node('textarea') : node('input'); if (type !== 'textarea') input.type = type; input.value = value; wrapper.append(input); parent.append(wrapper); return input; }
 export async function render(root,api) {
-  root.replaceChildren(); root.append(node('h2','REA Backup'),node('p','Local snapshots use SHA-256 content IDs and deduplicated 1 MiB chunks. Restore always creates a new folder. Stored backup data is not encrypted.','muted'));
+  root.replaceChildren(); root.append(node('h2','REA Backup'),node('p','Choose application snapshots below, or an encrypted restic repository. Restore always creates a new folder. Application snapshots are stored without encryption.','muted'));
   const status = node('p','', 'status'); root.append(status);
   function button(parent,label,fn) { const b = node('button',label,'button'); b.type = 'button'; b.addEventListener('click',async () => { b.disabled = true; status.textContent = 'Working…'; try { await fn(); status.textContent = 'Done.'; } catch (error) { status.textContent = error.message; } finally { b.disabled = false; } }); parent.append(b); }
   const sample = node('section',undefined,'card'); sample.append(node('h3','Create a workspace file')); root.append(sample);
@@ -27,5 +27,21 @@ export async function render(root,api) {
   const keep = field(retention,'Number of newest snapshots to keep','5','number'), confirmed = field(retention,'Confirm removal of listed application backups','','checkbox'), preview = node('p','', 'status'); retention.append(preview); let plan;
   button(retention,'Preview retention',async () => { plan = await api('planRetention',{ keepLast: Number(keep.value) }); preview.textContent = `Keep ${plan.keep.length} snapshots; remove ${plan.remove.length} older snapshots and ${plan.unusedChunks.length} unused chunks.`; });
   button(retention,'Apply retention',async () => { if (!plan) throw new Error('Preview retention first.'); const value = await api('prune',{ keepLast: Number(keep.value), token: plan.token, confirm: confirmed.checked }); preview.textContent = `Removed ${value.removedSnapshots} snapshots and ${value.removedChunks} unused chunks.`; plan = null; await refresh(); });
+  const native = node('section',undefined,'card'); native.append(node('h3','Encrypted restic repositories'),node('p','Create or open a local restic repository inside this workspace. Enter its password for each operation; it is cleared afterward and is never saved by the app. Keep your own copy of the password.','muted')); root.append(native);
+  const nativeRepository = field(native,'Restic repository folder','backup/restic'), nativePassword = field(native,'Repository password','','password'); nativePassword.autocomplete = 'off'; nativePassword.spellcheck = false;
+  const nativeVersion = field(native,'New repository format version (1 or 2)','1','number'); nativeVersion.min = '1'; nativeVersion.max = '2';
+  const nativeSource = field(native,'Source folder','backup/source'), nativeLabel = field(native,'Snapshot label',''), nativeID = field(native,'Restic snapshot ID'), nativeDestination = field(native,'New restore folder','backup/restic-restored'), nativeConfirm = field(native,'Confirm restore','','checkbox');
+  const nativeResult = node('pre',''); native.append(nativeResult);
+  async function nativeCall(action,input = {}) {
+    try { const value = await api(action,{ repository:nativeRepository.value,password:nativePassword.value,...input }); nativeResult.textContent = JSON.stringify(value,null,2); return value; }
+    finally { nativePassword.value = ''; }
+  }
+  button(native,'Create encrypted repository',() => nativeCall('nativeInit',{ version:Number(nativeVersion.value) }));
+  button(native,'Open repository',() => nativeCall('nativeInfo'));
+  button(native,'List restic snapshots',() => nativeCall('nativeList'));
+  button(native,'Save restic snapshot',async () => { const value = await nativeCall('nativeSnapshot',{ source:nativeSource.value,label:nativeLabel.value }); nativeID.value = value.id; });
+  button(native,'Inspect restic snapshot',() => nativeCall('nativeInspect',{ id:nativeID.value }));
+  button(native,'Verify restic snapshot',() => nativeCall('nativeCheck',{ id:nativeID.value }));
+  button(native,'Restore restic snapshot',() => nativeCall('nativeRestore',{ id:nativeID.value,destination:nativeDestination.value,confirm:nativeConfirm.checked }));
   try { await refresh(); } catch (error) { status.textContent = error.message; }
 }

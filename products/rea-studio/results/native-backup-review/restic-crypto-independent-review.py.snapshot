@@ -1,0 +1,25 @@
+import base64, hashlib, json, pathlib, datetime
+import cryptography
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives.poly1305 import Poly1305
+
+folder = pathlib.Path(__file__).resolve().parent
+source = folder / 'restic-crypto-independent-vectors.json'
+data = source.read_bytes()
+vectors = json.loads(data)['records']
+output = hashlib.sha256()
+for record in vectors:
+    key = {name: bytes.fromhex(value) for name,value in record['key'].items()}
+    nonce, plaintext = bytes.fromhex(record['nonce']), base64.b64decode(record['plaintext'], validate=True)
+    encryptor = Cipher(algorithms.AES(key['encrypt']),modes.CTR(nonce)).encryptor()
+    ciphertext = encryptor.update(plaintext) + encryptor.finalize()
+    padder = Cipher(algorithms.AES(key['k']),modes.ECB()).encryptor()
+    pad = padder.update(nonce) + padder.finalize()
+    tag = Poly1305.generate_tag(key['r'] + pad,ciphertext)
+    expected = nonce + ciphertext + tag
+    actual = base64.b64decode(record['encrypted'], validate=True)
+    assert actual == expected, f"Independent cipher/MAC mismatch at length {len(plaintext)}"
+    output.update(expected)
+result = {'checkedAt': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'syntheticOnly':True, 'readOnlyAppSources':True, 'vectors':len(vectors), 'failures':0, 'inputSHA256':hashlib.sha256(data).hexdigest(), 'outputSHA256':output.hexdigest(), 'independentImplementation':f'cryptography {cryptography.__version__} Cipher AES CTR/ECB + raw Poly1305 (Rust/OpenSSL bindings)', 'scope':'Exact ciphertext and MAC bytes across 16 key cases including full-width r bits, 11 plaintext boundary lengths; no security equivalence or constant-time assessment.'}
+(folder / 'restic-crypto-independent-review.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf8')
+print(json.dumps(result,indent=2))

@@ -1,0 +1,190 @@
+{
+  "product": "REA Backup native restic repository slice",
+  "date": "2026-10-12",
+  "status": "passed-bounded-native-interoperability",
+  "method": "New source-assisted Node implementation; authenticated released original executable used only as an independent test oracle, never as app runtime",
+  "baseline": {
+    "product": "restic",
+    "version": "0.19.1",
+    "commit": "6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf",
+    "releaseUrl": "https://github.com/restic/restic/releases/tag/v0.19.1",
+    "publisherDigestSource": "https://api.github.com/repos/restic/restic/releases/tags/v0.19.1",
+    "asset": "restic_0.19.1_windows_amd64.zip",
+    "assetBytes": 11237567,
+    "assetSha256": "da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d",
+    "publisherDigestReverified": true,
+    "executableBytes": 31660032,
+    "executableSha256": "b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830",
+    "authentication": "Each oracle fixture hashes preserved release ZIP and executable, copies executable bytes into its own temporary directory, hashes that copy, then verifies exact restic version and Go compiler version before further execution. No shared oracle directory mutation.",
+    "observedOriginalScrypt": [
+      {
+        "N": 32768,
+        "r": 8,
+        "p": 11
+      },
+      {
+        "N": 32768,
+        "r": 8,
+        "p": 12
+      },
+      {
+        "N": 32768,
+        "r": 8,
+        "p": 13
+      }
+    ],
+    "referenceManifest": "native-source-references.json",
+    "publisherDigestReverifiedAt": "2026-10-12T17:01:53.752Z",
+    "exactOriginalVersion": "restic 0.19.1 compiled with go1.26.4 on windows/amd64",
+    "timestampRuntime": {
+      "go": "1.26.4",
+      "commit": "a9ce111d580581fb925ae88f125c69b7d93504ea",
+      "referenceManifest": "native-source-references.json"
+    }
+  },
+  "validation": {
+    "command": "node --test products/rea-studio/apps/backup/app.test.mjs products/rea-studio/apps/backup/app.integration.test.mjs products/rea-studio/apps/backup/native.test.mjs",
+    "node": "v24.16.0",
+    "platform": "Windows x64",
+    "tests": 34,
+    "nativeTests": 30,
+    "existingCustomTests": 4,
+    "passed": 34,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "durationMs": 94545.2211,
+    "clientSyntax": "passed",
+    "diffWhitespace": "passed",
+    "browserValidation": "Not performed by this agent; no shared browser or actual user credential was used.",
+    "completedAt": "2026-10-12T17:04:42.678Z",
+    "testedHashes": {
+      "restic-crypto.mjs": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c",
+      "restic.mjs": "efa23b18a99f012bf15bcb59ee8a06cecb41c98838d71bb9e8dc31e9d872c3d6",
+      "server.mjs": "b33c1842c4ebce2aecc8b4583cfb05c726cda1164a2866683b31fd537c269807",
+      "client.mjs": "04c56655e166dd47f79530eac9e5d324360e6234be4184c8a15e7ff4878a3083",
+      "native.test.mjs": "d665da4f65ff7c61d788935467234991a379fb32a1a1a6796c416de747de7b63",
+      "app.test.mjs": "19e27ea9ca17272a6d21315b2ce3120d08de75358cbb2e33117d5d1002eb0e59",
+      "app.integration.test.mjs": "08d54bb58463b39c2c834575678188bd61247974b39129de8ee54d2fa5d35db4",
+      "README.md": "ff30deda2bd017198f873d36520b2c75274fc7eace6b1d1d3d3457f8088dab42",
+      "SOURCE-COMPARISON.md": "0f2c7c8ef3d5294f6fa8057563c82ccc009a347a739c54d2a74ad1594719e25b",
+      "native-source-references.json": "310dd650b87d08cbe324a969d8f909383fec5a6ba60d799ff6f10050e2e2390a",
+      "../../server.mjs": "ed40430c6df3bec60b8d05acd40f5c5ac4d8606cda3bc98f02065b2abe4050f3",
+      "../../lib/storage.mjs": "729c2f9700b1239f04294b11c42bfd2754478b227e39ab03ec49a1be9141b633"
+    },
+    "scope": "Full 34-test run after native timestamp correction and before the separately authorized custom-format restore timestamp correction. These exact tested hashes must not be attributed to subsequent custom source changes."
+  },
+  "observedContracts": [
+    "Native app-generated v1 and v2 key/config/repositories opened by original CLI",
+    "Original check --read-data passes for app-generated v1/v2 initial and repeated snapshots and app appends to original repositories",
+    "Original restores app-generated v1/v2 snapshots with matching binary/Unicode/empty-file bytes and empty directories",
+    "Original-generated v1/v2 snapshots are listed, inspected, verified, restored and extended by the app",
+    "Original v2 fixture asserted compressed metadata encoding 2 and nonzero compressed pack blob lengths, not just a v2 label",
+    "Native whole storage SHA-256, plaintext SHA-256, authenticated pack header/index agreement and file lengths verified",
+    "Wrong password, altered key/config/snapshot/payload/header MAC, invalid header type/footer length/index offset and plaintext hash rejected",
+    "Original CLI independently rejects altered config authentication and recognizes app-generated exclusive lock bytes",
+    "Authenticated unsafe traversal/case-collision/duplicate/unordered/symlink/oversize/content-length tree fixtures rejected before output creation",
+    "Excessive KDF parameters and zstd output expansion rejected",
+    "Input traversal, overlapping folders, short IDs, unconfirmed restore and every existing repository/restore destination rejected",
+    "Existing destination bytes remain intact after rejected restore",
+    "Existing and stale locks are refused without deleting them; normal app locks are released",
+    "Oversized or concurrently changed source aborts snapshot publication; source-change test begins after a real pack has been published and documents remaining unreferenced packs",
+    "Native HTTP init/snapshot/list/check/restore survives host restart; app records remain empty and API responses contain no request password",
+    "Existing custom snapshot/chunk/retention/restore and HTTP restart tests pass unchanged",
+    "Fourteen authenticated malformed node mtime/atime/ctime fixtures reject before native restore output; original check --read-data exits nonzero, sometimes by panic",
+    "Five authenticated malformed snapshot-time fixtures reject in native listing and selected inspection/check/restore before output; original check --read-data exits nonzero",
+    "Seventeen valid timestamp boundary fixtures pass native and original verification, including year 0000/9999, null zero time, 19-digit/comma fractions, single-digit hours and offsets +24:00/+00:60",
+    "Thirteen supported-Windows file-time boundary fixtures and one null-snapshot-time fixture restore with matching bytes and represented mtime within one millisecond using both app and original",
+    "Four valid-restic but unsupported-Windows file-time fixtures are inspectable/verifiable and refused by native restore before destination creation",
+    "Snapshot listing orders actual timestamp instants across timezone offsets; all app-owned locks are released after these fixtures"
+  ],
+  "failuresAndCorrections": [
+    {
+      "phase": "Initial native full run",
+      "result": "4/6 passed",
+      "failure": "Original calibrated scrypt p=12 exceeded initial p<=8 guard",
+      "correction": "Allow p<=64 while preserving explicit N*r memory and N*r*p work budgets"
+    },
+    {
+      "phase": "Original generated targeted rerun",
+      "result": "0/2 passed",
+      "failure": "Original local repositories omit optional tmp directory",
+      "correction": "Do not require tmp on open; create it safely when atomically writing"
+    },
+    {
+      "phase": "Expanded corruption suite",
+      "result": "16/17 passed",
+      "failure": "Index-only corruption test helper tried exclusive write of unchanged pack bytes",
+      "correction": "Preserve existing identical pack when only index changes; corrected helper then exercised actual index/header mismatch"
+    },
+    {
+      "phase": "Independent implementation review before freeze",
+      "failure": "No failing test; aggregate decoded metadata/tree budget, write/read depth boundary and lock acquisition cleanup needed stronger explicit enforcement",
+      "correction": "Count stored plus decoded metadata and repeated tree expansion, validate generated tree before publication, align source depth, and include second lock check in cleanup scope"
+    },
+    {
+      "phase": "Receipt helper",
+      "failure": "PowerShell hash-output pipeline syntax failed before hashes/checks executed",
+      "correction": "Collected hash records before piping; final hash, client syntax and whitespace checks passed"
+    },
+    {
+      "phase": "Independent authenticated timestamp review",
+      "failure": "JavaScript Date.parse coerced numeric time and normalized invalid calendars; selected snapshot reads omitted time validation",
+      "correction": "New bounded Go-compatible parser shared by snapshot listing/selection and optional node mtime/atime/ctime validation; preserve safely supported original extensions and null zero time"
+    },
+    {
+      "phase": "Initial targeted timestamp comparison",
+      "result": "2/3 passed",
+      "failure": "Test assumed original snapshots --json returns nonzero for malformed metadata, but original warns/skips and can return success",
+      "correction": "Compare malformed timestamp rejection with original check --read-data instead"
+    },
+    {
+      "phase": "Targeted malformed timestamp rerun",
+      "result": "1/2 passed",
+      "failure": "Original malformed tree may panic with tree was not read completely rather than a direct time parse diagnostic",
+      "correction": "Explicitly record and accept the observed nonzero panic outcome as original rejection, without claiming graceful handling"
+    },
+    {
+      "phase": "Synthetic Windows modification-time boundary probe",
+      "failure": "Node 24.16.0 utimes silently wraps negative and overflowing unsigned 32-bit Unix seconds",
+      "correction": "Native Windows restore preflights all requested mtimes before output and reads each applied time back within one millisecond; wider valid restic times stay readable but restore is refused"
+    }
+  ],
+  "boundaries": [
+    "Only bounded workspace-local restic repositories; no remote backend or original runtime wrapper",
+    "Writer fixed 1 MiB data blobs, one blob per pack and uncompressed v1/v2 metadata/data; no Rabin/batching/randomization/compression policy parity",
+    "Writer fixed scrypt N=32768,r=8,p=1 differs from original calibration and may reduce password-guessing resistance",
+    "BigInt Poly1305 arithmetic has no constant-time guarantee and no cryptographic audit; no original-grade production security claim",
+    "Snapshot paths are logical /source-name paths, not original absolute-path construction; custom format remains separately plaintext",
+    "Regular Unicode files/directories and millisecond modification times only; no symlink/device/sparse/ownership/ACL/xattr/hardlink/mode restoration or nanosecond parity",
+    "Selected snapshot verification, not whole-repository check/repair/orphan reclamation",
+    "No native retention/prune, repair, key management, mount, scheduler, cancellation, lock refresh or automatic stale-lock removal",
+    "Application budgets and cooperative deadline are not OS CPU/memory isolation",
+    "Trusted local filesystem required; repeated workspace path checks do not eliminate adversarial concurrent symlink/reparse replacement races",
+    "Crash/init/write failures may leave partial new repositories, temporary files, stale own locks or unreferenced packs; no published snapshot references intentionally missing data",
+    "No superiority, full replacement, universal format acceptance or exact original chunk/tree identity established",
+    "Timestamp parser accepts at most 128 characters and Go-compatible permissive forms; conversion and list ordering have millisecond precision, not exact nanosecond ordering",
+    "On tested Windows Node runtime, restore modification times are limited to 1970-01-01T00:00:00Z through 2106-02-07T06:28:15.999Z; null/year-0000/year-9999 file times are refused before output despite being valid restic metadata"
+  ],
+  "frozenHashes": {
+    "restic-crypto.mjs": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c",
+    "restic.mjs": "efa23b18a99f012bf15bcb59ee8a06cecb41c98838d71bb9e8dc31e9d872c3d6",
+    "server.mjs": "b33c1842c4ebce2aecc8b4583cfb05c726cda1164a2866683b31fd537c269807",
+    "client.mjs": "04c56655e166dd47f79530eac9e5d324360e6234be4184c8a15e7ff4878a3083",
+    "native.test.mjs": "d665da4f65ff7c61d788935467234991a379fb32a1a1a6796c416de747de7b63",
+    "app.test.mjs": "19e27ea9ca17272a6d21315b2ce3120d08de75358cbb2e33117d5d1002eb0e59",
+    "app.integration.test.mjs": "08d54bb58463b39c2c834575678188bd61247974b39129de8ee54d2fa5d35db4",
+    "README.md": "ff30deda2bd017198f873d36520b2c75274fc7eace6b1d1d3d3457f8088dab42",
+    "SOURCE-COMPARISON.md": "0f2c7c8ef3d5294f6fa8057563c82ccc009a347a739c54d2a74ad1594719e25b",
+    "native-source-references.json": "310dd650b87d08cbe324a969d8f909383fec5a6ba60d799ff6f10050e2e2390a",
+    "../../server.mjs": "ed40430c6df3bec60b8d05acd40f5c5ac4d8606cda3bc98f02065b2abe4050f3",
+    "../../lib/storage.mjs": "729c2f9700b1239f04294b11c42bfd2754478b227e39ab03ec49a1be9141b633"
+  },
+  "independentReview": {
+    "receipt": "work/restic-independent-review-receipt.json",
+    "sha256": "40dc9577c67049347c5b12206c10617b7753a644388f7784025d332ffd5dd89b",
+    "scope": "Separate read-only reviewer verified pinned sources, 176 AES/raw-Poly1305 vectors, 19 original timestamp boundary acceptance cases, three malformed metadata pre-output rejection reproductions and timezone ordering. One confirmed timestamp-family finding was corrected and independently retested; zero unresolved confirmed findings in that reviewed scope. This is not a cryptographic security audit or full product comparison.",
+    "reviewedServerSha256": "b33c1842c4ebce2aecc8b4583cfb05c726cda1164a2866683b31fd537c269807",
+    "historicalServerSnapshot": "work/backup-server.pre-custom-timestamp.mjs"
+  }
+}

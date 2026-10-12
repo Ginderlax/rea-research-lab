@@ -27,6 +27,12 @@ Projects 01–06 need Node.js. Original-artifact execution in projects 07–10 u
 
 ## Preservation and publication
 
-The local collection retains original distributables, full evidence, dependency files, engine installations and replay repositories under ignored `artifacts/`, `node_modules/` and `tooling/` directories. The private [Ginderlax/rea-research-lab repository](https://github.com/Ginderlax/rea-research-lab) stores research reports, reconstructed code, harnesses, acquisition digests, selected evidence and recorded observations. GitHub is not an archival mirror of every vendor distributable; those exact originals remain on the local machine.
+The local collection retains original distributables, full evidence, dependency files, engine installations and replay repositories under ignored `artifacts/`, `node_modules/` and `tooling/` directories. The public [Ginderlax/rea-research-lab repository](https://github.com/Ginderlax/rea-research-lab) stores research reports, reconstructed code, harnesses, acquisition digests, selected evidence and recorded observations. GitHub is not an archival mirror of every vendor distributable; those exact originals remain on the local machine.
 
 The separate `rea-backup-2026-10-12` backup was preserved unchanged. [PUBLICATION-MANIFEST.json](PUBLICATION-MANIFEST.json) hashes the research payload. The local publication receipt records the verified remote commit. [License scope and attribution](LICENSES.md) explain why no blanket license is applied to the collection.
+
+## Developer feedback
+
+We welcome independent reproduction, small counterexamples, corrections to the reports, and suggestions for stronger REA experiments. [Open a research feedback issue](https://github.com/Ginderlax/rea-research-lab/issues/new?template=research-feedback.md) or submit a pull request. [CONTRIBUTING.md](CONTRIBUTING.md) explains how to make a result easy to reproduce and review.
+
+Useful starting points include Monaco's nonminimal edit-script witness, Grafana's counter-reset behavior, n8n's edge-selection rules, KeePass's boundary cases, and the limits of REA's partial semantic traces. Findings should identify the exact component and release; the collection's scope is ten bounded mechanisms rather than ten complete product replicas.

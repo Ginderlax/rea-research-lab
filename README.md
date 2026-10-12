@@ -8,6 +8,8 @@ Start with [the series manuscript](SERIES-STUDY.md), [methods and evidence stand
 
 [REA Studio](products/rea-studio/README.md) adds ten runnable local development applications with a shared interface, persisted data and integration tests. The user's completion standard is every documented feature of the original products, plus improvements in speed, resource use, ease of use, compatibility and reliability. **Zero complete replacement products meet that standard yet.** The [acceptance requirements](products/rea-studio/ACCEPTANCE.md), [status record](products/rea-studio/STATUS.json) and individual application READMEs preserve the full scope and identify missing capabilities. Recorded component comparisons include tradeoffs as well as improvements.
 
+The [native exchange and source control milestone](products/rea-studio/NATIVE-EXCHANGE-MILESTONE.md) adds supported KeePass KDBX, Joplin JEX and Excalidraw scene exchange, editor Git controls and exact sequence differences. It records 112 passing development tests with zero skips, original-software interoperability checks and verified browser workflows. Remaining full-product requirements and measured regressions stay explicit.
+
 | Project | Released component and valuable mechanism | Recorded comparison unit | Report |
 | --- | --- | --- | --- |
 | 01 · VS Code / Monaco | Monaco 0.57.0 sequence-diff kernel | 5,002 exact outputs; 5,002 separate replay checks | [Study](projects/01-vscode-monaco/REPORT.md) |

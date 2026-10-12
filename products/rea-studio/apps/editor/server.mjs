@@ -1,6 +1,8 @@
 import { readFile, writeFile, readdir, stat, mkdir, rename, unlink } from 'node:fs/promises';
 import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
+import { gitAction } from './git.mjs';
+import { minimalSequenceDiff } from './sequence-diff.mjs';
 
 const MAX_BYTES = 2 * 1024 * 1024;
 const locks = new Map();
@@ -41,35 +43,25 @@ export function minimalLineDiff(before, after) {
   const a = before === '' ? [] : before.split('\n');
   const b = after === '' ? [] : after.split('\n');
   if (a.length > 10000 || b.length > 10000) throw new Error('Diff supports at most 10,000 lines per side.');
-  let prefix = 0;
-  while (prefix < a.length && prefix < b.length && a[prefix] === b[prefix]) prefix++;
-  let suffix = 0;
-  while (suffix < a.length - prefix && suffix < b.length - prefix && a[a.length - 1 - suffix] === b[b.length - 1 - suffix]) suffix++;
-  const n = a.length - prefix - suffix, m = b.length - prefix - suffix;
-  if ((n + 1) * (m + 1) > 4_000_000) throw new Error('Changed diff region exceeds 4 million comparison cells; split the file into smaller comparisons.');
-  const width = m + 1, table = new Uint32Array((n + 1) * width);
-  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
-    table[i * width + j] = a[prefix + i] === b[prefix + j]
-      ? 1 + table[(i + 1) * width + j + 1]
-      : Math.max(table[(i + 1) * width + j], table[i * width + j + 1]);
-  }
+  const alignment = minimalSequenceDiff(a, b);
   const operations = [];
   let oldLine = 1, newLine = 1;
   const append = (type, value) => { operations.push({ type, text: value, oldLine: type === 'insert' ? null : oldLine++, newLine: type === 'delete' ? null : newLine++ }); };
-  for (let i = 0; i < prefix; i++) append('equal', a[i]);
-  let i = 0, j = 0;
-  while (i < n || j < m) {
-    if (i < n && j < m && a[prefix + i] === b[prefix + j]) { append('equal', a[prefix + i]); i++; j++; }
-    else if (j < m && (i === n || table[i * width + j + 1] > table[(i + 1) * width + j])) append('insert', b[prefix + j++]);
-    else append('delete', a[prefix + i++]);
+  let cursor = 0;
+  for (const diff of alignment.diffs) {
+    const old = diff.seq1Range, next = diff.seq2Range;
+    while (cursor < old.start) append('equal', a[cursor++]);
+    while (cursor < old.endExclusive) append('delete', a[cursor++]);
+    for (let j = next.start; j < next.endExclusive; j++) append('insert', b[j]);
   }
-  for (let k = 0; k < suffix; k++) append('equal', a[a.length - suffix + k]);
+  while (cursor < a.length) append('equal', a[cursor++]);
   const inserted = operations.filter(op => op.type === 'insert').length;
   const deleted = operations.filter(op => op.type === 'delete').length;
-  return { operations, inserted, deleted, cost: inserted + deleted, minimal: true, unit: 'line insertions and deletions', comparedCells: n * m };
+  return { operations, inserted, deleted, cost: inserted + deleted, minimal: true, unit: 'line insertions and deletions', comparisons: alignment.comparisons, algorithm: alignment.algorithm };
 }
 
 export async function handle({ action, input = {}, workspace }) {
+  if (action.startsWith('git')) return gitAction({ action, input, workspace });
   if (action === 'diff') return minimalLineDiff(input.before, input.after);
   if (action === 'replace') {
     const content = text(input.content), find = text(input.find, 'Find'), replacement = text(input.replacement ?? '', 'Replacement');

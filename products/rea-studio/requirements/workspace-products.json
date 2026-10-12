@@ -79,7 +79,11 @@
         "coreTests": "products/rea-studio/apps/editor/app.test.mjs",
         "httpPersistenceTests": "products/rea-studio/apps/editor/app.integration.test.mjs",
         "newOriginalCode": true,
-        "studyReconstructionsImported": false
+        "studyReconstructionsImported": false,
+        "additionalTests": [
+          "products/rea-studio/apps/editor/git.test.mjs",
+          "products/rea-studio/apps/editor/sequence-diff.test.mjs"
+        ]
       },
       "inventoryCoverageGaps": [
         "The Monaco source catalogue includes 13 Markdown files and 134 playground example source files; generated monaco.d.ts is fingerprinted separately.",
@@ -295,7 +299,11 @@
         "coreTests": "products/rea-studio/apps/notes/app.test.mjs",
         "httpPersistenceTests": "products/rea-studio/apps/notes/app.integration.test.mjs",
         "newOriginalCode": true,
-        "studyReconstructionsImported": false
+        "studyReconstructionsImported": false,
+        "additionalTests": [
+          "products/rea-studio/apps/notes/jex.test.mjs"
+        ],
+        "originalFormatVerification": "products/rea-studio/apps/notes/interop-fixture-tool.mjs verify"
       },
       "inventoryCoverageGaps": [
         "The 277 readme Markdown files are a reproducible source-file inventory; most files and linked API/service docs are unreviewed.",
@@ -13478,11 +13486,13 @@
       ],
       "status": "different-contract",
       "implementation": {
-        "current": "Bounded exact minimal line insertion/deletion script with saved draft comparison.",
+        "current": "Exact minimal line insertion/deletion scripts with saved-draft comparison; common boundaries and disjoint-region detection, bounded shortest-path diagonal traces, and a linear-row Hirschberg fallback support at most 10,000 lines per side. Getter-sequence spans are also implemented in an original API.",
         "evidence": [
           "editor.server.mjs",
           "editor.client.mjs",
-          "editor.README.md"
+          "editor.README.md",
+          "editor.sequence-diff.mjs",
+          "editor.sequence-diff.test.mjs"
         ],
         "testReferences": [
           {
@@ -13494,6 +13504,10 @@
             "path": "products/rea-studio/apps/editor/app.test.mjs",
             "testName": "exhaustive two-letter inputs up to four lines agree with independent edit-distance recurrence",
             "scope": "bounded local behavior only"
+          },
+          {
+            "scope": "Independent minimum-cost and replay checks for bounded exhaustive/seeded sequences; no full Monaco diff-editor parity.",
+            "path": "products/rea-studio/apps/editor/sequence-diff.test.mjs"
           }
         ]
       },
@@ -13959,16 +13973,31 @@
       "sourceIds": [
         "vscode.git"
       ],
-      "status": "missing",
+      "status": "partial",
       "implementation": {
-        "current": null,
+        "current": "Installed Git performs initialization, local author identity, saved-file status, selected staging/unstaging, working/staged patches, commits, 30 recent commit records, branch creation/switching and rename records in a standalone confined application repository. Hooks, executable filters/fsmonitor, signature-verifier display and external diff/text conversion are disabled. Clean tabs refresh after branch switching; unsaved drafts remain in browser memory.",
         "evidence": [
-          "editor.README.md"
+          "editor.README.md",
+          "editor.git.mjs",
+          "editor.git.test.mjs",
+          "editor.client.mjs"
         ],
-        "testReferences": []
+        "testReferences": [
+          {
+            "scope": "Real standalone Git repository behavior with native Git; bounded local workflow only.",
+            "path": "products/rea-studio/apps/editor/git.test.mjs",
+            "testName": "real Git staging, initial unstaging, commit, patches, branch switching and rename records preserve saved files"
+          },
+          {
+            "scope": "Durable local HTTP integration, not VS Code acceptance.",
+            "path": "products/rea-studio/apps/editor/git.test.mjs",
+            "testName": "Git HTTP operations and history persist across actual application host restarts"
+          }
+        ]
       },
       "remaining": [
-        "Diff/stage/commit, branches, sync, conflicts and source-control extension APIs."
+        "Remote fetch/pull/push and synchronization, merge conflict resolution, advanced branch/rebase/stash/signing/submodule workflows and source-control extension APIs.",
+        "Complete VS Code source-control UI, lifecycle, configuration and original-product acceptance; external concurrent filesystem changes remain outside the local application boundary."
       ],
       "acceptanceGate": "Run every documented source control workflow on independent repositories and confirm local/remote effects.",
       "parityPassed": false,
@@ -14508,11 +14537,13 @@
       ],
       "status": "partial",
       "implementation": {
-        "current": "Persistent note create/read/update with title, body, flat notebook, tags and revision conflict detection.",
+        "current": "Persistent title/body/notebook/tag notes, revisions, saved-version history and trash; supported JEX metadata retains original IDs, dates, geolocation, author/source URL, to-do fields and raw relationships. A single atomic state record commits related metadata; attachment bytes are prepared before commit with rollback cleanup.",
         "evidence": [
           "notes.server.mjs",
           "notes.client.mjs",
-          "notes.README.md"
+          "notes.README.md",
+          "notes.jex.mjs",
+          "notes.jex.test.mjs"
         ],
         "testReferences": [
           {
@@ -14528,7 +14559,8 @@
         ]
       },
       "remaining": [
-        "Full note metadata, note/resource relations, editor commands, bulk operations and supported client behavior."
+        "Full note metadata semantics and editing UI, complete note/resource relations, editor commands, bulk operations and supported client behavior.",
+        "Imported metadata preservation does not implement to-do, location, application-data or other original workflows."
       ],
       "acceptanceGate": "Inventory every documented note operation and field, then compare persistence, revisions, bulk edits and errors.",
       "parityPassed": false,
@@ -14543,11 +14575,12 @@
       ],
       "status": "partial",
       "implementation": {
-        "current": "Safe text-only HTML generation using a small DOM-rendered Markdown subset.",
+        "current": "Safe DOM-rendered Markdown subset with inert raw HTML, allowed external HTTP/HTTPS/mailto links and exact 32-hex :/ local-note/attachment link buttons.",
         "evidence": [
           "notes.server.mjs",
           "notes.client.mjs",
-          "notes.README.md"
+          "notes.README.md",
+          "notes.markdown.mjs"
         ],
         "testReferences": [
           {
@@ -14563,8 +14596,8 @@
         ]
       },
       "remaining": [
-        "Complete CommonMark semantics and documented extensions, tables, math, diagrams, links, resources and configuration.",
-        "Nested blocks and other missing syntax must be enumerated."
+        "Complete CommonMark semantics and documented extensions, tables, math, diagrams, inline images/resources, configuration and nested syntax.",
+        "Complete original URL decoding, anchor construction and link-rendering behavior."
       ],
       "acceptanceGate": "Run a full CommonMark corpus plus every versioned extension and option; compare semantic output and safety behavior.",
       "parityPassed": false,
@@ -14578,17 +14611,27 @@
         "joplin.markdown",
         "joplin.attachments"
       ],
-      "status": "missing",
+      "status": "partial",
       "implementation": {
-        "current": null,
+        "current": "JEX preserves original note/resource IDs and link text. The Markdown subset recognizes exact :/32-hex IDs, resolves local notes including normalized legacy IDs, checks saved source-note ownership before attachment downloads and preserves unsaved drafts when linked-note navigation is declined or targets the already-open note.",
         "evidence": [
-          "notes.README.md"
+          "notes.README.md",
+          "notes.markdown.mjs",
+          "notes.client.mjs",
+          "notes.server.mjs",
+          "notes.jex.test.mjs"
         ],
-        "testReferences": []
+        "testReferences": [
+          {
+            "scope": "Local note navigation, saved attachment ownership and retained browser drafts; full original URL/anchor behavior is unverified.",
+            "path": "products/rea-studio/apps/notes/jex.test.mjs",
+            "testName": "internal Joplin links navigate local notes and download referenced resources without replacing retained drafts"
+          }
+        ]
       },
       "remaining": [
-        "Original studied resource URL parsing and collision-safe heading anchors are not imported into the new app.",
-        "Joplin internal resource/note IDs, heading link targets and documented URL decoding behavior."
+        "Collision-safe heading anchors, heading link targets, original resource URL grammar/decoding, inline images and all documented external/internal navigation behaviors.",
+        "The prior reconstruction is not imported; tests cover the new local link subset only."
       ],
       "acceptanceGate": "Execute independently derived original-artifact cases for both studied functions, then full note/resource/anchor navigation workflows.",
       "parityPassed": false,
@@ -14625,7 +14668,7 @@
       ],
       "status": "different-contract",
       "implementation": {
-        "current": "Case-insensitive AND substring search of title and body.",
+        "current": "Case-insensitive AND substring search across title, body, tags and notebook paths.",
         "evidence": [
           "notes.server.mjs",
           "notes.client.mjs",
@@ -14762,25 +14805,40 @@
       "sourceIds": [
         "joplin.import-export"
       ],
-      "status": "different-contract",
+      "status": "partial",
       "implementation": {
-        "current": "Single-note Markdown export and versioned JSON bundle export/import as independent new notes.",
+        "current": "Bounded uncompressed JEX TAR import/export supports note/folder/resource/tag/note-tag raw records, preserving original IDs, supported raw metadata, nested notebook parent IDs, tag relationships and binary attachment bytes. Single-note Markdown and legacy JSON new-copy interchange remain available. Unknown/encrypted/HTML records, identity collisions, broken references and unsafe or out-of-bounds TAR archives reject before state mutation.",
         "evidence": [
           "notes.server.mjs",
           "notes.client.mjs",
-          "notes.README.md"
+          "notes.README.md",
+          "notes.jex.mjs",
+          "notes.jex.test.mjs",
+          "notes.interop-fixture-tool.mjs",
+          "notes.pinned-joplin.json",
+          "notes.oracle-verification.json"
         ],
         "testReferences": [
           {
             "path": "products/rea-studio/apps/notes/app.test.mjs",
             "testName": "Markdown export and JSON bundle re-import create independent note copies",
             "scope": "bounded local behavior only"
+          },
+          {
+            "scope": "Bounded pinned original-format fixture and independently parsed TAR, not full Joplin parity.",
+            "path": "products/rea-studio/apps/notes/jex.test.mjs",
+            "testName": "native-TAR original-serialized fixture imports with IDs, hierarchy, metadata, links, tags and bytes intact"
+          },
+          {
+            "scope": "22 recorded passing checks from four pinned BaseItem serialization methods with schema/database/date stubs; fullOriginalApplicationExecuted=false.",
+            "path": "products/rea-studio/apps/notes/fixtures/oracle-verification.json"
           }
         ]
       },
       "remaining": [
-        "JEX/RAW and documented Markdown/HTML/PDF/ENEX and other formats require precise per-platform inventory.",
-        "Resource attachments, IDs, timestamps, hierarchy and metadata are not losslessly preserved by new-copy import."
+        "Complete JEX/RAW feature and real-world archive coverage, compression/extensions and all documented Markdown/HTML/PDF/ENEX and other formats require precise per-platform inventory and independent original-client acceptance.",
+        "JEX omits local saved-version history; JSON/standalone Markdown omit binaries. Legacy JSON imports create new IDs/dates and reject Joplin metadata/internal links.",
+        "The pinned original serialization-method harness checks raw records only; it does not execute the complete Joplin database, importer or UI."
       ],
       "acceptanceGate": "Round-trip each documented format and importer with metadata, resources, nested notebooks, errors and unsupported cases.",
       "parityPassed": false,
@@ -14837,16 +14895,21 @@
       "sourceIds": [
         "joplin.attachments"
       ],
-      "status": "missing",
+      "status": "partial",
       "implementation": {
-        "current": null,
+        "current": "Binary attachment upload/list/download adds a Joplin :/resource-id link to the saved note. Dedicated confined storage uses generated identities and content hashes; downloads/JEX exports verify byte count and SHA-256. Imported and new resource metadata/binaries round-trip through supported JEX records.",
         "evidence": [
-          "notes.README.md"
+          "notes.README.md",
+          "notes.server.mjs",
+          "notes.client.mjs",
+          "notes.jex.mjs",
+          "notes.jex.test.mjs"
         ],
         "testReferences": []
       },
       "remaining": [
-        "Files, images, inline resources, local opening, download behavior, orphan cleanup and supported safety prompts."
+        "Inline image rendering, previews, original opening/downloading policies, automatic orphan cleanup, client-specific lifecycle and supported safety prompts.",
+        "A crash between preparing resource bytes and committing metadata may leave an unreferenced binary; no partially imported note metadata is committed."
       ],
       "acceptanceGate": "Verify every documented resource operation, metadata/link relationship, sync policy and client-specific behavior.",
       "parityPassed": false,
@@ -14861,16 +14924,19 @@
       ],
       "status": "partial",
       "implementation": {
-        "current": "One flat notebook text field per note.",
+        "current": "JEX imports retain folder entities, parent IDs, original metadata and nested displayed paths. Changing the note notebook text field moves its export into a flat notebook with that title while retaining existing imported folders.",
         "evidence": [
           "notes.server.mjs",
           "notes.client.mjs",
-          "notes.README.md"
+          "notes.README.md",
+          "notes.jex.mjs",
+          "notes.jex.test.mjs"
         ],
         "testReferences": []
       },
       "remaining": [
-        "Persisted notebook entities, nested notebooks, hierarchy changes, drag/drop and client-specific operations."
+        "Notebook tree-management UI, arbitrary create/rename/move/delete, hierarchy changes, drag/drop and client-specific operations.",
+        "Preserved imported hierarchy does not provide every original notebook editing workflow."
       ],
       "acceptanceGate": "Compare create/rename/move/delete and note movement throughout nested trees on all applicable clients.",
       "parityPassed": false,
@@ -15109,22 +15175,23 @@
     "sourceBytes": "GET each immutable sources[].url, hash response bytes with SHA-256, and compare bytes/hash. Sources are provenance metadata, not copied source implementations.",
     "documentationCatalogues": "GET each recursive Git tree API at its exact commit; require truncated=false; apply selectionPredicate; sort paths using JavaScript code-point comparison; hash JSON.stringify(files.map(({path,gitBlobSha,bytes})=>({path,gitBlobSha,bytes}))) as UTF-8; compare inventorySha256 and each Git blob SHA.",
     "localEvidence": "Verify each local evidence path SHA-256. Ignored downloaded component archives remain local; obtain them through the original project acquisition scripts if absent.",
-    "developmentTests": "node --test products/rea-studio/apps/editor/app.test.mjs products/rea-studio/apps/editor/app.integration.test.mjs products/rea-studio/apps/metrics/app.test.mjs products/rea-studio/apps/metrics/app.integration.test.mjs products/rea-studio/apps/notes/app.test.mjs products/rea-studio/apps/notes/app.integration.test.mjs",
-    "testMeaning": "These tests establish bounded local functionality and persistence only. Full original-product acceptance suites and comparative benchmarks are not implemented."
+    "developmentTests": "node --test products/rea-studio/apps/editor/app.test.mjs products/rea-studio/apps/editor/app.integration.test.mjs products/rea-studio/apps/metrics/app.test.mjs products/rea-studio/apps/metrics/app.integration.test.mjs products/rea-studio/apps/notes/app.test.mjs products/rea-studio/apps/notes/app.integration.test.mjs products/rea-studio/apps/editor/git.test.mjs products/rea-studio/apps/editor/sequence-diff.test.mjs products/rea-studio/apps/notes/jex.test.mjs",
+    "testMeaning": "These tests establish bounded local functionality and persistence only. Full original-product acceptance suites and comparative benchmarks are not implemented.",
+    "originalFormatSubset": "node products/rea-studio/apps/notes/interop-fixture-tool.mjs verify; pinned BaseItem serialization methods and native TAR fixtures only, not a complete original Joplin client."
   },
   "localImplementationEvidence": [
     {
       "id": "editor.server.mjs",
       "path": "products/rea-studio/apps/editor/server.mjs",
-      "bytes": 6903,
-      "sha256": "8b7801053154ee329b03d245d724b41609bd6e41c811e705d3fc0632240aae12",
+      "bytes": 6304,
+      "sha256": "b7eaab9dcee52394936c415aa3abe4c861c481677349f62880704ca2023fafea",
       "kind": "original-implementation-source"
     },
     {
       "id": "editor.client.mjs",
       "path": "products/rea-studio/apps/editor/client.mjs",
-      "bytes": 6916,
-      "sha256": "20cf9e341102557e965b201181a778a1ad2cd77708cf39ae1dbe7e04e1c86a9d",
+      "bytes": 13596,
+      "sha256": "6537ed329e48c1b4bb5e72fcec41f4f21bdc4dfecfc87f3bee1f29f6f749ff51",
       "kind": "original-implementation-source"
     },
     {
@@ -15144,8 +15211,8 @@
     {
       "id": "editor.README.md",
       "path": "products/rea-studio/apps/editor/README.md",
-      "bytes": 4007,
-      "sha256": "29775e8f2cab20db4a546b6c1adf29ee976dcf92b478198cdad7e28af64dccb9",
+      "bytes": 5591,
+      "sha256": "b94e3cd3ccae730e89dd7a9b502272e52a2e24ad7ac7f9380c144c37760a13f9",
       "kind": "implementation-limitations"
     },
     {
@@ -15186,44 +15253,114 @@
     {
       "id": "notes.server.mjs",
       "path": "products/rea-studio/apps/notes/server.mjs",
-      "bytes": 7361,
-      "sha256": "b5b539304009f93b1f709a086b774efd1164ac7c5e4a4775c44d33cdd9046e04",
+      "bytes": 20098,
+      "sha256": "1864e92c9a497b5ddfff3ca7ea7d5c7599a066522f4e6324db140dd4eb4f2f33",
       "kind": "original-implementation-source"
     },
     {
       "id": "notes.client.mjs",
       "path": "products/rea-studio/apps/notes/client.mjs",
-      "bytes": 8172,
-      "sha256": "1e4f5f4f4897de889b5c1c295d2b350a840d939586d8bb4c0819636869752d65",
+      "bytes": 12662,
+      "sha256": "9741bb08e66053610ee3eb87e4fd84547801b3753884f76d290ee752557e954f",
       "kind": "original-implementation-source"
     },
     {
       "id": "notes.app.test.mjs",
       "path": "products/rea-studio/apps/notes/app.test.mjs",
-      "bytes": 4823,
-      "sha256": "24eaf7cf6a89129503fc389c84d0e2bab41e2aa0c4d9f6c71b8363d8c94e879f",
+      "bytes": 6974,
+      "sha256": "aa1891fc26b4dfecf771e53994c67bd2cadc4fa92c5ed86253a47a852a689cbd",
       "kind": "local-development-test"
     },
     {
       "id": "notes.app.integration.test.mjs",
       "path": "products/rea-studio/apps/notes/app.integration.test.mjs",
-      "bytes": 2059,
-      "sha256": "b8bf981ed4c572ae7c5784296400ab3376a76b67f1ebbf709d5c97bc1e59bee8",
+      "bytes": 4297,
+      "sha256": "b4ac48818f2508f21c873edf6d34e09432b3e50361b066d8cfe54ab207d2a1e8",
       "kind": "local-development-test"
     },
     {
       "id": "notes.README.md",
       "path": "products/rea-studio/apps/notes/README.md",
-      "bytes": 3860,
-      "sha256": "68b491608beba1b6a08878dbed0ee0091588c5c5da37cd1166cf739cfab933e7",
+      "bytes": 9891,
+      "sha256": "7b81a0e83160f83c3262f7a37c2f8a28f303c2b033603c20f1638cc6a8f6ceed",
       "kind": "implementation-limitations"
     },
     {
       "id": "notes.markdown.mjs",
       "path": "products/rea-studio/apps/notes/markdown.mjs",
-      "bytes": 4683,
-      "sha256": "3ba2c7610db925222afe291bba6900fd79192e02bea39bb4b790ac93d405b15a",
+      "bytes": 5135,
+      "sha256": "409b2bcc489c785e725d3257f21af1c6a3cd4f1f78fa0d0ca74d538876f24915",
       "kind": "original-implementation-source"
+    },
+    {
+      "id": "editor.git.mjs",
+      "path": "products/rea-studio/apps/editor/git.mjs",
+      "kind": "original-implementation-source",
+      "bytes": 11119,
+      "sha256": "52f9b43507796ff012f6ac9330bde1ccf094bd2315dc6c952e2625465699d6de"
+    },
+    {
+      "id": "editor.git.test.mjs",
+      "path": "products/rea-studio/apps/editor/git.test.mjs",
+      "kind": "local-development-test",
+      "bytes": 11458,
+      "sha256": "ab8213c182d1568254ea73db57133affbd48304b98f0d275d27c1fcf8b33f0cc"
+    },
+    {
+      "id": "editor.sequence-diff.mjs",
+      "path": "products/rea-studio/apps/editor/sequence-diff.mjs",
+      "kind": "original-implementation-source",
+      "bytes": 6137,
+      "sha256": "87fe7284ed00d70ccae740d7b148a32b7a9a17e92cdc73c666a299925465aec3"
+    },
+    {
+      "id": "editor.sequence-diff.test.mjs",
+      "path": "products/rea-studio/apps/editor/sequence-diff.test.mjs",
+      "kind": "local-development-test",
+      "bytes": 2931,
+      "sha256": "bf2730b040a82223d06f4140181d5f4191110b0f4432f6e5ef92d4deb919836d"
+    },
+    {
+      "id": "notes.jex.mjs",
+      "path": "products/rea-studio/apps/notes/jex.mjs",
+      "kind": "original-implementation-source",
+      "bytes": 13323,
+      "sha256": "02785fd47baad48c2ae34c01fd066ad9efa1b0d1784258bfcdadac0e9c75570f"
+    },
+    {
+      "id": "notes.jex.test.mjs",
+      "path": "products/rea-studio/apps/notes/jex.test.mjs",
+      "kind": "local-development-test",
+      "bytes": 14190,
+      "sha256": "21f9883954fa1d00d092751f70f4a482eaedc838a8d037e3276d1d72d2549fdf"
+    },
+    {
+      "id": "notes.interop-fixture-tool.mjs",
+      "path": "products/rea-studio/apps/notes/interop-fixture-tool.mjs",
+      "kind": "isolated-original-format-verification-tool",
+      "bytes": 12119,
+      "sha256": "8dfd56500bb9d31c0f3f77537bb8a4c7cad8bc4f8207a0f81a8c550825ee9f2f"
+    },
+    {
+      "id": "notes.pinned-joplin.json",
+      "path": "products/rea-studio/apps/notes/fixtures/pinned-joplin.json",
+      "kind": "synthetic-original-format-fixture-provenance",
+      "bytes": 6174,
+      "sha256": "cabc16edfc51e2e58fa0f147f31f5b5b54345a49597a3567583c3623d0fad220"
+    },
+    {
+      "id": "notes.pinned-joplin.jex",
+      "path": "products/rea-studio/apps/notes/fixtures/pinned-joplin.jex",
+      "kind": "synthetic-original-format-fixture",
+      "bytes": 9728,
+      "sha256": "044885c906ba7d8cb97a95fbdd6bc2323ba31a3c301e7ed1d6e592acec8944af"
+    },
+    {
+      "id": "notes.oracle-verification.json",
+      "path": "products/rea-studio/apps/notes/fixtures/oracle-verification.json",
+      "kind": "bounded-original-format-verification-receipt",
+      "bytes": 4843,
+      "sha256": "82b53a9c9c0594b0364f2752e78bef85d374d53a2f4a5b2580daa8edc6079d9f"
     }
   ],
   "catalogueCoverage": {
@@ -15252,7 +15389,27 @@
       "status": "previously-passed",
       "scope": "Bounded local server/core and HTTP cold restart tests. Code fingerprints recorded in localImplementationEvidence."
     },
-    "originalStudyResultsCreditedToNewApps": false
+    "originalStudyResultsCreditedToNewApps": false,
+    "currentMilestones": {
+      "recordedAt": "2026-10-12T15:14:55.079Z",
+      "scope": "Current implementation inventory and file-format evidence references. Earlier combined/core receipts above are historical bounded runs, not counts for the expanded suite.",
+      "fullOriginalProductAcceptancePassed": false,
+      "editor": "Real local Git subset and bounded exact sequence alignment.",
+      "notes": "Supported JEX raw-item preservation, attachments and local internal-link subset; complete client/release correspondence and parity remain open.",
+      "combinedDevelopmentReceiptReportedByParent": {
+        "testsPassed": 112,
+        "testsFailed": 0,
+        "testsSkipped": 0,
+        "reportedAt": "2026-10-12T15:18:00Z",
+        "scope": "Combined current local development suite reported by integrating parent; no complete original-product acceptance or comparative conclusion."
+      },
+      "notesOriginalFormatReceipt": {
+        "path": "products/rea-studio/apps/notes/fixtures/oracle-verification.json",
+        "checksPassed": 22,
+        "checksFailed": 0,
+        "scope": "Four original pinned serialization methods with bounded schema/database/date harness; not a complete original Joplin application."
+      }
+    }
   },
   "generatedAt": "2026-10-12T14:02:48.288Z"
 }

@@ -41,3 +41,26 @@ test('history bounds and input validation prevent unbounded individual notes', a
 test('long malformed Markdown openers stay plain text without repeated delimiter scans', () => {
   const input = '['.repeat(200_000); assert.deepEqual(inlineTokens(input), [{ type: 'text', text: input }]);
 });
+test('multiline labels reject API and bundle writes before mutation while note bodies retain line breaks', async () => {
+  const { call, data } = fixture(), initial = await call('save', { title: 'Retained', body: 'first\r\nsecond', notebook: 'Lab', tags: ['study'] });
+  const before = JSON.stringify([...data]);
+  for (const separator of ['\n', '\r', '\r\n']) for (const change of [{ title: `one${separator}two` }, { notebook: `one${separator}two` }, { tags: [`one${separator}two`] }]) {
+    await assert.rejects(call('save', { title: 'New', ...change }), /single line/);
+    await assert.rejects(call('save', { ...initial, ...change }), /single line/);
+    await assert.rejects(call('import-bundle', { content: JSON.stringify({ schema: 'rea-notes/v1', notes: [{ title: 'Valid first item' }, { title: 'Invalid second item', ...change }] }) }), /single line/);
+    assert.equal(JSON.stringify([...data]), before, 'Rejected labels must not commit even the valid bundle prefix.');
+  }
+  assert.equal((await call('get', { id: initial.id })).body, 'first\r\nsecond');
+  assert.ok((await call('jex-export')).base64);
+});
+test('saved multiline legacy labels remain intact during body edits and JSON backup', async () => {
+  const { call, data } = fixture(), id = 'a1a1a1a1-b2b2-c3c3-d4d4-e5e5e5e5e5e5', at = '2026-09-06T09:17:56.000Z';
+  const old = { id, title: 'Old\nTitle', body: 'Old body', notebook: 'Old\rNotebook', tags: ['Old\r\nTag'], createdAt: at, updatedAt: at, revision: 1, deletedAt: null, history: [] };
+  data.set('notes-note-' + id, structuredClone(old));
+  const saved = await call('save', { ...old, body: 'Edited body only' });
+  assert.equal(saved.title, old.title); assert.equal(saved.notebook, old.notebook); assert.deepEqual(saved.tags, old.tags);
+  assert.deepEqual(data.get('notes-note-' + id), old, 'Legacy source records are never rewritten.');
+  const backedUp = JSON.parse((await call('export')).content).notes[0];
+  assert.equal(backedUp.title, old.title); assert.equal(backedUp.notebook, old.notebook); assert.deepEqual(backedUp.tags, old.tags);
+  await assert.rejects(call('jex-export'), /Existing labels remain saved/);
+});

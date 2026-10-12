@@ -20,7 +20,7 @@ for (const [index, input] of cases.entries()) {
   const results = {};
   const order = index % 2 ? ['candidate', 'original'] : ['original', 'candidate'];
   for (const algorithm of order) {
-    const worker = spawnSync(process.execPath, ['--expose-gc', join(root, 'scripts/benchmark-worker.mjs'), JSON.stringify({ ...input, algorithm })], { encoding: 'utf8', timeout: 120000 });
+    const worker = spawnSync(process.execPath, ['--expose-gc', join(root, 'scripts/benchmark-worker.mjs')], { input: JSON.stringify({ ...input, algorithm }), encoding: 'utf8', timeout: 120000 });
     assert.equal(worker.status, 0, `${algorithm} benchmark failed. Obtain the recorded Monaco artifact as described in projects/01-vscode-monaco/REPORT.md. ${worker.stderr}`);
     results[algorithm] = JSON.parse(worker.stdout.trim());
   }

@@ -1,0 +1,32 @@
+# Native exchange and source control: verified development milestone
+
+Recorded on 12 October 2026. The accepted objective remains every documented feature of all ten original products, with improvements in speed, resource use, usability, compatibility and reliability. **This milestone does not meet that objective. Zero complete replacement products are certified.** It adds working, independently checked contracts to four of the ten applications.
+
+## Implemented contracts and evidence
+
+| Application | Working change | Independent evidence | Limits |
+| --- | --- | --- | --- |
+| Editor | Local Git initialization, status, staging/unstaging, working/staged patches, commits, history and branch creation/switching. Exact sequence differences with bounded trace storage and a linear-space fallback. | Real Git repositories and HTTP restart tests; differential minimum-cost/replay tests against an independent dynamic-programming oracle; eight-case pinned Monaco comparison. | Git executable required. No remote Git, merging/rebasing UI, complete VS Code extension/language/debugger ecosystem or Monaco internal result-helper/deadline API parity. |
+| Notes | Joplin JEX import/export, original IDs, notebook hierarchy, tags, supported metadata and resource bytes; attachments and local note/resource links. | Pinned original serialization/parser methods validate 22 checks; an independent native TAR reader verifies raw records and binary bytes. Browser import/export, note navigation, download and upload also pass. | The full original Joplin importer/application is not executed. Unsupported record types, encryption, HTML notes and ID collisions reject. No synchronization, rich-text editor, complete Markdown, plugin or full client/service compatibility. |
+| Sketch | Excalidraw version-2 native exchange; editable supported shapes, freehand strokes, multiple selection, grouping and undo/redo; retained unknown metadata/assets/elements. | Original v0.18.1 isolated restoration and serialization helpers; browser native export equals the untouched fixture, then a saved grouped freehand edit reopens with unsupported records and assets intact. | Five of eleven original fixture elements have editable projections; the remaining records are retained without rendering. Full original import/restore pipeline, renderer, collaboration, fonts and advanced bindings are unverified or absent. |
+| Vault | Genuine KDBX 3.1/4.0/4.1 import and 4.0/4.1 export, supported AES/ChaCha20 and AES-KDF/Argon2 combinations, key files, nested groups, protected fields, history, attachments and metadata retention. | Pinned KeePass 2.61.1 creates and opens synthetic databases in both directions; local encrypted HTTP persistence/restart checks. 18 Vault tests pass with zero skips. Browser opens an existing synthetic encrypted entry and locks it again. | Bounded format/KDF inputs; no plugins, Windows-account keys, global auto-type, complete group/history/recycle-bin workflows or security/usability superiority proof. See the detailed [KDBX coverage](apps/vault/KDBX-COVERAGE.md). |
+
+The other six applications retain their previously implemented local workflows. None implements its complete original product or service ecosystem. Per-application READMEs and the [requirements crosswalk](requirements/README.md) identify the remaining contract areas; their completion gates remain open.
+
+## Verification and reproducibility
+
+The combined [development validation](results/development-validation.json) records **112 passing tests, zero failures and zero skips** on Node.js 24.16.0, Windows x64. It binds the test run to source SHA-256 hashes. This count includes component, real-disk, HTTP restart and original-software interoperability tests; it is not 112 original-product features or a statistical confidence score.
+
+The [current browser record](results/browser-compatibility-verification.json) covers the added workflows with synthetic data in a separate local workspace. It supplements the preserved [initial ten-app browser record](results/browser-verification.json). Browser actions do not execute every feature or replace original-software comparisons. Native evidence is recorded separately in [Joplin serialization checks](apps/notes/fixtures/oracle-verification.json), [Excalidraw helper checks](apps/sketch/results/excalidraw-compatibility.json), and [KeePass compatibility checks](apps/vault/compatibility-evidence.json).
+
+Run `npm run verify` from this directory. Original KeePass/Excalidraw test fixtures require the preserved study artifacts; skipped original checks on another platform are coverage gaps. Run `node apps/notes/interop-fixture-tool.mjs verify` to refresh the pinned Joplin method comparison. Original implementations are verification oracles, not application runtime dependencies. These are source-assisted format/interface implementations, without a clean-room claim.
+
+## Comparative findings
+
+The [shared getter-sequence comparison](results/sequence-comparison.json) uses matching input setup outside timing, 30 warmups and 200 timed calls per case, separate workers and post-timing replay validation. The candidate is faster in three of eight recorded cases and slower in five. On the reduced witness it returns the minimum edit cost 9 versus the original cost 11. On the high-similarity 2,000-element case its median time is approximately 8.26 times the original. The earlier [line-interface comparison](results/editor-comparison.json) is retained with its distinct API and timing limitations.
+
+Observed sample quantiles are not confidence intervals. Whole-worker peak memory includes imports and validation. These are single-machine exploratory component results without independent replication, usability trials or full-product performance/resource benchmarks. They refute a blanket claim that the current candidate is faster on every input.
+
+## Open completion conditions
+
+Whole-product release/edition/platform bindings and an exhaustive atomic documented-feature inventory remain incomplete. The current 232 capability areas and 159 source fingerprints support discovery; broad documentation catalogs do not prove exhaustive extraction. Full parity requires an executable acceptance test for each frozen contract, then implementation and original-product comparisons. Complete protocol/provider/plugin ecosystems, long-running failure/recovery tests, accessibility/usability comparisons, resource measurements and external review remain outstanding. The [status record](STATUS.json) preserves these conditions explicitly.

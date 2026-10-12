@@ -74,9 +74,37 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(new Set(browser.checks.map(check => check.app)).size, 10);
   assert.ok(browser.checks.every(check => check.passed));
   assert.equal(browser.every_documented_feature_verified, false);
+  const currentBrowser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-compatibility-verification.json'), 'utf8'));
+  assert.deepEqual([...new Set(currentBrowser.checks.map(check => check.app))].sort(), ['editor', 'notes', 'sketch', 'vault']);
+  assert.ok(currentBrowser.checks.every(check => check.passed));
+  assert.equal(currentBrowser.every_documented_feature_verified, false);
+  assert.equal(currentBrowser.full_feature_parity_established, false);
+  assert.equal(currentBrowser.universal_superiority_established, false);
+  for (const entry of [...currentBrowser.implementation_fingerprints, currentBrowser.screenshot]) assert.equal(sha(readFileSync(join(root, entry.path))), entry.sha256, `Browser-tested file changed: ${entry.path}`);
+  const joplinOracle = JSON.parse(readFileSync(join(developmentRoot, 'apps/notes/fixtures/oracle-verification.json'), 'utf8'));
+  assert.equal(joplinOracle.failed, 0);
+  assert.equal(joplinOracle.passed, joplinOracle.checks.length);
+  assert.ok(joplinOracle.checks.every(check => check.passed));
+  assert.equal(joplinOracle.fullOriginalApplicationExecuted, false);
+  for (const entry of joplinOracle.implementationFingerprints) assert.equal(sha(readFileSync(join(root, entry.path))), entry.sha256, `Joplin-compared file changed: ${entry.path}`);
+  assert.equal(sha(readFileSync(join(developmentRoot, 'apps/notes/fixtures/pinned-joplin.jex'))), joplinOracle.fixtureSha256);
+  const sketchOracle = JSON.parse(readFileSync(join(developmentRoot, 'apps/sketch/results/excalidraw-compatibility.json'), 'utf8'));
+  assert.equal(sketchOracle.status, 'passed');
+  for (const [path, digest] of Object.entries(sketchOracle.implementationSha256)) assert.equal(sha(readFileSync(join(developmentRoot, 'apps/sketch', path))), digest, `Excalidraw-compared file changed: ${path}`);
+  const vaultOracle = JSON.parse(readFileSync(join(developmentRoot, 'apps/vault/compatibility-evidence.json'), 'utf8'));
+  assert.equal(vaultOracle.result.exitCode, 0);
+  assert.equal(vaultOracle.result.failed + vaultOracle.result.skipped, 0);
+  assert.equal(vaultOracle.result.passed, vaultOracle.result.tests);
+  assert.ok(vaultOracle.checks.every(check => check.passed));
+  for (const entry of vaultOracle.implementationFingerprints) assert.equal(sha(readFileSync(join(root, entry.path))), entry.sha256, `KeePass-compared file changed: ${entry.path}`);
   assert.equal(comparison.full_product_feature_parity_established, false);
   assert.equal(comparison.universal_superiority_established, false);
-  for (const entry of comparison.cases) assert.equal(sha(readFileSync(join(root, entry.candidate.implementation_identity.path))), entry.candidate.implementation_identity.sha256, 'Compared editor source changed');
+  for (const entry of comparison.cases) for (const identity of [entry.candidate.implementation_identity, ...(entry.candidate.implementation_identity.dependencies ?? [])]) assert.equal(sha(readFileSync(join(root, identity.path))), identity.sha256, 'Compared editor source changed');
+  const sequenceComparison = JSON.parse(readFileSync(join(developmentRoot, 'results/sequence-comparison.json'), 'utf8'));
+  assert.equal(sequenceComparison.full_product_feature_parity_established, false);
+  assert.equal(sequenceComparison.universal_superiority_established, false);
+  assert.equal(sha(readFileSync(join(developmentRoot, 'scripts/sequence-benchmark-worker.mjs'))), sequenceComparison.worker_sha256);
+  for (const entry of sequenceComparison.cases) assert.equal(sha(readFileSync(join(root, entry.candidate.implementation_identity.path))), entry.candidate.implementation_identity.sha256, 'Compared sequence source changed');
   const requirementsRoot = join(developmentRoot, 'requirements');
   const requirementIndex = JSON.parse(readFileSync(join(requirementsRoot, 'INDEX.json'), 'utf8'));
   const capabilityIds = new Set();
@@ -102,6 +130,14 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     }
     assert.equal(rows.length, registry.capability_area_rows);
     assert.equal(record.sources.length, registry.source_fingerprints);
+    const localEvidence = registry.file === 'workspace-products.json' ? record.localImplementationEvidence
+      : registry.file === 'visual-products.json' ? record.baselineProducts.flatMap(product => product.implementationFiles ?? [])
+      : record.products.flatMap(product => product.local_implementation_evidence ?? []);
+    for (const entry of localEvidence) {
+      const bytes = readFileSync(join(root, entry.path));
+      assert.equal(sha(bytes), entry.sha256, `Requirement implementation changed: ${entry.path}`);
+      if (entry.bytes !== undefined) assert.equal(bytes.length, entry.bytes, `Requirement implementation size changed: ${entry.path}`);
+    }
     for (const row of rows) { assert.ok(!capabilityIds.has(row.id), `Duplicate capability ID: ${row.id}`); capabilityIds.add(row.id); }
     for (const app of registry.applications) { assert.ok(!applications.has(app)); applications.add(app); }
     sourceFingerprints += record.sources.length;
@@ -110,7 +146,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(capabilityIds.size, requirementIndex.capability_area_rows);
   assert.equal(requirementIndex.exhaustive_feature_inventory_established, false);
   assert.equal(requirementIndex.full_product_parity_rows_passed, 0);
-  productDevelopment = { applications: 10, recorded_tests_passed: validation.summary.pass, tested_source_hashes_checked: validation.source_files.length, browser_workflow_records: browser.checks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
+  productDevelopment = { applications: 10, recorded_tests_passed: validation.summary.pass, tested_source_hashes_checked: validation.source_files.length, browser_workflow_records: browser.checks.length, added_browser_workflow_records: currentBrowser.checks.length, joplin_original_method_checks: joplinOracle.passed, keepass_interoperability_test_collection: vaultOracle.result.passed, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
 }
 const receipt = {
   status: 'passed', checked_at_utc: new Date().toISOString(), projects: index.projects.length,

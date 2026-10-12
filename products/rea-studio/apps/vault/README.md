@@ -4,13 +4,13 @@ This application supplies a real encrypted local vault workflow. It is **not a c
 
 ## Run and verify
 
-From `products/rea-studio`, run `npm start`, open the local address printed by the host, then select **Lab Vault**. No runtime dependencies are installed. Run these application checks from that directory:
+Use Node **24.7 or newer** for native Argon2; this milestone was verified with Node **24.16.0**. From `products/rea-studio`, run `npm start`, open the local address printed by the host, then select **Lab Vault**. No runtime dependencies are installed. Run these application checks from that directory:
 
 ```text
-node --test apps/vault/app.test.mjs apps/vault/app.integration.test.mjs
+node --test apps/vault/app.test.mjs apps/vault/app.integration.test.mjs apps/vault/kdbx.test.mjs apps/vault/kdbx.interop.test.mjs
 ```
 
-Create a master password, save entries, lock, unlock, search or edit entries, generate a password, optionally add a Base32 TOTP secret, rotate the master password, or copy the encrypted backup JSON. The import control accepts that application's own encrypted JSON and requires explicit confirmation before replacing an existing vault.
+Create a master password, save entries, lock, unlock, search or edit entries, generate a password, optionally add a Base32 TOTP secret, rotate the master password, or copy the encrypted backup JSON. Both encrypted JSON and **KeePass KDBX database** imports require explicit confirmation before replacing an existing vault. KDBX import asks for the source database password and optional key file separately from the local master password. Export downloads a KDBX 4.1 database with a selected cipher and KDF; KeePass can open the downloaded file.
 
 ## Implemented behavior
 
@@ -21,12 +21,13 @@ Create a master password, save entries, lock, unlock, search or edit entries, ge
 - Base32 TOTP generation supports SHA-1, SHA-256 and SHA-512; six to ten digits; configurable period; manual refresh with remaining seconds. SHA-1 behavior is checked against all six RFC 6238 example timestamps.
 - Wrong passwords and altered authentication tags/ciphertext fail authenticated decryption. Password rotation verifies the old password, rotates salt/key, and re-encrypts the existing contents. Mutations are serialized; disk writes use the host's atomic JSON record replacement.
 - Encrypted export/import in this application's format. Maximum 10,000 entries, 100,000 characters per note, master password minimum ten characters and maximum 1024 UTF-8 bytes.
+- Original, dependency-free KDBX import/export, implemented from the public format specification. Native Node 24.16.0 crypto provides AES, ChaCha20 and Argon2; original code implements the KDBX container, authentication, XML reader and legacy Salsa20 stream. Production actions never launch KeePass. See [KDBX-COVERAGE.md](KDBX-COVERAGE.md) for exact coverage, interoperability evidence, bounds and remaining gaps.
 
 Integration tests exercise actual host HTTP requests and durable records across host restarts. The persistent record is `vault/records/vault.database.json` under the configured local host data directory.
 
 ## Concrete parity gaps and limitations
 
-KDBX/KDB database compatibility; KeePass key files and Windows-account composite keys; AES-KDF/Argon2 choices and KeePass's ChaCha20/Twofish options; process-memory protected streams; secure desktop and screen-capture controls; global auto-type, drag/drop and clipboard expiration; entry attachments, expiration/history/recycle-bin behavior; hierarchical group management; plugin interfaces; multilingual interface; KeePass's many third-party import/export formats; synchronization, integration and other advanced commands are absent. Group paths here are entry text, not a managed group tree.
+KDB/KDBX 2.x and KDBX 3.1 export; Argon2 1.0 and KDF costs above the documented local bounds; Windows-account/plugin composite keys and plugin ciphers/KDFs; operating-system process-memory protection; secure desktop and screen-capture controls; global auto-type execution, drag/drop and clipboard expiration; attachment editing, expiration/history/recycle-bin workflows; group rename/reordering/management UI; plugin interfaces; multilingual interface; KeePass's many third-party import/export formats; synchronization, integration and other advanced commands remain absent. Imported groups, attachments, history, custom data and auto-type settings are preserved for export, while their corresponding KeePass workflows are not implemented. Group paths can place new or edited entries in nested groups on export; this is not a complete group-management interface.
 
 JavaScript strings and browser DOM secrets cannot be reliably zeroed like the key buffer. Unlocked entries are returned to the local browser on explicit open; every page served by the same local host belongs to the same trust boundary. This development version has no independent security assessment or proof that it is safe for production credentials. No comparison supports a claim that its cryptography or memory behavior is better than KeePass.
 

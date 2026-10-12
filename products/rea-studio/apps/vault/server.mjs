@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, randomInt, randomUUID, scrypt as derive } from 'node:crypto';
 import { promisify } from 'node:util';
+import { importKdbx, exportKdbx, base64 } from './kdbx.mjs';
 
 const scrypt = promisify(derive);
 const sessions = new Map();
@@ -63,7 +64,7 @@ function decode(doc, key) {
 }
 function lock(id) {
   const old = sessions.get(id);
-  if (old) { clearTimeout(old.timer); old.key.fill(0); old.data.entries.length = 0; sessions.delete(id); }
+  if (old) { clearTimeout(old.timer); old.key.fill(0); old.data.entries.length = 0; old.data.kdbx = undefined; old.data = null; sessions.delete(id); }
 }
 function unlocked(id) {
   const state = sessions.get(id);
@@ -80,7 +81,7 @@ function entry(input, existing) {
   const title = field(input.title, 256).trim();
   if (!title) throw new Error('An entry title is required.');
   if (input.totpSecret) fromBase32(input.totpSecret);
-  return { id: existing?.id ?? randomUUID(), title, username: field(input.username), password: field(input.password), url: field(input.url), group: field(input.group, 256), notes: field(input.notes, 100000), totpSecret: field(input.totpSecret, 1024), createdAt: existing?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString() };
+  return { ...(existing?.kdbxGroupId ? { kdbxGroupId: existing.kdbxGroupId } : {}), id: existing?.id ?? randomUUID(), title, username: field(input.username), password: field(input.password), url: field(input.url), group: field(input.group, 256), notes: field(input.notes, 100000), totpSecret: field(input.totpSecret, 1024), createdAt: existing?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString() };
 }
 function fromBase32(secret) {
   if (typeof secret !== 'string') throw new Error('TOTP secret must be Base32 text.');
@@ -145,6 +146,17 @@ async function run({ action, input = {}, store, workspace }) {
     } catch (error) { key.fill(0); throw error; }
     return { imported: true };
   }
+  if (action === 'importKdbx') {
+    if (await store.get(KEY,null) && input.confirmReplace !== true) throw new Error('Replacing a vault requires explicit confirmation.');
+    // Validate the local password before spending resources on a foreign KDF.
+    password(input.localPassword);
+    const data = await importKdbx(base64(input.fileBase64),{ password: input.password,usePassword: input.usePassword,keyFileBase64: input.keyFileBase64 });
+    for (const e of data.entries) if (e.totpSecret) fromBase32(e.totpSecret);
+    const salt = randomBytes(16), key = await keyFor(input.localPassword,salt);
+    try { await store.set(KEY,encode(data,key,salt)); openSession(id,key,salt,data); }
+    catch (error) { key.fill(0); throw error; }
+    return { imported: true,entries: data.entries.length,sourceVersion: data.kdbx.sourceVersion };
+  }
   const state = unlocked(id);
   if (action === 'list') {
     const search = field(input.search, 256).toLowerCase();
@@ -177,6 +189,10 @@ async function run({ action, input = {}, store, workspace }) {
     return { deleted: true };
   }
   if (action === 'exportEncrypted') return { document: await store.get(KEY, null) };
+  if (action === 'exportKdbx') {
+    const buffer = await exportKdbx(state.data,{ password: input.password,usePassword: input.usePassword,keyFileBase64: input.keyFileBase64 },input.options);
+    return { fileBase64: buffer.toString('base64'),filename: 'rea-vault.kdbx',bytes: buffer.length };
+  }
   if (action === 'changePassword') {
     const doc = await store.get(KEY, null), oldKey = await keyFor(input.currentPassword, envelope(doc).salt);
     try { decode(doc, oldKey); } finally { oldKey.fill(0); }

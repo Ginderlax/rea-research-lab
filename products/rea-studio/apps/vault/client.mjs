@@ -24,6 +24,27 @@ export async function render(root, api) {
   let selected = null;
   async function run(job) { status.textContent = 'Working…'; try { const value = await job(); status.textContent = 'Done.'; return value; } catch (error) { status.textContent = error.message; return null; } }
   function button(parent, title, fn) { const b = node('button',title,'button'); b.type = 'button'; b.addEventListener('click',() => run(async () => { b.disabled = true; try { await fn(); } finally { b.disabled = false; } })); parent.append(b); return b; }
+  async function fileBase64(input,required = false) {
+    const file = input.files?.[0]; if (!file) { if (required) throw new Error('Choose a KDBX database file.'); return undefined; }
+    const max = required ? 8 * 1024 * 1024 : 1024 * 1024;
+    if (file.size > max) throw new Error(required ? 'Database files must be at most 8 MiB.' : 'Key files must be at most 1 MiB.');
+    const bytes = new Uint8Array(await file.arrayBuffer()); let binary = '';
+    for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i,i + 8192));
+    const value = btoa(binary); bytes.fill(0); return value;
+  }
+  function select(parent,label,choices) { const wrapper = node('label',label), input = node('select'); for (const [value,title] of choices) { const option = node('option',title); option.value = value; input.append(option); } wrapper.append(input); parent.append(wrapper); return input; }
+  function kdbxImport(parent) {
+    const section = node('section',undefined,'card'); section.append(node('h3','Import a KeePass database'),node('p','KDBX 3.1, 4.0 and 4.1. The complete document and attachments stay encrypted locally; extra KeePass fields are preserved for export. Import replaces the local vault.','muted')); parent.append(section);
+    const file = field(section,'KeePass database file','file'); file.accept = '.kdbx';
+    const source = field(section,'KeePass database password','password'), use = field(section,'Use password component (uncheck for a key file only)','checkbox'); use.checked = true;
+    const keyFile = field(section,'Optional KeePass key file','file');
+    const local = field(section,'Local vault master password (at least 10 characters)','password'); local.autocomplete = 'new-password';
+    const replace = field(section,'Confirm replacement of the existing local vault','checkbox');
+    button(section,'Import KDBX database',async () => {
+      try { const value = await api('importKdbx',{ fileBase64: await fileBase64(file,true),password: source.value,usePassword: use.checked,keyFileBase64: await fileBase64(keyFile),localPassword: local.value,confirmReplace: replace.checked }); selected = null; await refresh(); status.textContent = `Imported ${value.entries} entries from KDBX ${value.sourceVersion}.`; }
+      finally { source.value = ''; local.value = ''; keyFile.value = ''; }
+    });
+  }
   generator.append(node('h3','Generate a password'));
   const length = field(generator,'Length','number','24'), generated = field(generator,'Generated password','password'); generated.readOnly = true;
   button(generator,'Generate',async () => { generated.value = (await api('generate',{ length: Number(length.value) })).password; });
@@ -38,6 +59,7 @@ export async function render(root, api) {
       const imported = field(gate,'Encrypted vault JSON to import','textarea');
       const confirmation = field(gate,'Replace an existing vault','checkbox');
       button(gate,'Import encrypted vault',async () => { await api('importEncrypted',{ document: imported.value, password: master.value, confirmReplace: confirmation.checked }); imported.value = ''; master.value = ''; await refresh(); });
+      kdbxImport(content);
       return;
     }
     gate.append(node('h3','Unlocked'));
@@ -74,6 +96,17 @@ export async function render(root, api) {
     button(maintenance,'Show encrypted backup JSON',async () => { exported.value = JSON.stringify((await api('exportEncrypted',{})).document,null,2); });
     const old = field(maintenance,'Current master password','password'), replacement = field(maintenance,'New master password','password');
     button(maintenance,'Change master password',async () => { try { await api('changePassword',{ currentPassword: old.value, newPassword: replacement.value }); } finally { old.value = ''; replacement.value = ''; } });
+    const exchange = node('section',undefined,'card'); content.append(exchange); exchange.append(node('h3','Export a KeePass database'),node('p','Download an encrypted KDBX 4.1 file that KeePass can open. Keep any key file separately from the database.','muted'));
+    const exportPassword = field(exchange,'Password for exported KDBX','password'), useExport = field(exchange,'Use password component (uncheck for a key file only)','checkbox'); useExport.checked = true;
+    const exportKey = field(exchange,'Optional key file for export','file');
+    const kdf = select(exchange,'Key derivation function',[['argon2id','Argon2id — 64 MiB, 3 passes, 2 lanes'],['argon2d','Argon2d — 64 MiB, 3 passes, 2 lanes'],['aes','AES-KDF — 100,000 rounds']]);
+    const cipher = select(exchange,'Database cipher',[['aes','AES-256-CBC'],['chacha20','ChaCha20']]);
+    button(exchange,'Download encrypted KDBX',async () => {
+      try { const value = await api('exportKdbx',{ password: exportPassword.value,usePassword: useExport.checked,keyFileBase64: await fileBase64(exportKey),options: { cipher: cipher.value,kdf: kdf.value } });
+        const data = Uint8Array.from(atob(value.fileBase64),c => c.charCodeAt(0)), url = URL.createObjectURL(new Blob([data],{ type: 'application/octet-stream' })), link = node('a'); link.href = url; link.download = value.filename; link.click(); setTimeout(() => URL.revokeObjectURL(url),1000); data.fill(0);
+      } finally { exportPassword.value = ''; exportKey.value = ''; }
+    });
+    kdbxImport(content);
   }
   await run(refresh);
 }

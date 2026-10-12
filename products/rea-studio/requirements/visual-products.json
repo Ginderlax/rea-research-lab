@@ -704,7 +704,7 @@
           "title": "Interactive canvas editing",
           "source": "readme",
           "status": "partial",
-          "implementation": "Four tools and single selection on bounded coordinates.",
+          "implementation": "Rectangle, ellipse, unbound straight arrow, text and freehand tools; multi-selection, grouped move/delete/style, single supported shape resize, undo/redo and bounded viewport. Imported unsupported or approximate content stays preserved with persistent warnings.",
           "acceptance": "Compare original gestures, tools, selection and editing operations.",
           "parityVerified": false,
           "documentationSources": [
@@ -713,16 +713,23 @@
           "implementationEvidence": [
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
-            "products/rea-studio/apps/sketch/client.mjs"
+            "products/rea-studio/apps/sketch/client.mjs",
+            "products/rea-studio/apps/sketch/README.md"
           ],
-          "testEvidence": []
+          "testEvidence": [
+            {
+              "file": "products/rea-studio/apps/sketch/client.test.mjs",
+              "name": "canvas event handlers draw freehand, group multiple shapes, move a group and undo/redo real scene data",
+              "proves": "Bounded development behavior or original helper fixture only; no complete original-product parity assertion."
+            }
+          ]
         },
         {
           "id": "excalidraw.tools.shapes",
           "title": "Rectangle and ellipse tools",
           "source": "readme",
           "status": "partial",
-          "implementation": "Draw, move and resize both types.",
+          "implementation": "Draw, move and resize unrotated editable rectangles and ellipses. Native appearance fields survive geometry edits; rendering approximates roughness, opacity, hatch and corner styles.",
           "acceptance": "Match shape properties, rotation, styles and pointer edge cases.",
           "parityVerified": false,
           "documentationSources": [
@@ -731,7 +738,8 @@
           "implementationEvidence": [
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
-            "products/rea-studio/apps/sketch/client.mjs"
+            "products/rea-studio/apps/sketch/client.mjs",
+            "products/rea-studio/apps/sketch/README.md"
           ],
           "testEvidence": [
             {
@@ -746,7 +754,7 @@
           "title": "Lines, arrows, binding and labels",
           "source": "readme",
           "status": "partial",
-          "implementation": "Unbound straight arrows only.",
+          "implementation": "Unbound straight two-point arrows; native points normalize only on geometry edits. Bound/curved/multiline/elbow arrows and their metadata are preserved without editable rendering; external bindings are not recalculated.",
           "acceptance": "Support original variants, labels, bindings and rerouting during edits.",
           "parityVerified": false,
           "documentationSources": [
@@ -755,7 +763,8 @@
           "implementationEvidence": [
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
-            "products/rea-studio/apps/sketch/client.mjs"
+            "products/rea-studio/apps/sketch/client.mjs",
+            "products/rea-studio/apps/sketch/README.md"
           ],
           "testEvidence": []
         },
@@ -763,24 +772,33 @@
           "id": "excalidraw.tools.freehand",
           "title": "Remaining drawing tools",
           "source": "readme",
-          "status": "missing",
-          "implementation": "No freehand, eraser, diamond or remaining tools.",
+          "status": "partial",
+          "implementation": "Freehand strokes draw, select, move, style and export safe SVG/native points. Imported pressures remain preserved on moves, while pressure rendering, point-level editing/resizing, eraser, diamond and remaining tools are absent.",
           "acceptance": "Enumerate every tool and replay pointer fixtures including pressure and eraser behavior.",
           "parityVerified": false,
           "documentationSources": [
             "excalidraw.readme"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/core.mjs",
+            "products/rea-studio/apps/sketch/server.mjs",
+            "products/rea-studio/apps/sketch/client.mjs"
           ],
-          "testEvidence": []
+          "testEvidence": [
+            {
+              "file": "products/rea-studio/apps/sketch/app.test.mjs",
+              "name": "freehand geometry, safe SVG, native points and pressure retention are explicit",
+              "proves": "Bounded development behavior or original helper fixture only; no complete original-product parity assertion."
+            }
+          ]
         },
         {
           "id": "excalidraw.styles.rough",
           "title": "Hand-drawn rendering and styles",
           "source": "readme",
           "status": "partial",
-          "implementation": "Straight geometry, stroke and fill colors.",
+          "implementation": "Plain geometric preview with stroke/fill/width controls; native roughness, hatch, opacity, corners, font and arrowhead metadata survive export but appearance is approximated.",
           "acceptance": "Compare roughness, strokes, fills, opacity and deterministic rendering.",
           "parityVerified": false,
           "documentationSources": [
@@ -789,7 +807,8 @@
           "implementationEvidence": [
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
-            "products/rea-studio/apps/sketch/client.mjs"
+            "products/rea-studio/apps/sketch/client.mjs",
+            "products/rea-studio/apps/sketch/README.md"
           ],
           "testEvidence": []
         },
@@ -878,14 +897,17 @@
           "title": "Embedded image support",
           "source": "readme",
           "status": "missing",
-          "implementation": "No binary images.",
+          "implementation": "Native image-file records and image elements survive unchanged scene export as inert JSON. Images are not fetched, decoded, rendered or editable.",
           "acceptance": "Import supported image types and preserve editing and export behavior.",
           "parityVerified": false,
           "documentationSources": [
             "excalidraw.readme"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/core.mjs",
+            "products/rea-studio/apps/sketch/server.mjs",
+            "products/rea-studio/apps/sketch/client.mjs"
           ],
           "testEvidence": []
         },
@@ -910,7 +932,7 @@
           "title": "SVG export",
           "source": "export",
           "status": "partial",
-          "implementation": "Safe geometric SVG and escaped text.",
+          "implementation": "Safe geometric SVG with escaped text and freehand paths for editable projections only. Opaque imported content and native rough/font/pressure appearance are omitted from the SVG preview.",
           "acceptance": "Compare fonts, options, binary files, metadata, bounds and rendered output.",
           "parityVerified": false,
           "documentationSources": [
@@ -919,7 +941,8 @@
           "implementationEvidence": [
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
-            "products/rea-studio/apps/sketch/client.mjs"
+            "products/rea-studio/apps/sketch/client.mjs",
+            "products/rea-studio/apps/sketch/README.md"
           ],
           "testEvidence": [
             {
@@ -965,31 +988,53 @@
           "id": "excalidraw.files.format",
           "title": "Native scene format",
           "source": "schema",
-          "status": "missing",
-          "implementation": "Original REA JSON schema only.",
+          "status": "partial",
+          "implementation": "Native .excalidraw type/version-2 scene envelope import/export preserves parsed original element/app-state/file/custom fields and unknown or deleted records. Selective edits update changed mapped fields, increment versions, retain metadata and export deletions as tombstones. Limits: 4 MiB UTF-8 JSON, 2,000 records, 100,000 metadata nodes and depth 30; lexical whitespace/numeric spellings are not preserved.",
           "acceptance": "Round-trip .excalidraw files preserving all element, file and app-state fields.",
           "parityVerified": false,
           "documentationSources": [
             "excalidraw.schema"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/core.mjs",
+            "products/rea-studio/apps/sketch/server.mjs",
+            "products/rea-studio/apps/sketch/client.mjs"
           ],
-          "testEvidence": []
+          "testEvidence": [
+            {
+              "file": "products/rea-studio/apps/sketch/app.test.mjs",
+              "name": "native v2 roundtrip preserves unknown, unsupported and deleted elements, app state and image files exactly",
+              "proves": "Bounded development behavior or original helper fixture only; no complete original-product parity assertion."
+            },
+            {
+              "file": "products/rea-studio/apps/sketch/app.test.mjs",
+              "name": "native import/save/reopen/export preserves the full original document through the real store",
+              "proves": "Bounded development behavior or original helper fixture only; no complete original-product parity assertion."
+            },
+            {
+              "file": "products/rea-studio/apps/sketch/vendor-oracle.test.mjs",
+              "name": "exact released v0.18.1 envelope, individual restoration and local serializer oracles",
+              "proves": "Pinned original helpers independently check six fully specified elements and local serialization. Full restoreElements, renderer, imported app-state migrations, bindings and broad scenes remain untested; absent original archive explicitly skips."
+            }
+          ]
         },
         {
           "id": "excalidraw.restore",
           "title": "Imported-scene restoration",
           "source": "restore",
-          "status": "missing",
-          "implementation": "Own geometry validation is not baseline restoration.",
+          "status": "partial",
+          "implementation": "Own bounded scene validation and editable projection of supported native elements; unsupported records remain intact with warnings. Isolated original restoreElement fixtures accept exported elements; complete original restoreElements, migrations, defaults, binding/order repair and app-state restoration are absent.",
           "acceptance": "Compare legacy/imported scenes and documented migration/repair rules.",
           "parityVerified": false,
           "documentationSources": [
             "excalidraw.restore"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/core.mjs",
+            "products/rea-studio/apps/sketch/server.mjs",
+            "products/rea-studio/apps/sketch/client.mjs"
           ],
           "testEvidence": []
         },
@@ -998,14 +1043,17 @@
           "title": "Frames and containment",
           "source": "frames",
           "status": "missing",
-          "implementation": "No frame type.",
+          "implementation": "Native frame elements and relationships are preserved without editable rendering or frame workflows.",
           "acceptance": "Match frame membership, clipping and movement on edit/export.",
           "parityVerified": false,
           "documentationSources": [
             "excalidraw.frames"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/core.mjs",
+            "products/rea-studio/apps/sketch/server.mjs",
+            "products/rea-studio/apps/sketch/client.mjs"
           ],
           "testEvidence": []
         },
@@ -1014,7 +1062,7 @@
           "title": "Initial elements, app state and files",
           "source": "initial",
           "status": "partial",
-          "implementation": "Loads own shapes and view only.",
+          "implementation": "Own load/save and native file import retain full parsed documents plus editable shape/view projections. No compatible initialData prop, async lifecycle or complete app-state API.",
           "acceptance": "Accept original synchronous/asynchronous scene, file and library data.",
           "parityVerified": false,
           "documentationSources": [
@@ -1023,7 +1071,8 @@
           "implementationEvidence": [
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
-            "products/rea-studio/apps/sketch/client.mjs"
+            "products/rea-studio/apps/sketch/client.mjs",
+            "products/rea-studio/apps/sketch/README.md"
           ],
           "testEvidence": [
             {
@@ -1038,7 +1087,7 @@
           "title": "Programmatic scene API",
           "source": "api",
           "status": "partial",
-          "implementation": "Own save/list/SVG actions only.",
+          "implementation": "Own validate/save/list/delete/SVG and native importExcalidraw/exportExcalidraw actions; no compatible full original scene integration API.",
           "acceptance": "Match updateScene, getters, reset, file operations and scrolling APIs.",
           "parityVerified": false,
           "documentationSources": [
@@ -1047,7 +1096,8 @@
           "implementationEvidence": [
             "products/rea-studio/apps/sketch/core.mjs",
             "products/rea-studio/apps/sketch/server.mjs",
-            "products/rea-studio/apps/sketch/client.mjs"
+            "products/rea-studio/apps/sketch/client.mjs",
+            "products/rea-studio/apps/sketch/README.md"
           ],
           "testEvidence": []
         },
@@ -1103,15 +1153,18 @@
           "id": "excalidraw.api.elements",
           "title": "Programmatic element construction",
           "source": "elements",
-          "status": "missing",
-          "implementation": "Own four-shape schema only.",
+          "status": "partial",
+          "implementation": "New editable rectangles, ellipses, straight arrows, text and freehand export native element records; six fully specified synthetic elements were checked with original individual restoration. Remaining skeleton/default/binding contracts and full original programmatic element API remain absent.",
           "acceptance": "Construct every supported element skeleton and compare defaults and bindings.",
           "parityVerified": false,
           "documentationSources": [
             "excalidraw.elements"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/core.mjs",
+            "products/rea-studio/apps/sketch/server.mjs",
+            "products/rea-studio/apps/sketch/client.mjs"
           ],
           "testEvidence": []
         },
@@ -1135,15 +1188,18 @@
           "id": "excalidraw.api.customdata",
           "title": "Custom data and element links",
           "source": "props",
-          "status": "missing",
-          "implementation": "Unknown fields are discarded.",
+          "status": "partial",
+          "implementation": "Native customData, element links, unknown properties and opaque records survive file roundtrip as inert JSON. Link opening/generation and original integration callback behavior are not implemented.",
           "acceptance": "Preserve customData and match link generation/open contracts.",
           "parityVerified": false,
           "documentationSources": [
             "excalidraw.props"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/core.mjs",
+            "products/rea-studio/apps/sketch/server.mjs",
+            "products/rea-studio/apps/sketch/client.mjs"
           ],
           "testEvidence": []
         },
@@ -1218,14 +1274,17 @@
           "title": "Shared read-only scene links",
           "source": "readme",
           "status": "missing",
-          "implementation": "File downloads only.",
+          "implementation": "Imported native link metadata stays inert and preserved; no link-opening, share-link or link-generation workflow.",
           "acceptance": "Create, open and revoke supported shared scenes and enforce read-only use.",
           "parityVerified": false,
           "documentationSources": [
             "excalidraw.readme"
           ],
           "implementationEvidence": [
-            "products/rea-studio/apps/sketch/README.md"
+            "products/rea-studio/apps/sketch/README.md",
+            "products/rea-studio/apps/sketch/core.mjs",
+            "products/rea-studio/apps/sketch/server.mjs",
+            "products/rea-studio/apps/sketch/client.mjs"
           ],
           "testEvidence": []
         }
@@ -1233,30 +1292,69 @@
       "implementationFiles": [
         {
           "path": "products/rea-studio/apps/sketch/core.mjs",
-          "sha256": "5234666eb6b6991fc75383236e55c9e8233eefb56d9617606f6da86708e9f717",
-          "bytes": 6494
+          "sha256": "57eea912cd343ea9aeb68165cde6068627681e727065f18072c3aa63528384c5",
+          "bytes": 20927
         },
         {
           "path": "products/rea-studio/apps/sketch/server.mjs",
-          "sha256": "7f064fba87cf45a572146c0e8b8deefc655248a1aa87e280b892ef988760c7c5",
-          "bytes": 1414
+          "sha256": "165a0010e625679674b4bbac79ee694f014eef2303af9db18b1d76c437ba0e27",
+          "bytes": 1801
         },
         {
           "path": "products/rea-studio/apps/sketch/client.mjs",
-          "sha256": "c4ed5728e1aaf884512fc606b3d63b25efc1a757cf52fa95b24255c21ea0ec05",
-          "bytes": 13961
+          "sha256": "e42ce400bfa29791eddb2d63b24923e2288fa0e0acb4196cd6b930e24ed841b2",
+          "bytes": 20991
         },
         {
           "path": "products/rea-studio/apps/sketch/app.test.mjs",
-          "sha256": "0a86fd8bb8be8e822bb3fb28e3c89ef5f2cc29ef197bce338029645381d64cbf",
-          "bytes": 4414
+          "sha256": "28e1ee3b02d52fcc91596b0cae61458472ec9d34b878448c3ee755bd4a897d79",
+          "bytes": 11123
         },
         {
           "path": "products/rea-studio/apps/sketch/README.md",
-          "sha256": "5b4964fcbe1642c4d20d5b991456537761ee474a3c1534923821004fe316d902",
-          "bytes": 2719
+          "sha256": "c4671a8fded6962864101222cebdf6012013e71e387cdafb17771a6545ca2f03",
+          "bytes": 8455
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/client.test.mjs",
+          "bytes": 5476,
+          "sha256": "e8b5e6030ff9e215d3e7250a526017bcf01d901eed231a1954ea22376226113c"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/fixtures.mjs",
+          "bytes": 2811,
+          "sha256": "6613a2b99ed6b35654ea5fcd391c751efe6908a088d05283a2070e17a38f6d11"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/vendor-oracle.mjs",
+          "bytes": 7596,
+          "sha256": "6f5eee0cf8a0624a9363a2395167f7e3413b804d6891a472f96cfb8f0b2c13df"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/vendor-oracle.test.mjs",
+          "bytes": 676,
+          "sha256": "a28079d2e3ecb7eaf9c1ecda82c0fc8237ae9a58e23e3ca7b78e15184569b6dd"
+        },
+        {
+          "path": "products/rea-studio/apps/sketch/results/excalidraw-compatibility.json",
+          "bytes": 5845,
+          "sha256": "26467ce1c6367e550515e110da95f396db76bfe794955a61baa4ebddcd823e08"
         }
-      ]
+      ],
+      "localImplementationMilestone": {
+        "recordedAt": "2026-10-12T15:11:14.410Z",
+        "nativeFileFormat": 2,
+        "baselineRelease": "@excalidraw/excalidraw@0.18.1",
+        "originalOracle": "products/rea-studio/apps/sketch/results/excalidraw-compatibility.json",
+        "testBoundary": "Original released envelope predicate, individual element restoration and local serialization helpers in isolated verification only. Complete application/renderer/restoration and broad real-world scenes are unverified.",
+        "fullProductParityVerified": false,
+        "combinedDevelopmentReceiptReportedByParent": {
+          "testsPassed": 112,
+          "testsFailed": 0,
+          "testsSkipped": 0,
+          "scope": "Current combined development suite, not a full original-product acceptance suite."
+        }
+      }
     },
     {
       "id": "node-red",
@@ -2067,8 +2165,9 @@
     "documentationSnapshot": "For independent docs repositories, GET /repos/{repo}/commits?until={releasePublishedAt}&per_page=1. This selection establishes temporal provenance, not exact release feature binding.",
     "sourceHashes": "GET each source URL and SHA-256 its UTF-8 body. Require HTTP 200.",
     "fileCensus": "GET each inventory API URL; require truncated=false; filter blob paths by pathRegex, sort, and SHA-256 UTF-8 JSON.stringify(paths). Counts are file counts, not verified capabilities.",
-    "developmentTests": "node --test products/rea-studio/apps/automation/app.test.mjs products/rea-studio/apps/flow/app.test.mjs products/rea-studio/apps/sketch/app.test.mjs",
-    "nextStep": "Acquire complete pinned products, extract every documented option/operation into keyed requirements, and create original-product fixtures before recording parity or improvements."
+    "developmentTests": "node --test products/rea-studio/apps/automation/app.test.mjs products/rea-studio/apps/flow/app.test.mjs products/rea-studio/apps/sketch/app.test.mjs products/rea-studio/apps/sketch/client.test.mjs products/rea-studio/apps/sketch/vendor-oracle.test.mjs",
+    "nextStep": "Acquire complete pinned products, extract every documented option/operation into keyed requirements, and create original-product fixtures before recording parity or improvements.",
+    "originalFormatSubset": "node products/rea-studio/apps/sketch/vendor-oracle.mjs; verifies preserved released archive/bundle hashes and uses isolated unchanged helpers only. A skipped original oracle is not compatibility evidence."
   },
   "recordedAt": "2026-10-12T13:53:55.251Z",
   "sources": [

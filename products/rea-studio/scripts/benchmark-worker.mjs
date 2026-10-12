@@ -5,12 +5,13 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { performance } from 'node:perf_hooks';
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
-const input = JSON.parse(process.argv[2]);
+const input = JSON.parse(readFileSync(0, 'utf8'));
 const { algorithm, before, after } = input;
 let compute;
 let implementationIdentity;
 if (algorithm === 'candidate') {
   implementationIdentity = { path: 'products/rea-studio/apps/editor/server.mjs', sha256: createHash('sha256').update(readFileSync(join(root, 'apps/editor/server.mjs'))).digest('hex') };
+  implementationIdentity.dependencies = ['apps/editor/sequence-diff.mjs', 'apps/editor/git.mjs'].map(file => ({ path: `products/rea-studio/${file}`, sha256: createHash('sha256').update(readFileSync(join(root, file))).digest('hex') }));
   const { minimalLineDiff } = await import('../apps/editor/server.mjs');
   compute = () => {
     const result = minimalLineDiff(before.join('\n'), after.join('\n'));
@@ -21,6 +22,7 @@ if (algorithm === 'candidate') {
   assert.equal(algorithm, 'original');
   const study = join(root, '../../projects/01-vscode-monaco');
   const scope = JSON.parse(readFileSync(join(study, 'scope.json'), 'utf8'));
+  for (const entry of scope.included) assert.equal(createHash('sha256').update(readFileSync(join(study, 'artifacts/package', entry.path))).digest('hex'), entry.sha256);
   const target = 'esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/myersDiffAlgorithm.js';
   const artifact = join(study, 'artifacts/package', target);
   const record = scope.included.find(entry => entry.path === target);

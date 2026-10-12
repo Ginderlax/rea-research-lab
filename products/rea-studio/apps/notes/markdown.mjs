@@ -19,9 +19,9 @@ export function inlineTokens(text) {
     if (text[at] === '[') {
       const close = next[']('][at + 1], end = close < text.length ? next[')'][close + 2] : text.length, newline = next['\n'][at];
       if (close > at + 1 && end < newline && end < text.length) {
-        const raw = text.slice(close + 2, end); let url = null;
+        const raw = text.slice(close + 2, end), internal = /^:\/([a-f0-9]{32})$/i.exec(raw); let url = null;
         if (raw && !/\s/.test(raw)) try { const parsed = new URL(raw); if (['https:', 'http:', 'mailto:'].includes(parsed.protocol)) url = parsed.href; } catch { /* Invalid links stay literal. */ }
-        append(url ? { type: 'link', text: text.slice(at + 1, close), url } : { type: 'text', text: text.slice(at, end + 1) }, end + 1); continue;
+        append(internal ? { type: 'internal-link', text: text.slice(at + 1, close), id: internal[1].toLowerCase() } : url ? { type: 'link', text: text.slice(at + 1, close), url } : { type: 'text', text: text.slice(at, end + 1) }, end + 1); continue;
       }
     }
     at++;
@@ -52,12 +52,12 @@ export function markdownBlocks(markdown) {
   flushParagraph(); flushList(); if (code) blocks.push({ type: 'code', text: code.join('\n') });
   return blocks;
 }
-export function renderMarkdown(container, markdown) {
+export function renderMarkdown(container, markdown, { onInternalLink } = {}) {
   container.replaceChildren();
   function inline(parent, text) {
     for (const token of inlineTokens(text)) {
       if (token.type === 'text') parent.append(document.createTextNode(token.text));
-      else { const node = document.createElement({ strong: 'strong', em: 'em', code: 'code', link: 'a' }[token.type]); node.textContent = token.text; if (token.type === 'link') { node.href = token.url; node.target = '_blank'; node.rel = 'noopener noreferrer'; } parent.append(node); }
+      else { const node = document.createElement({ strong: 'strong', em: 'em', code: 'code', link: 'a', 'internal-link': 'button' }[token.type]); node.textContent = token.text; if (token.type === 'link') { node.href = token.url; node.target = '_blank'; node.rel = 'noopener noreferrer'; } if (token.type === 'internal-link') { node.type = 'button'; node.className = 'button'; node.setAttribute('aria-label', `Open local note or attachment: ${token.text}`); node.disabled = !onInternalLink; node.onclick = () => onInternalLink?.(token.id); } parent.append(node); }
     }
   }
   for (const block of markdownBlocks(markdown)) {

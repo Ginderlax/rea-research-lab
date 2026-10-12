@@ -16,10 +16,12 @@
       "cd products/rea-studio; npm test",
       "For each source URL below: fetch its bytes and compare SHA-256; use recorded commit URLs for source documents.",
       "Verify original artifact digest before reproducing recorded read-only CLI inventory commands with synthetic/no configuration.",
-      "Use projects/07-keepass and projects/08-7zip acquisition records to locate shipped CHM carriers; do not treat an extraction exit status as successful topic enumeration."
+      "Use projects/07-keepass and projects/08-7zip acquisition records to locate shipped CHM carriers; do not treat an extraction exit status as successful topic enumeration.",
+      "node --test products/rea-studio/apps/vault/app.test.mjs products/rea-studio/apps/vault/app.integration.test.mjs products/rea-studio/apps/vault/kdbx.test.mjs products/rea-studio/apps/vault/kdbx.interop.test.mjs"
     ],
     "source_retention": "This crosswalk stores URL/commit/blob/content digests and catalog metadata, not redistributed vendor manual text. Complete frozen content retention and licensing review remain pending.",
-    "tree_digest_note": "Git tree response hashes bind observed API responses, not a publisher cryptographic signature."
+    "tree_digest_note": "Git tree response hashes bind observed API responses, not a publisher cryptographic signature.",
+    "local_evidence": "Verify local_implementation_evidence paths by SHA-256 and bytes. KeePass fixture tests verify the preserved binary before loading it and explicitly skip if unavailable; a skip is not interoperability evidence."
   },
   "completion_gates": [
     {
@@ -525,14 +527,34 @@
           "source_ids": [
             "kp.kdbx"
           ],
-          "current_app_status": "not-implemented",
-          "current_app_scope": "The application persists its own AES-GCM JSON envelope.",
-          "evidence": [],
+          "current_app_status": "implemented-local-subset",
+          "current_app_scope": "Original dependency-free KDBX 3.1 import and 4.0/4.1 import/export support bounded native AES/ChaCha20, AES-KDF/Argon2, compression, protected fields and preserved XML/attachments. UI exports 4.1. KDB/KDBX 2.x/3.0, 3.1 export, future/plugin formats, full schema validation and broad real-world files remain absent or unverified.",
+          "evidence": [
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.test.mjs",
+              "test_case": "KDBX 4.0/4.1, AES/ChaCha20, AES-KDF/Argon2d/Argon2id and gzip/none roundtrip actual data",
+              "boundary": "24 bounded local self-roundtrip combinations; independent original checks are separate."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "KeePass 2.61.1 independently creates and opens KDBX across every supported KDF/cipher pair",
+              "boundary": "Preserved digest-verified original assembly independently creates/opens six synthetic cipher/KDF pairs and compares contents; not every database feature or original workflow."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "original KeePass 3.1/Salsa20 import and 4.0 import preserve history and attachments on 4.1 export",
+              "boundary": "Original synthetic 3.1/4.0 fixtures with gzip/none; compatible subset upgrade, not complete format acceptance."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/app.integration.test.mjs",
+              "test_case": "KDBX HTTP import/export preserves encrypted document metadata across restart and failed replacement leaves existing data intact"
+            }
+          ],
           "acceptance_checks": [
             "Round-trip all database versions and features supported by KeePass 2.61.1 with the original application.",
             "Validate compression, attachments, custom data, protected fields and corruption failures."
           ],
-          "original_release_comparison": "not-yet-established-for-this-capability",
+          "original_release_comparison": "bounded-independent-KeePass-2.61.1-format-fixtures; full-capability-parity-not-established",
           "completion_gate": "not-passed"
         },
         {
@@ -543,7 +565,7 @@
             "kp.kdbx"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "AES-256-GCM authenticates local entries; it is a different cipher/container scheme from KDBX.",
+          "current_app_scope": "Local durable state remains authenticated AES-256-GCM/scrypt JSON. Native KDBX exchange uses AES-256-CBC or ChaCha20 with format header/block authentication; KDBX 3.1 Salsa20 and 4.x ChaCha20 protected strings are implemented. This does not provide original operating-system process-memory protection.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/vault/app.test.mjs",
@@ -552,13 +574,27 @@
             {
               "path": "products/rea-studio/apps/vault/app.integration.test.mjs",
               "test_case": "HTTP persisted operations across host restart"
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.test.mjs",
+              "test_case": "KDBX 4.0/4.1, AES/ChaCha20, AES-KDF/Argon2d/Argon2id and gzip/none roundtrip actual data",
+              "boundary": "24 bounded local self-roundtrip combinations; independent original checks are separate."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "KeePass 2.61.1 independently creates and opens KDBX across every supported KDF/cipher pair",
+              "boundary": "Preserved digest-verified original assembly independently creates/opens six synthetic cipher/KDF pairs and compares contents; not every database feature or original workflow."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.test.mjs",
+              "test_case": "KDBX authentication rejects wrong password/key, modified header/body/HMAC, truncation and trailing bytes"
             }
           ],
           "acceptance_checks": [
             "Match release-supported AES/ChaCha20 database behavior and file compatibility.",
             "Test malformed ciphertext and authentication failures against original fixtures."
           ],
-          "original_release_comparison": "not-yet-established-for-this-capability",
+          "original_release_comparison": "bounded-independent-KeePass-2.61.1-format-fixtures; full-capability-parity-not-established",
           "completion_gate": "not-passed"
         },
         {
@@ -568,13 +604,28 @@
             "kp.security",
             "kp.kdbx"
           ],
-          "current_app_status": "not-implemented",
-          "current_app_scope": "Only fixed-parameter scrypt is implemented.",
-          "evidence": [],
+          "current_app_status": "implemented-local-subset",
+          "current_app_scope": "Local storage uses fixed scrypt. KDBX exchange supports AES-KDF 1–2,000,000 rounds and Argon2d/Argon2id 1.3 within 1–32 passes, 1–16 lanes, 128 MiB memory and memory-times-passes at most 512 MiB. Unsupported/costly parameters reject. Argon2 1.0, broader original ranges and calibration remain gaps; optional Argon2 secret/associated-data have no independent fixture.",
+          "evidence": [
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.test.mjs",
+              "test_case": "KDBX 4.0/4.1, AES/ChaCha20, AES-KDF/Argon2d/Argon2id and gzip/none roundtrip actual data",
+              "boundary": "24 bounded local self-roundtrip combinations; independent original checks are separate."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "KeePass 2.61.1 independently creates and opens KDBX across every supported KDF/cipher pair",
+              "boundary": "Preserved digest-verified original assembly independently creates/opens six synthetic cipher/KDF pairs and compares contents; not every database feature or original workflow."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.test.mjs",
+              "test_case": "parser rejects future format/KDF, costly derivation, unsafe XML and missing references instead of dropping content"
+            }
+          ],
           "acceptance_checks": [
             "Implement each built-in release KDF with compatible parameters, calibration and error handling."
           ],
-          "original_release_comparison": "not-yet-established-for-this-capability",
+          "original_release_comparison": "bounded-independent-KeePass-2.61.1-format-fixtures; full-capability-parity-not-established",
           "completion_gate": "not-passed"
         },
         {
@@ -584,12 +635,26 @@
             "kp.keys"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "A single master password is supported; composite keys are absent.",
-          "evidence": [],
+          "current_app_scope": "KDBX source/export credentials support password, password plus keyfile or explicitly selected keyfile-only composition. Keyfile parsing supports raw 32-byte, 64-byte hex, UTF-8 XML v1/v2 with v2 hash verification and arbitrary hashed bytes. Local unlock remains a single master password; Windows-account/plugin composition and UTF-16 XML keyfiles are absent.",
+          "evidence": [
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "independent original opens fresh Lab database; password + XML keyfile and keyfile-only work in both directions",
+              "boundary": "Independent original XML v2 keyfile/password combinations and fresh file opening."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.test.mjs",
+              "test_case": "key files accept raw, hex, XML v1/v2 and hashed arbitrary contents with integrity checks"
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "original arbitrary 64-byte high-bit key files use hashed bytes rather than masked ASCII"
+            }
+          ],
           "acceptance_checks": [
             "Open/save fixtures for each permitted key combination, including compatible key-file formats."
           ],
-          "original_release_comparison": "not-yet-established-for-this-capability",
+          "original_release_comparison": "bounded-independent-KeePass-2.61.1-format-fixtures; full-capability-parity-not-established",
           "completion_gate": "not-passed"
         },
         {
@@ -640,7 +705,7 @@
             "kp.help"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Basic fields, a textual group path and create/update timestamps are supported.",
+          "current_app_scope": "Basic entry fields, group paths and dates are editable; native import/export retains group and entry UUIDs, nested groups, custom strings, history, tags, custom data, public metadata and auto-type settings in preserved XML. New/edited paths create nested export groups, ambiguous duplicate paths reject. Retention does not implement history snapshots, expiration/recycle-bin behavior or group-management UI.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/vault/app.test.mjs",
@@ -649,12 +714,27 @@
             {
               "path": "products/rea-studio/apps/vault/app.integration.test.mjs",
               "test_case": "HTTP persisted operations across host restart"
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "KeePass 2.61.1 independently creates and opens KDBX across every supported KDF/cipher pair",
+              "boundary": "Preserved digest-verified original assembly independently creates/opens six synthetic cipher/KDF pairs and compares contents; not every database feature or original workflow."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "original KeePass 3.1/Salsa20 import and 4.0 import preserve history and attachments on 4.1 export",
+              "boundary": "Original synthetic 3.1/4.0 fixtures with gzip/none; compatible subset upgrade, not complete format acceptance."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "independent original opens fresh Lab database; password + XML keyfile and keyfile-only work in both directions",
+              "boundary": "Independent original XML v2 keyfile/password combinations and fresh file opening."
             }
           ],
           "acceptance_checks": [
             "Match managed hierarchical groups, custom fields, expiration, history and deletion/recycle behavior."
           ],
-          "original_release_comparison": "not-yet-established-for-this-capability",
+          "original_release_comparison": "bounded-independent-KeePass-2.61.1-format-fixtures; full-capability-parity-not-established",
           "completion_gate": "not-passed"
         },
         {
@@ -664,13 +744,32 @@
             "kp.features",
             "kp.kdbx"
           ],
-          "current_app_status": "not-implemented",
-          "current_app_scope": "No attachments or attachment viewer are implemented.",
-          "evidence": [],
+          "current_app_status": "implemented-local-subset",
+          "current_app_scope": "Imported KDBX binary attachments, legacy protected binaries and history references are preserved in the encrypted local record and re-exported as KDBX 4 inner binaries with reference validation. Individual and cumulative inflation/preservation bounds fail explicitly. No attachment editing/viewing workflow is implemented.",
+          "evidence": [
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "KeePass 2.61.1 independently creates and opens KDBX across every supported KDF/cipher pair",
+              "boundary": "Preserved digest-verified original assembly independently creates/opens six synthetic cipher/KDF pairs and compares contents; not every database feature or original workflow."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "original KeePass 3.1/Salsa20 import and 4.0 import preserve history and attachments on 4.1 export",
+              "boundary": "Original synthetic 3.1/4.0 fixtures with gzip/none; compatible subset upgrade, not complete format acceptance."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "authentic original compressed database with oversized attachment fails the inflation limit"
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "legacy compressed attachments stop at the remaining aggregate XML/Base64 budget before retaining all binaries"
+            }
+          ],
           "acceptance_checks": [
             "Round-trip binary attachments, deduplication and documented supported viewer/editor behavior."
           ],
-          "original_release_comparison": "not-yet-established-for-this-capability",
+          "original_release_comparison": "bounded-independent-KeePass-2.61.1-format-fixtures; full-capability-parity-not-established",
           "completion_gate": "not-passed"
         },
         {
@@ -744,13 +843,29 @@
           "source_ids": [
             "kp.importexport"
           ],
-          "current_app_status": "not-implemented",
-          "current_app_scope": "Only encrypted export/import of the application's own JSON exists.",
-          "evidence": [],
+          "current_app_status": "implemented-local-subset",
+          "current_app_scope": "Application encrypted JSON and bounded genuine KDBX exchange are implemented with explicit replacement confirmation and separate source/export credentials. Native KeePass third-party formats, KDB/KDBX 2.x, full original import/export workflows and all platform/format combinations remain unimplemented or unverified.",
+          "evidence": [
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "KeePass 2.61.1 independently creates and opens KDBX across every supported KDF/cipher pair",
+              "boundary": "Preserved digest-verified original assembly independently creates/opens six synthetic cipher/KDF pairs and compares contents; not every database feature or original workflow."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "original KeePass 3.1/Salsa20 import and 4.0 import preserve history and attachments on 4.1 export",
+              "boundary": "Original synthetic 3.1/4.0 fixtures with gzip/none; compatible subset upgrade, not complete format acceptance."
+            },
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "independent original opens fresh Lab database; password + XML keyfile and keyfile-only work in both directions",
+              "boundary": "Independent original XML v2 keyfile/password combinations and fresh file opening."
+            }
+          ],
           "acceptance_checks": [
             "Enumerate every supported original import/export format and test lossless or documented lossy migrations."
           ],
-          "original_release_comparison": "not-yet-established-for-this-capability",
+          "original_release_comparison": "bounded-independent-KeePass-2.61.1-format-fixtures; full-capability-parity-not-established",
           "completion_gate": "not-passed"
         },
         {
@@ -760,12 +875,18 @@
             "kp.autotype"
           ],
           "current_app_status": "not-implemented",
-          "current_app_scope": "No desktop auto-type is implemented.",
-          "evidence": [],
+          "current_app_scope": "Imported auto-type sequences/settings are retained as native XML metadata and re-exported. No desktop/global auto-type execution, window matching or platform workflow is implemented.",
+          "evidence": [
+            {
+              "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+              "test_case": "KeePass 2.61.1 independently creates and opens KDBX across every supported KDF/cipher pair",
+              "boundary": "Preserved digest-verified original assembly independently creates/opens six synthetic cipher/KDF pairs and compares contents; not every database feature or original workflow."
+            }
+          ],
           "acceptance_checks": [
             "Exercise original global hotkeys, window matching, sequences and platform behavior."
           ],
-          "original_release_comparison": "not-yet-established-for-this-capability",
+          "original_release_comparison": "bounded-independent-KeePass-2.61.1-format-fixtures; full-capability-parity-not-established",
           "completion_gate": "not-passed"
         },
         {
@@ -790,7 +911,7 @@
             "kp.sync"
           ],
           "current_app_status": "not-implemented",
-          "current_app_scope": "Encrypted import replaces an entire local vault with explicit approval; it is not database merge.",
+          "current_app_scope": "Encrypted JSON and KDBX imports replace the complete local vault with explicit confirmation. Imported metadata stays preserved for export; database merge/synchronization and conflict/history policy remain absent.",
           "evidence": [],
           "acceptance_checks": [
             "Test merge/conflict/history semantics and each documented URL or file synchronization path."
@@ -822,7 +943,7 @@
             "kp.kdbx"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Old-password verification and local salt/key rotation work in the application format.",
+          "current_app_scope": "Old local master-password verification rotates the local salt/key and re-encrypts all entries plus preserved KDBX XML/binaries. Subsequent KDBX export can use separately selected supported password/keyfile credentials. Complete original key-composition changes and all preserved-content combinations remain unverified.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/vault/app.test.mjs",
@@ -831,6 +952,10 @@
             {
               "path": "products/rea-studio/apps/vault/app.integration.test.mjs",
               "test_case": "HTTP persisted operations across host restart"
+            },
+            {
+              "path": "products/rea-studio/apps/vault/app.integration.test.mjs",
+              "test_case": "KDBX HTTP import/export preserves encrypted document metadata across restart and failed replacement leaves existing data intact"
             }
           ],
           "acceptance_checks": [
@@ -861,6 +986,98 @@
         "Extract and enumerate the release-bound CHM pages and attach each web-derived requirement to a shipped topic.",
         "Split aggregate rows into every documented option, import/export format, plugin interface and platform condition.",
         "Inventory docs cross-references, release-specific changes, configuration/triggers and ecosystem boundaries; no omitted feature is waived."
+      ],
+      "local_implementation_milestone": {
+        "recorded_at_utc": "2026-10-12T15:12:37.756Z",
+        "coverage_document": "products/rea-studio/apps/vault/KDBX-COVERAGE.md",
+        "original_fixture_tool": "products/rea-studio/apps/vault/keepass-oracle.ps1",
+        "original_binary_sha256": "04d29636c393f0c1fc99ff739295494be3adefded93271e44591e8e300225a5a",
+        "original_execution_boundary": "Only independent synthetic fixture checks load preserved KeePass 2.61.1. Production import/export uses original standard-library application code and never launches KeePass.",
+        "bounds": "At most 8 MiB database/inflated/XML/combined preserved contents; keyfiles at most 1 MiB; 10,000 entries/attachments; full details and unsupported cases in KDBX-COVERAGE.md.",
+        "full_parity_complete": false,
+        "universal_superiority_established": false,
+        "validation_receipt": {
+          "path": "products/rea-studio/apps/vault/compatibility-evidence.json",
+          "tests": 18,
+          "passed": 18,
+          "failed": 0,
+          "skipped": 0,
+          "scope": "Bounded KDBX exchange, original synthetic fixtures, local encrypted persistence and parser/resource safeguards only."
+        }
+      },
+      "local_implementation_evidence": [
+        {
+          "kind": "original-implementation-source",
+          "path": "products/rea-studio/apps/vault/server.mjs",
+          "bytes": 12557,
+          "sha256": "e56d4950aa7864fbdf120402bfa6643ee00c1ab114e962b9de80bceca6327534"
+        },
+        {
+          "kind": "original-implementation-source",
+          "path": "products/rea-studio/apps/vault/client.mjs",
+          "bytes": 11040,
+          "sha256": "986487ecdf78b1cfb9bc655c2680725ec06abc06fcb5c8d3aff5600feaea8264"
+        },
+        {
+          "kind": "original-implementation-source",
+          "path": "products/rea-studio/apps/vault/kdbx.mjs",
+          "bytes": 33604,
+          "sha256": "97d221badd544fa47494ecf586e39974a9a0e45ec9673f3d57a24f3631fd770c"
+        },
+        {
+          "kind": "original-implementation-source",
+          "path": "products/rea-studio/apps/vault/xml.mjs",
+          "bytes": 5965,
+          "sha256": "0adfa8ec93cc2cffe7a256a94b896fd9bd815530de79769dccba4762c3c1c0bd"
+        },
+        {
+          "kind": "independent-original-fixture-tool",
+          "path": "products/rea-studio/apps/vault/keepass-oracle.ps1",
+          "bytes": 7783,
+          "sha256": "0a0f26e36f5183dd462d26674739ea85c1e54fd58588640a3c8a62318435dc07"
+        },
+        {
+          "kind": "local-development-or-original-fixture-test",
+          "path": "products/rea-studio/apps/vault/app.test.mjs",
+          "bytes": 5492,
+          "sha256": "9f0eb519e151e27d9fb43e6a9510e523c2e361d28c1c549d8aec1fae6a406b6a"
+        },
+        {
+          "kind": "local-development-or-original-fixture-test",
+          "path": "products/rea-studio/apps/vault/app.integration.test.mjs",
+          "bytes": 5515,
+          "sha256": "82a3d5d346c706a09c12946eb50dad44888027847142330d3e25b612c5fd1d55"
+        },
+        {
+          "kind": "local-development-or-original-fixture-test",
+          "path": "products/rea-studio/apps/vault/kdbx.test.mjs",
+          "bytes": 7172,
+          "sha256": "64b62855696a7f74583f687441087c0b23e6f2ebc6458723aeed1b45312a29be"
+        },
+        {
+          "kind": "local-development-or-original-fixture-test",
+          "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
+          "bytes": 10403,
+          "sha256": "706f74a95f55ffa678db40920e6d16de90b5f628d4a10a099a4d720f0b878759"
+        },
+        {
+          "kind": "implementation-coverage-and-limitations",
+          "path": "products/rea-studio/apps/vault/README.md",
+          "bytes": 5526,
+          "sha256": "87e0452bd55cd32de491037b25e61f876c9f1c0f27bc8c3d65d3d935a1aabbe6"
+        },
+        {
+          "kind": "implementation-coverage-and-limitations",
+          "path": "products/rea-studio/apps/vault/KDBX-COVERAGE.md",
+          "bytes": 8966,
+          "sha256": "e6f069cab063723d225f62cf98bf6e71f619755ed9e545e62d822104ec87ed39"
+        },
+        {
+          "kind": "bounded-original-format-verification-receipt",
+          "path": "products/rea-studio/apps/vault/compatibility-evidence.json",
+          "bytes": 5750,
+          "sha256": "895cb736a9b285bfd0c541b6f76a4dc577aca88675be38e3bab9d2a8be105aee"
+        }
       ]
     },
     {

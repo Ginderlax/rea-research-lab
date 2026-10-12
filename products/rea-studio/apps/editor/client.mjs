@@ -15,6 +15,17 @@ export async function render(root, api) {
   findControls.append(findInput, replaceInput, findButton, replaceButton);
   const difference = el('pre'); difference.style.whiteSpace = 'pre-wrap'; difference.setAttribute('aria-label', 'Line difference');
   pane.append(tabs, editor, actions, findControls, difference); root.append(heading, description, controls, files, pane, state);
+  const sourceControl = el('section', undefined, 'card'); sourceControl.append(el('h3', 'Git source control'));
+  const gitState = el('p', 'Loading repository…', 'muted'), gitControls = el('div', undefined, 'row');
+  const initializeGit = el('button', 'Initialize Git repository', 'button'), refreshGit = el('button', 'Refresh source control', 'button'); gitControls.append(initializeGit, refreshGit);
+  const identityControls = el('div', undefined, 'row'), authorName = el('input'), authorEmail = el('input'), saveIdentity = el('button', 'Save commit identity', 'button');
+  authorName.placeholder = 'Commit author name'; authorName.setAttribute('aria-label', 'Commit author name'); authorEmail.placeholder = 'Commit author email'; authorEmail.setAttribute('aria-label', 'Commit author email'); identityControls.append(authorName, authorEmail, saveIdentity);
+  const changes = el('div'), gitActions = el('div', undefined, 'row'), stageAll = el('button', 'Stage saved changes', 'button'), workingDiff = el('button', 'Show working diff', 'button'), stagedDiff = el('button', 'Show staged diff', 'button'); gitActions.append(stageAll, workingDiff, stagedDiff);
+  const commitControls = el('div', undefined, 'row'), commitMessage = el('textarea'), commit = el('button', 'Commit staged changes', 'button'); commitMessage.rows = 3; commitMessage.placeholder = 'Commit message'; commitMessage.setAttribute('aria-label', 'Commit message'); commitControls.append(commitMessage, commit);
+  const branchControls = el('div', undefined, 'row'), newBranch = el('input'), createBranch = el('button', 'Create and switch branch', 'button'), branches = el('select'), switchBranch = el('button', 'Switch branch', 'button');
+  newBranch.placeholder = 'New branch name'; newBranch.setAttribute('aria-label', 'New branch name'); branches.setAttribute('aria-label', 'Repository branch'); branchControls.append(newBranch, createBranch, branches, switchBranch);
+  const gitPatch = el('pre'), history = el('div'); gitPatch.style.whiteSpace = 'pre-wrap'; gitPatch.setAttribute('aria-label', 'Git patch');
+  sourceControl.append(gitState, gitControls, identityControls, changes, gitActions, commitControls, branchControls, gitPatch, history); root.insertBefore(sourceControl, state);
   const documents = new Map(); let active = null;
   const document = () => documents.get(active);
   function updateTabs() {
@@ -26,6 +37,47 @@ export async function render(root, api) {
     editor.disabled = saveButton.disabled = diffButton.disabled = closeButton.disabled = !active;
   }
   async function run(operation) { try { await operation(); } catch (error) { state.textContent = error.message; } }
+  let repository = null;
+  function displayRepository(data) {
+    repository = data; changes.replaceChildren(); history.replaceChildren(); branches.replaceChildren();
+    gitState.textContent = data.initialized ? `${data.branch} · ${data.head ? data.head.slice(0, 12) : 'No commits yet'} · ${data.changes.length} changed files. Source control uses saved files; save drafts before staging.` : 'No repository in this application workspace. Initialize to track its saved files.';
+    initializeGit.disabled = data.initialized;
+    for (const button of [saveIdentity, stageAll, workingDiff, stagedDiff, commit, createBranch, switchBranch]) button.disabled = !data.initialized;
+    if (!data.initialized) return;
+    if (!authorName.value) authorName.value = data.identity.name;
+    if (!authorEmail.value) authorEmail.value = data.identity.email;
+    for (const branch of data.branches) { const option = el('option', branch); option.value = branch; option.selected = branch === data.branch; branches.append(option); }
+    switchBranch.disabled = data.branches.length === 0;
+    for (const item of data.changes) {
+      const row = el('div', undefined, 'row'); row.append(el('span', `${item.index}${item.working} ${item.originalPath ? item.originalPath + ' → ' : ''}${item.path}${item.conflict ? ' · merge conflict' : ''}`));
+      if (item.untracked || item.working !== ' ') { const button = el('button', `Stage ${item.path}`, 'button'); button.onclick = () => run(() => gitUpdate('gitStage', { paths: [item.path, ...(item.originalPath ? [item.originalPath] : [])] })); row.append(button); }
+      if (!item.untracked && item.index !== ' ') { const button = el('button', `Unstage ${item.path}`, 'button'); button.onclick = () => run(() => gitUpdate('gitUnstage', { paths: [item.path, ...(item.originalPath ? [item.originalPath] : [])] })); row.append(button); }
+      const view = el('button', `View ${item.path} diff`, 'button'); view.onclick = () => run(async () => { gitPatch.textContent = (await api('gitDiff', { paths: [item.path], staged: item.index !== ' ' && !item.untracked })).patch || 'No tracked text changes in this comparison.'; }); row.append(view); changes.append(row);
+    }
+    stageAll.disabled = !data.changes.some(item => item.untracked || item.working !== ' ');
+    commit.disabled = !data.changes.some(item => !item.untracked && item.index !== ' ');
+    history.append(el('h4', 'Recent commits'));
+    for (const item of data.history) history.append(el('p', `${item.id.slice(0, 12)} · ${item.subject} · ${item.author} · ${item.authoredAt}`));
+  }
+  async function gitUpdate(action, input = {}) { displayRepository(await api(action, input)); state.textContent = 'Source control updated.'; }
+  refreshGit.onclick = () => run(() => gitUpdate('gitStatus'));
+  initializeGit.onclick = () => run(() => gitUpdate('gitInitialize'));
+  saveIdentity.onclick = () => run(() => gitUpdate('gitIdentity', { name: authorName.value, email: authorEmail.value }));
+  stageAll.onclick = () => run(() => gitUpdate('gitStage', { paths: repository.changes.filter(item => item.untracked || item.working !== ' ').flatMap(item => [item.path, ...(item.originalPath ? [item.originalPath] : [])]) }));
+  workingDiff.onclick = () => run(async () => { gitPatch.textContent = (await api('gitDiff', {})).patch || 'No tracked working changes.'; });
+  stagedDiff.onclick = () => run(async () => { gitPatch.textContent = (await api('gitDiff', { staged: true })).patch || 'No staged changes.'; });
+  commit.onclick = () => run(async () => { await gitUpdate('gitCommit', { message: commitMessage.value }); commitMessage.value = ''; });
+  async function switchWorkspace(action, name) {
+    await gitUpdate(action, { name });
+    for (const [file, item] of documents) if (item.content === item.saved) {
+      try { const data = await api('read', { path: file }); Object.assign(item, data, { saved: data.content }); }
+      catch { documents.delete(file); }
+    }
+    if (!documents.has(active)) active = documents.keys().next().value ?? null;
+    editor.value = document()?.content ?? ''; updateTabs(); await refresh(); state.textContent = 'Branch changed. Saved tabs refreshed; unsaved drafts were retained.';
+  }
+  createBranch.onclick = () => run(() => switchWorkspace('gitBranch', newBranch.value));
+  switchBranch.onclick = () => run(() => switchWorkspace('gitSwitch', branches.value));
   async function refresh() {
     const data = await api('list', {}); files.replaceChildren(el('h3', 'Workspace files'));
     if (!data.files.length) files.append(el('p', 'No files yet. Create your first file above.', 'muted'));
@@ -52,5 +104,5 @@ export async function render(root, api) {
   findButton.onclick = () => { if (!findInput.value) { state.textContent = 'Enter find text.'; return; } const start = editor.selectionEnd; let at = editor.value.indexOf(findInput.value, start); if (at < 0) at = editor.value.indexOf(findInput.value); if (at < 0) { state.textContent = 'No match.'; return; } editor.focus(); editor.setSelectionRange(at, at + findInput.value.length); state.textContent = `Found at character ${at + 1}.`; };
   replaceButton.onclick = () => run(async () => { const item = document(); if (!item) return; const result = await api('replace', { content: item.content, find: findInput.value, replacement: replaceInput.value }); item.content = editor.value = result.content; updateTabs(); state.textContent = `${result.count} replacements in this draft. Save to keep them.`; });
   editor.onkeydown = event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); run(save); } if (event.key === 'Tab') { event.preventDefault(); const start = editor.selectionStart, end = editor.selectionEnd; editor.setRangeText('  ', start, end, 'end'); editor.dispatchEvent(new Event('input')); } };
-  updateTabs(); await run(refresh);
+  updateTabs(); await run(refresh); await run(() => gitUpdate('gitStatus'));
 }

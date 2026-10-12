@@ -1,0 +1,37 @@
+# REA Sync — working development version
+
+This application performs real local-folder comparison and reviewed file synchronization. It is **not a complete replacement for rclone 1.75.2**. No superiority in all requested categories has been established; every documented original feature remains part of the ultimate acceptance scope.
+
+## Run and verify
+
+From `products/rea-studio`, run `npm start`, open the printed local address and select **Lab Sync**. Application verification:
+
+```text
+node --test apps/sync/app.test.mjs apps/sync/app.integration.test.mjs
+```
+
+Create a fixture through the new-file form or put regular files in the Sync application's dedicated workspace. Supply two separate relative folder paths. Preview changes, resolve every differing existing file, confirm the plan and apply it. **Mirror** mode additionally requires a separate deletion confirmation. Preview again whenever either folder changes or a plan expires.
+
+## Implemented behavior
+
+- SHA-256 scans of regular files, preserving bytes and detecting differences independent of modification time. Three modes: source-to-target copy that keeps target extras; source mirror that proposes removal of target-only files; two-way addition copying with explicit resolution of differing files.
+- Dry runs do not create target folders or alter files. Plans display proposed copies/deletions, conflict reasons, source/target hashes and sizes. Identical files are skipped; empty source directories are created when applying.
+- Differing existing files require individual **source**, **target** or **skip** choices. Persisted prior sync hashes distinguish source changes, target changes and changes on both sides. Choosing target in one-way modes leaves it unchanged; two-way mode can copy it back to source.
+- A plan is valid for thirty minutes, exists only in process memory and is single-use after success or execution failure. Application host disposal drops its volatile plans. Restart requires a new preview; persisted baseline/history remain.
+- Apply rechecks both complete folder fingerprints before writing. Modified files invalidate the preview. Files are hash-checked again when copied; new files use exclusive creation. Previous contents of explicitly replaced or removed files are preserved under `.rea-sync-history/<plan-id>/<side>/...` before modification.
+- Copied bytes are verified; modification timestamps are retained. Mirror removals concern files only; extra empty directories are not removed. Actual file operations and last-result/baseline records survive host restarts.
+- Paths stay inside the dedicated local workspace; nesting, traversal, symlinks, case collisions, Windows reserved names and file/directory collisions are refused. Filenames such as `__proto__`, `constructor` and `toString` are supported and tested. Limits: 10,000 entries, 64 MiB per file and 512 MiB per scanned folder.
+
+Integration checks cover binary copies, no-write dry runs, conflict choices, recovery copies, stale preview refusal, mirror deletion approval, two-way additions and actual HTTP/disk behavior across host restart.
+
+## Concrete parity gaps and limitations
+
+No cloud/storage-provider backends, remote accounts, remote APIs, provider credentials, encrypted remotes, remote configuration, mounts/VFS, server commands, checksummed provider compatibility, filters, bandwidth caps, parallel transfers, resume/chunked uploads, retry/backoff policies, remote caches, scheduling, extensive command syntax or rclone's many backend-specific options are implemented.
+
+Two-way mode does not propagate deletions or provide rclone bisync's full recovery/history semantics. Atomic whole-folder transactions, concurrent outside-process protection, metadata/permissions/ACL/xattr preservation, symlinks/hardlinks and unlimited file sizes are absent. Preflight and per-file checks narrow change races, but cannot guarantee transactions against other processes rewriting the same filesystem. A failure can leave completed earlier operations; it reports counts and preserved prior contents so a fresh preview can be reviewed.
+
+History is local and unencrypted; no automatic history pruning exists. This local workflow does not imply universal reliability, speed, reduced resource use or better usability than rclone.
+
+Official baseline references reviewed on 2026-10-12: [rclone documentation](https://rclone.org/docs/), [copy](https://rclone.org/commands/rclone_copy/), [sync](https://rclone.org/commands/rclone_sync/) and [bisync](https://rclone.org/bisync/). Live documentation references are not a frozen, exhaustive inventory for the pinned release.
+
+All application code is original Node.js/DOM code and imports no rclone or prior lab reconstruction implementation.

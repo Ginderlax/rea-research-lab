@@ -1,0 +1,121 @@
+import { readFile, writeFile, readdir, stat, mkdir, rename, unlink } from 'node:fs/promises';
+import path from 'node:path';
+import { createHash, randomUUID } from 'node:crypto';
+
+const MAX_BYTES = 2 * 1024 * 1024;
+const locks = new Map();
+const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+function text(value, name = 'text') {
+  if (typeof value !== 'string') throw new Error(`${name} must be text.`);
+  if (Buffer.byteLength(value) > MAX_BYTES) throw new Error(`${name} exceeds the 2 MiB limit.`);
+  return value;
+}
+function relative(value) {
+  if (typeof value !== 'string' || !value.trim() || value.length > 1024 || value.includes('\0')) throw new Error('Choose a relative file path.');
+  return value.replaceAll('\\', '/');
+}
+async function exclusive(key, operation) {
+  const previous = locks.get(key) ?? Promise.resolve();
+  let release;
+  const next = new Promise(resolve => { release = resolve; });
+  locks.set(key, next);
+  await previous;
+  try { return await operation(); } finally { release(); if (locks.get(key) === next) locks.delete(key); }
+}
+async function load(file) {
+  let info;
+  try { info = await stat(file); } catch (error) { if (error.code === 'ENOENT') return null; throw error; }
+  if (!info.isFile()) throw new Error('Choose a regular file.');
+  if (info.size > MAX_BYTES) throw new Error('File exceeds the 2 MiB editor limit.');
+  const bytes = await readFile(file);
+  if (bytes.length > MAX_BYTES) throw new Error('File exceeds the 2 MiB editor limit.');
+  if (bytes.includes(0)) throw new Error('Binary files cannot be edited here.');
+  let content;
+  try { content = new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch { throw new Error('Only valid UTF-8 text files are supported.'); }
+  return { content, revision: digest(bytes), bytes: bytes.length };
+}
+
+/** Exact shortest insert/delete script on complete lines. No timeout approximation. */
+export function minimalLineDiff(before, after) {
+  text(before, 'Before'); text(after, 'After');
+  const a = before === '' ? [] : before.split('\n');
+  const b = after === '' ? [] : after.split('\n');
+  if (a.length > 10000 || b.length > 10000) throw new Error('Diff supports at most 10,000 lines per side.');
+  let prefix = 0;
+  while (prefix < a.length && prefix < b.length && a[prefix] === b[prefix]) prefix++;
+  let suffix = 0;
+  while (suffix < a.length - prefix && suffix < b.length - prefix && a[a.length - 1 - suffix] === b[b.length - 1 - suffix]) suffix++;
+  const n = a.length - prefix - suffix, m = b.length - prefix - suffix;
+  if ((n + 1) * (m + 1) > 4_000_000) throw new Error('Changed diff region exceeds 4 million comparison cells; split the file into smaller comparisons.');
+  const width = m + 1, table = new Uint32Array((n + 1) * width);
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) {
+    table[i * width + j] = a[prefix + i] === b[prefix + j]
+      ? 1 + table[(i + 1) * width + j + 1]
+      : Math.max(table[(i + 1) * width + j], table[i * width + j + 1]);
+  }
+  const operations = [];
+  let oldLine = 1, newLine = 1;
+  const append = (type, value) => { operations.push({ type, text: value, oldLine: type === 'insert' ? null : oldLine++, newLine: type === 'delete' ? null : newLine++ }); };
+  for (let i = 0; i < prefix; i++) append('equal', a[i]);
+  let i = 0, j = 0;
+  while (i < n || j < m) {
+    if (i < n && j < m && a[prefix + i] === b[prefix + j]) { append('equal', a[prefix + i]); i++; j++; }
+    else if (j < m && (i === n || table[i * width + j + 1] > table[(i + 1) * width + j])) append('insert', b[prefix + j++]);
+    else append('delete', a[prefix + i++]);
+  }
+  for (let k = 0; k < suffix; k++) append('equal', a[a.length - suffix + k]);
+  const inserted = operations.filter(op => op.type === 'insert').length;
+  const deleted = operations.filter(op => op.type === 'delete').length;
+  return { operations, inserted, deleted, cost: inserted + deleted, minimal: true, unit: 'line insertions and deletions', comparedCells: n * m };
+}
+
+export async function handle({ action, input = {}, workspace }) {
+  if (action === 'diff') return minimalLineDiff(input.before, input.after);
+  if (action === 'replace') {
+    const content = text(input.content), find = text(input.find, 'Find'), replacement = text(input.replacement ?? '', 'Replacement');
+    if (!find) throw new Error('Find text cannot be empty.');
+    const parts = content.split(find);
+    const updated = parts.join(replacement);
+    text(updated);
+    return { content: updated, count: parts.length - 1 };
+  }
+  if (action === 'list') {
+    const files = [];
+    let truncated = false;
+    async function walk(folder = '', depth = 0) {
+      if (depth > 12) { truncated = true; return; }
+      const absolute = await workspace.resolve(folder || '.');
+      const entries = await readdir(absolute, { withFileTypes: true });
+      for (const entry of entries.sort((a, b) => a.name.localeCompare(b.name))) {
+        if (entry.isSymbolicLink() || ['node_modules', '.git'].includes(entry.name) || entry.name.startsWith('.rea-save-')) continue;
+        const name = folder ? `${folder}/${entry.name}` : entry.name;
+        if (entry.isDirectory()) await walk(name, depth + 1);
+        else if (entry.isFile()) files.push(name);
+        if (files.length >= 1000) { truncated = true; return; }
+      }
+    }
+    await walk();
+    return { files, truncated, root: workspace.root };
+  }
+  if (action === 'read') {
+    const name = relative(input.path), file = await workspace.resolve(name), existing = await load(file);
+    if (!existing) throw new Error('File does not exist. Use New file to create it.');
+    return { path: name, ...existing };
+  }
+  if (action === 'save') {
+    const name = relative(input.path), content = text(input.content), file = await workspace.resolve(name);
+    if (input.revision !== null && typeof input.revision !== 'string') throw new Error('A revision is required; use null only for a new file.');
+    return exclusive(file, async () => {
+      const current = await load(file);
+      if ((current?.revision ?? null) !== input.revision) throw new Error('File changed since it was opened. Open it again before saving; your draft is still in the editor.');
+      await mkdir(path.dirname(file), { recursive: true });
+      // Resolve again after creating directories so the host can reject links.
+      const checked = await workspace.resolve(name);
+      const temporary = path.join(path.dirname(checked), `.rea-save-${randomUUID()}`);
+      try { await writeFile(temporary, content, { encoding: 'utf8', flag: 'wx' }); await rename(temporary, checked); }
+      finally { await unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
+      return { path: name, content, revision: digest(Buffer.from(content)), bytes: Buffer.byteLength(content), saved: true };
+    });
+  }
+  throw new Error(`Unknown editor action: ${action}`);
+}

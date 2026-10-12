@@ -4,6 +4,10 @@ A reproducible collection of ten bounded reverse-engineering projects, prepared 
 
 Start with [the series manuscript](SERIES-STUDY.md), [methods and evidence standards](METHODOLOGY.md), or an individual report below. The studies demonstrate specific mechanisms; they do not claim reconstruction of entire products or hosted services. They are documented engineering studies and have not undergone independent academic peer review.
 
+## Product development
+
+[REA Studio](products/rea-studio/README.md) adds ten runnable local development applications with a shared interface, persisted data and integration tests. The user's completion standard is every documented feature of the original products, plus improvements in speed, resource use, ease of use, compatibility and reliability. **Zero complete replacement products meet that standard yet.** The [acceptance requirements](products/rea-studio/ACCEPTANCE.md), [status record](products/rea-studio/STATUS.json) and individual application READMEs preserve the full scope and identify missing capabilities. Recorded component comparisons include tradeoffs as well as improvements.
+
 | Project | Released component and valuable mechanism | Recorded comparison unit | Report |
 | --- | --- | --- | --- |
 | 01 · VS Code / Monaco | Monaco 0.57.0 sequence-diff kernel | 5,002 exact outputs; 5,002 separate replay checks | [Study](projects/01-vscode-monaco/REPORT.md) |
@@ -34,5 +38,7 @@ The separate `rea-backup-2026-10-12` backup was preserved unchanged. [PUBLICATIO
 ## Developer feedback
 
 We welcome independent reproduction, small counterexamples, corrections to the reports, and suggestions for stronger REA experiments. [Open a research feedback issue](https://github.com/Ginderlax/rea-research-lab/issues/new?template=research-feedback.md) or submit a pull request. [CONTRIBUTING.md](CONTRIBUTING.md) explains how to make a result easy to reproduce and review.
+
+For REA Studio, [report an application defect or missing feature](https://github.com/Ginderlax/rea-research-lab/issues/new?template=product-feedback.md). Include an exact revision, synthetic steps and the original release/documentation when making a compatibility claim.
 
 Useful starting points include Monaco's nonminimal edit-script witness, Grafana's counter-reset behavior, n8n's edge-selection rules, KeePass's boundary cases, and the limits of REA's partial semantic traces. Findings should identify the exact component and release; the collection's scope is ten bounded mechanisms rather than ten complete product replicas.

@@ -1,0 +1,25 @@
+{
+  "schema": "rea-interactive-development-validation/v1",
+  "checked_at_utc": "2026-10-12T13:59:21Z",
+  "method": "Interactive browser operations through the Codex in-app browser; visible saved results checked in the UI. All inputs were synthetic local development fixtures.",
+  "initial_host": "http://127.0.0.1:4310",
+  "updated_host": "http://127.0.0.1:4311",
+  "scope": "Specified interface workflows only. This is not an exhaustive UI, accessibility, usability or original-product feature comparison.",
+  "checks": [
+    { "app": "editor", "operations": ["create UTF-8 file", "save 51 bytes", "reopen file in a fresh host"], "observed": "The saved two-line synthetic content reopened unchanged.", "passed": true },
+    { "app": "metrics", "operations": ["import three-row CSV", "calculate numeric statistics", "save dashboard panel", "reopen dashboard in a fresh host"], "observed": "Count 3, sum 60, mean 20, minimum 10, maximum 30, median 20, p95 30 and sample standard deviation 10; persisted panel retained these values.", "passed": true },
+    { "app": "automation", "operations": ["save order-filtering workflow", "execute three records", "reopen retained execution in a fresh host"], "observed": "Two qualifying records produced total 375; completed status and per-node execution trace were retained.", "passed": true },
+    { "app": "sketch", "operations": ["draw rectangle by dragging canvas", "undo", "redo", "save scene", "reopen scene in a fresh host", "reset view"], "observed": "Scene remained listed and restored its saved zoom; drawing controls, undo/redo and view reset responded. Screenshot captures the development interface.", "passed": true },
+    { "app": "notes", "operations": ["save Markdown note with tags", "inspect safe heading and bold preview", "reopen revision one in a fresh host"], "observed": "Title, two tags and body persisted; preview rendered heading and emphasis.", "passed": true },
+    { "app": "flow", "operations": ["save temperature routing flow", "inject two messages", "reopen flow state in a fresh host"], "observed": "Hot and normal routes received their messages; hot counter one and completed run history persisted.", "passed": true },
+    { "app": "vault", "operations": ["open encrypted-vault setup interface", "generate an unassigned 24-character password"], "observed": "Setup interface loaded and generator produced a masked value. No account or master credential was entered through the browser; encryption and restart operations were verified separately by automated tests.", "passed": true, "browser_encrypted_crud_exercised": false },
+    { "app": "archive", "operations": ["create 23-byte synthetic file", "create ZIP", "list and validate CRC", "confirm extraction into new folder", "reopen and verify ZIP in a fresh host"], "observed": "One DEFLATE entry with CRC 5e0c838f validated and extracted successfully; reopened archive passed CRC and size checks again.", "passed": true },
+    { "app": "backup", "operations": ["create 22-byte synthetic file", "save snapshot", "verify contents", "confirm restore into new folder", "reopen and verify snapshot in a fresh host"], "observed": "Snapshot integrity passed and one file restored successfully; reopened snapshot verified one file, one unique chunk and 22 bytes.", "passed": true },
+    { "app": "sync", "operations": ["create synthetic source file", "preview plan", "review one copy and zero conflicts", "confirm apply", "reopen and compare folders in a fresh host"], "observed": "One file copied and zero files removed; after reopening, matching folders produced zero operations, zero conflicts and one skipped identical file.", "passed": true }
+  ],
+  "console_errors_or_warnings_observed": 0,
+  "preview": "studio-preview.jpg",
+  "complete_replacement_products": 0,
+  "every_documented_feature_verified": false,
+  "universal_superiority_established": false
+}

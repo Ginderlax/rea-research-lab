@@ -1,0 +1,178 @@
+{
+  "schema": "rea-development-comparison/v1",
+  "checked_at_utc": "2026-10-12T13:47:18.581Z",
+  "scope": "Internal Monaco 0.57.0 sequence algorithm versus Lab Editor minimal line diff; this is not a VS Code product benchmark.",
+  "host": {
+    "platform": "win32",
+    "architecture": "x64",
+    "cpu": "AMD Ryzen 7 9800X3D 8-Core Processor           ",
+    "runtime": "v24.16.0"
+  },
+  "methodology": "Separate fresh worker per algorithm/case; 20 warmups, 100 timed calls including output replay assertions; alternating execution order. Candidate calls include string assembly/tokenization and full line-operation output, while the original accepts token arrays and returns changed spans; these API costs differ. Whole-worker peak RSS includes Node.js, imports and input allocations. Single-machine exploratory timing, no confidence interval or independent replication.",
+  "cases": [
+    {
+      "id": "recorded-nonminimal-witness",
+      "input_sha256": "c29e56843637dab796c3685bafcdf2cfaf4e44189f3f1b9cc3c0eb2eafeede5e",
+      "before_lines": 12,
+      "after_lines": 3,
+      "order": [
+        "original",
+        "candidate"
+      ],
+      "original": {
+        "algorithm": "original",
+        "cost": 11,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "monaco-editor@0.57.0/esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/myersDiffAlgorithm.js",
+          "sha256": "432a33686b495e2aa53a24b7c909c8dfb8cb8817805ac89063d5c53c8014fe7f"
+        },
+        "median_ms": 0.00730000000000075,
+        "p95_ms": 0.015099999999996783,
+        "process_peak_rss_kib": 57968,
+        "runtime": "v24.16.0"
+      },
+      "candidate": {
+        "algorithm": "candidate",
+        "cost": 9,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "products/rea-studio/apps/editor/server.mjs",
+          "sha256": "8b7801053154ee329b03d245d724b41609bd6e41c811e705d3fc0632240aae12"
+        },
+        "median_ms": 0.0030999999999998806,
+        "p95_ms": 0.0071000000000012164,
+        "process_peak_rss_kib": 55448,
+        "runtime": "v24.16.0"
+      },
+      "candidate_cost_reduction": 2,
+      "candidate_median_time_ratio": 0.42465753424651537
+    },
+    {
+      "id": "identical-512-lines",
+      "input_sha256": "a215b0f3d2a45c8d26d899ee751d886defa78faa2378282de000a3bd92813fd9",
+      "before_lines": 512,
+      "after_lines": 512,
+      "order": [
+        "candidate",
+        "original"
+      ],
+      "candidate": {
+        "algorithm": "candidate",
+        "cost": 0,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "products/rea-studio/apps/editor/server.mjs",
+          "sha256": "8b7801053154ee329b03d245d724b41609bd6e41c811e705d3fc0632240aae12"
+        },
+        "median_ms": 0.04370000000000118,
+        "p95_ms": 0.12019999999999698,
+        "process_peak_rss_kib": 59304,
+        "runtime": "v24.16.0"
+      },
+      "original": {
+        "algorithm": "original",
+        "cost": 0,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "monaco-editor@0.57.0/esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/myersDiffAlgorithm.js",
+          "sha256": "432a33686b495e2aa53a24b7c909c8dfb8cb8817805ac89063d5c53c8014fe7f"
+        },
+        "median_ms": 0.009399999999999409,
+        "p95_ms": 0.020000000000003126,
+        "process_peak_rss_kib": 57788,
+        "runtime": "v24.16.0"
+      },
+      "candidate_cost_reduction": 0,
+      "candidate_median_time_ratio": 4.648936170213184
+    },
+    {
+      "id": "single-change-512-lines",
+      "input_sha256": "707876b43eab117bdb283d1d408c777d50a6f3d23c3d6d3227380f5d93411b56",
+      "before_lines": 512,
+      "after_lines": 512,
+      "order": [
+        "original",
+        "candidate"
+      ],
+      "original": {
+        "algorithm": "original",
+        "cost": 2,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "monaco-editor@0.57.0/esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/myersDiffAlgorithm.js",
+          "sha256": "432a33686b495e2aa53a24b7c909c8dfb8cb8817805ac89063d5c53c8014fe7f"
+        },
+        "median_ms": 0.012500000000002842,
+        "p95_ms": 0.03590000000000515,
+        "process_peak_rss_kib": 58552,
+        "runtime": "v24.16.0"
+      },
+      "candidate": {
+        "algorithm": "candidate",
+        "cost": 2,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "products/rea-studio/apps/editor/server.mjs",
+          "sha256": "8b7801053154ee329b03d245d724b41609bd6e41c811e705d3fc0632240aae12"
+        },
+        "median_ms": 0.04359999999999786,
+        "p95_ms": 0.09590000000000032,
+        "process_peak_rss_kib": 59464,
+        "runtime": "v24.16.0"
+      },
+      "candidate_cost_reduction": 0,
+      "candidate_median_time_ratio": 3.487999999999036
+    },
+    {
+      "id": "seeded-mixed-128-lines",
+      "input_sha256": "c0e4566cd0312f19cfd0e3491f8d3c974710139f3978c51c0d0d24d251306370",
+      "before_lines": 128,
+      "after_lines": 128,
+      "order": [
+        "candidate",
+        "original"
+      ],
+      "candidate": {
+        "algorithm": "candidate",
+        "cost": 136,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "products/rea-studio/apps/editor/server.mjs",
+          "sha256": "8b7801053154ee329b03d245d724b41609bd6e41c811e705d3fc0632240aae12"
+        },
+        "median_ms": 0.1332000000000022,
+        "p95_ms": 0.21359999999999957,
+        "process_peak_rss_kib": 60708,
+        "runtime": "v24.16.0"
+      },
+      "original": {
+        "algorithm": "original",
+        "cost": 136,
+        "replay_validated": true,
+        "samples": 100,
+        "implementation_identity": {
+          "path": "monaco-editor@0.57.0/esm/vs/editor/common/diff/defaultLinesDiffComputer/algorithms/myersDiffAlgorithm.js",
+          "sha256": "432a33686b495e2aa53a24b7c909c8dfb8cb8817805ac89063d5c53c8014fe7f"
+        },
+        "median_ms": 0.08129999999999882,
+        "p95_ms": 0.2775999999999996,
+        "process_peak_rss_kib": 60084,
+        "runtime": "v24.16.0"
+      },
+      "candidate_cost_reduction": 0,
+      "candidate_median_time_ratio": 1.6383763837638885
+    }
+  ],
+  "original_artifact_acquisition": "cd projects/01-vscode-monaco && npm run obtain",
+  "conclusion": "A smaller edit script on a known witness is a scoped quality improvement. Other measured costs and all full-product feature, usability, compatibility and reliability claims remain separate.",
+  "full_product_feature_parity_established": false,
+  "universal_superiority_established": false
+}

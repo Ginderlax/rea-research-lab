@@ -1,0 +1,47 @@
+# REA Studio development applications
+
+Ten local applications are being developed toward the user's requested full replacements. This directory contains working initial implementations and testable contracts. **None is a complete replacement for its original product.** Full feature parity, full-product comparison and universal superiority have not been established.
+
+The [acceptance requirements](ACCEPTANCE.md) retain the user's full scope. The [documentation crosswalks](requirements/README.md) begin release-specific requirement discovery. [STATUS.json](STATUS.json) records unresolved completion conditions; individual application READMEs list implemented capabilities and concrete gaps. Historical reverse-engineering studies remain in [`projects/`](../../projects/).
+
+## Run on this machine
+
+Install Node.js 24 or later, then run:
+
+```text
+cd products/rea-studio
+npm start
+```
+
+Open `http://127.0.0.1:4310`. There are no third-party runtime packages to install. The shared application host provides isolated file workspaces, persisted JSON records, same-origin session protection and serialized per-application operations. Data defaults to the lab's ignored `.local/rea-studio/` directory. `REA_STUDIO_DATA` can select another data directory; `node server.mjs --port 4311` selects another port.
+
+The host binds only to this machine. It is a development application for synthetic fixtures and evaluation; production security assessment, unrestricted files, remote accounts and broad vendor compatibility remain separate requirements. Encrypted vault storage is its own format, not a KeePass database.
+
+| Application | Implemented starting point | Details |
+| --- | --- | --- |
+| Lab Editor | File editing and exact minimal line differences | [Editor](apps/editor/README.md) |
+| Lab Metrics | CSV data, calculations and dashboard views | [Metrics](apps/metrics/README.md) |
+| Lab Automation | Declarative DAG execution and histories | [Automation](apps/automation/README.md) |
+| Lab Sketch | Interactive drawing and scene persistence | [Sketch](apps/sketch/README.md) |
+| Lab Notes | Notes, tags, search and export | [Notes](apps/notes/README.md) |
+| Lab Flow | Stateful message routing and observation | [Flow](apps/flow/README.md) |
+| Lab Vault | Authenticated encrypted entries and utilities | [Vault](apps/vault/README.md) |
+| Lab Archive | ZIP creation, validation and extraction | [Archive](apps/archive/README.md) |
+| Lab Backup | Local snapshots, integrity and restore | [Backup](apps/backup/README.md) |
+| Lab Sync | Local comparison and copy synchronization | [Sync](apps/sync/README.md) |
+
+## Verify and compare
+
+```text
+npm test
+npm run verify
+npm run benchmark
+```
+
+Tests exercise implemented contracts and actual persisted operations. The benchmark needs the original Monaco artifact acquired by `projects/01-vscode-monaco`; follow that study's acquisition instructions. Its [recorded comparison](results/editor-comparison.json) concerns only an internal sequence algorithm and shows both quality differences and costs. It is an exploratory single-machine comparison, with different API payloads, not a product-level superiority certificate.
+
+`npm run verify` reruns the development tests and records exact source hashes in the [validation receipt](results/development-validation.json). Separate [browser checks](results/browser-verification.json) exercise the local interfaces with synthetic data. These receipts demonstrate the implemented capabilities, while the acceptance requirements and feature gaps remain open.
+
+![REA Studio development interface with the drawing application](results/studio-preview.jpg)
+
+New application code is implemented separately from the prior reference-assisted reconstructions. There are no imports from those reconstructions and no bundled vendor applications. The collection's existing [license scope](../../LICENSES.md) continues to apply to prior study material; no new repository-wide license overrides it.

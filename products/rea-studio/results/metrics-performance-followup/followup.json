@@ -1,0 +1,96 @@
+{
+  "schema": "rea-native-calculation-performance-followup/v1",
+  "recordedAt": "2026-10-12T17:43:12.549Z",
+  "artifacts": [
+    {
+      "path": "products/rea-studio/results/metrics-performance-followup/executed-worker.mjs.snapshot",
+      "bytes": 3431,
+      "sha256": "c807922c00eee029060e3895d1b9dd20503ddf9f6813b3a1cfd205897e4a1676"
+    },
+    {
+      "path": "products/rea-studio/results/metrics-performance-followup/executed-runner.mjs.snapshot",
+      "bytes": 1553,
+      "sha256": "726570fd216a12458d5080bcb31948016aa7c8c967b5fa7682a5d0190566e4c1"
+    },
+    {
+      "path": "products/rea-studio/results/metrics-performance-followup/baseline.json",
+      "bytes": 31182,
+      "sha256": "7e9facc4aa5c2a923dc7fb4e6f1cbb580cbc768c1266e79b2ab644608f6a88b0"
+    },
+    {
+      "path": "products/rea-studio/results/metrics-performance-followup/shared-sort.json",
+      "bytes": 31104,
+      "sha256": "95047fb4fda24c76da06a9219380a76bd37849e232b6dd4916235c61db251385"
+    },
+    {
+      "path": "products/rea-studio/results/metrics-performance-followup/rejected-literal-trial.json",
+      "bytes": 31196,
+      "sha256": "7361fea5aa811a4082d4f3171f1964f46d5e903132f7416f0b7ac0876ab6a886"
+    },
+    {
+      "path": "products/rea-studio/results/metrics-performance-followup/shared-sort-candidate.mjs.snapshot",
+      "bytes": 13485,
+      "sha256": "9269cf8c32be9bf2c075b67019e82e41272d9495f0321fefc17b2c5695a91371"
+    },
+    {
+      "path": "products/rea-studio/results/metrics-performance-followup/rejected-literal-candidate.mjs.snapshot",
+      "bytes": 13781,
+      "sha256": "6a9c7cc095b6971d4e74b8350261d4b424ff89a36ee250359e6aa04cd5f1c8c6"
+    }
+  ],
+  "implementation": {
+    "path": "products/rea-studio/apps/metrics/native-calculations.mjs",
+    "sha256": "9269cf8c32be9bf2c075b67019e82e41272d9495f0321fefc17b2c5695a91371"
+  },
+  "baselineSourceRevision": "50155ea79ca43fd38842619e9acab7c0ea1976b0",
+  "originalRelease": "@grafana/data13.2.3",
+  "differential": {
+    "comparisons": 2910751,
+    "standardHelperComparisons": 14240,
+    "failures": 0,
+    "receipt": "products/rea-studio/apps/metrics/results/native-calculations-verification.json"
+  },
+  "selectedChange": "Shared sorted percentile input within one calculation call; single queue allocation and in-place assembly of a private result. No sorted-data cache persists across calls.",
+  "selectedSummary": [
+    {
+      "caseName": "smallStandard",
+      "originalMilliseconds": 0.001859849999999998,
+      "candidateMilliseconds": 0.0019597000000000017,
+      "speedRatioOriginalOverCandidate": 0.949048323723017
+    },
+    {
+      "caseName": "largeStandard",
+      "originalMilliseconds": 0.16106300000000004,
+      "candidateMilliseconds": 0.16415400000000005,
+      "speedRatioOriginalOverCandidate": 0.9811701207402804
+    },
+    {
+      "caseName": "singlePercentile",
+      "originalMilliseconds": 1.57271,
+      "candidateMilliseconds": 1.5939000000000008,
+      "speedRatioOriginalOverCandidate": 0.9867055649664341
+    },
+    {
+      "caseName": "allPercentiles",
+      "originalMilliseconds": 163.2156,
+      "candidateMilliseconds": 1.892649999999989,
+      "speedRatioOriginalOverCandidate": 86.23654664095366
+    },
+    {
+      "caseName": "allCalculations",
+      "originalMilliseconds": 165.42049999999995,
+      "candidateMilliseconds": 6.554349999999985,
+      "speedRatioOriginalOverCandidate": 25.23827686955996
+    }
+  ],
+  "retainedAlternative": "Direct standard-result literal was rejected after its separate trial had a slower large-standard median. The trial and exact source are retained.",
+  "limits": [
+    "Exploratory five synthetic workloads, three fresh process samples per implementation/workload; finite data does not establish all-input or whole-product superiority.",
+    "Both original and candidate modules are loaded in each child for exact-output checks, so reported memory is not an isolated implementation resource benchmark.",
+    "Three selected-change standard/single-percentile workloads have slower candidate medians, recorded without a significance claim.",
+    "Concurrent development activity, scheduling, warmup, small samples and the shared validation setup limit inference.",
+    "Worker verifies original archive and retained original module hashes, and dependency archive/location; the full independent differential runner separately authenticates actual lodash runtime bytes against its archive."
+  ],
+  "fullFeatureParityEstablished": false,
+  "universalSuperiorityEstablished": false
+}

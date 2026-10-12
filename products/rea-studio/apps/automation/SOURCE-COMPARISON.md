@@ -1,6 +1,6 @@
 # Automation execution source comparison
 
-Reviewed 2026-10-12. The existing crosswalk nominates n8n 2.16.0, source commit `6eb2d75670b912bdc0274abd73f4f6e8ca8678c6`. Its component-version mapping is non-unique. Documentation commit `be6702d26245396df6b2fcfeb6394576a7ce3326` is a temporal snapshot before that release, not an exact availability guarantee. These limitations remain unchanged.
+This comparison describes the existing custom workflow engine. The new native slice, resolved complete release binding and exact original module/helper observations are recorded separately in [NATIVE-SOURCE-COMPARISON.md](NATIVE-SOURCE-COMPARISON.md); the limitations below concern the earlier custom-format analysis. Reviewed 2026-10-12. The existing crosswalk nominates n8n 2.16.0, source commit `6eb2d75670b912bdc0274abd73f4f6e8ca8678c6`. Its component-version mapping is non-unique. Documentation commit `be6702d26245396df6b2fcfeb6394576a7ce3326` is a temporal snapshot before that release, not an exact availability guarantee. These limitations remain unchanged.
 
 This implementation executes its own declarative engine. Official source was consulted as evidence; no n8n package or study reconstruction is loaded into the application's runtime. The original full n8n product has **not** been executed for these fixtures, so all original-product parity and superiority gates remain open.
 

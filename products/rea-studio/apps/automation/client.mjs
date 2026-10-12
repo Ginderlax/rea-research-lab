@@ -1,3 +1,4 @@
+import {renderNative} from './native-client.mjs';
 function el(tag, text, attrs = {}) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; Object.assign(node, attrs); return node; }
 function button(text, click) { const b = el('button', text, { type: 'button', className: 'button' }); b.addEventListener('click', click); return b; }
 function field(label, input) { const wrap = el('label', label); wrap.style.display = 'grid'; wrap.style.gap = '6px'; wrap.append(input); return wrap; }
@@ -44,4 +45,5 @@ export async function render(root, api) {
   const cancelButton = button('Cancel execution', () => attempt(async () => { if (activeRun) { await api('cancel', activeRun); mark('Cancellation requested'); } })); cancelButton.disabled = true;
   const execution = el('div', undefined, { className: 'card' }); execution.append(el('h3', 'Run input'), rows, field('Run secrets JSON · used for this execution only', secrets), el('p', 'Use secret references for request credentials. Secret values and authorization/cookie headers are redacted in execution records. A retry can repeat a request or saved workflow that already caused a side effect.', { className: 'muted' }), runButton, cancelButton, result);
   root.append(heading, intro, status, actions, field('Name', name), graph, author, advanced, execution, history); refreshPicker(); redraw(); await showHistory();
+  const nativePanel=el('section'); root.append(nativePanel); await renderNative(nativePanel,api);
 }

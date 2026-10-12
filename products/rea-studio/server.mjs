@@ -84,6 +84,7 @@ export async function start({ port = 4310, dataDir = resolve(root, '../../.local
       ]);
       const client = /^\/apps\/([a-z]+)\/(client|core|markdown)\.mjs$/.exec(url.pathname);
       if (client && byId.has(client[1])) staticFiles.set(url.pathname, [`apps/${client[1]}/${client[2]}.mjs`, 'text/javascript; charset=utf-8']);
+      for (const name of ['native-client', 'native-example']) staticFiles.set(`/apps/automation/${name}.mjs`, [`apps/automation/${name}.mjs`, 'text/javascript; charset=utf-8']);
       const file = staticFiles.get(url.pathname);
       if (!file) return reply(404, { error: 'Page was not found' });
       return reply(200, await fs.readFile(join(root, file[0])), file[1]);

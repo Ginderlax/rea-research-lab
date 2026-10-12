@@ -13,7 +13,9 @@ function files(directory) {
 const sourceFiles = [...['apps', 'lib', 'public', 'scripts', 'tests'].flatMap(directory => files(join(root, directory))), ...['server.mjs', 'catalog.mjs', 'package.json'].map(name => join(root, name))]
   .filter(path => /\.(mjs|json|html|css|ps1)$/.test(path)).sort();
 const testFiles = sourceFiles.filter(path => path.endsWith('.test.mjs'));
-const run = spawnSync(process.execPath, ['--test', '--test-reporter=tap', '--test-concurrency=1', ...testFiles], { cwd: root, encoding: 'utf8', timeout: 300000, maxBuffer: 8 * 1024 * 1024 });
+const fingerprint = path => ({ path: relative(root, path).replaceAll('\\', '/'), sha256: createHash('sha256').update(readFileSync(path)).digest('hex') });
+const sourceBefore = sourceFiles.map(fingerprint);
+const run = spawnSync(process.execPath, ['--test', '--test-reporter=tap', '--test-concurrency=1', ...testFiles], { cwd: root, encoding: 'utf8', timeout: 600000, maxBuffer: 8 * 1024 * 1024 });
 process.stdout.write(run.stdout ?? '');
 process.stderr.write(run.stderr ?? '');
 const count = label => {
@@ -25,6 +27,9 @@ const summary = Object.fromEntries(['tests', 'pass', 'fail', 'cancelled', 'skipp
 assert.equal(run.status, 0, 'Development tests failed');
 assert.equal(summary.fail + summary.cancelled + summary.todo, 0, 'Collected tests must not fail or remain unfinished');
 assert.equal(summary.pass + summary.skipped, summary.tests);
+const sourceAfter = [...['apps', 'lib', 'public', 'scripts', 'tests'].flatMap(directory => files(join(root, directory))), ...['server.mjs', 'catalog.mjs', 'package.json'].map(name => join(root, name))]
+  .filter(path => /\.(mjs|json|html|css|ps1)$/.test(path)).sort().map(fingerprint);
+assert.deepEqual(sourceAfter, sourceBefore, 'Source files changed while development tests were running; this run cannot certify the final source bytes');
 const record = {
   schema: 'rea-development-validation/v1', checked_at_utc: new Date().toISOString(),
   scope: 'Implemented development application contracts; does not establish every documented original-product feature or comparative superiority.',
@@ -32,8 +37,9 @@ const record = {
   runner: 'node --test --test-reporter=tap --test-concurrency=1',
   test_files: testFiles.map(path => relative(root, path).replaceAll('\\', '/')),
   summary,
-  source_files: sourceFiles.map(path => ({ path: relative(root, path).replaceAll('\\', '/'), sha256: createHash('sha256').update(readFileSync(path)).digest('hex') })),
-  browser_validation: 'browser-execution-verification.json (current separate interactive checks), browser-compatibility-verification.json (historical native-exchange checks), browser-verification.json (initial ten-app checks); not rerun by this script',
+  source_files: sourceBefore,
+  source_bytes_stable_across_run: true,
+  browser_validation: 'Separate source-bound interactive records are identified in STATUS.json and the current milestone; historical native-core, execution, native-exchange and initial ten-app checks remain preserved. Browser checks are not rerun by this script.',
   comparison: 'editor-comparison.json (separate recorded exploratory component benchmark; not rerun by this script)',
   full_feature_parity_established: false,
   universal_superiority_established: false

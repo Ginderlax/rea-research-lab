@@ -1,0 +1,12 @@
+import { spawnSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
+const records=[];
+for(let run=0;run<3;run++)for(const caseName of ['smallStandard','largeStandard','singlePercentile','allPercentiles','allCalculations'])for(const implementation of run%2?['candidate','original']:['original','candidate']){
+ const child=spawnSync(process.execPath,['--expose-gc','work/grafana-performance-next/worker.mjs',implementation,caseName,...(process.argv[2]?[process.argv[2]]:[])],{encoding:'utf8',timeout:60000,maxBuffer:2*1024*1024});
+ if(child.status!==0)throw new Error(child.stderr);records.push({run,...JSON.parse(child.stdout)});
+}
+const summary=['smallStandard','largeStandard','singlePercentile','allPercentiles','allCalculations'].map(caseName=>{
+ const median=impl=>records.filter(row=>row.caseName===caseName&&row.implementation===impl).map(row=>row.millisecondsPerCall).sort((a,b)=>a-b)[1];
+ return{caseName,originalMilliseconds:median('original'),candidateMilliseconds:median('candidate'),speedRatioOriginalOverCandidate:median('original')/median('candidate')};
+});
+writeFileSync(process.argv[3]??'work/grafana-performance-next/baseline.json',JSON.stringify({checkedAt:new Date().toISOString(),records,summary,scope:'Five synthetic component workloads, three fresh child samples each. Both modules loaded in each child for exact-output validation; memory includes both and is not an isolated product resource comparison.',fullFeatureParity:false,universalSuperiority:false},null,2)+'\n');console.log(JSON.stringify(summary));

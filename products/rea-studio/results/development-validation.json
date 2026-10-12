@@ -1,6 +1,6 @@
 {
   "schema": "rea-development-validation/v1",
-  "checked_at_utc": "2026-10-12T17:14:09.617Z",
+  "checked_at_utc": "2026-10-12T18:32:49.334Z",
   "scope": "Implemented development application contracts; does not establish every documented original-product feature or comparative superiority.",
   "runtime": "v24.16.0",
   "platform": "win32",
@@ -10,13 +10,20 @@
     "apps/archive/app.integration.test.mjs",
     "apps/archive/app.test.mjs",
     "apps/archive/formats.test.mjs",
+    "apps/archive/sevenzip.test.mjs",
     "apps/archive/zip.test.mjs",
     "apps/archive/zstd.test.mjs",
     "apps/automation/app.test.mjs",
     "apps/automation/execution.test.mjs",
+    "apps/automation/native-client.test.mjs",
+    "apps/automation/native-http.test.mjs",
+    "apps/automation/native-server.test.mjs",
+    "apps/automation/native.test.mjs",
     "apps/backup/app.integration.test.mjs",
     "apps/backup/app.test.mjs",
     "apps/backup/native.test.mjs",
+    "apps/backup/restic-kdf-policy.test.mjs",
+    "apps/backup/restic-kdf.interop.test.mjs",
     "apps/editor/app.integration.test.mjs",
     "apps/editor/app.test.mjs",
     "apps/editor/git.test.mjs",
@@ -38,6 +45,8 @@
     "apps/sketch/vendor-oracle.test.mjs",
     "apps/sync/app.integration.test.mjs",
     "apps/sync/app.test.mjs",
+    "apps/sync/native.integration.test.mjs",
+    "apps/sync/native.test.mjs",
     "apps/vault/app.integration.test.mjs",
     "apps/vault/app.test.mjs",
     "apps/vault/kdbx.interop.test.mjs",
@@ -45,13 +54,13 @@
     "tests/host.test.mjs"
   ],
   "summary": {
-    "tests": 252,
-    "pass": 252,
+    "tests": 345,
+    "pass": 345,
     "fail": 0,
     "cancelled": 0,
     "skipped": 0,
     "todo": 0,
-    "duration_ms": 148879.0265
+    "duration_ms": 321582.6542
   },
   "source_files": [
     {
@@ -68,7 +77,7 @@
     },
     {
       "path": "apps/archive/client.mjs",
-      "sha256": "facc172c925229a191b974c1b34476fe67eb953ae37240ca478d6da5bdc335e9"
+      "sha256": "c65fb02402082f3774070b40da8528f1f26f57affd6de02fb90bc45e820eb765"
     },
     {
       "path": "apps/archive/compatibility-evidence.json",
@@ -104,11 +113,31 @@
     },
     {
       "path": "apps/archive/server.mjs",
-      "sha256": "80dc67e6ce27045aac6193aeb0fc862bdd92fd8a902b4d5ff6c37c5de4bc8c2a"
+      "sha256": "984e532d7d38d146ec9dbbe30d10166ad8519679e76aa8242bb59ce01d209c70"
+    },
+    {
+      "path": "apps/archive/sevenzip-source-references.json",
+      "sha256": "320305de5a608881b85fbb182d777887043bd1bf9d1ae5e976cc961a3e575ccc"
+    },
+    {
+      "path": "apps/archive/sevenzip-validation.json",
+      "sha256": "ff53f71c7ad81e1c9903011f3cda81ea0e3d257d1130d4a475c69b65741e5be5"
+    },
+    {
+      "path": "apps/archive/sevenzip.mjs",
+      "sha256": "f38b23f53c8341e563277472004a0a762fcd4075d0d0d33fe1eb9c555981285e"
+    },
+    {
+      "path": "apps/archive/sevenzip.test.mjs",
+      "sha256": "ebecd795f7bddbf02e68667dda9c30fb532f9da4b3b622ae8a49f5863cae7851"
     },
     {
       "path": "apps/archive/tar.mjs",
       "sha256": "940ce0be9034b8b54813e5290f6b40af4a98b4b89f1ef4e31d07caed38585afd"
+    },
+    {
+      "path": "apps/archive/verify-sevenzip.mjs",
+      "sha256": "00f562078dcaaa8645eec487101895a8d9a41104e19a8ebbb364a6bd408b3202"
     },
     {
       "path": "apps/archive/zip.mjs",
@@ -136,7 +165,11 @@
     },
     {
       "path": "apps/automation/client.mjs",
-      "sha256": "27aa4fd3d7d8e8783b3f63c8f1d3fe4f7113731ce74a49b433c4c87bac95f3fc"
+      "sha256": "d3d68c5270e3e00876fa2cd7ae7875787ba626d4e2c37296418966296a890687"
+    },
+    {
+      "path": "apps/automation/compare-original.mjs",
+      "sha256": "69233f081f4d35645afadc16c2c605f89ab0176618ae52430e045ae060073c78"
     },
     {
       "path": "apps/automation/core.mjs",
@@ -155,8 +188,64 @@
       "sha256": "9855e46ef1da6c862ad08e2d240cd079aa71e315d688468455b75fa57d290026"
     },
     {
+      "path": "apps/automation/native-client.mjs",
+      "sha256": "30de3b3079b3fcc44504cee521b8ac1360e2368dbf5cd3b40a7f498d1ca4da5f"
+    },
+    {
+      "path": "apps/automation/native-client.test.mjs",
+      "sha256": "1d96eacdcf370e1a045f5a4f7ac40bfa01b52a88760dacb2d7f58ab8cc0c736c"
+    },
+    {
+      "path": "apps/automation/native-example.mjs",
+      "sha256": "3d32795062ef4dd6c263bd881acae6624ecebcbbbf0b4e9f2a096aaf73b8dfce"
+    },
+    {
+      "path": "apps/automation/native-http.test.mjs",
+      "sha256": "efb08b3208624c40ffa06d3156adfdff100541a17844a35bfd4a8c08160d6f31"
+    },
+    {
+      "path": "apps/automation/native-original-acquisition.json",
+      "sha256": "403a0524f958ba037d530f5e69e1d5616687990334ed5cf58418da7a92108520"
+    },
+    {
+      "path": "apps/automation/native-original-manifest.json",
+      "sha256": "3cbe67f29673298e68d71838599fc8f57428aae22d5a667a3e25c590a1f93076"
+    },
+    {
+      "path": "apps/automation/native-original-package-lock.json",
+      "sha256": "3e9e349fb834ecbacf5f5a1b66d3360a71a88f739732b9f842db8d08d931b594"
+    },
+    {
+      "path": "apps/automation/native-original-package.json",
+      "sha256": "9cd4132f97f0440f28e04b068bb805cc6d8bb23cec7bc3c9e661f5e5eb49a515"
+    },
+    {
+      "path": "apps/automation/native-server.mjs",
+      "sha256": "f886800f1f0627939c10891a6819e7c528fe4f3c02f1c038b05500f558a9c5ec"
+    },
+    {
+      "path": "apps/automation/native-server.test.mjs",
+      "sha256": "4c3832dac7506c8351d77c952d0512e852d4a5bf963805227c5412eab837e59e"
+    },
+    {
+      "path": "apps/automation/native-validation.json",
+      "sha256": "0da63a9f94f8939671f47a85d633662188dad02e1075cbbc0bfd1c3df8510bdb"
+    },
+    {
+      "path": "apps/automation/native.mjs",
+      "sha256": "56219ace2735545b3c3ec198e729e1d53e38faacf789bf5a6701fcc7b9791bb0"
+    },
+    {
+      "path": "apps/automation/native.test.mjs",
+      "sha256": "a7ac5efc752be29de936f5febe3aef4d99866e5b05cb9fa6199c2a4b0fb5d8ce"
+    },
+    {
+      "path": "apps/automation/original-harness.mjs",
+      "sha256": "fd5bcf425b22b682b732ad826def54af3835dbd4ca7ef3413b29a0abc4f6cd28"
+    },
+    {
       "path": "apps/automation/server.mjs",
-      "sha256": "1e3775f6835515a6fd6a278605c9880c18a2ee775b911a9f0194d3ab8079960b"
+      "sha256": "f2bcf4f7b74b043f4cf2e1b5825d277544b50c65ec03b1a4ed8d3e2c88fbf143"
     },
     {
       "path": "apps/backup/app.integration.test.mjs",
@@ -187,8 +276,24 @@
       "sha256": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c"
     },
     {
+      "path": "apps/backup/restic-kdf-policy.mjs",
+      "sha256": "6118dcace475d83a77e5d7362316268893ef126387aae22e93601a73876620f1"
+    },
+    {
+      "path": "apps/backup/restic-kdf-policy.test.mjs",
+      "sha256": "0992732971358bf407d375671c8b296c1d3e89f76a2dd26f086dfafb736e9ed3"
+    },
+    {
+      "path": "apps/backup/restic-kdf.interop.test.mjs",
+      "sha256": "57128a1612aebe887e9c9f8350d321a975f19514296151627f0c923d6735faa7"
+    },
+    {
       "path": "apps/backup/restic.mjs",
-      "sha256": "efa23b18a99f012bf15bcb59ee8a06cecb41c98838d71bb9e8dc31e9d872c3d6"
+      "sha256": "70bf4a5bfd46041823fa00bd7cdbf880f6c0a9020f67ef9e7a807b4242fbb527"
+    },
+    {
+      "path": "apps/backup/results/kdf-policy-validation.json",
+      "sha256": "a0c78939faf2b144739945b2439d83a254c3bd1abc5080545b027c7390fb74ea"
     },
     {
       "path": "apps/backup/server.mjs",
@@ -356,7 +461,7 @@
     },
     {
       "path": "apps/metrics/native-calculations.mjs",
-      "sha256": "bd92695aaf7f7a473e01b9ff2a6d38dc0c650efda777686a6d18816422e22d1d"
+      "sha256": "9269cf8c32be9bf2c075b67019e82e41272d9495f0321fefc17b2c5695a91371"
     },
     {
       "path": "apps/metrics/native-calculations.test.mjs",
@@ -368,7 +473,7 @@
     },
     {
       "path": "apps/metrics/results/native-calculations-verification.json",
-      "sha256": "c3b0d42a174ee8f1083896cb4193f4c294d4ea7fc145596ac095e0f19b82eca2"
+      "sha256": "064dc86d91eafd1a438359481f84a1bc35cd56c8c7d3243c833441da2d9919cd"
     },
     {
       "path": "apps/metrics/scripts/acquire-grafana-fixtures.mjs",
@@ -476,11 +581,91 @@
     },
     {
       "path": "apps/sync/client.mjs",
-      "sha256": "ab944061fe4dcb32595ec555a9247fe432572405d403e160cb722b6db6247eda"
+      "sha256": "f64c9a3bceae28018cbb14e8ad216b5889f1209bd557637057f69db461b1c321"
+    },
+    {
+      "path": "apps/sync/fixtures/native-local-workflow.json",
+      "sha256": "e123e7ff42ec06faab8938825f0346a9b92fd5104c10c37dd68e8e6ffe63670c"
+    },
+    {
+      "path": "apps/sync/native-comparison.mjs",
+      "sha256": "f169dff550e3b5dfd95a11136791be88bfe6dc88768c949e0befd677aebdd767"
+    },
+    {
+      "path": "apps/sync/native-filters.mjs",
+      "sha256": "3e370373897364b61247da55be53ecd4b618da84df581d766120adafaba4d27b"
+    },
+    {
+      "path": "apps/sync/native-source-references.json",
+      "sha256": "0d8a26e9ede7c755586ef5fbbc26c52d625ab04d6a656a0e55ae79f02f8e6aec"
+    },
+    {
+      "path": "apps/sync/native.integration.test.mjs",
+      "sha256": "594c05460fbc8769f5424a9b3a3ca2e35c6be203fdf9063beb73c86683d0765f"
+    },
+    {
+      "path": "apps/sync/native.mjs",
+      "sha256": "3b6483d80b958ff70e42cb9df9205cf1757b5e481715c7240cd92e0c6e336aaf"
+    },
+    {
+      "path": "apps/sync/native.test.mjs",
+      "sha256": "6ce706edf8e3e59c3d178d8cf1a7a273beaf91bb76895b477aeb23f9231391b3"
+    },
+    {
+      "path": "apps/sync/results/bounded-workloads.json",
+      "sha256": "70218d69ac527090edeb5c5175b49178cde9af01098c1d99259d820c5199fe49"
+    },
+    {
+      "path": "apps/sync/results/comparison-verification.json",
+      "sha256": "0dad8a337383b384e00f0b945500f28c82cf4e2c1097eb67c92ec405ef844a75"
+    },
+    {
+      "path": "apps/sync/results/filter-verification.json",
+      "sha256": "5a7da2f0142adbe98fc90a338764aee7691feaa2b8b6cfa4dba7add73f45fb79"
+    },
+    {
+      "path": "apps/sync/results/native-verification.json",
+      "sha256": "d321232634c7956605837dbbf71583d27e48b7a4d925b302cddf7627af6e9f95"
+    },
+    {
+      "path": "apps/sync/results/source-verification.json",
+      "sha256": "7a1ae04c9daa80ee9b0181b3f0a863ee2ac5ca7216b3123cfff90a5ab5538997"
+    },
+    {
+      "path": "apps/sync/results/transfer-verification.json",
+      "sha256": "fccc6eece7b152360d253b112e5a500cb3e30d35e419672106e242a4bf6ef64c"
+    },
+    {
+      "path": "apps/sync/scripts/oracle.mjs",
+      "sha256": "e32f55ea14dcee3141f97a86f82bae54b8d299ff1918e6a0e1b8ff2cc633296f"
+    },
+    {
+      "path": "apps/sync/scripts/verify-bounds.mjs",
+      "sha256": "b34d89e1130eb878c14ba5bb093006f00b7ea55e3af9635e5cdeb4ba260eadeb"
+    },
+    {
+      "path": "apps/sync/scripts/verify-comparisons.mjs",
+      "sha256": "3b98d265eb350b7389e2cba6d76c77e459ca4138f81aba4b98f48011ab0dfa19"
+    },
+    {
+      "path": "apps/sync/scripts/verify-filters.mjs",
+      "sha256": "a83fcae57a182717b3cc91760e86119be5030c8c762ef9852aa6fd14ed80382b"
+    },
+    {
+      "path": "apps/sync/scripts/verify-native.mjs",
+      "sha256": "4cdaff17e642da19e3dac0e7afd15b37ab78e97fdaeb9c6a4018ab1926bb1df2"
+    },
+    {
+      "path": "apps/sync/scripts/verify-sources.mjs",
+      "sha256": "8e24c89d5533578a59b0dab5a1e30070dcc48dc461d0c79ae5344ad2406ffbf4"
+    },
+    {
+      "path": "apps/sync/scripts/verify-transfers.mjs",
+      "sha256": "cc59cf78c58c479fd9fe90167650a582c0c1339dd78845d4aae485db805e19ea"
     },
     {
       "path": "apps/sync/server.mjs",
-      "sha256": "2699ec444a7bcbe75253969b89b706ef5de1692b53b43ebbeaa7ea5ec007c512"
+      "sha256": "72d049438c9a1c940a62f79beba54d8585e7ac5b882776713eede112fc00b915"
     },
     {
       "path": "apps/vault/app.integration.test.mjs",
@@ -524,7 +709,7 @@
     },
     {
       "path": "catalog.mjs",
-      "sha256": "ecfcc0dc2ac500aa7c2439de8de589e08f178cb9f054cc1ccef2843d3814b1a1"
+      "sha256": "a99fcd3ae135fa1533d24f2de95a712267e34289767c2df30a1e83a91dc3ae71"
     },
     {
       "path": "lib/storage.mjs",
@@ -532,7 +717,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "c2b15746da97272b75791eedd501b37ef2da52b500250291c2e43ef67193d9fb"
+      "sha256": "0ee1f8a1181468017b1a9a4fdebe9c9ca04bc62acc064237f86a2c16cd95ca17"
     },
     {
       "path": "public/index.html",
@@ -572,18 +757,19 @@
     },
     {
       "path": "scripts/verify-development.mjs",
-      "sha256": "14101229431dd5d7fcdc3536e00c8031d90465a62b1296294d4bdb54a455d06a"
+      "sha256": "e51d5f87481a562ecd9807f76cbaaa5fef337478b9da01aa1ed369cc7db5838b"
     },
     {
       "path": "server.mjs",
-      "sha256": "ed40430c6df3bec60b8d05acd40f5c5ac4d8606cda3bc98f02065b2abe4050f3"
+      "sha256": "170a54ad81cf905768d52a68a86fb0ecacf0d02e069bc884ad6dffe5491440e0"
     },
     {
       "path": "tests/host.test.mjs",
       "sha256": "3d6ef08985f6720956ab6f9adf4efbe206ba6a3c81b299793b3bfdd19b7fbf4a"
     }
   ],
-  "browser_validation": "browser-execution-verification.json (current separate interactive checks), browser-compatibility-verification.json (historical native-exchange checks), browser-verification.json (initial ten-app checks); not rerun by this script",
+  "source_bytes_stable_across_run": true,
+  "browser_validation": "Separate source-bound interactive records are identified in STATUS.json and the current milestone; historical native-core, execution, native-exchange and initial ten-app checks remain preserved. Browser checks are not rerun by this script.",
   "comparison": "editor-comparison.json (separate recorded exploratory component benchmark; not rerun by this script)",
   "full_feature_parity_established": false,
   "universal_superiority_established": false

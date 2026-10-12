@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-10-12T15:42:19.278Z",
+  "sourceCommit": "6193dc03311b631b9727b560d24369e683dc396e",
+  "candidateTag": "v13.2.3",
+  "compilerVersion": "Version 7.0.2",
+  "schemaSha256": "dc3afb5bff3fd6a08b9d471a0281542ac5577cfc296c2ca792c9bbdc49d512df",
+  "checks": {
+    "generatedCompleteClassicDocumentAcceptedByPinnedTypes": true,
+    "malformedTitleAndGridRejectedByPinnedTypes": true,
+    "v1SpecIsUnstructured": true
+  },
+  "fixtureChecks": [
+    {
+      "fixture": "original-textbox.json",
+      "sha256": "1acaa516be8636f344e823e7efe3f931073ae85dcdd8b0cae4831be0c6a754b5",
+      "byteIdentical": true
+    },
+    {
+      "fixture": "original-v1-resource.json",
+      "sha256": "4c5a85bedc92785709f47e063aba6b3e517b5a43854327fff3d3c83444cc2da7",
+      "byteIdentical": true
+    },
+    {
+      "fixture": "original-v2-text.json",
+      "sha256": "2eced774fb88f8e254443723cba800b0816a6da2b3620d00f9a81b2677afdf15",
+      "byteIdentical": true
+    }
+  ],
+  "failed": 0,
+  "boundaries": [
+    "Compile-time structural typing against the official generated Classic types; not complete runtime JSON Schema validation.",
+    "Positive fixture is REA Studio generated output; unchanged exchange fixtures are exact pinned Grafana source fixtures.",
+    "V1 OpenAPI deliberately leaves the spec Unstructured; it cannot validate panel/plugin details.",
+    "No original Grafana server/client or migrations were executed. V2 is retained without local editing/rendering.",
+    "Unknown fields and legacy documents are preserved even when not representable by the generated Classic types."
+  ],
+  "negativeDiagnostics": "negative.ts(2,32): error TS2322: Type 'number' is not assignable to type 'string'.\nnegative.ts(2,80): error TS2322: Type 'string' is not assignable to type 'number'."
+}

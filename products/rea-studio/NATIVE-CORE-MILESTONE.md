@@ -1,5 +1,7 @@
 # Native flow, calculation, encrypted backup and codec milestone
 
+Historical checkpoint at revision `50155ea79ca43fd38842619e9acab7c0ea1976b0` with 252 passing tests. Its seven exact receipts and 146 source/proof snapshots are preserved in the [snapshot manifest](results/milestones/native-core-20261012/snapshot-manifest.json). The [new current milestone](NATIVE-WORKFLOWS-MILESTONE.md) supersedes its description of current work.
+
 Recorded on 12 October 2026. The accepted scope remains every documented original-product feature and improvements across speed, resource use, usability, compatibility and reliability. This checkpoint adds working native formats and selected original contracts; **zero complete replacements meet the full acceptance standard**. The development goal remains active.
 
 ## Working capabilities and evidence

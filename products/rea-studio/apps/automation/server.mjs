@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { handleNative, disposeNative } from './native-server.mjs';
 import { example, validateWorkflow } from './core.mjs';
 import { executeWorkflowAsync, ExecutionError, redact } from './engine.mjs';
 const index = 'automation.index';
@@ -61,6 +62,7 @@ async function launch(input, store) {
   return { state, active };
 }
 export async function handle({ action, input = {}, store, workspace }) {
+  if (action.startsWith('native-')) return handleNative({action,input,store,workspace});
   const state = session(store, workspace);
   if (action === 'list') { const ids = await store.get(index, []); const workflows = (await Promise.all(ids.map(id => store.get(`automation.workflow.${id}`, null)))).filter(Boolean); return { workflows, example }; }
   if (action === 'save') {
@@ -89,6 +91,7 @@ export async function handle({ action, input = {}, store, workspace }) {
   throw new Error('Unknown automation action');
 }
 export async function dispose(workspace) {
+  await disposeNative(workspace);
   const selected = [...liveSessions].filter(state => !workspace || state.workspace === workspace);
   for (const state of selected) for (const active of state.running.values()) active.controller.abort(new ExecutionError('Execution cancelled during shutdown', 'CANCELLED'));
   await Promise.allSettled(selected.flatMap(state => [...state.running.values()].map(active => active.promise)));

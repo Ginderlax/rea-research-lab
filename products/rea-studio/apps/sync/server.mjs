@@ -1,6 +1,7 @@
 import * as fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
+import { handleNative,disposeNative,snapshotNativeInput } from './native.mjs';
 
 const MAX_FILE = 64 * 1024 * 1024, MAX_TOTAL = 512 * 1024 * 1024;
 const plans = new Map(), queues = new Map();
@@ -156,6 +157,7 @@ async function apply(workspace, store, input) {
   plans.delete(`${workspace.root}:${input.token}`); return result;
 }
 async function run({ action, input = {}, workspace, store }) {
+  if (action.startsWith('rclone-')) return handleNative({action,input,workspace,store});
   if (action === 'plan') return plan(workspace,store,input);
   if (action === 'apply') return apply(workspace,store,input);
   if (action === 'status') return { lastResult: await store.get('sync.lastResult',null) };
@@ -168,7 +170,8 @@ async function run({ action, input = {}, workspace, store }) {
   throw new Error('Unknown synchronization action.');
 }
 export async function handle(context) {
+  if (context.action.startsWith('rclone-')) context = {...context,input:snapshotNativeInput(context.action,context.input ?? {})};
   const key = context.workspace.root, previous = queues.get(key) ?? Promise.resolve(), current = previous.catch(() => {}).then(() => run(context)); queues.set(key,current);
   try { return await current; } finally { if (queues.get(key) === current) queues.delete(key); }
 }
-export function dispose(workspace) { for (const key of plans.keys()) if (key.startsWith(`${workspace.root}:`)) plans.delete(key); }
+export function dispose(workspace) { disposeNative(workspace); for (const key of plans.keys()) if (key.startsWith(`${workspace.root}:`)) plans.delete(key); }

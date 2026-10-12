@@ -75,6 +75,12 @@ The [synthetic stat dashboard](fixtures/native-stat-dashboard.json) previews `st
 
 Imported Classic/V1 **stat** panels now evaluate saved `options.reduceOptions.calcs` (default `lastNotNull`) against numeric fields in saved/locally bound frames. Saved field config takes precedence over panel defaults; saved null mode participates in calculation. Stat calculation selection edits only `options.reduceOptions.calcs`, retaining unknown options, config, queries, sources and metadata. A layout save alone does not alter saved calculation selection/order or unsupported IDs. Stat values mode, field matchers/overrides, mappings, units, thresholds, sparkline, styling and full plugin behaviors remain retained without execution. The preview uses fresh calculation state and stops above 4,000,000 sample/calculation pairs or with object-valued samples. Other imported panel types and remote queries retain their existing boundaries.
 
+## Measured percentile optimization
+
+The current implementation sorts shared percentile input once within a calculation call. It preserves the independently compared result, own-property and cache contracts. The [performance follow-up](../../results/metrics-performance-followup/README.md) retains exact executed sources, all paired samples and a rejected alternative.
+
+Across three fresh paired samples per workload, the median all-99-percentiles workload was approximately 86 times faster and the all-124-calculations workload approximately 25 times faster than the released original module. Small standard calculations, large standard calculations and a single percentile had slightly slower candidate medians. Both implementations were loaded for output validation in each child, so these measurements do not isolate memory use. The five synthetic workloads do not establish general speed or product superiority; the three slower medians remain open findings.
+
 ## Independent original execution evidence
 
 [The verification receipt](results/native-calculations-verification.json) compares newly written code to the **actual original released CJS module**, loaded from the complete extracted release with its real pinned lodash 4.17.23 dependency. Before executing it, the harness rechecks the release SHA-256, each retained original source against both the extracted artifact and archive bytes, and the dependency archive and original lodash runtime bytes. It never imports the prior reconstructed module. The original is a developer-only oracle, not an application dependency.

@@ -1,0 +1,62 @@
+# Local rclone 1.75.2 contract
+
+This is a newly written, bounded, one-way local-file contract. It does not run rclone, embed its runtime, load a provider, or read a prior project reconstruction. The existing SHA-256/manual conflict workflow remains separate. The original executable is used only by independent verification scripts on synthetic, private local fixtures with an empty configuration and inherited `RCLONE_*` settings removed.
+
+The baseline release is **rclone v1.75.2**, source commit **be8d6044eacb843b74d335db0c5fbe09222031fe**. Its preserved Windows AMD64 ZIP SHA-256 is `8a9db2bad1dc79a65b3348fd857069598e2aab7cf4d118b77b1df23055aff818`; executable SHA-256 is `41eab3e118d264920b62c3327966c5ece0dc4dd715ee617d9e30450d8ead95a4`. The executable reports Go **1.26.9**. [native-source-references.json](native-source-references.json) binds 31 scoped contracts to 15 complete official files with byte hashes and exact line locations. These are selected acceptance contracts, not an exhaustive feature inventory. The original [MIT license](https://github.com/rclone/rclone/blob/be8d6044eacb843b74d335db0c5fbe09222031fe/COPYING) is also hash-bound in that manifest.
+
+## HTTP and UI
+
+Use the authenticated host API `POST /api/sync/rclone-plan`, `rclone-apply`, and `rclone-status`. The **Copy with rclone rules** card exposes copy/sync, comparison choices, ordered rules, include/exclude text, file-list text, size limits, case matching, time tolerance, empty-directory creation, separate removal approval, and full-preview JSON download. Changing a control invalidates the displayed plan. The display identifies skipped unequal bytes under size/time/keep-existing rules. Supported filter settings not exposed by a dedicated form remain available through the HTTP contract.
+
+```json
+{
+  "source": "native-demo/source",
+  "target": "native-demo/target",
+  "mode": "sync",
+  "comparison": { "checksum": true, "modifyWindowNs": "100" },
+  "filters": { "filterFrom": ["- /private/**\n+ *.txt\n- **\n"] },
+  "createEmptySrcDirs": false
+}
+```
+
+Plan performs reads only, including when the target does not exist. Apply requires `{ "token": "returned-token", "confirm": true, "allowDelete": true }`; `allowDelete` is required only when selected file or empty-directory removals are proposed. Plans are volatile, expire after 30 minutes, are workspace-bound, and are single-use once execution starts. Input and returned preview data are cloned independently of private token-bound state. The global cache holds at most 200 plans, at most **16 MiB serialized metadata per plan**, and **64 MiB serialized metadata combined** across workspaces; oldest previews are evicted to fit. This JSON-size accounting is not an exact JavaScript heap cap. Expired previews are rejected and removed on the next native request; an idle process can retain expired metadata within the same global bounds until another request or host disposal. Host restart/disposal invalidates previews; last-result and recovery bytes persist. Native and manual Sync calls are serialized by the application's existing workspace queue.
+
+## Comparison and filter boundary
+
+Comparison settings are booleans `checksum`, `sizeOnly`, `ignoreSize`, `ignoreTimes`, `ignoreExisting`, `update`, `noUpdateModtime`, plus `modifyWindowNs`, a nonnegative decimal integer **string** limited to one day. The native minimum is **100 ns**, reflecting the tested Windows NTFS fixture host; the original dynamically probes local/backend precision. There is no promise of identical precision behavior on another filesystem. Size mismatch precedes size-only/checksum unless ignored; ignore-existing precedes ignore-times. Default equal size and time skip copying even when bytes differ. Outside the time window, matching default MD5 updates modification time unless suppressed. Update mode preserves sufficiently newer targets and reproduces the original older/within-window branches. Original default local MD5 decides transfer; independent SHA-256 fingerprints protect preview/apply state and verify output bytes. Configurable original hash types and hash-less backend fallbacks are outside this contract.
+
+Supported filter fields are arrays of direct strings `include`, `exclude`, `filter`; arrays of **inline file text** `includeFrom`, `excludeFrom`, `filterFrom`, `filesFrom`, `filesFromRaw`, `filesFrom0`; boolean `ignoreCase`; and integer byte counts `minSize`, `maxSize`. No filter-file path is opened through these text fields. Complete direct inputs are validated before cloning: plain data, known top-level fields, at most 128 KiB accounted UTF-8 data/key text, 8,192 values, 16 nesting levels, 64 properties per object and 256 entries per array. Proxies, accessors, cycles, non-plain objects, symbols, hidden properties and non-finite numbers are rejected without invoking accessors or proxy traps. Property-name inspection can allocate a name list before excess-property rejection; this is not a universal reflection/heap bound on arbitrary caller-created objects. The HTTP host additionally bounds serialized requests. Original bare size flags mean KiB, so differential scripts append `B` to explicit byte values. Bounds are inclusive. First matching rule wins. Families are compiled in pinned source order: include/includeFrom, exclude/excludeFrom, filter/filterFrom; includes add the final `- /**`, including after a reset. Prefer one ordered filter list when ordering matters. Non-raw lines use Go-compatible whitespace trimming and ignore blank/#/; comment lines; raw lines retain spaces, and filesFrom0 splits at NUL. Explicit file lists retain filename case and cannot be combined with active path/size filters in this release.
+
+Path globs support root anchoring, `*`, `**`, `?`, nested brace alternatives, positive ASCII POSIX classes, literal/range/negated character classes, `\d`, `\D`, `\s`, `\S`, `\w`, `\W`, and escaped punctuation. Matching counts Unicode codepoints; case folding uses the host's Unicode regular-expression tables. Go Perl `\s` is ASCII whitespace, not JavaScript's wider whitespace class. `[!a]` is a class containing `!` and `a`; use `[^a]` for negation. `dir/**/a` does not collapse the two slashes to match `dir/a`. Parent-directory derivation reproduces the pinned traversal rules. Raw `{{RE2}}`, Unicode property/quoted classes, other Go escape forms and broader RE2 syntax are explicitly rejected; all Go regexp behavior and Unicode-version equivalence are unproved. Patterns must be well-formed text without control characters. The complete original glob language is not claimed.
+
+## Apply policy and resource boundary
+
+Copy retains target extras. Sync removes only selected target files absent from selected source; it then prunes selected empty target-only directories, preserving excluded descendants. `createEmptySrcDirs` creates selected empty source directories. Copies/updates finish before removals, and an operation error stops subsequent work. Source contents win automatically for proposed replacements after approval; native copy does not require the separate manual workflow's per-file conflict choices.
+
+Both complete folder fingerprints, including excluded files and directory names, are rechecked before apply. Per-file metadata/bytes are rechecked during execution. Existing target bytes are saved under `.rea-sync-history/<token>/previous/<path>` before replacement/removal, with a manifest describing proposed operations and prior metadata. This preserves bytes; it is not automatic rollback or full original `--backup-dir` behavior. Each completed copy verifies SHA-256. New files use exclusive hard-link publication; replacements use same-directory temporary file sync and rename. Unpublished owned temporary files are removed on failure. A failure can leave earlier completed operations or a newly published file whose later timestamp step failed; counts report completed steps, not a whole-folder transaction. Persistent partial-failure status records the error and available history.
+
+Writes retain **millisecond** modification time, flooring sub-millisecond values. The Windows host refuses writes outside 1970–2106-02-07T06:28:15.999Z before execution because Node filesystem timestamp writes outside that range can wrap; write read-back must be within 1 ms. Directory times, access times, creation times, metadata, ACLs, permissions and extended attributes are not preserved. The original's sub-millisecond timestamp precision is not reproduced.
+
+Limits per scanned folder: **64 MiB/file, 512 MiB total, 10,000 entries, 100 directory levels**. Names and full proposed paths are bounded to 2,048 UTF-16 code units; safe Windows names and canonical relative paths are required. Filters are bounded to 256 input/rules, 64 KiB combined text, 2,048-unit patterns, eight brace levels, 128 alternatives, 262,144 compiled tokens and 100 million matching states per plan. The two-minute limit is checked between filesystem stages; it cannot cancel an already blocked OS call. The scan reads/hashes all regular files, including excluded files: an excluded oversize file or symlink is still refused. Symlinks, file/directory conflicts, case-colliding names, nested roots and recovery-repository roots are rejected. These restrictions deliberately limit the supported local slice. External processes can still race filesystem operations; no cross-process lock or atomic folder transaction is claimed.
+
+No remote providers/accounts/credentials, mounts/VFS, encrypted remotes, remote config, remote APIs, server modes, full bisync, age/metadata/hash filters, exclude-if-present, delete-excluded, bandwidth/scheduling controls, parallel transfers, retry/backoff/resume, chunked upload, arbitrary flags, case-renaming strategies, or provider-specific options are implemented. Full product completion, exhaustive feature coverage, and universal improvement gates remain **false**.
+
+## Independent evidence and reruns
+
+From `products/rea-studio`:
+
+```text
+node --test apps/sync/*.test.mjs
+node apps/sync/scripts/verify-sources.mjs
+node apps/sync/scripts/verify-filters.mjs
+node apps/sync/scripts/verify-comparisons.mjs
+node apps/sync/scripts/verify-transfers.mjs
+node apps/sync/scripts/verify-bounds.mjs
+node apps/sync/scripts/verify-native.mjs
+```
+
+Original scripts require the preserved authenticated Windows executable/ZIP paths above; they use private temporary fixtures and remove only their verified owned temporary directory. Source verification fetches fixed official commit URLs and checks complete byte hashes. It does not feed source into runtime. The aggregate receipt binds tested module and evidence hashes; a changed module requires refreshing its affected evidence.
+
+The differential corpora contain **56 filter settings on 132 paths** (51 selections plus five original/native rejection cases), **1,400 action/output/time decisions over 140 comparison profiles** (all 128 combinations of seven booleans plus 12 tolerance profiles), and **21 folder dry-run/apply scenarios** comparing complete resulting path sets, SHA-256 and millisecond-aligned modification times. There are 241 actual original CLI executions across these three corpora, including three version checks. Thirty-five app checks cover the manual workflow, native HTTP/restart, recovery bytes, approval, stale state, caller mutation, bounded complete input, cache eviction/expiry, status-store failure, safe paths, and resource refusal. This finite evidence does not establish correctness for every original feature, file, or platform.
+
+Bounded workload evidence includes an accepted 64 MiB copy, accepted 512 MiB preview, accepted 10,000-file preview and rejected 10,001 entries. Recorded elapsed times and process-lifetime maximum RSS include fixture/module/prior-case overhead as noted in the receipt. They are native acceptance observations, **not an original-versus-native speed/resource benchmark**. Browser verification is coordinated separately by the parent task and is not inferred from HTTP tests.

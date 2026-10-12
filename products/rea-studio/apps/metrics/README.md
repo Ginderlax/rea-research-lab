@@ -17,6 +17,8 @@ An original, dependency-free CSV analytics and dashboard exchange application wi
 
 ## Run and verify
 
+The [recorded performance follow-up](../../results/metrics-performance-followup/README.md) measures the shared-percentile optimization against the released original. Two synthetic workloads improved substantially; three retained slower medians remain open. No whole-product or isolated-memory superiority is established.
+
 From `products/rea-studio`, run `npm start`, open the local REA Studio URL and select **Metrics**. From the repository root:
 
 ```sh

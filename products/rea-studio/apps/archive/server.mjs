@@ -6,6 +6,7 @@ import { MAX_TOTAL, MAX_FILE, MAX_ENTRIES, clean, makeZip, readZip } from './zip
 import { MAX_CONTAINER, makeTar, readTar } from './tar.mjs';
 import { makeGzip, readGzip } from './gzip.mjs';
 import { isZstd, makeZstd, readZstd } from './zstd.mjs';
+import { read7z, write7z } from './sevenzip.mjs';
 export { makeZip, readZip, crc32 } from './zip.mjs';
 const queues = new Map();
 async function safe(workspace, relative) {
@@ -49,6 +50,13 @@ async function load(workspace, relative) {
   return fs.readFile(location);
 }
 function readArchive(bytes, relative, includeData = false) {
+  if (bytes.subarray(0, 6).equals(Buffer.from([0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c]))) {
+    const entries = read7z(bytes).map(({ data, mtimeMs, crc, ...entry }) => ({ ...entry, size: data.length,
+      ...(mtimeMs !== null ? { modifiedAt: new Date(mtimeMs).toISOString() } : {}),
+      ...(crc !== null ? { crc32: crc.toString(16).padStart(8, '0') } : {}), contentChecksum: crc !== null,
+      ...(includeData ? { data } : {}) }));
+    return { format: 'sevenzip', entries };
+  }
   if (bytes.length >= 4 && [0x04034b50, 0x06054b50].includes(bytes.readUInt32LE(0))) return { format: 'zip', entries: readZip(bytes, includeData) };
   if (bytes[0] === 31 && bytes[1] === 139) {
     const tar = /\.(?:tgz|tar\.gz)$/i.test(relative), inflated = readGzip(bytes, tar ? MAX_CONTAINER : MAX_FILE);
@@ -72,13 +80,19 @@ async function run({ action, input = {}, workspace }) {
     return { created: true, path: input.path };
   }
   if (action === 'create') {
-    const format = input.format ?? 'zip', extensions = { zip: /\.zip$/i, tar: /\.tar$/i, tgz: /\.(?:tar\.gz|tgz)$/i, gzip: /\.gz$/i, zstd: /\.zst$/i, tzst: /\.(?:tar\.zst|tzst)$/i };
-    if (!Object.hasOwn(extensions, format) || !extensions[format].test(input.output ?? '') || format === 'gzip' && /\.(?:tgz|tar\.gz)$/i.test(input.output) || format === 'zstd' && /\.(?:tzst|tar\.zst)$/i.test(input.output)) throw new Error('Choose ZIP (.zip), TAR (.tar), TAR.GZ (.tar.gz/.tgz), GZIP (.gz), Zstandard (.zst), or TAR.ZST (.tar.zst/.tzst) with its matching output extension.');
+    const format = input.format ?? 'zip', extensions = { zip: /\.zip$/i, sevenzip: /\.7z$/i, tar: /\.tar$/i, tgz: /\.(?:tar\.gz|tgz)$/i, gzip: /\.gz$/i, zstd: /\.zst$/i, tzst: /\.(?:tar\.zst|tzst)$/i };
+    if (!Object.hasOwn(extensions, format) || !extensions[format].test(input.output ?? '') || format === 'gzip' && /\.(?:tgz|tar\.gz)$/i.test(input.output) || format === 'zstd' && /\.(?:tzst|tar\.zst)$/i.test(input.output)) throw new Error('Choose ZIP (.zip), 7Z (.7z), TAR (.tar), TAR.GZ (.tar.gz/.tgz), GZIP (.gz), Zstandard (.zst), or TAR.ZST (.tar.zst/.tzst) with its matching output extension.');
     const location = await safe(workspace, input.output); let entries;
     if (['gzip','zstd'].includes(format)) { const source = await safe(workspace, input.source), stat = await fs.lstat(source); if (!stat.isFile() || stat.size > MAX_FILE) throw new Error('Single-file compression needs one regular file within the local size limit.'); entries = [{ name: path.basename(source), data: await fs.readFile(source), modifiedAt: stat.mtime.toISOString() }]; }
     else entries = await collect(workspace, input.source);
     let archive;
     if (format === 'zip') archive = makeZip(entries, input.compression ?? 'deflate', { zip64: input.zip64 === true, level: input.level, comment: input.comment });
+    else if (format === 'sevenzip') {
+      const compression = input.compression ?? 'deflate';
+      if (!['store', 'deflate'].includes(compression)) throw new Error('7Z supports DEFLATE compression or uncompressed store. Compressed LZMA/LZMA2 is not supported.');
+      archive = write7z(entries.map(e => ({ ...e, mtimeMs: new Date(e.modifiedAt).getTime() })), {
+        method: compression === 'store' ? 'copy' : 'deflate', level: input.level ?? 6, solid: input.solid === true, encodedHeader: input.encodedHeader === true });
+    }
     else if (format === 'tar') archive = makeTar(entries);
     else if (format === 'tgz') archive = makeGzip(makeTar(entries), { level: input.level, maxOutput: MAX_CONTAINER });
     else if (format === 'tzst') archive = makeZstd(makeTar(entries), { level: input.level, maxOutput: MAX_CONTAINER });

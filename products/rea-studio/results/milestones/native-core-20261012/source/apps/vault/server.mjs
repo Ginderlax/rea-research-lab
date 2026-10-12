@@ -1,0 +1,214 @@
+import { createCipheriv, createDecipheriv, createHmac, randomBytes, randomInt, randomUUID, scrypt as derive } from 'node:crypto';
+import { promisify } from 'node:util';
+import { importKdbx, exportKdbx, base64 } from './kdbx.mjs';
+
+const scrypt = promisify(derive);
+const sessions = new Map();
+const queues = new Map();
+const KEY = 'vault.database';
+const AAD = Buffer.from('REA Vault format 1; AES-256-GCM; scrypt N32768 r8 p1');
+const ttl = 5 * 60 * 1000;
+
+function touch(id, state) {
+  clearTimeout(state.timer); state.touched = Date.now();
+  state.timer = setTimeout(() => lock(id), ttl); state.timer.unref?.();
+}
+function openSession(id, key, salt, data) {
+  lock(id); const state = { key, salt, data, touched: Date.now() };
+  sessions.set(id, state); touch(id,state);
+}
+
+function password(value) {
+  if (typeof value !== 'string' || value.length < 10 || Buffer.byteLength(value) > 1024) throw new Error('Use at least 10 characters and at most 1024 UTF-8 bytes for the master password.');
+  return value;
+}
+async function keyFor(pass, salt) {
+  return scrypt(password(pass), salt, 32, { N: 32768, r: 8, p: 1, maxmem: 128 * 1024 * 1024 });
+}
+function bytes(value, size) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9+/]*={0,2}$/.test(value)) throw new Error('Invalid encrypted vault format.');
+  const result = Buffer.from(value, 'base64');
+  if (result.toString('base64') !== value || (size && result.length !== size)) throw new Error('Invalid encrypted vault format.');
+  return result;
+}
+function envelope(doc) {
+  if (!doc || doc.format !== 1 || doc.cipher !== 'AES-256-GCM' || doc.kdf !== 'scrypt-N32768-r8-p1') throw new Error('Unsupported encrypted vault format.');
+  return { salt: bytes(doc.salt, 16), iv: bytes(doc.iv, 12), tag: bytes(doc.tag, 16), ciphertext: bytes(doc.ciphertext) };
+}
+function encode(data, key, salt) {
+  const iv = randomBytes(12);
+  const cipher = createCipheriv('aes-256-gcm', key, iv);
+  cipher.setAAD(AAD);
+  const ciphertext = Buffer.concat([cipher.update(JSON.stringify(data), 'utf8'), cipher.final()]);
+  return { format: 1, cipher: 'AES-256-GCM', kdf: 'scrypt-N32768-r8-p1', salt: salt.toString('base64'), iv: iv.toString('base64'), tag: cipher.getAuthTag().toString('base64'), ciphertext: ciphertext.toString('base64') };
+}
+function decode(doc, key) {
+  try {
+    const { iv, tag, ciphertext } = envelope(doc);
+    const decipher = createDecipheriv('aes-256-gcm', key, iv);
+    decipher.setAAD(AAD); decipher.setAuthTag(tag);
+    const plaintext = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+    try {
+      const data = JSON.parse(plaintext.toString('utf8'));
+      if (data.version !== 1 || !Array.isArray(data.entries) || data.entries.length > 10000) throw new Error('Invalid vault contents.');
+      const ids = new Set();
+      for (const item of data.entries) {
+        if (!item || typeof item.id !== 'string' || !/^[a-f0-9-]{36}$/.test(item.id) || ids.has(item.id)) throw new Error('Invalid entry ID.');
+        ids.add(item.id);
+        for (const key of ['title','username','password','url','group','notes','totpSecret','createdAt','updatedAt']) if (typeof item[key] !== 'string' || item[key].length > (key === 'notes' ? 100000 : 4096)) throw new Error('Invalid entry field.');
+        if (item.totpSecret) fromBase32(item.totpSecret);
+      }
+      return data;
+    } finally { plaintext.fill(0); }
+  } catch { throw new Error('The password is incorrect or the vault has been damaged.'); }
+}
+function lock(id) {
+  const old = sessions.get(id);
+  if (old) { clearTimeout(old.timer); old.key.fill(0); old.data.entries.length = 0; old.data.kdbx = undefined; old.data = null; sessions.delete(id); }
+}
+function unlocked(id) {
+  const state = sessions.get(id);
+  if (!state || Date.now() - state.touched > ttl) { lock(id); throw new Error('Vault is locked.'); }
+  touch(id,state);
+  return state;
+}
+function field(value, max = 4096) {
+  if (value === undefined) return '';
+  if (typeof value !== 'string' || value.length > max) throw new Error(`Text fields must contain at most ${max} characters.`);
+  return value;
+}
+function entry(input, existing) {
+  const title = field(input.title, 256).trim();
+  if (!title) throw new Error('An entry title is required.');
+  if (input.totpSecret) fromBase32(input.totpSecret);
+  return { ...(existing?.kdbxGroupId ? { kdbxGroupId: existing.kdbxGroupId } : {}), id: existing?.id ?? randomUUID(), title, username: field(input.username), password: field(input.password), url: field(input.url), group: field(input.group, 256), notes: field(input.notes, 100000), totpSecret: field(input.totpSecret, 1024), createdAt: existing?.createdAt ?? new Date().toISOString(), updatedAt: new Date().toISOString() };
+}
+function fromBase32(secret) {
+  if (typeof secret !== 'string') throw new Error('TOTP secret must be Base32 text.');
+  const text = secret.toUpperCase().replace(/[\s-]/g, '').replace(/=+$/, '');
+  if (!text || !/^[A-Z2-7]+$/.test(text) || text.length > 1024) throw new Error('TOTP secret must contain valid Base32 characters.');
+  let bits = 0, value = 0; const output = [];
+  for (const char of text) {
+    value = (value << 5) | 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'.indexOf(char); bits += 5;
+    if (bits >= 8) { bits -= 8; output.push((value >>> bits) & 255); value &= (1 << bits) - 1; }
+  }
+  if (!output.length || (bits && value !== 0) || ![0,2,4,5,7].includes(text.length % 8)) throw new Error('TOTP secret has invalid trailing bits.');
+  return Buffer.from(output);
+}
+export function totp(secret, { time = Date.now(), period = 30, digits = 6, algorithm = 'sha1' } = {}) {
+  if (!Number.isSafeInteger(time) || time < 0 || !Number.isInteger(period) || period < 1 || period > 3600 || !Number.isInteger(digits) || digits < 6 || digits > 10 || !['sha1','sha256','sha512'].includes(algorithm)) throw new Error('Invalid TOTP parameters.');
+  const counter = Buffer.alloc(8); counter.writeBigUInt64BE(BigInt(Math.floor(time / 1000 / period)));
+  const key = fromBase32(secret);
+  const hash = createHmac(algorithm, key).update(counter).digest(); key.fill(0);
+  const offset = hash.at(-1) & 15;
+  return { code: String((hash.readUInt32BE(offset) & 0x7fffffff) % 10 ** digits).padStart(digits, '0'), remainingSeconds: period - Math.floor(time / 1000) % period };
+}
+async function run({ action, input = {}, store, workspace }) {
+  const id = workspace.root;
+  if (action === 'status') {
+    const state = sessions.get(id);
+    if (state && Date.now() - state.touched > ttl) lock(id);
+    return { exists: !!await store.get(KEY, null), locked: !sessions.has(id), idleLockMinutes: 5 };
+  }
+  if (action === 'lock') { lock(id); return { locked: true }; }
+  if (action === 'generate') {
+    const length = input.length ?? 24;
+    const alphabet = [...new Set(input.alphabet ?? 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+')].join('');
+    if (!Number.isInteger(length) || length < 1 || length > 256 || alphabet.length < 2 || alphabet.length > 128 || /[^\x21-\x7e]/.test(alphabet)) throw new Error('Invalid generator length or alphabet.');
+    return { password: Array.from({ length }, () => alphabet[randomInt(alphabet.length)]).join('') };
+  }
+  if (action === 'create') {
+    if (await store.get(KEY, null)) throw new Error('A vault already exists. Unlock it instead.');
+    const salt = randomBytes(16), key = await keyFor(input.password, salt);
+    const data = { version: 1, entries: [] };
+    try { await store.set(KEY, encode(data, key, salt)); }
+    catch (error) { key.fill(0); throw error; }
+    openSession(id,key,salt,data);
+    return { created: true, locked: false };
+  }
+  if (action === 'unlock') {
+    lock(id);
+    const doc = await store.get(KEY, null);
+    if (!doc) throw new Error('Create a vault first.');
+    const salt = envelope(doc).salt, key = await keyFor(input.password, salt);
+    try { openSession(id,key,salt,decode(doc,key)); }
+    catch (error) { key.fill(0); throw error; }
+    return { locked: false };
+  }
+  if (action === 'importEncrypted') {
+    if (await store.get(KEY, null) && input.confirmReplace !== true) throw new Error('Replacing a vault requires explicit confirmation.');
+    const doc = typeof input.document === 'string' ? JSON.parse(input.document) : input.document;
+    const salt = envelope(doc).salt, key = await keyFor(input.password, salt);
+    try {
+      const data = decode(doc, key);
+      await store.set(KEY, encode(data, key, salt));
+      openSession(id,key,salt,data);
+    } catch (error) { key.fill(0); throw error; }
+    return { imported: true };
+  }
+  if (action === 'importKdbx') {
+    if (await store.get(KEY,null) && input.confirmReplace !== true) throw new Error('Replacing a vault requires explicit confirmation.');
+    // Validate the local password before spending resources on a foreign KDF.
+    password(input.localPassword);
+    const data = await importKdbx(base64(input.fileBase64),{ password: input.password,usePassword: input.usePassword,keyFileBase64: input.keyFileBase64 });
+    for (const e of data.entries) if (e.totpSecret) fromBase32(e.totpSecret);
+    const salt = randomBytes(16), key = await keyFor(input.localPassword,salt);
+    try { await store.set(KEY,encode(data,key,salt)); openSession(id,key,salt,data); }
+    catch (error) { key.fill(0); throw error; }
+    return { imported: true,entries: data.entries.length,sourceVersion: data.kdbx.sourceVersion };
+  }
+  const state = unlocked(id);
+  if (action === 'list') {
+    const search = field(input.search, 256).toLowerCase();
+    return { entries: state.data.entries.filter(e => [e.title,e.username,e.url,e.group,e.notes].some(v => v.toLowerCase().includes(search))).map(({ password, totpSecret, notes, ...rest }) => rest).sort((a,b) => a.title.localeCompare(b.title)) };
+  }
+  if (action === 'read') {
+    const result = state.data.entries.find(e => e.id === input.id);
+    if (!result) throw new Error('Entry not found.');
+    return { entry: { ...result } };
+  }
+  if (action === 'totp') {
+    const result = state.data.entries.find(e => e.id === input.id);
+    if (!result?.totpSecret) throw new Error('This entry has no TOTP secret.');
+    return totp(result.totpSecret, { time: input.time, digits: input.digits, period: input.period, algorithm: input.algorithm });
+  }
+  if (action === 'save') {
+    const old = state.data.entries.find(e => e.id === input.id);
+    if (input.id && !old) throw new Error('Entry not found.');
+    const result = entry(input, old);
+    const data = { ...state.data, entries: old ? state.data.entries.map(e => e.id === old.id ? result : e) : [...state.data.entries, result] };
+    if (data.entries.length > 10000) throw new Error('The local vault entry limit is 10,000.');
+    await store.set(KEY, encode(data, state.key, state.salt)); state.data = data;
+    return { id: result.id, saved: true };
+  }
+  if (action === 'delete') {
+    if (input.confirm !== true) throw new Error('Deleting an entry requires confirmation.');
+    if (!state.data.entries.some(e => e.id === input.id)) throw new Error('Entry not found.');
+    const data = { ...state.data, entries: state.data.entries.filter(e => e.id !== input.id) };
+    await store.set(KEY, encode(data, state.key, state.salt)); state.data = data;
+    return { deleted: true };
+  }
+  if (action === 'exportEncrypted') return { document: await store.get(KEY, null) };
+  if (action === 'exportKdbx') {
+    const buffer = await exportKdbx(state.data,{ password: input.password,usePassword: input.usePassword,keyFileBase64: input.keyFileBase64 },input.options);
+    return { fileBase64: buffer.toString('base64'),filename: 'rea-vault.kdbx',bytes: buffer.length };
+  }
+  if (action === 'changePassword') {
+    const doc = await store.get(KEY, null), oldKey = await keyFor(input.currentPassword, envelope(doc).salt);
+    try { decode(doc, oldKey); } finally { oldKey.fill(0); }
+    const salt = randomBytes(16), key = await keyFor(input.newPassword, salt);
+    try { await store.set(KEY, encode(state.data, key, salt)); }
+    catch (error) { key.fill(0); throw error; }
+    state.key.fill(0); state.key = key; state.salt = salt;
+    return { changed: true };
+  }
+  throw new Error('Unknown vault action.');
+}
+export async function handle(context) {
+  const id = context.workspace.root;
+  const previous = queues.get(id) ?? Promise.resolve();
+  const current = previous.catch(() => {}).then(() => run(context));
+  queues.set(id, current);
+  try { return await current; } finally { if (queues.get(id) === current) queues.delete(id); }
+}
+export function dispose(workspace) { lock(workspace.root); }

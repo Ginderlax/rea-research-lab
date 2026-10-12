@@ -83,7 +83,7 @@ export function doStandardCalcs(field, ignoreNulls, nullAsZero) {
   return result;
 }
 
-function special(id, field, ignore, zero) {
+function special(id, field, ignore, zero, shared) {
   const values = field.values;
   if (id === 'first') return { first: values[0] };
   if (id === 'last') return { last: values[values.length - 1] };
@@ -122,10 +122,14 @@ function special(id, field, ignore, zero) {
     return { median: sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2 };
   }
   if (/^p\d+$/.test(id)) {
-    let candidates = values;
-    if (ignore) candidates = candidates.filter(value => value !== null);
-    if (zero) candidates = candidates.map(value => value === null ? 0 : value);
-    const sorted = candidates.slice().sort((a, b) => a - b);
+    let sorted = shared?.percentiles;
+    if (!sorted) {
+      let candidates = values;
+      if (ignore) candidates = candidates.filter(value => value !== null);
+      if (zero) candidates = candidates.map(value => value === null ? 0 : value);
+      sorted = candidates.slice().sort((a, b) => a - b);
+      if (shared) shared.percentiles = sorted;
+    }
     return { [id]: sorted[Math.round((sorted.length - 1) * (Number(id.slice(1)) / 100))] };
   }
   return null;
@@ -158,7 +162,8 @@ export function reduceField({ field, reducers }) {
   if (!field || !reducers || !reducers.length) return {};
   if (field.state?.calcs && reducers.every(id => field.state.calcs.hasOwnProperty(id))) return { ...field.state.calcs };
   field.state ||= {};
-  const queue = reducers.map(id => definitions.get(id)).filter(Boolean);
+  const queue = [];
+  for (const id of reducers) { const definition = definitions.get(id); if (definition) queue.push(definition); }
   if (field.values && !field.values.length) {
     const result = { ...field.state.calcs };
     for (const definition of queue) result[definition.id] = definition.emptyInputResult !== null ? definition.emptyInputResult : null;
@@ -170,8 +175,8 @@ export function reduceField({ field, reducers }) {
     const result = special(queue[0].id, field, ignore, zero);
     field.state.calcs = { ...field.state.calcs, ...result }; return result;
   }
-  let result = doStandardCalcs(field, ignore, zero);
-  for (const { id } of queue) if (!Object.hasOwn(result, id) && specialIds.has(id)) result = { ...result, ...special(id, field, ignore, zero) };
+  const result = doStandardCalcs(field, ignore, zero), shared = {};
+  for (const { id } of queue) if (!Object.hasOwn(result, id) && specialIds.has(id)) Object.assign(result, special(id, field, ignore, zero, shared));
   field.state.calcs = { ...field.state.calcs, ...result }; return result;
 }
 

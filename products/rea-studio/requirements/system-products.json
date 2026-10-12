@@ -1600,12 +1600,48 @@
           "bytes": 1075,
           "sha256": "987ee02241ceebb7fdce414f39eb3531b3cb96c51b2ca499f0eed015e46b2342",
           "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/sevenzip.mjs",
+          "bytes": 23155,
+          "sha256": "f38b23f53c8341e563277472004a0a762fcd4075d0d0d33fe1eb9c555981285e",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/sevenzip.test.mjs",
+          "bytes": 23736,
+          "sha256": "ebecd795f7bddbf02e68667dda9c30fb532f9da4b3b622ae8a49f5863cae7851",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/sevenzip-validation.json",
+          "bytes": 19686,
+          "sha256": "ff53f71c7ad81e1c9903011f3cda81ea0e3d257d1130d4a475c69b65741e5be5",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/sevenzip-source-references.json",
+          "bytes": 22251,
+          "sha256": "320305de5a608881b85fbb182d777887043bd1bf9d1ae5e976cc961a3e575ccc",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/archive/SEVENZIP-COMPATIBILITY.md",
+          "bytes": 8922,
+          "sha256": "9d9cd3c81ed780f9ab359edb7d49b424edbaa6a9a3308da9079a7aebb9f5c25f",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
         }
       ],
       "current_zstandard_milestone": {
         "scope": "Bounded .zst,TAR.ZST/.tzst,ZIP93+ZIP64, frame walking and cumulative decompression limits.",
         "full_product_parity": false,
         "record": "products/rea-studio/apps/archive/zstd-validation.json"
+      },
+      "current_sevenzip_milestone": {
+        "record": "products/rea-studio/apps/archive/sevenzip-validation.json",
+        "archive_tests": 68,
+        "scope": "Bounded native Copy/DEFLATE 7Z with solid folders and supported encoded headers; compressed LZMA/LZMA2 remains separate staged work.",
+        "full_product_parity": false
       }
     },
     {
@@ -2081,8 +2117,8 @@
       "local_implementation_evidence": [
         {
           "path": "products/rea-studio/apps/backup/restic.mjs",
-          "bytes": 29982,
-          "sha256": "efa23b18a99f012bf15bcb59ee8a06cecb41c98838d71bb9e8dc31e9d872c3d6",
+          "bytes": 30261,
+          "sha256": "70bf4a5bfd46041823fa00bd7cdbf880f6c0a9020f67ef9e7a807b4242fbb527",
           "scope": "Current implemented subset; full-product parity gate remains open."
         },
         {
@@ -2111,15 +2147,52 @@
         },
         {
           "path": "products/rea-studio/apps/backup/SOURCE-COMPARISON.md",
-          "bytes": 7562,
-          "sha256": "6ef9c83dabbf6cf790e81e392cf4d7b86531829d4081003a713882178dcf01c5",
+          "bytes": 7845,
+          "sha256": "a90590534725c4de3f1b31a36d68f8bf76690c44a0e0e8e2c4e6ca7acdce8660",
           "scope": "Current implemented subset; full-product parity gate remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/backup/restic-kdf-policy.mjs",
+          "bytes": 1923,
+          "sha256": "6118dcace475d83a77e5d7362316268893ef126387aae22e93601a73876620f1",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/backup/restic-kdf-policy.test.mjs",
+          "bytes": 1414,
+          "sha256": "0992732971358bf407d375671c8b296c1d3e89f76a2dd26f086dfafb736e9ed3",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/backup/restic-kdf.interop.test.mjs",
+          "bytes": 3405,
+          "sha256": "57128a1612aebe887e9c9f8350d321a975f19514296151627f0c923d6735faa7",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/backup/KDF-POLICY.md",
+          "bytes": 2752,
+          "sha256": "3ca4ecda91703ab8f7598ff1b8c5468a9959d5b42d8a4537b43cc62347f14b79",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/backup/results/kdf-policy-validation.json",
+          "bytes": 3559,
+          "sha256": "a0c78939faf2b144739945b2439d83a254c3bd1abc5080545b027c7390fb74ea",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
         }
       ],
       "current_native_milestone": {
         "scope": "Bounded encrypted native resticv1/v2 init/read/write/check/restore, bidirectional original CLI fixtures, time/metadata validation and independent cipher/MAC vectors.",
         "full_product_parity": false,
         "record": "products/rea-studio/apps/backup/native-validation.json"
+      },
+      "current_password_policy_followup": {
+        "record": "products/rea-studio/apps/backup/results/kdf-policy-validation.json",
+        "minimum_p": 13,
+        "maximum_p": 32,
+        "existing_key_migration": false,
+        "exact_original_calibration": false
       }
     },
     {
@@ -4944,7 +5017,62 @@
         "Parse all 193 observed Markdown files, their links/generated docs and runtime help. A file tree or overview table alone does not establish every documented feature.",
         "Remote service interoperability, OAuth, quotas, object metadata, mount behavior and operational failure/recovery tests remain entirely unverified."
       ],
-      "local_implementation_evidence": []
+      "local_implementation_evidence": [
+        {
+          "path": "products/rea-studio/apps/sync/native.mjs",
+          "bytes": 21498,
+          "sha256": "3b6483d80b958ff70e42cb9df9205cf1757b5e481715c7240cd92e0c6e336aaf",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/sync/native-filters.mjs",
+          "bytes": 11483,
+          "sha256": "3e370373897364b61247da55be53ecd4b618da84df581d766120adafaba4d27b",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/sync/native-comparison.mjs",
+          "bytes": 2844,
+          "sha256": "f169dff550e3b5dfd95a11136791be88bfe6dc88768c949e0befd677aebdd767",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/sync/native.test.mjs",
+          "bytes": 13157,
+          "sha256": "6ce706edf8e3e59c3d178d8cf1a7a273beaf91bb76895b477aeb23f9231391b3",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/sync/native.integration.test.mjs",
+          "bytes": 3371,
+          "sha256": "594c05460fbc8769f5424a9b3a3ca2e35c6be203fdf9063beb73c86683d0765f",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/sync/native-source-references.json",
+          "bytes": 21518,
+          "sha256": "0d8a26e9ede7c755586ef5fbbc26c52d625ab04d6a656a0e55ae79f02f8e6aec",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/sync/results/native-verification.json",
+          "bytes": 6185,
+          "sha256": "d321232634c7956605837dbbf71583d27e48b7a4d925b302cddf7627af6e9f95",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        },
+        {
+          "path": "products/rea-studio/apps/sync/RCLONE-COMPATIBILITY.md",
+          "bytes": 11995,
+          "sha256": "65ce033dcb4bd5e8d35bb3f92b5d02ce8390d5ed77c378bd3444fc143bfbcf8d",
+          "scope": "Current implemented subset and source-bound evidence; complete-product parity remains open."
+        }
+      ],
+      "current_native_milestone": {
+        "record": "products/rea-studio/apps/sync/results/native-verification.json",
+        "focused_tests": 35,
+        "scope": "Bounded local rclone filter/comparison/copy/sync contracts; remote backends remain staged work.",
+        "full_product_parity": false
+      }
     }
   ],
   "source_tree_observations": [

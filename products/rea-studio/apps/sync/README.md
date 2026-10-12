@@ -7,7 +7,7 @@ This application performs real local-folder comparison and reviewed file synchro
 From `products/rea-studio`, run `npm start`, open the printed local address and select **Lab Sync**. Application verification:
 
 ```text
-node --test apps/sync/app.test.mjs apps/sync/app.integration.test.mjs
+node --test apps/sync/*.test.mjs
 ```
 
 Create a fixture through the new-file form or put regular files in the Sync application's dedicated workspace. Supply two separate relative folder paths. Preview changes, resolve every differing existing file, confirm the plan and apply it. **Mirror** mode additionally requires a separate deletion confirmation. Preview again whenever either folder changes or a plan expires.
@@ -24,9 +24,13 @@ Create a fixture through the new-file form or put regular files in the Sync appl
 
 Integration checks cover binary copies, no-write dry runs, conflict choices, recovery copies, stale preview refusal, mirror deletion approval, two-way additions and actual HTTP/disk behavior across host restart.
 
+## Pinned local rclone rules
+
+The **Copy with rclone rules** card adds a separate local copy/sync contract for rclone 1.75.2, with ordered include/exclude/filter text, specific file lists, size/case filters, MD5/size/time decisions, modification tolerance, empty-directory handling, no-write previews, explicit approval, recovery bytes and saved native results. The manual SHA-256 workflow above still uses its own conflict choices. Read [RCLONE-COMPATIBILITY.md](RCLONE-COMPATIBILITY.md) for exact HTTP inputs, original source/fixture evidence, supported boundaries and reproduction commands. Full completion and universal superiority remain false.
+
 ## Concrete parity gaps and limitations
 
-No cloud/storage-provider backends, remote accounts, remote APIs, provider credentials, encrypted remotes, remote configuration, mounts/VFS, server commands, checksummed provider compatibility, filters, bandwidth caps, parallel transfers, resume/chunked uploads, retry/backoff policies, remote caches, scheduling, extensive command syntax or rclone's many backend-specific options are implemented.
+No cloud/storage-provider backends, remote accounts, remote APIs, provider credentials, encrypted remotes, remote configuration, mounts/VFS, server commands, checksummed provider compatibility, full filter/RE2/metadata/age behavior, bandwidth caps, parallel transfers, resume/chunked uploads, retry/backoff policies, remote caches, scheduling, extensive command syntax or rclone's many backend-specific options are implemented.
 
 Two-way mode does not propagate deletions or provide rclone bisync's full recovery/history semantics. Atomic whole-folder transactions, concurrent outside-process protection, metadata/permissions/ACL/xattr preservation, symlinks/hardlinks and unlimited file sizes are absent. Preflight and per-file checks narrow change races, but cannot guarantee transactions against other processes rewriting the same filesystem. A failure can leave completed earlier operations; it reports counts and preserved prior contents so a fresh preview can be reviewed.
 

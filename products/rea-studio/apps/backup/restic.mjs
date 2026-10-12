@@ -4,6 +4,7 @@ import os from 'node:os';
 import { randomBytes, randomUUID } from 'node:crypto';
 import { zstdDecompressSync } from 'node:zlib';
 import { hash, seal, open, base64, password, passwordKey, masterKey, masterJSON, randomKey, randomPolynomial, validPolynomial } from './restic-crypto.mjs';
+import { calibrateWriter } from './restic-kdf-policy.mjs';
 
 const MiB = 1024 * 1024;
 export const limits = { file: 64 * MiB,total: 512 * MiB,pack: 96 * MiB,metadata: 16 * MiB,metadataTotal: 64 * MiB,entries: 10000,blobs: 100000,packs: 4096,depth: 100,keys: 16,milliseconds: 120000 };
@@ -237,14 +238,15 @@ class Repository {
 
 async function initialize(repo,input) {
   password(input.password); const version = input.version ?? 1; if (![1,2].includes(version)) throw new Error('Native restic repository version must be 1 or 2.');
-  const key = randomKey(), salt = randomBytes(64), keyDoc = { created:new Date().toISOString(),username:'rea-studio',hostname:os.hostname(),kdf:'scrypt',N:32768,r:8,p:1,salt:salt.toString('base64') };
+  const calibrated = await calibrateWriter();
+  const key = randomKey(), salt = randomBytes(64), keyDoc = { created:new Date().toISOString(),username:'rea-studio',hostname:os.hostname(),kdf:'scrypt',N:calibrated.N,r:calibrated.r,p:calibrated.p,salt:salt.toString('base64') };
   keyDoc.data = seal(await passwordKey(keyDoc,input.password),encode(masterJSON(key))).toString('base64');
   const config = { version,id:randomBytes(32).toString('hex'),chunker_polynomial:randomPolynomial() };
   const root = repo.location(); await fs.mkdir(path.dirname(root),{ recursive:true }); await fs.mkdir(root);
   for (const directory of ['data','index','keys','locks','snapshots','tmp']) await fs.mkdir(repo.location(directory));
   repo.key = key; repo.config = config;
   const keyBytes = encode(keyDoc), keyID = hash(keyBytes); await repo.atomic(`keys/${keyID}`,keyBytes); await repo.atomic('config',seal(key,encode(config)));
-  return { format:'restic',version,repository:repo.relative,id:config.id,keyID,encrypted:true };
+  return { format:'restic',version,repository:repo.relative,id:config.id,keyID,encrypted:true,passwordDerivation:{ N:keyDoc.N,r:keyDoc.r,p:keyDoc.p,minimumP:calibrated.minimumP,calibrationTargetMilliseconds:calibrated.targetMilliseconds } };
 }
 async function snapshot(repo,input) {
   const source = clean(input.source);

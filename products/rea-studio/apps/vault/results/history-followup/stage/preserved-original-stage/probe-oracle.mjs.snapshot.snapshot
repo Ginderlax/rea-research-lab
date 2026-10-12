@@ -1,0 +1,3 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {original,here} from './harness.mjs';
+const directory=path.join(here,'.local/oracle-probe');await fs.mkdir(directory,{recursive:true});
+try{const result=await original(directory,{mode:'create',database:path.join(directory,'synthetic.kdbx')});await fs.writeFile(path.join(directory,'result.json'),JSON.stringify(result,null,2));console.log('original fixture created')}catch(error){await fs.writeFile(path.join(directory,'failure.json'),JSON.stringify({message:error.message,observation:error.observation},null,2));throw error}

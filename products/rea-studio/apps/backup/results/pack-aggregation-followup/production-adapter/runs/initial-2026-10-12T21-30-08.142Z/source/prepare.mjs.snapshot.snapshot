@@ -1,0 +1,14 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+const root=path.dirname(fileURLToPath(import.meta.url)),frozen=path.resolve(root,'../restic-pack-aggregation-next'),repo=path.resolve(root,'../../outputs/rea-research-lab'),hash=b=>createHash('sha256').update(b).digest('hex'),manifestBytes=await fs.readFile(path.join(frozen,'freeze-manifest.json')),manifest=JSON.parse(manifestBytes);
+if(hash(manifestBytes)!=='8ddb6cfda4c2e06e8413ff70cd97ebb259cb1ddab81f60cdb2be2f1c1d3d8b3b')throw new Error('Frozen source manifest identity changed');
+for(const row of manifest.entries)if(hash(await fs.readFile(path.join(frozen,row.path)))!==row.sha256)throw new Error('Frozen artifact changed '+row.path);
+const files=[];
+const app='products/rea-studio/apps/backup';for(const name of await fs.readdir(path.join(frozen,app)))if(name.endsWith('.mjs'))files.push({from:frozen,path:`${app}/${name}`,role:'Frozen stage exact candidate/baseline module'});
+for(const name of ['server.mjs','catalog.mjs','lib/storage.mjs'])files.push({from:repo,path:`products/rea-studio/${name}`,role:'Exact production shared host, catalog and workspace modules; private clone only'});
+const sources=[];for(const row of files){const bytes=await fs.readFile(path.join(row.from,row.path));for(const target of [path.join(root,row.path),path.join(root,'baseline',row.path+'.snapshot')]){await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);}sources.push({source:path.join(row.from,row.path),path:row.path,role:row.role,bytes:bytes.length,sha256:hash(bytes)});}
+const original=[];for(const relative of ['restic_0.19.1_windows_amd64.zip','unpacked/restic_0.19.1_windows_amd64.exe']){const source=`projects/09-restic/artifacts/${relative}`,bytes=await fs.readFile(path.join(frozen,source)),sha256=relative.endsWith('.zip')?'da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d':'b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830';if(hash(bytes)!==sha256)throw new Error('Original oracle mismatch');const target=path.join(root,source);await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);original.push({path:source,bytes:bytes.length,sha256});}
+await fs.writeFile(path.join(root,'baseline.json'),JSON.stringify({schema:'rea-restic-pack-native-adapter-baseline/v1',frozenStageReceiptSha256:hash(await fs.readFile(path.join(frozen,'stage-validation.json'))),frozenStageManifestSha256:hash(manifestBytes),sources,original,noImportsAdapted:true,sharedHostModulesUnchanged:true,scope:'Backup runtime/tests plus exact shared server/catalog/storage. Other app runtime modules are absent and never invoked. Ports are dynamically assigned (0); user/root hosts untouched.'},null,2)+'\n');
+console.log(JSON.stringify({files:sources.length,original:original.length}));

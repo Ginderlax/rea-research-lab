@@ -1,0 +1,28 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+
+const here=path.dirname(fileURLToPath(import.meta.url)),main=path.resolve(here,'../restic-pack-aggregation-next'),review=path.resolve(here,'../restic-pack-independent-review');
+const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+const read=async(root,name)=>{const bytes=await fs.readFile(path.join(root,name));return {bytes,record:{bytes:bytes.length,sha256:hash(bytes)}};};
+const reviewReceipt=await read(review,'review-validation.json');
+assert.equal(reviewReceipt.record.sha256,'08b797f88b0566599ddcd0f25aa521681a26de9f689edb01e56bd70572b1e582');
+for(const [name,record]of Object.entries(JSON.parse(reviewReceipt.bytes).inventory))assert.deepEqual((await read(review,name)).record,record);
+const mainManifest=await read(main,'freeze-manifest.json');
+assert.equal(mainManifest.record.sha256,'8ddb6cfda4c2e06e8413ff70cd97ebb259cb1ddab81f60cdb2be2f1c1d3d8b3b');
+const entries=JSON.parse(mainManifest.bytes).entries;
+assert.equal(entries.length,250);
+for(const entry of entries)assert.deepEqual((await read(main,entry.path)).record,{bytes:entry.bytes,sha256:entry.sha256});
+const app='products/rea-studio/apps/backup/',files=['restic.mjs','restic-data-pack.mjs','restic-crypto.mjs','restic-compression.mjs','restic-kdf-policy.mjs','capture-rabin-file.mjs','rabin.mjs','restic-data-pack.test.mjs','capture-rabin-file.test.mjs','restic-rabin-lifecycle.test.mjs','restic-rabin-deadline.test.mjs'].map(name=>app+name);
+files.push('products/rea-studio/lib/storage.mjs');
+const provenance=JSON.parse((await read(main,'source-provenance.json')).bytes);
+files.push(...provenance.references.map(row=>row.path));
+const origins=[];
+for(const name of files){const source=await read(main,name);const frozen=entries.find(row=>row.path===name);assert.ok(frozen);assert.deepEqual(source.record,{bytes:frozen.bytes,sha256:frozen.sha256});await fs.mkdir(path.dirname(path.join(here,name)),{recursive:true});await fs.writeFile(path.join(here,name),source.bytes,{flag:'wx'});origins.push({path:name,...source.record});}
+await fs.mkdir(path.join(here,'preserved'),{recursive:true});
+for(const [root,name,target]of [[main,'source-provenance.json','main-source-provenance.json'],[main,'stage-validation.json','main-stage-validation.json'],[main,'freeze-manifest.json','main-freeze-manifest.json'],[main,'production-baseline.json','main-production-baseline.json'],[review,'review-validation.json','independent-review-validation.json'],[review,'overlap-observation.json','overlap-observation.json'],[review,'overlap-reproduction.mjs','overlap-reproduction.mjs.snapshot'],[main,app+'restic-data-pack.mjs','restic-data-pack.c68d.mjs.snapshot'],[main,app+'restic.mjs','restic.e668.mjs.snapshot']]){const source=await read(root,name);await fs.writeFile(path.join(here,'preserved',target),source.bytes,{flag:'wx'});origins.push({preservedPath:'preserved/'+target,originRoot:path.basename(root),originPath:name,...source.record});}
+const output={schema:'rea-restic-pack-operation-guard-origin/v1',preparedAt:new Date().toISOString(),mainFrozenInventory:{files:250,...mainManifest.record},independentReviewReceipt:reviewReceipt.record,origins,scope:'New private stage copied from exact main candidate; only data-pack helper is to change. No production, frozen main/adapter/review or historical evidence edits.',historicalTests:{main:66,adapter:33},historicalTestsRerun:false,originalRuntimeExecutions:0,performanceWorkAuthorized:false};
+await fs.writeFile(path.join(here,'origin-validation.json'),JSON.stringify(output,null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({status:'prepared exact frozen main sources',files:origins.length,helperSHA256:origins.find(row=>row.path===app+'restic-data-pack.mjs').sha256}));

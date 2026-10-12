@@ -1,0 +1,6 @@
+import {handle as originalHandle,dispose} from "file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-history-draft-fix-next/server.mjs";
+export {dispose};
+let gate;
+export function arm(action){if(gate)throw new Error('A gate is already armed');let release;gate={action,promise:new Promise(resolve=>release=resolve),release:()=>release()};}
+export function release(){gate?.release();gate=undefined;}
+export async function handle(context){const result=await originalHandle(context);if(gate?.action===context.action){const captured=gate;process.stdout.write('OWNED_GATE_HELD '+context.action+'\n');await captured.promise;}return result;}

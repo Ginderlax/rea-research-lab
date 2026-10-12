@@ -1,0 +1,20 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+const root=path.dirname(fileURLToPath(import.meta.url)),repo=path.resolve(root,'../../outputs/rea-research-lab'),hash=b=>createHash('sha256').update(b).digest('hex');
+const sources=[];
+for(const name of (await fs.readdir(path.join(repo,'products/rea-studio/apps/backup'))).sort())if(/\.(mjs|md|json)$/.test(name))sources.push(`products/rea-studio/apps/backup/${name}`);
+sources.push('products/rea-studio/lib/storage.mjs','products/rea-studio/lib/dom.mjs','products/rea-studio/apps/backup/results/rabin-validation.json','products/rea-studio/apps/backup/results/compression-validation.json','projects/09-restic/artifact-manifest.json','projects/09-restic/reference-manifest.json','projects/09-restic/UPSTREAM-LICENSE.txt');
+const baseline=[];
+for(const relative of sources){const bytes=await fs.readFile(path.join(repo,relative)),target=path.join(root,'baseline',relative+'.snapshot');await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);baseline.push({path:relative,bytes:bytes.length,sha256:hash(bytes)});if(relative.startsWith('products/rea-studio/')&&!relative.includes('/results/')&&!relative.endsWith('native-validation.json')){const copy=path.join(root,relative);await fs.mkdir(path.dirname(copy),{recursive:true});await fs.writeFile(copy,bytes);}}
+await fs.writeFile(path.join(root,'production-baseline.json'),JSON.stringify({schema:'rea-restic-pack-production-baseline/v1',recordedAt:new Date().toISOString(),repository:repo,files:baseline},null,2)+'\n');
+const artifact='projects/09-restic/artifacts';
+const original=[];
+for(const relative of ['restic_0.19.1_windows_amd64.zip','unpacked/restic_0.19.1_windows_amd64.exe']){const bytes=await fs.readFile(path.join(repo,artifact,relative)),expected=relative.endsWith('.zip')?'da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d':'b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830';if(hash(bytes)!==expected)throw new Error('Original oracle digest mismatch');const target=path.join(root,artifact,relative);await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);original.push({path:`${artifact}/${relative}`,bytes:bytes.length,sha256:expected,role:'Local original independent oracle; exclude binary payload from public source evidence.'});}
+const commit='6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf',references=[];
+for(const relative of ['LICENSE','doc/design.rst','internal/repository/pack/pack.go','internal/repository/packer_manager.go','internal/repository/index/index.go','internal/repository/repository.go']){const url=`https://raw.githubusercontent.com/restic/restic/${commit}/${relative}`,response=await fetch(url);if(!response.ok)throw new Error(`${response.status} ${url}`);const bytes=Buffer.from(await response.arrayBuffer()),target=path.join(root,'references',relative+'.snapshot');await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);references.push({path:`references/${relative}.snapshot`,originalPath:relative,url,bytes:bytes.length,sha256:hash(bytes),retrievedAt:new Date().toISOString()});}
+if(references.find(r=>r.originalPath==='LICENSE').sha256!=='6f08a01a9fab5b24e139a09f15cc24a73087c7bc09e3bacf099fdf2d767bf897')throw new Error('Pinned license mismatch');
+if(references.find(r=>r.originalPath==='doc/design.rst').sha256!=='c482724583b0630cdd45a2b2f37d87b228bea6efbebe3b3d737271c152c53524')throw new Error('Pinned design mismatch');
+await fs.writeFile(path.join(root,'source-provenance.json'),JSON.stringify({schema:'rea-restic-pack-source-provenance/v1',version:'restic 0.19.1',commit,sourceAssisted:true,license:'BSD-2-Clause (original exact LICENSE bytes retained)',originalRuntimeWrapper:false,productionIntegrated:false,fullParity:false,performanceParity:false,original,references},null,2)+'\n');
+console.log(JSON.stringify({stage:root,baselineFiles:baseline.length,references:references.length,originalPins:original}));

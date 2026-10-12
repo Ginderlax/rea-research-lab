@@ -1,0 +1,57 @@
+{"nativePackPolicyObservation":{"phase":"first-snapshot","snapshot":"403d0135d1497c8860cf4c020fbb6e8cbd3687038b18cb2de1cf97a006b17339","totalPacks":5,"dataPacks":1,"uniqueDataBlobs":2,"dataRows":[{"id":"3a21bff172ed1f427f9ee97d000ebdc6157f62595383d81215d9328f28381bf4","type":"data","offset":0,"length":4850,"uncompressed_length":2097199},{"id":"ab6e5bc4241af3c9ec1e009c14d127ba88f63d9bd835da470ddb01bb53ef2fe3","type":"data","offset":4850,"length":76,"uncompressed_length":35}],"allStorageHeaderPayloadAndIndexVerified":true}}
+{"nativePackPolicyObservation":{"phase":"repeat-snapshot","dataPacks":1,"dataRows":2,"addedDataPacks":0,"addedDataRows":0}}
+{"nativePackPolicyObservation":{"phase":"repeat-snapshot","dataPacks":1,"dataRows":2,"addedDataPacks":0,"addedDataRows":0}}
+{"nativePackHostObservation":{"requests":[{"action":"nativeInit","status":200},{"action":"nativeSnapshot","status":200},{"action":"nativeCheck","status":200},{"action":"nativeSnapshot","status":200},{"action":"nativeList","status":200},{"action":"nativeList","status":200},{"action":"nativeCheck","status":200},{"action":"nativeRestore","status":200}],"commands":[{"args":["check","--read-data"],"exitCode":0,"stdout":"create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  2 / 2 snapshots\nread all data\n[0:00] 100.00%  8 / 8 packs\nno errors were found\n","stderr":""},{"args":["restore","6f9c0f092f40185ec3be9a3588c83ac253ba3ca2011757f06b6e0f12dc1cd468","--target","C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-pack-host-adapter-ghxzGj\\original-restored"],"exitCode":0,"stdout":"restoring snapshot 6f9c0f09 of [/source] at 2026-10-12 21:42:09.433 +0000 UTC by rea-studio@EvanH to C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-pack-host-adapter-ghxzGj\\original-restored\nSummary: Restored 6 files/dirs (2.000 MiB) in 0:00\n","stderr":""}],"firstSnapshot":"403d0135d1497c8860cf4c020fbb6e8cbd3687038b18cb2de1cf97a006b17339","secondSnapshot":"6f9c0f092f40185ec3be9a3588c83ac253ba3ca2011757f06b6e0f12dc1cd468","fixtureFiles":{"binary.bin":"3a21bff172ed1f427f9ee97d000ebdc6157f62595383d81215d9328f28381bf4","empty.txt":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","nested/雪😀.txt":"ab6e5bc4241af3c9ec1e009c14d127ba88f63d9bd835da470ddb01bb53ef2fe3"},"checkedBytes":2097234,"restartPersistence":true,"exactDataPackAndRowDedup":true,"httpRestoreBytesAndMtime":true,"originalRestoreBytes":true,"ports":"Private ephemeral ports; existing hosts untouched."}}
+✔ private production host batches three-file native capture, preserves exact dedup across restart and restores through HTTP and original (11651.7167ms)
+{"nativeSmallMutationObservation":{"boundary":"first successful source read held before delivery","fixtureBytes":23,"fixtureSha256":"00af494886e00d9ff60fdf13621a6c8dba11f571d2692897e5a4e4532b34d6d2","readCalls":3,"sourceHandleCloses":1,"publishedDataIndexSnapshotObjects":0,"remainingOwnLocks":0,"runtimeSourceUnmodified":true}}
+✔ held small-file read detects mutation before any native pack/index/snapshot publication (1852.8981ms)
+{"nativeSmallMutationObservation":{"boundary":"owned EOF chunk sink held before sink completion","fixtureBytes":37,"fixtureSha256":"67dbf0ab8db4036e48a4812b784e740b09c6078bf588ac9836980dd1c4212654","sinkCalls":1,"sourceHandleCloses":1,"returnedCaptureSuccess":false,"emittedChunkOwnershipVerified":true,"scope":"Real unchanged file-capture primitive; sink is an owned deterministic test callback, no repository snapshot is attempted."}}
+✔ held small-file sink detects mutation after owned EOF chunk without returning capture success (14.1116ms)
+✔ native AES-CTR/Poly1305-AES rejects altered nonce, ciphertext and tag before decrypting (3.1525ms)
+{"nativePackPolicyObservation":{"phase":"first-snapshot","snapshot":"dca4e20127328a41b9bf2d64dda80b537b304bb4b6a16cf49372e70a111a2e72","totalPacks":5,"dataPacks":1,"uniqueDataBlobs":2,"dataRows":[{"id":"3a21bff172ed1f427f9ee97d000ebdc6157f62595383d81215d9328f28381bf4","type":"data","offset":0,"length":2097231},{"id":"ab6e5bc4241af3c9ec1e009c14d127ba88f63d9bd835da470ddb01bb53ef2fe3","type":"data","offset":2097231,"length":67}],"allStorageHeaderPayloadAndIndexVerified":true}}
+{"nativePackPolicyObservation":{"phase":"repeat-snapshot","dataPacks":1,"dataRows":2,"addedDataPacks":0,"addedDataRows":0}}
+✔ app writes genuine native v1 repositories; original opens, checks, restores and app appends (13246.9788ms)
+{"nativePackPolicyObservation":{"phase":"first-snapshot","snapshot":"3e0118589f29a71fa2d4ec32678d13bb18d97f2af5ceed1053f1a0869718cd90","totalPacks":5,"dataPacks":1,"uniqueDataBlobs":2,"dataRows":[{"id":"3a21bff172ed1f427f9ee97d000ebdc6157f62595383d81215d9328f28381bf4","type":"data","offset":0,"length":4850,"uncompressed_length":2097199},{"id":"ab6e5bc4241af3c9ec1e009c14d127ba88f63d9bd835da470ddb01bb53ef2fe3","type":"data","offset":4850,"length":76,"uncompressed_length":35}],"allStorageHeaderPayloadAndIndexVerified":true}}
+{"nativePackPolicyObservation":{"phase":"repeat-snapshot","dataPacks":1,"dataRows":2,"addedDataPacks":0,"addedDataRows":0}}
+✔ app writes genuine native v2 repositories; original opens, checks, restores and app appends (12135.3035ms)
+✔ original v1 snapshots including compressed v2 blobs are listed, checked, restored and extended by app (9839.2136ms)
+ℹ Original calibrated scrypt parameters: N=32768, r=8, p=10
+✔ original v2 snapshots including compressed v2 blobs are listed, checked, restored and extended by app (10854.1502ms)
+ℹ Original calibrated scrypt parameters: N=32768, r=8, p=11
+✔ wrong password, damaged native key/config and excessive KDF are refused without persistent credentials (3952.3336ms)
+✔ native restore refuses storage hash before creating its destination (2830.0647ms)
+✔ native restore refuses blob MAC before creating its destination (3199.3096ms)
+✔ native restore refuses header MAC before creating its destination (2928.9428ms)
+✔ native restore refuses header type before creating its destination (2753.9652ms)
+✔ native restore refuses footer length before creating its destination (2983.1246ms)
+✔ native restore refuses plaintext hash before creating its destination (2717.0064ms)
+✔ native restore refuses index mismatch before creating its destination (2702.5112ms)
+✔ snapshot MAC, unknown v2 metadata, and zstd expansion budgets fail before tree processing (5603.0872ms)
+✔ authenticated malformed mtime, atime and ctime are rejected before output; original rejects those trees too (63613.5262ms)
+ℹ 14 authenticated bad tree timestamp cases compared with the released original.
+✔ malformed snapshot time is rejected by list and every selected action before output, matching original parsing (25718.6295ms)
+ℹ 5 authenticated bad snapshot time cases compared with the released original.
+✔ valid Go time boundaries and permissive encodings match original acceptance and safe Windows mtime restoration (91281.2094ms)
+ℹ 17 authenticated valid tree time cases; original restore compared within the supported platform interval. Null snapshot time also matched original zero-time normalization.
+✔ snapshot listing orders timestamps by their instant rather than textual offset or fractional form (4633.247ms)
+✔ authenticated native tree traversal is rejected before restore output (3008.6994ms)
+✔ authenticated native tree case collision is rejected before restore output (2875.8726ms)
+✔ authenticated native tree duplicate is rejected before restore output (3082.9672ms)
+✔ authenticated native tree unordered is rejected before restore output (3014.9092ms)
+✔ authenticated native tree symlink is rejected before restore output (2802.6372ms)
+✔ authenticated native tree excessive size is rejected before restore output (2973.5236ms)
+✔ authenticated native tree content size is rejected before restore output (2839.9309ms)
+✔ native paths, overlapping folders, existing destinations, invalid IDs and confirmations preserve existing data (8947.6177ms)
+✔ native app and original honor authenticated exclusive locks; app never deletes an existing stale lock (3335.8081ms)
+✔ oversized source files are rejected before native snapshot publication (1608.2742ms)
+{"nativeMutationFixture":{"bytes":25165825,"sha256":"30ef6132bb13a7945b1f5c5d8155ccc607a315f1fc5272f7f560b3bac491c366","generator":"xorshift32 seed 0x1a2b3c4d; low byte per state","reason":"Cross the 16 MiB aggregate pack target with distinct chunks before source EOF"}}
+✔ source mutation during native capture aborts publication and releases the app lock (2327.747ms)
+✔ native HTTP repository, encrypted snapshot and restore persist across host restarts without password records (4267.1537ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 315837.9533

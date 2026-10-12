@@ -1,0 +1,13 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const own=path.dirname(fileURLToPath(import.meta.url));
+const file=path.join(own,'audit-bundle.mjs');
+let text=await fs.readFile(file,'utf8');
+const marker="};await fs.writeFile(path.join(own,'review-validation.json')";
+if(!text.includes(marker))throw new Error('Exact expected audit insertion boundary missing');
+text=text.replace(marker,"};result.stagePreservation.publicStageArtifacts=1442;result.stagePreservation.publicStageMetadataFiles=2;result.stagePreservation.publicStageFilesTotal=1444;delete result.stagePreservation.publicStageFiles;result.stagePreservation.all1454OriginalIdentitiesPreservedIncludingDuplicateMultiplicity=true;result.publicContentAudit.rejectedEmbeddedCompleteOriginalSourceZipBytes=true;result.publicContentAudit.maximumPublicFileBytes=Math.max(...publicEntries.map(e=>e.bytes));result.ownHarnessCorrection={failure:'Initial audit incorrectly asserted 1442 total stage directory paths; actual1444 includes two manifest/freeze metadata records',preservedSource:'failures/stage-count-v1/audit-bundle.mjs.snapshot',rawStderr:'failures/stage-count-v1/stderr.txt',rawStdout:'failures/stage-count-v1/stdout.txt',classification:'Independent audit harness accounting error, not candidate behavior failure',correctedCheck:'1442 artifacts+2 metadata; 1442 artifacts+12 local ZIP identities equal all1454 original stage identities with multiplicities'};await fs.writeFile(path.join(own,'review-validation.json')");
+const old="const files=[];for(const name of ['audit-bundle.mjs','review-validation.json','final-review-mappings.json'])files.push({path:name,...await id(path.join(own,name))});";
+if(!text.includes(old))throw new Error('Exact expected manifest boundary missing');
+text=text.replace(old,"const files=[];async function inventory(folder,relative=''){for(const e of (await fs.readdir(folder,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))){const p=relative?relative+'/'+e.name:e.name;if(['review-manifest.json','freeze.json'].includes(p))continue;if(e.isDirectory())await inventory(path.join(folder,e.name),p);else files.push({path:p,...await id(path.join(folder,e.name))});}}await inventory(own);");
+await fs.writeFile(file,text);

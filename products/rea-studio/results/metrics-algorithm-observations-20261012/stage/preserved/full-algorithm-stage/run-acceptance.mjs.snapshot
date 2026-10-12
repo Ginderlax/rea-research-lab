@@ -1,0 +1,18 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {spawnSync} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {here,sha,authenticateOriginal} from './authenticate-original.mjs';
+const authority=await authenticateOriginal(),names=['candidate-algorithm.mjs','selector-algorithm.mjs','candidate-baseline.mjs','candidate-module-control.mjs','selector-control.mjs','authenticate-original.mjs','canonical.mjs','verify-candidate.mjs','run-validation.mjs','verify-heldout-selection.mjs','verify-standard-heldout.mjs','verify-algorithm-controls.mjs','verify-algorithm-budget.mjs','run-acceptance.mjs','preserved/measured-workloads.mjs'],before={},steps=[],attempt='acceptance-attempt-'+Date.now();
+await fs.mkdir(path.join(here,'preserved',attempt),{recursive:true});await fs.mkdir(path.join(here,'results'),{recursive:true});
+for(const name of names){const bytes=await fs.readFile(path.join(here,name));before[name]=sha(bytes);await fs.mkdir(path.dirname(path.join(here,'preserved',attempt,name)),{recursive:true});await fs.writeFile(path.join(here,'preserved',attempt,name),bytes);}
+for(const[name,hash]of Object.entries(authority.files)){const bytes=await fs.readFile(name);assert.equal(sha(bytes),hash);await fs.writeFile(path.join(here,'preserved',attempt,path.basename(name)),bytes);}
+for(const script of ['run-validation.mjs','verify-heldout-selection.mjs','verify-standard-heldout.mjs','verify-algorithm-controls.mjs','verify-algorithm-budget.mjs']){
+ const startedAt=new Date().toISOString(),argument=script==='run-validation.mjs'?'candidate-algorithm.mjs':path.join(here,'candidate-algorithm.mjs'),child=spawnSync(process.execPath,[path.join(here,script),argument],{encoding:'utf8',timeout:180000,maxBuffer:4*1024*1024,windowsHide:true}),stem=attempt+'-'+script;
+ await fs.writeFile(path.join(here,'results',stem+'.stdout.txt'),child.stdout??'');await fs.writeFile(path.join(here,'results',stem+'.stderr.txt'),child.stderr??'');
+ steps.push({script,startedAt,completedAt:new Date().toISOString(),exitCode:child.status,signal:child.signal,error:child.error?.message,stdout:{path:'results/'+stem+'.stdout.txt',sha256:sha(child.stdout??'')},stderr:{path:'results/'+stem+'.stderr.txt',sha256:sha(child.stderr??'')}});
+ await fs.writeFile(path.join(here,'results',attempt+'.partial.json'),JSON.stringify({steps},null,2)+'\n');console.log(JSON.stringify(steps.at(-1)));if(child.status!==0)break;
+}
+const after={};for(const name of names)after[name]=sha(await fs.readFile(path.join(here,name)));assert.deepEqual(before,after);for(const[name,hash]of Object.entries(authority.files))assert.equal(sha(await fs.readFile(name)),hash);
+const receipt={schemaVersion:1,checkedAt:new Date().toISOString(),status:steps.length===5&&steps.every(step=>step.exitCode===0)?'passed':'failed',sourcesBefore:before,sourcesAfter:after,authority,steps,timingMeasurementRun:false,memoryMeasurementRun:false,scope:'Full and supplementary correctness acceptance. Exact current source snapshots and authentic original runtime retained before execution; all failed attempts retained. No timing/memory workloads.'};
+await fs.writeFile(path.join(here,'results',attempt+'.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify({receipt:attempt+'.json',status:receipt.status}));if(receipt.status!=='passed')process.exitCode=1;

@@ -1,6 +1,7 @@
 import { randomUUID, randomBytes, createHash } from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import { decodeBase64, MAX_ARCHIVE, MAX_RESOURCE, digest, readJex, serializeRecord, writeTar, resourceName, isJoplinId } from './jex.mjs';
+import {ensureOrganization,bindNotebook,organizationList,changeNotebook,checkOrganizationRevision} from './notebooks.mjs';
 
 const stateKey = 'notes-state-v2', legacyPrefix = 'notes-note-';
 let queue = Promise.resolve();
@@ -12,16 +13,16 @@ function label(value, name, limit) { const result = text(value, name, limit); if
 function tags(value) { if (!Array.isArray(value) || value.length > 50) throw new Error('Use at most 50 tags.'); return [...new Set(value.map(item => label(item, 'Tag', 100).trim()).filter(Boolean))]; }
 async function exclusive(operation) { const previous = queue; let release; queue = new Promise(resolve => { release = resolve; }); await previous; try { return await operation(); } finally { release(); } }
 async function state(store) {
-  const saved = await store.get(stateKey, null); if (saved) return saved;
+  const saved = await store.get(stateKey, null); if (saved) return ensureOrganization(structuredClone(saved));
   const notes = Object.create(null);
   for (const key of await store.list(legacyPrefix)) { const note = await store.get(key, null); if (note) notes[note.id] = note; }
-  return { schema: 2, notes: { ...notes }, records: {}, resources: {} };
+  return ensureOrganization({ schema: 2, notes: { ...notes }, records: {}, resources: {} });
 }
 function get(s, id) { const note = s.notes[validId(id)]; if (!note) throw new Error('Note does not exist.'); return note; }
 function checkRevision(note, value) { if (!Number.isInteger(value) || value !== note.revision) throw new Error('Note changed since it was opened. Reopen it before saving; your draft is preserved.'); }
 function summary(note, query = '') { const at = query ? note.body.toLowerCase().indexOf(query.toLowerCase()) : 0, start = Math.max(0, at - 40); const { body, history, joplin, ...rest } = note; return { ...rest, preview: body.slice(start, start + 180), characters: body.length, historyCount: history.length }; }
-function historical(note) { const { revision, title, body, tags, notebook, updatedAt } = note; return { revision, title, body, tags, notebook, updatedAt }; }
-function edited(note, changes) { return { ...note, ...changes, updatedAt: new Date().toISOString(), revision: note.revision + 1, history: [...note.history, historical(note)].slice(-20) }; }
+function historical(note) { const { revision, title, body, tags, notebook, notebookId, updatedAt } = note; return { revision, title, body, tags, notebook, notebookId, updatedAt }; }
+function edited(note, changes) { const time=new Date().toISOString();return { ...note, ...changes, metadataEdited:true, updatedAt:time,userUpdatedAt:time, revision: note.revision + 1, history: [...note.history, historical(note)].slice(-20) }; }
 function folderPath(records, id) { if (!id) return 'Imported'; const r = records[id]; return r.props.parent_id ? folderPath(records, r.props.parent_id) + ' / ' + r.title : r.title; }
 function iso(value) { return value || '1970-01-01T00:00:00.000Z'; }
 function exportId(note) { return note.joplin?.props.id ?? note.id.replaceAll('-', ''); }
@@ -50,9 +51,12 @@ async function commitWithResources(store, workspace, s, resources) {
 export async function handle({ action, input = {}, store, workspace }) {
   if (action === 'list') {
     const s = await state(store), search = text(input.search ?? '', 'Search', 500).trim().toLowerCase(), tokens = search.split(/\s+/).filter(Boolean), notes = Object.values(s.notes);
-    const visible = notes.filter(note => Boolean(note.deletedAt) === Boolean(input.trash) && (!input.notebook || note.notebook === input.notebook) && (!input.tag || note.tags.includes(input.tag)) && tokens.every(token => `${note.title}\n${note.body}\n${note.tags.join(' ')}\n${note.notebook}`.toLowerCase().includes(token))).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    const visible = notes.filter(note => Boolean(note.deletedAt) === Boolean(input.trash) && (!input.notebook || note.notebook === input.notebook) && (!input.notebookId || note.notebookId === input.notebookId) && (!input.tag || note.tags.includes(input.tag)) && tokens.every(token => `${note.title}\n${note.body}\n${note.tags.join(' ')}\n${note.notebook}`.toLowerCase().includes(token))).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     return { notes: visible.map(note => summary(note, tokens[0])), tags: [...new Set(notes.filter(note => !note.deletedAt).flatMap(note => note.tags))].sort(), notebooks: [...new Set(notes.filter(note => !note.deletedAt).map(note => note.notebook))].sort(), total: visible.length };
   }
+  if(action==='notebook-list')return organizationList(await state(store));
+  if(['notebook-create','notebook-rename','notebook-move'].includes(action))return exclusive(async()=>{const s=await state(store),title=action==='notebook-move'?undefined:label(input.title,'Notebook title',200).trim();if(action!=='notebook-move'&&!title)throw new Error('Give the notebook a title.');const result=changeNotebook(s,{...input,title,action},new Date().toISOString());await store.set(stateKey,s);return result;});
+  if(action==='note-move')return exclusive(async()=>{const s=await state(store),note=get(s,input.id);checkRevision(note,input.revision);checkOrganizationRevision(s,input.organizationRevision);if(note.deletedAt)throw new Error('Restore this note before moving it.');if(note.joplin?.props.share_id||(note.notebookId&&organizationList(s).notebooks.find(row=>row.id===note.notebookId)?.editable===false))throw new Error('Shared or trashed notebook organization is outside this local subset.');if(typeof input.notebookId!=='string')throw new Error('Choose a valid notebook ID.');const selected=bindNotebook(s,note,{notebookId:input.notebookId}),now=new Date().toISOString(),updated={...selected,revision:note.revision+1,updatedAt:now,userUpdatedAt:note.userUpdatedAt??note.updatedAt,history:[...note.history,historical(note)].slice(-20)};if(updated.joplin)updated.joplin={...updated.joplin,props:{...updated.joplin.props,parent_id:updated.notebookId,updated_time:now,is_conflict:'0',conflict_original_id:'',deleted_time:'0'}};s.notes[note.id]=updated;s.organization.revision++;await store.set(stateKey,s);return{note:updated,...organizationList(s)};});
   if (action === 'get') return get(await state(store), input.id);
   if (action === 'link-target') {
     if (!isJoplinId(input.id)) throw new Error('Internal links need an exact 32-hex Joplin ID.');
@@ -75,18 +79,20 @@ export async function handle({ action, input = {}, store, workspace }) {
     const inputNotebook = text(input.notebook ?? 'Notes', 'Notebook', 200), notebook = existing?.notebook === inputNotebook ? inputNotebook : label(inputNotebook, 'Notebook', 200).trim() || 'Notes';
     const cleanTags = existing && JSON.stringify(input.tags) === JSON.stringify(existing.tags) ? existing.tags : tags(input.tags ?? []);
     const changes = { title, body: text(input.body ?? '', 'Note', 200_000), notebook, tags: cleanTags }, now = new Date().toISOString();
-    const note = existing ? edited(existing, changes) : { id: randomUUID(), ...changes, createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [] };
+    const draft = existing ? edited(existing, changes) : { id: randomUUID(), ...changes, createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [] };
+    const selection={...input,notebook};if(existing&&input.notebook!==undefined&&input.notebookId===existing.notebookId&&input.notebook!==existing.notebook)delete selection.notebookId;
+    const note=bindNotebook(s,draft,selection);
     s.notes[note.id] = note; await store.set(stateKey, s); return note;
   });
   if (action === 'delete' || action === 'restore') return exclusive(async () => {
     const s = await state(store), note = get(s, input.id); checkRevision(note, input.revision);
-    const updated = { ...note, deletedAt: action === 'delete' ? new Date().toISOString() : null, updatedAt: new Date().toISOString(), revision: note.revision + 1 };
+    const time=new Date().toISOString(),updated = { ...note, metadataEdited:true,userUpdatedAt:time, deletedAt: action === 'delete' ? time : null, updatedAt:time, revision: note.revision + 1 };
     s.notes[note.id] = updated; await store.set(stateKey, s); return updated;
   });
   if (action === 'history-restore') return exclusive(async () => {
     const s = await state(store), note = get(s, input.id); checkRevision(note, input.revision); if (note.deletedAt) throw new Error('Restore this note before restoring a version.');
     const version = note.history.find(item => item.revision === input.historyRevision); if (!version) throw new Error('Historical version does not exist.');
-    const updated = edited(note, { title: version.title, body: version.body, tags: version.tags, notebook: version.notebook }); s.notes[note.id] = updated; await store.set(stateKey, s); return updated;
+    const draft=edited(note,{title:version.title,body:version.body,tags:version.tags,notebook:version.notebook});const updated=bindNotebook(s,draft,{notebook:version.notebook,...(version.notebookId!==undefined?{notebookId:version.notebookId}:{})});s.notes[note.id]=updated;await store.set(stateKey,s);return updated;
   });
   if (action === 'export') {
     const s = await state(store);
@@ -105,7 +111,7 @@ export async function handle({ action, input = {}, store, workspace }) {
       const title = label(source.title, 'Title', 300).trim(); if (!title) throw new Error('Imported notes need titles.');
       return { id: randomUUID(), title, body: text(source.body ?? '', 'Body', 200_000), notebook: label(source.notebook ?? 'Imported', 'Notebook', 200).trim() || 'Imported', tags: tags(source.tags ?? []), createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [] };
     });
-    for (const note of notes) s.notes[note.id] = note; await store.set(stateKey, s); return { imported: notes.length, ids: notes.map(note => note.id) };
+    for (const note of notes) s.notes[note.id] = note; ensureOrganization(s);await store.set(stateKey, s); return { imported: notes.length, ids: notes.map(note => note.id) };
   });
   if (action === 'jex-import') return exclusive(async () => {
     const imported = readJex(decodeBase64(input.base64, MAX_ARCHIVE, 'JEX archive')), s = await state(store);
@@ -119,7 +125,7 @@ export async function handle({ action, input = {}, store, workspace }) {
       const deleted = Number(r.props.deleted_time || 0); if (!Number.isSafeInteger(deleted) || deleted < 0 || deleted > 8.64e15) throw new Error('Invalid deleted timestamp.');
       s.notes[id] = { id, title: r.title, body: r.body, notebook, tags: cleanTags, createdAt: iso(r.props.created_time), updatedAt: iso(r.props.updated_time), revision: 1, deletedAt: deleted ? new Date(deleted).toISOString() : null, history: [], joplin: { ...r, originalNotebook: notebook } }; added.push(id);
     }
-    s.records = merged;
+    s.records = merged;ensureOrganization(s);s.organization.revision++;
     const resources = [...imported.resources].map(([id, r]) => ({ id, sha256: r.sha256, bytes: r.bytes.length, data: r.bytes, name: r.name }));
     for (const r of resources) { const { data, ...metadata } = r; s.resources[r.id] = metadata; }
     await commitWithResources(store, workspace, s, resources);
@@ -144,14 +150,14 @@ export async function handle({ action, input = {}, store, workspace }) {
     const s = await state(store), records = new Map(Object.entries(s.records).filter(([, r]) => r.type !== 1 && r.type !== 6)), time = new Date().toISOString(), active = Object.values(s.notes).filter(note => input.includeTrash || !note.deletedAt);
     const insert = r => { const previous = records.get(r.props.id); if (previous && JSON.stringify(previous) !== JSON.stringify(r)) throw new Error('Generated metadata ID collision.'); records.set(r.props.id, r); return r.props.id; };
     for (const note of active) {
-      const id = exportId(note); let parentId = note.joplin?.originalNotebook === note.notebook ? note.joplin.props.parent_id ?? '' : '';
-      if (!note.joplin || note.joplin.originalNotebook !== note.notebook) {
+      const id = exportId(note); let parentId = note.notebookId;
+      if (parentId===undefined) {
         parentId = stableId('REA notebook:' + note.notebook); const folder = records.get(parentId);
         if (folder && (folder.type !== 2 || folder.title !== note.notebook)) throw new Error('Notebook ID collision.');
         if (!folder) { const folderRecord = newRecord(2, parentId, note.notebook, time); folderRecord.props.parent_id = ''; insert(folderRecord); }
       }
       const r = note.joplin ? structuredClone(note.joplin) : newRecord(1, id, note.title, note.createdAt); delete r.originalNotebook; r.title = note.title; r.body = note.body; r.props.parent_id = parentId;
-      if (!note.joplin || note.revision > 1) { r.props.updated_time = note.updatedAt; r.props.user_updated_time = note.updatedAt; r.props.deleted_time = String(note.deletedAt ? Date.parse(note.deletedAt) : 0); }
+      if (!note.joplin || note.metadataEdited) { r.props.updated_time = note.updatedAt; r.props.user_updated_time = note.userUpdatedAt??note.updatedAt; r.props.deleted_time = String(note.deletedAt ? Date.parse(note.deletedAt) : 0); }
       if (!note.joplin) Object.assign(r.props, { is_todo: '0', is_conflict: '0', todo_due: '0', todo_completed: '0', latitude: '0.00000000', longitude: '0.00000000', altitude: '0.0000', author: '', source_url: '', markup_language: '1' });
       if (records.has(id)) throw new Error('Note identity collides with another item.'); records.set(id, r);
       for (const tagTitle of note.tags) {

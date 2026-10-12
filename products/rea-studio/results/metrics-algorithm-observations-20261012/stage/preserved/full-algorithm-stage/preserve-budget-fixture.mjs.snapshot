@@ -1,0 +1,13 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+import {here,sha} from './authenticate-original.mjs';
+import {canonical} from './canonical.mjs';
+const source=await fs.readFile(path.join(here,'verify-algorithm-budget.mjs'),'utf8'),record=JSON.parse(await fs.readFile(path.join(here,'results/algorithm-budget.json')));
+const begin=source.indexOf('let seed=0xd3094e71;'),end=source.indexOf('let originalSelections=');assert.ok(begin>=0&&end>begin);
+const exactGenerator=source.slice(begin,end),cases=vm.runInNewContext(exactGenerator+'\ncases;',{Array,Math,Number},{timeout:5000});
+assert.equal(cases.length,record.inputs);let text='';
+for(const[label,values]of cases){const rows=record.records.filter(row=>row.label===label);assert.equal(rows.length,7);for(const row of rows)assert.equal(sha(canonical(values)),row.inputSHA256);text+=canonical({label,values})+'\n';}
+assert.ok(Buffer.byteLength(text)<=16*1024*1024);await fs.mkdir(path.join(here,'fixtures'),{recursive:true});await fs.writeFile(path.join(here,'fixtures/algorithm-budget.graph.jsonl'),text,{flag:'wx'});
+const receipt={schemaVersion:1,checkedAt:new Date().toISOString(),status:'passed',generatorSourceSHA256:sha(source),generatorFragmentSHA256:sha(exactGenerator),testReceiptSHA256:sha(await fs.readFile(path.join(here,'results/algorithm-budget.json'))),inputs:cases.length,all462ExecutedInputHashesMatched:true,fixture:{path:'fixtures/algorithm-budget.graph.jsonl',bytes:Buffer.byteLength(text),sha256:sha(text)},scope:'Post-acceptance exact synthetic fixture preservation using the unchanged executed generator fragment; every graph input authenticated against all seven original-backed executed records. No reducer or measured workload executed.'};await fs.writeFile(path.join(here,'fixture-preservation.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(receipt));

@@ -1,0 +1,8 @@
+C:\Users\evanh\Documents\Codex\2026-10-12\go\work\notes-notebooks-next\run.mjs:7
+async function fingerprint(){const rows=[];for(const name of ['products/rea-studio/apps/notes','original'])async function walk(directory,prefix){for(const entry of await fs.readdir(directory,{withFileTypes:true})){const relative=prefix+'/'+entry.name;if(entry.isDirectory())await walk(path.join(directory,entry.name),relative);else{const bytes=await fs.readFile(path.join(directory,entry.name));rows.push({path:relative,bytes:bytes.length,sha256:hash(bytes)});}}}await walk(path.join(root,name),name);for(const relative of ['products/rea-studio/server.mjs','products/rea-studio/catalog.mjs','products/rea-studio/lib/storage.mjs','run.mjs','source-provenance.json','license-and-special-id-provenance.json']){const bytes=await fs.readFile(path.join(root,relative));rows.push({path:relative,bytes:bytes.length,sha256:hash(bytes)});}return rows.sort((a,b)=>a.path.localeCompare(b.path));}
+                                                                                                           ^^^^^
+
+SyntaxError: Async functions can only be declared at the top level or inside a block.
+    at checkSyntax (node:internal/main/check_syntax:72:5)
+
+Node.js v24.16.0

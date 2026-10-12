@@ -1,0 +1,22 @@
+public static async moveToFolder(noteId: string, folderId: string, saveOptions: SaveOptions|null = null) {
+		const Folder = this.getClass<typeof FolderClass>('Folder');
+		if (folderId === Folder.conflictFolderId()) throw new Error(_('Cannot move note to "%s" notebook', Folder.conflictFolderTitle()));
+
+		// When moving a note to a different folder, the user timestamp is not
+		// updated. However updated_time is updated so that the note can be
+		// synced later on.
+		//
+		// We also reset deleted_time, so that if a deleted note is moved to
+		// that folder it is restored. If it wasn't deleted, it does nothing.
+
+		const modifiedNote: NoteEntity = {
+			id: noteId,
+			parent_id: folderId,
+			is_conflict: 0,
+			conflict_original_id: '',
+			deleted_time: 0,
+			updated_time: time.unixMs(),
+		};
+
+		return Note.save(modifiedNote, { autoTimestamp: false, ...saveOptions });
+	}

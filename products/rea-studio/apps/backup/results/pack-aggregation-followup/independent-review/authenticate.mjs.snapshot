@@ -1,0 +1,52 @@
+import fs from 'node:fs/promises';import {createReadStream} from 'node:fs';import path from 'node:path';import {fileURLToPath} from 'node:url';import {createHash} from 'node:crypto';import assert from 'node:assert/strict';
+const here=path.dirname(fileURLToPath(import.meta.url)),main=path.resolve(here,'../restic-pack-aggregation-next'),adapter=path.resolve(here,'../restic-pack-production-adapter-next');
+const sha=bytes=>createHash('sha256').update(bytes).digest('hex'),load=async file=>JSON.parse(await fs.readFile(file));
+async function fingerprint(file){const before=await fs.lstat(file);assert.ok(before.isFile()&&!before.isSymbolicLink());const hash=createHash('sha256');for await(const bytes of createReadStream(file))hash.update(bytes);const after=await fs.lstat(file);assert.equal(after.size,before.size);assert.equal(after.mtimeMs,before.mtimeMs);return {bytes:before.size,sha256:hash.digest('hex')};}
+function local(root,relative){assert.equal(typeof relative,'string');assert.ok(!relative.includes('\\')&&!path.isAbsolute(relative));const full=path.resolve(root,relative);assert.ok(full.startsWith(root+path.sep));return full;}
+const stages=[];
+for(const [label,root,receiptName,receiptHash,manifestHash,count]of [
+ ['main',main,'stage-validation.json','0dfa5a64c897d76b669afcb145e3cdb75db676cbd3fcad95a550d264271e11b7','8ddb6cfda4c2e06e8413ff70cd97ebb259cb1ddab81f60cdb2be2f1c1d3d8b3b',250],
+ ['adapter',adapter,'adapter-validation.json','8fe8bff177b10a75e051cddfd754228e567809c30beb364b928836c84107d683','bf001d4bd76a43749d3524b7b9eccbcc4861250f0bebca3968c1dc5a720d59a9',214]]){
+  const receiptBytes=await fs.readFile(path.join(root,receiptName)),manifestBytes=await fs.readFile(path.join(root,'freeze-manifest.json'));assert.equal(sha(receiptBytes),receiptHash);assert.equal(sha(manifestBytes),manifestHash);
+  const manifest=JSON.parse(manifestBytes),receipt=JSON.parse(receiptBytes);assert.equal(manifest.entries.length,count);assert.equal(new Set(manifest.entries.map(row=>row.path)).size,count);
+  for(const row of manifest.entries)assert.deepEqual(await fingerprint(local(root,row.path)),{bytes:row.bytes,sha256:row.sha256});
+  stages.push({label,root,receiptName,receiptHash,manifestHash,entries:manifest.entries,receipt});
+}
+const mainReceipt=stages[0].receipt,adapterReceipt=stages[1].receipt,baseline=await load(path.join(main,'production-baseline.json'));
+assert.equal(baseline.files.length,37);const currentBaseline=[],mainExecutedSources=[];
+for(const row of baseline.files){assert.deepEqual(await fingerprint(local(main,'baseline/'+row.path+'.snapshot')),{bytes:row.bytes,sha256:row.sha256});
+  const current=await fingerprint(path.join(baseline.repository,row.path));currentBaseline.push({path:row.path,historical:{bytes:row.bytes,sha256:row.sha256},current,matchesHistorical:current.sha256===row.sha256&&current.bytes===row.bytes});}
+for(const row of mainReceipt.sourceFingerprints){assert.deepEqual(await fingerprint(local(main,row.path)),{bytes:row.bytes,sha256:row.sha256});mainExecutedSources.push(row);}
+const mainRun=await load(local(main,mainReceipt.run.path));assert.deepEqual(mainRun.counts,{tests:66,pass:66,fail:0,cancelled:0,skipped:0,todo:0});assert.equal(mainRun.exitCode,0);assert.equal(mainRun.sourceStable,true);
+const provenance=await load(path.join(main,'source-provenance.json')),original=[];for(const row of provenance.original){for(const [label,root]of [['main',main],['adapter',adapter]]){assert.deepEqual(await fingerprint(local(root,row.path)),{bytes:row.bytes,sha256:row.sha256});original.push({stage:label,...row});}}
+for(const row of provenance.references)assert.deepEqual(await fingerprint(local(main,row.path)),{bytes:row.bytes,sha256:row.sha256});
+const contracts=await load(path.join(main,'contract-bindings.json'));for(const row of contracts.bindings){const bytes=await fs.readFile(local(main,row.reference));assert.equal(sha(bytes),row.sha256);const lines=bytes.toString().split('\n');assert.ok(row.startLine>=1&&row.endLine>=row.startLine&&row.endLine<=lines.length);assert.ok(lines[row.startLine-1].includes(row.anchor));}
+const ab=await load(path.join(adapter,'baseline.json'));assert.equal(ab.sources.length,28);for(const row of ab.sources){assert.deepEqual(await fingerprint(row.source),{bytes:row.bytes,sha256:row.sha256});assert.deepEqual(await fingerprint(local(adapter,'baseline/'+row.path+'.snapshot')),{bytes:row.bytes,sha256:row.sha256});}
+const diff=await load(path.join(adapter,'adapter-diff.json')),originalTest=await fs.readFile(local(adapter,'baseline/'+diff.path+'.snapshot'),'utf8');assert.equal(sha(originalTest),diff.originalSha256);let reconstructed=originalTest;
+for(const [from,to]of diff.replacements){assert.equal(reconstructed.split(from).length,2);reconstructed=reconstructed.replace(from,to);}assert.equal(sha(reconstructed),diff.adaptedSha256);assert.equal(await fs.readFile(local(adapter,diff.path),'utf8'),reconstructed);
+for(const row of adapterReceipt.finalRun.sourceFingerprints){assert.deepEqual(await fingerprint(local(adapter,row.path)),{bytes:row.bytes,sha256:row.sha256});}
+const final=await load(local(adapter,adapterReceipt.finalRun.path));assert.deepEqual(final.counts,{tests:33,pass:33,fail:0,cancelled:0,skipped:0,todo:0});assert.equal(final.exitCode,0);
+const rootHelper='2cad61b73ec5542f16e7ce01ac76a80864b78ef64750018262ea36975a8e7169',helperPath='products/rea-studio/apps/backup/native-policy-assertions.mjs';
+for(const file of [path.join(baseline.repository,helperPath),local(adapter,helperPath),path.join(adapter,'root-adapter-baseline/native-policy-assertions.mjs.snapshot')])assert.equal((await fingerprint(file)).sha256,rootHelper);
+const currentNativePath=path.join(baseline.repository,'products/rea-studio/apps/backup/native.test.mjs'),currentNativeBytes=await fs.readFile(currentNativePath,'utf8');assert.ok(currentNativeBytes.includes('verifyStructure'));assert.ok(!currentNativeBytes.includes('verifyBatch'));assert.ok(currentNativeBytes.includes('Buffer.alloc(4 * 1024 * 1024 + 1,93)'));
+const currentNativeDigest=sha(currentNativeBytes);
+const initial=adapterReceipt.runs.find(row=>row.mode==='initial');assert.ok(initial);assert.deepEqual(initial.counts,{tests:30,pass:27,fail:3,cancelled:0,skipped:0,todo:0});assert.equal(initial.exitCode,1);
+const mainRaw=await fs.readFile(path.join(main,path.dirname(mainReceipt.run.path),'stdout.txt'),'utf8'),mainObservations=JSON.parse(await fs.readFile(path.join(main,path.dirname(mainReceipt.run.path),'original-observations.json')));
+const rawMarkers=text=>text.split(/\r?\n/).filter(line=>line.includes('{')).flatMap(line=>{try{return [JSON.parse(line.slice(line.indexOf('{')))];}catch{return [];}});
+assert.deepEqual(rawMarkers(mainRaw).find(row=>row.packAggregationOriginalObservations),mainObservations);
+const adapterRaw=await fs.readFile(path.join(adapter,path.dirname(adapterReceipt.finalRun.path),'stdout.txt'),'utf8'),adapterMarkers=rawMarkers(adapterRaw);assert.deepEqual(adapterMarkers,adapterReceipt.observations);
+const host=adapterMarkers.find(row=>row.nativePackHostObservation).nativePackHostObservation;assert.equal(host.commands.length,2);assert.equal(host.restartPersistence,true);assert.equal(host.exactDataPackAndRowDedup,true);
+for(const candidate of ['products/rea-studio/apps/backup/restic.mjs','products/rea-studio/apps/backup/restic-data-pack.mjs'])assert.deepEqual(await fingerprint(local(main,candidate)),await fingerprint(local(adapter,candidate)));
+for(const snapshot of stages)for(const row of snapshot.entries)assert.deepEqual(await fingerprint(local(snapshot.root,row.path)),{bytes:row.bytes,sha256:row.sha256});
+for(const row of currentBaseline)assert.deepEqual(await fingerprint(path.join(baseline.repository,row.path)),row.current);assert.equal(sha(await fs.readFile(currentNativePath)),currentNativeDigest);
+const result={schemaVersion:1,checkedAt:new Date().toISOString(),status:'passed',authenticatedInventories:stages.map(row=>({label:row.label,receiptSHA256:row.receiptHash,manifestSHA256:row.manifestHash,files:row.entries.length,allCheckedBeforeAndAfter:true})),
+ mainHistoricalBaseline37:currentBaseline,currentBaselineDifferenceCount:currentBaseline.filter(row=>!row.matchesHistorical).length,currentSourceBeforeAndAfterStable:true,
+ baselineMeaning:'Main37 baseline is the exact21:10 stage bootstrap, preserved historically. Current root generic native-test adapter is a separately fingerprinted later interval, not retroactively rebound to those37 rows.',
+ mainExecutedSources,candidateFiles:{restic:await fingerprint(path.join(main,'products/rea-studio/apps/backup/restic.mjs')),dataPack:await fingerprint(path.join(main,'products/rea-studio/apps/backup/restic-data-pack.mjs'))},
+ historicalMainNativeTestSHA256:diff.originalSha256,stagedBatchNativeTestSHA256:diff.adaptedSha256,currentRootGenericNativeTestSHA256:currentNativeDigest,currentAndStagedRootPolicyHelperSHA256:rootHelper,
+ adapterTransformationExactlyReconstructed:true,rootGenericAdapterDoesNotUseBatchPolicy:true,rootGenericMutationFixtureRetains4MiB:true,
+ originalBinariesAuthenticated:original,pinnedSourceReferences:provenance.references.length,contractLineBindings:contracts.bindings.length,
+ historicalMainTests:mainRun.counts,historicalAdapterTests:final.counts,historicalInitialAdapterTests:initial.counts,
+ historicalMainNewExchangeOriginalCommands:mainObservations.packAggregationOriginalObservations.flatMap(row=>row.commands).length,newPrivateHostOriginalCommands:host.commands.length,
+ rawOriginalObservationMarkersAuthenticated:true,sourceAndOriginalRuntimeExecutedThisReview:false,allOlderEvidenceUnchanged:true,fullParity:false,securityParity:false,performanceParity:false};
+await fs.writeFile(path.join(here,'authentication.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({status:result.status,inventories:[250,214],mainBaseline37CurrentDifferences:currentBaseline.filter(row=>!row.matchesHistorical),mainTests:66,adapterTests:33,originalCommands:result.historicalMainNewExchangeOriginalCommands,currentRootGenericNativeTestSHA256:currentNativeDigest}));

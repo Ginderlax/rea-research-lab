@@ -1,0 +1,68 @@
+// Native bounded source-assisted history;2026-10-12; GPL-2.0-or-later.
+// Production never imports upstream code or launches the original application.
+import {createHmac,timingSafeEqual} from 'node:crypto';
+import {materializeKdbxDocument,projectKdbxDocument,decodeKdbxDate,encodeKdbxDate,base64} from './kdbx.mjs';
+import {serializeXml,element,nodes,one,text,put} from './xml.mjs';
+const MAX=8*1024*1024,MAX_HISTORY=1000,CONTENT=['title','username','password','url','notes','totpSecret'];
+const uuid64=id=>Buffer.from(id.replaceAll('-',''),'hex').toString('base64');
+function clone(value){return typeof value==='string'?value:{name:value.name,attrs:Object.fromEntries(Object.entries(value.attrs)),children:value.children.map(clone)};}
+function snapshot(entry){return clone({...entry,children:entry.children.filter(n=>typeof n==='string'||n.name!=='History')});}
+function integer(value,fallback,min,max,label){if(value===undefined||value==='')return fallback;if(!/^-?\d+$/.test(value))throw new Error('Invalid history '+label+'.');const n=BigInt(value);if(n<min||n>max)throw new Error('Unsupported history '+label+'.');return n;}
+export function historySettings(xml){const meta=one(xml,'Meta',true);return {maxItems:integer(text(one(meta,'HistoryMaxItems'))||undefined,10n,-2147483648n,2147483647n,'count setting'),maxSize:integer(text(one(meta,'HistoryMaxSize'))||undefined,6291456n,-9223372036854775808n,9223372036854775807n,'size setting')};}
+function entryNode(xml,id){if(typeof id!=='string'||!/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(id))throw new Error('Invalid entry identity.');let found=null;function visit(group){for(const e of nodes(group,'Entry'))if(text(one(e,'UUID',true))===uuid64(id)){if(found)throw new Error('Duplicate entry identity.');found=e;}for(const child of nodes(group,'Group'))visit(child);}visit(one(one(xml,'Root',true),'Group',true));if(!found)throw new Error('Entry not found.');return found;}
+function history(entry,extra=0){let h=one(entry,'History');if(!h){h=element('History');entry.children.push(h);}const rows=nodes(h,'Entry');if(rows.length>MAX_HISTORY+extra)throw new Error('History exceeds the local1000-revision bound.');return {h,rows};}
+function lastMod(entry){return Date.parse(decodeKdbxDate(text(one(one(entry,'Times',true),'LastModificationTime',true))));}
+function unknownTime(time){const date=new Date(time);return time>=Date.parse('2999-12-27T23:59:59Z')&&time<=Date.parse('2999-12-29T23:59:59Z')&&date.getUTCMinutes()===59&&date.getUTCSeconds()===59;}
+function tags(entry){const dotnetTrim=s=>s.replace(/^[\u0009-\u000D\u0020\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+|[\u0009-\u000D\u0020\u0085\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000]+$/g,'');return [...new Set(text(one(entry,'Tags')).split(/[,;]/).map(dotnetTrim).filter(Boolean))];}
+function binaryLengths(binaries){if(!Array.isArray(binaries)||binaries.length>10000)throw new Error('Invalid history attachment table.');let retained=0;return binaries.map(binary=>{if(!binary||typeof binary.dataBase64!=='string'||typeof binary.protected!=='boolean')throw new Error('Invalid history attachment metadata.');retained+=binary.dataBase64.length;if(retained>MAX)throw new Error('History attachment table exceeds8MiB.');const decoded=base64(binary.dataBase64);const length=decoded.length;decoded.fill(0);return length;});}
+export function historyEntrySize(entry,binaries=[]){return entrySize(entry,binaryLengths(binaries));}
+function entrySize(entry,lengths){
+  if(nodes(one(entry,'History')??element('History'),'Entry').length)throw new Error('Nested history snapshots are unsupported for mutation.');
+  let bytes=276n,chars=0n;const strings=nodes(entry,'String'),bins=nodes(entry,'Binary'),keys=new Set();bytes+=BigInt(strings.length)*40n;
+  for(const s of strings){const key=text(one(s,'Key',true)),value=text(one(s,'Value',true));if(keys.has(key))throw new Error('Duplicate history string field.');keys.add(key);chars+=BigInt(key.length+value.length);}
+  bytes+=BigInt(bins.length)*65n;const binaryKeys=new Set();
+  for(const b of bins){const key=text(one(b,'Key',true)),value=one(b,'Value',true);if(binaryKeys.has(key))throw new Error('Duplicate history attachment field.');binaryKeys.add(key);chars+=BigInt(key.length);const ref=value.attrs.Ref;
+    if(!/^\d+$/.test(ref??'')||!Number.isSafeInteger(Number(ref))||Number(ref)>=lengths.length||text(value).trim())throw new Error('Invalid history attachment reference.');
+    bytes+=BigInt(lengths[Number(ref)]);
+  }
+  const auto=one(entry,'AutoType');if(auto){chars+=BigInt(text(one(auto,'DefaultSequence')).length);const associations=nodes(auto,'Association');bytes+=BigInt(associations.length)*24n;for(const a of associations)chars+=BigInt(text(one(a,'Window')).length+text(one(a,'KeystrokeSequence')).length);}
+  chars+=BigInt(text(one(entry,'OverrideURL')).length);const list=tags(entry);bytes+=BigInt(list.length)*8n;for(const tag of list)chars+=BigInt(tag.length);
+  const custom=one(entry,'CustomData'),items=custom?nodes(custom,'Item'):[];bytes+=BigInt(items.length)*16n;const customKeys=new Set();for(const item of items){const key=text(one(item,'Key',true)),value=text(one(item,'Value',true));if(customKeys.has(key))throw new Error('Duplicate history custom-data key.');customKeys.add(key);chars+=BigInt(key.length+value.length);}
+  return bytes+chars*2n;
+}
+function maintain(entry,settings,binaries){const {h,rows}=history(entry,1),lengths=binaryLengths(binaries),currentUuid=text(one(entry,'UUID',true));
+  const costs=rows.map((e,index)=>{put(e,'UUID',currentUuid);const time=lastMod(e);return {e,index,time,unknown:unknownTime(time),size:entrySize(e,lengths)};});
+  // Same first-lowest-time removals as released RemoveOldestBackup, without
+  // repeatedly decoding shared attachments or rescanning every revision.
+  // TimeUtil.Compare(...,true) treats the released KeePass1.x unknown-time
+  // family as older than every ordinary time, and all such values as equal.
+  const oldest=costs.toSorted((a,b)=>a.unknown!==b.unknown?(a.unknown?-1:1):(!a.unknown?a.time-b.time:0)||a.index-b.index),removed=new Set();let count=costs.length,total=costs.reduce((n,c)=>n+c.size,0n);
+  for(const c of oldest){if((settings.maxItems<0n||BigInt(count)<=settings.maxItems)&&(settings.maxSize<0n||total<=settings.maxSize))break;if(c.time>=Date.parse('9999-12-31T00:00:00Z'))throw new Error('History pruning of times on9999-12-31 is unsupported: the original oldest-backup sentinel cannot select them.');removed.add(c.e);count--;total-=c.size;}
+  if(count>MAX_HISTORY)throw new Error('History exceeds the local1000-revision bound.');h.children=h.children.filter(n=>!removed.has(n));return rows.filter(e=>!removed.has(e));
+}
+function touch(entry,now,modified){const times=one(entry,'Times',true),encoded=encodeKdbxDate(now),usage=integer(text(one(times,'UsageCount'))||undefined,0n,0n,18446744073709551615n,'usage count');put(times,'LastAccessTime',encoded);put(times,'UsageCount',((usage+1n)&18446744073709551615n).toString());if(modified)put(times,'LastModificationTime',encoded);}
+function finalData(data,xml){const document=serializeXml(xml),binaryBytes=(data.kdbx?.binaries??[]).reduce((n,b)=>n+b.dataBase64.length,0);if(Buffer.byteLength(document)+binaryBytes>MAX)throw new Error('History change exceeds the combined8MiB XML/attachment preservation bound.');return {...data,entries:projectKdbxDocument(xml),kdbx:{...(data.kdbx??{binaries:[],publicCustomData:null,sourceVersion:'4.1'}),xml:document}};}
+function append(entry){const {h}=history(entry);h.children.push(snapshot(entry));}
+export function applyEntrySave(data,previous,next,{now=next.updatedAt}={}){
+  const xml=materializeKdbxDocument(data),settings=historySettings(xml),binaries=data.kdbx?.binaries??[];
+  if(previous){const e=entryNode(xml,previous.id),changed=CONTENT.some(key=>previous[key]!==next[key]);if(changed)append(e);touch(e,now,changed);maintain(e,settings,binaries);if(!changed)next={...next,updatedAt:previous.updatedAt};}
+  const staged={...data,kdbx:{...(data.kdbx??{binaries:[],publicCustomData:null,sourceVersion:'4.1'}),xml:serializeXml(xml)},entries:previous?data.entries.map(e=>e.id===previous.id?next:e):[...data.entries,next]};
+  // Materialize new standard fields only after capturing the prior revision.
+  return finalData(staged,materializeKdbxDocument(staged));
+}
+function revision(entry,key){if(!Buffer.isBuffer(key)||key.length!==32)throw new Error('Missing private history revision key.');return createHmac('sha256',key).update(serializeXml(snapshot(entry))).digest('hex');}
+function selected(data,id,index,token,key){if(!Number.isInteger(index)||index<0||index>=MAX_HISTORY)throw new Error('Invalid history index.');const xml=materializeKdbxDocument(data),entry=entryNode(xml,id),{rows}=history(entry);if(index>=rows.length)throw new Error('History revision no longer exists.');if(typeof token!=='string'||!/^[0-9a-f]{64}$/.test(token)||!timingSafeEqual(Buffer.from(token,'hex'),Buffer.from(revision(rows[index],key),'hex')))throw new Error('History selection changed; refresh the history list.');return {xml,entry,chosen:rows[index]};}
+export function listEntryHistory(data,id,key){const xml=materializeKdbxDocument(data),entry=entryNode(xml,id),settings=historySettings(xml),{rows}=history(entry),lengths=binaryLengths(data.kdbx?.binaries??[]);return {limits:{maxItems:settings.maxItems.toString(),maxSize:settings.maxSize.toString(),localMaxRevisions:MAX_HISTORY},revisions:rows.map((e,index)=>({index,revision:revision(e,key),modifiedAt:new Date(lastMod(e)).toISOString(),title:text(nodes(e,'String').find(s=>text(one(s,'Key',true))==='Title')&&one(nodes(e,'String').find(s=>text(one(s,'Key',true))==='Title'),'Value')),sizeBytes:Number(entrySize(e,lengths))}))};}
+function projection(entry,current){const fields=Object.create(null);for(const s of nodes(entry,'String'))fields[text(one(s,'Key',true))]=text(one(s,'Value',true));const times=one(entry,'Times',true);return {...current,title:fields.Title??'',username:fields.UserName??'',password:fields.Password??'',url:fields.URL??'',notes:fields.Notes??'',totpSecret:fields['REA.TOTP.Secret']??'',createdAt:decodeKdbxDate(text(one(times,'CreationTime',true))),updatedAt:decodeKdbxDate(text(one(times,'LastModificationTime',true)))};}
+export function readEntryHistory(data,id,index,token,key){const {chosen}=selected(data,id,index,token,key),current=data.entries.find(e=>e.id===id);historyEntrySize(chosen,data.kdbx?.binaries??[]);return {entry:projection(chosen,current)};}
+export function restoreEntryHistory(data,id,index,token,key,{confirm=false,now=new Date().toISOString()}={}){
+  if(confirm!==true)throw new Error('Restoring history requires explicit confirmation.');const {xml,entry,chosen}=selected(data,id,index,token,key),settings=historySettings(xml),binaries=data.kdbx?.binaries??[];
+  // Validate/normalize UUIDs before copying the selected revision, matching
+  // MaintainBackups repair, while keeping it available across pruning.
+  const {rows}=history(entry),uuid=text(one(entry,'UUID',true));for(const h of rows)put(h,'UUID',uuid);
+  const chosenCopy=snapshot(chosen),location=clone(one(one(entry,'Times',true),'LocationChanged',true)),previousParent=one(entry,'PreviousParentGroup');
+  append(entry);maintain(entry,settings,binaries);const keptHistory=one(entry,'History');
+  const children=chosenCopy.children.filter(n=>typeof n==='string'||!['History','PreviousParentGroup'].includes(n.name));entry.children=children;put(entry,'UUID',uuid);if(previousParent)entry.children.push(clone(previousParent));entry.children.push(keptHistory);
+  const restoredTimes=one(entry,'Times',true);restoredTimes.children=restoredTimes.children.filter(n=>typeof n==='string'||n.name!=='LocationChanged');restoredTimes.children.push(location);touch(entry,now,true);
+  return finalData(data,xml);
+}

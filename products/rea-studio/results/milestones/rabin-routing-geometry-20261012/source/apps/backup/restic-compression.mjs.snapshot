@@ -1,0 +1,34 @@
+import { zstdCompressSync, zstdDecompressSync, constants } from 'node:zlib';
+// Source-assisted restic v2 format contracts. Original repository.go is pinned
+// in results/compression-source-study/stage/source-provenance.json;
+// its BSD-2-Clause notice is retained beside the original source.
+// Node/libzstd levels are a distinct policy, not klauspost output equivalence.
+export const MODES = Object.freeze({off:3, fastest:1, auto:3, better:7, max:19});
+export function compressionMode(value = 'auto') {
+  if (typeof value !== 'string' || !Object.hasOwn(MODES,value)) throw new Error('Use a supported restic compression mode: auto, off, fastest, better or max.');
+  return value;
+}
+function compress(bytes, mode) {
+  if (!Buffer.isBuffer(bytes) || bytes.length > 16*1024*1024) throw new Error('Restic compression input exceeds its 16 MiB bound.');
+  mode = compressionMode(mode);
+  const output = zstdCompressSync(bytes,{params:{[constants.ZSTD_c_compressionLevel]:MODES[mode],[constants.ZSTD_c_windowLog]:19,[constants.ZSTD_c_checksumFlag]:0},maxOutputLength:bytes.length+Math.ceil(bytes.length/256)+1024});
+  // Verify the exact plaintext before any repository effect.
+  const restored = zstdDecompressSync(output,{maxOutputLength:Math.max(1,bytes.length)});
+  if (!restored.equals(bytes)) throw new Error('Compressed restic blob verification failed.');
+  return output;
+}
+export function encodeBlob(bytes, type, version, mode = 'auto') {
+  mode = compressionMode(mode);
+  if (![1,2].includes(version) || !['data','tree'].includes(type)) throw new Error('Unsupported restic blob type or repository version.');
+  if (!Buffer.isBuffer(bytes) || bytes.length > 16*1024*1024) throw new Error('Restic compression input exceeds its 16 MiB bound.');
+  // The original compresses even when the frame grows. Off applies to data;
+  // nonempty tree blobs are still compressed in v2, and v1 stays uncompressed.
+  if (version === 1 || !bytes.length || (mode === 'off' && type === 'data')) return {bytes,uncompressedLength:0};
+  return {bytes:compress(bytes,mode),uncompressedLength:bytes.length};
+}
+export function encodeMetadata(bytes, version, mode = 'auto') {
+  if (![1,2].includes(version)) throw new Error('Unsupported restic repository version.');
+  compressionMode(mode);
+  if (!Buffer.isBuffer(bytes) || bytes.length > 16*1024*1024) throw new Error('Restic compression input exceeds its 16 MiB bound.');
+  return version === 1 ? bytes : Buffer.concat([Buffer.from([2]),compress(bytes,mode)]);
+}

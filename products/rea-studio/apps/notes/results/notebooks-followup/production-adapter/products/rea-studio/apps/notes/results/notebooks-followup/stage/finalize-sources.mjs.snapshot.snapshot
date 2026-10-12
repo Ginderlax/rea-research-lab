@@ -1,0 +1,9 @@
+import fs from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import path from 'node:path';
+const root=path.dirname(fileURLToPath(import.meta.url));
+async function replace(relative,before,after){const filename=path.join(root,relative),source=await fs.readFile(filename,'utf8');if(source.split(before).length!==2)throw new Error('Expected one exact source transform: '+relative);await fs.writeFile(filename,source.replace(before,after));}
+await replace('products/rea-studio/apps/notes/notebooks.integration.test.mjs','actual HTTP host cold restarts and JEX reimport','actual HTTP host cold restarts and JEX export');
+await replace('run.mjs',"'run.mjs','source-provenance.json'","'run.mjs','README.md','NOTICE.md','prepare.mjs','acquire.mjs','finalize-sources.mjs','browser-host.mjs','browser-baseline.json','baseline.json','selected-requirements.json','products/rea-studio/public/index.html','products/rea-studio/public/studio.mjs','products/rea-studio/public/style.css','source-provenance.json'");
+await replace('products/rea-studio/apps/notes/notebooks.test.mjs',"}let note=await call('get',{id:id('3')});note=await call('delete'","}{const saved=await store.get('notes-state-v2');saved.notes[id('3')].joplin.props.share_id='shared-note-fixture';await store.set('notes-state-v2',saved);const note=await call('get',{id:id('3')}),before=JSON.stringify(await store.get('notes-state-v2'));await assert.rejects(call('note-move',{id:note.id,revision:note.revision,organizationRevision:(await call('notebook-list')).revision,notebookId:''}),/outside/);assert.equal(JSON.stringify(await store.get('notes-state-v2')),before);delete saved.notes[id('3')].joplin.props.share_id;await store.set('notes-state-v2',saved);}let note=await call('get',{id:id('3')});note=await call('delete'");
+console.log('Exact staged test-name, collector-scope and shared-note negative assertions applied.');

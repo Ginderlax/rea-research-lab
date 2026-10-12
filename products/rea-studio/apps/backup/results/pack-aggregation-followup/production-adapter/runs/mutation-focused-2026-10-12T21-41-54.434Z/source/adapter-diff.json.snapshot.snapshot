@@ -1,0 +1,27 @@
+{
+  "schema": "rea-restic-native-policy-adapter-diff/v2",
+  "path": "products/rea-studio/apps/backup/native.test.mjs",
+  "originalSha256": "d665da4f65ff7c61d788935467234991a379fb32a1a1a6796c416de747de7b63",
+  "adaptedSha256": "df33b2c492eb8219ee4105f159a4f012c4baf429c7b12ac56114f0c61017780f",
+  "replacements": [
+    [
+      "import test from 'node:test';",
+      "import test from 'node:test';\nimport {verifyBatch,verifyUnchanged} from './native-policy-assertions.mjs';"
+    ],
+    [
+      "assert.ok(saved.newPacks >= 7);",
+      "await verifyBatch({workspace,snapshot:saved,password:PASSWORD});"
+    ],
+    [
+      "assert.ok(second.newPacks < saved.newPacks,'Existing native data blobs are reused.');",
+      "assert.ok(second.newPacks < saved.newPacks,'Existing native data blobs are reused.'); await verifyUnchanged({workspace,password:PASSWORD});"
+    ],
+    [
+      "Buffer.alloc(4 * 1024 * 1024 + 1,93)",
+      "(() => { const bytes=Buffer.alloc(24 * 1024 * 1024 + 1); let state=0x1a2b3c4d; for(let offset=0;offset<bytes.length;offset++){state^=state<<13;state^=state>>>17;state^=state<<5;bytes[offset]=state&255;} console.log(JSON.stringify({nativeMutationFixture:{bytes:bytes.length,sha256:hash(bytes),generator:'xorshift32 seed 0x1a2b3c4d; low byte per state',reason:'Cross the 16 MiB aggregate pack target with distinct chunks before source EOF'}})); return bytes; })()"
+    ]
+  ],
+  "importPathAdaptation": "One additional test-only local helper import; all original imports/paths unchanged.",
+  "reason": "The historical >=7 pack minimum was already obsolete with original Rabin chunking before aggregation; replace it with authenticated pack/header/index/content accounting and exact repeat deduplication. Aggregation also delays the first data-pack publication until a target is crossed, so the old 4 MiB mutation fixture reached EOF before its observed pack publication. Only that fixture is enlarged to deterministic 24 MiB+1 distinct content; all mutation, check, restore, timestamp, overwrite and lock assertions remain unchanged.",
+  "initialFailures": "Initial exact candidate run: 27/30 passed; two stale >=7 policy assertions and one small-file publication-timing assumption failed. Raw failures and original source retained unchanged."
+}

@@ -1,0 +1,211 @@
+{
+  "schema": "rea-vault-history-production-adapter-diff/v1",
+  "runtimeByteIdentical": true,
+  "runtime": [
+    {
+      "path": "products/rea-studio/apps/vault/history.mjs",
+      "sha256": "c902e684ab38cb9d9ef421826e9091422a7843b2b85ba689d2a12690e78b5f26"
+    },
+    {
+      "path": "products/rea-studio/apps/vault/server.mjs",
+      "sha256": "c4aa4d91d93a19de3aab0e4d9cc42759336e78bd1f853572586b542efbeb0fb9"
+    },
+    {
+      "path": "products/rea-studio/apps/vault/kdbx.mjs",
+      "sha256": "ea774360332dbc7497a2e6a005fa10604cafbb92326293384d157d8827e0fe0c"
+    },
+    {
+      "path": "products/rea-studio/apps/vault/xml.mjs",
+      "sha256": "0adfa8ec93cc2cffe7a256a94b896fd9bd815530de79769dccba4762c3c1c0bd"
+    },
+    {
+      "path": "products/rea-studio/apps/vault/client.mjs",
+      "sha256": "1d392037160c2cdca8c53e0ab807d5215964cd00c248360e5c00532f3ba00bed"
+    }
+  ],
+  "tests": [
+    "history.test.mjs",
+    "unknown-time.test.mjs",
+    "http.test.mjs",
+    "ui.test.mjs",
+    "selection-independent.test.mjs",
+    "selection-boundaries.test.mjs",
+    "selection-adjacent.test.mjs",
+    "same-editor-draft.test.mjs",
+    "preexisting-draft.test.mjs",
+    "draft-adjacent.test.mjs",
+    "idle-view.test.mjs",
+    "disposal-adjacent.test.mjs"
+  ],
+  "changes": [
+    {
+      "path": "products/rea-studio/apps/vault/harness.mjs",
+      "oldSha256": "092f8dd9bbfbae145f8c05aa75e215fcc772bc7ef94d9fb980175071e50e5230",
+      "newSha256": "3f6cbc54455cbfe59475842e15cbb113087388cd208308aaae5fa16be1067298",
+      "changes": [
+        {
+          "from": "export const oracle=path.resolve(here,'../../outputs/rea-research-lab/projects/07-keepass/artifacts/portable/KeePass.exe');",
+          "to": "export const fixtureRoot=path.resolve(here,'../../../..','.local/vault-history-fixtures',String(process.pid));\nexport const observationsDirectory=path.join(fixtureRoot,'observations');\nexport const oracle=process.env.REA_KEEPASS_EXE??path.resolve(here,'../../../..','projects/07-keepass/artifacts/portable/KeePass.exe');"
+        }
+      ],
+      "scope": "Test-only path/output adapter; test scenarios and native semantics unchanged."
+    },
+    {
+      "path": "products/rea-studio/apps/vault/history.test.mjs",
+      "oldSha256": "00e41a6c40835a9c2e03e0bf625b4e1db8a67f24e1dc88ab38a42038634b5b82",
+      "newSha256": "4a7f595b5b8908ad6bc2a462b652a2af4095963073d10a196342851be19b6a7b",
+      "changes": [
+        {
+          "from": "observations,pass} from './harness.mjs'",
+          "to": "observations,pass,observationsDirectory} from './harness.mjs'"
+        },
+        {
+          "from": "path.join(here,'.local/observations')",
+          "to": "observationsDirectory"
+        },
+        {
+          "from": "path.join(here,'.local/observations/history-original.json')",
+          "to": "path.join(observationsDirectory,'history-original.json')"
+        },
+        {
+          "from": "detail:'.local/observations/history-original.json'",
+          "to": "detail:path.join(observationsDirectory,'history-original.json')"
+        }
+      ],
+      "scope": "Test-only path/output adapter; test scenarios and native semantics unchanged."
+    },
+    {
+      "path": "products/rea-studio/apps/vault/unknown-time.test.mjs",
+      "oldSha256": "7c2e1be955c3ccad4d0f993e7e16d0df22d55d545b7d1622b75dc5f30fd9e182",
+      "newSha256": "908d309a2c5447a7d3f7bad62a2822ee94416ddf00504de492c69a86f6e89b61",
+      "changes": [
+        {
+          "from": "observations,pass} from './harness.mjs'",
+          "to": "observations,pass,observationsDirectory} from './harness.mjs'"
+        },
+        {
+          "from": "path.join(here,'.local/observations')",
+          "to": "observationsDirectory"
+        },
+        {
+          "from": "path.join(here,'.local/observations/history-unknown-time.json')",
+          "to": "path.join(observationsDirectory,'history-unknown-time.json')"
+        },
+        {
+          "from": "detail:'.local/observations/history-unknown-time.json'",
+          "to": "detail:path.join(observationsDirectory,'history-unknown-time.json')"
+        }
+      ],
+      "scope": "Test-only path/output adapter; test scenarios and native semantics unchanged."
+    },
+    {
+      "path": "products/rea-studio/apps/vault/http.test.mjs",
+      "oldSha256": "857e056feed83d578c9e753ce51420e35ea62aa83cb7d2150b5f6bf3479df6bd",
+      "newSha256": "e150f9fc00bb67cf6edb43fb5b37b72f02cafef67578a713f08319c67226a56b",
+      "changes": [
+        {
+          "from": "observations,pass} from './harness.mjs'",
+          "to": "observations,pass,observationsDirectory} from './harness.mjs'"
+        },
+        {
+          "from": "path.join(here,'.local/observations')",
+          "to": "observationsDirectory"
+        },
+        {
+          "from": "path.join(here,'.local/observations/history-http.json')",
+          "to": "path.join(observationsDirectory,'history-http.json')"
+        },
+        {
+          "from": "detail:'.local/observations/history-http.json'",
+          "to": "detail:path.join(observationsDirectory,'history-http.json')"
+        }
+      ],
+      "scope": "Test-only path/output adapter; test scenarios and native semantics unchanged."
+    },
+    {
+      "path": "products/rea-studio/apps/vault/http-runner.mjs",
+      "oldSha256": "5a9c4ba2157f0f26d9dbc090fc7859a8e5d332c0a88e4ad357a2818c21edcc69",
+      "newSha256": "6007eb262bdfbcb87e5249a54bcd66264fac170daaf35066a99fc70a5cd152c2",
+      "changes": [
+        {
+          "from": "from './host/server.mjs'",
+          "to": "from '../../server.mjs'"
+        }
+      ],
+      "scope": "Test-only path/output adapter; test scenarios and native semantics unchanged."
+    },
+    {
+      "path": "products/rea-studio/apps/vault/ui-fixture.mjs",
+      "oldSha256": "f60f8c243ac309bca22d1fb2ad31924375d558a864dbf08411d59fa42843a2a6",
+      "newSha256": "230304bddd749cbe2044982c1eeef4fc342406e9bf52a997c737a7b8b9f3f8ca",
+      "changes": [
+        {
+          "from": "import assert from 'node:assert/strict';",
+          "to": "import {fixtureRoot,observationsDirectory} from './harness.mjs';\nimport assert from 'node:assert/strict';"
+        },
+        {
+          "from": "path.join(own,'.local',name+'-'+process.pid)",
+          "to": "path.join(fixtureRoot,name+'-'+process.pid)"
+        },
+        {
+          "from": "path.join(own,'.local/observations/selection-boundaries')",
+          "to": "path.join(observationsDirectory,'selection-boundaries')"
+        }
+      ],
+      "scope": "Test-only path/output adapter; test scenarios and native semantics unchanged."
+    },
+    {
+      "path": "products/rea-studio/apps/vault/lifecycle-ui-fixture.mjs",
+      "oldSha256": "70e7620dae05f395df3a2d7264ad9d63fbb9bbda18b3664c4155886fff8fda7e",
+      "newSha256": "42b2d0473a76e33d10a7a9ebf2fdb83b99ec8d96e20ede3e66f451d826403160",
+      "changes": [
+        {
+          "from": "import assert from 'node:assert/strict';",
+          "to": "import {fixtureRoot,observationsDirectory} from './harness.mjs';\nimport assert from 'node:assert/strict';"
+        },
+        {
+          "from": "path.join(own,'.local',name+'-'+process.pid)",
+          "to": "path.join(fixtureRoot,name+'-'+process.pid)"
+        },
+        {
+          "from": "path.join(own,'.local/observations/lifecycle-boundaries')",
+          "to": "path.join(observationsDirectory,'lifecycle-boundaries')"
+        }
+      ],
+      "scope": "Test-only path/output adapter; test scenarios and native semantics unchanged."
+    },
+    {
+      "path": "products/rea-studio/apps/vault/selection-independent.test.mjs",
+      "oldSha256": "262e8da3bcad7ff9ab04fe2066a965fc2a073faa273020b0b01ef52d3a78fb57",
+      "newSha256": "d444deba7eb5aa3ae4fcd6ebfb352e2d38f96844b851890d273472f190d2e19b",
+      "changes": [
+        {
+          "from": "import {render} from './client.mjs';",
+          "to": "import {fixtureRoot,observationsDirectory} from './harness.mjs';\nimport {render} from './client.mjs';"
+        },
+        {
+          "from": "path.join(own,'.local/restore-selection-synthetic')",
+          "to": "path.join(fixtureRoot,'restore-selection-synthetic')"
+        },
+        {
+          "from": "path.join(own,'.local/observations')",
+          "to": "observationsDirectory"
+        },
+        {
+          "from": "path.join(own,'.local/observations/restore-selection-observation.json')",
+          "to": "path.join(observationsDirectory,'restore-selection-observation.json')"
+        }
+      ],
+      "scope": "Test-only path/output adapter; test scenarios and native semantics unchanged."
+    },
+    {
+      "path": "products/rea-studio/apps/vault/README.md",
+      "oldSha256": "87e0452bd55cd32de491037b25e61f876c9f1c0f27bc8c3d65d3d935a1aabbe6",
+      "newSha256": "f1d508dddf2fd2a1772a5abdaa99db9cfe2654ff2dbd1bb17cdf4369851a75cf",
+      "scope": "Documentation addition with actual app-relative inert study/notice links only; no runtime change."
+    }
+  ],
+  "semanticTestChanges": false,
+  "allFrozen1454Preserved": true,
+  "appResultsWritesByNormalTests": false
+}

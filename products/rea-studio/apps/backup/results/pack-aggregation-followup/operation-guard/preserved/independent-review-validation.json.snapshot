@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-12T21:56:44.773Z",
+  "status": "frozen independent review with concrete finding",
+  "authenticatedInventories": [
+    {
+      "label": "main",
+      "receiptSHA256": "0dfa5a64c897d76b669afcb145e3cdb75db676cbd3fcad95a550d264271e11b7",
+      "manifestSHA256": "8ddb6cfda4c2e06e8413ff70cd97ebb259cb1ddab81f60cdb2be2f1c1d3d8b3b",
+      "files": 250,
+      "allCheckedBeforeAndAfter": true
+    },
+    {
+      "label": "adapter",
+      "receiptSHA256": "8fe8bff177b10a75e051cddfd754228e567809c30beb364b928836c84107d683",
+      "manifestSHA256": "bf001d4bd76a43749d3524b7b9eccbcc4861250f0bebca3968c1dc5a720d59a9",
+      "files": 214,
+      "allCheckedBeforeAndAfter": true
+    }
+  ],
+  "authentication": {
+    "bytes": 27542,
+    "sha256": "c94444677bb097d39aba11dcc01bf3f41c9d8bc79f8273c5d695d7714d59be6f"
+  },
+  "newBehavioralReproductions": 1,
+  "attempts": [
+    {
+      "path": "overlap-attempt-1791842030560.json",
+      "schemaVersion": 1,
+      "interval": {
+        "start": "2026-10-12T21:53:50.496Z",
+        "end": "2026-10-12T21:53:50.562Z"
+      },
+      "exitCode": 0,
+      "sourceBefore": "6040420d6e606851b4ce641674be869f4e0abc123c0d03d43edb0d1ef2ec69b9",
+      "sourceAfter": "6040420d6e606851b4ce641674be869f4e0abc123c0d03d43edb0d1ef2ec69b9",
+      "stdout": {
+        "path": "overlap-attempt-1791842030560.stdout.txt",
+        "bytes": 1467,
+        "sha256": "8a6ca507e441d43afa7e37def327956b842b82927147829ab871210af67a1bfc"
+      },
+      "stderr": {
+        "path": "overlap-attempt-1791842030560.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "originalRuntimeExecutions": 0,
+      "productionChanged": false
+    }
+  ],
+  "findings": [
+    {
+      "id": "exported-writer-overlap-loss",
+      "reproduced": true,
+      "helperSHA256": "c68d66ff24d99d07f26e318675d11138946fdc5fa858d46ff6f4032a754cd1b3",
+      "observation": {
+        "bytes": 1566,
+        "sha256": "58989eaa7c5b16efb2dd935e58fa92d6af8983a1e3df16901937d8b695e83bcb"
+      },
+      "currentApplicationLossDemonstrated": false,
+      "requestedRepairStage": "../restic-pack-operation-guard-next",
+      "scope": "Current snapshot calls are serialized; exported-helper overlap must reject/serialize before mutation."
+    }
+  ],
+  "currentRootNativeTestSHA256": "1966dda8ac0522783f162a1cece179cb45e6e3cfdade1a5dd48eb0f3c8e44fba",
+  "historicalNativeTestSHA256": "d665da4f65ff7c61d788935467234991a379fb32a1a1a6796c416de747de7b63",
+  "stagedBatchNativeTestSHA256": "df33b2c492eb8219ee4105f159a4f012c4baf429c7b12ac56114f0c61017780f",
+  "currentRootGenericHelperSHA256": "2cad61b73ec5542f16e7ce01ac76a80864b78ef64750018262ea36975a8e7169",
+  "historicalTestsAuthenticated": {
+    "main": 66,
+    "adapter": 33
+  },
+  "thoseSuitesRerunThisReview": false,
+  "sourceBeforeAfterStable": true,
+  "oldEvidenceOrProductionChanged": false,
+  "originalRuntimeExecutions": 0,
+  "timingMeasurementRun": false,
+  "memoryMeasurementRun": false,
+  "inventory": {
+    "authenticate.mjs": {
+      "bytes": 10089,
+      "sha256": "3f33fd8a124d974aed6064219dcb4d343a7989d56500e2b73814bb00fdf79430"
+    },
+    "authentication.json": {
+      "bytes": 27542,
+      "sha256": "c94444677bb097d39aba11dcc01bf3f41c9d8bc79f8273c5d695d7714d59be6f"
+    },
+    "freeze-review.mjs": {
+      "bytes": 5510,
+      "sha256": "db79fdfdef80c61130b34b53a10d1f67dabc88bd2cad535ffed4beb42afe5a53"
+    },
+    "overlap-attempt-1791842030560.json": {
+      "bytes": 724,
+      "sha256": "98b2aeb34d678a75ccada6153630e27e2de15283e5176697230ce894001f8a20"
+    },
+    "overlap-attempt-1791842030560.stderr.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "overlap-attempt-1791842030560.stdout.txt": {
+      "bytes": 1467,
+      "sha256": "8a6ca507e441d43afa7e37def327956b842b82927147829ab871210af67a1bfc"
+    },
+    "overlap-observation.json": {
+      "bytes": 1566,
+      "sha256": "58989eaa7c5b16efb2dd935e58fa92d6af8983a1e3df16901937d8b695e83bcb"
+    },
+    "overlap-reproduction.mjs": {
+      "bytes": 3518,
+      "sha256": "6040420d6e606851b4ce641674be869f4e0abc123c0d03d43edb0d1ef2ec69b9"
+    },
+    "preserved/adapter-freeze-manifest.json": {
+      "bytes": 47748,
+      "sha256": "bf001d4bd76a43749d3524b7b9eccbcc4861250f0bebca3968c1dc5a720d59a9"
+    },
+    "preserved/adapter-validation.json": {
+      "bytes": 19017,
+      "sha256": "8fe8bff177b10a75e051cddfd754228e567809c30beb364b928836c84107d683"
+    },
+    "preserved/main-freeze-manifest.json": {
+      "bytes": 51982,
+      "sha256": "8ddb6cfda4c2e06e8413ff70cd97ebb259cb1ddab81f60cdb2be2f1c1d3d8b3b"
+    },
+    "preserved/main-production-baseline.json": {
+      "bytes": 7164,
+      "sha256": "27dc998f6920048c0954d8719ed6a9243ed0fc8d40f4ee4ad27ccb22100e89be"
+    },
+    "preserved/main-stage-validation.json": {
+      "bytes": 12852,
+      "sha256": "0dfa5a64c897d76b669afcb145e3cdb75db676cbd3fcad95a550d264271e11b7"
+    },
+    "preserved/restic-data-pack.c68d.mjs.snapshot": {
+      "bytes": 3867,
+      "sha256": "c68d66ff24d99d07f26e318675d11138946fdc5fa858d46ff6f4032a754cd1b3"
+    },
+    "preserved/restic.e668.mjs.snapshot": {
+      "bytes": 34155,
+      "sha256": "e668ea9eeb494ace14a237ccaa175c5e6cdff2d56b9871005bc0f13e3685880c"
+    },
+    "REVIEW.md": {
+      "bytes": 7474,
+      "sha256": "48700bc67ea42c55642ff046a5a1ac7a96045363b0ff3274c6192d155e6c4f55"
+    },
+    "run-overlap.mjs": {
+      "bytes": 1399,
+      "sha256": "558109c4473159f813a59a8d5096ae4d9b1483edc86e0b12c5cb6b7b6a0e0c43"
+    }
+  },
+  "fullProductComplete": false,
+  "universalSuperiorityEstablished": false
+}

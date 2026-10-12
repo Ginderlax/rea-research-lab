@@ -1,0 +1,5 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {createHash} from 'node:crypto';import {here} from './harness.mjs';
+const studio=path.resolve(here,'../../outputs/rea-research-lab/products/rea-studio'),copied=[];
+for(const file of ['server.mjs','catalog.mjs','lib/storage.mjs','public/index.html','public/studio.mjs','public/style.css']){const bytes=await fs.readFile(path.join(studio,file));const target=path.join(here,'host',file);await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);copied.push({path:file,bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});}
+await fs.mkdir(path.join(here,'host/apps/vault'),{recursive:true});await fs.writeFile(path.join(here,'host/apps/vault/server.mjs'),"export {handle,dispose} from '../../../server.mjs';\n");await fs.copyFile(path.join(here,'client.mjs'),path.join(here,'host/apps/vault/client.mjs'));
+await fs.writeFile(path.join(here,'host-source-binding.json'),JSON.stringify({copied,scope:'Exact copied shared HTTP host/storage with explicit adapter to stage-only Vault. This is not a production integration test.'},null,2));

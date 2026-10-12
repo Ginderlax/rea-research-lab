@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {zstdDecompressSync,zstdCompressSync} from 'node:zlib';
+import {createWorkspace} from './products/rea-studio/lib/storage.mjs';
+import {handleNative,limits} from './products/rea-studio/apps/backup/restic.mjs';
+import {hash,open,seal,passwordKey,masterKey} from './products/rea-studio/apps/backup/restic-crypto.mjs';
+const root=await fs.mkdtemp(path.join(os.tmpdir(),'rea-pack-record-bound-')),workspace=await createWorkspace(path.join(root,'workspace')),password='owned-index-record-budget',before=limits.blobs;
+const api=(action,input={})=>handleNative({action,input:{repository:'repository',password,...input},workspace});
+let report;
+try{
+ await api('nativeInit',{version:2});await fs.mkdir(workspace.resolve('source'));await fs.writeFile(workspace.resolve('source/first'),'first file');const first=await api('nativeSnapshot',{source:'source'});
+ const names=await fs.readdir(workspace.resolve('repository/keys')),doc=JSON.parse(await fs.readFile(workspace.resolve(`repository/keys/${names[0]}`))),key=masterKey(JSON.parse(open(await passwordKey(doc,password),Buffer.from(doc.data,'base64')))),indexes=await fs.readdir(workspace.resolve('repository/index')),plain=open(key,await fs.readFile(workspace.resolve(`repository/index/${indexes[0]}`))),index=JSON.parse(zstdDecompressSync(plain.subarray(1))),duplicate=seal(key,Buffer.concat([Buffer.from([2]),zstdCompressSync(Buffer.from(JSON.stringify(index)))]));
+ const count=index.packs.reduce((n,p)=>n+p.blobs.length,0);assert.equal(count,3);await fs.writeFile(workspace.resolve(`repository/index/${hash(duplicate)}`),duplicate);limits.blobs=2*count;
+ await fs.writeFile(workspace.resolve('source/second'),'second file');let result,error;try{result=await api('nativeSnapshot',{source:'source'});}catch(e){error=e.message;}
+ const snapshots=await fs.readdir(workspace.resolve('repository/snapshots'));let checkError;if(result)try{await api('nativeCheck',{id:result.id});}catch(e){checkError=e.message;}
+ report={schema:'rea-pack-index-record-diagnostic/v1',syntheticCap:limits.blobs,previousUniqueBlobs:count,previousActualIndexRecords:2*count,firstSnapshot:first.id,secondSnapshot:result?.id??null,captureError:error??null,reopenError:checkError??null,snapshotCount:snapshots.length,scope:'Owned doubled authenticated index rows and child-only lowered exported app limit; no production bytes or live data changed.'};
+ console.log(JSON.stringify(report));
+}finally{limits.blobs=before;assert.equal(path.dirname(root),path.resolve(os.tmpdir()));assert.ok(path.basename(root).startsWith('rea-pack-record-bound-'));await fs.rm(root,{recursive:true,force:true});}

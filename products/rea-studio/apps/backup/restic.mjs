@@ -7,6 +7,7 @@ import { hash, seal, open, base64, password, passwordKey, masterKey, masterJSON,
 import { calibrateWriter } from './restic-kdf-policy.mjs';
 import { compressionMode, encodeBlob, encodeMetadata } from './restic-compression.mjs';
 import { captureRabinFile } from './capture-rabin-file.mjs';
+import { createDataPackWriter, DATA_PACK_TARGET } from './restic-data-pack.mjs';
 
 const MiB = 1024 * 1024;
 export const limits = { file: 64 * MiB,total: 512 * MiB,pack: 96 * MiB,metadata: 16 * MiB,metadataTotal: 64 * MiB,entries: 10000,blobs: 100000,packs: 4096,depth: 100,keys: 16,milliseconds: 120000 };
@@ -196,6 +197,7 @@ class Repository {
         }
       }
     }
+    this.indexRecords = records;
   }
   async pack(packID) {
     if (this.lastPack?.id === packID) return this.lastPack;
@@ -260,16 +262,20 @@ class Repository {
     return { verified:true,files,checkedBytes,uniqueDataBlobs:blobs.size,scope:'Selected snapshot: referenced trees and data, authenticated packs, storage/plaintext hashes and index agreement.' };
   }
   async saveBlob(type, bytes, newPacks) {
+    this.guard();
+    if (!Buffer.isBuffer(bytes) || !['data','tree'].includes(type) || bytes.length > (type === 'tree' ? limits.metadata:8*MiB)) throw new Error('Native blob exceeds its bounded data/tree input limit.');
     const blobID = hash(bytes), identity = `${type}:${blobID}`;
     if (this.blobs.has(identity)) { await this.blob(type,blobID); return blobID; }
-    if (this.packs.size + newPacks.length >= limits.packs || this.blobs.size >= limits.blobs) throw new Error('Native repository exceeds the bounded pack or blob limit.');
-    // One independently authenticated blob per pack is valid, although less
-    // space-efficient than restic's multi-blob pack batching.
+    if (type === 'data' && this.dataWriter.has(blobID)) return this.dataWriter.save(bytes);
+    if (this.indexRecords + this.dataWriter.count >= limits.blobs) throw new Error('Native repository exceeds the bounded blob limit.');
+    if (this.packs.size >= limits.packs) throw new Error('Native repository exceeds the bounded pack limit.');
+    if (type === 'data') return this.dataWriter.save(bytes);
+    // Tree packs stay separate and retain the existing one-tree-per-pack policy.
     const encoded = encodeBlob(bytes,type,this.config.version,this.compression), payload = seal(this.key,encoded.bytes), record = Buffer.alloc(encoded.uncompressedLength ? 41:37); record[0] = (type === 'tree' ? 1:0) + (encoded.uncompressedLength ? 2:0); record.writeUInt32LE(payload.length,1); if (encoded.uncompressedLength) record.writeUInt32LE(encoded.uncompressedLength,5); Buffer.from(blobID,'hex').copy(record,encoded.uncompressedLength ? 9:5);
     const header = seal(this.key,record), trailer = Buffer.alloc(4); trailer.writeUInt32LE(header.length);
     const packed = Buffer.concat([payload,header,trailer]), packID = hash(packed);
     await this.atomic(`data/${packID.slice(0,2)}/${packID}`,packed);
-    const blob = { id:blobID,type,offset:0,length:payload.length,...(encoded.uncompressedLength ? {uncompressed_length:encoded.uncompressedLength}:{}) }; newPacks.push({ id:packID,blobs:[blob] }); this.blobs.set(identity,{ ...blob,pack:packID }); return blobID;
+    const blob = { id:blobID,type,offset:0,length:payload.length,...(encoded.uncompressedLength ? {uncompressed_length:encoded.uncompressedLength}:{}) }; newPacks.push({ id:packID,blobs:[blob] }); this.packs.set(packID,true); this.blobs.set(identity,{ ...blob,pack:packID }); this.indexRecords++; return blobID;
   }
 }
 
@@ -291,6 +297,12 @@ async function snapshot(repo,input) {
   if (input.label !== undefined && (typeof input.label !== 'string' || input.label.length > 256)) throw new Error('Snapshot label must contain at most 256 characters.');
   const sourceRoot = repo.workspace.resolve(source); if (!(await fs.lstat(sourceRoot)).isDirectory()) throw new Error('Snapshot source must be a directory.');
   await repo.indexes(); const newPacks = []; let files = 0, bytes = 0, entries = 1;
+  repo.dataWriter = createDataPackWriter({key:repo.key,version:repo.config.version,compression:repo.compression,guard:()=>repo.guard(),commit:async pack=>{
+    repo.guard();if(repo.packs.size >= limits.packs)throw new Error('Native repository exceeds the bounded pack limit.');
+    await repo.atomic(`data/${pack.id.slice(0,2)}/${pack.id}`,pack.bytes);
+    newPacks.push({id:pack.id,blobs:pack.blobs});repo.packs.set(pack.id,true);repo.indexRecords+=pack.blobs.length;
+    for(const blob of pack.blobs)repo.blobs.set(`data:${blob.id}`,{...blob,pack:pack.id});
+  }});
   const capture = async (relative,depth) => {
     if (depth + 2 > limits.depth) throw new Error('Source exceeds the directory depth limit.');
     const location = repo.workspace.resolve(relative), beforeDir = await fs.lstat(location);
@@ -318,12 +330,13 @@ async function snapshot(repo,input) {
   const subtree = await capture(source,0), stat = await fs.lstat(repo.workspace.resolve(source));
   const name = source.split('/').at(-1), tree = await repo.saveBlob('tree',encode({ nodes:[{ name:encodeName(name),type:'dir',mode:stat.mode & 0o777,mtime:stat.mtime.toISOString(),atime:stat.atime.toISOString(),ctime:stat.ctime.toISOString(),uid:0,gid:0,content:null,subtree }] },true),newPacks);
   // Apply the same tree limits before publication that future readers enforce.
+  await repo.dataWriter.flush();
   await repo.entries(tree);
   await repo.assertLock();
   if (newPacks.length) await repo.saveObject('index',{ packs:newPacks });
   await repo.assertLock();
   const snapshotID = await repo.saveObject('snapshots',{ time:new Date().toISOString(),tree,paths:[`/${name}`],hostname:os.hostname(),username:'rea-studio',uid:0,gid:0,tags:input.label ? [input.label]:[] });
-  return { format:'restic',id:snapshotID,tree,files,bytes,entries,newPacks:newPacks.length,repository:repo.relative,compression:{repositoryVersion:repo.config.version,mode:repo.config.version===2?repo.compression:'uncompressed-v1',implementation:'Node/libzstd; original encoder byte equivalence and performance are unproven.'},chunking:'Source-assisted Rabin: 64-byte window, average20, min512KiB, max8MiB.' };
+  return { format:'restic',id:snapshotID,tree,files,bytes,entries,newPacks:newPacks.length,repository:repo.relative,packAggregation:{dataTargetBytes:DATA_PACK_TARGET,policy:'Sequential data-only batching; tree packs remain separate. Original concurrent/randomized batching and performance are unproven.'},compression:{repositoryVersion:repo.config.version,mode:repo.config.version===2?repo.compression:'uncompressed-v1',implementation:'Node/libzstd; original encoder byte equivalence and performance are unproven.'},chunking:'Source-assisted Rabin: 64-byte window, average20, min512KiB, max8MiB.' };
 }
 async function selected(repo,input) {
   // Read snapshot first, then indexes, as required by the native ordering contract.
@@ -383,6 +396,7 @@ export async function handleNative({ action,input,workspace }) {
       } else throw new Error('Unknown native backup action.');
     }
   } catch (error) { failure = error instanceof Error ? error:new Error(String(error)); }
+  repo.dataWriter?.dispose();
   try { await repo.release(); }
   catch (error) { repo.cleanupWarnings.push({ scope:'own-lock',lockID:repo.lockID,message:error.message }); }
   if (failure) {

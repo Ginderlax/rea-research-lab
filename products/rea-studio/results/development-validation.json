@@ -1,6 +1,6 @@
 {
   "schema": "rea-development-validation/v1",
-  "checked_at_utc": "2026-10-12T21:53:30.335Z",
+  "checked_at_utc": "2026-10-12T23:32:57.313Z",
   "scope": "Implemented development application contracts; does not establish every documented original-product feature or comparative superiority.",
   "runtime": "v24.16.0",
   "platform": "win32",
@@ -29,11 +29,15 @@
     "apps/backup/app.integration.test.mjs",
     "apps/backup/app.test.mjs",
     "apps/backup/capture-rabin-file.test.mjs",
+    "apps/backup/native-host-pack.test.mjs",
+    "apps/backup/native-small-mutation.test.mjs",
     "apps/backup/native.test.mjs",
     "apps/backup/rabin-original.test.mjs",
     "apps/backup/rabin.test.mjs",
     "apps/backup/restic-compression-review.test.mjs",
     "apps/backup/restic-compression.test.mjs",
+    "apps/backup/restic-data-pack-ownership.test.mjs",
+    "apps/backup/restic-data-pack.test.mjs",
     "apps/backup/restic-kdf-policy.test.mjs",
     "apps/backup/restic-kdf.interop.test.mjs",
     "apps/backup/restic-rabin-deadline.test.mjs",
@@ -55,6 +59,8 @@
     "apps/notes/app.integration.test.mjs",
     "apps/notes/app.test.mjs",
     "apps/notes/jex.test.mjs",
+    "apps/notes/notebooks.integration.test.mjs",
+    "apps/notes/notebooks.test.mjs",
     "apps/sketch/app.test.mjs",
     "apps/sketch/client.test.mjs",
     "apps/sketch/geometry-client.test.mjs",
@@ -70,20 +76,32 @@
     "apps/sync/webdav.test.mjs",
     "apps/vault/app.integration.test.mjs",
     "apps/vault/app.test.mjs",
+    "apps/vault/disposal-adjacent.test.mjs",
+    "apps/vault/draft-adjacent.test.mjs",
+    "apps/vault/history.test.mjs",
+    "apps/vault/http.test.mjs",
+    "apps/vault/idle-view.test.mjs",
     "apps/vault/kdbx.interop.test.mjs",
     "apps/vault/kdbx.test.mjs",
+    "apps/vault/preexisting-draft.test.mjs",
+    "apps/vault/same-editor-draft.test.mjs",
+    "apps/vault/selection-adjacent.test.mjs",
+    "apps/vault/selection-boundaries.test.mjs",
+    "apps/vault/selection-independent.test.mjs",
+    "apps/vault/ui.test.mjs",
+    "apps/vault/unknown-time.test.mjs",
     "tests/host.test.mjs",
     "tests/rabin-recorder.test.mjs",
     "tests/sketch-collector.test.mjs"
   ],
   "summary": {
-    "tests": 607,
-    "pass": 607,
+    "tests": 686,
+    "pass": 686,
     "fail": 0,
     "cancelled": 0,
     "skipped": 0,
     "todo": 0,
-    "duration_ms": 529724.4302
+    "duration_ms": 559696.0493
   },
   "source_files": [
     {
@@ -1179,8 +1197,16 @@
       "sha256": "86cb5e5b3959e539905b21eb69bb71db3eba3e19d03fa4f69bb3c8260cc537de"
     },
     {
+      "path": "apps/backup/native-host-pack.test.mjs",
+      "sha256": "698ddbc673ae393823f4ece09d38b9b1a30deaedeeed1f19e435879249d91247"
+    },
+    {
       "path": "apps/backup/native-policy-assertions.mjs",
       "sha256": "2cad61b73ec5542f16e7ce01ac76a80864b78ef64750018262ea36975a8e7169"
+    },
+    {
+      "path": "apps/backup/native-small-mutation.test.mjs",
+      "sha256": "3331adbd907d009956e21ef06e496d1497354a75fd28c122d0321f1b5a931f6e"
     },
     {
       "path": "apps/backup/native-source-references.json",
@@ -1192,7 +1218,7 @@
     },
     {
       "path": "apps/backup/native.test.mjs",
-      "sha256": "1966dda8ac0522783f162a1cece179cb45e6e3cfdade1a5dd48eb0f3c8e44fba"
+      "sha256": "98ade76b0b449709e4c6fe3cf735c30ab023bf9715b0409d1e643d93bef7fb70"
     },
     {
       "path": "apps/backup/rabin-original-compare.mjs",
@@ -1212,7 +1238,7 @@
     },
     {
       "path": "apps/backup/restic-compression-review.test.mjs",
-      "sha256": "08cb9bc25585c4dd53ac5082539bacd5af2f12977dd33904b76d8b1ec6bedc70"
+      "sha256": "80d927678a7e41c6fe42f661dc187e99ee83e7486d0d91f4c8c56ccea9eaa16f"
     },
     {
       "path": "apps/backup/restic-compression.mjs",
@@ -1225,6 +1251,18 @@
     {
       "path": "apps/backup/restic-crypto.mjs",
       "sha256": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c"
+    },
+    {
+      "path": "apps/backup/restic-data-pack-ownership.test.mjs",
+      "sha256": "361c3e455abfdf32a3144634f6df4226714d8f7c7be38e0465ddae5008d6d7cf"
+    },
+    {
+      "path": "apps/backup/restic-data-pack.mjs",
+      "sha256": "6e83e26c7e0307a36d8d72b9ddb543ad1401fa54cc96bd861e800a16bb304245"
+    },
+    {
+      "path": "apps/backup/restic-data-pack.test.mjs",
+      "sha256": "360926dab9c88c07d3e1a1f24967b85397670edf452a619ecc194162e45764a6"
     },
     {
       "path": "apps/backup/restic-kdf-policy.mjs",
@@ -1252,7 +1290,7 @@
     },
     {
       "path": "apps/backup/restic.mjs",
-      "sha256": "9885d1f26ec0a7311c360923279b731fe43d76b292db735b22cf38d6036eec20"
+      "sha256": "e668ea9eeb494ace14a237ccaa175c5e6cdff2d56b9871005bc0f13e3685880c"
     },
     {
       "path": "apps/backup/results/compression-source-study/preservation-manifest.json",
@@ -1301,6 +1339,70 @@
     {
       "path": "apps/backup/results/native-policy-followup/validation.json",
       "sha256": "b3cf4b627f73a13da8a20511a4c6a6381b9a47291d70ec561d945aa8436584d1"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/collector-failed-64/attempt.json",
+      "sha256": "5f76326851250999da9241894577ae3c578f612f8039fddb8ff7af28a04ea21d"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/collector-failed-64/preservation-manifest.json",
+      "sha256": "4cd723fa5998643e2b327ea8173901723c06f17c699c52bda1890c64374b4a02"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/collector-failed-64/source-after.json",
+      "sha256": "d8d39479e878cf855d2125b2b5a23492f4b1de609092114492c951eef96ea9fb"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/collector-failed-64/source-before.json",
+      "sha256": "d8d39479e878cf855d2125b2b5a23492f4b1de609092114492c951eef96ea9fb"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/failed-116/attempt.json",
+      "sha256": "a81f4dee968482dbd5ab3bf01762825443a5118937c5e4bd2971531269f5b444"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/failed-116/preservation-manifest.json",
+      "sha256": "4a2a3a864473a8fcecfac0f178475cd6632a1e70a9819691894fa1d06348db9e"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/failed-116/source-after.json",
+      "sha256": "602f24ad56564a235e507419f8b4291cf1c987f145dacc0bbde5d3aad50dd7b7"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/failed-116/source-before.json",
+      "sha256": "602f24ad56564a235e507419f8b4291cf1c987f145dacc0bbde5d3aad50dd7b7"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/integration-run-manifest.json",
+      "sha256": "4af50666e5d5ceadf2a4e7a7105b95f1838d9e15b435ded77c46e95e45dc8f84"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/integration-runs/2026-10-12T22-37-12.224Z/attempt.json",
+      "sha256": "5f76326851250999da9241894577ae3c578f612f8039fddb8ff7af28a04ea21d"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/integration-runs/2026-10-12T22-37-12.224Z/record-correction/validation.json",
+      "sha256": "3e89c19946743ceb541f91cbf9b224f12e36718a6b88187f4c7de76918db9594"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/integration-runs/2026-10-12T22-37-12.224Z/source-after.json",
+      "sha256": "d8d39479e878cf855d2125b2b5a23492f4b1de609092114492c951eef96ea9fb"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/integration-runs/2026-10-12T22-37-12.224Z/source-before.json",
+      "sha256": "d8d39479e878cf855d2125b2b5a23492f4b1de609092114492c951eef96ea9fb"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/integration-runs/2026-10-12T22-37-12.224Z/validation.json",
+      "sha256": "d3d8df025eb9de145b3585d19d42e5199f112da7d2de382fb8d3f04a4a14aebc"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/integration-validation.json",
+      "sha256": "3e89c19946743ceb541f91cbf9b224f12e36718a6b88187f4c7de76918db9594"
+    },
+    {
+      "path": "apps/backup/results/pack-aggregation-followup/preservation-manifest.json",
+      "sha256": "77228c9ebbac44fa66f5eac9adab810038da21b46c57749098dec9ed4daa32e0"
     },
     {
       "path": "apps/backup/results/rabin-recorder-review/independent-integration/baseline/current/products/rea-studio/apps/backup/results/rabin-recorder-review/preservation-manifest.json",
@@ -1960,7 +2062,7 @@
     },
     {
       "path": "apps/notes/client.mjs",
-      "sha256": "9741bb08e66053610ee3eb87e4fd84547801b3753884f76d290ee752557e954f"
+      "sha256": "799431e9d4e7af3135aa63393e9008133aa1d0ef3d1c1d5ebe812a1a93746c81"
     },
     {
       "path": "apps/notes/fixtures/oracle-verification.json",
@@ -1987,8 +2089,56 @@
       "sha256": "409b2bcc489c785e725d3257f21af1c6a3cd4f1f78fa0d0ca74d538876f24915"
     },
     {
+      "path": "apps/notes/notebook-original-oracle.mjs",
+      "sha256": "3cb650d3223daebd54ed5b357f8c2ef977d9749cc7e37189f1036fa0f13892b6"
+    },
+    {
+      "path": "apps/notes/notebooks.integration.test.mjs",
+      "sha256": "b14ef6c52503b634d3a66e0b73d83fe3a577b783a0da9a5d76d8ce016993a75c"
+    },
+    {
+      "path": "apps/notes/notebooks.mjs",
+      "sha256": "4ba3d49563b87d1a37ebb4314d4f513f84e0c8681f9404842c380bc49175edc9"
+    },
+    {
+      "path": "apps/notes/notebooks.test.mjs",
+      "sha256": "4e14c0e2d99d856e67fff9b9dec8216858be354c63019a24599e60a3505bc82d"
+    },
+    {
+      "path": "apps/notes/results/notebooks-followup/integration-run-manifest.json",
+      "sha256": "797d328034a6093515a6676db64676c8fcdf12f4e32b28beea9c7a0ed2f48cb3"
+    },
+    {
+      "path": "apps/notes/results/notebooks-followup/integration-runs/2026-10-12T22-43-56.052Z/held-adaptation.json",
+      "sha256": "db60dfc35978624ee45aae5b88310f8b72fe37a486ab09ae1b13a3e6b40db631"
+    },
+    {
+      "path": "apps/notes/results/notebooks-followup/integration-runs/2026-10-12T22-43-56.052Z/held-validation.json",
+      "sha256": "64e47d7e39f12bfbc040d7f6abfedb80da9511a8175437cb2c6f06ae2322815a"
+    },
+    {
+      "path": "apps/notes/results/notebooks-followup/integration-runs/2026-10-12T22-43-56.052Z/source-after.json",
+      "sha256": "d63950ee4ee2991cfc3d3a71dedfa68506349c554bc171c40e0dec8d17793c1f"
+    },
+    {
+      "path": "apps/notes/results/notebooks-followup/integration-runs/2026-10-12T22-43-56.052Z/source-before.json",
+      "sha256": "d63950ee4ee2991cfc3d3a71dedfa68506349c554bc171c40e0dec8d17793c1f"
+    },
+    {
+      "path": "apps/notes/results/notebooks-followup/integration-runs/2026-10-12T22-43-56.052Z/validation.json",
+      "sha256": "854f4885e1757093fdd36dc7265f76405c2afd4af26e0169b928fc92511aa0b8"
+    },
+    {
+      "path": "apps/notes/results/notebooks-followup/integration-validation.json",
+      "sha256": "854f4885e1757093fdd36dc7265f76405c2afd4af26e0169b928fc92511aa0b8"
+    },
+    {
+      "path": "apps/notes/results/notebooks-followup/preservation-manifest.json",
+      "sha256": "972d6a3b06ddf435bd9cdbae156458002d48d7d6484c368a74aec8a8f7ab1549"
+    },
+    {
       "path": "apps/notes/server.mjs",
-      "sha256": "1864e92c9a497b5ddfff3ca7ea7d5c7599a066522f4e6324db140dd4eb4f2f33"
+      "sha256": "971de4b1cf823424ee4548ef98b752876f3a0fa6a89e667b11ac58bc9d034a39"
     },
     {
       "path": "apps/sketch/app.test.mjs",
@@ -2400,11 +2550,47 @@
     },
     {
       "path": "apps/vault/client.mjs",
-      "sha256": "986487ecdf78b1cfb9bc655c2680725ec06abc06fcb5c8d3aff5600feaea8264"
+      "sha256": "1d392037160c2cdca8c53e0ab807d5215964cd00c248360e5c00532f3ba00bed"
     },
     {
       "path": "apps/vault/compatibility-evidence.json",
       "sha256": "895cb736a9b285bfd0c541b6f76a4dc577aca88675be38e3bab9d2a8be105aee"
+    },
+    {
+      "path": "apps/vault/disposal-adjacent.test.mjs",
+      "sha256": "1202a8711b710e9ea1dce2d2e17f1533ab70fecadd8e3eaa478f71ce2dac3167"
+    },
+    {
+      "path": "apps/vault/draft-adjacent.test.mjs",
+      "sha256": "05fecb80855c30786448d0a83ac85d3932b1b79dd01f557cbe9feee71e8dad12"
+    },
+    {
+      "path": "apps/vault/harness.mjs",
+      "sha256": "3f6cbc54455cbfe59475842e15cbb113087388cd208308aaae5fa16be1067298"
+    },
+    {
+      "path": "apps/vault/history-oracle.ps1",
+      "sha256": "442c91d2baabfd1caa8ab67a0fd338b9e820ed3b08c7524286c5c435c90ba7c4"
+    },
+    {
+      "path": "apps/vault/history.mjs",
+      "sha256": "c902e684ab38cb9d9ef421826e9091422a7843b2b85ba689d2a12690e78b5f26"
+    },
+    {
+      "path": "apps/vault/history.test.mjs",
+      "sha256": "4a7f595b5b8908ad6bc2a462b652a2af4095963073d10a196342851be19b6a7b"
+    },
+    {
+      "path": "apps/vault/http-runner.mjs",
+      "sha256": "6007eb262bdfbcb87e5249a54bcd66264fac170daaf35066a99fc70a5cd152c2"
+    },
+    {
+      "path": "apps/vault/http.test.mjs",
+      "sha256": "e150f9fc00bb67cf6edb43fb5b37b72f02cafef67578a713f08319c67226a56b"
+    },
+    {
+      "path": "apps/vault/idle-view.test.mjs",
+      "sha256": "650da3bdd7b99d2e6d6e0d99b3fb91c901aac3a2d9f9b941c8d8cc942eb9cacd"
     },
     {
       "path": "apps/vault/kdbx.interop.test.mjs",
@@ -2412,7 +2598,7 @@
     },
     {
       "path": "apps/vault/kdbx.mjs",
-      "sha256": "97d221badd544fa47494ecf586e39974a9a0e45ec9673f3d57a24f3631fd770c"
+      "sha256": "ea774360332dbc7497a2e6a005fa10604cafbb92326293384d157d8827e0fe0c"
     },
     {
       "path": "apps/vault/kdbx.test.mjs",
@@ -2423,8 +2609,92 @@
       "sha256": "0a0f26e36f5183dd462d26674739ea85c1e54fd58588640a3c8a62318435dc07"
     },
     {
+      "path": "apps/vault/lifecycle-ui-fixture.mjs",
+      "sha256": "42b2d0473a76e33d10a7a9ebf2fdb83b99ec8d96e20ede3e66f451d826403160"
+    },
+    {
+      "path": "apps/vault/preexisting-draft.test.mjs",
+      "sha256": "c9ec466204154d2e4db9c7c6e8c1cf9b02d91063a45fc3ebd2d1ffade0ed7bbe"
+    },
+    {
+      "path": "apps/vault/results/history-followup/final-independent-review/preservation-mapping.json",
+      "sha256": "ae3fa013c6a77f4132fe799b987f306f87261bc53712e144b59b09335932e2cf"
+    },
+    {
+      "path": "apps/vault/results/history-followup/preservation-manifest.json",
+      "sha256": "d35a031196de8f61fc8e3151ad85d9c4b8c4dd0d15e23d759a2d8d8906512f20"
+    },
+    {
+      "path": "apps/vault/results/history-followup/production-adapter/assembly-failures/failure.json",
+      "sha256": "80060fbe0bdc08e32e230b4b45ad32959e43357a6ae505f077d5154582ba3c7a"
+    },
+    {
+      "path": "apps/vault/results/history-followup/production-integration/installation-manifest.json",
+      "sha256": "7427b0c6582a3c2788c536fada88b37385a4b614913fc737dd2333f35bb9521a"
+    },
+    {
+      "path": "apps/vault/results/history-followup/production-integration/integration-run-manifest.json",
+      "sha256": "51cba056fde4b7322534a3e0ba76aa4f1da262cf41a09259ad3a7cc8f223225a"
+    },
+    {
+      "path": "apps/vault/results/history-followup/production-integration/integration-validation.json",
+      "sha256": "a5883d66bd314c0b5ae1a741ea39dec4767bf9b86b2ed39ce7a52cbdecfabc6c"
+    },
+    {
+      "path": "apps/vault/results/history-followup/production-integration/runs/2026-10-12T23-22-44.590Z/history-http.json",
+      "sha256": "09d0d6fc0a62c590a503253d09472c226af32515aa0c12de5549b3a01fd3ab4f"
+    },
+    {
+      "path": "apps/vault/results/history-followup/production-integration/runs/2026-10-12T23-22-44.590Z/history-original.json",
+      "sha256": "16b7bfd91fa4ae4423a9e12d2e5c2db734f0e22099ee301f2484aa121faa341c"
+    },
+    {
+      "path": "apps/vault/results/history-followup/production-integration/runs/2026-10-12T23-22-44.590Z/history-unknown-time.json",
+      "sha256": "813a10c1b63b6b3a95076d595325750f3c8edfcedf0875474fc799e755d134e5"
+    },
+    {
+      "path": "apps/vault/results/history-followup/production-integration/runs/2026-10-12T23-22-44.590Z/source-after.json",
+      "sha256": "1a21a826a527d42bedc8acb8951382030c8df113dd792e644faf5af63f11d1dd"
+    },
+    {
+      "path": "apps/vault/results/history-followup/production-integration/runs/2026-10-12T23-22-44.590Z/source-before.json",
+      "sha256": "1a21a826a527d42bedc8acb8951382030c8df113dd792e644faf5af63f11d1dd"
+    },
+    {
+      "path": "apps/vault/results/history-followup/production-integration/runs/2026-10-12T23-22-44.590Z/validation.json",
+      "sha256": "a5883d66bd314c0b5ae1a741ea39dec4767bf9b86b2ed39ce7a52cbdecfabc6c"
+    },
+    {
+      "path": "apps/vault/same-editor-draft.test.mjs",
+      "sha256": "688c325bf72747320ec19f94c3c6856fdfb6b1054053c0e2251d4d96e8266643"
+    },
+    {
+      "path": "apps/vault/selection-adjacent.test.mjs",
+      "sha256": "aeb6f287ca4e9a8f6e09ecf94a39856995df4ff3a391646727174283af196b0d"
+    },
+    {
+      "path": "apps/vault/selection-boundaries.test.mjs",
+      "sha256": "8a0d8e4198907563e55d61d9115bb8f0d2045c6af2822a05f025d6df96f13a53"
+    },
+    {
+      "path": "apps/vault/selection-independent.test.mjs",
+      "sha256": "d444deba7eb5aa3ae4fcd6ebfb352e2d38f96844b851890d273472f190d2e19b"
+    },
+    {
       "path": "apps/vault/server.mjs",
-      "sha256": "e56d4950aa7864fbdf120402bfa6643ee00c1ab114e962b9de80bceca6327534"
+      "sha256": "c4aa4d91d93a19de3aab0e4d9cc42759336e78bd1f853572586b542efbeb0fb9"
+    },
+    {
+      "path": "apps/vault/ui-fixture.mjs",
+      "sha256": "230304bddd749cbe2044982c1eeef4fc342406e9bf52a997c737a7b8b9f3f8ca"
+    },
+    {
+      "path": "apps/vault/ui.test.mjs",
+      "sha256": "3233e8b904b2a730b5ec0f2e6b1a5bb8d1c8d333d11271e8e72deee386efe914"
+    },
+    {
+      "path": "apps/vault/unknown-time.test.mjs",
+      "sha256": "908d309a2c5447a7d3f7bad62a2822ee94416ddf00504de492c69a86f6e89b61"
     },
     {
       "path": "apps/vault/xml.mjs",

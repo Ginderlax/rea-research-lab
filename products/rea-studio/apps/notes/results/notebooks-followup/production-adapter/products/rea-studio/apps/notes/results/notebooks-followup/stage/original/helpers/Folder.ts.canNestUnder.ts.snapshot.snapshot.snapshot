@@ -1,0 +1,20 @@
+public static async canNestUnder(folderId: string, targetFolderId: string) {
+		if (folderId === targetFolderId) return false;
+
+		const folder = await Folder.load(folderId);
+		if (isRootSharedFolder(folder)) return false;
+
+		const conflictFolderId = Folder.conflictFolderId();
+		if (folderId === conflictFolderId || targetFolderId === conflictFolderId) return false;
+
+		if (!targetFolderId) return true;
+
+		while (true) {
+			const folder = await Folder.load(targetFolderId);
+			if (!folder.parent_id) break;
+			if (folder.parent_id === folderId) return false;
+			targetFolderId = folder.parent_id;
+		}
+
+		return true;
+	}

@@ -1,0 +1,91 @@
+import json
+import math
+import hashlib
+import xml.etree.ElementTree as ET
+from pathlib import Path
+import reportlab
+from reportlab.graphics.shapes import Drawing, Line, Circle, String, Rect
+from reportlab.graphics import renderSVG, renderPDF
+from reportlab.lib import colors
+
+root=Path(__file__).resolve().parent
+source=(root/'recomputed-summary.json').read_bytes()
+assert hashlib.sha256(source).hexdigest()=='e1bd043ecf79c7b878c4a5be76cd1f4b4b38d721435f555b35eee3cde8b92029'
+summary=json.loads(source)
+roles=['original','baseline','candidate']
+palette={'original':colors.HexColor('#626d78'),'baseline':colors.HexColor('#1765ad'),'candidate':colors.HexColor('#b34919')}
+labels=['Small standard (100)','Large standard (25,000)','Single p95 (25,000)','All 99 percentiles','All 124 calculations','Constructed p95','Fallback p95']
+files=[]
+def text(d,x,y,value,size=10,color=colors.HexColor('#24313d'),anchor='start'):
+    d.add(String(x,y,value,fontName='Helvetica',fontSize=size,fillColor=color,textAnchor=anchor))
+def point_range(d,xlow,xmid,xhigh,y,color):
+    assert 0<=xlow<=xmid<=xhigh<=d.width
+    d.add(Line(xlow,y,xhigh,y,strokeColor=color,strokeWidth=1.2))
+    for x in [xlow,xhigh]:d.add(Line(x,y-3,x,y+3,strokeColor=color,strokeWidth=1.2))
+    d.add(Circle(xmid,y,2.7,fillColor=color,strokeColor=color))
+def save(d,name):
+    renderSVG.drawToFile(d,str(root/(name+'.svg')))
+    renderPDF.drawToFile(d,str(root/(name+'.pdf')))
+    ET.parse(root/(name+'.svg'))
+    for suffix in ['svg','pdf']:
+        filename=name+'.'+suffix
+        data=(root/filename).read_bytes()
+        files.append({'path':filename,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
+
+d=Drawing(980,455)
+d.add(Rect(0,0,980,455,fillColor=colors.white,strokeColor=None))
+text(d,22,431,'Algorithm candidate: timing medians and observed ranges',15)
+text(d,22,411,'Seven repetitions per role and workload; descriptive min/max bars, not confidence intervals.',9)
+start,end,bottom,top=225,770,93,374
+lo,hi=math.log10(.0005),math.log10(300)
+scale=lambda value:start+(math.log10(value)-lo)/(hi-lo)*(end-start)
+for value in [.001,.01,.1,1,10,100]:
+    x=scale(value);d.add(Line(x,bottom,x,top,strokeColor=colors.HexColor('#e0e4e8'),strokeWidth=.6));text(d,x,bottom-16,str(value),8,anchor='middle')
+for index,row in enumerate(summary['timingSummary']):
+    y=356-index*40;text(d,22,y-3,labels[index],10)
+    for offset,role in zip([8,0,-8],roles):
+        item=row['millisecondsPerCall'][role]
+        point_range(d,scale(item['min']),scale(item['median']),scale(item['max']),y+offset,palette[role])
+    change=row['candidateComparedWith']['baseline']['medianRatioPercent']
+    text(d,806,y-3,f'{change:+.2f}% vs baseline',9,palette['candidate'])
+text(d,480,49,'Milliseconds per fresh calculation (logarithmic axis)',10,anchor='middle')
+for index,role in enumerate(roles):
+    x=230+index*150;d.add(Circle(x,28,2.7,fillColor=palette[role],strokeColor=palette[role]));text(d,x+9,24,role.title(),9)
+text(d,22,6,'Candidate unaccepted: all-percentiles median +38.00% vs baseline (overlapping ranges). Windows and user activity uncontrolled.',8)
+save(d,'timing-ranges')
+
+d=Drawing(1050,475);d.add(Rect(0,0,1050,475,fillColor=colors.white,strokeColor=None))
+text(d,22,451,'Isolated memory: lifetime peak RSS and signed paired retained heap differences',15)
+text(d,22,430,'One implementation per fresh child; candidate has two modules. Seven repetitions; observed min/max bars.',9)
+left_start,left_end,right_start,right_end,bottom,top=228,588,690,1018,112,397
+max_rss=max(item['max'] for row in summary['memorySummary'] for item in [row['metricsByImplementation'][role]['lifetimePeakRSSBytes'] for role in roles])/1048576
+rss_bound=math.ceil(max_rss/25)*25
+delta_values=[row['candidateComparedWith']['baseline']['retained-heapUsed-signedBytes']['pairedDifferenceBytes'][key] for row in summary['memorySummary'] for key in ['min','max']]
+delta_low=math.floor(min([0]+delta_values)/1000)*1000-1000
+delta_high=math.ceil(max([0]+delta_values)/1000)*1000+1000
+rss=lambda value:left_start+value/1048576/rss_bound*(left_end-left_start)
+delta=lambda value:right_start+(value-delta_low)/(delta_high-delta_low)*(right_end-right_start)
+for value in [0,rss_bound/3,rss_bound*2/3,rss_bound]:
+    x=rss(value*1048576);d.add(Line(x,bottom,x,top,strokeColor=colors.HexColor('#e0e4e8'),strokeWidth=.6));text(d,x,bottom-16,f'{value:g}',8,anchor='middle')
+for value in sorted(set([delta_low,round(delta_low/2),0,delta_high])):
+    x=delta(value);d.add(Line(x,bottom,x,top,strokeColor=colors.HexColor('#a1abb4') if value==0 else colors.HexColor('#e0e4e8'),strokeWidth=.9 if value==0 else .6));text(d,x,bottom-16,str(value),8,anchor='middle')
+for index,row in enumerate(summary['memorySummary']):
+    y=376-index*40;text(d,22,y-3,labels[index],10)
+    for offset,role in zip([8,0,-8],roles):
+        item=row['metricsByImplementation'][role]['lifetimePeakRSSBytes'];point_range(d,rss(item['min']),rss(item['median']),rss(item['max']),y+offset,palette[role])
+    item=row['candidateComparedWith']['baseline']['retained-heapUsed-signedBytes']['pairedDifferenceBytes']
+    assert delta_low<=item['min']<=item['max']<=delta_high
+    point_range(d,delta(item['min']),delta(item['median']),delta(item['max']),y,palette['candidate'])
+text(d,408,71,'Complete-child lifetime peak RSS (MiB)',10,anchor='middle')
+text(d,854,71,'Candidate minus baseline retained heap delta (bytes)',9,anchor='middle')
+for index,role in enumerate(roles):
+    x=250+index*125;d.add(Circle(x,48,2.7,fillColor=palette[role],strokeColor=palette[role]));text(d,x+9,45,role.title(),9)
+text(d,22,23,'Signed paired values are not clipped. Heap deltas include GC variation; release diagnostics also include serializer/cache-check pressure.',8)
+text(d,22,8,'No cumulative allocation, exact intermediate peak, process-tree isolation, machine isolation or leak claim.',8)
+save(d,'memory-ranges-and-signed-deltas')
+receipt={'summarySHA256':hashlib.sha256(source).hexdigest(),'scriptSHA256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+         'reportlabVersion':reportlab.Version,'files':files,'method':'Standard ReportLab graphics rendering of already authenticated numeric summaries. No measurement workload.',
+         'svgXMLParsed':True,'negativePairedValuesClipped':False,'timingLogAxis':True,'rangesAreConfidenceIntervals':False,
+         'rasterVisualInspectionPerformed':False,'matplotlibAttemptedDuringCurrentConsolidation':False,'axesIncludeAllObservedValues':True,'rssAxisMaximumMiB':rss_bound,'signedDeltaAxisBoundsBytes':[delta_low,delta_high]}
+(root/'figure-validation.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf-8')
+print(json.dumps(receipt))

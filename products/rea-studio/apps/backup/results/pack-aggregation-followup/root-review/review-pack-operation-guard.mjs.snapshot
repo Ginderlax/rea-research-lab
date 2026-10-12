@@ -1,0 +1,64 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {resolve,join} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {zstdDecompressSync} from 'node:zlib';
+const work=import.meta.dirname,stage=join(work,'restic-pack-operation-guard-next');
+const output=join(work,'restic-pack-operation-guard-root-review');mkdirSync(output,{recursive:true});
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const helperPath='products/rea-studio/apps/backup/restic-data-pack.mjs';
+const helperBytes=readFileSync(join(stage,helperPath));
+assert.equal(sha(helperBytes),'6e83e26c7e0307a36d8d72b9ddb543ad1401fa54cc96bd861e800a16bb304245');
+const receiptBytes=readFileSync(join(stage,'stage-validation.json'));
+assert.equal(sha(receiptBytes),'7dca77fee378a0f27ac9788373f0c96bb999fa9004240d615673d76d3adbb1ca');
+const receipt=JSON.parse(receiptBytes);assert.deepEqual(receipt.finalRun.counts,{tests:54,pass:54,fail:0,cancelled:0,skipped:0,todo:0});
+const {createDataPackWriter:fixed}=await import(pathToFileURL(join(stage,helperPath)));
+const originalPath=join(work,'restic-pack-aggregation-next',helperPath);
+assert.equal(sha(readFileSync(originalPath)),'c68d66ff24d99d07f26e318675d11138946fdc5fa858d46ff6f4032a754cd1b3');
+const {createDataPackWriter:previous}=await import(pathToFileURL(originalPath));
+const cryptoPath=join(stage,'products/rea-studio/apps/backup/restic-crypto.mjs');
+const {randomKey,open}=await import(pathToFileURL(cryptoPath));
+const cryptoBefore=sha(readFileSync(cryptoPath));
+function latch(){let release;const promise=new Promise(r=>release=r);return {promise,release};}
+function verify(packs,key,expected){
+ const restored=[];
+ for(const pack of packs){
+  assert.equal(sha(pack.bytes),pack.id);const headerLength=pack.bytes.readUInt32LE(pack.bytes.length-4);
+  const payloadEnd=pack.bytes.length-4-headerLength;assert.ok(payloadEnd>=0);
+  const header=open(key,pack.bytes.subarray(payloadEnd,-4));let at=0,offset=0;
+  const rows=[];
+  while(at<header.length){
+   const type=header[at];assert.ok(type===0||type===2);const width=type===2?41:37;
+   assert.ok(at+width<=header.length);const length=header.readUInt32LE(at+1),plainLength=type===2?header.readUInt32LE(at+5):0;
+   const id=header.subarray(at+(type===2?9:5),at+width).toString('hex');
+   let data=open(key,pack.bytes.subarray(offset,offset+length));if(plainLength)data=zstdDecompressSync(data,{maxOutputLength:plainLength});
+   if(plainLength)assert.equal(data.length,plainLength);assert.equal(sha(data),id);restored.push(data);
+   rows.push({id,type:'data',offset,length,...(plainLength?{uncompressed_length:plainLength}:{})});offset+=length;at+=width;
+  }
+  assert.equal(offset,payloadEnd);assert.deepEqual(rows,pack.blobs);
+ }
+ assert.deepEqual(restored,expected);return expected.map(sha);
+}
+async function overlap(writerFactory,version,guarded){
+ const key=randomKey(),entered=latch(),gate=latch(),packs=[];let calls=0;
+ const writer=writerFactory({key,version,commit:async pack=>{calls++;if(calls===1){entered.release();await gate.promise;}packs.push(pack);}});
+ const a=Buffer.from('accepted first record'),b=Buffer.from('concurrent second record');
+ assert.equal(await writer.save(a),sha(a));const flush=writer.flush();await entered.promise;
+ if(guarded){
+  await assert.rejects(writer.save(b),e=>e.code==='ERR_RESTIC_DATA_PACK_BUSY');
+  await assert.rejects(writer.flush(),e=>e.code==='ERR_RESTIC_DATA_PACK_BUSY');
+  assert.throws(()=>writer.dispose(),e=>e.code==='ERR_RESTIC_DATA_PACK_BUSY');
+  assert.equal(writer.has(sha(b)),false);assert.equal(writer.count,1);
+ }else{assert.equal(await writer.save(b),sha(b));assert.equal(writer.has(sha(b)),true);assert.equal(writer.count,2);}
+ gate.release();await flush;assert.equal(writer.count,0);await writer.flush();
+ verify(packs,key,[a]);
+ if(guarded){assert.equal(await writer.save(b),sha(b));await writer.flush();verify(packs,key,[a,b]);}
+ return {version,guarded,rejectedOverlaps:guarded?3:0,previousAcceptedSecondRecordLost:!guarded,acceptedAfterRetryRestored:guarded,packByteHeaderIndexAuthentication:true,packCount:packs.length};
+}
+const observations=[];
+for(const version of [1,2]){observations.push(await overlap(previous,version,false));observations.push(await overlap(fixed,version,true));}
+assert.equal(sha(readFileSync(join(stage,helperPath))),sha(helperBytes));assert.equal(sha(readFileSync(cryptoPath)),cryptoBefore);
+const review={schema:'rea-root-pack-operation-guard-review/v1',checkedAt:new Date().toISOString(),passed:true,candidateHelperSHA256:sha(helperBytes),stageReceiptSHA256:sha(receiptBytes),reviewedFocusedTests:54,independentBehaviorCases:4,observations,sourceBytesStable:true,productionChanged:false,demonstratedCurrentHttpLoss:false,fullFeatureParity:false,universalSuperiority:false};
+writeFileSync(join(output,'review-validation.json'),JSON.stringify(review,null,2)+'\n');
+console.log(JSON.stringify(review));

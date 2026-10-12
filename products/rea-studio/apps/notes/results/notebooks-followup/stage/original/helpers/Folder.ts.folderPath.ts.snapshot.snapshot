@@ -1,0 +1,18 @@
+public static folderPath(folders: FolderEntity[], folderId: string) {
+		const idToFolders: Record<string, FolderEntity> = {};
+		for (let i = 0; i < folders.length; i++) {
+			idToFolders[folders[i].id] = folders[i];
+		}
+
+		const path = [];
+		while (folderId) {
+			const folder = idToFolders[folderId];
+			if (!folder) break; // Shouldn't happen
+			path.push(folder);
+			folderId = folder.parent_id;
+		}
+
+		path.reverse();
+
+		return path;
+	}

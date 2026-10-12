@@ -1,0 +1,8 @@
+file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/restic-pack-aggregation-next/bind-sources.mjs:7
+for(const reference of provenance.references){const bytes=await fs.readFile(path.join(root,reference.path));if(hash(bytes)!==reference.sha256)throw new Error('Reference changed '+reference.path);const lines=bytes.toString('utf8').split('\n');for(const anchor of contracts[reference.originalPath]??[]){const pos=lines.findIndex(line=>line.startsWith(anchor));if(pos<0)throw new Error('Missing contract anchor '+anchor);let end=pos+1;if(anchor.startsWith('func ')||anchor.startsWith('type ')){const tail=lines.slice(pos+1).findIndex(line=>line==='}');if(tail>=0)end=pos+tail+2;}bindings.push({reference:reference.path,originalPath:reference.originalPath,sha256:reference.sha256,url:reference.url,anchor,startLine:pos+1,endLine:end,role:'Source-assisted contract binding; original helper not executed as staged runtime.'});}}
+                                                                                                                                                                                                                                                                                                                                                                                     ^
+
+Error: Missing contract anchor func (r *Repository) FlushPacks(
+    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/restic-pack-aggregation-next/bind-sources.mjs:7:374
+
+Node.js v24.16.0

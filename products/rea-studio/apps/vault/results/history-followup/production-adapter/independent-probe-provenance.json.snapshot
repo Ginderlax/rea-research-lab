@@ -1,0 +1,111 @@
+{
+  "schema": "rea-vault-production-adapter-independent-probes/v1",
+  "sourceReviewRunSha256": "fb4a193f51d946b8c73570882e858b4e7f095f47eed388cc70ccbfe6a7e20ab7",
+  "historicalIndependentRunCounts": {
+    "tests": 11,
+    "pass": 11,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "sourceReview": "keepass-history-draft-independent-review/runs/final-independent",
+  "originalInputs": [
+    {
+      "path": "restore-selection.test.mjs",
+      "bytes": 4880,
+      "sha256": "5fe7436eae01c547c01ca3b280a0582209c34daa2f913a006cff4b383cf3333b"
+    },
+    {
+      "path": "selection-boundaries.test.mjs",
+      "bytes": 5567,
+      "sha256": "8a0d8e4198907563e55d61d9115bb8f0d2045c6af2822a05f025d6df96f13a53"
+    },
+    {
+      "path": "same-editor-draft.test.mjs",
+      "bytes": 1992,
+      "sha256": "688c325bf72747320ec19f94c3c6856fdfb6b1054053c0e2251d4d96e8266643"
+    },
+    {
+      "path": "preexisting-draft.test.mjs",
+      "bytes": 1286,
+      "sha256": "c9ec466204154d2e4db9c7c6e8c1cf9b02d91063a45fc3ebd2d1ffade0ed7bbe"
+    },
+    {
+      "path": "timer/idle-view.test.mjs",
+      "bytes": 2154,
+      "sha256": "0410356c215e64c52836822ad84b8c8751ec7462ba419052061c2bc28a5bdd42"
+    },
+    {
+      "path": "ui-fixture.mjs",
+      "bytes": 4268,
+      "sha256": "af981ddbd3d4a166b3cda1238185119b81bccbdddcb6e06708619c83ffc375a6"
+    },
+    {
+      "path": "timer/ui-fixture.mjs",
+      "bytes": 4292,
+      "sha256": "a5e1f5c9d54ed95737359a92eb413fd05e201adc899a41caf5ee60f0853465f6"
+    },
+    {
+      "path": "run-final.mjs",
+      "bytes": 2680,
+      "sha256": "2ffd5f39402e416a7dcb4aca0d67183f5f343c5bd918ede6c96bde682268b8a6"
+    }
+  ],
+  "adaptations": [
+    {
+      "path": "independent-probes/restore-selection.test.mjs",
+      "originalSha256": "5fe7436eae01c547c01ca3b280a0582209c34daa2f913a006cff4b383cf3333b",
+      "newSha256": "d7d063a17f6cfaa76646f7562971d751c68f1d1314e92306146c1ec1fb0a12a2",
+      "changes": [
+        {
+          "from": "../keepass-history-draft-fix-next/client.mjs",
+          "to": "../products/rea-studio/apps/vault/client.mjs"
+        },
+        {
+          "from": "../keepass-history-draft-fix-next/server.mjs",
+          "to": "../products/rea-studio/apps/vault/server.mjs"
+        },
+        {
+          "from": "path.join(own,'restore-selection-observation.json')",
+          "to": "path.join(own,'.local/restore-selection-observation.json')"
+        }
+      ],
+      "scenarioBodiesUnchanged": true
+    },
+    {
+      "path": "independent-probes/ui-fixture.mjs",
+      "originalSha256": "af981ddbd3d4a166b3cda1238185119b81bccbdddcb6e06708619c83ffc375a6",
+      "newSha256": "0498d107860f7a7dc6c188587c7811ec616f3440692e7cf63fe39ade645e1747",
+      "changes": [
+        {
+          "from": "path.join(own,'../keepass-history-selection-fix-next')",
+          "to": "path.join(own,'../products/rea-studio/apps/vault')"
+        },
+        {
+          "from": "path.join(own,'boundary-observations')",
+          "to": "path.join(own,'../.local/independent-observations')"
+        }
+      ],
+      "scenarioBodiesUnchanged": true
+    },
+    {
+      "path": "independent-probes/timer/ui-fixture.mjs",
+      "originalSha256": "a5e1f5c9d54ed95737359a92eb413fd05e201adc899a41caf5ee60f0853465f6",
+      "newSha256": "5ddd1956f5c325cdee84f2e06cf047522bc7b87d1253727396634c7080ced374",
+      "changes": [
+        {
+          "from": "path.join(own,'../../keepass-history-draft-fix-next')",
+          "to": "path.join(own,'../../products/rea-studio/apps/vault')"
+        },
+        {
+          "from": "path.join(own,'boundary-observations')",
+          "to": "path.join(own,'../../.local/independent-observations')"
+        }
+      ],
+      "scenarioBodiesUnchanged": true
+    }
+  ],
+  "productionEdited": false,
+  "behavioralBodiesUnchanged": true,
+  "newIndependentAuthor": false
+}

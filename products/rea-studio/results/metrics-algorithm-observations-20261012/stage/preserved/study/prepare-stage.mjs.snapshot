@@ -1,0 +1,45 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const here=path.dirname(fileURLToPath(import.meta.url)),candidateRoot=path.resolve(here,'../metrics-selector-algorithm-next'),old=path.resolve(here,'../metrics-selector-measurement-next'),sha=b=>createHash('sha256').update(b).digest('hex');
+const candidateReceiptBytes=await fs.readFile(path.join(candidateRoot,'stage-validation.json')),candidateManifestBytes=await fs.readFile(path.join(candidateRoot,'freeze-manifest.json'));
+assert.equal(sha(candidateReceiptBytes),'34c5f9f157d347d3b4bd00d0852af4c3030e9591233fb6edabf97cfaf3ef125f');assert.equal(sha(candidateManifestBytes),'4ba611ee5cf9d9c1e8e6a8b210dae381f17e1e7f75820700c519067201c221dd');
+const proof=JSON.parse(candidateReceiptBytes),frozen=JSON.parse(candidateManifestBytes);assert.equal(frozen.files,88);
+for(const[name,row]of Object.entries(frozen.inventory)){const bytes=await fs.readFile(path.join(candidateRoot,name));assert.equal(bytes.length,row.bytes,name);assert.equal(sha(bytes),row.sha256,name);}
+const oldReadinessBytes=await fs.readFile(path.join(old,'readiness-validation.json'));assert.equal(sha(oldReadinessBytes),'ff749bf6cf82865e0060c7f6a7d521734597199f9adbe0b745ba884a3c97908f');const oldReadiness=JSON.parse(oldReadinessBytes);
+const oldManifestBytes=await fs.readFile(path.join(old,'memory-preflight.control.json'));assert.equal(sha(oldManifestBytes),'cbafd22595e65f57d266d5fba79d2ddf84538cfd2bed94df0ab0bc8590b73b3f');const oldManifest=JSON.parse(oldManifestBytes);
+const copies=[];
+async function copy(root,name,target,expected){const bytes=await fs.readFile(path.join(root,name));if(expected){assert.equal(bytes.length,expected.bytes,name);assert.equal(sha(bytes),expected.sha256,name);}await fs.mkdir(path.dirname(path.join(here,target)),{recursive:true});await fs.writeFile(path.join(here,target),bytes,{flag:'wx'});copies.push({sourceRoot:root,sourcePath:name,path:target,bytes:bytes.length,sha256:sha(bytes)});return bytes;}
+for(const name of ['canonical.mjs','authenticate-original.mjs','workloads.mjs','memory-worker.mjs','timing-worker.mjs','watch-owned-process.ps1','parse-observer.ps1'])await copy(old,name,name,oldReadiness.inventory[name]);
+const adaptations=[];
+for(const name of ['memory-runner.mjs','timing-runner.mjs','benchmark.mjs','check-harnesses.mjs','harness.test.mjs']){
+ const original=(await copy(old,name,'preserved/process-control-baseline/'+name,oldReadiness.inventory[name])).toString();
+ let current=original.replaceAll('candidate-module-control.mjs','candidate-algorithm.mjs').replaceAll('selector-control.mjs','selector-algorithm.mjs');
+ if(name==='harness.test.mjs'){
+  const before=String.raw`/import \{ singlePercentile \} from '\.\/selector-control\.mjs';/`,after=String.raw`/import \{ singlePercentile, preparePercentileValues \} from '\.\/selector-algorithm\.mjs';/`;
+  assert.ok(current.includes(before));current=current.replace(before,after);
+ }
+ if(name==='benchmark.mjs'){assert.ok(current.includes('prospectiveSourceLayoutHypothesis:true'));current=current.replace('prospectiveSourceLayoutHypothesis:true','prospectiveSourceLayoutHypothesis:false,prospectiveAlgorithmHypothesis:true');}
+ await fs.writeFile(path.join(here,name),current,{flag:'wx'});adaptations.push({path:name,baselineSHA256:sha(original),currentSHA256:sha(current),changes:'Candidate filename bindings only; harness import assertion includes both exact exports; benchmark annotation identifies algorithm hypothesis. Lifecycle, scheduling, limits, loops, observers and arithmetic unchanged.'});
+}
+for(const name of ['candidate-baseline.mjs','candidate-algorithm.mjs','selector-algorithm.mjs'])await copy(candidateRoot,name,name,frozen.inventory[name]);
+for(const name of ['stage-validation.json','freeze-manifest.json','candidate-contract.json','fixture-preservation.json','results/algorithm-budget.json','results/candidate-algorithm.json'])await copy(candidateRoot,name,'preserved/algorithm/'+name,name==='freeze-manifest.json'?{bytes:candidateManifestBytes.length,sha256:sha(candidateManifestBytes)}:frozen.inventory[name]);
+await copy(candidateRoot,'fixtures/algorithm-budget.graph.jsonl','preserved/correctness-provenance/algorithm-budget.graph.jsonl',frozen.inventory['fixtures/algorithm-budget.graph.jsonl']);
+await copy(candidateRoot,'preserved/sources.json','preserved/sources.json',frozen.inventory['preserved/sources.json']);
+for(const row of proof.attemptRecords)await copy(candidateRoot,row.path,'preserved/algorithm/'+row.path,frozen.inventory[row.path]);
+await copy(old,'memory-preflight.control.json','preserved/previous-memory-preflight.control.json',oldReadiness.inventory['memory-preflight.control.json']);
+await copy(old,'readiness-validation.json','preserved/previous-readiness-validation.json',{bytes:oldReadinessBytes.length,sha256:sha(oldReadinessBytes)});
+for(const fixture of Object.values(oldManifest.expectedFiles)){
+ await copy(old,fixture.inputPath,fixture.inputPath,{bytes:fixture.inputBytes,sha256:fixture.inputFileSHA256});await copy(old,fixture.path,fixture.path,{bytes:fixture.bytes,sha256:fixture.sha256});
+}
+const acceptanceRecords=[];
+for(const row of proof.attemptRecords){const bytes=await fs.readFile(path.join(candidateRoot,row.path));assert.equal(sha(bytes),row.sha256);const accepted=JSON.parse(bytes);assert.equal(accepted.status,'passed');assert.deepEqual(accepted.sourcesBefore,accepted.sourcesAfter);assert.equal(accepted.sourcesBefore['candidate-algorithm.mjs'],proof.entrySHA256);assert.equal(accepted.sourcesBefore['selector-algorithm.mjs'],proof.helperSHA256);assert.equal(accepted.steps.length,5);assert.ok(accepted.steps.every(step=>step.exitCode===0));acceptanceRecords.push({receiptPath:'preserved/algorithm/'+row.path,receiptSHA256:row.sha256,entryBeforeAfter:proof.entrySHA256,helperBeforeAfter:proof.helperSHA256});}
+const binding={schemaVersion:1,status:'passed',sourceStageReceipt:'preserved/algorithm/stage-validation.json',sourceStageReceiptSHA256:sha(candidateReceiptBytes),sourceStageManifestSHA256:sha(candidateManifestBytes),candidate:{entrySHA256:proof.entrySHA256,helperSHA256:proof.helperSHA256,baselineSHA256:proof.productionSHA256},bothNativeModulesBoundBeforeAndAfter:true,failedAcceptanceAttempts:0,acceptanceRecords,counts:proof.counts,scope:'Derived binding from the authenticated frozen 88-file candidate and exact acceptance receipts; no acceptance replay, no rebinding of earlier measured evidence. Legacy process-control guard shape is retained with new explicit provenance.'};
+await fs.writeFile(path.join(here,'preserved/algorithm-binding.json'),JSON.stringify(binding,null,2)+'\n',{flag:'wx'});
+const rootReview=path.resolve(here,'../metrics-selector-algorithm-root-review');await copy(rootReview,'review-validation.json','preserved/root-independent-review.json');await copy(path.resolve(here,'..'),'metrics-selector-algorithm-root-review.stdout.txt','preserved/root-independent-review.stdout.txt');
+const productionPath=path.resolve(here,'../../outputs/rea-research-lab/products/rea-studio/apps/metrics/native-calculations.mjs');assert.equal(sha(await fs.readFile(productionPath)),proof.productionSHA256);
+await fs.mkdir(path.join(here,'results'),{recursive:true});
+await fs.writeFile(path.join(here,'preservation.json'),JSON.stringify({schemaVersion:1,createdAt:new Date().toISOString(),candidateReceiptSHA256:sha(candidateReceiptBytes),candidateManifestSHA256:sha(candidateManifestBytes),all88CandidateArtifactsAuthenticated:true,oldReadinessSHA256:sha(oldReadinessBytes),oldManifestSHA256:sha(oldManifestBytes),copies,adaptations,productionPath,productionSHA256:proof.productionSHA256,workloadSourceAndAll14InputOutputFixturesCopiedExactly:true,new66InputFixtureUsedOnlyAsCorrectnessProvenance:true,timingMeasurementRun:false,memoryMeasurementRun:false,profileRun:false},null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({status:'prepared',copies:copies.length,processAdaptations:adaptations.length,candidateFilesVerified:88,measurementRun:false}));

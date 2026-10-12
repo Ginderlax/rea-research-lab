@@ -1,0 +1,15 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=path.dirname(fileURLToPath(import.meta.url)),app=path.join(root,'products/rea-studio/apps/backup');
+async function replacements(name,pairs){let text=await fs.readFile(path.join(app,name),'utf8');for(const[from,to]of pairs){if(text.split(from).length!==2)throw new Error(`Expected one replacement ${name}: ${from}`);text=text.replace(from,to);}await fs.writeFile(path.join(app,name),text);}
+await replacements('restic-pack-snapshot.test.mjs',[
+ ['original:async args=>{const result=',"original:async args=>{assert.equal(hash(await fs.readFile(exe)),'b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830');const result="],
+ ['for(const blob of pack.blobs){assert.equal(blob.offset,offset);','for(const blob of [...pack.blobs].sort((a,b)=>a.offset-b.offset)){assert.equal(blob.offset,offset);'],
+ ["assert.equal((await f.api('nativeCheck',{id:again.id})).verified,true);f.row.dataPacks=","assert.equal((await f.api('nativeCheck',{id:again.id})).verified,true);await f.original(['check','--read-data']);f.row.dataPacks="]
+]);
+await replacements('restic-compression-review.test.mjs',[
+ ['assert.equal(pack.blobs.length,1);const result=change({header:Buffer.from(header),payload:Buffer.from(payload),blob:pack.blobs[0]});','const firstLength=pack.blobs[0].length;const result=change({header:Buffer.from(header),payload:Buffer.from(payload.subarray(0,firstLength)),blob:pack.blobs[0]});'],
+ ['encodedPayload=result.payload??payload;const trailer=', 'encodedPayload=Buffer.concat([result.payload??payload.subarray(0,firstLength),payload.subarray(firstLength)]);const delta=encodedPayload.length-payload.length;for(const blob of pack.blobs.slice(1))blob.offset+=delta;const trailer=']
+]);
+console.log('Adapted exact independent corruption fixture helper to preserve subsequent payloads and shift index offsets; public production remains unchanged.');

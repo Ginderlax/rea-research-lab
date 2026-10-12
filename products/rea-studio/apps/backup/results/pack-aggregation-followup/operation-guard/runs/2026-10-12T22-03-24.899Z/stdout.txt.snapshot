@@ -1,0 +1,24 @@
+{"packOperationOwnershipObservations":[{"name":"save-vs-flush/v1","rejectedCalls":3,"commitCalls":2,"acceptedIDs":["8b73fdd7c558ab19159de3b502926cb85d6a7e8ef754c746c8cffa663d22bc4d","5e0360c918741d4e947e3436daeeff9f968da4c50c862944ed72fc34bb302a00"],"exactBytes":true},{"name":"flush-vs-flush-and-dispose/v1","rejectedCalls":2,"commitCalls":2,"exactBytes":true},{"name":"save-vs-automatic-old-flush/v1","rejectedCalls":3,"commitCalls":3,"acceptedIDs":["01d3a187638cc1a7740a74fbeb57aa2648dbdec42d497321912bf393d283ccd1","b63ec286a8d0a4e90158007c673ed0beb763e6cac8ac4a59843213ee6bf04220","152a717d2e7fceef7d1d3f53277a9dc48eabd2b06bc4993e30639833e36c8043"],"incomingSnapshotPreserved":true},{"name":"save-vs-automatic-current-flush/v1","rejectedCalls":3,"commitCalls":2,"exactBytes":true},{"name":"reentrant-commit/v1","rejectedCalls":3,"commitCalls":1,"exactBytes":true},{"name":"save-vs-flush/v2","rejectedCalls":3,"commitCalls":2,"acceptedIDs":["8b73fdd7c558ab19159de3b502926cb85d6a7e8ef754c746c8cffa663d22bc4d","5e0360c918741d4e947e3436daeeff9f968da4c50c862944ed72fc34bb302a00"],"exactBytes":true},{"name":"flush-vs-flush-and-dispose/v2","rejectedCalls":2,"commitCalls":2,"exactBytes":true},{"name":"save-vs-automatic-old-flush/v2","rejectedCalls":3,"commitCalls":3,"acceptedIDs":["01d3a187638cc1a7740a74fbeb57aa2648dbdec42d497321912bf393d283ccd1","b63ec286a8d0a4e90158007c673ed0beb763e6cac8ac4a59843213ee6bf04220","152a717d2e7fceef7d1d3f53277a9dc48eabd2b06bc4993e30639833e36c8043"],"incomingSnapshotPreserved":true},{"name":"save-vs-automatic-current-flush/v2","rejectedCalls":3,"commitCalls":2,"exactBytes":true},{"name":"reentrant-commit/v2","rejectedCalls":3,"commitCalls":1,"exactBytes":true},{"name":"commit-failure/explicit","rejectedCalls":3,"commitCalls":1,"pendingCountAfterFailure":0,"ownedCiphertextBuffersZeroed":1,"primaryErrorIdentityPreserved":true,"busyReleased":true,"callerBuffersUnchanged":true},{"name":"commit-failure/automatic-old","rejectedCalls":3,"commitCalls":1,"pendingCountAfterFailure":0,"ownedCiphertextBuffersZeroed":2,"primaryErrorIdentityPreserved":true,"busyReleased":true,"callerBuffersUnchanged":true},{"name":"commit-failure/automatic-current","rejectedCalls":3,"commitCalls":1,"pendingCountAfterFailure":0,"ownedCiphertextBuffersZeroed":1,"primaryErrorIdentityPreserved":true,"busyReleased":true,"callerBuffersUnchanged":true},{"name":"non-commit-failure-ownership","pendingRetained":true,"busyReleased":true,"exactBytes":true},{"name":"dispose-pending","ciphertextBuffersZeroed":1,"busyReleased":true,"callerBytesUnchanged":true}]}
+✔ v1 save during held explicit flush rejects before guard/allocation and preserves rightful bytes (2.8146ms)
+✔ v1 second flush and dispose reject during held flush without clearing pending rows (0.6952ms)
+✔ v1 save owns its automatic previous-pack flush and snapshots incoming caller bytes (0.8021ms)
+✔ v1 first save retains ownership through its automatic current-pack commit (0.5663ms)
+✔ v1 reentrant commit callback gets immediate public-operation rejections (0.583ms)
+✔ v2 save during held explicit flush rejects before guard/allocation and preserves rightful bytes (0.9656ms)
+✔ v2 second flush and dispose reject during held flush without clearing pending rows (1.0401ms)
+✔ v2 save owns its automatic previous-pack flush and snapshots incoming caller bytes (1.1433ms)
+✔ v2 first save retains ownership through its automatic current-pack commit (0.298ms)
+✔ v2 reentrant commit callback gets immediate public-operation rejections (0.3504ms)
+✔ held explicit commit rejection preserves primary Error, releases busy and wipes owned payloads (0.5817ms)
+✔ held automatic-old commit rejection preserves primary Error, releases busy and wipes owned payloads (0.3095ms)
+✔ held automatic-current commit rejection preserves primary Error, releases busy and wipes owned payloads (0.2462ms)
+✔ guard and validation failures release ownership while retaining previously accepted pending data (0.3435ms)
+✔ dispose is synchronous, clears owned queued ciphertext, leaves caller bytes intact and releases ownership (0.4847ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73.6486

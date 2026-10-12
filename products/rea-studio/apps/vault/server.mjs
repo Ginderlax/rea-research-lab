@@ -1,6 +1,7 @@
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, randomInt, randomUUID, scrypt as derive } from 'node:crypto';
 import { promisify } from 'node:util';
 import { importKdbx, exportKdbx, base64 } from './kdbx.mjs';
+import {applyEntrySave,listEntryHistory,readEntryHistory,restoreEntryHistory} from './history.mjs';
 
 const scrypt = promisify(derive);
 const sessions = new Map();
@@ -176,10 +177,17 @@ async function run({ action, input = {}, store, workspace }) {
     const old = state.data.entries.find(e => e.id === input.id);
     if (input.id && !old) throw new Error('Entry not found.');
     const result = entry(input, old);
-    const data = { ...state.data, entries: old ? state.data.entries.map(e => e.id === old.id ? result : e) : [...state.data.entries, result] };
+    const data = applyEntrySave(state.data,old,result);
     if (data.entries.length > 10000) throw new Error('The local vault entry limit is 10,000.');
     await store.set(KEY, encode(data, state.key, state.salt)); state.data = data;
     return { id: result.id, saved: true };
+  }
+  if(action==='historyList')return listEntryHistory(state.data,input.id,state.key);
+  if(action==='historyRead')return readEntryHistory(state.data,input.id,input.index,input.revision,state.key);
+  if(action==='historyRestore'){
+    const data=restoreEntryHistory(state.data,input.id,input.index,input.revision,state.key,{confirm:input.confirm});
+    for(const item of data.entries)if(item.totpSecret)fromBase32(item.totpSecret);
+    await store.set(KEY,encode(data,state.key,state.salt));state.data=data;return {restored:true,id:input.id};
   }
   if (action === 'delete') {
     if (input.confirm !== true) throw new Error('Deleting an entry requires confirmation.');
@@ -205,6 +213,8 @@ async function run({ action, input = {}, store, workspace }) {
   throw new Error('Unknown vault action.');
 }
 export async function handle(context) {
+  // Capture caller-owned input before the serialization queue can await.
+  context={...context,input:captureInput(context.input??{})};
   const id = context.workspace.root;
   const previous = queues.get(id) ?? Promise.resolve();
   const current = previous.catch(() => {}).then(() => run(context));
@@ -212,3 +222,14 @@ export async function handle(context) {
   try { return await current; } finally { if (queues.get(id) === current) queues.delete(id); }
 }
 export function dispose(workspace) { lock(workspace.root); }
+
+function captureInput(value){let bytes=0,nodes=0;function copy(item,depth=0){
+  if(++nodes>100000||depth>64)throw new Error('Vault input structure exceeds local bounds.');
+  if(typeof item==='string'){bytes+=Buffer.byteLength(item);if(bytes>12*1024*1024)throw new Error('Vault input exceeds12MiB.');return item;}
+  if(item===null||item===undefined||typeof item==='boolean')return item;
+  if(typeof item==='number'){if(!Number.isFinite(item))throw new Error('Vault input contains an invalid number.');return item;}
+  if(typeof item!=='object'||(!Array.isArray(item)&&![null,Object.prototype].includes(Object.getPrototypeOf(item))))throw new Error('Vault input must contain plain data.');
+  if(Array.isArray(item)&&item.length>100000)throw new Error('Vault input array exceeds local bounds.');
+  const out=Array.isArray(item)?new Array(item.length):Object.create(null);
+  for(const key of Object.keys(item)){bytes+=Buffer.byteLength(key);if(bytes>12*1024*1024)throw new Error('Vault input exceeds12MiB.');const descriptor=Object.getOwnPropertyDescriptor(item,key);if(!descriptor||!Object.hasOwn(descriptor,'value'))throw new Error('Vault input accessors are unsupported.');Object.defineProperty(out,key,{value:copy(descriptor.value,depth+1),enumerable:true,writable:true,configurable:true});}return out;
+  }return copy(value);}

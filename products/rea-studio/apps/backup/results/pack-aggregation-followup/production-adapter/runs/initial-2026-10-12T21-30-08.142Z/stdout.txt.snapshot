@@ -1,0 +1,96 @@
+✔ native AES-CTR/Poly1305-AES rejects altered nonce, ciphertext and tag before decrypting (3.3513ms)
+✖ app writes genuine native v1 repositories; original opens, checks, restores and app appends (3446.1922ms)
+✖ app writes genuine native v2 repositories; original opens, checks, restores and app appends (2465.5243ms)
+✔ original v1 snapshots including compressed v2 blobs are listed, checked, restored and extended by app (10571.4584ms)
+ℹ Original calibrated scrypt parameters: N=32768, r=8, p=12
+✔ original v2 snapshots including compressed v2 blobs are listed, checked, restored and extended by app (8814.2484ms)
+ℹ Original calibrated scrypt parameters: N=32768, r=8, p=10
+✔ wrong password, damaged native key/config and excessive KDF are refused without persistent credentials (3542.9547ms)
+✔ native restore refuses storage hash before creating its destination (2560.7641ms)
+✔ native restore refuses blob MAC before creating its destination (2522.1585ms)
+✔ native restore refuses header MAC before creating its destination (2552.4715ms)
+✔ native restore refuses header type before creating its destination (2921.1395ms)
+✔ native restore refuses footer length before creating its destination (2958.4727ms)
+✔ native restore refuses plaintext hash before creating its destination (3015.8022ms)
+✔ native restore refuses index mismatch before creating its destination (3020.1959ms)
+✔ snapshot MAC, unknown v2 metadata, and zstd expansion budgets fail before tree processing (5546.1789ms)
+✔ authenticated malformed mtime, atime and ctime are rejected before output; original rejects those trees too (53896.5778ms)
+ℹ 14 authenticated bad tree timestamp cases compared with the released original.
+✔ malformed snapshot time is rejected by list and every selected action before output, matching original parsing (24256.9022ms)
+ℹ 5 authenticated bad snapshot time cases compared with the released original.
+✔ valid Go time boundaries and permissive encodings match original acceptance and safe Windows mtime restoration (79787.9504ms)
+ℹ 17 authenticated valid tree time cases; original restore compared within the supported platform interval. Null snapshot time also matched original zero-time normalization.
+✔ snapshot listing orders timestamps by their instant rather than textual offset or fractional form (4472.2533ms)
+✔ authenticated native tree traversal is rejected before restore output (2810.2239ms)
+✔ authenticated native tree case collision is rejected before restore output (2984.8348ms)
+✔ authenticated native tree duplicate is rejected before restore output (2702.8086ms)
+✔ authenticated native tree unordered is rejected before restore output (2605.8007ms)
+✔ authenticated native tree symlink is rejected before restore output (2498.9304ms)
+✔ authenticated native tree excessive size is rejected before restore output (2620.5499ms)
+✔ authenticated native tree content size is rejected before restore output (2827.4367ms)
+✔ native paths, overlapping folders, existing destinations, invalid IDs and confirmations preserve existing data (8025.7996ms)
+✔ native app and original honor authenticated exclusive locks; app never deletes an existing stale lock (3032.043ms)
+✔ oversized source files are rejected before native snapshot publication (1323.4096ms)
+✖ source mutation during native capture aborts publication and releases the app lock (1769.645ms)
+✔ native HTTP repository, encrypted snapshot and restore persist across host restarts without password records (3740.6772ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 27
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 253380.5507
+
+✖ failing tests:
+
+test at products\rea-studio\apps\backup\native.test.mjs:103:30
+✖ app writes genuine native v1 repositories; original opens, checks, restores and app appends (3446.1922ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(saved.newPacks >= 7)
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/restic-pack-production-adapter-next/products/rea-studio/apps/backup/native.test.mjs:107:126)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at products\rea-studio\apps\backup\native.test.mjs:103:30
+✖ app writes genuine native v2 repositories; original opens, checks, restores and app appends (2465.5243ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(saved.newPacks >= 7)
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/restic-pack-production-adapter-next/products/rea-studio/apps/backup/native.test.mjs:107:126)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at products\rea-studio\apps\backup\native.test.mjs:304:1
+✖ source mutation during native capture aborts publication and releases the app lock (1769.645ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /changed while being captured/. Input:
+  
+  ''
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/restic-pack-production-adapter-next/products/rea-studio/apps/backup/native.test.mjs:315:40)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: /changed while being captured/,
+    operator: 'match',
+    diff: 'simple'
+  }

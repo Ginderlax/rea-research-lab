@@ -1,0 +1,40 @@
+✔ notes HTTP save/history/export/trash survive host restarts on real disk (121.0087ms)
+✔ JEX imports and binary attachments survive HTTP host restarts with exact IDs and metadata (68.0088ms)
+✔ notes CRUD, search/tag/notebook filtering, revisions, history, trash and restore (4.6177ms)
+✔ concurrent revision writes cannot overwrite the winning draft (0.4022ms)
+✔ Markdown export and JSON bundle re-import create independent note copies (5.7612ms)
+✔ safe Markdown subset never emits HTML or dangerous link schemes (0.5788ms)
+✔ history bounds and input validation prevent unbounded individual notes (2.4872ms)
+✔ long malformed Markdown openers stay plain text without repeated delimiter scans (13.6102ms)
+✔ multiline labels reject API and bundle writes before mutation while note bodies retain line breaks (4.389ms)
+✔ saved multiline legacy labels remain intact during body edits and JSON backup (0.4258ms)
+✔ internal Joplin links navigate local notes and download referenced resources without replacing retained drafts (28.3455ms)
+✔ native-TAR original-serialized fixture imports with IDs, hierarchy, metadata, links, tags and bytes intact (134.7019ms)
+✔ edits and new attachments retain original metadata and produce valid raw relationships (26.6425ms)
+✔ colliding IDs and unsupported or broken records reject the whole import before mutation (22.5898ms)
+✔ saving an unchanged imported title, notebook or tag never normalizes metadata away (12.4845ms)
+✔ TAR checksum, truncation, duplicates, traversal, links, missing resources and trailing payload fail closed (2.2963ms)
+✔ checksum-valid high-bit TAR names and numeric fields reject before storing anything (9.0305ms)
+✔ binary bounds, tamper detection and failed storage commits protect attachments (26.058ms)
+✔ existing legacy notes migrate without deletion and export as valid Joplin identifiers (11.3709ms)
+{"notebookHttpObservation":{"privateEphemeralHost":true,"hostRestarts":2,"parentId":"dfd4de79b07d9fae80501af0c5f67042","childId":"a1768c47d4662c907210445bd57a4cf9","noteId":"afa37ecb-35b0-497d-b544-f5dcf589d19a","attachmentSha256":"096a5d78ca5b29ff53b6c48451fafa47e26208c96719ff5e79d03941018ea597","exportSha256":"5427bc55dfc45afc198cafa8a861b2203827ad46b72acacec16f2a6c031ad41b","identityFilterVerified":true}}
+✔ notebook identity tree operations and note moves persist through actual HTTP host cold restarts and JEX export (151.6919ms)
+✔ notebook create rename reparent and note move preserve native IDs metadata relationships bytes and roundtrip (62.6084ms)
+✔ identity notebook filters distinguish duplicate sibling titles and separator-containing titles (12.5181ms)
+✔ cycle missing IDs stale revisions multiline titles oversized descendant paths and failed commits do not mutate saved state (25.1614ms)
+✔ legacy notebook text saves still create flat folders while stable-ID history restoration follows current hierarchy (12.7519ms)
+✔ shared or trashed notebook mutations and trashed note moves reject while retained metadata can export (37.8009ms)
+✔ notebook graph rejects excessive depth record counts and paths without assuming title separators are depth (4.9551ms)
+(node:53444) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ released original Folder nesting/path/move and Note move helpers match finite regular unshared fixtures (26.335ms)
+{"notebookOriginalObservations":[{"comparisons":24,"bindings":[{"path":"packages/lib/models/Folder.ts","method":"folderPath","startLine":867,"endLine":884,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"557e5c49fdc9a48a6179db9be4bdf3767454a4de1b148113ccb816f10b595584"},{"path":"packages/lib/models/Folder.ts","method":"canNestUnder","startLine":981,"endLine":1000,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"b08c139defcd9df89bf9f6d7b0f319a0eeed740d728d29b0e0cd0a5e0f7c01dc"},{"path":"packages/lib/models/Folder.ts","method":"moveToFolder","startLine":1002,"endLine":1028,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"381dc1ed8feb7e422aef2167063f861aee34c5a6e8ef5a0ce65965ae1cac092b"},{"path":"packages/lib/models/Note.ts","method":"moveToFolder","startLine":633,"endLine":654,"sourceSha256":"5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647","sliceSha256":"7665835c01e79de3dcc44e014a48133000b78ac64b8d84cadb2ca66be30d1af7"}],"scope":"Four exact released Desktop3.6.14 methods; in-memory load/save and fixed-clock stubs. No original database, synchronization, desktop UI or release executable is executed.","nestingComparisons":20,"pathComparisons":4,"originalMoveContractExecutions":2},{"candidateOriginalMoveComparisons":2,"originalMoveExecutions":2,"bindings":[{"path":"packages/lib/models/Folder.ts","method":"folderPath","startLine":867,"endLine":884,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"557e5c49fdc9a48a6179db9be4bdf3767454a4de1b148113ccb816f10b595584"},{"path":"packages/lib/models/Folder.ts","method":"canNestUnder","startLine":981,"endLine":1000,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"b08c139defcd9df89bf9f6d7b0f319a0eeed740d728d29b0e0cd0a5e0f7c01dc"},{"path":"packages/lib/models/Folder.ts","method":"moveToFolder","startLine":1002,"endLine":1028,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"381dc1ed8feb7e422aef2167063f861aee34c5a6e8ef5a0ce65965ae1cac092b"},{"path":"packages/lib/models/Note.ts","method":"moveToFolder","startLine":633,"endLine":654,"sourceSha256":"5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647","sliceSha256":"7665835c01e79de3dcc44e014a48133000b78ac64b8d84cadb2ca66be30d1af7"}],"scope":"Four exact released Desktop3.6.14 methods; in-memory load/save and fixed-clock stubs. No original database, synchronization, desktop UI or release executable is executed.","priorUserEditTimestampPreserved":true}]}
+✔ actual candidate notebook and note move exports match released original helper effects with user times retained (33.2452ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1223.6223

@@ -1,0 +1,113 @@
+{
+  "schema": "rea-independent-keepass-real-browser-validation/v1",
+  "createdAt": "2026-10-12T22:59:31.877Z",
+  "status": "PASS",
+  "sourceStable": true,
+  "candidateFingerprints": [
+    {
+      "path": "history.mjs",
+      "bytes": 11850,
+      "sha256": "c902e684ab38cb9d9ef421826e9091422a7843b2b85ba689d2a12690e78b5f26"
+    },
+    {
+      "path": "server.mjs",
+      "bytes": 14576,
+      "sha256": "c4aa4d91d93a19de3aab0e4d9cc42759336e78bd1f853572586b542efbeb0fb9"
+    },
+    {
+      "path": "client.mjs",
+      "bytes": 17933,
+      "sha256": "1d392037160c2cdca8c53e0ab807d5215964cd00c248360e5c00532f3ba00bed"
+    },
+    {
+      "path": "kdbx.mjs",
+      "bytes": 34007,
+      "sha256": "ea774360332dbc7497a2e6a005fa10604cafbb92326293384d157d8827e0fe0c"
+    },
+    {
+      "path": "xml.mjs",
+      "bytes": 5965,
+      "sha256": "0adfa8ec93cc2cffe7a256a94b896fd9bd815530de79769dccba4762c3c1c0bd"
+    }
+  ],
+  "checks": [
+    {
+      "name": "held-restore-draft",
+      "notes": "Draft typed during held restore response"
+    },
+    {
+      "name": "held-save-draft",
+      "notes": "Newer browser draft while save response is held"
+    },
+    {
+      "name": "confirmed-restore",
+      "notes": "Original browser notes",
+      "passwordType": "password"
+    },
+    {
+      "name": "lock-unlock-persistence",
+      "notes": "Original browser notes"
+    },
+    {
+      "name": "real-process-restart-persistence",
+      "notes": "Original browser notes",
+      "historyCount": 5,
+      "passwordType": "password"
+    }
+  ],
+  "additionalAssertions": {
+    "unconfirmedRestoreRefused": true,
+    "dirtyBeforeRestoreRefusedAndPersistedRecordUnchanged": true,
+    "heldRestoreCommitVerified": true,
+    "heldSaveRetainedDraft": true,
+    "confirmedRestoreVerified": true,
+    "lockUnlockVerified": true,
+    "realProcessRestartSameEncryptedRecord": true,
+    "historyFiveRevisionsPersisted": true,
+    "passwordControlsMasked": true,
+    "applicationOriginConsoleWarningsErrors": 0,
+    "retainedBrowserExtensionWarningsErrors": 12
+  },
+  "ownedPreview": {
+    "processes": [
+      {
+        "url": "http://127.0.0.1:62020/#vault",
+        "dataDir": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-draft-independent-review\\.local\\browser-data",
+        "pid": 43204,
+        "seeded": true,
+        "entryId": "80f4162e-b8c6-4df8-a09f-33c516d48eb3",
+        "scope": "Owned synthetic fixture; no user workspace or original application process"
+      },
+      {
+        "url": "http://127.0.0.1:56110/#vault",
+        "dataDir": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-draft-independent-review\\.local\\browser-data",
+        "pid": 36672,
+        "seeded": false,
+        "scope": "Owned synthetic fixture; no user workspace or original application process"
+      },
+      {
+        "url": "http://127.0.0.1:63251/#vault",
+        "dataDir": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-draft-independent-review\\.local\\browser-data",
+        "pid": 39860,
+        "seeded": false,
+        "scope": "Owned synthetic fixture; no user workspace or original application process"
+      }
+    ],
+    "allProcessesExited": true,
+    "allTabsClosed": true,
+    "user4311Untouched": true,
+    "portsEphemeral": true
+  },
+  "collectorFailures": [
+    {
+      "path": "failures/browser-collector-v1/failure.json",
+      "classification": "Saved default accessibility diff omitted previously observed dirty-refusal status; unchanged-source full-tree repeat corrected evidence capture"
+    },
+    {
+      "path": "failures/browser-collector-v2/failure.json",
+      "classification": "Original collector counted third-party extension warnings as application diagnostics; all retained, exact application origins scoped explicitly"
+    }
+  ],
+  "scope": "Actual Chrome browser and real HTTP in an owned ephemeral preview with synthetic encrypted data. An explicit preview-only import/response gate adapter holds results after the genuine frozen server commits; no app runtime edits, no original GUI execution, no current production HTTP-loss or full-parity/security claim.",
+  "originalApplicationExecutionsThisReview": 0
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "rea-restic-native-policy-adapter-diff/v1",
+  "path": "products/rea-studio/apps/backup/native.test.mjs",
+  "originalSha256": "d665da4f65ff7c61d788935467234991a379fb32a1a1a6796c416de747de7b63",
+  "adaptedSha256": "2ab37fee9c3177206df39b59d9a669b3ca26b147a67401c98a60920bfe8d84e2",
+  "replacements": [
+    [
+      "import test from 'node:test';",
+      "import test from 'node:test';\nimport {verifyBatch,verifyUnchanged} from './native-policy-assertions.mjs';"
+    ],
+    [
+      "assert.ok(saved.newPacks >= 7);",
+      "await verifyBatch({workspace,snapshot:saved,password:PASSWORD});"
+    ],
+    [
+      "assert.ok(second.newPacks < saved.newPacks,'Existing native data blobs are reused.');",
+      "assert.ok(second.newPacks < saved.newPacks,'Existing native data blobs are reused.'); await verifyUnchanged({workspace,password:PASSWORD});"
+    ]
+  ],
+  "importPathAdaptation": "One additional test-only local helper import; all original imports/paths unchanged.",
+  "reason": "One-blob-per-pack minimum count is superseded by bounded authenticated multi-blob data batching. The existing repeat count assertion is retained and strengthened with exact data-pack/index-row equality. All original check/restore/timestamp/overwrite/lock assertions remain unchanged."
+}

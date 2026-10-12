@@ -1,0 +1,23 @@
+{
+  "schema": "rea-sketch-collector-second-static-review/v1",
+  "reviewer": "/root/grafana_exchange/sketch_cleanup_read",
+  "helperSHA256": "ffafa889dd99c201c9a2d9682e9a8e3e7033f88e35ab1ef9498aa48f3319ec61",
+  "scope": "Read-only exact production helper inspection. No executable/test/browser invocation or mutation.",
+  "findings": [
+    {
+      "lines": [13, 35],
+      "description": "A root that exits first can leave a descendant alive. terminateTree skips cleanup once child.exitCode/signalCode is set and reports descendantGuarantee:false. Inherited pipes can cause a later timeout that destroys pipes without terminating the descendant; independent descendant pipes can permit normal successful root collection.",
+      "reproduced": false,
+      "alreadyDisclosedInStageDocumentation": true
+    }
+  ],
+  "otherObservations": [
+    "Windows taskkill is addressed only to the owned child PID; no process-name search occurs.",
+    "taskkill exit zero or root-already-exited confirmed:true does not establish absence of all descendants.",
+    "Failed tree cleanup falls back to root signaling only; descendant guarantees are withheld.",
+    "Close-event escape deadline is 2*cleanupMs+1000 and leaves closed:false, rejected as success.",
+    "Retained stdout/stderr obey configured limits; cleanup command diagnostics share a16KiB cap.",
+    "Fingerprint reads and diagnostic writes are outside the child timeout; the timeout is not an end-to-end collection deadline."
+  ],
+  "additionalSettlementDefectFound": false
+}

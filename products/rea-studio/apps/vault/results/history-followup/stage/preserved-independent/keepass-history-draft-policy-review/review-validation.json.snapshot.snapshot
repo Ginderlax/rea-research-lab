@@ -1,0 +1,87 @@
+{
+  "schema": "rea-independent-keepass-dirty-restore-review-final/v1",
+  "createdAt": "2026-10-12T22:44:16.855Z",
+  "status": "FROZEN_REVIEW_WITH_CONFIRMED_FINDING",
+  "authenticated": [
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-selection-fix-next\\selection-preservation-manifest.json",
+      "bytes": 109574,
+      "sha256": "d6c09b4a6e4d45b3729ad8c8692b2352686e8e7e88e5ad791905fbb26b8b52de",
+      "count": 546,
+      "allEntriesMatch": true
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-independent-review\\review-manifest.json",
+      "bytes": 19320,
+      "sha256": "659a694609e032da24f51b625d9f6528b0d9a5c3e558c9bc0d9fe7a0cf6f35d1",
+      "count": 101,
+      "allEntriesMatch": true
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-selection-independent-review\\review-manifest.json",
+      "bytes": 6234,
+      "sha256": "df87b099e0234bb611b76dd6079e09482f526696037a0124bd4374318738dd6d",
+      "count": 36,
+      "allEntriesMatch": true
+    }
+  ],
+  "run": {
+    "bytes": 2150,
+    "sha256": "ccd1a6ac8c94983953463b7ea79e6857c3a878334852f71681e59495bfdb9c28",
+    "counts": {
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "sourceStable": true
+  },
+  "candidateFingerprints": [
+    {
+      "path": "history.mjs",
+      "sha256": "c902e684ab38cb9d9ef421826e9091422a7843b2b85ba689d2a12690e78b5f26"
+    },
+    {
+      "path": "server.mjs",
+      "sha256": "c4aa4d91d93a19de3aab0e4d9cc42759336e78bd1f853572586b542efbeb0fb9"
+    },
+    {
+      "path": "client.mjs",
+      "sha256": "157e34dfaa5dce136f4225aa04dcfcd7f69d8a4880c4c42b657c265adaa3ebfd"
+    },
+    {
+      "path": "kdbx.mjs",
+      "sha256": "ea774360332dbc7497a2e6a005fa10604cafbb92326293384d157d8827e0fe0c"
+    },
+    {
+      "path": "xml.mjs",
+      "sha256": "0adfa8ec93cc2cffe7a256a94b896fd9bd815530de79769dccba4762c3c1c0bd"
+    }
+  ],
+  "finding": {
+    "priority": "P2",
+    "trigger": "Unsaved Notes in the same editor before confirmed Restore",
+    "observed": "Draft lost; one historyRestore request and encrypted record changes",
+    "expected": "Refuse restore and preserve the dirty editor without issuing the effect",
+    "originalSource": {
+      "path": "C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-history-next/source/KeePass/Forms/PwEntryForm.cs",
+      "sha256": "b818aed12debd3d30115e17a44e6f03d6c57e4175f76f7d3d2a443da90a872c4",
+      "lines": [
+        [
+          1070,
+          1071
+        ],
+        [
+          1485,
+          1491
+        ],
+        [
+          2139,
+          2145
+        ]
+      ]
+    }
+  },
+  "limits": "One owned synthetic main-editor dirty-before-request safety probe against actual frozen client/server with a DOM element model, not a native GUI or HTTP loss observation"
+}

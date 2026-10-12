@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const work=import.meta.dirname,lab=path.resolve(work,'../outputs/rea-research-lab'),studio=path.join(lab,'products/rea-studio');
+const sha=b=>createHash('sha256').update(b).digest('hex');
+async function files(dir){const out=[];for(const e of await fs.readdir(dir,{withFileTypes:true})){const p=path.join(dir,e.name);if(e.isDirectory())out.push(...await files(p));else out.push(p);}return out.sort();}
+async function preserve(source,target,schema,extra={}){
+  await fs.mkdir(target,{recursive:true});const entries=[];
+  for(const p of await files(source)){const rel=path.relative(source,p).replaceAll('\\','/');assert.ok(!rel.split('/').some(s=>['.git','.local','node_modules'].includes(s)));const b=await fs.readFile(p),dest=rel+'.snapshot';await fs.mkdir(path.dirname(path.join(target,dest)),{recursive:true});await fs.writeFile(path.join(target,dest),b,{flag:'wx'});entries.push({sourcePath:rel,path:dest,bytes:b.length,sha256:sha(b)});}
+  const manifest={schema,recordedAtUtc:new Date().toISOString(),sourceStage:path.relative(work,source).replaceAll('\\','/'),snapshots:entries,...extra,allSnapshotsInert:true,originalExecutableCopied:false,fullProductParity:false,universalSuperiority:false};
+  const b=Buffer.from(JSON.stringify(manifest,null,2)+'\n');await fs.writeFile(path.join(target,'preservation-manifest.json'),b,{flag:'wx'});return{files:entries.length,manifestSHA256:sha(b)};
+}
+const suite=path.join(work,'packs-notebooks-history-suite-runs/2026-10-12T23-23-34.771Z'),receipt=JSON.parse(await fs.readFile(path.join(suite,'attempt-validation.json'))),before=JSON.parse(await fs.readFile(path.join(suite,'source-before.json'))),after=JSON.parse(await fs.readFile(path.join(suite,'source-after.json')));
+assert.deepEqual(before,after);assert.equal(receipt.summary.pass,686);assert.equal(receipt.summary.tests,686);assert.equal(receipt.summary.fail+receipt.summary.skipped+receipt.summary.cancelled+receipt.summary.todo,0);assert.equal(receipt.sourceStable,true);assert.equal(before.length,674);
+for(const e of before){const b=await fs.readFile(path.join(studio,e.path));assert.equal(b.length,e.bytes);assert.equal(sha(b),e.sha256);const frozen=await fs.readFile(path.join(suite,'source',e.path+'.snapshot'));assert.ok(b.equals(frozen));}
+const validationBytes=await fs.readFile(path.join(studio,'results/development-validation.json')),validation=JSON.parse(validationBytes);assert.deepEqual(validation.summary,receipt.summary);assert.equal(validation.source_files.length,674);assert.equal(validation.source_bytes_stable_across_run,true);
+const suiteProof=await preserve(suite,path.join(studio,'results/packs-notebooks-history-combined-20261012'),'rea-packs-notebooks-history-suite-preservation/v1',{summary:receipt.summary,sourceFiles:674,sourceStable:true,sourceCapturedBeforeExecution:true,developmentValidationSHA256:sha(validationBytes),runtime:receipt.runtime});
+const auditSource=path.join(work,'metrics-algorithm-measured-independent-audit'),audit=JSON.parse(await fs.readFile(path.join(auditSource,'audit-validation.json')));
+const auditProof=await preserve(auditSource,path.join(studio,'results/metrics-algorithm-independent-audit-20261012'),'rea-metrics-algorithm-independent-audit-preservation/v1',{auditReceiptSHA256:sha(await fs.readFile(path.join(auditSource,'audit-validation.json'))),auditFrozenManifestSHA256:sha(await fs.readFile(path.join(auditSource,'freeze-manifest.json'))),candidateSelectedForIntegration:false,measurementReruns:0});
+console.log(JSON.stringify({suiteProof,auditProof,currentCompleteReplacementProducts:0}));

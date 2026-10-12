@@ -1,0 +1,181 @@
+TAP version 13
+# Subtest: automatic changed edit preserves prior version; no-op touches access and usage without history or mtime
+ok 1 - automatic changed edit preserves prior version; no-op touches access and usage without history or mtime
+  ---
+  duration_ms: 11.363
+  type: 'test'
+  ...
+# Subtest: count, size, unlimited limits and oldest modification time preserve ordered survivors
+ok 2 - count, size, unlimited limits and oldest modification time preserve ordered survivors
+  ---
+  duration_ms: 12.5382
+  type: 'test'
+  ...
+# Subtest: restore keeps current location, history and UUID while restoring metadata and selected content
+ok 3 - restore keeps current location, history and UUID while restoring metadata and selected content
+  ---
+  duration_ms: 7.0274
+  type: 'test'
+  ...
+# Subtest: confirmation, stale selections, bad indices and cross-key tokens reject without mutation; explicit read is a copy
+ok 4 - confirmation, stale selections, bad indices and cross-key tokens reject without mutation; explicit read is a copy
+  ---
+  duration_ms: 4.3238
+  type: 'test'
+  ...
+# Subtest: malformed history, nested revisions, duplicate fields, bad attachment refs and combined bound reject before persistence
+ok 5 - malformed history, nested revisions, duplicate fields, bad attachment refs and combined bound reject before persistence
+  ---
+  duration_ms: 189.9004
+  type: 'test'
+  ...
+# Subtest: 1000 final revisions may prune one pending copy; unlimited overflow and late-year sentinel prune reject
+ok 6 - 1000 final revisions may prune one pending copy; unlimited overflow and late-year sentinel prune reject
+  ---
+  duration_ms: 406.6194
+  type: 'test'
+  ...
+# Subtest: original release direct backup and maintenance replay match native edits, metadata, no-op and oldest pruning
+ok 7 - original release direct backup and maintenance replay match native edits, metadata, no-op and oldest pruning
+  ---
+  duration_ms: 1551.5059
+  type: 'test'
+  ...
+# Subtest: original RestoreFromBackup copies old content and metadata while retaining live history/location
+ok 8 - original RestoreFromBackup copies old content and metadata while retaining live history/location
+  ---
+  duration_ms: 1440.2422
+  type: 'test'
+  ...
+# Subtest: original GetSize byte-accounting covers Unicode, protected and empty binaries, Auto-Type and unusual tag trimming
+ok 9 - original GetSize byte-accounting covers Unicode, protected and empty binaries, Auto-Type and unusual tag trimming
+  ---
+  duration_ms: 1943.9365
+  type: 'test'
+  ...
+# Subtest: original history settings boundary count0 and exact byte cutoff agree with candidate
+ok 10 - original history settings boundary count0 and exact byte cutoff agree with candidate
+  ---
+  duration_ms: 1829.7388
+  type: 'test'
+  ...
+# Subtest: public entry captures input before queue awaits and rejects failed storage without altering current/history
+ok 11 - public entry captures input before queue awaits and rejects failed storage without altering current/history
+  ---
+  duration_ms: 61.4769
+  type: 'test'
+  ...
+# Subtest: queued input is captured while persistence is held; lock waits for restored-state publication
+ok 12 - queued input is captured while persistence is held; lock waits for restored-state publication
+  ---
+  duration_ms: 106.197
+  type: 'test'
+  ...
+# Subtest: unsafe own keys remain data, inherited/accessor inputs reject, and byte/structure bounds fail before store changes
+ok 13 - unsafe own keys remain data, inherited/accessor inputs reject, and byte/structure bounds fail before store changes
+  ---
+  duration_ms: 60.877
+  type: 'test'
+  ...
+# REA_KEEPASS_HISTORY_ORIGINAL {"originalProcessExecutions":14,"guiExecutions":0,"detail":".local/observations/history-original.json"}
+# Subtest: disk HTTP edit/history/confirmed restore survive genuine process restart and release opens native export
+ok 14 - disk HTTP edit/history/confirmed restore survive genuine process restart and release opens native export
+  ---
+  duration_ms: 1286.508
+  type: 'test'
+  ...
+# Subtest: master-key rotation preserves history through restart, invalidates old private selection token and rejects old password
+ok 15 - master-key rotation preserves history through restart, invalidates old private selection token and rejects old password
+  ---
+  duration_ms: 564.6591
+  type: 'test'
+  ...
+# REA_KEEPASS_HISTORY_HTTP {"hostProcesses":5,"originalProcessExecutions":1,"detail":".local/observations/history-http.json"}
+# Subtest: a held Open A read cannot replace a later Open B editor or redirect its save
+ok 16 - a held Open A read cannot replace a later Open B editor or redirect its save
+  ---
+  duration_ms: 87.9805
+  type: 'test'
+  ...
+# Subtest: closing history while its preview is held prevents late secret publication
+ok 17 - closing history while its preview is held prevents late secret publication
+  ---
+  duration_ms: 70.6108
+  type: 'test'
+  ...
+# Subtest: an older search response cannot replace newer search results or a new editor draft
+ok 18 - an older search response cannot replace newer search results or a new editor draft
+  ---
+  duration_ms: 67.1631
+  type: 'test'
+  ...
+# Subtest: New entry remains a new identity after a late post-restore read
+ok 19 - New entry remains a new identity after a late post-restore read
+  ---
+  duration_ms: 90.1472
+  type: 'test'
+  ...
+# Subtest: locking during a held restore read cannot resurrect its old selected entry after unlock
+ok 20 - locking during a held restore read cannot resurrect its old selected entry after unlock
+  ---
+  duration_ms: 132.8431
+  type: 'test'
+  ...
+# Subtest: late explicit history preview cannot populate a newly opened empty editor
+ok 21 - late explicit history preview cannot populate a newly opened empty editor
+  ---
+  duration_ms: 60.5995
+  type: 'test'
+  ...
+# Subtest: a delayed post-restore list does not change the next editor selected by the user
+ok 22 - a delayed post-restore list does not change the next editor selected by the user
+  ---
+  duration_ms: 57.7211
+  type: 'test'
+  ...
+# Subtest: a failed history restore persistence keeps ciphertext and active entry/history unchanged
+ok 23 - a failed history restore persistence keeps ciphertext and active entry/history unchanged
+  ---
+  duration_ms: 60.825
+  type: 'test'
+  ...
+# Subtest: ordinary save completion preserves a different editor opened while that response was held
+ok 24 - ordinary save completion preserves a different editor opened while that response was held
+  ---
+  duration_ms: 59.6622
+  type: 'test'
+  ...
+# Subtest: late post-restore read must not redirect the newly selected editor save to a different entry
+ok 25 - late post-restore read must not redirect the newly selected editor save to a different entry
+  ---
+  duration_ms: 90.1377
+  type: 'test'
+  ...
+# Subtest: staged DOM interaction lists redacted history, explicitly views masked secret and confirms restoration
+ok 26 - staged DOM interaction lists redacted history, explicitly views masked secret and confirms restoration
+  ---
+  duration_ms: 82.1948
+  type: 'test'
+  ...
+# Subtest: history result arriving after selecting New entry cannot populate a stale editor
+ok 27 - history result arriving after selecting New entry cannot populate a stale editor
+  ---
+  duration_ms: 69.3369
+  type: 'test'
+  ...
+# Subtest: released unknown-time family is oldest rather than a future UTC date; boundary and two-unknown ties match
+ok 28 - released unknown-time family is oldest rather than a future UTC date; boundary and two-unknown ties match
+  ---
+  duration_ms: 4821.6624
+  type: 'test'
+  ...
+# REA_KEEPASS_HISTORY_UNKNOWN {"originalProcessExecutions":9,"detail":".local/observations/history-unknown-time.json"}
+1..28
+# tests 28
+# suites 0
+# pass 28
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7715.3372

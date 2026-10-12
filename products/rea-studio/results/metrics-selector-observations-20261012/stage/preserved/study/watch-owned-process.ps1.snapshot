@@ -1,0 +1,8 @@
+param([Parameter(Mandatory=$true)][int]$OwnedProcessId)
+$ErrorActionPreference = 'Stop'
+while ($true) {
+  try { $watchedProcess = Get-Process -Id $OwnedProcessId -ErrorAction Stop }
+  catch { exit 0 }
+  [Console]::WriteLine((@{ pid = $OwnedProcessId; rss = $watchedProcess.WorkingSet64; at = [DateTime]::UtcNow.ToString('o') } | ConvertTo-Json -Compress))
+  Start-Sleep -Milliseconds 100
+}

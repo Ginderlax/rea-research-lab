@@ -1,0 +1,11 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {start} from './products/rea-studio/server.mjs';
+const root=path.dirname(fileURLToPath(import.meta.url)),hash=bytes=>createHash('sha256').update(bytes).digest('hex'),rows=[];
+async function capture(directory,prefix){for(const entry of await fs.readdir(directory,{withFileTypes:true})){const relative=prefix+'/'+entry.name;if(entry.isDirectory()){if(entry.name!=='fixtures')await capture(path.join(directory,entry.name),relative);}else{const bytes=await fs.readFile(path.join(directory,entry.name));rows.push({path:relative,bytes:bytes.length,sha256:hash(bytes)});const target=path.join(root,'browser-proof/current-source-before',relative+'.snapshot');await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);}}}
+await capture(path.join(root,'products/rea-studio/apps/notes'),'products/rea-studio/apps/notes');
+for(const relative of ['products/rea-studio/server.mjs','products/rea-studio/catalog.mjs','products/rea-studio/lib/storage.mjs','products/rea-studio/public/index.html','products/rea-studio/public/studio.mjs','products/rea-studio/public/style.css','browser-resume.mjs']){const bytes=await fs.readFile(path.join(root,relative));rows.push({path:relative,bytes:bytes.length,sha256:hash(bytes)});}
+const baseline=JSON.parse(await fs.readFile(path.join(root,'browser-baseline.json')));for(const row of baseline.sources)if(hash(await fs.readFile(path.join(root,row.path)))!==row.sha256)throw new Error('Preview shell baseline changed.');
+const host=await start({port:0,dataDir:path.join(root,'.local/browser-data')});await fs.writeFile(path.join(root,'browser-proof/current-host.json'),JSON.stringify({url:host.url,privateEphemeralHost:true,sourceFingerprints:rows,existingSyntheticDataReopened:true,userPort4311Touched:false},null,2)+'\n');console.log(JSON.stringify({url:host.url+'/#notes',privateEphemeralHost:true}));let closed=false;async function stop(){if(closed)return;closed=true;await host.close();process.exit(0);}process.on('SIGINT',stop);process.on('SIGTERM',stop);setInterval(()=>{},1000);

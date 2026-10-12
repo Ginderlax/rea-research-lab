@@ -1,0 +1,83 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {here,lab,artifacts,sha,authenticateOriginal} from './authenticate-original.mjs';
+
+const manifest = JSON.parse(await fs.readFile(path.join(here,'memory-preflight.control.json')));
+const selectorBytes = await fs.readFile(path.join(here,'preserved/selector-validation.json'));
+assert.equal(sha(selectorBytes),manifest.fullSemanticReceiptSHA256);
+const selector = JSON.parse(selectorBytes);
+const previous = JSON.parse(await fs.readFile(path.join(here,'preserved/previous-measurement-validation.json')));
+const selectedCopies = [];
+async function preserve(source, target, digest, bytes) {
+  const input = await fs.readFile(source);
+  assert.equal(sha(input),digest);
+  if(bytes!==undefined) assert.equal(input.length,bytes);
+  const output = path.join(here,target);
+  await fs.mkdir(path.dirname(output),{recursive:true});
+  try { await fs.writeFile(output,input,{flag:'wx'}); }
+  catch(error) { if(error.code!=='EEXIST') throw error; assert.ok(input.equals(await fs.readFile(output))); }
+  assert.equal(sha(await fs.readFile(source)),digest);
+  selectedCopies.push({source,path:target,bytes:input.length,sha256:digest});
+}
+const oldSelector = path.resolve(here,'../metrics-selector-control-next');
+for(const name of ['build-selector-control.mjs','candidate-inline-control.mjs',
+  'results/candidate-module-control-selection-heldout.json','results/candidate-module-control-standard-heldout.json',
+  'results/supplementary-attempt-1791838649735.json']) {
+  const row=selector.inventory[name]; assert.ok(row);
+  await preserve(path.join(oldSelector,name),'preserved/selector/'+name,row.sha256,row.bytes);
+}
+const oldMeasurement = path.resolve(here,'../metrics-standard-dispatch-next');
+const previousManifestName = 'memory-preflight.percentile.json', previousRow = previous.inventory[previousManifestName];
+assert.ok(previousRow);
+await preserve(path.join(oldMeasurement,previousManifestName),'preserved/'+previousManifestName,previousRow.sha256,previousRow.bytes);
+const previousManifest=JSON.parse(await fs.readFile(path.join(here,'preserved/'+previousManifestName)));
+const comparisons=[];
+for(const name of ['smallStandard','largeStandard','singlePercentile','allPercentiles','allCalculations']) {
+  const old=previousManifest.expectedFiles[name],current=manifest.expectedFiles[name];
+  assert.equal(current.inputSHA256,old.inputSHA256);
+  assert.equal(current.canonicalOutputSHA256,old.canonicalOutputSHA256);
+  for(const key of ['n','reducers','warmup','transient','retained']) assert.deepEqual(current.spec[key],old.spec[key]);
+  comparisons.push({name,inputSHA256:current.inputSHA256,canonicalOutputSHA256:current.canonicalOutputSHA256,
+    n:current.spec.n,reducers:current.spec.reducers,warmup:current.spec.warmup,transient:current.spec.transient,retained:current.spec.retained});
+}
+const baseline=await fs.readFile(path.join(here,'candidate-baseline.mjs'),'utf8');
+const entry=await fs.readFile(path.join(here,'candidate-module-control.mjs'),'utf8');
+const helper=await fs.readFile(path.join(here,'selector-control.mjs'),'utf8');
+const inline=await fs.readFile(path.join(here,'preserved/selector/candidate-inline-control.mjs'),'utf8');
+assert.equal(sha(baseline),selector.candidate.baselineSHA256);
+assert.equal(sha(entry),selector.candidate.entrySHA256);
+assert.equal(sha(helper),selector.candidate.helperSHA256);
+const section=(source,begin,end)=>{const start=source.indexOf(begin),stop=source.indexOf(end,start);assert.ok(start>=0&&stop>start);return source.slice(start,stop);};
+const sections={standardBodySHA256:['export function doStandardCalcs(','\nfunction special('],
+  completeSharedSpecialBodySHA256:['function special(','\nconst specialIds'],
+  multiSelectionAndCacheTailSHA256:['  const result = doStandardCalcs(','\n/** Lossless JSON transport']};
+const bodyGuards={};
+for(const [name,[begin,end]] of Object.entries(sections)){
+  const oldBody=section(baseline,begin,end),currentBody=section(entry,begin,end);
+  const old=name==='standardBodySHA256'?oldBody.trimEnd():oldBody,current=name==='standardBodySHA256'?currentBody.trimEnd():currentBody;
+  assert.equal(current,old);assert.equal(sha(old),selector.sourceGuards[name]);bodyGuards[name]=sha(old);
+}
+assert.equal(entry.slice(entry.indexOf('/** Lossless JSON transport')),baseline.slice(baseline.indexOf('/** Lossless JSON transport')));
+const reconstructed=entry.replace("import { singlePercentile } from './selector-control.mjs';\n",'')
+  .replace('function special(',helper.replace('export function singlePercentile(','function singlePercentile(')+'function special(');
+assert.equal(reconstructed,inline);assert.equal(sha(reconstructed),selector.candidate.inlineControlSHA256);
+const authority = await authenticateOriginal();assert.deepEqual(authority.files,manifest.authority.files);
+for(const [source,digest] of Object.entries(authority.files)){
+  const relative=path.relative(artifacts,source).replaceAll('\\','/');assert.ok(!relative.startsWith('../')&&!path.isAbsolute(relative));
+  await preserve(source,'preserved/original/'+relative,digest);
+}
+for(const [name,digest]of [['release.tgz',authority.archiveSHA256],['lodash-4.17.23.tgz',authority.dependencyArchiveSHA256]])
+  await preserve(path.join(artifacts,name),'preserved/original/'+name,digest);
+const production = JSON.parse(await fs.readFile(path.join(here,'preservation.json'))).production;
+for(const row of production)assert.equal(sha(await fs.readFile(path.join(lab,'products/rea-studio',row.path))),row.sha256);
+const output={schemaVersion:1,checkedAt:new Date().toISOString(),status:'passed',selectedCopies,sourceGuards:bodyGuards,
+  standardAndSharedSpecialAndMultiCacheBodiesByteIdentical:true,transportBodyByteIdentical:true,inlineControlExactlyReconstructed:true,
+  bothNativeModuleSources:{entry:sha(entry),helper:sha(helper)},authority,priorFiveComparableInputSelectionAndMemoryCounts:comparisons,
+  productionPathsCheckedUnchanged:production.length,historicalCompleteSemanticProof:selector.comparisons,
+  fullCorrectnessRerunThisStage:false,allOlderInventoriesRereadThisStage:false,
+  provenanceScope:'Authenticated exact prior final receipts and selected inventory entries; preserved originals and both candidate modules. Historical full/held-out/cache proof remains exact evidence for these same module bytes; not a new full replay.',
+  comparabilityLimits:'First five logical inputs, selections, outputs, warmup/transient/retention counts match. Current timing harness adds lastField/cache validation and current memory release validation adds two cached rereads; cross-study protocol/source equivalence is not claimed.',
+  timingMeasurementRun:false,memoryMeasurementRun:false,performanceEstablished:false};
+await fs.writeFile(path.join(here,'results/source-binding-audit.json'),JSON.stringify(output,null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({status:output.status,preserved:selectedCopies.length,bodies:bodyGuards,originalModules:Object.keys(authority.files).length,comparableCases:comparisons.length}));

@@ -1,0 +1,86 @@
+import json
+import math
+import hashlib
+import xml.etree.ElementTree as ET
+from pathlib import Path
+import reportlab
+from reportlab.graphics.shapes import Drawing, Line, Circle, String, Rect
+from reportlab.graphics import renderSVG, renderPDF
+from reportlab.lib import colors
+
+root=Path(__file__).resolve().parent
+source=(root/'recomputed-summary.json').read_bytes()
+assert hashlib.sha256(source).hexdigest()=='18a5373363c0103dc54e25cd9deccc8254ebabfbf1e4f775343295c6d81bd78f'
+summary=json.loads(source)
+roles=['original','baseline','candidate']
+palette={'original':colors.HexColor('#626d78'),'baseline':colors.HexColor('#1765ad'),'candidate':colors.HexColor('#b34919')}
+labels=['Small standard (100)','Large standard (25,000)','Single p95 (25,000)','All 99 percentiles','All 124 calculations','Constructed p95','Fallback p95']
+files=[]
+def text(d,x,y,value,size=10,color=colors.HexColor('#24313d'),anchor='start'):
+    d.add(String(x,y,value,fontName='Helvetica',fontSize=size,fillColor=color,textAnchor=anchor))
+def point_range(d,xlow,xmid,xhigh,y,color):
+    assert 0<=xlow<=xmid<=xhigh<=d.width
+    d.add(Line(xlow,y,xhigh,y,strokeColor=color,strokeWidth=1.2))
+    for x in [xlow,xhigh]:d.add(Line(x,y-3,x,y+3,strokeColor=color,strokeWidth=1.2))
+    d.add(Circle(xmid,y,2.7,fillColor=color,strokeColor=color))
+def save(d,name):
+    renderSVG.drawToFile(d,str(root/(name+'.svg')))
+    renderPDF.drawToFile(d,str(root/(name+'.pdf')))
+    ET.parse(root/(name+'.svg'))
+    for suffix in ['svg','pdf']:
+        filename=name+'.'+suffix
+        data=(root/filename).read_bytes()
+        files.append({'path':filename,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()})
+
+d=Drawing(980,455)
+d.add(Rect(0,0,980,455,fillColor=colors.white,strokeColor=None))
+text(d,22,431,'Selector control: timing medians and observed ranges',15)
+text(d,22,411,'Seven repetitions per role and workload; descriptive min/max bars, not confidence intervals.',9)
+start,end,bottom,top=225,770,93,374
+lo,hi=math.log10(.0005),math.log10(300)
+scale=lambda value:start+(math.log10(value)-lo)/(hi-lo)*(end-start)
+for value in [.001,.01,.1,1,10,100]:
+    x=scale(value);d.add(Line(x,bottom,x,top,strokeColor=colors.HexColor('#e0e4e8'),strokeWidth=.6));text(d,x,bottom-16,str(value),8,anchor='middle')
+for index,row in enumerate(summary['timingSummary']):
+    y=356-index*40;text(d,22,y-3,labels[index],10)
+    for offset,role in zip([8,0,-8],roles):
+        item=row['millisecondsPerCall'][role]
+        point_range(d,scale(item['min']),scale(item['median']),scale(item['max']),y+offset,palette[role])
+    change=row['candidateComparedWith']['baseline']['medianRatioPercent']
+    text(d,806,y-3,f'{change:+.2f}% vs baseline',9,palette['candidate'])
+text(d,480,49,'Milliseconds per fresh calculation (logarithmic axis)',10,anchor='middle')
+for index,role in enumerate(roles):
+    x=230+index*150;d.add(Circle(x,28,2.7,fillColor=palette[role],strokeColor=palette[role]));text(d,x+9,24,role.title(),9)
+text(d,22,6,'Candidate retained without integration: fallback p95 median is 27.91% slower than baseline. Windows background work uncontrolled.',8)
+save(d,'timing-ranges')
+
+d=Drawing(1050,475);d.add(Rect(0,0,1050,475,fillColor=colors.white,strokeColor=None))
+text(d,22,451,'Isolated memory: lifetime peak RSS and signed paired retained heap differences',15)
+text(d,22,430,'One implementation per fresh child; candidate has two modules. Seven repetitions; observed min/max bars.',9)
+left_start,left_end,right_start,right_end,bottom,top=228,588,690,1018,112,397
+rss=lambda value:left_start+value/1048576/300*(left_end-left_start)
+delta=lambda value:right_start+(value+8500)/10000*(right_end-right_start)
+for value in [0,100,200,300]:
+    x=rss(value*1048576);d.add(Line(x,bottom,x,top,strokeColor=colors.HexColor('#e0e4e8'),strokeWidth=.6));text(d,x,bottom-16,str(value),8,anchor='middle')
+for value in [-8000,-4000,0,1000]:
+    x=delta(value);d.add(Line(x,bottom,x,top,strokeColor=colors.HexColor('#a1abb4') if value==0 else colors.HexColor('#e0e4e8'),strokeWidth=.9 if value==0 else .6));text(d,x,bottom-16,str(value),8,anchor='middle')
+for index,row in enumerate(summary['memorySummary']):
+    y=376-index*40;text(d,22,y-3,labels[index],10)
+    for offset,role in zip([8,0,-8],roles):
+        item=row['metricsByImplementation'][role]['lifetimePeakRSSBytes'];point_range(d,rss(item['min']),rss(item['median']),rss(item['max']),y+offset,palette[role])
+    item=row['candidateComparedWith']['baseline']['retained-heapUsed-signedBytes']['pairedDifferenceBytes']
+    assert -8500<=item['min']<=item['max']<=1500
+    point_range(d,delta(item['min']),delta(item['median']),delta(item['max']),y,palette['candidate'])
+text(d,408,71,'Complete-child lifetime peak RSS (MiB)',10,anchor='middle')
+text(d,854,71,'Candidate minus baseline retained heap delta (bytes)',9,anchor='middle')
+for index,role in enumerate(roles):
+    x=250+index*125;d.add(Circle(x,48,2.7,fillColor=palette[role],strokeColor=palette[role]));text(d,x+9,45,role.title(),9)
+text(d,22,23,'Signed paired values are not clipped. Heap deltas include GC variation; release diagnostics also include serializer/cache-check pressure.',8)
+text(d,22,8,'No cumulative allocation, exact intermediate peak, process-tree isolation, machine isolation or leak claim.',8)
+save(d,'memory-ranges-and-signed-deltas')
+receipt={'summarySHA256':hashlib.sha256(source).hexdigest(),'scriptSHA256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+         'reportlabVersion':reportlab.Version,'files':files,'method':'Standard ReportLab graphics rendering of already authenticated numeric summaries. No measurement workload.',
+         'svgXMLParsed':True,'negativePairedValuesClipped':False,'timingLogAxis':True,'rangesAreConfidenceIntervals':False,
+         'rasterVisualInspectionPerformed':False,'preferredMatplotlibUnavailable':True}
+(root/'figure-validation.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf-8')
+print(json.dumps(receipt))

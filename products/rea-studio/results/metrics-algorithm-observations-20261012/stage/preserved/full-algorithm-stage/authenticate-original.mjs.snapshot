@@ -1,0 +1,17 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {createRequire} from 'node:module';
+import {gunzipSync} from 'node:zlib';
+import assert from 'node:assert/strict';
+export const here=path.dirname(fileURLToPath(import.meta.url)),lab=path.resolve(here,'../../outputs/rea-research-lab'),artifacts=path.join(lab,'projects/02-grafana/artifacts'),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+function members(archive){const tar=gunzipSync(archive,{maxOutputLength:32*1024*1024}),result=new Map();for(let offset=0;offset+512<=tar.length;){const head=tar.subarray(offset,offset+512);if(head.every(byte=>byte===0))break;const name=head.subarray(0,100).toString().split('\0')[0],prefix=head.subarray(345,500).toString().split('\0')[0],size=Number.parseInt(head.subarray(124,136).toString().replace(/\0/g,'').trim(),8);assert.ok(Number.isSafeInteger(size)&&size>=0&&offset+512+size<=tar.length);result.set(prefix?prefix+'/'+name:name,tar.subarray(offset+512,offset+512+size));offset+=512+Math.ceil(size/512)*512;}return result;}
+export async function authenticateOriginal(){
+  const source=JSON.parse(await fs.readFile(path.join(here,'preserved/sources.json'))),release=await fs.readFile(path.join(artifacts,'release.tgz')),dependency=await fs.readFile(path.join(artifacts,'lodash-4.17.23.tgz'));assert.equal(sha(release),source.archiveSha256);assert.equal('sha512-'+createHash('sha512').update(release).digest('base64'),source.registryIntegrity);assert.equal(sha(dependency),source.oracleDependency.sha256);assert.equal('sha512-'+createHash('sha512').update(dependency).digest('base64'),source.oracleDependency.integrity);
+  const files={},packageMembers=members(release),dependencyMembers=members(dependency),app=path.join(lab,'products/rea-studio/apps/metrics');
+  for(const row of source.sources){const retained=await fs.readFile(path.join(app,row.file));assert.equal(sha(retained),row.sha256);if(row.path.startsWith('docs/'))continue;const target=path.join(artifacts,'package',row.path),bytes=await fs.readFile(target);assert.ok(bytes.equals(retained));assert.ok(bytes.equals(packageMembers.get('package/'+row.path)));if(row.path.endsWith('.cjs'))files[target]=row.sha256;}
+  const lodashPath=path.join(artifacts,'node_modules/lodash/lodash.js'),lodashBytes=await fs.readFile(lodashPath);assert.ok(lodashBytes.equals(dependencyMembers.get('package/lodash.js')));files[lodashPath]=sha(lodashBytes);
+  const entry=path.join(artifacts,'package/dist/cjs/transformations/fieldReducer.cjs'),require=createRequire(entry);assert.equal(path.resolve(require.resolve('lodash')),path.resolve(lodashPath));
+  return {entry,format:'cjs',files,lodashPath,archiveSHA256:sha(release),dependencyArchiveSHA256:sha(dependency),actualDependencyBytesVerified:true};
+}

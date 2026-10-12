@@ -1,0 +1,26 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const here=path.dirname(fileURLToPath(import.meta.url)),old=path.resolve(here,'../metrics-selector-control-next'),measured=path.resolve(here,'../metrics-selector-measurement-review-next'),sha=b=>createHash('sha256').update(b).digest('hex');
+const measuredReceipt=await fs.readFile(path.join(measured,'measurement-validation.json'));
+assert.equal(sha(measuredReceipt),'2226c0d8257df6db57616e6ace33cf91a9617154800553f01a0375c118260208');
+const previous=await fs.readFile(path.join(old,'selector-validation.json'));
+assert.equal(sha(previous),'b582c0da35dcd8b81a701cd1252c995c0ffb1e7307932b5b9f1279e737378aa6');
+const copied={};
+async function copy(from,to,expected){const bytes=await fs.readFile(from);if(expected)assert.equal(sha(bytes),expected);await fs.mkdir(path.dirname(path.join(here,to)),{recursive:true});await fs.writeFile(path.join(here,to),bytes,{flag:'wx'});copied[to]={source:from,bytes:bytes.length,sha256:sha(bytes)};}
+await copy(path.join(old,'candidate-baseline.mjs'),'candidate-baseline.mjs','9269cf8c32be9bf2c075b67019e82e41272d9495f0321fefc17b2c5695a91371');
+await copy(path.join(old,'candidate-module-control.mjs'),'candidate-module-control.mjs','33574a99fd21029a7b564b1d9316c2b6d7389641c6b607d6bea61dc022457dd3');
+await copy(path.join(old,'selector-control.mjs'),'selector-control.mjs','a6622d09853a8c1b550e6de919d0908a3647660bde561f250fcee9a81864763a');
+for(const name of ['authenticate-original.mjs','canonical.mjs','verify-candidate.mjs','run-validation.mjs','verify-heldout-selection.mjs','verify-standard-heldout.mjs'])await copy(path.join(old,name),name);
+for(const name of ['selector-validation.json','verify-selector-controls.mjs','verify-work-cap.mjs','build-selector-control.mjs'])await copy(path.join(old,name),'preserved/previous-selector/'+name);
+await copy(path.join(old,'preserved/sources.json'),'preserved/sources.json');
+await copy(path.join(measured,'measurement-validation.json'),'preserved/measured-review.json');
+await copy(path.join(measured,'recomputed-summary.json'),'preserved/measured-summary.json');
+await copy(path.join(old,'fixtures/selector-heldout.graph.jsonl'),'preserved/selector-heldout.graph.jsonl','211b89c96ec2b286b8c60e7b82861d48a940ef07e58a91c2677b9ae98834a741');
+await copy(path.resolve(here,'../metrics-selector-measurement-next/workloads.mjs'),'preserved/measured-workloads.mjs');
+const production=path.resolve(here,'../../outputs/rea-research-lab/products/rea-studio/apps/metrics/native-calculations.mjs');
+assert.equal(sha(await fs.readFile(production)),copied['candidate-baseline.mjs'].sha256);
+await fs.writeFile(path.join(here,'preservation.json'),JSON.stringify({schemaVersion:1,checkedAt:new Date().toISOString(),copied,productionSHA256:copied['candidate-baseline.mjs'].sha256,previousMeasuredReviewSHA256:sha(measuredReceipt),previousSelectorReceiptSHA256:sha(previous),scope:'Separate prospective algorithm candidate. No older stage or production changes; no timing/memory measurements authorized.'},null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({status:'prepared',copied:Object.keys(copied).length}));

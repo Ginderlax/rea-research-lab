@@ -1,0 +1,20 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {createHash} from 'node:crypto';import assert from 'node:assert/strict';
+import {createDataPackWriter} from '../restic-pack-aggregation-next/products/rea-studio/apps/backup/restic-data-pack.mjs';
+import {hash,randomKey,open} from '../restic-pack-aggregation-next/products/rea-studio/apps/backup/restic-crypto.mjs';
+const here=path.dirname(fileURLToPath(import.meta.url)),stage=path.resolve(here,'../restic-pack-aggregation-next'),sha=b=>createHash('sha256').update(b).digest('hex');
+const names=['restic-data-pack.mjs','restic-crypto.mjs','restic-compression.mjs'],before={};for(const name of names)before[name]=sha(await fs.readFile(path.join(stage,'products/rea-studio/apps/backup',name)));
+let entered,release;const enteredPromise=new Promise(done=>entered=done),held=new Promise(done=>release=done),key=randomKey(),committed=[];
+const writer=createDataPackWriter({key,version:1,commit:async pack=>{committed.push(pack);entered();await held;}});
+const a=Buffer.from('first owned data'),b=Buffer.from('second owned data');
+const acceptedA=await writer.save(a),firstFlush=writer.flush();await enteredPromise;
+const acceptedB=await writer.save(b),pendingBeforeRelease=writer.count;
+release();await firstFlush;await writer.flush();
+const actual=[];for(const pack of committed){assert.equal(hash(pack.bytes),pack.id);const length=pack.bytes.readUInt32LE(pack.bytes.length-4),header=open(key,pack.bytes.subarray(pack.bytes.length-4-length,-4));let offset=0;for(let position=0;position<header.length;position+=37){assert.equal(header[position],0);const blobLength=header.readUInt32LE(position+1),id=header.subarray(position+5,position+37).toString('hex'),plaintext=open(key,pack.bytes.subarray(offset,offset+blobLength));assert.equal(hash(plaintext),id);actual.push(id);offset+=blobLength;}assert.equal(offset,pack.bytes.length-4-length);}
+assert.equal(acceptedA,hash(a));assert.equal(acceptedB,hash(b));assert.equal(pendingBeforeRelease,2);assert.equal(writer.count,0);assert.deepEqual(actual,[acceptedA]);assert.equal(actual.includes(acceptedB),false);
+for(const name of names)assert.equal(sha(await fs.readFile(path.join(stage,'products/rea-studio/apps/backup',name))),before[name]);
+const observation={schemaVersion:1,checkedAt:new Date().toISOString(),reproduced:true,behavior:'save(B) resolves with its plaintext ID during held flush(A), then flush(A) discards B from pending state; later flush commits no B.',
+ sourceHashesBeforeAndAfter:before,acceptedPlaintextIDs:[acceptedA,acceptedB],authenticatedCommittedPlaintextIDs:actual,committedPacks:committed.length,pendingBeforeFirstCommitReleased:pendingBeforeRelease,pendingAfterFinalFlush:writer.count,
+ directHelperSafePersistenceContractSatisfied:false,applicationCallerPath:'Snapshot capture awaits every saveChunk, and awaits final flush; current application does not issue this overlap.',
+ scope:'Two tiny owned buffers and a synthetic held commit callback against the exact exported helper. No filesystem repository, original executable, production code, browser, timer benchmark or user data involved.',
+ findingBoundary:'Sequential caller serialization is required but not enforced by the exported helper. This reproduction does not show loss in the existing serialized application path.'};
+await fs.writeFile(path.join(here,'overlap-observation.json'),JSON.stringify(observation,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(observation));

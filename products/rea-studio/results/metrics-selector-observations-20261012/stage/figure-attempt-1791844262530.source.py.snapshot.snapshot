@@ -1,0 +1,83 @@
+import os
+import json
+import hashlib
+from pathlib import Path
+
+root = Path(__file__).resolve().parent
+os.environ['MPLCONFIGDIR'] = str(root / '.local' / 'matplotlib-cache')
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+
+source = (root / 'recomputed-summary.json').read_bytes()
+assert hashlib.sha256(source).hexdigest() == '18a5373363c0103dc54e25cd9deccc8254ebabfbf1e4f775343295c6d81bd78f'
+summary = json.loads(source)
+roles = ['original', 'baseline', 'candidate']
+colors = {'original': '#626d78', 'baseline': '#1765ad', 'candidate': '#b34919'}
+labels = ['Small standard (100)', 'Large standard (25,000)', 'Single p95 (25,000)',
+          'All 99 percentiles', 'All 124 calculations', 'Constructed p95', 'Fallback p95']
+plt.rcParams.update({'font.size': 9, 'axes.spines.top': False, 'axes.spines.right': False,
+                     'svg.fonttype': 'none', 'savefig.facecolor': 'white'})
+files = []
+def save(fig, stem):
+    for suffix in ['svg', 'png']:
+        name = stem + '.' + suffix
+        fig.savefig(root / name, dpi=155, bbox_inches='tight')
+        data = (root / name).read_bytes()
+        files.append({'path': name, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()})
+    plt.close(fig)
+
+fig, ax = plt.subplots(figsize=(10.4, 4.8))
+base_y = np.arange(7)
+for offset, role in zip([-.18, 0, .18], roles):
+    values = [row['millisecondsPerCall'][role] for row in summary['timingSummary']]
+    med = np.array([row['median'] for row in values])
+    low = np.array([row['min'] for row in values])
+    high = np.array([row['max'] for row in values])
+    ax.errorbar(med, base_y + offset, xerr=np.array([med-low, high-med]),
+                fmt='o', markersize=4, capsize=3, linewidth=1.2, color=colors[role], label=role.title())
+ax.set_xscale('log')
+ax.set_yticks(base_y, labels)
+ax.invert_yaxis()
+ax.set_xlabel('Milliseconds per fresh calculation, logarithmic axis')
+ax.set_title('Selector control: timing medians and observed ranges')
+ax.grid(axis='x', alpha=.25)
+ax.legend(loc='lower right')
+fig.text(.16, -.012, 'Seven repetitions per role and workload. Bars show observed min/max, not confidence intervals.\n'
+         'Candidate remains unintegrated: fixed fallback p95 median is 27.91% slower than baseline.', fontsize=8)
+save(fig, 'timing-ranges')
+
+fig, axes = plt.subplots(1, 2, figsize=(11.7, 4.8), gridspec_kw={'width_ratios': [1.3, 1]})
+for offset, role in zip([-.18, 0, .18], roles):
+    values = [row['metricsByImplementation'][role]['lifetimePeakRSSBytes'] for row in summary['memorySummary']]
+    med = np.array([row['median'] for row in values])/1048576
+    low = np.array([row['min'] for row in values])/1048576
+    high = np.array([row['max'] for row in values])/1048576
+    axes[0].errorbar(med, base_y + offset, xerr=np.array([med-low, high-med]), fmt='o', markersize=4,
+                     capsize=3, linewidth=1.2, color=colors[role], label=role.title())
+delta = [row['candidateComparedWith']['baseline']['retained-heapUsed-signedBytes']['pairedDifferenceBytes']
+         for row in summary['memorySummary']]
+med = np.array([row['median'] for row in delta]); low = np.array([row['min'] for row in delta]); high = np.array([row['max'] for row in delta])
+axes[1].errorbar(med, base_y, xerr=np.array([med-low, high-med]), fmt='o', markersize=4,
+                 capsize=3, linewidth=1.2, color=colors['candidate'])
+axes[1].axvline(0, linewidth=.8, color='#626d78')
+for ax in axes:
+    ax.set_yticks(base_y, labels if ax is axes[0] else [])
+    ax.invert_yaxis(); ax.grid(axis='x', alpha=.25)
+axes[0].set_xlabel('Complete-child lifetime peak RSS (MiB)')
+axes[0].set_xlim(0, 300); axes[0].legend(loc='lower right')
+axes[1].set_xlabel('Candidate − baseline paired retained heap delta (bytes)')
+axes[1].set_xlim(-8500, 1500)
+fig.suptitle('Isolated memory: medians and observed ranges; signed paired differences retained', y=1.01)
+fig.text(.145, -.025, 'Fresh children load exactly one implementation; candidate has two modules. Seven repetitions per role/workload.\n'
+         'Heap deltas include GC variation. Post-retention validation affects release diagnostics; no cumulative allocation or leak claim.', fontsize=8)
+fig.tight_layout()
+save(fig, 'memory-ranges-and-signed-deltas')
+
+receipt = {'summarySHA256': hashlib.sha256(source).hexdigest(), 'scriptSHA256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+           'matplotlibVersion': matplotlib.__version__, 'numpyVersion': np.__version__, 'files': files,
+           'method': 'Standard plotting library; source-bound existing numeric summaries only. No measurement workloads.',
+           'negativePairedValuesClipped': False, 'timingLogAxis': True, 'rangesAreConfidenceIntervals': False}
+(root / 'figure-validation.json').write_text(json.dumps(receipt, indent=2)+'\n', encoding='utf-8')
+print(json.dumps(receipt))

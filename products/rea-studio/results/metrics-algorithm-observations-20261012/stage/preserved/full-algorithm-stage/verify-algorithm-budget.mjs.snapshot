@@ -1,0 +1,41 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {createRequire} from 'node:module';
+import assert from 'node:assert/strict';
+import {here,sha,authenticateOriginal} from './authenticate-original.mjs';
+import {canonical,packet} from './canonical.mjs';
+import {selectFiniteRank,selectionUnavailable} from './selector-algorithm.mjs';
+import {valuesForSpec,specsFor} from './preserved/measured-workloads.mjs';
+const authority=await authenticateOriginal(),original=createRequire(authority.entry)(authority.entry),candidate=await import(pathToFileURL(path.join(here,'candidate-algorithm.mjs')).href),prior=await import(pathToFileURL(path.join(here,'candidate-module-control.mjs')).href);
+let seed=0xd3094e71;const random=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return seed>>>0;};
+const cases=[];
+for(const n of [1,2,5,24,25,127,128,129,257,1024,25000]){
+  cases.push(['ascending-'+n,Array.from({length:n},(_,i)=>i+.125)],['descending-'+n,Array.from({length:n},(_,i)=>n-i+.125)],['organ-pipe-'+n,Array.from({length:n},(_,i)=>i<n/2?i+.125:n-i+.125)],['prime-saw-'+n,Array.from({length:n},(_,i)=>(i*8191)%32749+.0625)],['rank-ties-'+n,Array.from({length:n},(_,i)=>i%13)],['random-'+n,Array.from({length:n},()=>((random()%1000003)-500001)/16)]);
+}
+let originalSelections=0,defaultSelections=0,reducedBudgetChecks=0,refusedBudgetChecks=0,deterministicPivots=0,stableFallbackChecks=0;
+const records=[],outputs=[];
+for(const[label,values]of cases)for(const p of [1,5,25,50,75,95,99]){
+ const id='p'+p,index=Math.round((values.length-1)*p/100),expected=original.fieldReducers.get(id).reduce({type:'number',config:{},values:values.slice()},false,false)[id];originalSelections++;
+ const sorted=values.slice().sort((a,b)=>a-b);assert.equal(sorted[index],expected);
+ const privateValues=values.slice(),diagnostics={},actual=selectFiniteRank(privateValues,index,undefined,diagnostics);
+ assert.notEqual(actual,selectionUnavailable,label+':default budget must complete');assert.equal(actual,expected);assert.deepEqual(privateValues.slice().sort((a,b)=>a-b),sorted);assert.ok(diagnostics.work<=diagnostics.limit);defaultSelections++;deterministicPivots+=diagnostics.deterministicPivots;
+ records.push({label,id,samples:values.length,inputSHA256:sha(canonical(values)),...diagnostics});
+ for(const limit of [...new Set([0,1,3,12,50,Math.floor(values.length/2),values.length,values.length*2])]){
+  const copy=values.slice(),bounded={},selected=selectFiniteRank(copy,index,limit,bounded);reducedBudgetChecks++;
+  assert.deepEqual(copy.slice().sort((a,b)=>a-b),sorted,label+':permutation after budget '+limit);
+  if(selected===selectionUnavailable){refusedBudgetChecks++;copy.sort((a,b)=>a-b);assert.equal(copy[index],expected);stableFallbackChecks++;}else assert.equal(selected,expected);
+  assert.ok(bounded.work<=limit+3,'Refused charge exceeds at most the three-comparison sample reservation.');
+ }
+ outputs.push(canonical({label,id,expected}));
+}
+assert.ok(deterministicPivots>0,'Actual adversarial/rank corpus must execute deterministic groups-of-five pivoting.');assert.ok(refusedBudgetChecks>0);
+assert.equal(selectFiniteRank([],0),selectionUnavailable);assert.equal(selectFiniteRank([1],-1),selectionUnavailable);assert.equal(selectFiniteRank([1],1),selectionUnavailable);assert.equal(selectFiniteRank([1],0,-1),selectionUnavailable);
+const fixed=[];let fixedComparisons=0;
+for(const[label,spec]of Object.entries(specsFor(original))){
+ const values=valuesForSpec(spec),run=(implementation)=>{const field={type:'number',config:{nullValueMode:'connected'},values:values.slice(),state:{calcs:{unrelated:'kept'}}},result=implementation.reduceField({field,reducers:spec.reducers});return packet(field,result);},expected=run(original);
+ for(const implementation of [prior,candidate]){assert.equal(canonical(run(implementation)),canonical(expected),label);fixedComparisons++;}
+ fixed.push({label,samples:values.length,inputSHA256:sha(canonical(values)),expectedSHA256:sha(canonical(expected)),reducers:spec.reducers});
+}
+const receipt={schemaVersion:1,checkedAt:new Date().toISOString(),status:'passed',authority,seed:'0xd3094e71',inputs:cases.length,originalSelections,defaultSelections,reducedBudgetChecks,refusedBudgetChecks,stableFallbackChecks,deterministicPivots,records,fixedMeasuredControls:fixed,fixedComparisons,expectedOutputSHA256:sha(outputs.join('\n')+'\n'),entrySHA256:sha(await fs.readFile(path.join(here,'candidate-algorithm.mjs'))),helperSHA256:sha(await fs.readFile(path.join(here,'selector-algorithm.mjs'))),scope:'Source-bound original finite-rank expectations, private-array permutation integrity at many deliberately reduced work caps, real deterministic-pivot executions and unchanged fixed seven measured input shapes. Work counts are correctness diagnostics, not timings/memory/profile results.',timingMeasurementRun:false,memoryMeasurementRun:false,performanceParityEstablished:false,fullProductComplete:false,universalSuperiorityEstablished:false};
+await fs.writeFile(path.join(here,'results/algorithm-budget.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify({status:'passed',inputs:cases.length,originalSelections,defaultSelections,reducedBudgetChecks,refusedBudgetChecks,deterministicPivots,fixedComparisons}));

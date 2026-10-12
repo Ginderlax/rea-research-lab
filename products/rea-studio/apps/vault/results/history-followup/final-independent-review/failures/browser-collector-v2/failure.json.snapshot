@@ -1,0 +1,7 @@
+{
+  "classification": "Owned collector scope error; no application failure",
+  "exitCode": 1,
+  "assertion": "Expected all captured browser warnings/errors to be absent",
+  "observed": "Captured entries were Chrome extension content-script warnings, not the owned application origin. Exact source, console observations and a static collector diagnostic rerun are preserved.",
+  "correction": "Assert zero warnings/errors from the exact owned preview origins; retain and separately count explicit chrome-extension:// entries. Reject unexpected other origins instead of silently ignoring them. No browser behavior or application source changed."
+}

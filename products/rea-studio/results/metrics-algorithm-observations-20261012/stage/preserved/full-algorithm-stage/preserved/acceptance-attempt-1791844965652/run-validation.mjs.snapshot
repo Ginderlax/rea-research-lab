@@ -1,0 +1,23 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {spawnSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+const here=path.dirname(fileURLToPath(import.meta.url)),names=process.argv.slice(2);
+if(!names.length)throw Error('Supply exact candidate filenames.');
+await fs.mkdir(path.join(here,'results'),{recursive:true});
+const records=[];
+for(const name of names){
+  if(!/^candidate-[a-z-]+\.mjs$/.test(name))throw Error('Unexpected candidate filename.');
+  const candidate=path.join(here,name),base=name.slice(0,-4),receipt=path.join(here,'results',base+'.json');
+  const startedAt=new Date().toISOString(),beforeSHA256=createHash('sha256').update(await fs.readFile(candidate)).digest('hex');
+  const child=spawnSync(process.execPath,[path.join(here,'verify-candidate.mjs'),candidate,receipt],{encoding:'utf8',timeout:180000,maxBuffer:4*1024*1024,windowsHide:true});
+  const completedAt=new Date().toISOString();
+  await fs.writeFile(path.join(here,'results',base+'.stdout.txt'),child.stdout??'');
+  await fs.writeFile(path.join(here,'results',base+'.stderr.txt'),child.stderr??'');
+  const record={candidate:name,sha256:createHash('sha256').update(await fs.readFile(candidate)).digest('hex'),beforeSHA256,startedAt,completedAt,verificationDriverSHA256:createHash('sha256').update(await fs.readFile(path.join(here,'verify-candidate.mjs'))).digest('hex'),exitCode:child.status,signal:child.signal,error:child.error?.message,receipt:path.relative(here,receipt),formalPerformance:false};
+  if(child.status===0){const result=JSON.parse(await fs.readFile(receipt));Object.assign(record,{status:result.status,comparisons:result.comparisons,standardHelperComparisons:result.standardHelperComparisons,cacheComparisonsIncluded:result.cacheComparisons,expectedOutputSha256:result.expectedOutputSha256,failures:result.failures.length});}
+  records.push(record);await fs.writeFile(path.join(here,'results',base+'-validation.interval.json'),JSON.stringify(record,null,2)+'\n');console.log(JSON.stringify(record));
+}
+await fs.writeFile(path.join(here,'results','validation-run-'+Date.now()+'.json'),JSON.stringify({checkedAt:new Date().toISOString(),records},null,2)+'\n');
+if(records.some(record=>record.exitCode!==0))process.exitCode=1;

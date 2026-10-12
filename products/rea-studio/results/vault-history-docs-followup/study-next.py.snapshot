@@ -1,0 +1,25 @@
+import hashlib,json,pathlib,zipfile,re
+
+root=pathlib.Path(__file__).resolve().parent
+work=root.parent
+archive=work/'keepass-history-draft-fix-next/.local/KeePass-2.61.1-Source.zip'
+data=archive.read_bytes()
+sha=lambda b:hashlib.sha256(b).hexdigest()
+assert len(data)==5333853 and sha(data)=='711bd9ec7076661678469e51bae876debac07a08c32f1b1c6b3b8fe5e761c13a'
+selected=['KeePass/Forms/MainForm.cs','KeePass/Forms/MainForm_Functions.cs','KeePass/Forms/DatabaseSettingsForm.cs','KeePass/Forms/PwEntryForm.cs','KeePassLib/PwEntry.cs','KeePassLib/PwGroup.cs','KeePassLib/PwDatabase.cs','KeePassLib/PwDeletedObject.cs','KeePassLib/Collections/PwObjectList.cs','Docs/License.txt']
+files=[];matches=[]
+with zipfile.ZipFile(archive) as z:
+    assert len(z.infolist())==1381
+    for name in selected:
+        info=z.getinfo(name)
+        assert info.file_size<=512*1024 and info.compress_size<=512*1024
+        b=z.read(info);assert len(b)==info.file_size
+        target=root/'.local/pinned-source'/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(b)
+        files.append({'source':name,'localPath':target.relative_to(root).as_posix(),'bytes':len(b),'sha256':sha(b)})
+        lines=b.decode('utf-8-sig').splitlines()
+        for i,line in enumerate(lines):
+            if re.search(r'RecycleBin|DeleteSelectedEntries|DeleteEntries|OnEntryDelete|OnBtnHistoryDelete|m_vHistory.Remove|HistoryMaxItems|HistoryMaxSize|PreviousParentGroup',line):
+                matches.append({'source':name,'line':i+1,'text':line.strip()})
+record={'schema':'rea-keepass-next-feature-pinned-source-study/v1','release':'2.61.1','originalArchive':{'bytes':len(data),'sha256':sha(data),'census':1381},'files':files,'matches':matches,'originalExecutions':0,'runtimeTests':0,'productionEdited':False,'license':'GPL-2.0-or-later; exact Docs/License.txt retained locally','scope':'Ten selected source/license files, not exhaustive source analysis.'}
+(root/'source-study.json').write_text(json.dumps(record,indent=2)+'\n',encoding='utf-8')
+print(json.dumps({'selectedFiles':len(files),'sourceMatches':len(matches),'originalExecutions':0}))

@@ -308,6 +308,13 @@ function syncDocument(data) {
   checkReferences(xml,data.kdbx?.binaries ?? []); return xml;
 }
 
+// Stage history code uses the same native XML projection/materialization;
+// these helpers never derive keys or execute the original implementation.
+export const materializeKdbxDocument = data => syncDocument(data);
+export const projectKdbxDocument = xml => documentEntries(xml,4).entries;
+export const decodeKdbxDate = value => isoDate(value,4);
+export const encodeKdbxDate = value => date64(value);
+
 export async function exportKdbx(data,credentials = {},options = {}) {
   const version = options.version ?? '4.1', cipher = options.cipher ?? 'aes', kdf = options.kdf ?? 'argon2id';
   if (!['4.0','4.1'].includes(version) || !Object.hasOwn(CIPHERS,cipher) || !Object.hasOwn(KDFS,kdf)) throw new Error('Unsupported KDBX export version, cipher or KDF.');

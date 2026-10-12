@@ -1,0 +1,27 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const work=import.meta.dirname,lab=path.resolve(work,'../outputs/rea-research-lab'),bundle=path.join(work,'keepass-history-production-integration-bundle-ready');
+const prefix='products/rea-studio/apps/vault/',outPrefix=prefix+'results/history-followup/production-integration/',out=path.join(lab,outPrefix);
+const sha=b=>createHash('sha256').update(b).digest('hex'),safe=p=>assert.ok(p&&!p.startsWith('/')&&!p.includes('\\')&&!p.split('/').includes('..'));
+const manifestBytes=await fs.readFile(path.join(bundle,'integration-manifest.json'));assert.equal(sha(manifestBytes),'5a27d0e6e4c3772ef79bd46cc6b748e86775f3424719c6db4c690c670ae90758');const manifest=JSON.parse(manifestBytes);assert.equal(manifest.count,1822);assert.equal(manifest.files.length,1822);
+const receiptBytes=await fs.readFile(path.join(bundle,'integration-validation.json'));assert.equal(sha(receiptBytes),'68d8ff9eefa9b56ecbb86b5d1fd74cd33861cd2bc82aa3713a0c098d63f642ab');const receipt=JSON.parse(receiptBytes);
+assert.equal(receipt.productionEdited,false);assert.equal(receipt.sourceStable,true);assert.equal(receipt.runtimeByteIdentical,true);assert.equal(receipt.oldCompatibilityRebound,false);assert.equal(receipt.noOriginalExecutableOrDllCarriersEmbedded,true);assert.equal(receipt.publicEvidenceFiles,1656);
+for(const n of ['fullProductParity','securityParity','superiority'])assert.equal(receipt[n],false);
+async function authenticate(){const seen=new Set();for(const e of manifest.files){safe(e.path);assert.ok(!seen.has(e.path));seen.add(e.path);const b=await fs.readFile(path.join(bundle,e.path));assert.equal(b.length,e.bytes);assert.equal(sha(b),e.sha256,e.path);}}
+await authenticate();
+const copyBytes=await fs.readFile(path.join(bundle,'integration-copy-list.json'));assert.equal(sha(copyBytes),'7469f024f5c802b31cf59c568ba1b22f4e797042e7cf9a9bf2ef1f9b5b5f504b');const list=JSON.parse(copyBytes);assert.equal(list.count,1679);assert.equal(list.files.length,1679);assert.equal(list.liveAppFiles,23);assert.equal(list.publicEvidenceFiles,1656);
+const forbiddenHashes=new Set(['711bd9ec7076661678469e51bae876debac07a08c32f1b1c6b3b8fe5e761c13a',...receipt.originalNativeArtifacts.map(e=>e.sha256)]),targets=new Set();
+for(const e of list.files){safe(e.path);safe(e.targetPath);assert.ok(e.targetPath.startsWith(prefix));assert.ok(!e.targetPath.split('/').some(n=>['.local','artifacts','node_modules','tooling','work'].includes(n)));assert.ok(!targets.has(e.targetPath));targets.add(e.targetPath);const b=await fs.readFile(path.join(bundle,e.path));assert.equal(b.length,e.bytes);assert.equal(sha(b),e.sha256);assert.ok(!forbiddenHashes.has(e.sha256));assert.ok(!['MZ','PK'].includes(b.subarray(0,2).toString('ascii')));}
+const oldCompatibility=await fs.readFile(path.join(lab,prefix+'compatibility-evidence.json'));assert.equal(sha(oldCompatibility),'895cb736a9b285bfd0c541b6f76a4dc577aca88675be38e3bab9d2a8be105aee');
+await fs.mkdir(out,{recursive:true});
+const retained=[];
+for(const n of ['integration-validation.json','integration-manifest.json','integration-copy-list.json','source-preservation-mappings.json','integration-freeze.json','INTEGRATION.md','assembly.mjs','production-baseline.json','adaptations.json','independent-probe-provenance.json']){const b=await fs.readFile(path.join(bundle,n)),name=n+'.snapshot';await fs.writeFile(path.join(out,name),b,{flag:'wx'});retained.push({sourcePath:n,path:name,bytes:b.length,sha256:sha(b)});}
+const own=await fs.readFile(import.meta.filename);await fs.writeFile(path.join(out,'integrate-vault-history.mjs.snapshot'),own,{flag:'wx'});retained.push({sourcePath:'root/integrate-vault-history.mjs',path:'integrate-vault-history.mjs.snapshot',bytes:own.length,sha256:sha(own)});
+for(const e of list.files){const target=path.join(lab,e.targetPath),b=await fs.readFile(path.join(bundle,e.path));await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,b,{flag:e.kind==='live-app-proposal'?'w':'wx'});}
+for(const e of list.files){const b=await fs.readFile(path.join(lab,e.targetPath));assert.equal(b.length,e.bytes);assert.equal(sha(b),e.sha256,e.targetPath);}
+assert.equal(sha(await fs.readFile(path.join(lab,prefix+'compatibility-evidence.json'))),sha(oldCompatibility));await authenticate();
+const installed={schema:'rea-vault-history-installation-preservation/v1',installedAtUtc:new Date().toISOString(),bundleManifestSHA256:sha(manifestBytes),bundleReceiptSHA256:sha(receiptBytes),copyListSHA256:sha(copyBytes),retained,copies:list.files.map(e=>({...e,path:e.targetPath,sourcePath:e.path})),liveAppFiles:23,inertEvidenceFiles:1656,old18CompatibilityReceiptUnchanged:true,acceptedRuntimeByteIdentical:true,newBehavioralExecutionsDuringInstallation:0,publicSourceArchivesIncluded:false,publicOriginalExecutablesOrLibrariesIncluded:false,fullProductParity:false,universalSuperiority:false};
+const bytes=JSON.stringify(installed,null,2)+'\n';await fs.writeFile(path.join(out,'installation-manifest.json'),bytes,{flag:'wx'});
+console.log(JSON.stringify({copies:list.count,liveAppFiles:23,inertEvidenceFiles:1656,retained:retained.length,installationManifestSHA256:sha(Buffer.from(bytes)),original18ReceiptUnchanged:true,runtime:receipt.runtime}));

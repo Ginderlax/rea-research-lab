@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: each supported editable value changed before Restore refuses the effect without relying on input events
+ok 1 - each supported editable value changed before Restore refuses the effect without relying on input events
+  ---
+  duration_ms: 405.434
+  type: 'test'
+  ...
+# Subtest: a draft typed while the post-Restore read is held retains editor fields and saves to the same entry
+ok 2 - a draft typed while the post-Restore read is held retains editor fields and saves to the same entry
+  ---
+  duration_ms: 53.9416
+  type: 'test'
+  ...
+# Subtest: new-entry Save response retains the subsequent draft and its committed identity for the next Save
+ok 3 - new-entry Save response retains the subsequent draft and its committed identity for the next Save
+  ---
+  duration_ms: 51.161
+  type: 'test'
+  ...
+# Subtest: typing and reverting values while Restore is held still preserves the active editor through the input revision
+ok 4 - typing and reverting values while Restore is held still preserves the active editor through the input revision
+  ---
+  duration_ms: 51.5873
+  type: 'test'
+  ...
+# Subtest: a delayed Delete response retains newly typed values as a new draft with no deleted identity
+ok 5 - a delayed Delete response retains newly typed values as a new draft with no deleted identity
+  ---
+  duration_ms: 45.2216
+  type: 'test'
+  ...
+# Subtest: a delayed generated-password response cannot overwrite a newer explicitly typed password
+ok 6 - a delayed generated-password response cannot overwrite a newer explicitly typed password
+  ---
+  duration_ms: 46.6607
+  type: 'test'
+  ...
+# Subtest: restore refuses an already modified main editor and preserves the unsaved draft
+ok 7 - restore refuses an already modified main editor and preserves the unsaved draft
+  ---
+  duration_ms: 78.2136
+  type: 'test'
+  ...
+# Subtest: same-editor draft typed after a restore request remains visible when the delayed response completes
+ok 8 - same-editor draft typed after a restore request remains visible when the delayed response completes
+  ---
+  duration_ms: 80.8014
+  type: 'test'
+  ...
+# Subtest: same-editor draft typed after a save request remains visible when the delayed response completes
+ok 9 - same-editor draft typed after a save request remains visible when the delayed response completes
+  ---
+  duration_ms: 54.7403
+  type: 'test'
+  ...
+# Subtest: a held Open A read cannot replace a later Open B editor or redirect its save
+ok 10 - a held Open A read cannot replace a later Open B editor or redirect its save
+  ---
+  duration_ms: 82.513
+  type: 'test'
+  ...
+# Subtest: closing history while its preview is held prevents late secret publication
+ok 11 - closing history while its preview is held prevents late secret publication
+  ---
+  duration_ms: 58.9533
+  type: 'test'
+  ...
+# Subtest: an older search response cannot replace newer search results or a new editor draft
+ok 12 - an older search response cannot replace newer search results or a new editor draft
+  ---
+  duration_ms: 57.1383
+  type: 'test'
+  ...
+# Subtest: New entry remains a new identity after a late post-restore read
+ok 13 - New entry remains a new identity after a late post-restore read
+  ---
+  duration_ms: 83.1388
+  type: 'test'
+  ...
+# Subtest: locking during a held restore read cannot resurrect its old selected entry after unlock
+ok 14 - locking during a held restore read cannot resurrect its old selected entry after unlock
+  ---
+  duration_ms: 116.3447
+  type: 'test'
+  ...
+# Subtest: late explicit history preview cannot populate a newly opened empty editor
+ok 15 - late explicit history preview cannot populate a newly opened empty editor
+  ---
+  duration_ms: 55.0443
+  type: 'test'
+  ...
+# Subtest: a delayed post-restore list does not change the next editor selected by the user
+ok 16 - a delayed post-restore list does not change the next editor selected by the user
+  ---
+  duration_ms: 51.5831
+  type: 'test'
+  ...
+# Subtest: a failed history restore persistence keeps ciphertext and active entry/history unchanged
+ok 17 - a failed history restore persistence keeps ciphertext and active entry/history unchanged
+  ---
+  duration_ms: 50.7366
+  type: 'test'
+  ...
+# Subtest: ordinary save completion preserves a different editor opened while that response was held
+ok 18 - ordinary save completion preserves a different editor opened while that response was held
+  ---
+  duration_ms: 51.3781
+  type: 'test'
+  ...
+# Subtest: late post-restore read must not redirect the newly selected editor save to a different entry
+ok 19 - late post-restore read must not redirect the newly selected editor save to a different entry
+  ---
+  duration_ms: 79.1259
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 725.7914

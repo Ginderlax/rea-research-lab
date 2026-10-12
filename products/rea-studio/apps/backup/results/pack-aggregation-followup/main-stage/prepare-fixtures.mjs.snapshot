@@ -1,0 +1,9 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+const root=path.dirname(fileURLToPath(import.meta.url)),baselinePath=path.join(root,'production-baseline.json'),baseline=JSON.parse(await fs.readFile(baselinePath)),hash=b=>createHash('sha256').update(b).digest('hex');
+for(const relative of ['products/rea-studio/apps/backup/fixtures/legacy-v2-writer.mjs','products/rea-studio/apps/backup/results/compression-source-study/legacy/restic.mjs.snapshot']){const bytes=await fs.readFile(path.join(baseline.repository,relative));if(relative.endsWith('.snapshot')&&hash(bytes)!=='70bf4a5bfd46041823fa00bd7cdbf880f6c0a9020f67ef9e7a807b4242fbb527')throw new Error('Historical legacy writer digest mismatch');for(const target of [path.join(root,relative),path.join(root,'baseline',relative+'.snapshot')]){await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);}baseline.files.push({path:relative,bytes:bytes.length,sha256:hash(bytes)});}
+await fs.writeFile(baselinePath,JSON.stringify(baseline,null,2)+'\n');
+await fs.writeFile(path.join(root,'failures/first-run-note.txt'),'First source-stable run 2026-10-12T21-14-55.185Z: 58 pass, 1 module-load failure. The baseline clone omitted the nested legacy fixture and its authenticated historical source snapshot, so compression-review could not load. Full raw output, collector, test and implementation bytes retained in runs. No behavioral assertion was relaxed.\nTwo prior atomic apply_patch attempts rejected a whitespace-mismatched final context before any mutation; corrected exact context afterward.\n');
+console.log(JSON.stringify({baselineFiles:baseline.files.length}));

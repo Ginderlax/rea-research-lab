@@ -1,0 +1,43 @@
+TAP version 13
+# Subtest: released unknown-time family is oldest rather than a future UTC date; boundary and two-unknown ties match
+not ok 1 - released unknown-time family is oldest rather than a future UTC date; boundary and two-unknown ties match
+  ---
+  duration_ms: 981.5547
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-next\\unknown-time.test.mjs:5:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    2999-12-28T23:59:59Z
+    + actual - expected
+    
+      [
+    -   'synthetic-prior-secret',
+        'synthetic-current-secret',
+    +   'sentinel current'
+      ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0: 'synthetic-prior-secret'
+    1: 'synthetic-current-secret'
+  actual:
+    0: 'synthetic-current-secret'
+    1: 'sentinel current'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-history-next/unknown-time.test.mjs:10:258)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# REA_KEEPASS_HISTORY_UNKNOWN {"originalProcessExecutions":2,"detail":".local/observations/history-unknown-time.json"}
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1039.1174

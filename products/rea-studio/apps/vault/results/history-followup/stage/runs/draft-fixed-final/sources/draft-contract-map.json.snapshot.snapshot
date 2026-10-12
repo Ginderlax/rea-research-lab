@@ -1,0 +1,46 @@
+{
+  "schema": "rea-keepass-draft-guard-contract-map/v1",
+  "release": "2.61.1",
+  "archiveSha256": "711bd9ec7076661678469e51bae876debac07a08c32f1b1c6b3b8fe5e761c13a",
+  "sourceAssisted": true,
+  "contracts": [
+    {
+      "id": "vault.history.restore.refuse-dirty.enabled",
+      "startLine": 1070,
+      "endLine": 1071,
+      "meaning": "The released dialog disables Restore when its edited entry differs from its initial entry.",
+      "source": "KeePass/Forms/PwEntryForm.cs",
+      "sourceBytes": 84184,
+      "sourceSha256": "b818aed12debd3d30115e17a44e6f03d6c57e4175f76f7d3d2a443da90a872c4",
+      "spanUtf8Bytes": 114,
+      "spanSha256": "5368df3c8d805c60ea010d6e37669e4a689c1deb7e8a68d8006169d2bec85628",
+      "evidence": "Authenticated exact original source; original GUI guard not executed."
+    },
+    {
+      "id": "vault.history.restore.refuse-dirty.handler",
+      "startLine": 1485,
+      "endLine": 1491,
+      "meaning": "The released restore handler rechecks and refuses modified entry contents before its restore effect.",
+      "source": "KeePass/Forms/PwEntryForm.cs",
+      "sourceBytes": 84184,
+      "sourceSha256": "b818aed12debd3d30115e17a44e6f03d6c57e4175f76f7d3d2a443da90a872c4",
+      "spanUtf8Bytes": 317,
+      "spanSha256": "f22916d30fb789a5d2fd7fcd6fdd7108904ff1f70c1fa694b9ed9abe7f3a9afc",
+      "evidence": "Authenticated exact original source; original GUI guard not executed."
+    },
+    {
+      "id": "vault.history.restore.refuse-dirty.comparison",
+      "startLine": 2139,
+      "endLine": 2145,
+      "meaning": "The released modification check saves current dialog fields into a clone and compares against the initial entry.",
+      "source": "KeePass/Forms/PwEntryForm.cs",
+      "sourceBytes": 84184,
+      "sourceSha256": "b818aed12debd3d30115e17a44e6f03d6c57e4175f76f7d3d2a443da90a872c4",
+      "spanUtf8Bytes": 244,
+      "spanSha256": "9c561ab9001c1a087ab0675f7b278a88a985dca27167eaeb27bc91d39cb6f5c0",
+      "evidence": "Authenticated exact original source; original GUI guard not executed."
+    }
+  ],
+  "extendedCandidatePolicy": "Seven current editable values, input revisions and request generations guard asynchronous Save/Restore publication. This models candidate transport behavior, not execution of original dialog concurrency.",
+  "originalGUIExecutions": 0
+}

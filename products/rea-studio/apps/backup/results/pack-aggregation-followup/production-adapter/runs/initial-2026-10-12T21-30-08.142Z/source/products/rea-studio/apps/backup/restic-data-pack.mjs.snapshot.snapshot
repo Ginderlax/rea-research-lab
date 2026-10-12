@@ -1,0 +1,47 @@
+import {hash,seal,open} from './restic-crypto.mjs';
+import {encodeBlob} from './restic-compression.mjs';
+import {zstdDecompressSync} from 'node:zlib';
+
+// Source-assisted restic 0.19.1 pack/header/index contracts, pinned exact
+// sources and BSD-2-Clause notice in this stage's source-provenance.json.
+// Sequential app policy; original concurrent batching/randomization differs.
+export const DATA_PACK_TARGET=16*1024*1024,DATA_PACK_MAX_RECORDS=4096,DATA_BLOB_MAX=8*1024*1024;
+export function createDataPackWriter({key,version,compression='auto',guard=()=>{},commit,target=DATA_PACK_TARGET}) {
+  if(![1,2].includes(version)||typeof commit!=='function'||typeof guard!=='function'||!Number.isSafeInteger(target)||target<128||target>DATA_PACK_TARGET)throw new Error('Invalid bounded data pack writer settings.');
+  let records=[],payloadBytes=0,headerBytes=0,broken=null;
+  const pending=new Map();
+  const check=()=>{if(broken)throw broken;guard();};
+  const discard=()=>{for(const row of records)row.payload.fill(0);records=[];pending.clear();payloadBytes=0;headerBytes=0;};
+  const flush=async()=>{
+    check();if(!records.length)return;
+    try {
+      const headerPlain=Buffer.alloc(headerBytes),blobs=[];let pos=0,offset=0;
+      for(const row of records){check();const {id,payload,uncompressedLength}=row;headerPlain[pos]=uncompressedLength?2:0;headerPlain.writeUInt32LE(payload.length,pos+1);if(uncompressedLength)headerPlain.writeUInt32LE(uncompressedLength,pos+5);Buffer.from(id,'hex').copy(headerPlain,pos+(uncompressedLength?9:5));pos+=uncompressedLength?41:37;blobs.push({id,type:'data',offset,length:payload.length,...(uncompressedLength?{uncompressed_length:uncompressedLength}:{})});offset+=payload.length;}
+      const header=seal(key,headerPlain);if(!open(key,header).equals(headerPlain))throw new Error('Data pack header verification failed.');
+      const trailer=Buffer.alloc(4);trailer.writeUInt32LE(header.length);
+      const packed=Buffer.concat([...records.map(row=>row.payload),header,trailer],payloadBytes+header.length+4);
+      // A sole oversized chunk may exceed the target (never the 8 MiB input
+      // bound plus encoded/header overhead). All ordinary batches stay within it.
+      if(packed.length>DATA_PACK_TARGET&&records.length!==1)throw new Error('Data pack exceeds its bounded target.');
+      check();const packID=hash(packed);await commit({id:packID,bytes:packed,blobs});discard();check();
+    }catch(error){broken=error instanceof Error?error:new Error(String(error));discard();throw broken;}
+  };
+  return Object.freeze({
+    get count(){return pending.size;},
+    has(id){return pending.has(id);},
+    async save(bytes){
+      check();if(!Buffer.isBuffer(bytes)||bytes.length>DATA_BLOB_MAX)throw new Error('Data blob exceeds the bounded 8 MiB Rabin chunk limit.');
+      const id=hash(bytes),existing=pending.get(id);
+      if(existing){let plain=open(key,existing.payload);if(existing.uncompressedLength)plain=zstdDecompressSync(plain,{maxOutputLength:existing.uncompressedLength});if(hash(plain)!==id||!plain.equals(bytes))throw new Error('Pending data blob verification failed.');check();return id;}
+      // Encrypt synchronously before the first await: caller buffers never
+      // become pending storage and may be reused once save() returns.
+      const encoded=encodeBlob(bytes,'data',version,compression),payload=seal(key,encoded.bytes),width=encoded.uncompressedLength?41:37;
+      if(records.length&&(payloadBytes+payload.length+headerBytes+width+36>target||records.length>=DATA_PACK_MAX_RECORDS))await flush();
+      check();const row={id,payload,uncompressedLength:encoded.uncompressedLength};records.push(row);pending.set(id,row);payloadBytes+=payload.length;headerBytes+=width;
+      if(payloadBytes+headerBytes+36>=target)await flush();
+      return id;
+    },
+    flush,
+    dispose(){discard();}
+  });
+}

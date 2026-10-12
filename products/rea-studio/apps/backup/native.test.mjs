@@ -304,7 +304,7 @@ test('oversized source files are rejected before native snapshot publication',as
 });
 
 test('source mutation during native capture aborts publication and releases the app lock',async t => {
-  const { workspace,call } = await fixture(t); await fs.mkdir(workspace.resolve('source')); await fs.writeFile(workspace.resolve('source/changing.bin'),Buffer.alloc(4 * 1024 * 1024 + 1,93)); await call('nativeInit');
+  const { workspace,call } = await fixture(t); await fs.mkdir(workspace.resolve('source')); await fs.writeFile(workspace.resolve('source/changing.bin'),(() => { const bytes=Buffer.alloc(24 * 1024 * 1024 + 1); let state=0x1a2b3c4d; for(let offset=0;offset<bytes.length;offset++){state^=state<<13;state^=state>>>17;state^=state<<5;bytes[offset]=state&255;} console.log(JSON.stringify({nativeMutationFixture:{bytes:bytes.length,sha256:hash(bytes),generator:'xorshift32 seed 0x1a2b3c4d; low byte per state',reason:'Cross the 16 MiB aggregate pack target with distinct chunks before source EOF'}})); return bytes; })()); await call('nativeInit');
   const operation = call('nativeSnapshot',{ source:'source' }); const outcome = operation.then(value => ({ value }),error => ({ error }));
   const deadline = Date.now()+10000; let stored = false;
   while (Date.now() < deadline) {

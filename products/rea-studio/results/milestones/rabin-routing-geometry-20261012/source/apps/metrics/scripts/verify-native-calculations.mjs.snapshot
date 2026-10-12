@@ -1,0 +1,107 @@
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
+import { createRequire } from 'node:module';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import { isDeepStrictEqual } from 'node:util';
+import * as native from '../native-calculations.mjs';
+
+const app = fileURLToPath(new URL('../', import.meta.url)), study = fileURLToPath(new URL('../../../../../projects/02-grafana/', import.meta.url));
+const digest = bytes => createHash('sha256').update(bytes).digest('hex');
+const receipt = JSON.parse(await readFile(path.join(app, 'fixtures/reducers/sources.json')));
+const release = path.join(study, 'artifacts/release.tgz');
+const originalReleaseBytes = await readFile(release);
+if (digest(originalReleaseBytes) !== receipt.archiveSha256 || 'sha512-' + createHash('sha512').update(originalReleaseBytes).digest('base64') !== receipt.registryIntegrity) throw new Error('Pinned original archive digest/integrity mismatch.');
+for (const source of receipt.sources) {
+  const retained = await readFile(path.join(app, source.file));
+  if (digest(retained) !== source.sha256) throw new Error('Retained source changed: ' + source.file);
+  if (!source.path.startsWith('docs/')) {
+    const original = await readFile(path.join(study, 'artifacts/package', source.path));
+    if (!original.equals(retained) || !original.equals(execFileSync('tar', ['-xOf', release, 'package/' + source.path], { maxBuffer: 4 * 1024 * 1024 }))) throw new Error('Original source changed: ' + source.path);
+  }
+}
+const dependencyArchive = path.join(study, 'artifacts/lodash-4.17.23.tgz');
+if (digest(await readFile(dependencyArchive)) !== receipt.oracleDependency.sha256) throw new Error('Original dependency archive changed.');
+const dependencyMain = await readFile(path.join(study, 'artifacts/node_modules/lodash/lodash.js'));
+if (!dependencyMain.equals(execFileSync('tar', ['-xOf', dependencyArchive, 'package/lodash.js'], { maxBuffer: 4 * 1024 * 1024 }))) throw new Error('Original dependency runtime changed.');
+const originalPath = path.join(study, 'artifacts/package/dist/cjs/transformations/fieldReducer.cjs'), oracleRequire = createRequire(originalPath);
+if (path.resolve(oracleRequire.resolve('lodash')) !== path.resolve(study, 'artifacts/node_modules/lodash/lodash.js')) throw new Error('Original dependency resolves outside verified runtime.');
+const original = oracleRequire(originalPath);
+
+let seed = 0x9b170cab;
+const random = () => { seed ^= seed << 13; seed ^= seed >>> 17; seed ^= seed << 5; return seed >>> 0; };
+const cases = [
+  ['empty', []], ['missing', undefined], ['single-null', [null]], ['nullish', [null, undefined, null, undefined]],
+  ['nan-surrounds', [NaN, 7.125, NaN, -3.75, NaN]], ['extremes', [-Number.MAX_VALUE, Number.MIN_VALUE, Number.MAX_VALUE]],
+  ['infinite-reset', [Infinity, -Infinity, 0, Infinity]], ['signed-zero-new', [0, -0, null, -0, 0]],
+  ['repeated-reset', [48, 97, 9, 13, 6, 15, 12, 30, 45]], ['zero-percent-new', [0, 7.25]],
+  ['rounding', [1e16, 1, -1e16, 0.125]], ['nan-only', [NaN, NaN, NaN]],
+  ['typed-strings', ['9.5', 0.125, '-13.75', null, 'invalid', undefined]], ['bool-mix', [false, null, true, undefined, true, false]],
+  ['nul-unicode', ['\0', 'é', '😀', '', null, 'é']], ['sparse', Array(7)], ['sparse-with-values', Object.assign(Array(9), { 1: 3.125, 7: -12.75 })],
+  ['max-sentinel-new', [Number.MAX_VALUE, null]], ['min-sentinel-new', [-Number.MAX_VALUE, undefined]],
+  ['all-positive-unordered', [7.125, 0.125, 100.375, 40.25, 3.5, 9.75]], ['tiny-overflow', [Number.MIN_VALUE, 2 * Number.MIN_VALUE, 1e308, 1e308]],
+];
+const alphabet = [-13.75, 0.125, null, undefined, '9.5'];
+for (let length = 1; length <= 3; length++) for (let index = 0; index < alphabet.length ** length; index++) {
+  let number = index;
+  cases.push([`new-alphabet-${length}-${index}`, Array.from({ length }, () => { const value = alphabet[number % alphabet.length]; number = Math.floor(number / alphabet.length); return value; })]);
+}
+const palette = [-13.75, 0.125, 98.375, 1e-9, -0, 0, null, undefined, NaN, Infinity, -Infinity, '9.5', 'bad', true, false];
+for (let index = 0; index < 180; index++) cases.push([`heldout-xorshift-${index}`, Array.from({ length: random() % 97 }, () => palette[random() % palette.length])]);
+const types = ['number', 'time', 'string', 'boolean', 'trace', 'geo', 'enum', 'other', 'frame', 'nestedFrames'];
+const modes = [undefined, 'connected', 'null', 'null as zero', null, 'unrecognized-mode'];
+const ids = Object.keys(original.ReducerID);
+const implementationSha256 = digest(await readFile(path.join(app, 'native-calculations.mjs')));
+const selections = [...ids.map(id => [id]), ['avg'], ['current'], ['total'], ['unknown-reducer'], ['mean', 'median', 'p50', 'countAll'], ['lastNotNull', 'lastNotNull'], ['stdDev', 'variance'], ['firstNotNull', 'lastNotNull'], [], ids];
+const corpusHash = createHash('sha256'), outputsHash = createHash('sha256'), failures = [];
+let comparisons = 0, exceptionComparisons = 0, cacheComparisons = 0, standardHelperComparisons = 0;
+const groups = {};
+function compare(label, build, reducers) {
+  const expectedField = build(), actualField = build();
+  let expected, actual, expectedError, actualError;
+  try { expected = original.reduceField({ field: expectedField, reducers }); } catch (error) { expectedError = { name: error.name }; }
+  try { actual = native.reduceField({ field: actualField, reducers }); } catch (error) { actualError = { name: error.name }; }
+  const exact = isDeepStrictEqual(expected, actual) && isDeepStrictEqual(expectedField?.state, actualField?.state) && isDeepStrictEqual(expectedError, actualError);
+  comparisons++; groups[label.split(':')[0]] = (groups[label.split(':')[0]] ?? 0) + 1; if (expectedError) exceptionComparisons++;
+  outputsHash.update(JSON.stringify(native.encodeCalculation([expected, expectedField?.state, expectedError])) + '\n');
+  if (!exact && failures.length < 12) failures.push({ label, reducers, expected: native.encodeCalculation(expected), actual: native.encodeCalculation(actual), expectedState: native.encodeCalculation(expectedField?.state), actualState: native.encodeCalculation(actualField?.state), expectedError, actualError });
+  return exact;
+}
+for (const [label, values] of cases) {
+  corpusHash.update(JSON.stringify(native.encodeCalculation({ label, values })) + '\n');
+  for (const type of types) for (const nullValueMode of modes) for (const reducers of selections) compare(`ordinary:${label}:${type}:${String(nullValueMode)}`, () => ({ type, config: { nullValueMode }, values: values?.slice() }), reducers);
+  for (const type of types) for (const [ignore, zero] of [[false, false], [false, true], [true, false], [true, true]]) {
+    const field = { type, values: values?.slice() }, expected = original.doStandardCalcs(field, ignore, zero), actual = native.doStandardCalcs(field, ignore, zero);
+    standardHelperComparisons++;
+    if (!isDeepStrictEqual(expected, actual) && failures.length < 12) failures.push({ label: `standard-helper:${label}:${type}:${ignore}:${zero}`, expected: native.encodeCalculation(expected), actual: native.encodeCalculation(actual) });
+  }
+}
+for (const type of types) for (const nullValueMode of modes) for (const reducers of selections) {
+  for (const [label, cache] of [['complete-cache', Object.fromEntries(reducers.map((id, i) => [id, i % 2 ? undefined : 717]))], ['partial-cache', { mean: -99, unrelated: 'retained', p50: undefined }], ['empty-cache', {}]]) {
+    for (const values of [[4.125, null, -9.75, undefined, 18.5], []]) { compare(`cache:${label}:${type}:${String(nullValueMode)}`, () => ({ type, config: { nullValueMode }, values: [...values], state: { unrelated: 'state-preserved', calcs: { ...cache } } }), reducers); cacheComparisons++; }
+  }
+}
+for (const reducers of selections) {
+  compare('missing-field', () => undefined, reducers);
+  compare('missing-config', () => ({ type: 'number', values: [3.125, null, -8.75] }), reducers);
+}
+const boundedValues = Array.from({ length: 25000 }, (_, index) => index % 17 ? Math.sin(index * 0.013) * 71.25 : null);
+const boundedStart = performance.now();
+for (const nullValueMode of ['connected', 'null', 'null as zero']) compare('bounded-25000-all-124', () => ({ type: 'number', values: [...boundedValues], config: { nullValueMode } }), ids);
+const boundedElapsedMs = performance.now() - boundedStart;
+const metadata = list => list.map(({ reduce, ...entry }) => entry);
+const helpers = {
+  enumeration: isDeepStrictEqual(original.ReducerID, native.ReducerID) && isDeepStrictEqual(Object.keys(original.ReducerID), Object.keys(native.ReducerID)),
+  defaults: isDeepStrictEqual(original.defaultCalcs, native.defaultCalcs),
+  registry: isDeepStrictEqual(metadata(original.fieldReducers.list()), metadata(native.fieldReducers.list())),
+  aliasLookup: isDeepStrictEqual(metadata(original.fieldReducers.list(['avg', 'unknown', 'total', 'current', 'median', 'avg'])), metadata(native.fieldReducers.list(['avg', 'unknown', 'total', 'current', 'median', 'avg']))),
+  selectors: isDeepStrictEqual(original.fieldReducers.selectOptions(['mean', 'current', 'unknown', 'p99'], item => item.standard, item => `${item.name}!`), native.fieldReducers.selectOptions(['mean', 'current', 'unknown', 'p99'], item => item.standard, item => `${item.name}!`)),
+  idPredicate: [...ids, 'avg', 'unknown', '__proto__', '', null, undefined].every(id => original.isReducerID(id) === native.isReducerID(id)),
+  fieldTypes: [...ids, 'avg', 'unknown'].every(id => ['number', 'string', 'time', 'other'].every(type => original.getFieldTypeForReducer(id, type) === native.getFieldTypeForReducer(id, type))),
+};
+const result = { schema: 'rea-native-calculation-differential/v1', status: failures.length || Object.values(helpers).includes(false) ? 'failed' : 'passed', checkedAt: new Date().toISOString(), original: '@grafana/data@13.2.3 reduceField and fixed built-in registry', originalArchiveSha256: receipt.archiveSha256, originalDependencyVerified: true, implementationFile: 'native-calculations.mjs', implementationSha256, runtime: process.version, sourceAssisted: true, priorReconstructionImported: false, priorStudyCorpusReused: false, corpusIndependence: 'New generator, seed and exhaustive alphabet; shared boundary controls may overlap prior research. Prior study records are not loaded.', seed: '0x9b170cab', distinctInputs: cases.length, inputCorpusSha256: corpusHash.digest('hex'), expectedOutputSha256: outputsHash.digest('hex'), canonicalIds: ids.length, aliases: ['current', 'avg', 'total'], types, nullModes: modes.map(value => value === undefined ? '(default)' : value), selectionPatterns: selections.length, comparisons, standardHelperComparisons, cacheComparisons, exceptionComparisons, groups, helpers, bounded: { samples: 25000, selections: 124, modes: 3, elapsedMs: boundedElapsedMs, purpose: 'Acceptance at local API bound, not a performance benchmark.' }, failures, limitations: ['Fixed built-in registry only; custom registry registration/initialization and global mutable metadata are excluded.', 'Direct fields use array values and ordinary state/config objects. This corpus covers primitive samples, sparse arrays and missing values, not arbitrary class/proxy/boxed/vector objects.', 'Errors compare exception class; messages and JavaScript engine stack traces are not byte-identical.', 'Finite differential evidence does not prove all inputs or complete Grafana product compatibility.'] };
+await mkdir(path.join(app, 'results'), { recursive: true });
+await writeFile(path.join(app, 'results/native-calculations-verification.json'), JSON.stringify(result, null, 2) + '\n');
+console.log(JSON.stringify(result, null, 2));
+if (result.status !== 'passed') process.exitCode = 1;

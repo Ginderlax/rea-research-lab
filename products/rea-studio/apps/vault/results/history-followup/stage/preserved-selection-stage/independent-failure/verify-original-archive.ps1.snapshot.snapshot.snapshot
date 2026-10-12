@@ -1,0 +1,21 @@
+param([Parameter(Mandatory=$true)][string]$Archive,[Parameter(Mandatory=$true)][string]$Census)
+$ErrorActionPreference='Stop'
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$expected=Get-Content -LiteralPath $Census -Raw | ConvertFrom-Json
+$actualHash=(Get-FileHash -LiteralPath $Archive -Algorithm SHA256).Hash.ToLowerInvariant()
+if($actualHash -ne $expected.archiveSha256){throw 'Original source archive digest mismatch'}
+$zip=[System.IO.Compression.ZipFile]::OpenRead($Archive)
+try {
+  if($zip.Entries.Count -ne $expected.archiveEntries.Count){throw 'Archive entry census differs'}
+  $selected=@()
+  foreach($record in $expected.selectedFiles){
+    if($record.bytes -gt 300000){throw 'Independent selected-source bound exceeded'}
+    $matches=@($zip.Entries | Where-Object {$_.FullName -ceq $record.path})
+    if($matches.Count -ne 1 -or $matches[0].Length -ne $record.bytes){throw ('Original source entry identity differs: '+$record.path)}
+    $stream=$matches[0].Open()
+    try {$digest=[Convert]::ToHexString([System.Security.Cryptography.SHA256]::HashData($stream)).ToLowerInvariant()} finally {$stream.Dispose()}
+    if($digest -ne $record.sha256){throw ('Original source entry digest mismatch: '+$record.path)}
+    $selected+=@{path=$record.path;bytes=$record.bytes;sha256=$digest}
+  }
+  @{schema='rea-independent-keepass-source-archive/v1';archiveSha256=$actualHash;archiveEntries=$zip.Entries.Count;selectedEntries=$selected;allSelectedMatch=$true;candidateExecuted=$false} | ConvertTo-Json -Depth 5
+} finally {$zip.Dispose()}

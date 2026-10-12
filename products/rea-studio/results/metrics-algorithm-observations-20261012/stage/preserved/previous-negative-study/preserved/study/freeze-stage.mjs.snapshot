@@ -1,0 +1,70 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {here,lab,sha,authenticateOriginal} from './authenticate-original.mjs';
+const receiptName='readiness-validation.json',read=async name=>JSON.parse(await fs.readFile(path.join(here,name)));
+async function fileDigest(name){const bytes=await fs.readFile(name);return {bytes:bytes.length,sha256:sha(bytes)};}
+async function inventory(directory=here){const result={};for(const row of (await fs.readdir(directory,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))){
+  const absolute=path.join(directory,row.name),relative=path.relative(here,absolute).replaceAll('\\','/');
+  if(relative==='.local'||relative===receiptName)continue;
+  assert.ok(!row.isSymbolicLink(),'Unexpected stage link '+relative);
+  if(row.isDirectory())Object.assign(result,await inventory(absolute));else if(row.isFile())result[relative]=await fileDigest(absolute);else throw Error('Unsupported stage entry '+relative);
+}return result;}
+if(process.argv.includes('--verify-only')){
+  const receipt=await read(receiptName);assert.deepEqual(await inventory(),receipt.inventory);
+  console.log(JSON.stringify({status:'passed',receipt:receiptName,sha256:sha(await fs.readFile(path.join(here,receiptName))),inventoryFiles:Object.keys(receipt.inventory).length,readOnly:true}));
+}else{
+  const manifestBytes=await fs.readFile(path.join(here,'memory-preflight.control.json')),manifest=JSON.parse(manifestBytes);
+  assert.equal(sha(manifestBytes),'cbafd22595e65f57d266d5fba79d2ddf84538cfd2bed94df0ab0bc8590b73b3f');
+  const preservation=await read('preservation.json');
+  assert.equal(sha(await fs.readFile(path.join(here,'preserved/selector-validation.json'))),preservation.selectorReceiptSHA256);
+  assert.equal(sha(await fs.readFile(path.join(here,'preserved/previous-measurement-validation.json'))),preservation.previousMeasurementReceiptSHA256);
+  for(const row of preservation.copies){assert.deepEqual(await fileDigest(path.join(here,row.path)),{bytes:row.bytes,sha256:row.sha256});
+    assert.deepEqual(await fileDigest(path.join(row.sourceRoot,row.sourcePath)),{bytes:row.bytes,sha256:row.sha256});}
+  const productionBefore={};for(const row of preservation.production){const bytes=await fs.readFile(path.join(lab,'products/rea-studio',row.path));assert.equal(sha(bytes),row.sha256);productionBefore[row.path]=sha(bytes);
+    assert.equal(sha(await fs.readFile(path.join(here,'preserved/production',row.path+'.snapshot'))),row.sha256);}
+  const authority=await authenticateOriginal();assert.deepEqual(authority.files,manifest.authority.files);
+  const proofNames=['results/source-binding-audit.json','results/harness-readiness.json','results/memory-harness-checks.control.json','results/timing-readiness.json','results/adversarial-readiness.corrected.json','results/private-host-routing.json'];
+  const proofs={};for(const name of proofNames){const bytes=await fs.readFile(path.join(here,name)),value=JSON.parse(bytes);assert.equal(value.status,'passed');proofs[name]={bytes:bytes.length,sha256:sha(bytes)};
+    for(const [source,digest]of Object.entries(value.sourceHashesBefore??{})){assert.equal(sha(await fs.readFile(path.join(here,source))),digest);assert.equal(value.sourceHashesAfter[source],digest);}
+  }
+  const binding=await read('results/source-binding-audit.json');
+  for(const row of binding.selectedCopies){assert.deepEqual(await fileDigest(path.join(here,row.path)),{bytes:row.bytes,sha256:row.sha256});assert.deepEqual(await fileDigest(row.source),{bytes:row.bytes,sha256:row.sha256});}
+  const harness=await read('results/harness-readiness.json');assert.equal(harness.steps.length,3);
+  for(const step of harness.steps){assert.equal(step.exitCode,0);for(const side of ['stdout','stderr'])assert.equal(sha(await fs.readFile(path.join(here,step[side].path))),step[side].sha256);}
+  const memory=await read('results/memory-harness-checks.control.json');assert.equal(memory.measurementRun,false);assert.equal(memory.samples.length,3);assert.equal(memory.manifestSHA256,sha(manifestBytes));
+  for(const sample of memory.samples){assert.equal(sample.result.comparisons,21);assert.equal(sample.result.measurementRun,false);assert.equal(sample.result.loadedReducerImplementations,1);
+    assert.deepEqual(sample.result.selectedSources,manifest.implementations[sample.implementation].files);}
+  const timing=await read('results/timing-readiness.json');assert.equal(timing.timingMeasurementRun,false);assert.equal(timing.result.comparisons,63);assert.equal(timing.manifestSHA256,sha(manifestBytes));
+  for(const side of ['stdout','stderr'])assert.equal(sha(await fs.readFile(path.join(here,timing[side].path))),timing[side].sha256);
+  const adversarial=await read('results/adversarial-readiness.corrected.json');assert.equal(adversarial.originalSelections,42);assert.equal(adversarial.implementationComparisons,84);assert.equal(adversarial.fallbackExecutions,6);assert.equal(adversarial.plannedAdversarialWorkload.fallbackExecutionCount,1);
+  assert.equal(adversarial.bothCandidateModuleSources.entry,sha(await fs.readFile(path.join(here,'candidate-module-control.mjs'))));
+  assert.equal(adversarial.bothCandidateModuleSources.helper,sha(await fs.readFile(path.join(here,'selector-control.mjs'))));
+  const failed=await read('failures/organ-pipe-p1-hypothesis/failure.json');assert.equal(failed.exitCode,1);
+  for(const row of failed.snapshots)assert.deepEqual(await fileDigest(path.join(here,'failures/organ-pipe-p1-hypothesis',row.path+'.snapshot')),{bytes:row.bytes,sha256:row.sha256});
+  for(const fixture of Object.values(manifest.expectedFiles)){
+    assert.deepEqual(await fileDigest(path.join(here,fixture.inputPath)),{bytes:fixture.inputBytes,sha256:fixture.inputFileSHA256});
+    assert.deepEqual(await fileDigest(path.join(here,fixture.path)),{bytes:fixture.bytes,sha256:fixture.sha256});
+  }
+  const host=await read('results/private-host-routing.json');assert.equal(host.records.length,7);assert.equal(host.ownedHostClosed,true);assert.equal(host.hostSourceBeforeAndAfterStable,true);
+  const excludedArchives=[];for(const name of ['preserved/original/release.tgz','preserved/original/lodash-4.17.23.tgz'])excludedArchives.push({path:name,...await fileDigest(path.join(here,name)),reason:'Exact local original registry archive retained for authentication; excluded from a future public source-only snapshot.'});
+  const exclusions={schemaVersion:1,archives:excludedArchives,nativeExecutablesCopied:0,inventoryExclusions:[{path:'.local/**',reason:'Owned generated private HTTP fixture; executed source copies are bound in host receipt and preserved originals, no real accounts/data.'}],scope:'Prospective publication policy only. No publication performed.'};
+  await fs.writeFile(path.join(here,'publication-exclusions.json'),JSON.stringify(exclusions,null,2)+'\n',{flag:'wx'});
+  const stageInventory=await inventory();assert.equal(Object.keys(stageInventory).some(name=>/^results\/(paired-control-|memory-observations-)/.test(name)),false,'Measurement outputs unexpectedly exist');
+  const productionAfter={};for(const row of preservation.production)productionAfter[row.path]=sha(await fs.readFile(path.join(lab,'products/rea-studio',row.path)));assert.deepEqual(productionAfter,productionBefore);
+  const output={schemaVersion:1,checkedAt:new Date().toISOString(),status:'passed',scope:'Frozen prospective two-module selector timing/memory plan and correctness-only readiness. No production or prior study modifications.',
+    candidate:{entrySHA256:manifest.implementations.candidate.files[manifest.implementations.candidate.entry],helperSHA256:manifest.implementations.candidate.files[path.join(here,'selector-control.mjs')],baselineSHA256:manifest.implementations.baseline.files[manifest.implementations.baseline.entry]},
+    original:authority,runtime:manifest.runtime,manifestSHA256:sha(manifestBytes),preservedSelectorReceiptSHA256:preservation.selectorReceiptSHA256,preservedPreviousMeasurementReceiptSHA256:preservation.previousMeasurementReceiptSHA256,
+    proofs,currentChecks:{harnessTestGroups:4,invalidAuthorizationCases:15,originalPreflightCalculationsBothAttempts:14,originalPreflightCachedReadsBothAttempts:28,memoryCheckOnlyChildren:3,memoryFreshCachePacketChecks:63,timingFreshCachePacketChecks:63,adversarialOriginalSelectionsPerAttempt:42,adversarialImplementationComparisonsPerAttempt:84,correctedFallbackHits:6,privateHostRoutesAndActions:7},
+    preservedFailures:{attempts:1,path:'failures/organ-pipe-p1-hypothesis/failure.json',scope:'Initial p1 fallback-coverage hypothesis failed, though all output checks were exact; replaced by verified organ-pipe/p95 before measurements. Full initial console stack was not captured into a raw file.'},
+    historicalSemanticProofReusedWithoutNewFullReplay:true,historicalAllInventoryReread:false,allSelectedOlderArtifactsCheckedUnchanged:true,productionSourceHashesBefore:productionBefore,productionSourceHashesAfter:productionAfter,
+    sourceGuards:binding.sourceGuards,backendOnlyHelperRequiresNoStaticRoute:true,prospectiveWorkloads:7,samplesPerRoleAndWorkload:7,expectedTimingChildren:147,expectedIsolatedMemoryChildren:147,
+    schedulingReservation:{timingMinutes:[3,5],isolatedMemoryMinutes:[10,15],prospectiveEstimateNotMeasured:true},
+    observerAndSerializerPressureDisclosed:true,measurementBranchExecutionTested:false,allOwnedPreflightHostsClosed:true,
+    inventory:stageInventory,inventoryExcludedPaths:exclusions.inventoryExclusions,publicationExcludedArchives:excludedArchives,
+    timingMeasurementRun:false,memoryMeasurementRun:false,performanceEstablished:false,productionChanged:false,selectedForIntegration:null,
+    futureMeasurementRequiresNewExplicitRootQuietWindow:true,machineLevelIsolationEstablished:false,allDocumentedFeaturesEnumerated:false,universalCorrectnessEstablished:false,fullProductComplete:false,universalSuperiorityEstablished:false};
+  const bytes=JSON.stringify(output,null,2)+'\n';await fs.writeFile(path.join(here,receiptName),bytes,{flag:'wx'});
+  assert.deepEqual(await inventory(),stageInventory);
+  console.log(JSON.stringify({status:output.status,receipt:path.join(here,receiptName),sha256:sha(bytes),inventoryFiles:Object.keys(stageInventory).length,timingMeasurementRun:false,memoryMeasurementRun:false}));
+}

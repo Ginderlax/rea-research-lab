@@ -1,0 +1,81 @@
+{
+  "schema": "rea-independent-vault-detached-idle-review-final/v1",
+  "createdAt": "2026-10-12T22:47:56.355Z",
+  "status": "FROZEN_REVIEW_WITH_CONFIRMED_PREEXISTING_FINDING",
+  "authenticated": [
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-independent-review\\review-manifest.json",
+      "bytes": 19320,
+      "sha256": "659a694609e032da24f51b625d9f6528b0d9a5c3e558c9bc0d9fe7a0cf6f35d1",
+      "count": 101,
+      "allEntriesMatch": true
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-selection-independent-review\\review-manifest.json",
+      "bytes": 6234,
+      "sha256": "df87b099e0234bb611b76dd6079e09482f526696037a0124bd4374318738dd6d",
+      "count": 36,
+      "allEntriesMatch": true
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-draft-policy-review\\review-manifest.json",
+      "bytes": 2697,
+      "sha256": "a36e0aa279f305f5e9e7474ebbc05fa9661d2f27f4934ddd6811428b005dc6a9",
+      "count": 16,
+      "allEntriesMatch": true
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-selection-fix-next\\selection-preservation-manifest.json",
+      "bytes": 109574,
+      "sha256": "d6c09b4a6e4d45b3729ad8c8692b2352686e8e7e88e5ad791905fbb26b8b52de",
+      "count": 546,
+      "allEntriesMatch": true
+    }
+  ],
+  "sourceFingerprints": [
+    {
+      "path": "history.mjs",
+      "sha256": "c902e684ab38cb9d9ef421826e9091422a7843b2b85ba689d2a12690e78b5f26"
+    },
+    {
+      "path": "server.mjs",
+      "sha256": "c4aa4d91d93a19de3aab0e4d9cc42759336e78bd1f853572586b542efbeb0fb9"
+    },
+    {
+      "path": "client.mjs",
+      "sha256": "157e34dfaa5dce136f4225aa04dcfcd7f69d8a4880c4c42b657c265adaa3ebfd"
+    },
+    {
+      "path": "kdbx.mjs",
+      "sha256": "ea774360332dbc7497a2e6a005fa10604cafbb92326293384d157d8827e0fe0c"
+    },
+    {
+      "path": "xml.mjs",
+      "sha256": "0adfa8ec93cc2cffe7a256a94b896fd9bd815530de79769dccba4762c3c1c0bd"
+    }
+  ],
+  "run": {
+    "bytes": 988,
+    "sha256": "48604def881bca32044f4f370ddafa924ea253801e135b48fe9eb706b1829a99",
+    "counts": {
+      "tests": 1,
+      "pass": 0,
+      "fail": 1,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "sourceStable": true
+  },
+  "preHistorySource": {
+    "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-history-next\\baseline\\products\\rea-studio\\apps\\vault\\client.mjs.snapshot",
+    "sha256": "986487ecdf78b1cfb9bc655c2680725ec06abc06fcb5c8d3aff5600feaea8264",
+    "classification": "Same no-cleanup return and old content-parent guard; source inspection, not a prior-runtime execution"
+  },
+  "finding": {
+    "priority": "P2",
+    "trigger": "Navigate away from Vault, reopen, make a new request, then older idle timer fires",
+    "observed": "The older detached view requests lock and locks the current active session",
+    "expected": "Detach/dispose cancels its timer and suppresses its later effects"
+  },
+  "scope": "Finite direct logical idle-timer callback; no elapsed-time measurement, native GUI execution or current HTTP loss claim."
+}

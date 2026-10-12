@@ -1,0 +1,70 @@
+import test,{after} from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs/promises';import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {applyEntrySave,listEntryHistory,readEntryHistory,restoreEntryHistory,historyEntrySize} from './history.mjs';
+import {importKdbx,exportKdbx,materializeKdbxDocument,projectKdbxDocument,encodeKdbxDate} from './kdbx.mjs';
+import {parseXml,serializeXml,element,nodes,one,text,put} from './xml.mjs';
+import {handle,dispose} from './server.mjs';import {here,temp,original,observations,pass} from './harness.mjs';
+const id='00000000-1111-2222-3333-444444444444',privateKey=Buffer.alloc(32,23),first='2024-01-01T00:00:00Z',second='2024-01-02T00:00:00Z',third='2024-01-03T00:00:00Z';
+function fresh(){return {version:1,entries:[{id,title:'Synthetic history',username:'synthetic-user',password:'one',url:'https://example.invalid',notes:'Unicode λ🎛',group:'Parent/Child',totpSecret:'',createdAt:first,updatedAt:first}]}}
+function edited(data,value,now=second){return applyEntrySave(data,data.entries[0],{...data.entries[0],password:value,updatedAt:now})}
+function entry(xml){function visit(g){return nodes(g,'Entry')[0]??nodes(g,'Group').map(visit).find(Boolean)}return visit(one(one(xml,'Root',true),'Group',true))}
+function settings(data,count,size=-1){const xml=materializeKdbxDocument(data),meta=one(xml,'Meta',true);put(meta,'HistoryMaxItems',String(count));put(meta,'HistoryMaxSize',String(size));return {...data,kdbx:{...(data.kdbx??{binaries:[],publicCustomData:null,sourceVersion:'4.1'}),xml:serializeXml(xml)}}}
+function withXml(data,fn){const xml=materializeKdbxDocument(data);fn(xml,entry(xml));return {...data,kdbx:{...(data.kdbx??{binaries:[],publicCustomData:null,sourceVersion:'4.1'}),xml:serializeXml(xml)}}}
+const list=data=>listEntryHistory(data,id,privateKey);
+const restore=(data,row,now=third)=>restoreEntryHistory(data,id,row.index,row.revision,privateKey,{confirm:true,now});
+after(async()=>{await fs.mkdir(path.join(here,'.local/observations'),{recursive:true});await fs.writeFile(path.join(here,'.local/observations/history-original.json'),JSON.stringify({originalProcessExecutions:observations.length,observations},null,2));console.log('REA_KEEPASS_HISTORY_ORIGINAL '+JSON.stringify({originalProcessExecutions:observations.length,guiExecutions:0,detail:'.local/observations/history-original.json'}))});
+test('automatic changed edit preserves prior version; no-op touches access and usage without history or mtime',()=>{
+  const baseline=fresh(),changed=edited(baseline,'two'),rows=list(changed);assert.equal(rows.revisions.length,1);assert.equal(readEntryHistory(changed,id,0,rows.revisions[0].revision,privateKey).entry.password,'one');assert.equal(baseline.kdbx,undefined);
+  assert.equal(JSON.stringify(rows).includes('one'),false);assert.equal(JSON.stringify(rows).includes('Unicode'),false);
+  const noop=applyEntrySave(changed,changed.entries[0],{...changed.entries[0],updatedAt:third}),e=entry(materializeKdbxDocument(noop));assert.equal(list(noop).revisions.length,1);assert.equal(noop.entries[0].updatedAt,changed.entries[0].updatedAt);assert.equal(text(one(one(e,'Times'),'LastAccessTime')),encodeKdbxDate(third));assert.equal(text(one(one(e,'Times'),'UsageCount')),'2');
+});
+test('count, size, unlimited limits and oldest modification time preserve ordered survivors',()=>{
+  let data=settings(fresh(),2);data=edited(data,'two',third);data=edited(data,'three',second);data=edited(data,'four','2024-01-04T00:00:00Z');assert.deepEqual(list(data).revisions.map(r=>r.modifiedAt),['2024-01-03T00:00:00.000Z','2024-01-02T00:00:00.000Z']);
+  assert.equal(list(edited(settings(fresh(),0),'two')).revisions.length,0);assert.equal(list(edited(settings(fresh(),-1),'two')).revisions.length,1);
+  const oneRevision=edited(settings(fresh(),-1),'two'),cost=list(oneRevision).revisions[0].sizeBytes;assert.equal(list(edited(settings(fresh(),-1,cost),'two')).revisions.length,1);assert.equal(list(edited(settings(fresh(),-1,cost-1),'two')).revisions.length,0);
+});
+test('restore keeps current location, history and UUID while restoring metadata and selected content',()=>{
+  let data=withXml(fresh(),(xml,e)=>{put(one(e,'Times'),'UsageCount','5');put(e,'OverrideURL','cmd://preserved-old');put(e,'QualityCheck','False');e.children.push(element('CustomData',[element('Item',[element('Key','custom'),element('Value','protected by vault encryption')])]))});
+  data=edited(data,'two');const chosen=list(data).revisions[0];data=withXml(data,(xml,e)=>{put(e,'OverrideURL','cmd://current');put(one(e,'Times'),'LocationChanged',encodeKdbxDate('2023-12-20T00:00:00Z'));put(e,'PreviousParentGroup',Buffer.alloc(16,3).toString('base64'))});
+  const before=JSON.stringify(data),result=restore(data,chosen),e=entry(materializeKdbxDocument(result));assert.equal(result.entries[0].password,'one');assert.equal(result.entries[0].updatedAt,'2024-01-03T00:00:00.000Z');assert.equal(text(one(e,'OverrideURL')),'cmd://preserved-old');assert.equal(text(one(e,'PreviousParentGroup')),Buffer.alloc(16,3).toString('base64'));assert.equal(text(one(one(e,'Times'),'LocationChanged')),encodeKdbxDate('2023-12-20T00:00:00Z'));assert.equal(text(one(one(e,'Times'),'UsageCount')),'6');assert.equal(list(result).revisions.length,2);assert.equal(readEntryHistory(result,id,1,list(result).revisions[1].revision,privateKey).entry.password,'two');assert.equal(JSON.stringify(data),before);
+  const pruned=restore(settings(data,1),list(settings(data,1)).revisions[0]);assert.equal(pruned.entries[0].password,'one');assert.equal(list(pruned).revisions.length,1);
+});
+test('confirmation, stale selections, bad indices and cross-key tokens reject without mutation; explicit read is a copy',()=>{
+  const data=edited(fresh(),'two'),row=list(data).revisions[0],before=JSON.stringify(data);assert.throws(()=>restoreEntryHistory(data,id,0,row.revision,privateKey),/confirmation/);
+  for(const index of [-1,1,1.5,1000])assert.throws(()=>restoreEntryHistory(data,id,index,row.revision,privateKey,{confirm:true}));assert.throws(()=>restoreEntryHistory(data,id,0,row.revision,Buffer.alloc(32,1),{confirm:true}),/selection changed/);
+  const changed=withXml(data,(xml,e)=>{put(nodes(one(e,'History'),'Entry')[0],'OverrideURL','different')});assert.throws(()=>restore(changed,row),/selection changed/);
+  const read=readEntryHistory(data,id,0,row.revision,privateKey);read.entry.password='caller edit';assert.equal(readEntryHistory(data,id,0,row.revision,privateKey).entry.password,'one');assert.equal(JSON.stringify(data),before);
+});
+test('malformed history, nested revisions, duplicate fields, bad attachment refs and combined bound reject before persistence',()=>{
+  const data=edited(fresh(),'two');for(const mutate of [e=>nodes(one(e,'History'),'Entry')[0].children.push(element('History',[element('Entry')])),e=>nodes(one(e,'History'),'Entry')[0].children.push(element('String',[element('Key','Title'),element('Value','duplicate')])),e=>nodes(one(e,'History'),'Entry')[0].children.push(element('Binary',[element('Key','bad'),element('Value','',{Ref:'42'})])),e=>put(one(nodes(one(e,'History'),'Entry')[0],'Times'),'LastModificationTime','AAAA')]){
+    const malformed=withXml(data,(xml,e)=>mutate(e));assert.throws(()=>list(malformed));assert.throws(()=>edited(malformed,'three'));
+  }
+  const huge=withXml(data,(xml,e)=>e.children.push(element('PreservedUnknown','x'.repeat(4*1024*1024))));assert.throws(()=>edited(huge,'three'),/8 MiB|8MiB/);assert.ok(JSON.stringify(huge).length<9*1024*1024);
+});
+test('1000 final revisions may prune one pending copy; unlimited overflow and late-year sentinel prune reject',()=>{
+  const data=edited(fresh(),'two'),xml=materializeKdbxDocument(data),e=entry(xml),h=one(e,'History'),copy=nodes(h,'Entry')[0];h.children=Array.from({length:1000},()=>structuredClone(copy));let large={...data,kdbx:{...data.kdbx,xml:serializeXml(xml)}};large=settings(large,1000);assert.equal(list(edited(large,'three')).revisions.length,1000);assert.throws(()=>edited(settings(large,-1),'three'),/1000-revision/);
+  const future=fresh();future.entries[0].updatedAt='9999-12-31T00:00:00Z';assert.throws(()=>edited(settings(future,0),'two'),/sentinel/);
+});
+test('original release direct backup and maintenance replay match native edits, metadata, no-op and oldest pruning',async t=>{
+  const dir=await temp(t),seed=path.join(dir,'seed.kdbx');const created=await original(dir,{mode:'create',database:seed,maxItems:2,maxSize:-1});let data=await importKdbx(await fs.readFile(seed),{password:pass});assert.equal(data.entries[0].id,id);assert.equal(historyEntrySize(nodes(one(entry(materializeKdbxDocument(data)),'History'),'Entry')[0],data.kdbx.binaries),BigInt(created.history[0].size));
+  const operations=[{action:'save',fields:{Password:'native edit 1'},now:third},{action:'save',fields:{Password:'native edit 1'},now:'2024-01-04T00:00:00Z'},{action:'save',fields:{Password:'native edit 2'},now:second},{action:'save',fields:{Password:'native edit 3'},now:'2024-01-05T00:00:00Z'}];
+  for(const operation of operations)data=edited(data,operation.fields.Password,operation.now);
+  const expected=await original(dir,{mode:'read',database:seed,operations,output:path.join(dir,'replayed.kdbx')}),target=path.join(dir,'native.kdbx');await fs.writeFile(target,await exportKdbx(data,{password:pass},{kdf:'aes',rounds:100}));const actual=await original(dir,{mode:'read',database:target});assert.deepEqual(actual.entry,expected.entry);assert.deepEqual(actual.history,expected.history);assert.equal(expected.history.length,2);
+});
+test('original RestoreFromBackup copies old content and metadata while retaining live history/location',async t=>{
+  const dir=await temp(t),seed=path.join(dir,'seed.kdbx');await original(dir,{mode:'create',database:seed,maxItems:1,maxSize:-1});const data=await importKdbx(await fs.readFile(seed),{password:pass}),result=restore(data,list(data).revisions[0]);const expected=await original(dir,{mode:'read',database:seed,operations:[{action:'restore',index:0,now:third}],output:path.join(dir,'original-restored.kdbx')}),target=path.join(dir,'native-restored.kdbx');await fs.writeFile(target,await exportKdbx(result,{password:pass},{kdf:'aes',rounds:100}));const actual=await original(dir,{mode:'read',database:target});assert.deepEqual(actual.entry,expected.entry);assert.deepEqual(actual.history,expected.history);assert.equal(actual.entry.fields.Password.value,'synthetic-prior-secret');assert.equal(actual.history[0].fields.Password.value,'synthetic-current-secret');
+});
+test('original GetSize byte-accounting covers Unicode, protected and empty binaries, Auto-Type and unusual tag trimming',async t=>{
+  const dir=await temp(t),seed=path.join(dir,'seed.kdbx');await original(dir,{mode:'create',database:seed,maxItems:-1,maxSize:-1});for(const value of ['alpha; alpha, λ 🎛;beta','\u0085NEL\u0085;\uFEFFBOM\uFEFF;\u00A0NBSP\u00A0','x;X;x;;,x']){
+    const target=path.join(dir,'tags-'+createHash('sha256').update(value).digest('hex').slice(0,8)+'.kdbx');const observed=await original(dir,{mode:'read',database:seed,operations:[{action:'tags',value},{action:'save',fields:{Password:'after tags'},now:third}],output:target});const data=await importKdbx(await fs.readFile(target),{password:pass}),rows=nodes(one(entry(materializeKdbxDocument(data)),'History'),'Entry');for(let i=0;i<rows.length;i++)assert.equal(historyEntrySize(rows[i],data.kdbx.binaries),BigInt(observed.history[i].size));
+  }
+});
+test('original history settings boundary count0 and exact byte cutoff agree with candidate',async t=>{
+  const dir=await temp(t),seed=path.join(dir,'seed.kdbx');const observed=await original(dir,{mode:'create',database:seed,maxItems:-1,maxSize:-1}),data=await importKdbx(await fs.readFile(seed),{password:pass});
+  for(const [count,size] of [[0,-1],[-1,observed.history[0].size],[-1,observed.history[0].size-1]]){const native=edited(settings(data,count,size),'boundary',third),expected=await original(dir,{mode:'read',database:seed,maxItems:count,maxSize:size,operations:[{action:'save',fields:{Password:'boundary'},now:third}]});assert.equal(list(native).revisions.length,expected.history.length);const rows=nodes(one(entry(materializeKdbxDocument(native)),'History'),'Entry');assert.deepEqual(rows.map(e=>historyEntrySize(e,native.kdbx.binaries).toString()),expected.history.map(e=>String(e.size)));}
+});
+function memory(){let value;return {get:async()=>structuredClone(value??null),set:async(k,v)=>{value=structuredClone(v)},snapshot:()=>structuredClone(value)}}
+test('public entry captures input before queue awaits and rejects failed storage without altering current/history',async t=>{
+  const store=memory(),workspace={root:await temp(t)},api=(action,input={})=>handle({action,input,store,workspace});t.after(()=>dispose(workspace));await api('create',{password:pass});let input={title:'one',username:'user',password:'initial',url:'',notes:'',group:'',totpSecret:''};const promise=api('save',input);input.title='mutated';const {id:entryId}=await promise;const prior=(await api('read',{id:entryId})).entry;assert.equal(prior.title,'one');await api('save',{...prior,password:'two'});const rows=await api('historyList',{id:entryId});assert.equal(rows.revisions.length,1);const snapshot=JSON.stringify(store.snapshot()),read=(await api('historyRead',{id:entryId,...rows.revisions[0]})).entry;read.password='mutated returned';assert.equal((await api('historyRead',{id:entryId,...rows.revisions[0]})).entry.password,'initial');
+  store.set=async()=>{throw new Error('Synthetic store failure')};await assert.rejects(api('save',{...prior,password:'three'}),/Synthetic store/);await assert.rejects(api('historyRestore',{id:entryId,...rows.revisions[0],confirm:true}),/Synthetic store/);assert.equal((await api('read',{id:entryId})).entry.password,'two');assert.equal(JSON.stringify(store.snapshot()),snapshot);assert.equal((await api('historyList',{id:entryId})).revisions.length,1);
+});

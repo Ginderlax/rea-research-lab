@@ -1,0 +1,13 @@
+# Prospective selection and percentile dispatch candidate
+
+The frozen two-module candidate regressed the fixed organ-pipe p95 timing by 27.91056% versus the unchanged baseline. This separate stage tests a different pivot/work strategy and less repeated work in multi-percentile dispatch. The old measured study, inputs, thresholds, raw logs and production remain unchanged.
+
+Before implementation, the planned finite-number path is a private single-pass candidate copy, a median of nine evenly spaced samples for sufficiently large partitions, then deterministic groups-of-five median selection once cumulative partition scans exceed twice the initial length. All comparison/partition work has an explicit conservative `64*n+128` charge limit. Exhaustion returns to the existing stable sort with a preserved permutation. A deliberately smaller explicit limit will exercise this refusal contract in correctness tests. These constants are prospective structural limits, not selected from a new performance trial. A worst-case machine-time or linear-time guarantee is not claimed.
+
+Null filtering remains strict-null filtering for percentile reducers; undefined, sparse holes, nonfinite values, signed zero and coercible primitives retain the authentic stable sort behavior. Finite fast-path collection may avoid the old duplicate filter/slice arrays, but it must never change caller values or cache/alias behavior.
+
+Multi-percentile requests continue to share one complete stable sort. Their selected results will be assigned directly at each original queue position, avoiding a temporary one-property result and repeated special-reducer dispatch. The standard reducer and all non-percentile special bodies remain exact. Sparse multiselection is deliberately not added to this stage.
+
+Acceptance will replay the complete 2,910,751 original reducer comparisons (including 48,240 cache checks) plus 14,240 standard helper checks, held-out selection and standard/coercion cases, the exact previous 42-input corpus, all fixed seven measured input shapes, additional deterministic adversarial inputs and explicit budget-exhaustion/permutation/cache controls. Both candidate modules and all actual original CJS/Lodash authorities will be authenticated before/after every run; failures and actual executed sources are retained.
+
+This is correctness-only preparation. No timing, memory measurement, profiling, integration or superiority claim is authorized. Source-layout effects and possible small-array overhead remain unresolved until a future separately authorized quiet interval.

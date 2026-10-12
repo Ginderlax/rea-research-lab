@@ -1,0 +1,13 @@
+# Isolated Notes notebook organization candidate
+
+This stage selects joplin.notebooks from the exact preserved workspace-products requirement version. Production files and previous pack stages are unchanged. The candidate adds usable notebook create/rename/reparent, saved-note movement and identity filtering to the existing local Notes workflow, while retaining native IDs, supported metadata, resources, tags, saved histories and legacy notebook text saves.
+
+Run `node run.mjs` here for the 28 focused existing/new tests. The collector preserves source bytes before execution, raw stdout/stderr and source/production checks; normal tests write only their owned temporary data and stdout. Historical and failed runs remain separate. The legacy fixture tool is retained unchanged and is not run to rewrite the old 22-check receipt. Candidate server/client/notebooks module are runtime; notebook-original-oracle.mjs is test-only. See NOTICE.md and the original source receipts for attribution and licensing.
+
+The browser preview uses only an ephemeral private port and synthetic fixture data. It exercises actual hierarchy changes, saved-note moves, retained unsaved drafts, rejected cycles, identity filtering and reload persistence. Two HTTP host cold restarts and attachment/JEX identity assertions also run in focused integration tests. No original Joplin GUI or whole application has been executed.
+
+The released original binding is Desktop v3.6.14 at 7e2765a3857754d12dbadea442b60ceaf9d4b23d. Exact original helpers provide 26 candidate comparisons and two additional standalone original move-contract executions. The original methods run with in-memory database adapters, a fixed clock and English locale messages; comparisons cover regular unshared notebook graphs only. No full parity, security, superiority or measured performance claim is made.
+
+Known limits include 2,000 raw records, depth 64, 200 UTF-16 characters in display paths, shared/trashed/conflict notebook operations excluded, no notebook deletion or original drag/drop GUI, no autosave, and unchanged simple substring search. The existing 8 MiB JEX, 4 MiB resources, 1,000 notes, 3,000 TAR entries and 16 MiB state record limits remain. Failed storage commits keep old state; OS/process crash recovery and shared client database semantics are not demonstrated.
+
+Preserved failures include the first acquisition's wrong BaseModel path, optional missing desktop command, collector syntax failure, and the 27/28 run where a legacy text save incorrectly retained an unchanged notebook ID. The same legacy assertion passes after the compatibility fix. Later source/record counts are bound to their own exact runs rather than rewriting earlier evidence.

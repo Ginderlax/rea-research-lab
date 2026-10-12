@@ -349,7 +349,17 @@
       },
       "documentationCatalogues": [
         "joplin-documents"
-      ]
+      ],
+      "notebookComparisonSupplement": {
+        "release": "Joplin Desktop 3.6.14",
+        "commit": "7e2765a3857754d12dbadea442b60ceaf9d4b23d",
+        "record": "products/rea-studio/apps/notes/results/notebooks-followup/integration-validation.json",
+        "exact_helper_cases": 26,
+        "additional_original_only_move_cases": 2,
+        "complete_original_product_executions": 0,
+        "old_renderer_study_rebound": false,
+        "full_product_parity": false
+      }
     }
   ],
   "sources": [
@@ -14884,23 +14894,36 @@
       ],
       "status": "partial",
       "implementation": {
-        "current": "JEX imports retain folder entities, parent IDs, original metadata and nested displayed paths. Changing the note notebook text field moves its export into a flat notebook with that title while retaining existing imported folders.",
+        "current": "Exact-ID notebook creation, rename, reparenting and note moves with duplicate sibling identity checks, nested paths, cycle/depth limits, optimistic organization/note revisions and atomic persistence. Legacy flat names and supported JEX metadata remain available.",
         "evidence": [
           "notes.server.mjs",
           "notes.client.mjs",
           "notes.README.md",
           "notes.jex.mjs",
-          "notes.jex.test.mjs"
+          "notes.jex.test.mjs",
+          "notes.notebooks.mjs",
+          "notes.notebooks.test.mjs",
+          "notes.notebooks.integration.test.mjs",
+          "notes.results.notebooks-followup.integration-validation.json"
         ],
-        "testReferences": []
+        "testReferences": [
+          {
+            "path": "products/rea-studio/apps/notes/results/notebooks-followup/integration-validation.json",
+            "scope": "28 focused groups plus two separate held persistence cases; 26 exact Joplin 3.6.14 source-helper cases and two additional original-only move cases. GUI/database/full original product execution: zero."
+          },
+          {
+            "path": "products/rea-studio/results/browser-notebooks-20261012/validation.json",
+            "scope": "11 actual synthetic UI checks with 19 current source identities unchanged; browser reload, not host restart."
+          }
+        ]
       },
       "remaining": [
-        "Notebook tree-management UI, arbitrary create/rename/move/delete, hierarchy changes, drag/drop and client-specific operations.",
-        "Preserved imported hierarchy does not provide every original notebook editing workflow."
+        "Notebook deletion/trash/recovery, full notebook settings/sharing/synchronization and release-bound platform/client behavior.",
+        "The separate Joplin 3.6.14 source-helper comparison does not bind the older renderer 3.7.1 component study to a complete desktop product."
       ],
       "acceptanceGate": "Compare create/rename/move/delete and note movement throughout nested trees on all applicable clients.",
       "parityPassed": false,
-      "originalComparisonStatus": "not-verified-for-new-application"
+      "originalComparisonStatus": "finite-source-helper-comparison-only"
     },
     {
       "id": "joplin.plugins",
@@ -15213,15 +15236,15 @@
     {
       "id": "notes.server.mjs",
       "path": "products/rea-studio/apps/notes/server.mjs",
-      "bytes": 20098,
-      "sha256": "1864e92c9a497b5ddfff3ca7ea7d5c7599a066522f4e6324db140dd4eb4f2f33",
+      "bytes": 22424,
+      "sha256": "971de4b1cf823424ee4548ef98b752876f3a0fa6a89e667b11ac58bc9d034a39",
       "kind": "original-implementation-source"
     },
     {
       "id": "notes.client.mjs",
       "path": "products/rea-studio/apps/notes/client.mjs",
-      "bytes": 12662,
-      "sha256": "9741bb08e66053610ee3eb87e4fd84547801b3753884f76d290ee752557e954f",
+      "bytes": 17796,
+      "sha256": "799431e9d4e7af3135aa63393e9008133aa1d0ef3d1c1d5ebe812a1a93746c81",
       "kind": "original-implementation-source"
     },
     {
@@ -15241,8 +15264,8 @@
     {
       "id": "notes.README.md",
       "path": "products/rea-studio/apps/notes/README.md",
-      "bytes": 9891,
-      "sha256": "7b81a0e83160f83c3262f7a37c2f8a28f303c2b033603c20f1638cc6a8f6ceed",
+      "bytes": 12785,
+      "sha256": "916c6ac01e288a5c772c7425a69379c034d98e2e17b4a30f5b4841d65b97d660",
       "kind": "implementation-limitations"
     },
     {
@@ -15326,55 +15349,113 @@
       "path": "products/rea-studio/apps/metrics/core.mjs",
       "bytes": 13222,
       "sha256": "8c65a58e6be1ffcc684b457f9fb176e0972ead6143ac0ca77aaebbfce87fa0a1",
-      "scope": "Current implemented subset; no full-product parity assertion."
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open.",
+      "id": "notes.s.core.mjs",
+      "kind": "original-implementation-source"
     },
     {
       "path": "products/rea-studio/apps/metrics/grafana.test.mjs",
       "bytes": 10875,
       "sha256": "27e1a54c7bd183e9caed3192e0aa69d71c3fcb2702dd1b45041be4d8983b5f3f",
-      "scope": "Current implemented subset; no full-product parity assertion."
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open.",
+      "id": "notes.s.grafana.test.mjs",
+      "kind": "original-implementation-source"
     },
     {
       "path": "products/rea-studio/apps/metrics/grafana.integration.test.mjs",
       "bytes": 2306,
       "sha256": "b24d618992d10de979a2f3363d6ca20618bd8b2632ea3813f69ffe9bfa0070af",
-      "scope": "Current implemented subset; no full-product parity assertion."
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open.",
+      "id": "notes.s.grafana.integration.test.mjs",
+      "kind": "original-implementation-source"
     },
     {
       "path": "products/rea-studio/apps/metrics/native-calculations.mjs",
       "bytes": 13485,
       "sha256": "9269cf8c32be9bf2c075b67019e82e41272d9495f0321fefc17b2c5695a91371",
-      "scope": "Current implemented subset; full-product parity gate remains open."
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open.",
+      "id": "notes.s.native-calculations.mjs",
+      "kind": "original-implementation-source"
     },
     {
       "path": "products/rea-studio/apps/metrics/native-calculations.test.mjs",
       "bytes": 7012,
       "sha256": "145cb0b3cdf55135def211696d5518be5d9f16b9927bd3e399a217fb4e6e3faa",
-      "scope": "Current implemented subset; full-product parity gate remains open."
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open.",
+      "id": "notes.s.native-calculations.test.mjs",
+      "kind": "original-implementation-source"
     },
     {
       "path": "products/rea-studio/apps/metrics/native-calculations.integration.test.mjs",
       "bytes": 3759,
       "sha256": "718a10fcb44fa1311583152644a5b85e352d295f5cc1855b7009f90e640913c2",
-      "scope": "Current implemented subset; full-product parity gate remains open."
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open.",
+      "id": "notes.s.native-calculations.integration.test.mjs",
+      "kind": "original-implementation-source"
     },
     {
       "path": "products/rea-studio/apps/metrics/fixtures/native-stat-dashboard.json",
       "bytes": 1178,
       "sha256": "c155e81cf4cb9904b4cf583a55785c7d483fa9102232abaaed8ad28635635189",
-      "scope": "Current implemented subset; full-product parity gate remains open."
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open.",
+      "id": "notes.s.fixtures.native-stat-dashboard.json",
+      "kind": "original-implementation-source"
     },
     {
       "path": "products/rea-studio/apps/metrics/fixtures/reducers/sources.json",
       "bytes": 8741,
       "sha256": "e1a79b21512ca5497fc14b9fa243f1b1dfa3565be94521499c7cc92315cb01de",
-      "scope": "Current implemented subset; full-product parity gate remains open."
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open.",
+      "id": "notes.s.fixtures.reducers.sources.json",
+      "kind": "original-implementation-source"
     },
     {
       "path": "products/rea-studio/apps/metrics/results/native-calculations-verification.json",
       "bytes": 2605,
       "sha256": "064dc86d91eafd1a438359481f84a1bc35cd56c8c7d3243c833441da2d9919cd",
-      "scope": "Current implemented subset; full-product parity gate remains open."
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open.",
+      "id": "notes.s.results.native-calculations-verification.json",
+      "kind": "original-implementation-source"
+    },
+    {
+      "path": "products/rea-studio/apps/notes/notebooks.mjs",
+      "bytes": 6902,
+      "sha256": "4ba3d49563b87d1a37ebb4314d4f513f84e0c8681f9404842c380bc49175edc9",
+      "id": "notes.notebooks.mjs",
+      "kind": "original-implementation-source",
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open."
+    },
+    {
+      "path": "products/rea-studio/apps/notes/notebooks.test.mjs",
+      "bytes": 14161,
+      "sha256": "4e14c0e2d99d856e67fff9b9dec8216858be354c63019a24599e60a3505bc82d",
+      "id": "notes.notebooks.test.mjs",
+      "kind": "original-implementation-source",
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open."
+    },
+    {
+      "path": "products/rea-studio/apps/notes/notebooks.integration.test.mjs",
+      "bytes": 3279,
+      "sha256": "b14ef6c52503b634d3a66e0b73d83fe3a577b783a0da9a5d76d8ce016993a75c",
+      "id": "notes.notebooks.integration.test.mjs",
+      "kind": "original-implementation-source",
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open."
+    },
+    {
+      "path": "products/rea-studio/apps/notes/notebook-original-oracle.mjs",
+      "bytes": 3688,
+      "sha256": "3cb650d3223daebd54ed5b357f8c2ef977d9749cc7e37189f1036fa0f13892b6",
+      "id": "notes.notebook-original-oracle.mjs",
+      "kind": "original-implementation-source",
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open."
+    },
+    {
+      "path": "products/rea-studio/apps/notes/results/notebooks-followup/integration-validation.json",
+      "bytes": 4538,
+      "sha256": "854f4885e1757093fdd36dc7265f76405c2afd4af26e0169b928fc92511aa0b8",
+      "id": "notes.results.notebooks-followup.integration-validation.json",
+      "kind": "source-bound-focused-validation",
+      "scope": "Finite native notebook organization and note moves; full Joplin parity remains open."
     }
   ],
   "catalogueCoverage": {
@@ -15425,5 +15506,5 @@
       }
     }
   },
-  "generatedAt": "2026-10-12T14:02:48.288Z"
+  "generatedAt": "2026-10-12T23:42:19.697Z"
 }

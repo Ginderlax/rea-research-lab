@@ -1,0 +1,50 @@
+✖ same-editor draft typed after a restore request remains visible when the delayed response completes (63.4525ms)
+✖ same-editor draft typed after a save request remains visible when the delayed response completes (48.9006ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 0
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 187.9682
+
+✖ failing tests:
+
+test at same-editor-draft.test.mjs:2:1
+✖ same-editor draft typed after a restore request remains visible when the delayed response completes (63.4525ms)
+  AssertionError [ERR_ASSERTION]: An enabled editor must retain a draft typed after request capture, or block editing during the operation.
+  + actual - expected
+  
+  + 'A content'
+  - 'Draft typed after restore request was issued'
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-history-selection-independent-review/same-editor-draft.test.mjs:2:707)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'A content',
+    expected: 'Draft typed after restore request was issued',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at same-editor-draft.test.mjs:3:1
+✖ same-editor draft typed after a save request remains visible when the delayed response completes (48.9006ms)
+  AssertionError [ERR_ASSERTION]: An enabled editor must retain a subsequent draft or block editing during the operation.
+  + actual - expected
+  
+  + ''
+  - 'A subsequent draft while save is pending'
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-history-selection-independent-review/same-editor-draft.test.mjs:3:769)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: 'A subsequent draft while save is pending',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

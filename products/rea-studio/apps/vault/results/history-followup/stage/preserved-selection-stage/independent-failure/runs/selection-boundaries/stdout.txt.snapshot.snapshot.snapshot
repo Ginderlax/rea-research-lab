@@ -1,0 +1,69 @@
+✖ New entry remains a new identity after a late post-restore read (74.7365ms)
+✖ locking during a held restore read cannot resurrect its old selected entry after unlock (108.3703ms)
+✔ late explicit history preview cannot populate a newly opened empty editor (53.4455ms)
+✔ a delayed post-restore list does not change the next editor selected by the user (56.2857ms)
+✔ a failed history restore persistence keeps ciphertext and active entry/history unchanged (60.4663ms)
+✖ ordinary save completion preserves a different editor opened while that response was held (49.5138ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 3
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 477.3973
+
+✖ failing tests:
+
+test at selection-boundaries.test.mjs:3:1
+✖ New entry remains a new identity after a late post-restore read (74.7365ms)
+  AssertionError [ERR_ASSERTION]: A new editor must not acquire the old restored entry ID.
+  + actual - expected
+  
+  + '24d868cd-5f53-46fc-98ac-9cc48b075d6d'
+  - undefined
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-history-independent-review/selection-boundaries.test.mjs:3:666)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '24d868cd-5f53-46fc-98ac-9cc48b075d6d',
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at selection-boundaries.test.mjs:4:1
+✖ locking during a held restore read cannot resurrect its old selected entry after unlock (108.3703ms)
+  AssertionError [ERR_ASSERTION]: Unlock must begin with a fresh editor rather than resurrecting a response from before lock.
+  
+  'Entry A' !== ''
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-history-independent-review/selection-boundaries.test.mjs:4:758)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Entry A',
+    expected: '',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at selection-boundaries.test.mjs:8:1
+✖ ordinary save completion preserves a different editor opened while that response was held (49.5138ms)
+  AssertionError [ERR_ASSERTION]: Completion of A save must not clear the B editor.
+  
+  '' !== 'Entry B'
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-history-independent-review/selection-boundaries.test.mjs:8:746)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: 'Entry B',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

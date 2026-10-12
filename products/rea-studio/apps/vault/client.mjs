@@ -4,16 +4,20 @@ function field(parent, label, type = 'text', value = '') {
   if (type !== 'textarea') input.type = type; input.value = value; wrapper.append(input); parent.append(wrapper); return input;
 }
 export async function render(root, api) {
-  const transport = api; let idleTimer;
+  const transport = api; let idleTimer,sessionEpoch=0,selectionGeneration=0,refreshGeneration=0,disposed=false;
   api = async (action,input) => {
+    if(disposed)throw new Error('This vault view is closed.');
+    if(['lock','create','unlock','importEncrypted','importKdbx'].includes(action)){sessionEpoch++;clearTimeout(idleTimer);}
+    const epoch=sessionEpoch;
     const result = await transport(action,input);
-    if (!['status','generate'].includes(action)) {
+    if(disposed)throw new Error('This vault view is closed.');
+    if (epoch===sessionEpoch&&content.parentElement===root&&!['status','generate'].includes(action)) {
       clearTimeout(idleTimer);
       if (action !== 'lock') idleTimer = setTimeout(async () => {
-        if (content.parentElement !== root) return;
-        generated.value = ''; selected = null; content.replaceChildren();
-        try { await transport('lock',{}); await refresh(); status.textContent = 'Vault locked after five minutes of inactivity.'; }
-        catch (error) { status.textContent = error.message; }
+        if (disposed||content.parentElement !== root) return;
+        generated.value = ''; selected = null; selectionGeneration++; content.replaceChildren();
+        try { await transport('lock',{}); if(disposed)return;await refresh();if(!disposed)status.textContent = 'Vault locked after five minutes of inactivity.'; }
+        catch (error) { if(!disposed)status.textContent = error.message; }
       },5 * 60 * 1000);
     }
     return result;
@@ -22,7 +26,7 @@ export async function render(root, api) {
   root.append(node('h2','REA Vault'),node('p','Encrypted local entries, a password generator and one-time codes. The vault locks after five minutes without a vault request.','muted'));
   const status = node('p','', 'status'), content = node('div'), generator = node('section',undefined,'card'); root.append(status,content,generator);
   let selected = null;
-  async function run(job) { status.textContent = 'Working…'; try { const value = await job(); status.textContent = 'Done.'; return value; } catch (error) { status.textContent = error.message; return null; } }
+  async function run(job) { if(disposed)return null;status.textContent = 'Working…'; try { const value = await job(); if(!disposed&&status.textContent==='Working…')status.textContent = 'Done.'; return value; } catch (error) { if(!disposed)status.textContent = error.message; return null; } }
   function button(parent, title, fn) { const b = node('button',title,'button'); b.type = 'button'; b.addEventListener('click',() => run(async () => { b.disabled = true; try { await fn(); } finally { b.disabled = false; } })); parent.append(b); return b; }
   async function fileBase64(input,required = false) {
     const file = input.files?.[0]; if (!file) { if (required) throw new Error('Choose a KDBX database file.'); return undefined; }
@@ -50,7 +54,8 @@ export async function render(root, api) {
   button(generator,'Generate',async () => { generated.value = (await api('generate',{ length: Number(length.value) })).password; });
   button(generator,'Show / hide generated password',async () => { generated.type = generated.type === 'password' ? 'text' : 'password'; });
   async function refresh() {
-    const state = await api('status',{}); content.replaceChildren();
+    const view=++refreshGeneration;selectionGeneration++;
+    const state = await api('status',{});if(view!==refreshGeneration||content.parentElement!==root)return; content.replaceChildren();
     const gate = node('section',undefined,'card'); content.append(gate);
     if (state.locked) {
       selected = null; gate.append(node('h3',state.exists ? 'Unlock your vault' : 'Create your vault'));
@@ -63,31 +68,68 @@ export async function render(root, api) {
       return;
     }
     gate.append(node('h3','Unlocked'));
-    button(gate,'Lock now',async () => { await api('lock',{}); generated.value = ''; await refresh(); });
+    button(gate,'Lock now',async () => { selectionGeneration++;selected=null; await api('lock',{}); generated.value = ''; await refresh(); });
     const search = field(gate,'Search entries');
     const results = node('div',undefined,'grid'); gate.append(results);
+    let listGeneration=0;
+    const viewCurrent=()=>!disposed&&view===refreshGeneration&&gate.parentElement===content&&content.parentElement===root;
     async function list() {
-      const data = await api('list',{ search: search.value }); results.replaceChildren();
+      const generation=++listGeneration,data = await api('list',{ search: search.value });if(!viewCurrent()||generation!==listGeneration)return; results.replaceChildren();
       if (!data.entries.length) results.append(node('p','No entries yet. Create one below.','muted'));
       for (const item of data.entries) {
         const row = node('section',undefined,'card'); row.append(node('strong',item.title),node('p',[item.group,item.username].filter(Boolean).join(' · ')));
-        button(row,'Open entry',async () => { selected = (await api('read',{ id: item.id })).entry; editor(); }); results.append(row);
+        button(row,'Open entry',async () => { const generation=++selectionGeneration,result=await api('read',{ id: item.id });if(!viewCurrent()||generation!==selectionGeneration)return; selected=result.entry; editor(); }); results.append(row);
       }
     }
-    button(gate,'Search',list); await list();
+    button(gate,'Search',list); await list();if(!viewCurrent())return;
     const edit = node('section',undefined,'card'); content.append(edit);
-    function editor() {
+    let editorVersion=0;
+    function editor(retainedDraft) {
+      const version=++editorVersion,generation=selectionGeneration,entryId=selected?.id;
+      const current=()=>viewCurrent()&&version===editorVersion&&generation===selectionGeneration&&selected?.id===entryId&&edit.parentElement===content;
       edit.replaceChildren(); edit.append(node('h3',selected ? 'Edit entry' : 'New entry'));
-      const title = field(edit,'Title','text',selected?.title ?? ''), group = field(edit,'Group','text',selected?.group ?? ''), username = field(edit,'Username','text',selected?.username ?? ''), secret = field(edit,'Password','password',selected?.password ?? ''), url = field(edit,'URL','text',selected?.url ?? ''), notes = field(edit,'Notes','textarea',selected?.notes ?? ''), otp = field(edit,'TOTP Base32 secret','password',selected?.totpSecret ?? '');
+      const values=retainedDraft??selected;
+      const title = field(edit,'Title','text',values?.title ?? ''), group = field(edit,'Group','text',values?.group ?? ''), username = field(edit,'Username','text',values?.username ?? ''), secret = field(edit,'Password','password',values?.password ?? ''), url = field(edit,'URL','text',values?.url ?? ''), notes = field(edit,'Notes','textarea',values?.notes ?? ''), otp = field(edit,'TOTP Base32 secret','password',values?.totpSecret ?? '');
+      let draftRevision=0,mutationGeneration=0;
+      const draftValues=()=>({title:title.value,group:group.value,username:username.value,password:secret.value,url:url.value,notes:notes.value,totpSecret:otp.value});
+      const draftSignature=()=>JSON.stringify(draftValues());let initialSignature=JSON.stringify({title:selected?.title??'',group:selected?.group??'',username:selected?.username??'',password:selected?.password??'',url:selected?.url??'',notes:selected?.notes??'',totpSecret:selected?.totpSecret??''});
+      const captureDraft=()=>({revision:draftRevision,signature:draftSignature()});
+      const draftCurrent=captured=>current()&&captured.revision===draftRevision&&captured.signature===draftSignature();
+      const pendingCurrent=request=>current()&&request===mutationGeneration;
+      for(const control of [title,group,username,secret,url,notes,otp])control.addEventListener('input',()=>{draftRevision++;if(current())status.textContent='Unsaved draft.';});
       button(edit,'Show / hide entry password',async () => { secret.type = secret.type === 'password' ? 'text' : 'password'; });
-      button(edit,'Use generated password',async () => { if (!generated.value) generated.value = (await api('generate',{ length: Number(length.value) })).password; secret.value = generated.value; });
-      button(edit,'Save encrypted entry',async () => { await api('save',{ id: selected?.id, title: title.value, group: group.value, username: username.value, password: secret.value, url: url.value, notes: notes.value, totpSecret: otp.value }); selected = null; await list(); editor(); });
-      button(edit,'New entry',async () => { selected = null; editor(); });
+      button(edit,'Use generated password',async () => { if(!current())return;const captured=captureDraft();if (!generated.value){const result=await api('generate',{ length: Number(length.value) });if(!draftCurrent(captured))return;generated.value=result.password;}secret.value=generated.value;draftRevision++;status.textContent='Unsaved draft.'; });
+      button(edit,'Save encrypted entry',async () => {if(!current())return;const captured=captureDraft(),request=++mutationGeneration,submitted=draftValues();const result=await api('save',{id:entryId,...submitted});if(!pendingCurrent(request))return;if(!draftCurrent(captured)){initialSignature=JSON.stringify(submitted);if(!entryId){const retained=draftValues();selectionGeneration++;selected={...submitted,id:result.id};editor(retained);}await list();status.textContent='Submitted values saved. Your newer draft is retained.';return;}selectionGeneration++; selected = null;editor(); await list(); });
+      button(edit,'New entry',async () => { selectionGeneration++;selected = null; editor(); });
       if (selected) {
+        let historyGeneration=0;
+        const historyPanel=node('section',undefined,'card'); edit.append(historyPanel);
+        button(edit,'Show entry history',async()=>{
+          if(!current())return;const request=++historyGeneration,value=await api('historyList',{id:entryId});if(!current()||request!==historyGeneration)return;
+          const historyCurrent=()=>current()&&request===historyGeneration&&historyPanel.parentElement===edit;
+          historyPanel.replaceChildren(node('h3','Previous versions'),node('p',`History count: ${Number(value.limits.maxItems)<0?'unlimited in the imported settings':value.limits.maxItems}. The database byte limit and local bounds also apply.`,'muted'));
+          button(historyPanel,'Close history',async()=>{historyGeneration++;historyPanel.replaceChildren();});
+          if(!value.revisions.length)historyPanel.append(node('p','No previous versions. Editing an existing entry creates one.'));
+          for(const revision of value.revisions){
+            const row=node('section',undefined,'card');row.append(node('p',`${revision.title} · ${revision.modifiedAt}`));historyPanel.append(row);
+            button(row,'View this version',async()=>{
+              if(!historyCurrent()||row.parentElement!==historyPanel)return;const result=await api('historyRead',{id:entryId,...revision});if(!historyCurrent()||row.parentElement!==historyPanel)return;
+              const preview=node('section',undefined,'card');row.replaceChildren(node('p',revision.modifiedAt),preview);
+              for(const [label,key] of [['Title','title'],['Username','username'],['URL','url'],['Notes','notes']]){const value=field(preview,label,key==='notes'?'textarea':'text',result.entry[key]);value.readOnly=true;}
+              const password=field(preview,'Previous password','password',result.entry.password);password.readOnly=true;
+              button(preview,'Show / hide previous password',async()=>{password.type=password.type==='password'?'text':'password'});
+              const confirmation=field(preview,'Confirm restoring this version and saving the current version in history','checkbox');
+              button(preview,'Restore this version',async()=>{
+                if(!historyCurrent()||row.parentElement!==historyPanel)return;if(draftSignature()!==initialSignature)throw new Error('Save or discard your entry draft before restoring a previous version.');const captured=captureDraft(),request=++mutationGeneration;await api('historyRestore',{id:entryId,...revision,confirm:confirmation.checked});if(!historyCurrent()||row.parentElement!==historyPanel||!pendingCurrent(request))return;
+                const result=await api('read',{id:entryId});if(!historyCurrent()||row.parentElement!==historyPanel||!pendingCurrent(request))return;if(!draftCurrent(captured)){selected=result.entry;initialSignature=JSON.stringify({title:result.entry.title??'',group:result.entry.group??'',username:result.entry.username??'',password:result.entry.password??'',url:result.entry.url??'',notes:result.entry.notes??'',totpSecret:result.entry.totpSecret??''});await list();status.textContent='Version restored in the vault. Your newer draft is retained.';return;}selectionGeneration++;selected=result.entry;editor();await list();
+              });
+            });
+          }
+        });
         const code = node('p','', 'status'); edit.append(code);
-        button(edit,'Generate one-time code',async () => { const value = await api('totp',{ id: selected.id }); code.textContent = `${value.code} · ${value.remainingSeconds} seconds remaining`; });
+        button(edit,'Generate one-time code',async () => {if(!current())return; const value = await api('totp',{ id: entryId });if(!current())return; code.textContent = `${value.code} · ${value.remainingSeconds} seconds remaining`; });
         const remove = field(edit,'Confirm entry deletion','checkbox');
-        button(edit,'Delete entry',async () => { await api('delete',{ id: selected.id, confirm: remove.checked }); selected = null; await list(); editor(); });
+        button(edit,'Delete entry',async () => {if(!current())return;const captured=captureDraft(),request=++mutationGeneration;await api('delete',{id:entryId,confirm:remove.checked});if(!pendingCurrent(request))return;const retained=draftCurrent(captured)?undefined:draftValues();selectionGeneration++; selected = null;editor(retained); await list();if(retained)status.textContent='Entry deleted. Your newer draft is retained as a new entry.'; });
       }
     }
     editor();
@@ -109,4 +151,5 @@ export async function render(root, api) {
     kdbxImport(content);
   }
   await run(refresh);
+  return ()=>{if(disposed)return;disposed=true;sessionEpoch++;selectionGeneration++;refreshGeneration++;clearTimeout(idleTimer);generated.value='';selected=null;function clearValues(element){if(['input','textarea'].includes(element.tagName?.toLowerCase()))element.value='';for(const child of Array.from(element.children??[]))clearValues(child);}clearValues(content);content.replaceChildren();};
 }

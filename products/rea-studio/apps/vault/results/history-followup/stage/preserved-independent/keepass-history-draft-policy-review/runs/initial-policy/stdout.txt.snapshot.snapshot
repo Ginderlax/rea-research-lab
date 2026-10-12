@@ -1,0 +1,30 @@
+✖ restore refuses an already modified main editor and preserves the unsaved draft (72.6082ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 142.2391
+
+✖ failing tests:
+
+test at preexisting-draft.test.mjs:5:1
+✖ restore refuses an already modified main editor and preserves the unsaved draft (72.6082ms)
+  AssertionError [ERR_ASSERTION]: Released KeePass disables/refuses history restore while the entry dialog contains unsaved changes.
+  + actual - expected
+  
+  + 'A content'
+  - 'Unsaved draft present before pressing Restore'
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-history-draft-policy-review/preexisting-draft.test.mjs:15:10)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'A content',
+    expected: 'Unsaved draft present before pressing Restore',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

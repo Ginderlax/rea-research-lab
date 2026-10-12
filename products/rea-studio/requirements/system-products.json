@@ -719,7 +719,7 @@
             "kp.help"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Basic entry fields, group paths and dates are editable; native import/export retains group and entry UUIDs, nested groups, custom strings, history, tags, custom data, public metadata and auto-type settings in preserved XML. New/edited paths create nested export groups, ambiguous duplicate paths reject. Retention does not implement history snapshots, expiration/recycle-bin behavior or group-management UI.",
+          "current_app_scope": "Basic entry fields/group paths plus native backup-on-change history and confirmed restore preserve UUID/parent/location identity and supported XML. No-op saves update access without a history version. Default 10-item/6 MiB pruning uses selected KeePass size/time semantics within explicit local bounds. Pending Save/Restore/Delete drafts, selection changes and detached idle callbacks are guarded. Expiration/recycle-bin, group-management UI, arbitrary history settings/age policy and full original product parity remain open.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/vault/app.test.mjs",
@@ -743,7 +743,10 @@
               "path": "products/rea-studio/apps/vault/kdbx.interop.test.mjs",
               "test_case": "independent original opens fresh Lab database; password + XML keyfile and keyfile-only work in both directions",
               "boundary": "Independent original XML v2 keyfile/password combinations and fresh file opening."
-            }
+            },
+            "products/rea-studio/apps/vault/history.mjs",
+            "products/rea-studio/apps/vault/HISTORY.md",
+            "products/rea-studio/apps/vault/results/history-followup/production-integration/integration-validation.json"
           ],
           "acceptance_checks": [
             "Match managed hierarchical groups, custom fields, expiration, history and deletion/recycle behavior."
@@ -1023,20 +1026,20 @@
         {
           "kind": "original-implementation-source",
           "path": "products/rea-studio/apps/vault/server.mjs",
-          "bytes": 12557,
-          "sha256": "e56d4950aa7864fbdf120402bfa6643ee00c1ab114e962b9de80bceca6327534"
+          "bytes": 14576,
+          "sha256": "c4aa4d91d93a19de3aab0e4d9cc42759336e78bd1f853572586b542efbeb0fb9"
         },
         {
           "kind": "original-implementation-source",
           "path": "products/rea-studio/apps/vault/client.mjs",
-          "bytes": 11040,
-          "sha256": "986487ecdf78b1cfb9bc655c2680725ec06abc06fcb5c8d3aff5600feaea8264"
+          "bytes": 17933,
+          "sha256": "1d392037160c2cdca8c53e0ab807d5215964cd00c248360e5c00532f3ba00bed"
         },
         {
           "kind": "original-implementation-source",
           "path": "products/rea-studio/apps/vault/kdbx.mjs",
-          "bytes": 33604,
-          "sha256": "97d221badd544fa47494ecf586e39974a9a0e45ec9673f3d57a24f3631fd770c"
+          "bytes": 34007,
+          "sha256": "ea774360332dbc7497a2e6a005fa10604cafbb92326293384d157d8827e0fe0c"
         },
         {
           "kind": "original-implementation-source",
@@ -1077,8 +1080,8 @@
         {
           "kind": "implementation-coverage-and-limitations",
           "path": "products/rea-studio/apps/vault/README.md",
-          "bytes": 5526,
-          "sha256": "87e0452bd55cd32de491037b25e61f876c9f1c0f27bc8c3d65d3d935a1aabbe6"
+          "bytes": 7739,
+          "sha256": "30dbc0f5d04f131e385f049d0efd0462939289d9203a9ed41d11c3de6c1f2ff3"
         },
         {
           "kind": "implementation-coverage-and-limitations",
@@ -1091,8 +1094,61 @@
           "path": "products/rea-studio/apps/vault/compatibility-evidence.json",
           "bytes": 5750,
           "sha256": "895cb736a9b285bfd0c541b6f76a4dc577aca88675be38e3bab9d2a8be105aee"
+        },
+        {
+          "path": "products/rea-studio/apps/vault/history.mjs",
+          "bytes": 11850,
+          "sha256": "c902e684ab38cb9d9ef421826e9091422a7843b2b85ba689d2a12690e78b5f26"
+        },
+        {
+          "path": "products/rea-studio/apps/vault/history.test.mjs",
+          "bytes": 16974,
+          "sha256": "4a7f595b5b8908ad6bc2a462b652a2af4095963073d10a196342851be19b6a7b"
+        },
+        {
+          "path": "products/rea-studio/apps/vault/history-oracle.ps1",
+          "bytes": 8620,
+          "sha256": "442c91d2baabfd1caa8ab67a0fd338b9e820ed3b08c7524286c5c435c90ba7c4"
+        },
+        {
+          "path": "products/rea-studio/apps/vault/same-editor-draft.test.mjs",
+          "bytes": 1992,
+          "sha256": "688c325bf72747320ec19f94c3c6856fdfb6b1054053c0e2251d4d96e8266643"
+        },
+        {
+          "path": "products/rea-studio/apps/vault/preexisting-draft.test.mjs",
+          "bytes": 1286,
+          "sha256": "c9ec466204154d2e4db9c7c6e8c1cf9b02d91063a45fc3ebd2d1ffade0ed7bbe"
+        },
+        {
+          "path": "products/rea-studio/apps/vault/idle-view.test.mjs",
+          "bytes": 2164,
+          "sha256": "650da3bdd7b99d2e6d6e0d99b3fb91c901aac3a2d9f9b941c8d8cc942eb9cacd"
+        },
+        {
+          "path": "products/rea-studio/apps/vault/HISTORY.md",
+          "bytes": 8742,
+          "sha256": "50cad13e2357efa57f47d317f72b2ca3d22ea10d4f7395a7f115d3222339d2f1"
+        },
+        {
+          "path": "products/rea-studio/apps/vault/results/history-followup/production-integration/integration-validation.json",
+          "bytes": 8590,
+          "sha256": "a5883d66bd314c0b5ae1a741ea39dec4767bf9b86b2ed39ce7a52cbdecfabc6c"
         }
-      ]
+      ],
+      "currentHistoryMilestone": {
+        "record": "products/rea-studio/apps/vault/results/history-followup/production-integration/integration-validation.json",
+        "tests": 41,
+        "source_fingerprints": 34,
+        "original_assembly_loads": 24,
+        "actual_local_host_processes": 5,
+        "gui_original_executions": 0,
+        "original_touch_executions": 0,
+        "independent_tests": 11,
+        "independent_review_manifest": "products/rea-studio/apps/vault/results/history-followup/production-integration/installation-manifest.json",
+        "source_archive_carriers_kept_local": 12,
+        "full_product_parity": false
+      }
     },
     {
       "inventory_status": "initial-traceable-crosswalk; not-an-exhaustive-feature-inventory",
@@ -1914,8 +1970,11 @@
             "restic.design"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Bounded native encrypted restic v1/v2 local repository init/read/write alongside the earlier custom format; one data blob per pack. Full pack/index/cache/migration contracts remain open.",
-          "evidence": [],
+          "current_app_scope": "Bounded native encrypted restic v1/v2 local repository init/read/write alongside the earlier custom format; sequential data-only aggregation into bounded packs; tree blobs remain separate. Full pack/index/cache/migration contracts remain open. Current 64-group integration verifies authenticated pack offsets/index rows, multi-blob deduplication and same-session operation ownership. Full released pack/index/cache/locking contracts and comparative resource/performance acceptance remain open.",
+          "evidence": [
+            "products/rea-studio/apps/backup/restic-data-pack.mjs",
+            "products/rea-studio/apps/backup/results/pack-aggregation-followup/integration-validation.json"
+          ],
           "acceptance_checks": [
             "Open and produce release-supported repository formats with the original CLI."
           ],
@@ -1960,7 +2019,7 @@
             "restic.design"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Source-assisted degree-53/window-64 Rabin chunking, three authenticated polynomials, 512 KiB minimum and 8 MiB maximum; 30 original files match 126 ordered boundaries and IDs. Capture bounds and one blob per pack remain; arbitrary chunker settings/pack efficiency/full parity remain open.",
+          "current_app_scope": "Source-assisted degree-53/window-64 Rabin chunking, three authenticated polynomials, 512 KiB minimum and 8 MiB maximum; 30 original files match 126 ordered boundaries and IDs. Capture bounds remain; arbitrary chunker settings/pack efficiency/full parity remain open. Current 64-group integration verifies authenticated pack offsets/index rows, multi-blob deduplication and same-session operation ownership. Full released pack/index/cache/locking contracts and comparative resource/performance acceptance remain open.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/backup/app.test.mjs",
@@ -1974,7 +2033,9 @@
             "products/rea-studio/apps/backup/capture-rabin-file.mjs",
             "products/rea-studio/apps/backup/rabin-original.test.mjs",
             "products/rea-studio/apps/backup/restic-rabin-snapshot.test.mjs",
-            "products/rea-studio/apps/backup/results/rabin-validation.json"
+            "products/rea-studio/apps/backup/results/rabin-validation.json",
+            "products/rea-studio/apps/backup/restic-data-pack.mjs",
+            "products/rea-studio/apps/backup/results/pack-aggregation-followup/integration-validation.json"
           ],
           "acceptance_checks": [
             "Test boundary-sensitive content-defined chunking, pack/index compatibility and compression behavior."
@@ -1989,8 +2050,11 @@
             "restic.040_backup"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Native regular-file/directory captures with guarded bounded streaming, labels/source/timestamps and selected compression modes. Full excludes/tags/special-file/platform behavior remains open.",
-          "evidence": [],
+          "current_app_scope": "Native regular-file/directory captures with guarded bounded streaming, labels/source/timestamps and selected compression modes. Full excludes/tags/special-file/platform behavior remains open. Current 64-group integration verifies authenticated pack offsets/index rows, multi-blob deduplication and same-session operation ownership. Full released pack/index/cache/locking contracts and comparative resource/performance acceptance remain open.",
+          "evidence": [
+            "products/rea-studio/apps/backup/restic-data-pack.mjs",
+            "products/rea-studio/apps/backup/results/pack-aggregation-followup/integration-validation.json"
+          ],
           "acceptance_checks": [
             "Compare original include/exclude, tags, host identity, stdin, dry-run and metadata semantics."
           ],
@@ -2020,7 +2084,7 @@
             "restic.045_working_with_repos"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Bounded native key/config/pack/index/tree/data authentication and integrity checking, plus earlier custom snapshot checks; full released check options/backends remain open.",
+          "current_app_scope": "Bounded native key/config/pack/index/tree/data authentication and integrity checking, plus earlier custom snapshot checks; full released check options/backends remain open. Current 64-group integration verifies authenticated pack offsets/index rows, multi-blob deduplication and same-session operation ownership. Full released pack/index/cache/locking contracts and comparative resource/performance acceptance remain open.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/backup/app.test.mjs",
@@ -2029,7 +2093,9 @@
             {
               "path": "products/rea-studio/apps/backup/app.integration.test.mjs",
               "test_case": "HTTP persisted operations across host restart"
-            }
+            },
+            "products/rea-studio/apps/backup/restic-data-pack.mjs",
+            "products/rea-studio/apps/backup/results/pack-aggregation-followup/integration-validation.json"
           ],
           "acceptance_checks": [
             "Compare original check options, partial/read-data coverage, pack/index errors and repair guidance."
@@ -2124,8 +2190,11 @@
             "restic.045_working_with_repos"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Native owned repository locks, pre-commit cancellation/deadline guards and handle/temp cleanup; post-commit cleanup issues are retained as warnings. Cross-process/kernel race and full released locking contracts remain open.",
-          "evidence": [],
+          "current_app_scope": "Native owned repository locks, pre-commit cancellation/deadline guards and handle/temp cleanup; post-commit cleanup issues are retained as warnings. Cross-process/kernel race and full released locking contracts remain open. Current 64-group integration verifies authenticated pack offsets/index rows, multi-blob deduplication and same-session operation ownership. Full released pack/index/cache/locking contracts and comparative resource/performance acceptance remain open.",
+          "evidence": [
+            "products/rea-studio/apps/backup/restic-data-pack.mjs",
+            "products/rea-studio/apps/backup/results/pack-aggregation-followup/integration-validation.json"
+          ],
           "acceptance_checks": [
             "Compare cross-process/host locks, stale locks and documented unlock behavior."
           ],
@@ -2189,8 +2258,8 @@
       "local_implementation_evidence": [
         {
           "path": "products/rea-studio/apps/backup/restic.mjs",
-          "bytes": 32780,
-          "sha256": "9885d1f26ec0a7311c360923279b731fe43d76b292db735b22cf38d6036eec20",
+          "bytes": 34155,
+          "sha256": "e668ea9eeb494ace14a237ccaa175c5e6cdff2d56b9871005bc0f13e3685880c",
           "scope": "Current implemented subset; full-product parity gate remains open."
         },
         {
@@ -2201,8 +2270,8 @@
         },
         {
           "path": "products/rea-studio/apps/backup/native.test.mjs",
-          "bytes": 35173,
-          "sha256": "1966dda8ac0522783f162a1cece179cb45e6e3cfdade1a5dd48eb0f3c8e44fba",
+          "bytes": 35598,
+          "sha256": "98ade76b0b449709e4c6fe3cf735c30ab023bf9715b0409d1e643d93bef7fb70",
           "scope": "Current implemented subset; full-product parity gate remains open."
         },
         {
@@ -2267,8 +2336,8 @@
         },
         {
           "path": "products/rea-studio/apps/backup/restic-compression-review.test.mjs",
-          "bytes": 15419,
-          "sha256": "08cb9bc25585c4dd53ac5082539bacd5af2f12977dd33904b76d8b1ec6bedc70",
+          "bytes": 17073,
+          "sha256": "80d927678a7e41c6fe42f661dc187e99ee83e7486d0d91f4c8c56ccea9eaa16f",
           "scope": "Current bounded implementation/evidence; complete original feature parity remains open."
         },
         {
@@ -2330,8 +2399,8 @@
         },
         {
           "path": "products/rea-studio/apps/backup/RABIN.md",
-          "bytes": 4398,
-          "sha256": "a19a8e47d47f2c19644ce0f3e3eb7479390325aff1f8626ad1f6057bcc62ba5c"
+          "bytes": 4507,
+          "sha256": "29d9b48f977100edd877cb2c126fdabc1ce6bfbe6fa8fb56acf2811636f0ae86"
         },
         {
           "path": "products/rea-studio/apps/backup/results/rabin-validation.json",
@@ -2357,6 +2426,41 @@
           "path": "products/rea-studio/apps/backup/results/native-policy-followup/preservation-manifest.json",
           "bytes": 7851,
           "sha256": "b1fc5e21691dbcaf7f08225b17d7f9fc723fad6e2cd3053ebb15554720264031"
+        },
+        {
+          "path": "products/rea-studio/apps/backup/restic-data-pack.mjs",
+          "bytes": 4455,
+          "sha256": "6e83e26c7e0307a36d8d72b9ddb543ad1401fa54cc96bd861e800a16bb304245"
+        },
+        {
+          "path": "products/rea-studio/apps/backup/restic-data-pack.test.mjs",
+          "bytes": 5168,
+          "sha256": "360926dab9c88c07d3e1a1f24967b85397670edf452a619ecc194162e45764a6"
+        },
+        {
+          "path": "products/rea-studio/apps/backup/restic-data-pack-ownership.test.mjs",
+          "bytes": 15121,
+          "sha256": "361c3e455abfdf32a3144634f6df4226714d8f7c7be38e0465ddae5008d6d7cf"
+        },
+        {
+          "path": "products/rea-studio/apps/backup/native-host-pack.test.mjs",
+          "bytes": 5531,
+          "sha256": "698ddbc673ae393823f4ece09d38b9b1a30deaedeeed1f19e435879249d91247"
+        },
+        {
+          "path": "products/rea-studio/apps/backup/native-small-mutation.test.mjs",
+          "bytes": 5199,
+          "sha256": "3331adbd907d009956e21ef06e496d1497354a75fd28c122d0321f1b5a931f6e"
+        },
+        {
+          "path": "products/rea-studio/apps/backup/PACKS.md",
+          "bytes": 4586,
+          "sha256": "274fcf1e38a5f8f5890b73d31bed8b201b454bd1efb2782c99dd14fb32d1d18c"
+        },
+        {
+          "path": "products/rea-studio/apps/backup/results/pack-aggregation-followup/integration-validation.json",
+          "bytes": 37906,
+          "sha256": "3e89c19946743ceb541f91cbf9b224f12e36718a6b88187f4c7de76918db9594"
         }
       ],
       "current_native_milestone": {
@@ -2387,6 +2491,18 @@
         "strict_expiry_tests": 3,
         "scope": "Source-assisted degree-53/window-64 Rabin chunking, three authenticated polynomials, 512 KiB minimum and 8 MiB maximum; 30 original files match 126 ordered boundaries and IDs. Capture bounds and one blob per pack remain; arbitrary chunker settings/pack efficiency/full parity remain open.",
         "collector_followup": "products/rea-studio/apps/backup/results/rabin-recorder-review/integration-validation.json",
+        "full_product_parity": false,
+        "evidence_role": "historical-a563-checkpoint"
+      },
+      "currentPackAggregationMilestone": {
+        "record": "products/rea-studio/apps/backup/results/pack-aggregation-followup/integration-validation.json",
+        "tests": 64,
+        "source_fingerprints": 42,
+        "pack_limit_bytes": 16777216,
+        "data_only": true,
+        "trees_aggregated": false,
+        "guard_scope": "Immediate BUSY rejection protects pending accepted rows from concurrent same-session operations; ownership stays held through flush/commit/cleanup.",
+        "scope": "Bounded sequential local native v1/v2 data packs; original check/restore comparisons and failure histories retained. No speed/RSS/full pack/locking parity claim.",
         "full_product_parity": false
       }
     },

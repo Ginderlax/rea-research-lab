@@ -1,0 +1,57 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import {spawn} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {collect} from './read-tap.mjs';
+
+const here=path.dirname(fileURLToPath(import.meta.url)),main=path.resolve(here,'../restic-pack-aggregation-next'),adapter=path.resolve(here,'../restic-pack-production-adapter-next'),review=path.resolve(here,'../restic-pack-independent-review');
+const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
+const fp=async file=>{const bytes=await fs.readFile(file);return {bytes:bytes.length,sha256:sha(bytes)};};
+async function authenticatePrior(){
+  const result=[];
+  for(const [root,receipt,manifest,digest]of [[main,'stage-validation.json','freeze-manifest.json','8ddb6cfda4c2e06e8413ff70cd97ebb259cb1ddab81f60cdb2be2f1c1d3d8b3b'],[adapter,'adapter-validation.json','freeze-manifest.json','bf001d4bd76a43749d3524b7b9eccbcc4861250f0bebca3968c1dc5a720d59a9']]){
+    const frozen=await fp(path.join(root,manifest));assert.equal(frozen.sha256,digest);const entries=JSON.parse(await fs.readFile(path.join(root,manifest))).entries;
+    for(const row of entries)assert.deepEqual(await fp(path.join(root,row.path)),{bytes:row.bytes,sha256:row.sha256});
+    result.push({stage:path.basename(root),receipt:await fp(path.join(root,receipt)),manifest:frozen,files:entries.length});
+  }
+  const receipt=await fp(path.join(review,'review-validation.json'));assert.equal(receipt.sha256,'08b797f88b0566599ddcd0f25aa521681a26de9f689edb01e56bd70572b1e582');
+  const inventory=JSON.parse(await fs.readFile(path.join(review,'review-validation.json'))).inventory;
+  for(const [name,record]of Object.entries(inventory))assert.deepEqual(await fp(path.join(review,name)),record);
+  result.push({stage:path.basename(review),receipt,files:Object.keys(inventory).length});return result;
+}
+async function fingerprint(){
+  const origin=JSON.parse(await fs.readFile(path.join(here,'origin-validation.json')));
+  const names=['prepare.mjs','verify-stage.mjs','read-tap.mjs','PLAN.md','origin-validation.json',...origin.origins.map(row=>row.path??row.preservedPath),'products/rea-studio/apps/backup/restic-data-pack-ownership.test.mjs'];
+  const result={};for(const name of names.sort())result[name]=await fp(path.join(here,name));
+  for(const row of origin.origins){const name=row.path??row.preservedPath;if(name!=='products/rea-studio/apps/backup/restic-data-pack.mjs')assert.deepEqual(result[name],{bytes:row.bytes,sha256:row.sha256});}
+  return result;
+}
+const priorBefore=await authenticatePrior(),before=await fingerprint(),runName=new Date().toISOString().replaceAll(':','-'),run=path.join(here,'runs',runName);
+await fs.mkdir(path.join(run,'source'),{recursive:true});
+await fs.writeFile(path.join(run,'source-before.json'),JSON.stringify(before,null,2)+'\n',{flag:'wx'});
+for(const name of Object.keys(before)){const target=path.join(run,'source',name+'.snapshot');await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,await fs.readFile(path.join(here,name)),{flag:'wx'});}
+const ownershipOnly=process.argv.includes('--ownership-only');
+const tests=ownershipOnly?['restic-data-pack-ownership.test.mjs']:['restic-data-pack.test.mjs','restic-data-pack-ownership.test.mjs','capture-rabin-file.test.mjs','restic-rabin-deadline.test.mjs','restic-rabin-lifecycle.test.mjs'];
+const expectedTests=ownershipOnly?17:54,args=['--max-old-space-size=256','--test','--test-reporter=tap','--test-concurrency=1','--test-timeout=60000',...tests.map(name=>'products/rea-studio/apps/backup/'+name)];
+const startedAt=new Date().toISOString(),child=spawn(process.execPath,args,{cwd:here,windowsHide:true,stdio:['ignore','pipe','pipe']});
+const output=[[],[]];let total=0,limitHit=false,spawnError=null,timedOut=false;
+for(const [index,stream]of [child.stdout,child.stderr].entries())stream.on('data',chunk=>{total+=chunk.length;if(total>2*1024*1024){limitHit=true;child.kill();}else output[index].push(Buffer.from(chunk));});
+child.once('error',error=>{spawnError={name:error.name,message:error.message,code:error.code??null};});
+const timeout=setTimeout(()=>{timedOut=true;child.kill();},300000);
+const {exitCode,signal}=await new Promise(resolve=>child.once('close',(exitCode,signal)=>resolve({exitCode,signal})));clearTimeout(timeout);
+const finishedAt=new Date().toISOString(),stdout=Buffer.concat(output[0]),stderr=Buffer.concat(output[1]);
+await fs.writeFile(path.join(run,'stdout.txt'),stdout,{flag:'wx'});await fs.writeFile(path.join(run,'stderr.txt'),stderr,{flag:'wx'});
+const after=await fingerprint(),priorAfter=await authenticatePrior();
+await fs.writeFile(path.join(run,'source-after.json'),JSON.stringify(after,null,2)+'\n',{flag:'wx'});
+const text=stdout.toString(),counts=Object.fromEntries(['tests','pass','fail','cancelled','skipped','todo'].map(name=>[name,Number(new RegExp(`(?:ℹ|#) ${name} (\\d+)`).exec(text)?.[1]??-1)]));
+const sourceStable=JSON.stringify(before)===JSON.stringify(after),priorStable=JSON.stringify(priorBefore)===JSON.stringify(priorAfter);
+const observations={},observationErrors=[];
+for(const label of ownershipOnly?['packOperationOwnershipObservations']:['packOperationOwnershipObservations','rabinDeadlineObservations','rabinLifecycleObservations'])try{observations[label]=collect(text,label);}catch(error){observationErrors.push({label,message:error.message});}
+if(Object.keys(observations).length)await fs.writeFile(path.join(run,'observations.json'),JSON.stringify(observations,null,2)+'\n',{flag:'wx'});
+const passed=exitCode===0&&!signal&&!limitHit&&!timedOut&&!spawnError&&sourceStable&&priorStable&&counts.tests===expectedTests&&counts.pass===expectedTests&&counts.fail===0&&counts.cancelled===0&&counts.skipped===0&&counts.todo===0&&observationErrors.length===0;
+const receipt={schema:'rea-restic-operation-guard-functional-run/v1',status:passed?'passed':'failed',startedAt,finishedAt,run:'runs/'+runName,node:process.version,nodeExecutable:process.execPath,args,exitCode,signal,spawnError,limitHit,timedOut,expectedTests,counts,sourceBeforeAfterStable:sourceStable,priorFrozenInventoriesBeforeAfterStable:priorStable,priorBefore,sourceFingerprints:before,raw:{stdout:{path:'stdout.txt',bytes:stdout.length,sha256:sha(stdout)},stderr:{path:'stderr.txt',bytes:stderr.length,sha256:sha(stderr)}},observationsPath:Object.keys(observations).length?'observations.json':null,observationErrors,limits:{childMilliseconds:300000,testMilliseconds:60000,combinedOutputBytes:2*1024*1024,oldSpaceMiB:256},scope:'Finite owned functional fixtures in the separate operation-guard stage; no production mutation, original executable invocation, browser, timing or memory measurement.',historical66And33Rerun:false,currentApplicationLossDemonstrated:false,universalParity:false};
+await fs.writeFile(path.join(run,'validation.json'),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({status:receipt.status,run:receipt.run,counts,sourceStable,priorStable,observationErrors,stderr:stderr.toString().slice(0,800)}));
+if(!passed)process.exitCode=1;

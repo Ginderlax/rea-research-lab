@@ -1,0 +1,22 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const here=path.dirname(fileURLToPath(import.meta.url)),sha=b=>createHash('sha256').update(b).digest('hex');
+const previous=await fs.readFile(path.join(here,'preserved/previous-selector/verify-selector-controls.mjs'),'utf8');
+const replacements=[
+ ["inline:await import(pathToFileURL(path.join(here,'candidate-inline-control.mjs')).href),module:await import(pathToFileURL(path.join(here,'candidate-module-control.mjs')).href)","prior:await import(pathToFileURL(path.join(here,'candidate-module-control.mjs')).href),algorithm:await import(pathToFileURL(path.join(here,'candidate-algorithm.mjs')).href)"],
+ ["'candidate-inline-control.mjs','candidate-module-control.mjs','selector-control.mjs','verify-selector-controls.mjs'","'candidate-module-control.mjs','selector-control.mjs','candidate-algorithm.mjs','selector-algorithm.mjs','verify-algorithm-controls.mjs'"],
+ ["results/selector-controls.json","results/algorithm-controls.json"],
+ ["'results/selector-controls.json'","'results/algorithm-controls.json'"],
+ ["exact inline comparator and new module-boundary candidate","frozen two-module comparator and new algorithm candidate"],
+];
+let next=previous;for(const[from,to]of replacements){if(next.includes(from))next=next.replace(from,to);}
+assert.ok(next.includes('algorithm:await import'));assert.ok(!next.includes('candidate-inline-control.mjs'));assert.ok(next.includes("'results/algorithm-controls.json'"));
+await fs.writeFile(path.join(here,'verify-algorithm-controls.mjs'),next,{flag:'wx'});
+const contractPath=path.join(here,'candidate-contract.json'),initial=await fs.readFile(contractPath);
+await fs.writeFile(path.join(here,'preserved/candidate-contract.pre-acceptance.json'),initial,{flag:'wx'});
+const contract=JSON.parse(initial);contract.helperSHA256=sha(await fs.readFile(path.join(here,'selector-algorithm.mjs')));contract.checkedAt=new Date().toISOString();contract.preAcceptanceOnlyHelperRefinement='Manual swaps and overflow-safe midpoint before any candidate execution; earlier contract retained.';
+await fs.writeFile(contractPath,JSON.stringify(contract,null,2)+'\n');
+console.log(JSON.stringify({status:'prepared',helperSHA256:contract.helperSHA256,controlDriverSHA256:sha(next)}));

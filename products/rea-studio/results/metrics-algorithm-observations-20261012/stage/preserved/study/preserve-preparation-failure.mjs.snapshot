@@ -1,0 +1,19 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {here,sha} from './authenticate-original.mjs';
+const source=await fs.readFile(path.join(here,'prepare-manifest.mjs')),directory=path.join(here,'failures/archive-parent-path');await fs.mkdir(directory,{recursive:true});await fs.writeFile(path.join(directory,'prepare-manifest.mjs'),source,{flag:'wx'});
+const stderr=String.raw`node:internal/fs/promises:640
+  return new FileHandle(await PromisePrototypeThen(
+                        ^
+
+Error: ENOENT: no such file or directory, open 'C:\Users\evanh\Documents\Codex\2026-10-12\go\outputs\rea-research-lab\projects\02-grafana\artifacts\package\release.tgz'
+    at async open (node:internal/fs/promises:640:25)
+    at async Object.readFile (node:internal/fs/promises:1287:14)
+    at async file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-algorithm-measurement-next/prepare-manifest.mjs:15:260 {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\projects\\02-grafana\\artifacts\\package\\release.tgz'
+}
+
+Node.js v24.16.0
+`;
+await fs.writeFile(path.join(directory,'stderr.tool-console-copy.txt'),stderr,{flag:'wx'});await fs.writeFile(path.join(directory,'failure.json'),JSON.stringify({schemaVersion:1,preservedAt:new Date().toISOString(),exitCode:1,sourceSHA256:sha(source),stderrCopySHA256:sha(stderr),rawOrigin:'Exact observed tool-console error text copied into artifact, not an original automatic child capture.',failure:'Archive parent resolved one directory too shallow. Six evidence runtime files were copied, no manifest or measured workload was produced.',correctiveAction:'Fix archive root, make original evidence writes verify identical existing bytes, rerun preparation only.',candidateChanged:false,timingMeasurementRun:false,memoryMeasurementRun:false},null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({status:'preserved',sourceSHA256:sha(source)}));

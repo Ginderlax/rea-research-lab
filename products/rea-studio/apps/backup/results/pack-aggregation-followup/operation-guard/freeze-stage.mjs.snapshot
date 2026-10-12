@@ -1,0 +1,54 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+
+const here=path.dirname(fileURLToPath(import.meta.url)),sha=bytes=>createHash('sha256').update(bytes).digest('hex'),receiptPath='stage-validation.json';
+const fp=async file=>{const bytes=await fs.readFile(file);return {bytes:bytes.length,sha256:sha(bytes)};};
+async function inventory(dir=here){
+  const result={};
+  for(const row of (await fs.readdir(dir,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))){
+    const file=path.join(dir,row.name),name=path.relative(here,file).replaceAll('\\','/');if(name===receiptPath)continue;assert.ok(!row.isSymbolicLink());
+    if(row.isDirectory())Object.assign(result,await inventory(file));else {assert.ok(row.isFile());result[name]=await fp(file);}
+  }
+  return result;
+}
+async function verifyOrigins(){
+  const origin=JSON.parse(await fs.readFile(path.join(here,'origin-validation.json'))),changed='products/rea-studio/apps/backup/restic-data-pack.mjs';
+  for(const row of origin.origins){const name=row.path??row.preservedPath;if(name!==changed)assert.deepEqual(await fp(path.join(here,name)),{bytes:row.bytes,sha256:row.sha256});}
+  const previous=await fs.readFile(path.join(here,'preserved/restic-data-pack.c68d.mjs.snapshot'),'utf8'),candidate=await fs.readFile(path.join(here,changed),'utf8');
+  const body=(text,label)=>{const normalized=text.replaceAll('\r\n','\n'),start=normalized.indexOf('const '+label+'=async()=>{');assert.ok(start>=0);return normalized.slice(start+('const '+label+'=async()=>{').length).split('\n  };')[0];};
+  const beforeBody=body(previous,'flush'),afterBody=body(candidate,'flushOwned');assert.equal(beforeBody,afterBody);
+  const line=(text,name)=>text.replaceAll('\r\n','\n').split('\n').find(row=>row.trimStart().startsWith('const '+name+'='));
+  for(const name of ['check','discard'])assert.equal(line(previous,name),line(candidate,name));
+  return {originalHelper:await fp(path.join(here,'preserved/restic-data-pack.c68d.mjs.snapshot')),candidateHelper:await fp(path.join(here,changed)),stagedRepositoryRuntime:await fp(path.join(here,'products/rea-studio/apps/backup/restic.mjs')),normalizedPackingBodySHA256:sha(beforeBody),normalizedCheckAndDiscardBodiesUnchanged:true,onlyCopiedRuntimeModuleChanged:changed};
+}
+async function verifyPrior(prior){
+  for(const entry of prior){const root=path.resolve(here,'../'+entry.stage),receipt=entry.stage==='restic-pack-independent-review'?'review-validation.json':entry.stage==='restic-pack-production-adapter-next'?'adapter-validation.json':'stage-validation.json';assert.deepEqual(await fp(path.join(root,receipt)),entry.receipt);
+    if(entry.manifest){assert.deepEqual(await fp(path.join(root,'freeze-manifest.json')),entry.manifest);for(const row of JSON.parse(await fs.readFile(path.join(root,'freeze-manifest.json'))).entries)assert.deepEqual(await fp(path.join(root,row.path)),{bytes:row.bytes,sha256:row.sha256});}
+    else for(const [name,record]of Object.entries(JSON.parse(await fs.readFile(path.join(root,receipt))).inventory))assert.deepEqual(await fp(path.join(root,name)),record);
+  }
+}
+if(process.argv.includes('--verify-only')){
+  const frozen=JSON.parse(await fs.readFile(path.join(here,receiptPath)));assert.deepEqual(await inventory(),frozen.inventory);assert.deepEqual(await verifyOrigins(),frozen.sourceIdentity);await verifyPrior(frozen.priorFrozenInventories);
+  console.log(JSON.stringify({status:'passed',sha256:(await fp(path.join(here,receiptPath))).sha256,files:Object.keys(frozen.inventory).length,focusedTests:frozen.finalRun.counts,readOnly:true}));
+}else {
+  const names=(await fs.readdir(path.join(here,'runs'))).sort(),attempts=[];
+  for(const name of names){const relative='runs/'+name,run=JSON.parse(await fs.readFile(path.join(here,relative,'validation.json')));
+    assert.equal(run.sourceBeforeAfterStable,true);assert.equal(run.priorFrozenInventoriesBeforeAfterStable,true);
+    const before=JSON.parse(await fs.readFile(path.join(here,relative,'source-before.json'))),after=JSON.parse(await fs.readFile(path.join(here,relative,'source-after.json')));assert.deepEqual(before,after);assert.deepEqual(before,run.sourceFingerprints);
+    for(const [file,record]of Object.entries(before))assert.deepEqual(await fp(path.join(here,relative,'source',file+'.snapshot')),record);
+    for(const record of Object.values(run.raw))assert.deepEqual(await fp(path.join(here,relative,record.path)),{bytes:record.bytes,sha256:record.sha256});
+    attempts.push({path:relative+'/validation.json',...await fp(path.join(here,relative,'validation.json')),status:run.status,startedAt:run.startedAt,finishedAt:run.finishedAt,counts:run.counts,observationErrors:run.observationErrors,helperSHA256:before['products/rea-studio/apps/backup/restic-data-pack.mjs'].sha256});
+  }
+  assert.equal(attempts.length,4);assert.equal(attempts[0].status,'failed');assert.equal(attempts[0].counts.pass,15);assert.equal(attempts[0].counts.fail,0);assert.equal(attempts[0].observationErrors.length,1);for(const row of attempts.slice(1))assert.equal(row.status,'passed');
+  const finalRun=JSON.parse(await fs.readFile(path.join(here,attempts.at(-1).path)));assert.equal(finalRun.counts.tests,54);assert.equal(finalRun.counts.pass,54);for(const key of ['fail','cancelled','skipped','todo'])assert.equal(finalRun.counts[key],0);assert.deepEqual(finalRun.sourceFingerprints,JSON.parse(await fs.readFile(path.join(here,finalRun.run,'source-after.json'))));
+  for(const [name,record]of Object.entries(finalRun.sourceFingerprints))assert.deepEqual(await fp(path.join(here,name)),record);
+  const sourceIdentity=await verifyOrigins();assert.equal(sourceIdentity.candidateHelper.sha256,'6e83e26c7e0307a36d8d72b9ddb543ad1401fa54cc96bd861e800a16bb304245');assert.ok(attempts.every(row=>row.helperSHA256===sourceIdentity.candidateHelper.sha256));
+  const observations=JSON.parse(await fs.readFile(path.join(here,finalRun.run,'observations.json')));assert.equal(observations.packOperationOwnershipObservations.length,17);await verifyPrior(finalRun.priorBefore);
+  const review=JSON.parse(await fs.readFile(path.join(here,'preserved/independent-review-validation.json'))),current=await inventory();
+  const receipt={schema:'rea-restic-pack-operation-guard-stage/v1',frozenAt:new Date().toISOString(),status:'source-stable focused tests passed; staged for independent review',sourceIdentity,finalRun:{path:attempts.at(-1).path,...await fp(path.join(here,attempts.at(-1).path)),startedAt:finalRun.startedAt,finishedAt:finalRun.finishedAt,counts:finalRun.counts,sourceBeforeAfterStable:true},focusedTestBreakdown:{inheritedHelper:9,capture:5,deadline:3,lifecycle:20,newOwnership:17,total:54},attempts,observations:{path:finalRun.run+'/observations.json',...await fp(path.join(here,finalRun.run,'observations.json')),ownershipCases:17,independentAuthenticatedByteHeaderOffsetAndIndexChecks:true,primaryErrorIdentityAndCiphertextCleanupChecked:true},priorFrozenInventories:finalRun.priorBefore,originalReproduction:{receiptSHA256:'08b797f88b0566599ddcd0f25aa521681a26de9f689edb01e56bd70572b1e582',helperSHA256:sourceIdentity.originalHelper.sha256,reproduced:true,currentApplicationLossDemonstrated:false},historicalBaselineIdentity:{mainCapturedNativeTestSHA256:review.historicalNativeTestSHA256,currentRootGenericNativeTestSHA256:review.currentRootNativeTestSHA256,stagedBatchNativeTestSHA256:review.stagedBatchNativeTestSHA256,currentAndStagedRootPolicyHelperSHA256:review.currentRootGenericHelperSHA256,mainBaseline37IsHistorical:true},historicalTests:{main:66,adapter:33,rerunOrReboundHere:false},originalExecutableInvocations:0,productionIntegrated:false,productionOrOlderEvidenceEdited:false,currentApplicationLossDemonstrated:false,timingOrMemoryMeasurementRun:false,ownedProcessesSettled:true,windowsDescendantTerminationGuarantee:false,fullProductComplete:false,universalCorrectnessEstablished:false,performanceParityEstablished:false,inventory:current};
+  await fs.writeFile(path.join(here,receiptPath),JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});assert.deepEqual(await inventory(),current);
+  console.log(JSON.stringify({path:path.join(here,receiptPath),sha256:(await fp(path.join(here,receiptPath))).sha256,files:Object.keys(current).length,counts:finalRun.counts,candidateHelperSHA256:sourceIdentity.candidateHelper.sha256,originalMainAndAdapterUnchanged:true}));
+}

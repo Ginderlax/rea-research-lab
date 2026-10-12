@@ -1,0 +1,10 @@
+file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-selector-algorithm-next/freeze-stage.mjs:6
+async function checkRows(root,rows){let bytes=0;for(const[name,row]of Object.entries(rows)){const target=path.resolve(root,name);assert.ok(target.startsWith(path.resolve(root)+path.sep),'Inventory path outside root');const data=await fs.readFile(target);assert.equal(data.length,row.bytes,name);assert.equal(sha(data),row.sha256,name);bytes+=data.length;}return {files:Object.keys(rows).length,bytes};}
+                                                                             ^
+
+TypeError: Cannot convert undefined or null to object
+    at Object.entries (<anonymous>)
+    at checkRows (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-selector-algorithm-next/freeze-stage.mjs:6:78)
+    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-selector-algorithm-next/freeze-stage.mjs:10:301
+
+Node.js v24.16.0

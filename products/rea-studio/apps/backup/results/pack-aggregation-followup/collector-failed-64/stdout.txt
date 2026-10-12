@@ -1,0 +1,425 @@
+TAP version 13
+# {"nativePackPolicyObservation":{"phase":"first-snapshot","snapshot":"e4689e470b2d68b7f5dc0249f120d1b1c4aadde4bb1790cae5d4d55a582ccb55","totalPacks":5,"dataPacks":1,"uniqueDataBlobs":2,"dataRows":[{"id":"3a21bff172ed1f427f9ee97d000ebdc6157f62595383d81215d9328f28381bf4","type":"data","offset":0,"length":4850,"uncompressed_length":2097199},{"id":"ab6e5bc4241af3c9ec1e009c14d127ba88f63d9bd835da470ddb01bb53ef2fe3","type":"data","offset":4850,"length":76,"uncompressed_length":35}],"allStorageHeaderPayloadAndIndexVerified":true}}
+# {"nativePackPolicyObservation":{"phase":"repeat-snapshot","dataPacks":1,"dataRows":2,"addedDataPacks":0,"addedDataRows":0}}
+# {"nativePackPolicyObservation":{"phase":"repeat-snapshot","dataPacks":1,"dataRows":2,"addedDataPacks":0,"addedDataRows":0}}
+# {"nativePackHostObservation":{"requests":[{"action":"nativeInit","status":200},{"action":"nativeSnapshot","status":200},{"action":"nativeCheck","status":200},{"action":"nativeSnapshot","status":200},{"action":"nativeList","status":200},{"action":"nativeList","status":200},{"action":"nativeCheck","status":200},{"action":"nativeRestore","status":200}],"commands":[{"args":["check","--read-data"],"exitCode":0,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  2 / 2 snapshots\\nread all data\\n[0:00] 100.00%  8 / 8 packs\\nno errors were found\\n","stderr":""},{"args":["restore","ceb9247efe05848560e408cab2b443e74c3d45b40bcdc175fb34155d3eb4c2e7","--target","C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-pack-host-adapter-wjha61\\\\original-restored"],"exitCode":0,"stdout":"restoring snapshot ceb9247e of [/source] at 2026-10-12 22:37:18.793 +0000 UTC by rea-studio@EvanH to C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-pack-host-adapter-wjha61\\\\original-restored\\nSummary: Restored 6 files/dirs (2.000 MiB) in 0:00\\n","stderr":""}],"firstSnapshot":"e4689e470b2d68b7f5dc0249f120d1b1c4aadde4bb1790cae5d4d55a582ccb55","secondSnapshot":"ceb9247efe05848560e408cab2b443e74c3d45b40bcdc175fb34155d3eb4c2e7","fixtureFiles":{"binary.bin":"3a21bff172ed1f427f9ee97d000ebdc6157f62595383d81215d9328f28381bf4","empty.txt":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","nested/雪😀.txt":"ab6e5bc4241af3c9ec1e009c14d127ba88f63d9bd835da470ddb01bb53ef2fe3"},"checkedBytes":2097234,"restartPersistence":true,"exactDataPackAndRowDedup":true,"httpRestoreBytesAndMtime":true,"originalRestoreBytes":true,"ports":"Private ephemeral ports; existing hosts untouched."}}
+# Subtest: private production host batches three-file native capture, preserves exact dedup across restart and restores through HTTP and original
+ok 1 - private production host batches three-file native capture, preserves exact dedup across restart and restores through HTTP and original
+  ---
+  duration_ms: 12020.8702
+  type: 'test'
+  ...
+# {"nativeSmallMutationObservation":{"boundary":"first successful source read held before delivery","fixtureBytes":23,"fixtureSha256":"00af494886e00d9ff60fdf13621a6c8dba11f571d2692897e5a4e4532b34d6d2","readCalls":3,"sourceHandleCloses":1,"publishedDataIndexSnapshotObjects":0,"remainingOwnLocks":0,"runtimeSourceUnmodified":true}}
+# Subtest: held small-file read detects mutation before any native pack/index/snapshot publication
+ok 2 - held small-file read detects mutation before any native pack/index/snapshot publication
+  ---
+  duration_ms: 1848.9787
+  type: 'test'
+  ...
+# {"nativeSmallMutationObservation":{"boundary":"owned EOF chunk sink held before sink completion","fixtureBytes":37,"fixtureSha256":"67dbf0ab8db4036e48a4812b784e740b09c6078bf588ac9836980dd1c4212654","sinkCalls":1,"sourceHandleCloses":1,"returnedCaptureSuccess":false,"emittedChunkOwnershipVerified":true,"scope":"Real unchanged file-capture primitive; sink is an owned deterministic test callback, no repository snapshot is attempted."}}
+# Subtest: held small-file sink detects mutation after owned EOF chunk without returning capture success
+ok 3 - held small-file sink detects mutation after owned EOF chunk without returning capture success
+  ---
+  duration_ms: 13.6848
+  type: 'test'
+  ...
+# Subtest: native AES-CTR/Poly1305-AES rejects altered nonce, ciphertext and tag before decrypting
+ok 4 - native AES-CTR/Poly1305-AES rejects altered nonce, ciphertext and tag before decrypting
+  ---
+  duration_ms: 3.3134
+  type: 'test'
+  ...
+# {"nativePackPolicyObservation":{"phase":"first-snapshot","snapshot":"fc2b2f67618ee6caff808a66f4eeff393030a4e5a22f4a73494b8d9a54de8acf","totalPacks":5,"dataPacks":1,"uniqueDataBlobs":2,"dataRows":[{"id":"3a21bff172ed1f427f9ee97d000ebdc6157f62595383d81215d9328f28381bf4","type":"data","offset":0,"length":2097231},{"id":"ab6e5bc4241af3c9ec1e009c14d127ba88f63d9bd835da470ddb01bb53ef2fe3","type":"data","offset":2097231,"length":67}],"allStorageHeaderPayloadAndIndexVerified":true}}
+# {"nativePackPolicyObservation":{"phase":"repeat-snapshot","dataPacks":1,"dataRows":2,"addedDataPacks":0,"addedDataRows":0}}
+# Subtest: app writes genuine native v1 repositories; original opens, checks, restores and app appends
+ok 5 - app writes genuine native v1 repositories; original opens, checks, restores and app appends
+  ---
+  duration_ms: 14426.7064
+  type: 'test'
+  ...
+# {"nativePackPolicyObservation":{"phase":"first-snapshot","snapshot":"2a2eed8294e51229e57907928f87bdc4efcb4d8da62a5d05a186e002b797a930","totalPacks":5,"dataPacks":1,"uniqueDataBlobs":2,"dataRows":[{"id":"3a21bff172ed1f427f9ee97d000ebdc6157f62595383d81215d9328f28381bf4","type":"data","offset":0,"length":4850,"uncompressed_length":2097199},{"id":"ab6e5bc4241af3c9ec1e009c14d127ba88f63d9bd835da470ddb01bb53ef2fe3","type":"data","offset":4850,"length":76,"uncompressed_length":35}],"allStorageHeaderPayloadAndIndexVerified":true}}
+# {"nativePackPolicyObservation":{"phase":"repeat-snapshot","dataPacks":1,"dataRows":2,"addedDataPacks":0,"addedDataRows":0}}
+# Subtest: app writes genuine native v2 repositories; original opens, checks, restores and app appends
+ok 6 - app writes genuine native v2 repositories; original opens, checks, restores and app appends
+  ---
+  duration_ms: 14394.9882
+  type: 'test'
+  ...
+# Subtest: original v1 snapshots including compressed v2 blobs are listed, checked, restored and extended by app
+ok 7 - original v1 snapshots including compressed v2 blobs are listed, checked, restored and extended by app
+  ---
+  duration_ms: 10525.5583
+  type: 'test'
+  ...
+# Original calibrated scrypt parameters: N=32768, r=8, p=10
+# Subtest: original v2 snapshots including compressed v2 blobs are listed, checked, restored and extended by app
+ok 8 - original v2 snapshots including compressed v2 blobs are listed, checked, restored and extended by app
+  ---
+  duration_ms: 11732.8912
+  type: 'test'
+  ...
+# Original calibrated scrypt parameters: N=32768, r=8, p=11
+# Subtest: wrong password, damaged native key/config and excessive KDF are refused without persistent credentials
+ok 9 - wrong password, damaged native key/config and excessive KDF are refused without persistent credentials
+  ---
+  duration_ms: 4428.5767
+  type: 'test'
+  ...
+# Subtest: native restore refuses storage hash before creating its destination
+ok 10 - native restore refuses storage hash before creating its destination
+  ---
+  duration_ms: 3332.8721
+  type: 'test'
+  ...
+# Subtest: native restore refuses blob MAC before creating its destination
+ok 11 - native restore refuses blob MAC before creating its destination
+  ---
+  duration_ms: 3289.659
+  type: 'test'
+  ...
+# Subtest: native restore refuses header MAC before creating its destination
+ok 12 - native restore refuses header MAC before creating its destination
+  ---
+  duration_ms: 3235.4578
+  type: 'test'
+  ...
+# Subtest: native restore refuses header type before creating its destination
+ok 13 - native restore refuses header type before creating its destination
+  ---
+  duration_ms: 3488.2
+  type: 'test'
+  ...
+# Subtest: native restore refuses footer length before creating its destination
+ok 14 - native restore refuses footer length before creating its destination
+  ---
+  duration_ms: 3290.4972
+  type: 'test'
+  ...
+# Subtest: native restore refuses plaintext hash before creating its destination
+ok 15 - native restore refuses plaintext hash before creating its destination
+  ---
+  duration_ms: 3100.3155
+  type: 'test'
+  ...
+# Subtest: native restore refuses index mismatch before creating its destination
+ok 16 - native restore refuses index mismatch before creating its destination
+  ---
+  duration_ms: 3237.0312
+  type: 'test'
+  ...
+# Subtest: snapshot MAC, unknown v2 metadata, and zstd expansion budgets fail before tree processing
+ok 17 - snapshot MAC, unknown v2 metadata, and zstd expansion budgets fail before tree processing
+  ---
+  duration_ms: 5681.6849
+  type: 'test'
+  ...
+# Subtest: authenticated malformed mtime, atime and ctime are rejected before output; original rejects those trees too
+ok 18 - authenticated malformed mtime, atime and ctime are rejected before output; original rejects those trees too
+  ---
+  duration_ms: 58367.969
+  type: 'test'
+  ...
+# 14 authenticated bad tree timestamp cases compared with the released original.
+# Subtest: malformed snapshot time is rejected by list and every selected action before output, matching original parsing
+ok 19 - malformed snapshot time is rejected by list and every selected action before output, matching original parsing
+  ---
+  duration_ms: 23733.1295
+  type: 'test'
+  ...
+# 5 authenticated bad snapshot time cases compared with the released original.
+# Subtest: valid Go time boundaries and permissive encodings match original acceptance and safe Windows mtime restoration
+ok 20 - valid Go time boundaries and permissive encodings match original acceptance and safe Windows mtime restoration
+  ---
+  duration_ms: 81782.365
+  type: 'test'
+  ...
+# 17 authenticated valid tree time cases; original restore compared within the supported platform interval. Null snapshot time also matched original zero-time normalization.
+# Subtest: snapshot listing orders timestamps by their instant rather than textual offset or fractional form
+ok 21 - snapshot listing orders timestamps by their instant rather than textual offset or fractional form
+  ---
+  duration_ms: 4491.9383
+  type: 'test'
+  ...
+# Subtest: authenticated native tree traversal is rejected before restore output
+ok 22 - authenticated native tree traversal is rejected before restore output
+  ---
+  duration_ms: 3059.6722
+  type: 'test'
+  ...
+# Subtest: authenticated native tree case collision is rejected before restore output
+ok 23 - authenticated native tree case collision is rejected before restore output
+  ---
+  duration_ms: 2882.4876
+  type: 'test'
+  ...
+# Subtest: authenticated native tree duplicate is rejected before restore output
+ok 24 - authenticated native tree duplicate is rejected before restore output
+  ---
+  duration_ms: 3136.0546
+  type: 'test'
+  ...
+# Subtest: authenticated native tree unordered is rejected before restore output
+ok 25 - authenticated native tree unordered is rejected before restore output
+  ---
+  duration_ms: 2896.0322
+  type: 'test'
+  ...
+# Subtest: authenticated native tree symlink is rejected before restore output
+ok 26 - authenticated native tree symlink is rejected before restore output
+  ---
+  duration_ms: 2903.1305
+  type: 'test'
+  ...
+# Subtest: authenticated native tree excessive size is rejected before restore output
+ok 27 - authenticated native tree excessive size is rejected before restore output
+  ---
+  duration_ms: 3037.2448
+  type: 'test'
+  ...
+# Subtest: authenticated native tree content size is rejected before restore output
+ok 28 - authenticated native tree content size is rejected before restore output
+  ---
+  duration_ms: 2901.2342
+  type: 'test'
+  ...
+# Subtest: native paths, overlapping folders, existing destinations, invalid IDs and confirmations preserve existing data
+ok 29 - native paths, overlapping folders, existing destinations, invalid IDs and confirmations preserve existing data
+  ---
+  duration_ms: 8653.8698
+  type: 'test'
+  ...
+# Subtest: native app and original honor authenticated exclusive locks; app never deletes an existing stale lock
+ok 30 - native app and original honor authenticated exclusive locks; app never deletes an existing stale lock
+  ---
+  duration_ms: 2990.777
+  type: 'test'
+  ...
+# Subtest: oversized source files are rejected before native snapshot publication
+ok 31 - oversized source files are rejected before native snapshot publication
+  ---
+  duration_ms: 1290.6193
+  type: 'test'
+  ...
+# {"nativeMutationFixture":{"bytes":25165825,"sha256":"30ef6132bb13a7945b1f5c5d8155ccc607a315f1fc5272f7f560b3bac491c366","generator":"xorshift32 seed 0x1a2b3c4d; low byte per state","reason":"Cross the 16 MiB aggregate pack target with distinct chunks before source EOF"}}
+# Subtest: source mutation during native capture aborts publication and releases the app lock
+ok 32 - source mutation during native capture aborts publication and releases the app lock
+  ---
+  duration_ms: 2145.4285
+  type: 'test'
+  ...
+# Subtest: native HTTP repository, encrypted snapshot and restore persist across host restarts without password records
+ok 33 - native HTTP repository, encrypted snapshot and restore persist across host restarts without password records
+  ---
+  duration_ms: 3900.2923
+  type: 'test'
+  ...
+# Subtest: independent compression boundaries, frame windows and incompressible growth remain bounded
+ok 34 - independent compression boundaries, frame windows and incompressible growth remain bounded
+  ---
+  duration_ms: 90.4894
+  type: 'test'
+  ...
+# Subtest: mixed legacy v2 plaintext and compressed candidate snapshots preserve old blobs and deduplicate across modes
+ok 35 - mixed legacy v2 plaintext and compressed candidate snapshots preserve old blobs and deduplicate across modes
+  ---
+  duration_ms: 12432.16
+  type: 'test'
+  ...
+# Subtest: candidate appends compressed data to an independently original-created v2 off repository
+ok 36 - candidate appends compressed data to an independently original-created v2 off repository
+  ---
+  duration_ms: 5844.1426
+  type: 'test'
+  ...
+# {"mutatedPackStructure":{"blobType":"data","targetBlobID":"ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad","blobRows":3,"unchangedRows":2,"otherCiphertextsPreserved":true,"recomputedOffsets":true}}
+# {"mutatedPackStructure":{"blobType":"data","targetBlobID":"ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad","blobRows":3,"unchangedRows":2,"otherCiphertextsPreserved":true,"recomputedOffsets":true}}
+# {"mutatedPackStructure":{"blobType":"data","targetBlobID":"ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad","blobRows":3,"unchangedRows":2,"otherCiphertextsPreserved":true,"recomputedOffsets":true}}
+# {"mutatedPackStructure":{"blobType":"tree","targetBlobID":"b1ad9d1fd145fc3a04f5dda9c3d6e82afcb0380c1baea5e2b3da6d05ab5d7796","blobRows":1,"unchangedRows":0,"otherCiphertextsPreserved":true,"recomputedOffsets":true}}
+# {"mutatedPackStructure":{"blobType":"data","targetBlobID":"ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad","blobRows":3,"unchangedRows":2,"otherCiphertextsPreserved":true,"recomputedOffsets":true}}
+# Subtest: authenticated compressed corruption and pack/index disagreements reject before restore output, including original reader
+ok 37 - authenticated compressed corruption and pack/index disagreements reject before restore output, including original reader
+  ---
+  duration_ms: 16588.7754
+  type: 'test'
+  ...
+# {"case":"index-length","candidateError":"Restic index and authenticated pack header disagree.","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"case":"payload-mac","candidateError":"Restic authentication failed: wrong password or damaged data.","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"case":"header-mac","candidateError":"Restic authentication failed: wrong password or damaged data.","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"case":"frame-magic","candidateError":"Unknown frame descriptor","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"case":"frame-truncated-tree","candidateError":"Restic decompressed blob length mismatch.","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"case":"decoded-budget","candidateError":"Cannot create a Buffer larger than 25 bytes","restoreDestinationCreated":false,"appLocksBeforeOriginal":[]}
+# {"originalCompressionReviewObservations":[{"args":["check","--read-data"],"exitCode":0,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  2 / 2 snapshots\\nread all data\\n[0:00] 100.00%  12 / 12 packs\\nno errors were found\\n","stderr":""},{"args":["restore","7b03e7b9c2a6f4aab94f3465da000e06199ff8554ed6db0249813504307513ff","--target","C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-compression-review-Y9GjS8\\\\old-restored"],"exitCode":0,"stdout":"restoring snapshot 7b03e7b9 of [/source] at 2026-10-12 22:42:21.866 +0000 UTC by rea-studio@EvanH to C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-compression-review-Y9GjS8\\\\old-restored\\nSummary: Restored 7 files/dirs (2.415 MiB) in 0:00\\n","stderr":""},{"args":["restore","4668295bf6740bbe77754f517bb7eeb3a822966f3c7bfbe2d4245b7e8bcf4d23","--target","C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-compression-review-Y9GjS8\\\\new-restored"],"exitCode":0,"stdout":"restoring snapshot 4668295b of [/source] at 2026-10-12 22:42:24.135 +0000 UTC by rea-studio@EvanH to C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-compression-review-Y9GjS8\\\\new-restored\\nSummary: Restored 8 files/dirs (2.472 MiB) in 0:00\\n","stderr":""},{"args":["check","--read-data"],"exitCode":0,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  3 / 3 snapshots\\nread all data\\n[0:00] 100.00%  15 / 15 packs\\nno errors were found\\n","stderr":""},{"args":["restore","d0d585fe4820f897ec9db3ce9f8c602ffe99e781eb5691bac4e772d33e7260ba","--target","C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-compression-review-Y9GjS8\\\\off-restored"],"exitCode":0,"stdout":"restoring snapshot d0d585fe of [/source] at 2026-10-12 22:42:29.507 +0000 UTC by rea-studio@EvanH to C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-compression-review-Y9GjS8\\\\off-restored\\nSummary: Restored 8 files/dirs (2.472 MiB) in 0:00\\n","stderr":""},{"args":["init","--repository-version","2"],"exitCode":0,"stdout":"created restic repository 620abd1110 at C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-compression-review-RT7CPs\\\\workspace\\\\repository\\n\\nPlease note that knowledge of your password is required to access\\nthe repository. Losing your password means that your data is\\nirrecoverably lost.\\n","stderr":""},{"args":["backup","C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-compression-review-RT7CPs\\\\workspace\\\\source","--compression","off","--json"],"exitCode":0,"stdout":"{\\"message_type\\":\\"summary\\",\\"files_new\\":4,\\"files_changed\\":0,\\"files_unmodified\\":0,\\"dirs_new\\":10,\\"dirs_changed\\":0,\\"dirs_unmodified\\":0,\\"data_blobs\\":3,\\"tree_blobs\\":11,\\"data_added\\":444996,\\"data_added_packed\\":440909,\\"total_files_processed\\":4,\\"total_bytes_processed\\":434633,\\"total_duration\\":0.5995218,\\"backup_start\\":\\"2026-10-12T18:42:34.0686115-04:00\\",\\"backup_end\\":\\"2026-10-12T18:42:34.6681333-04:00\\",\\"snapshot_id\\":\\"6a5c627a08d7ceb4bf9cc3d66f53a14337a4596efeb849275c1781d80bc42a1e\\"}\\n","stderr":""},{"args":["check","--read-data"],"exitCode":0,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  2 / 2 snapshots\\nread all data\\n[0:00] 100.00%  6 / 6 packs\\nno errors were found\\n","stderr":""},{"args":["restore","05bdf7881526fbbc5010970d26db68c7cd9619beb11d9c4fed97162fac7f3bd5","--target","C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-compression-review-RT7CPs\\\\append-restored"],"exitCode":0,"stdout":"restoring snapshot 05bdf788 of [/source] at 2026-10-12 22:42:35.502 +0000 UTC by rea-studio@EvanH to C:\\\\Users\\\\evanh\\\\AppData\\\\Local\\\\Temp\\\\rea-compression-review-RT7CPs\\\\append-restored\\nSummary: Restored 7 files/dirs (465.462 KiB) in 0:00\\n","stderr":""},{"args":["check","--read-data"],"exitCode":1,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  1 / 1 snapshots\\nread all data\\n[0:00] 100.00%  4 / 4 packs\\n","stderr":"pack b074226114f1be2f66627ec337ccef1225279d6837ddc301c22f0d789918ddb2 contains 1 errors: [blob ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad is not contained in index or position is incorrect]\\n\\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\\n\\nrestic repair packs b074226114f1be2f66627ec337ccef1225279d6837ddc301c22f0d789918ddb2\\nrestic repair snapshots --forget\\n\\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\\nFatal: repository contains errors\\n"},{"args":["check","--read-data"],"exitCode":1,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  1 / 1 snapshots\\nread all data\\n[0:00] 100.00%  4 / 4 packs\\n","stderr":"pack 5e2112e5b9f109dfabf0ac94c5c2bbdc9e3cfe96b9a61ebb8d22ff8a0a6611a2 contains 1 errors: [blob ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad: decrypting blob <data/ee466a8c> from pack 5e2112e5b9f109dfabf0ac94c5c2bbdc9e3cfe96b9a61ebb8d22ff8a0a6611a2 failed: ciphertext verification failed]\\n\\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\\n\\nrestic repair packs 5e2112e5b9f109dfabf0ac94c5c2bbdc9e3cfe96b9a61ebb8d22ff8a0a6611a2\\nrestic repair snapshots --forget\\n\\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\\nFatal: repository contains errors\\n"},{"args":["check","--read-data"],"exitCode":1,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  1 / 1 snapshots\\nread all data\\n[0:00] 100.00%  4 / 4 packs\\n","stderr":"pack 915d1fa1ae0db55213e0aa5a1b1124afb53a6eca38f92d29cb9bc737a00343a5 contains 1 errors: [ciphertext verification failed]\\n\\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\\n\\nrestic repair packs 915d1fa1ae0db55213e0aa5a1b1124afb53a6eca38f92d29cb9bc737a00343a5\\nrestic repair snapshots --forget\\n\\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\\nFatal: repository contains errors\\n"},{"args":["check","--read-data"],"exitCode":1,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  1 / 1 snapshots\\nread all data\\n[0:00] 100.00%  4 / 4 packs\\n","stderr":"pack b0907fc5988c29b5f67f95bda5c24c78cfd2ecd1de73cb22496ba72388aa7cd1 contains 1 errors: [blob ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad: decompressing blob <data/ee466a8c> from pack b0907fc5988c29b5f67f95bda5c24c78cfd2ecd1de73cb22496ba72388aa7cd1 failed: invalid input: magic number mismatch]\\n\\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\\n\\nrestic repair packs b0907fc5988c29b5f67f95bda5c24c78cfd2ecd1de73cb22496ba72388aa7cd1\\nrestic repair snapshots --forget\\n\\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\\nFatal: repository contains errors\\n"},{"args":["check","--read-data"],"exitCode":1,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  1 / 1 snapshots\\nread all data\\n[0:00] 100.00%  4 / 4 packs\\n","stderr":"error for tree b1ad9d1f:\\n  decompressing blob <tree/b1ad9d1f> from pack 875442e31c93fc63a4634d379b857d3c00e773ce69546ca9436070ad498df567 failed: unexpected EOF\\npack 875442e31c93fc63a4634d379b857d3c00e773ce69546ca9436070ad498df567 contains 1 errors: [blob b1ad9d1fd145fc3a04f5dda9c3d6e82afcb0380c1baea5e2b3da6d05ab5d7796: decompressing blob <tree/b1ad9d1f> from pack 875442e31c93fc63a4634d379b857d3c00e773ce69546ca9436070ad498df567 failed: unexpected EOF]\\n\\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\\n\\nrestic repair packs 875442e31c93fc63a4634d379b857d3c00e773ce69546ca9436070ad498df567\\nrestic repair snapshots --forget\\n\\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\\nFatal: repository contains errors\\n"},{"args":["check","--read-data"],"exitCode":1,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  1 / 1 snapshots\\nread all data\\n[0:00] 100.00%  4 / 4 packs\\n","stderr":"pack 83fd5e1b71493bcafce9ef3492ff33a36383fb23c527b48f16e04ed74bda6a9e contains 1 errors: [blob ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad: read blob <data/ee466a8c> from pack 83fd5e1b71493bcafce9ef3492ff33a36383fb23c527b48f16e04ed74bda6a9e: wrong data returned, hash is 5b766f6d76a999636fd93b4e039d5a32187f84a19c0950449f0c721da0223914]\\n\\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\\n\\nrestic repair packs 83fd5e1b71493bcafce9ef3492ff33a36383fb23c527b48f16e04ed74bda6a9e\\nrestic repair snapshots --forget\\n\\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\\nFatal: repository contains errors\\n"},{"args":["check","--read-data"],"exitCode":1,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00]          0 snapshots\\nread all data\\n[0:00] 100.00%  4 / 4 packs\\n","stderr":"error: failed to load snapshot 0979d23f: not supported encoding format\\n\\nThe repository is damaged and must be repaired. Please follow the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html .\\n\\nFatal: repository contains errors\\n"},{"args":["check","--read-data"],"exitCode":0,"stdout":"create exclusive lock for repository\\nload indexes\\ncheck all packs\\ncheck snapshots, trees and blobs\\n[0:00] 100.00%  1 / 1 snapshots\\nread all data\\n[0:00] 100.00%  4 / 4 packs\\nno errors were found\\n","stderr":""}]}
+# Subtest: authenticated unsupported metadata marker and compressed metadata output budget reject without restore output
+ok 38 - authenticated unsupported metadata marker and compressed metadata output budget reject without restore output
+  ---
+  duration_ms: 7110.7619
+  type: 'test'
+  ...
+# {"case":"unknown-marker","originalAccepts":false,"candidateAccepts":false,"documentedBoundary":null}
+# {"case":"decoded-metadata-budget","originalAccepts":true,"candidateAccepts":false,"documentedBoundary":"16 MiB metadata subset"}
+# {"packOperationOwnershipObservations":[{"name":"save-vs-flush/v1","rejectedCalls":3,"commitCalls":2,"acceptedIDs":["8b73fdd7c558ab19159de3b502926cb85d6a7e8ef754c746c8cffa663d22bc4d","5e0360c918741d4e947e3436daeeff9f968da4c50c862944ed72fc34bb302a00"],"exactBytes":true},{"name":"flush-vs-flush-and-dispose/v1","rejectedCalls":2,"commitCalls":2,"exactBytes":true},{"name":"save-vs-automatic-old-flush/v1","rejectedCalls":3,"commitCalls":3,"acceptedIDs":["01d3a187638cc1a7740a74fbeb57aa2648dbdec42d497321912bf393d283ccd1","b63ec286a8d0a4e90158007c673ed0beb763e6cac8ac4a59843213ee6bf04220","152a717d2e7fceef7d1d3f53277a9dc48eabd2b06bc4993e30639833e36c8043"],"incomingSnapshotPreserved":true},{"name":"save-vs-automatic-current-flush/v1","rejectedCalls":3,"commitCalls":2,"exactBytes":true},{"name":"reentrant-commit/v1","rejectedCalls":3,"commitCalls":1,"exactBytes":true},{"name":"save-vs-flush/v2","rejectedCalls":3,"commitCalls":2,"acceptedIDs":["8b73fdd7c558ab19159de3b502926cb85d6a7e8ef754c746c8cffa663d22bc4d","5e0360c918741d4e947e3436daeeff9f968da4c50c862944ed72fc34bb302a00"],"exactBytes":true},{"name":"flush-vs-flush-and-dispose/v2","rejectedCalls":2,"commitCalls":2,"exactBytes":true},{"name":"save-vs-automatic-old-flush/v2","rejectedCalls":3,"commitCalls":3,"acceptedIDs":["01d3a187638cc1a7740a74fbeb57aa2648dbdec42d497321912bf393d283ccd1","b63ec286a8d0a4e90158007c673ed0beb763e6cac8ac4a59843213ee6bf04220","152a717d2e7fceef7d1d3f53277a9dc48eabd2b06bc4993e30639833e36c8043"],"incomingSnapshotPreserved":true},{"name":"save-vs-automatic-current-flush/v2","rejectedCalls":3,"commitCalls":2,"exactBytes":true},{"name":"reentrant-commit/v2","rejectedCalls":3,"commitCalls":1,"exactBytes":true},{"name":"commit-failure/explicit","rejectedCalls":3,"commitCalls":1,"pendingCountAfterFailure":0,"ownedCiphertextBuffersZeroed":1,"primaryErrorIdentityPreserved":true,"busyReleased":true,"callerBuffersUnchanged":true},{"name":"commit-failure/automatic-old","rejectedCalls":3,"commitCalls":1,"pendingCountAfterFailure":0,"ownedCiphertextBuffersZeroed":2,"primaryErrorIdentityPreserved":true,"busyReleased":true,"callerBuffersUnchanged":true},{"name":"commit-failure/automatic-current","rejectedCalls":3,"commitCalls":1,"pendingCountAfterFailure":0,"ownedCiphertextBuffersZeroed":1,"primaryErrorIdentityPreserved":true,"busyReleased":true,"callerBuffersUnchanged":true},{"name":"non-commit-failure-ownership","pendingRetained":true,"busyReleased":true,"exactBytes":true},{"name":"guard-at-automatic-flush-entry","unqueuedCiphertextZeroed":true,"acceptedPendingRetained":true,"busyReleased":true,"retryCommitsExactAcceptedBytes":true},{"name":"guard-after-held-automatic-commit","ownedCiphertextBuffersZeroed":2,"originalPrimaryErrorPreserved":true,"busyReleased":true,"earlierAcceptedCommittedBytesPreserved":true,"incomingNotAccepted":true},{"name":"dispose-pending","ciphertextBuffersZeroed":1,"busyReleased":true,"callerBytesUnchanged":true}]}
+# Subtest: v1 save during held explicit flush rejects before guard/input inspection and preserves rightful bytes
+ok 39 - v1 save during held explicit flush rejects before guard/input inspection and preserves rightful bytes
+  ---
+  duration_ms: 3.1026
+  type: 'test'
+  ...
+# Subtest: v1 second flush and dispose reject during held flush without clearing pending rows
+ok 40 - v1 second flush and dispose reject during held flush without clearing pending rows
+  ---
+  duration_ms: 0.9777
+  type: 'test'
+  ...
+# Subtest: v1 save owns its automatic previous-pack flush and snapshots incoming caller bytes
+ok 41 - v1 save owns its automatic previous-pack flush and snapshots incoming caller bytes
+  ---
+  duration_ms: 0.891
+  type: 'test'
+  ...
+# Subtest: v1 first save retains ownership through its automatic current-pack commit
+ok 42 - v1 first save retains ownership through its automatic current-pack commit
+  ---
+  duration_ms: 0.6821
+  type: 'test'
+  ...
+# Subtest: v1 reentrant commit callback gets immediate public-operation rejections
+ok 43 - v1 reentrant commit callback gets immediate public-operation rejections
+  ---
+  duration_ms: 0.5157
+  type: 'test'
+  ...
+# Subtest: v2 save during held explicit flush rejects before guard/input inspection and preserves rightful bytes
+ok 44 - v2 save during held explicit flush rejects before guard/input inspection and preserves rightful bytes
+  ---
+  duration_ms: 1.1844
+  type: 'test'
+  ...
+# Subtest: v2 second flush and dispose reject during held flush without clearing pending rows
+ok 45 - v2 second flush and dispose reject during held flush without clearing pending rows
+  ---
+  duration_ms: 1.1683
+  type: 'test'
+  ...
+# Subtest: v2 save owns its automatic previous-pack flush and snapshots incoming caller bytes
+ok 46 - v2 save owns its automatic previous-pack flush and snapshots incoming caller bytes
+  ---
+  duration_ms: 0.7607
+  type: 'test'
+  ...
+# Subtest: v2 first save retains ownership through its automatic current-pack commit
+ok 47 - v2 first save retains ownership through its automatic current-pack commit
+  ---
+  duration_ms: 0.4454
+  type: 'test'
+  ...
+# Subtest: v2 reentrant commit callback gets immediate public-operation rejections
+ok 48 - v2 reentrant commit callback gets immediate public-operation rejections
+  ---
+  duration_ms: 0.3979
+  type: 'test'
+  ...
+# Subtest: held explicit commit rejection preserves primary Error, releases busy and wipes owned payloads
+ok 49 - held explicit commit rejection preserves primary Error, releases busy and wipes owned payloads
+  ---
+  duration_ms: 0.6361
+  type: 'test'
+  ...
+# Subtest: held automatic-old commit rejection preserves primary Error, releases busy and wipes owned payloads
+ok 50 - held automatic-old commit rejection preserves primary Error, releases busy and wipes owned payloads
+  ---
+  duration_ms: 0.6207
+  type: 'test'
+  ...
+# Subtest: held automatic-current commit rejection preserves primary Error, releases busy and wipes owned payloads
+ok 51 - held automatic-current commit rejection preserves primary Error, releases busy and wipes owned payloads
+  ---
+  duration_ms: 0.3078
+  type: 'test'
+  ...
+# Subtest: guard and validation failures release ownership while retaining previously accepted pending data
+ok 52 - guard and validation failures release ownership while retaining previously accepted pending data
+  ---
+  duration_ms: 0.3665
+  type: 'test'
+  ...
+# Subtest: guard failure at automatic old-flush entry wipes only the unqueued incoming ciphertext and permits a safe retry
+ok 53 - guard failure at automatic old-flush entry wipes only the unqueued incoming ciphertext and permits a safe retry
+  ---
+  duration_ms: 0.5013
+  type: 'test'
+  ...
+# Subtest: guard expiry after held old-pack commit retains that committed pack, rejects incoming acceptance and wipes both owned payloads
+ok 54 - guard expiry after held old-pack commit retains that committed pack, rejects incoming acceptance and wipes both owned payloads
+  ---
+  duration_ms: 0.493
+  type: 'test'
+  ...
+# Subtest: dispose is synchronous, clears owned queued ciphertext, leaves caller bytes intact and releases ownership
+ok 55 - dispose is synchronous, clears owned queued ciphertext, leaves caller bytes intact and releases ownership
+  ---
+  duration_ms: 0.4741
+  type: 'test'
+  ...
+# Subtest: v1 buffers multiple authenticated blobs with exact contiguous index/header rows
+ok 56 - v1 buffers multiple authenticated blobs with exact contiguous index/header rows
+  ---
+  duration_ms: 3.2657
+  type: 'test'
+  ...
+# Subtest: v2 buffers multiple authenticated blobs with exact contiguous index/header rows
+ok 57 - v2 buffers multiple authenticated blobs with exact contiguous index/header rows
+  ---
+  duration_ms: 0.9595
+  type: 'test'
+  ...
+# Subtest: pending deduplication is verified and caller memory cannot alter queued or committed data
+ok 58 - pending deduplication is verified and caller memory cannot alter queued or committed data
+  ---
+  duration_ms: 0.4855
+  type: 'test'
+  ...
+# Subtest: size and record boundaries split packs without a partial or empty header
+ok 59 - size and record boundaries split packs without a partial or empty header
+  ---
+  duration_ms: 1.0385
+  type: 'test'
+  ...
+# Subtest: failed commit poisons the writer and drops owned pending buffers without reissuing a commit
+ok 60 - failed commit poisons the writer and drops owned pending buffers without reissuing a commit
+  ---
+  duration_ms: 0.4759
+  type: 'test'
+  ...
+# Subtest: deadline/cancellation guard rejects before a pack commit and dispose releases pending state
+ok 61 - deadline/cancellation guard rejects before a pack commit and dispose releases pending state
+  ---
+  duration_ms: 0.2326
+  type: 'test'
+  ...
+# Subtest: data input types and 8 MiB bound reject before copying or committing
+ok 62 - data input types and 8 MiB bound reject before copying or committing
+  ---
+  duration_ms: 0.2225
+  type: 'test'
+  ...
+# Subtest: 4,096 record cap rolls over a small-payload pack independently of the byte target
+ok 63 - 4,096 record cap rolls over a small-payload pack independently of the byte target
+  ---
+  duration_ms: 121.165
+  type: 'test'
+  ...
+# Subtest: expired guard after committed pack preserves that pack and stops later buffer acceptance
+ok 64 - expired guard after committed pack preserves that pack and stops later buffer acceptance
+  ---
+  duration_ms: 0.4835
+  type: 'test'
+  ...
+1..64
+# tests 64
+# suites 0
+# pass 64
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 348845.1735

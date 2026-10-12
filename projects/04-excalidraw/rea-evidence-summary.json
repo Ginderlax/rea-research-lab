@@ -1,0 +1,727 @@
+{
+  "reaVersion": "6.4.0",
+  "generatedAt": "2026-10-12T11:18:09.892Z",
+  "coverage": "Focused extracted subset only; full shipped tarball retained locally. Static analysis does not establish runtime execution.",
+  "selectedFiles": [
+    {
+      "path": "getSceneVersion.js",
+      "sha256": "3681f480c14a0c220126ea02c3cebd7f841afaee35828271a47475764de7ed09"
+    },
+    {
+      "path": "hashElementsVersion.js",
+      "sha256": "6ef696fb8893d26cae09ce1af1acb09e6f84b97be20d79a6f126301eb6960ca2"
+    },
+    {
+      "path": "package.json",
+      "sha256": "ea898511eadd45924d613dc2ee04333ac64b4df7fa0257abaf7a11f3703f41aa"
+    },
+    {
+      "path": "sceneCoordsToViewportCoords.js",
+      "sha256": "1ca2e8de2873c19bcf45401a168fb38719bd08d36e55464fe0244a11d4efc044"
+    },
+    {
+      "path": "viewportCoordsToSceneCoords.js",
+      "sha256": "5be6fc8982e61788fac69addd29ed07e190e55f119369dd78fb8809fcf6abe74"
+    }
+  ],
+  "analysisEvidenceId": "ev_f88a929f367a0c12a8913ae852f1a62124290178035578b5de2a1cbf1b4dd383",
+  "summaryEvidenceId": "ev_8fe31420c584a23fd287adedf96c2d2f660927058ff530d44a14f33a91f0ece2",
+  "traceEvidenceId": "ev_163a91706a2adbce72f47a028f2062a34a4835762a38851d61779c5ecae114e3",
+  "semanticEvidenceId": "ev_4bb14053c61c47d8912d58add652ef77478720375f5273c4911fb916e049a02e",
+  "semanticTrace": {
+    "seedFunction": "Dn",
+    "seedNodeId": "jsrg_node_528fd7ebbe1687c2dbceb9b9afc3888e0765a0dab58f2232a32edce998a16223",
+    "seedKind": "parameter",
+    "direction": "forward-influence",
+    "status": "found",
+    "nodeCount": 2,
+    "relationCount": 1,
+    "unknownCount": 1,
+    "coverage": {
+      "status": "partial"
+    },
+    "summary": {
+      "total_seed_matches": 1,
+      "traversed_nodes": 2,
+      "traversed_relations": 1,
+      "traversed_functions": 1,
+      "traversed_modules": 1,
+      "relevant_unknowns": 1
+    },
+    "limitations": [
+      "Boundary extraction covers unshadowed JSON/global coercions plus parse and validation method candidates.",
+      "Child-process extraction covers asynchronous node:child_process creation, literal argv/env/stdio options, exit/error listeners, and kill signals.",
+      "Configuration extraction covers process.env, process.argv, node:fs reads, and direct logical defaults.",
+      "Event extraction covers EventEmitter-style literal registrations, removals, and dispatch candidates; dynamic names remain unknown.",
+      "Function fingerprints are static candidates; equal digests can remain ambiguous and do not prove behavioral equivalence.",
+      "Local data flow does not claim control-flow-sensitive reaching definitions or arbitrary dynamic property resolution.",
+      "Promise ownership covers explicit unshadowed Promise construction, static factories, aggregation, chaining, and await syntax only.",
+      "Relevant dynamic, unsupported, incomplete, or ambiguous semantics remain unknown.",
+      "Request extraction covers fetch, WebSocket, node:http/node:https construction, direct option fields, and exact local response consumers.",
+      "Resource extraction covers built-in filesystem/network acquisition and exact local close/destroy/end handles.",
+      "Semantic graph reachability is a static inference and does not prove runtime execution.",
+      "The semantic graph contains static syntax observations and conservative relationship candidates; it does not claim runtime execution.",
+      "Timer extraction covers global or node:timers scheduling and exact local-handle cancellation."
+    ]
+  },
+  "analysisArtifactDigest": "414aa9a828297282f0baf95a519b8e430456fbdbf2fecaab40549fbe8eb39841",
+  "statistics": {
+    "relevant_files": 5,
+    "nested_asar_containers": 0,
+    "text_bytes_read": 690,
+    "invalid_utf8_files": 0,
+    "parsed_javascript_files": 4,
+    "visited_ast_nodes": 200,
+    "findings": 4,
+    "modules": 0,
+    "parse_failures": 0
+  },
+  "semanticGraph": {
+    "graphId": "jsrg_58249fd0d851767bfc8a9a7d6df9ec6c61ec656ddbf4075a2638fd397527e7ea",
+    "nodes": 125,
+    "relations": 86,
+    "unknowns": 38,
+    "coverage": {
+      "status": "unknown",
+      "truncated": false,
+      "omitted_nodes": 0,
+      "omitted_relations": 0,
+      "limits": [],
+      "families": [
+        {
+          "family": "boundary",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "call-flow",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": [
+            "jsrg_unknown_4b4641d12d1368a16e7751f703c1a46c9fae1350b93d157924fcacdf72e4024c"
+          ]
+        },
+        {
+          "family": "child-process",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "closure",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "configuration",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "data-flow",
+          "status": "partial",
+          "retained_relations": 79,
+          "omitted_relations": 0,
+          "unknown_ids": [
+            "jsrg_unknown_011994c64f201c85282f9a036755bbbcf349aea04a53ef64611c8f840923723f",
+            "jsrg_unknown_05d1f82555ab22ac195e08bea47bd85fe0bf328bce6a7449b308dead9e90cbd2",
+            "jsrg_unknown_1637c467be76b7475b8670a6f6b86df4da254190fab8636e771e85a12cbb5352",
+            "jsrg_unknown_2db2e7065e9c5afd12d8fc491a3f344551fb5aa6c25ba8e392703271cde2bf7a",
+            "jsrg_unknown_357c4e491c586716c1dd3facef376386090b9023cbe4de7d34a57ff4ba53412e",
+            "jsrg_unknown_3a3f826e59b9dd352bfaf5727c0fc7f992d7a657a380b10aa155f3b625f8778a",
+            "jsrg_unknown_3b50717915786753632ad3c8fa08c27e3dcfa1ac2406a8681569fd30ea15ec4f",
+            "jsrg_unknown_574049fabd4ec75652c60a6151e681cbf3650a409a3a7cf5dfb12985ffb95ca0",
+            "jsrg_unknown_585b54f74d1fddfb2b6c49e3bd20287510e3d02765e3c7b914d02c38c64594f5",
+            "jsrg_unknown_5caa5f16c8e316166b1aa3ffbbdd222f43634072885eb46f0b896877319f80a7",
+            "jsrg_unknown_627fd84fd36875577742b1f91cb1679b944846703312eee714b23fbad3d6e6c9",
+            "jsrg_unknown_6a38f8eda8d78b5cc36626f16f42e5fde15f3a8a3e34e189148058330b60741f",
+            "jsrg_unknown_76bbd1dd32004aa0edd56144454702a955b4d3bc0432fbc30cfe715d6f1606ab",
+            "jsrg_unknown_848efb7c999d750d2dbd5474c74f079e65ffe5a6ce1056567f154b43cf51834e",
+            "jsrg_unknown_8c8f47a1f71e35f30d12752792f2fba99d30c0f3fbd583218d1cf97f7a90ca2a",
+            "jsrg_unknown_8dc9ed61127b02842af809a30c4bb19eed8325d02cccff27ed8e3b916c48e4a8",
+            "jsrg_unknown_95588e5591b94288716dc316ddf529fc8fe7ced4510ceb8f1a59bb93d0ffaa25",
+            "jsrg_unknown_a2b89a030cf2fb9f2ee178c879e67e573945ef35d95b6b48b8c7012ea29c84b9",
+            "jsrg_unknown_a8f0c11b83b3961a63b7495599d2a74a34f4bd32d36eeaf4f48b0136271c1209",
+            "jsrg_unknown_b776a353a3b29ce6bf24253abb59633ff68d4e3a9697b82f3436457758ceff7c",
+            "jsrg_unknown_b85d6b2a11a48e23769802d8c5ec4fbfdb41298922b8830718229a705e94e777",
+            "jsrg_unknown_be2cecd9ddc7195f75196fbf6e6069317ca325fce1096d50ca876007bb338dcc",
+            "jsrg_unknown_c6212a06626527a7d7cc4babd2b47bac472cff6a8ef75b0ce3b826051267125b",
+            "jsrg_unknown_d0136d441ff6ab48ab5e840d969ad6a09e543efc366d8c7954941d9f7f9b82a8",
+            "jsrg_unknown_dd3c1087aa07810d6e184579daa112b5ab84a2cb56cc649b695b247c97ad7233",
+            "jsrg_unknown_de45d8e01212b72b8ce6b39cbbd5bf63b6aa3a7ed681ffec4c1c9331cebc902d",
+            "jsrg_unknown_f0ebde0942ad48e9e7abf8ae0ac6a5b0203e94cf4c32fbf58ce3f832de3edda7",
+            "jsrg_unknown_faa98fee7c44c313755a0aa098c41c8c3978bcdebda4957a56611e2fa8c05abe"
+          ]
+        },
+        {
+          "family": "event",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "object-flow",
+          "status": "partial",
+          "retained_relations": 7,
+          "omitted_relations": 0,
+          "unknown_ids": [
+            "jsrg_unknown_050d9f357b879e3c4827b38320361800fa4fa636ed9bb8874e2494facbdadaa3",
+            "jsrg_unknown_160d4ef527e144ba7eb6c51271925471fbf6c6c635b8889cb675821bcce31553",
+            "jsrg_unknown_16204d1bbcb5080348e075e46156983dafdd958052cb9e72d5a92dfc2c32aea1",
+            "jsrg_unknown_26c1511dbaa6f61bd14de17a8a186034be8244c9ee7c25a6060e8c2432b12c24",
+            "jsrg_unknown_321d8ff870f343ac2a429342b603314864ab2a99a32977368f3b30472c3e1e06",
+            "jsrg_unknown_41f00dfe1e24cd22db5e6f472e4e105265469a52b45ff700aec864abba1b0b32",
+            "jsrg_unknown_788dd53859bf8877508a3ba528f4c698548663359933e231870c7f13559a3c12",
+            "jsrg_unknown_b6a78dcd02d87abaeda6dbea3b429bd8a769e2d7f6c412d93d16d59fc0d4f74c",
+            "jsrg_unknown_fa7ff441377d67a5fd6d3c9a6d683d4902c5808519f618c741ec5f3e3e0c5f46"
+          ]
+        },
+        {
+          "family": "promise-ownership",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "request",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "resource-lifecycle",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "timer",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        }
+      ]
+    },
+    "functionNodes": [
+      {
+        "id": "jsrg_node_03f0434569cad9e0ddef6f7293bef40a265794639da7ae281cb8627306265390",
+        "label": "nY",
+        "location": {
+          "kind": "source-range",
+          "source": "getSceneVersion.js",
+          "start": {
+            "line": 1,
+            "column": 7
+          },
+          "end": {
+            "line": 1,
+            "column": 40
+          }
+        }
+      },
+      {
+        "id": "jsrg_node_3a4b31169f425b370889e200be42da93ecd264883d94b431521571b5ec0f34cc",
+        "label": "rY",
+        "location": {
+          "kind": "source-range",
+          "source": "hashElementsVersion.js",
+          "start": {
+            "line": 1,
+            "column": 7
+          },
+          "end": {
+            "line": 1,
+            "column": 91
+          }
+        }
+      },
+      {
+        "id": "jsrg_node_47f5e3e1e780d29597d01a63a552cacca469b8e5aea38d2554b85db8376935dd",
+        "label": null,
+        "location": {
+          "kind": "source-range",
+          "source": "getSceneVersion.js",
+          "start": {
+            "line": 1,
+            "column": 19
+          },
+          "end": {
+            "line": 1,
+            "column": 37
+          }
+        }
+      },
+      {
+        "id": "jsrg_node_50de61ce047861d9ae508de29b9d8f434c0d63a455c6e1d719bf2053a843e249",
+        "label": "Dn",
+        "location": {
+          "kind": "source-range",
+          "source": "viewportCoordsToSceneCoords.js",
+          "start": {
+            "line": 1,
+            "column": 7
+          },
+          "end": {
+            "line": 1,
+            "column": 143
+          }
+        }
+      },
+      {
+        "id": "jsrg_node_aa4627dd4e35aef538054b43bef294185991359b653c4e2185e23ef6271bc65e",
+        "label": "ta",
+        "location": {
+          "kind": "source-range",
+          "source": "sceneCoordsToViewportCoords.js",
+          "start": {
+            "line": 1,
+            "column": 7
+          },
+          "end": {
+            "line": 1,
+            "column": 141
+          }
+        }
+      }
+    ]
+  },
+  "summary": {
+    "input_path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\projects\\04-excalidraw\\artifacts\\analysis-input",
+    "format": "directory",
+    "root_artifact_sha256": "414aa9a828297282f0baf95a519b8e430456fbdbf2fecaab40549fbe8eb39841",
+    "statistics": {
+      "relevant_files": 5,
+      "nested_asar_containers": 0,
+      "text_bytes_read": 690,
+      "invalid_utf8_files": 0,
+      "parsed_javascript_files": 4,
+      "visited_ast_nodes": 200,
+      "findings": 4,
+      "modules": 0,
+      "parse_failures": 0
+    },
+    "electron": {
+      "browser_windows": 0,
+      "explicit_web_preferences": 0,
+      "preload_entrypoints": 0,
+      "context_bridge_apis": 0,
+      "exposed_api_members": 0,
+      "ipc": {
+        "operations": 0,
+        "literal_channels": 0,
+        "dynamic_channel_operations": 0,
+        "renderer_transmissions": 0,
+        "renderer_listeners": 0,
+        "main_handlers": 0,
+        "paired_renderer_transmissions": 0,
+        "ambiguous_renderer_transmissions": 0,
+        "unpaired_literal_renderer_transmissions": 0
+      },
+      "sender_validation_observations": 0,
+      "utility_processes": 0,
+      "resolved_utility_entrypoints": 0,
+      "native_addon_bindings": 0,
+      "resolved_native_addon_bindings": 0
+    },
+    "coverage": {
+      "application": {
+        "status": "complete",
+        "truncated": false,
+        "omitted_count": 0,
+        "limits": []
+      },
+      "semantic": {
+        "status": "unknown",
+        "truncated": false,
+        "omitted_nodes": 0,
+        "omitted_relations": 0,
+        "limits": [],
+        "families": [
+          {
+            "family": "boundary",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "call-flow",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 1
+          },
+          {
+            "family": "child-process",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "closure",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "configuration",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "data-flow",
+            "status": "partial",
+            "retained_relations": 79,
+            "omitted_relations": 0,
+            "unknown_count": 28
+          },
+          {
+            "family": "event",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "object-flow",
+            "status": "partial",
+            "retained_relations": 7,
+            "omitted_relations": 0,
+            "unknown_count": 9
+          },
+          {
+            "family": "promise-ownership",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "request",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "resource-lifecycle",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "timer",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          }
+        ]
+      },
+      "application_unknowns": 0,
+      "semantic_unknowns": 38
+    },
+    "limitation_count": 5
+  },
+  "trace": {
+    "seed": {
+      "kind": "module",
+      "value": "viewportCoordsToSceneCoords.js",
+      "match": null,
+      "case_sensitive": false
+    },
+    "seedMatches": [
+      {
+        "node_id": "jag_node_78a118ae417f82dfe914e5d093b59a17d6c4fe7b81f1d17a318fec0731d341e2",
+        "kind": "javascript-asset",
+        "basis": "label",
+        "field": "observations[0].label"
+      },
+      {
+        "node_id": "jag_node_81ee1189f3ff632a93c9ffad1abbbb6c057f2884aa9a3f9f6f79d82daa016e74",
+        "kind": "javascript-module",
+        "basis": "label",
+        "field": "observations[0].label"
+      }
+    ],
+    "coverage": {
+      "status": "complete-within-source",
+      "source_graph_status": "complete",
+      "total_seed_matches": 2
+    },
+    "keys": [
+      "trace_id",
+      "source_evidence_id",
+      "source_graph_id",
+      "seed",
+      "direction",
+      "seed_matches",
+      "graph",
+      "paths",
+      "native_handoffs",
+      "summary",
+      "coverage",
+      "evidence_links",
+      "limitations"
+    ]
+  },
+  "moduleNodes": [
+    {
+      "nodeId": "jag_node_09c07e980396175d7c87a412a9736410f045c91ae730946d7b046acdd4ce3a59",
+      "observations": [
+        {
+          "label": "sceneCoordsToViewportCoords.js:sceneCoordsToViewportCoords",
+          "location": {
+            "kind": "source-range",
+            "source": "sceneCoordsToViewportCoords.js",
+            "start": {
+              "line": 2,
+              "column": 9
+            },
+            "end": {
+              "line": 2,
+              "column": 42
+            }
+          },
+          "semanticRole": "export-binding"
+        },
+        {
+          "label": "sceneCoordsToViewportCoords.js:sceneCoordsToViewportCoords:return-shapes",
+          "location": {
+            "kind": "source-range",
+            "source": "sceneCoordsToViewportCoords.js",
+            "start": {
+              "line": 1,
+              "column": 7
+            },
+            "end": {
+              "line": 1,
+              "column": 141
+            }
+          },
+          "semanticRole": "export-return-shapes"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_4af0a95e542962c1c716f068753bf5388706e5f6e3b8cf11f8ee281ed91a4d82",
+      "observations": [
+        {
+          "label": "getSceneVersion.js:getSceneVersion",
+          "location": {
+            "kind": "source-range",
+            "source": "getSceneVersion.js",
+            "start": {
+              "line": 2,
+              "column": 9
+            },
+            "end": {
+              "line": 2,
+              "column": 30
+            }
+          },
+          "semanticRole": "export-binding"
+        },
+        {
+          "label": "getSceneVersion.js:getSceneVersion:return-shapes",
+          "location": {
+            "kind": "source-range",
+            "source": "getSceneVersion.js",
+            "start": {
+              "line": 1,
+              "column": 7
+            },
+            "end": {
+              "line": 1,
+              "column": 40
+            }
+          },
+          "semanticRole": "export-return-shapes"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_5a061385335c1947988fc89955e90b7857afe65e17b45e6a2d6eb1586eea4d78",
+      "observations": [
+        {
+          "label": "getSceneVersion.js",
+          "location": {
+            "kind": "source-range",
+            "source": "getSceneVersion.js",
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 3,
+              "column": 0
+            }
+          },
+          "semanticRole": "source-module"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_7fa8237a2c3269fa5b0c9e1241a2cfea5ccb548e07a354c54b4ad8c19e02944a",
+      "observations": [
+        {
+          "label": "hashElementsVersion.js",
+          "location": {
+            "kind": "source-range",
+            "source": "hashElementsVersion.js",
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 3,
+              "column": 0
+            }
+          },
+          "semanticRole": "source-module"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_81ee1189f3ff632a93c9ffad1abbbb6c057f2884aa9a3f9f6f79d82daa016e74",
+      "observations": [
+        {
+          "label": "viewportCoordsToSceneCoords.js",
+          "location": {
+            "kind": "source-range",
+            "source": "viewportCoordsToSceneCoords.js",
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 3,
+              "column": 0
+            }
+          },
+          "semanticRole": "source-module"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_8f1e8d74c5b442c320403f3a5acf7b586e4c6a4a39bde62740020dfd60bed39c",
+      "observations": [
+        {
+          "label": "sceneCoordsToViewportCoords.js",
+          "location": {
+            "kind": "source-range",
+            "source": "sceneCoordsToViewportCoords.js",
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 3,
+              "column": 0
+            }
+          },
+          "semanticRole": "source-module"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_de6f00a8190dcdc0a3fcf499cfd3034e207f0c62795da3573b932d241a97c8da",
+      "observations": [
+        {
+          "label": "hashElementsVersion.js:hashElementsVersion",
+          "location": {
+            "kind": "source-range",
+            "source": "hashElementsVersion.js",
+            "start": {
+              "line": 2,
+              "column": 9
+            },
+            "end": {
+              "line": 2,
+              "column": 34
+            }
+          },
+          "semanticRole": "export-binding"
+        },
+        {
+          "label": "hashElementsVersion.js:hashElementsVersion:return-shapes",
+          "location": {
+            "kind": "source-range",
+            "source": "hashElementsVersion.js",
+            "start": {
+              "line": 1,
+              "column": 7
+            },
+            "end": {
+              "line": 1,
+              "column": 91
+            }
+          },
+          "semanticRole": "export-return-shapes"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_f9ecd74466a9ebbaa4ed96b5744cfb85266c79f19e421870e13facf8bd5c0ae3",
+      "observations": [
+        {
+          "label": "viewportCoordsToSceneCoords.js:viewportCoordsToSceneCoords:return-shapes",
+          "location": {
+            "kind": "source-range",
+            "source": "viewportCoordsToSceneCoords.js",
+            "start": {
+              "line": 1,
+              "column": 7
+            },
+            "end": {
+              "line": 1,
+              "column": 143
+            }
+          },
+          "semanticRole": "export-return-shapes"
+        },
+        {
+          "label": "viewportCoordsToSceneCoords.js:viewportCoordsToSceneCoords",
+          "location": {
+            "kind": "source-range",
+            "source": "viewportCoordsToSceneCoords.js",
+            "start": {
+              "line": 2,
+              "column": 9
+            },
+            "end": {
+              "line": 2,
+              "column": 42
+            }
+          },
+          "semanticRole": "export-binding"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+    "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+    "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+    "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+    "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code."
+  ]
+}

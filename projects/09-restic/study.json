@@ -1,0 +1,99 @@
+{
+  "id": "09-restic",
+  "product": "restic",
+  "version": "v0.19.1",
+  "status": "completed-bounded-study",
+  "component": "Small-file plaintext content addressing, duplicate/rename identity and stored-object hashes",
+  "report": "REPORT.md",
+  "claims": "CLAIMS.md",
+  "artifact": {
+    "product": "restic",
+    "version": "v0.19.1",
+    "release_url": "https://github.com/restic/restic/releases/tag/v0.19.1",
+    "asset_url": "https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_windows_amd64.zip",
+    "asset_bytes": 11237567,
+    "asset_sha256": "da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d",
+    "publisher_digest": "sha256:da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d",
+    "publisher_digest_matched": true,
+    "executable_relative_path": "artifacts/unpacked/restic_0.19.1_windows_amd64.exe",
+    "executable_bytes": 31660032,
+    "executable_sha256": "b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830",
+    "acquired_date": "2026-10-12",
+    "rea_source_commit": "abc8c6dadf4f11b67de1cc2ee96bb55047416d71",
+    "rea_native_package": "6.4.0"
+  },
+  "method": "source-assisted reconstruction with original released executable as behavioral oracle",
+  "rea": {
+    "evidence_id": "ev_99d189902e8214855fb03563672ed97d01e7efada64885131ee6875bba92788f",
+    "operation": "inspect_go_binary",
+    "provider": {
+      "id": "go-build-info",
+      "name": "REA Go build-information reader",
+      "version": "1"
+    },
+    "artifact_sha256": "b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830",
+    "authority": "shipped-artifact",
+    "confidence": "observed",
+    "build_header_offset": 30188544,
+    "go_version_claim": "go1.26.4",
+    "module_path_claim": "github.com/restic/restic/cmd/restic",
+    "main_module": {
+      "path": "github.com/restic/restic",
+      "version": "(devel)",
+      "sum": "",
+      "replacement": null
+    },
+    "embedded_dependency_records": 80,
+    "metadata_parse_complete": true,
+    "locations": [
+      {
+        "kind": "file-offset-range",
+        "start": 30188544,
+        "end": 30188576
+      }
+    ],
+    "limitations": [
+      "Embedded build metadata is observed file content, not proof of compiler identity, dependency authenticity or runtime behavior.",
+      "Only Go build information is inspected; function names, source mappings, type metadata and decompiled code are not recovered.",
+      "Resource guards bound stable artifact reads to 256 MiB, aggregate embedded strings to 1 MiB, structural table decoding to 16 MiB and complete metadata payloads to 8 MiB; these are not operating-system memory or CPU limits."
+    ],
+    "source_assisted": true,
+    "native_analysis": {
+      "status": "not-claimed"
+    }
+  },
+  "results": {
+    "differential_comparisons": 122,
+    "file_observations": 122,
+    "snapshots": 3,
+    "size_assertions": 122,
+    "duplicate_reference_pair_checks": 5,
+    "changed_content_id_checks": 1,
+    "renamed_content_id_checks": 1,
+    "plaintext_tree_id_checks": 3,
+    "stored_object_id_checks": 12,
+    "original_integrity_check_passed": true,
+    "mismatches": 0,
+    "record": "results.json",
+    "count_unit": "Per-file content-ID list, repeated across snapshots; additional checks separately counted"
+  },
+  "reproduction": {
+    "acquire": "node acquire.mjs",
+    "test": "node reproduce.mjs",
+    "analyze": "node analyze.mjs",
+    "demo": "node reconstruction.mjs",
+    "required_host": "Windows x64, Node.js 24+",
+    "fresh_outputs": "artifacts/replays/"
+  },
+  "limitations": [
+    "Content-defined chunking at or above 512 KiB",
+    "Pack encryption or index reconstruction",
+    "Large-file restore compatibility",
+    "Remote backends",
+    "User documents or repositories",
+    "Compression behavior and universal equivalence"
+  ],
+  "upstream_license": "BSD-2-Clause",
+  "source_reference_manifest": "reference-manifest.json",
+  "original_artifact_and_full_evidence_location": "artifacts/ (retained locally, excluded from Git)"
+}

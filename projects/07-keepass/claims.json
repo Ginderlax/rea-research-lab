@@ -1,0 +1,49 @@
+{
+  "classification": "conservative source-assisted artifact and oracle study; not clean-room",
+  "claims": [
+    {
+      "id": "K01",
+      "claim": "The analyzed executable is KeePass assembly 2.61.1.0, bound to the recorded SHA256 and MVID.",
+      "status": "observed-static",
+      "evidence": ["evidence/managed-identity.json", "artifact-manifest.json"],
+      "evidence_id": "ev_6fc1c6e422a7043ac0b762edb358ebfa3f7e54939a5f15ed90601c8940300f53"
+    },
+    {
+      "id": "K02",
+      "claim": "REA decoded all five method bodies in the selected HmacOtp declaring type with complete coverage for that selection.",
+      "status": "observed-static",
+      "evidence": ["evidence/managed-hmacotp.json"],
+      "evidence_id": "ev_80db52861a29dee461a0931afbaafbf4ad1e43ee4a49e33d1345b71f8244b78b",
+      "scope": "unselected declaring types and external implementations excluded"
+    },
+    {
+      "id": "K03",
+      "claim": "Null or empty algorithm labels default to HMAC-SHA-1; labels are otherwise case-sensitive; digit count zero or greater than eight and unsupported algorithms return an empty string.",
+      "status": "static-and-execution-supported",
+      "evidence": ["evidence/hmacotp-cil.txt", "evidence/test-cases.json", "evidence/oracle-results.json"],
+      "coordinate": "method 0x0600222a, early validation and algorithm dispatch"
+    },
+    {
+      "id": "K04",
+      "claim": "The explicit offset is used only when 0 <= offset < digest_length - 4; equality at the upper bound falls back to dynamic truncation.",
+      "status": "static-and-execution-supported",
+      "evidence": ["evidence/hmacotp-cil.txt", "evidence/oracle-results.json"],
+      "coordinate": "method 0x0600222a, IL_00CB through IL_00DB"
+    },
+    {
+      "id": "K05",
+      "claim": "The bounded Python reconstruction agrees with all 485 captured original calls and the ten RFC 4226 known answers within that corpus.",
+      "status": "finite-differential-result",
+      "evidence": ["evidence/verification.json", "evidence/oracle-results.json", "reproduce.py"],
+      "scope": "485 literal distinct inputs; 430 distinct under the explicitly documented alias normalization; no blind or independent statistical trial claim"
+    },
+    {
+      "id": "K06",
+      "claim": "A full unrestricted member request exceeded the 64 MiB representation budget; it does not provide full member coverage.",
+      "status": "observed-limitation",
+      "evidence": ["evidence/managed-members-full-failure.json"],
+      "evidence_id": "ev_232bf2e0677cfc2283adf8352e4e751dc1d055fd8c882a6ed88ec310dee108c4"
+    }
+  ],
+  "excluded_claims": ["whole KeePass reconstruction", "vault encryption or database security verification", "formal equivalence", "independent clean-room protocol", "automatic reconstruction by REA", "current-clock and negative-time equivalence", "security vulnerability from observed compatibility boundaries"]
+}

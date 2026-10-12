@@ -1,0 +1,40 @@
+import {readFile,writeFile,mkdir,copyFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
+import {join} from 'node:path';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {replayOutput} from './replay-output.mjs';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const output=await replayOutput(root,'analysis');
+await mkdir(join(output,'results'),{recursive:true});
+const rea=process.env.REA_CLI || 'C:/Users/evanh/Documents/Codex/2026-10-12/go/outputs/rea-backup-2026-10-12/runtime/node_modules/rea-agents/scripts/rea.mjs';
+const scope=JSON.parse(await readFile(join(root,'scope.json')));
+for(const file of scope.included){
+const source=join(root,'artifacts/package',file.path),bytes=await readFile(source);
+if(createHash('sha256').update(bytes).digest('hex')!==file.sha256)throw new Error('Focused bytes differ: '+file.path);
+const destination=join(output,'focus',file.path);await mkdir(join(destination,'..'),{recursive:true});await copyFile(source,destination);
+}
+await mkdir(join(output,'evidence'),{recursive:true});
+function run(command,input,out){const bytes=execFileSync(process.execPath,[rea,command,input,'--format','json'],{maxBuffer:160*1024*1024});return writeFile(join(output,'evidence',out),bytes).then(()=>JSON.parse(bytes));}
+const envelope=await run('analyze-javascript-application',join(output,'focus'),'application.json');
+const evidence=envelope.evidence_id?envelope:envelope.evidence || envelope.data;
+if(!evidence?.evidence_id)throw new Error('Unknown REA envelope: '+Object.keys(envelope));
+const summaryInput={source:{kind:'inline',evidence},view:{kind:'summary'}};
+await writeFile(join(output,'evidence/summary-input.json'),JSON.stringify(summaryInput));
+const summary=await run('inspect-analysis-view',join(output,'evidence/summary-input.json'),'summary.json');
+const traceInput={application:evidence,seed:{kind:'module',value:scope.seed,match:'exact'},direction:'outgoing'};
+await writeFile(join(output,'evidence/trace-input.json'),JSON.stringify(traceInput));
+const trace=await run('trace-application-feature',join(output,'evidence/trace-input.json'),'trace.json');
+const ne=evidence.normalized_result;
+const moduleNode=ne.graph.nodes.find(n=>n.kind==='javascript-module' && n.observations.some(o=>o.label===scope.seed));
+const itemInput={source:{kind:'inline',evidence},view:{kind:'item',collection:'modules',selector:{node_id:moduleNode.node_id}}};
+await writeFile(join(output,'evidence/module-input.json'),JSON.stringify(itemInput));
+const item=await run('inspect-analysis-view',join(output,'evidence/module-input.json'),'module.json');
+const targetFunction=ne.semantic_graph.nodes.find(n=>n.kind==='function' && n.label==='doStandardCalcs');
+if(!targetFunction)throw new Error('Recovered feature function missing');
+const semanticInput={application:evidence,query:{seed:{kind:'semantic-node',node_id:targetFunction.node_id},direction:'forward-influence'}};
+await writeFile(join(output,'evidence/semantic-input.json'),JSON.stringify(semanticInput));
+const semanticTrace=await run('trace-javascript-semantics',join(output,'evidence/semantic-input.json'),'semantic-trace.json');
+const observations=ne.graph.nodes.flatMap(n=>n.observations.map(o=>({node_id:n.node_id,kind:n.kind,observation_id:o.observation_id,label:o.label,properties:o.properties,authority:o.evidence.authority,location:o.evidence.location,coverage:o.evidence.coverage}))).filter(o=>/export-binding|export-return|callable|local-binding/.test(o.properties.semantic_role || ''));
+await writeFile(join(output,'results/rea-evidence.json'),JSON.stringify({application_evidence_id:evidence.evidence_id,provider:evidence.provider,subject:evidence.subject,statistics:ne.statistics,semantic_coverage:ne.semantic_graph.coverage,semantic_nodes:ne.semantic_graph.nodes.length,semantic_relations:ne.semantic_graph.relations.length,semantic_unknowns:ne.semantic_graph.unknowns.length,graph_nodes:ne.graph.nodes.length,graph_edges:ne.graph.edges.length,summary_evidence_id:summary.evidence_id || summary.evidence?.evidence_id,trace_evidence_id:trace.evidence_id || trace.evidence?.evidence_id,module_evidence_id:item.evidence_id,semantic_trace_evidence_id:semanticTrace.evidence_id,featureFunction:targetFunction,functions:ne.semantic_graph.nodes.filter(n=>n.kind==='function' && n.label),observations},null,2)+'\n');
+console.log(JSON.stringify({project:scope.package,evidence_id:evidence.evidence_id,nodes:ne.graph.nodes.length,edges:ne.graph.edges.length,observations:observations.length,summaryKeys:Object.keys(summary),traceKeys:Object.keys(trace)}));

@@ -1,0 +1,825 @@
+{
+  "reaVersion": "6.4.0",
+  "generatedAt": "2026-10-12T11:20:08.440Z",
+  "coverage": "Focused extracted subset only; full shipped tarball retained locally. Static analysis does not establish runtime execution.",
+  "selectedFiles": [
+    {
+      "path": "urlUtils.js",
+      "sha256": "06072f09ef26b92ed6625dd4457be6a76e34cb71e7fd446401a8d19f89a50ae6"
+    },
+    {
+      "path": "headerAnchor.js",
+      "sha256": "cb043c965a0b1e1daf611fd1d6cf768e5c3c692fe0b236a57fe685a0aa8f27e3"
+    },
+    {
+      "path": "package.json",
+      "sha256": "877a5478f87ce44d3ae6b9420c02ac07e6dc7dd651f0b25a95f4229d47ad5e71"
+    }
+  ],
+  "analysisEvidenceId": "ev_ef3bbb9acf96a74c7e45f1fa234877c5eb8d46ee4910a46cfdb8567c29f404c7",
+  "summaryEvidenceId": "ev_acd4e728203eb20c11e96a0256aba2de2af7f9f4ea51ed80d969fda0f0fa31fd",
+  "traceEvidenceId": "ev_6225df352cf39a70ac5bbdb9174481d9fb552b50643af464109db6983dd7a4c6",
+  "semanticEvidenceId": "ev_eaa2d434e284964336b96f511fdcdb941513c5ad39ec7cdad566c9fba295f077",
+  "semanticTrace": {
+    "seedFunction": "parseResourceUrl",
+    "seedNodeId": "jsrg_node_2ae7131fcaba4c7d2e2a93d6b42e2b26e46a5992dfe562cc3581b672e4829eeb",
+    "seedKind": "parameter",
+    "direction": "forward-influence",
+    "status": "found",
+    "nodeCount": 4,
+    "relationCount": 3,
+    "unknownCount": 1,
+    "coverage": {
+      "status": "partial"
+    },
+    "summary": {
+      "total_seed_matches": 1,
+      "traversed_nodes": 4,
+      "traversed_relations": 3,
+      "traversed_functions": 1,
+      "traversed_modules": 1,
+      "relevant_unknowns": 1
+    },
+    "limitations": [
+      "Boundary extraction covers unshadowed JSON/global coercions plus parse and validation method candidates.",
+      "Child-process extraction covers asynchronous node:child_process creation, literal argv/env/stdio options, exit/error listeners, and kill signals.",
+      "Configuration extraction covers process.env, process.argv, node:fs reads, and direct logical defaults.",
+      "Event extraction covers EventEmitter-style literal registrations, removals, and dispatch candidates; dynamic names remain unknown.",
+      "Function fingerprints are static candidates; equal digests can remain ambiguous and do not prove behavioral equivalence.",
+      "Local data flow does not claim control-flow-sensitive reaching definitions or arbitrary dynamic property resolution.",
+      "Promise ownership covers explicit unshadowed Promise construction, static factories, aggregation, chaining, and await syntax only.",
+      "Relevant dynamic, unsupported, incomplete, or ambiguous semantics remain unknown.",
+      "Request extraction covers fetch, WebSocket, node:http/node:https construction, direct option fields, and exact local response consumers.",
+      "Resource extraction covers built-in filesystem/network acquisition and exact local close/destroy/end handles.",
+      "Semantic graph reachability is a static inference and does not prove runtime execution.",
+      "The semantic graph contains static syntax observations and conservative relationship candidates; it does not claim runtime execution.",
+      "Timer extraction covers global or node:timers scheduling and exact local-handle cancellation."
+    ]
+  },
+  "analysisArtifactDigest": "b6d715e39c1157ad52c4bbf914fc84baf1eeb86d9456cfbf80e9a0bab09253f9",
+  "statistics": {
+    "relevant_files": 3,
+    "nested_asar_containers": 0,
+    "text_bytes_read": 6092,
+    "invalid_utf8_files": 0,
+    "parsed_javascript_files": 2,
+    "visited_ast_nodes": 512,
+    "findings": 9,
+    "modules": 0,
+    "parse_failures": 0
+  },
+  "semanticGraph": {
+    "graphId": "jsrg_60d5a0d19f84f34d19132effa2d0e764307774e996d0061be8a3c2a017e89974",
+    "nodes": 339,
+    "relations": 293,
+    "unknowns": 106,
+    "coverage": {
+      "status": "unknown",
+      "truncated": false,
+      "omitted_nodes": 0,
+      "omitted_relations": 0,
+      "limits": [],
+      "families": [
+        {
+          "family": "boundary",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "call-flow",
+          "status": "partial",
+          "retained_relations": 7,
+          "omitted_relations": 0,
+          "unknown_ids": [
+            "jsrg_unknown_02298afc25f70c9c1a8b56de0e1748721ed0cbeb2762d687623befc7c1ab6713",
+            "jsrg_unknown_033facc3a1a6355201978ff016d6dfd5746413d034a085ff147732bbccf23549",
+            "jsrg_unknown_0539280a01914791cd93d62d6f132952c653e7d23177b87570b12ed720eb1b9b",
+            "jsrg_unknown_0be417d72838701de407b91c55b51e027192d7f6a3a1edaadf003316de6b2121",
+            "jsrg_unknown_2ce450e5bec809f7425a0ca696c533d8b2fe4481b0eb7637deecd10c25b9f084",
+            "jsrg_unknown_30b0d8daef20eab634158d61520da29f0db92abe7560099795152ea4d0e564a3",
+            "jsrg_unknown_42f005ecf8a24907618c792dc4a3876936cac9370d5f0e9548c27c70acc7d1d1",
+            "jsrg_unknown_4487e2695c6dd4a9ccda4e08531bbfd7ded70b24ba65499f76342d116cee09e2",
+            "jsrg_unknown_4c46e51fcd30580d0dacfe8e64f099499707e9826ef937079584e54157d2a366",
+            "jsrg_unknown_565c6cb65fbc33cbacf4c218d2771dd751396325598fade078a92d551b8afa47",
+            "jsrg_unknown_5d432b69c7724ce5025e4f842b157ddb344c105fdffa142a5321895597964745",
+            "jsrg_unknown_7e753cec3fd078785faef871c2191a0c125433641aacae21ca37f6592ffa3d6a",
+            "jsrg_unknown_80e85a30093c2b9648ada65b6a5309464fd8ea7bbb2344ba8259699023305cc3",
+            "jsrg_unknown_873504b284f14c1a6a4e3cedd6c0ae2067519a02632f6efd8d7d5898c1633843",
+            "jsrg_unknown_9e68c7f5e3e476cacbdc6212c9fa56e4bd24351ef3f4a6ae97eda1456e25926c",
+            "jsrg_unknown_afa5724b616da0c7acbe31427ed8da80f1e2648ed1b807e6ddfe5f198922e700",
+            "jsrg_unknown_b623fdc5659842869aeede60aa3cc12ee48d9eaaf34bde8a7efcec9e519c4975",
+            "jsrg_unknown_b95b48af742af4ca14de0f5ebd0e66d59677eced649c452c2c6c3851e54f2eb8",
+            "jsrg_unknown_beae300070e934d1ae2151b3c683a079775838190cc326e1e2d1cf4b3e8523a0",
+            "jsrg_unknown_cabcbba4cfabcaf13c648860b1d9d4bd31995201de67d53483c1b59df37e695c",
+            "jsrg_unknown_f985aa4297080dcbd14c80379f9c88b113fadbf7346cacf727381fb5067b2a9b",
+            "jsrg_unknown_faf90f618ce782f631a0d92f241bfeee60b0e458705f1f179f6188d68f46abf3",
+            "jsrg_unknown_fe6579eaf51ee59c2ef74b2b2b1fdc43d614630a0839f83aae6b09b0936a613e"
+          ]
+        },
+        {
+          "family": "child-process",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "closure",
+          "status": "partial",
+          "retained_relations": 5,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "configuration",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "data-flow",
+          "status": "partial",
+          "retained_relations": 252,
+          "omitted_relations": 0,
+          "unknown_ids": [
+            "jsrg_unknown_0b272ad553c027b363ac68ced51f99a0c792e728e346e17ebad309a4b02122ef",
+            "jsrg_unknown_0c7a2067549f480311e9fe53c451161ed9d44bc8ebbb2cec5310883661529769",
+            "jsrg_unknown_0dd1a6df5716e572d8481135c4f634173e1a39c440a22fcdc7f72c229771d365",
+            "jsrg_unknown_1ce9a8a964d3ec56b89cc2ca470342162bbd78093f4039628deca1a520c2dd9f",
+            "jsrg_unknown_3453e80ccc690dcd3cb55df03da873c9f4308ae8add223ec38bbb3b4a68dbe0d",
+            "jsrg_unknown_3768bce82352bf65eef5ccfddb94c66ed95c5af3c7367c7383700a4697a147c2",
+            "jsrg_unknown_3be6a5d4dc0fc4416ea1d8da9d71fcfc7837531d73d0d5512ed0e409107d6861",
+            "jsrg_unknown_3d6c3379286e233db175fcfa06c5882f2e5808e035217034245dd214618f720d",
+            "jsrg_unknown_49a15b81af34a8166dac53d50aaec697c0d6bf79c337331fe116dc93302dbcbe",
+            "jsrg_unknown_49bd53b1594e365bb9e5884434d7f0c3ef9cedb45e8fc49da0bff6d023add046",
+            "jsrg_unknown_55f8ebdbea1a852fe7001ce321c83e2ca0ed8eca86faeeb07017d322f5dc4c54",
+            "jsrg_unknown_62f8ba9d732cea1683c3fdf923756a2cd7de4d9c96bf5bfc13772628dcc74239",
+            "jsrg_unknown_6a11b81fbb75d8bda1b06192e7a2d20bc52f1fe5181c8e75b571d7b1f93b135f",
+            "jsrg_unknown_6bdfc3dca742200a918abe1e88f5f7ef1b0b57699e8ef401982cce3e3b8fa030",
+            "jsrg_unknown_6d77812339292d266ea61ded8118941c6c341513fae58f5c41d6417f348034d5",
+            "jsrg_unknown_73db4d5229a2e1f246e6ebe8263534597c3fad6c466ad2288bec4f7eecc2161c",
+            "jsrg_unknown_76a06d9d6cc0e64f324e80de5d6c693034bae5e81392ac2ed2ffa8fd8ca800a5",
+            "jsrg_unknown_781216e96d3dc9cc67e44dafc0c2d104fc3e2358f6838b84055cba4d0c786c37",
+            "jsrg_unknown_7a85aa5a2a631dbc6d2191e3211ea8958f2b46bce1095c85ad2f6400185142c2",
+            "jsrg_unknown_7b13e814b01f07b8d96b1ffd69b07b8a8c313af86e7233a1f59847d3c68910e2",
+            "jsrg_unknown_7b1465c8f5fac18c8dacca05220ec3045b9a24c1878ada16c944311bbfa1ed79",
+            "jsrg_unknown_86ad9d2810f4fb215471007c5c730839b8dbfc5ce4688cd841843d03b7aa11bc",
+            "jsrg_unknown_87167f62e8c406d2f4e18cd1f9c3c2841f1d02a7129283c698ab7a2c9a56c9b8",
+            "jsrg_unknown_913d60c259c0063fa3a4c6600f6ad8d89411e9c46da0f3919c283519f1576733",
+            "jsrg_unknown_be8c2ce8d86452bf081a6b7b9114fc90d8d534a675053d59e391b5a8523fc113",
+            "jsrg_unknown_c47b36abb4fe9e25002b5d02c79f271d339b7ee83e30d43c9513ce97231969f1",
+            "jsrg_unknown_c74fdf8978d0733a79cc954958326df79be00db8f6fff3dd949ce2c5d655cf9c",
+            "jsrg_unknown_dae1f1dbdf2ee6a05be94ea93e84bc59356bff6dc89449678660d17289de6c7b",
+            "jsrg_unknown_ddf42729498546aa026e61bbb518bcd4f1910be6146d488f9cc3355fb74300e6",
+            "jsrg_unknown_def4d9d055249e618ccb43cbae081f9c0153af7404f77608ec27ee9304e64541",
+            "jsrg_unknown_eb259ea87f4580aefb35b6976fd746c99223fd9bfe262810276aa20920aefdcb",
+            "jsrg_unknown_ecec50afc9f3a31cbb794b4618b346f6cec6636dad7c1e04c59a0dc03ec3d5c5",
+            "jsrg_unknown_f38492517f03e313d6efa3babe36f70c02d6d8519ab9a14641be9c58b1f85a34",
+            "jsrg_unknown_f47c41030a09090cd0d684bd0b21eeca143c7f51dda938f005d65c8817a0a471",
+            "jsrg_unknown_f86254a99cde27a1bf9cb41619c8c818b61c3a37392a9828c26a102ec504380f",
+            "jsrg_unknown_fcfecdbb6c1ce6e2dbb387fc0540f1db94a57a852f60ca2c3c80d984c9147d3e"
+          ]
+        },
+        {
+          "family": "event",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "object-flow",
+          "status": "partial",
+          "retained_relations": 29,
+          "omitted_relations": 0,
+          "unknown_ids": [
+            "jsrg_unknown_01d1bf18e8c2bbf96d05222ea9bab2ac8beca5659d0b55df9129ea49feec406b",
+            "jsrg_unknown_06e155b8420697a84e2eccb076841478c2da0c34bfa5afadf08981a7c2b004f3",
+            "jsrg_unknown_084e031fa1fc6e4ee4dc1834fd89c73dfed1e53f780e03310fd4514b9e77499e",
+            "jsrg_unknown_0ce8ccabffcdb5978b0d79cccf7cb6bf2a0f4fc51cf9c52311e78b3faa7b0e23",
+            "jsrg_unknown_13887c47a92f20114c77f97317fd83d4f9d1c38a8faee35fef3e2411e767f667",
+            "jsrg_unknown_145fc5a42f1d561903dbabd295a517e4c32d834ec8cf4d2bba10bd5172f917fc",
+            "jsrg_unknown_1f597f108cedf8fa7f2ff94346cee38ed02768e746c65c85ec02f197adb292eb",
+            "jsrg_unknown_205d43bf13f43e86836be3380a9dcb0a14977c50c8cafdaa12d2dc3ed2efd681",
+            "jsrg_unknown_233856317e86db0da60b31dd7b89cc858b76a0df1c202a5ddd339aeb1d483012",
+            "jsrg_unknown_2e114a9064f3cf6fd5dcdb0de6c546bb25678ae08c837a87908a880bd4739a86",
+            "jsrg_unknown_318a524dc2883b85e395aa6c4ca3d71b74cf4b0ec3745d1ffe72c83d391424a7",
+            "jsrg_unknown_32a3df2d217c25641ae27e248db7d8bd708b61cd4048388cd08d18b7c234c93b",
+            "jsrg_unknown_3550a339aa193cd8d90fe10bdd815f8d8a4b63fcb554599c7aa7aaf5332dc339",
+            "jsrg_unknown_39fa7533f6faa391b55c063e21c454b4df13c99659465d7a04de87bd4e55ad8a",
+            "jsrg_unknown_3b2c2a79d0fb69d946761f7e7ff81b110a97ea7c84fc8741ba940285a0f0613d",
+            "jsrg_unknown_417bf23e59a248598aea5c3d580e7ce0e3cec59bcf3a7ad2b38853e6881d063b",
+            "jsrg_unknown_4768bd37fa595576b5a75490bdefe0d0e6108afd251c08396dd2ecf8621d5f67",
+            "jsrg_unknown_47fe90c20df56ba70e79106a03a77224f0ea342f2fb77f8318909ae229231d2f",
+            "jsrg_unknown_4ed4866db625e9e9b44d8390021d284d49accbc2af004285c426cad4103cc0d4",
+            "jsrg_unknown_4f855c1d81517d090dfd86b9e747528f776fe5916db7ed74d5f18f2427b0901f",
+            "jsrg_unknown_520c110f2f82bcb7043ee5177540c189db55dd73bba8a84bbf9192e9e8acd853",
+            "jsrg_unknown_53b3711390ba992b43ed0c5de2e73219faae9b804638da8ccd587048936a0af6",
+            "jsrg_unknown_5419461cf13b1af81538ac0ebb29593262b0433f062c5db439c5fc42df4bbe4e",
+            "jsrg_unknown_58f850154f7d7a8f99e64acf3d8dddea7b1174d1f643ed62282cbd6f71c86e94",
+            "jsrg_unknown_58fc4809c2201d8fca3d339b52bcae9a44050b60d29c677e374bbc6054b13435",
+            "jsrg_unknown_59aa159eeed636377c19b2e24aba34f08938274b6a989132050ef8c9d989c317",
+            "jsrg_unknown_5ed9b477b70359257ffb1cbdead989031b0bebe6bc448dae03570c0e20d4d0bd",
+            "jsrg_unknown_7e194930d5f33f3e80cbc38f13747fa7793a1acd2b27864a587573bf333e5d7a",
+            "jsrg_unknown_80d3320f84bcfb5da193fa10ca0b230634194ac1fccc024012fdc925c9d6dc42",
+            "jsrg_unknown_8d9c248e609b516d30cea81a3baf298f9eebf666427707b322b2eaba2890b0df",
+            "jsrg_unknown_982a4d3c83561365adc69e21641846c34d6e17eef80d832aaf3c8c205099bfdc",
+            "jsrg_unknown_9b1322064c301ec10d1071da43f5e1e26669399f0d06ca46be6c7641a34fc6bf",
+            "jsrg_unknown_9b63825abe30015c8d35d12416cac37e6d6e020af86a839e2c509442346ed0f5",
+            "jsrg_unknown_9e6ca9b75d46d2aafa78f6488fc465561ba1c7927d73daf185a29ff591ef5fd5",
+            "jsrg_unknown_a0321c33a1cb0ce8d71f6a72f7711951573c355d221c6068d8a72243c66bdb5d",
+            "jsrg_unknown_a1ad581620e96eee2fe448bf6f56cd63cd9252e3c5bc06eaa89dde7587120b27",
+            "jsrg_unknown_a39b7905da8ab817d3f4fbf3f64fa842ea1180421947deb0ec8684c068f8f389",
+            "jsrg_unknown_acbe23d375e25d3e6617781f245ae91615337e5b767c6207f560dd13104aefba",
+            "jsrg_unknown_af03386097cf67edfaa830e4fbd7af44f1f4d57ad980552353ef885301d129e6",
+            "jsrg_unknown_ba2ff2e5812283cd47d491d13e1bf8c04c7a0f397abc48e964043b0f03f168e3",
+            "jsrg_unknown_be72095e135a5944848baa1c1d796edf5573f7596479aad789d83f44719baf87",
+            "jsrg_unknown_e082e5ff1e954aed7889aac3d6a19410a5a04d87c3d74d9a726ab67a38252f85",
+            "jsrg_unknown_eef9d1433465b1ec35b1b235de4f492853bd86abde2c47c1dcf4d298cbda410b",
+            "jsrg_unknown_f18e1cafd1442bb40faaa2bf2d5e37bf79e9c266f8bc524c66a9a510f8cc9fca",
+            "jsrg_unknown_f793ba8dcc0a153dcbe87c4e2ca396dcef49a69387f9a3297458e86a0491e4ce",
+            "jsrg_unknown_fc8cd41a08b3f8558f507cada27cd2b1576740950f8ede80deb3d592b0289bfc",
+            "jsrg_unknown_fefc5f340f05a50c31a61a08922693c7ec8cb2ca945616ed8d23cdfa643d3abe"
+          ]
+        },
+        {
+          "family": "promise-ownership",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "request",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "resource-lifecycle",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        },
+        {
+          "family": "timer",
+          "status": "partial",
+          "retained_relations": 0,
+          "omitted_relations": 0,
+          "unknown_ids": []
+        }
+      ]
+    },
+    "functionNodes": [
+      {
+        "id": "jsrg_node_040a857272313a794933ff9697c563a1cf40749cb18c5302329af436ed2bb632",
+        "label": null,
+        "location": {
+          "kind": "source-range",
+          "source": "headerAnchor.js",
+          "start": {
+            "line": 5,
+            "column": 47
+          },
+          "end": {
+            "line": 81,
+            "column": 5
+          }
+        }
+      },
+      {
+        "id": "jsrg_node_4007dc29ad0aaeaee30da177da16409dc23427854f8065e13a1737f61ec7f39d",
+        "label": "parseResourceUrl",
+        "location": {
+          "kind": "source-range",
+          "source": "urlUtils.js",
+          "start": {
+            "line": 13,
+            "column": 25
+          },
+          "end": {
+            "line": 28,
+            "column": 1
+          }
+        }
+      },
+      {
+        "id": "jsrg_node_805f6e23c38ed956d471d23b063406019f1a6c35da70f8a370b567ea114ad35d",
+        "label": "default_1",
+        "location": {
+          "kind": "source-range",
+          "source": "headerAnchor.js",
+          "start": {
+            "line": 4,
+            "column": 0
+          },
+          "end": {
+            "line": 82,
+            "column": 1
+          }
+        }
+      },
+      {
+        "id": "jsrg_node_b7858661baf04a48fe4e3b355b2e69353367f28ddd5875d06594784551b3b4c2",
+        "label": "urlDecode",
+        "location": {
+          "kind": "source-range",
+          "source": "urlUtils.js",
+          "start": {
+            "line": 5,
+            "column": 18
+          },
+          "end": {
+            "line": 7,
+            "column": 1
+          }
+        }
+      },
+      {
+        "id": "jsrg_node_b9f75dd9ea5a86053d4c94e9b16b0bd0974e0eae21258434706ff02c50105431",
+        "label": "headingTextToAnchorName",
+        "location": {
+          "kind": "source-range",
+          "source": "headerAnchor.js",
+          "start": {
+            "line": 9,
+            "column": 40
+          },
+          "end": {
+            "line": 38,
+            "column": 9
+          }
+        }
+      },
+      {
+        "id": "jsrg_node_bc432d620235ee1434f06d34ee1d2fd2fe945662a9f86deea870e7a187b6a03b",
+        "label": "createAnchorTokens",
+        "location": {
+          "kind": "source-range",
+          "source": "headerAnchor.js",
+          "start": {
+            "line": 39,
+            "column": 35
+          },
+          "end": {
+            "line": 60,
+            "column": 9
+          }
+        }
+      },
+      {
+        "id": "jsrg_node_e2294444fa9da1c28f9150d8e624693d480c4421385a044d3fdbbb523fcc68f3",
+        "label": "isResourceUrl",
+        "location": {
+          "kind": "source-range",
+          "source": "urlUtils.js",
+          "start": {
+            "line": 9,
+            "column": 22
+          },
+          "end": {
+            "line": 11,
+            "column": 1
+          }
+        }
+      }
+    ]
+  },
+  "summary": {
+    "input_path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\projects\\05-joplin\\artifacts\\analysis-input",
+    "format": "directory",
+    "root_artifact_sha256": "b6d715e39c1157ad52c4bbf914fc84baf1eeb86d9456cfbf80e9a0bab09253f9",
+    "statistics": {
+      "relevant_files": 3,
+      "nested_asar_containers": 0,
+      "text_bytes_read": 6092,
+      "invalid_utf8_files": 0,
+      "parsed_javascript_files": 2,
+      "visited_ast_nodes": 512,
+      "findings": 9,
+      "modules": 0,
+      "parse_failures": 0
+    },
+    "electron": {
+      "browser_windows": 0,
+      "explicit_web_preferences": 0,
+      "preload_entrypoints": 0,
+      "context_bridge_apis": 0,
+      "exposed_api_members": 0,
+      "ipc": {
+        "operations": 0,
+        "literal_channels": 0,
+        "dynamic_channel_operations": 0,
+        "renderer_transmissions": 0,
+        "renderer_listeners": 0,
+        "main_handlers": 0,
+        "paired_renderer_transmissions": 0,
+        "ambiguous_renderer_transmissions": 0,
+        "unpaired_literal_renderer_transmissions": 0
+      },
+      "sender_validation_observations": 0,
+      "utility_processes": 0,
+      "resolved_utility_entrypoints": 0,
+      "native_addon_bindings": 0,
+      "resolved_native_addon_bindings": 0
+    },
+    "coverage": {
+      "application": {
+        "status": "complete",
+        "truncated": false,
+        "omitted_count": 0,
+        "limits": []
+      },
+      "semantic": {
+        "status": "unknown",
+        "truncated": false,
+        "omitted_nodes": 0,
+        "omitted_relations": 0,
+        "limits": [],
+        "families": [
+          {
+            "family": "boundary",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "call-flow",
+            "status": "partial",
+            "retained_relations": 7,
+            "omitted_relations": 0,
+            "unknown_count": 23
+          },
+          {
+            "family": "child-process",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "closure",
+            "status": "partial",
+            "retained_relations": 5,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "configuration",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "data-flow",
+            "status": "partial",
+            "retained_relations": 252,
+            "omitted_relations": 0,
+            "unknown_count": 36
+          },
+          {
+            "family": "event",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "object-flow",
+            "status": "partial",
+            "retained_relations": 29,
+            "omitted_relations": 0,
+            "unknown_count": 47
+          },
+          {
+            "family": "promise-ownership",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "request",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "resource-lifecycle",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          },
+          {
+            "family": "timer",
+            "status": "partial",
+            "retained_relations": 0,
+            "omitted_relations": 0,
+            "unknown_count": 0
+          }
+        ]
+      },
+      "application_unknowns": 0,
+      "semantic_unknowns": 106
+    },
+    "limitation_count": 5
+  },
+  "trace": {
+    "seed": {
+      "kind": "module",
+      "value": "urlUtils.js",
+      "match": null,
+      "case_sensitive": false
+    },
+    "seedMatches": [
+      {
+        "node_id": "jag_node_c396a02ff5f6797b91e67f85a330832b72f628ac07d8f07d756c15d3740ecbaf",
+        "kind": "javascript-module",
+        "basis": "label",
+        "field": "observations[0].label"
+      },
+      {
+        "node_id": "jag_node_da433f3669d9360140d44f7ca92bb3382c362ea9b25936df047b821786f6feed",
+        "kind": "javascript-asset",
+        "basis": "label",
+        "field": "observations[0].label"
+      }
+    ],
+    "coverage": {
+      "status": "complete-within-source",
+      "source_graph_status": "complete",
+      "total_seed_matches": 2
+    },
+    "keys": [
+      "trace_id",
+      "source_evidence_id",
+      "source_graph_id",
+      "seed",
+      "direction",
+      "seed_matches",
+      "graph",
+      "paths",
+      "native_handoffs",
+      "summary",
+      "coverage",
+      "evidence_links",
+      "limitations"
+    ]
+  },
+  "moduleNodes": [
+    {
+      "nodeId": "jag_node_6223b9fd64377d94e64b63f41f202d622e12b3d02f561571524007144b4e187f",
+      "observations": [
+        {
+          "label": "urlUtils.js:parseResourceUrl",
+          "location": {
+            "kind": "source-range",
+            "source": "urlUtils.js",
+            "start": {
+              "line": 29,
+              "column": 0
+            },
+            "end": {
+              "line": 29,
+              "column": 43
+            }
+          },
+          "semanticRole": "export-binding"
+        },
+        {
+          "label": "urlUtils.js:parseResourceUrl",
+          "location": {
+            "kind": "source-range",
+            "source": "urlUtils.js",
+            "start": {
+              "line": 3,
+              "column": 0
+            },
+            "end": {
+              "line": 3,
+              "column": 77
+            }
+          },
+          "semanticRole": "export-binding"
+        },
+        {
+          "label": "urlUtils.js:parseResourceUrl:return-shapes",
+          "location": {
+            "kind": "source-range",
+            "source": "urlUtils.js",
+            "start": {
+              "line": 13,
+              "column": 25
+            },
+            "end": {
+              "line": 28,
+              "column": 1
+            }
+          },
+          "semanticRole": "export-return-shapes"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_83199de74572d94e89ca98f625388f3555977b7e844cd43c588bd11f012238c9",
+      "observations": [
+        {
+          "label": "urlUtils.js:urlDecode:return-shapes",
+          "location": {
+            "kind": "source-range",
+            "source": "urlUtils.js",
+            "start": {
+              "line": 5,
+              "column": 18
+            },
+            "end": {
+              "line": 7,
+              "column": 1
+            }
+          },
+          "semanticRole": "export-return-shapes"
+        },
+        {
+          "label": "urlUtils.js:urlDecode",
+          "location": {
+            "kind": "source-range",
+            "source": "urlUtils.js",
+            "start": {
+              "line": 8,
+              "column": 0
+            },
+            "end": {
+              "line": 8,
+              "column": 29
+            }
+          },
+          "semanticRole": "export-binding"
+        },
+        {
+          "label": "urlUtils.js:urlDecode",
+          "location": {
+            "kind": "source-range",
+            "source": "urlUtils.js",
+            "start": {
+              "line": 3,
+              "column": 51
+            },
+            "end": {
+              "line": 3,
+              "column": 77
+            }
+          },
+          "semanticRole": "export-binding"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_8c023d5b8e376f220e0137fe48cbd09dfb84a24daefd86db5d56402192bc7de6",
+      "observations": [
+        {
+          "label": "urlUtils.js:isResourceUrl",
+          "location": {
+            "kind": "source-range",
+            "source": "urlUtils.js",
+            "start": {
+              "line": 3,
+              "column": 27
+            },
+            "end": {
+              "line": 3,
+              "column": 77
+            }
+          },
+          "semanticRole": "export-binding"
+        },
+        {
+          "label": "urlUtils.js:isResourceUrl:return-shapes",
+          "location": {
+            "kind": "source-range",
+            "source": "urlUtils.js",
+            "start": {
+              "line": 9,
+              "column": 22
+            },
+            "end": {
+              "line": 11,
+              "column": 1
+            }
+          },
+          "semanticRole": "export-return-shapes"
+        },
+        {
+          "label": "urlUtils.js:isResourceUrl",
+          "location": {
+            "kind": "source-range",
+            "source": "urlUtils.js",
+            "start": {
+              "line": 12,
+              "column": 0
+            },
+            "end": {
+              "line": 12,
+              "column": 37
+            }
+          },
+          "semanticRole": "export-binding"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_a44ee7095daac484b860310110a300d5350f5bf3eec11e956968847bf927a069",
+      "observations": [
+        {
+          "label": "headerAnchor.js:default",
+          "location": {
+            "kind": "source-range",
+            "source": "headerAnchor.js",
+            "start": {
+              "line": 3,
+              "column": 0
+            },
+            "end": {
+              "line": 3,
+              "column": 27
+            }
+          },
+          "semanticRole": "export-binding"
+        },
+        {
+          "label": "headerAnchor.js:default:return-shapes",
+          "location": {
+            "kind": "source-range",
+            "source": "headerAnchor.js",
+            "start": {
+              "line": 4,
+              "column": 0
+            },
+            "end": {
+              "line": 82,
+              "column": 1
+            }
+          },
+          "semanticRole": "export-return-shapes"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_c396a02ff5f6797b91e67f85a330832b72f628ac07d8f07d756c15d3740ecbaf",
+      "observations": [
+        {
+          "label": "urlUtils.js",
+          "location": {
+            "kind": "source-range",
+            "source": "urlUtils.js",
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 30,
+              "column": 36
+            }
+          },
+          "semanticRole": "source-module"
+        }
+      ]
+    },
+    {
+      "nodeId": "jag_node_dc68cfc8c5d5781c8fcb4b6013952a96dae326d7b006dda2a563861ac2a236c5",
+      "observations": [
+        {
+          "label": "headerAnchor.js",
+          "location": {
+            "kind": "source-range",
+            "source": "headerAnchor.js",
+            "start": {
+              "line": 1,
+              "column": 0
+            },
+            "end": {
+              "line": 83,
+              "column": 40
+            }
+          },
+          "semanticRole": "source-module"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+    "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+    "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+    "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+    "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code."
+  ]
+}

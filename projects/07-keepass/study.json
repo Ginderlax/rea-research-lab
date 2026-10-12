@@ -1,0 +1,59 @@
+{
+  "id": "07-keepass",
+  "product": "KeePass",
+  "version": "2.61.1",
+  "title": "KeePass one time password compatibility study",
+  "status": "completed-bounded-study",
+  "scope": "HmacOtp Generate and explicit nonnegative UTC GenerateTimeOtp compatibility; no vault data or full product reconstruction",
+  "method": "conservative source-assisted and investigator-assisted; REA selected CIL, supplemental reflection, original assembly oracle, Python reconstruction",
+  "source_blind": false,
+  "clean_room": false,
+  "automatic_reconstruction": false,
+  "rea_source_commit": "abc8c6dadf4f11b67de1cc2ee96bb55047416d71",
+  "evidence_ids": [
+    "ev_6fc1c6e422a7043ac0b762edb358ebfa3f7e54939a5f15ed90601c8940300f53",
+    "ev_80db52861a29dee461a0931afbaafbf4ad1e43ee4a49e33d1345b71f8244b78b"
+  ],
+  "validation": {
+    "differential_rows": 485,
+    "passed": 485,
+    "mismatches": 0,
+    "unique_literal_input_tuples": 485,
+    "unique_normalized_input_tuples": 430,
+    "normalization": "null secret to empty; null/empty algorithm to HMAC-SHA-1; TOTP step 0 to 30",
+    "rfc4226_known_answers": 10,
+    "known_answers_included_in_differential_rows": true,
+    "seed": 76112026,
+    "latest_wrapper_check": "captured-oracle-replay passed",
+    "live_wrapper_not_rerun_during_finalization": true
+  },
+  "findings": [
+    "case-sensitive algorithm labels and empty-string rejection",
+    "strict explicit offset upper boundary",
+    "optional decimal checksum and padding",
+    "zero time step defaults to 30 seconds"
+  ],
+  "limitations": [
+    "finite corpus, not formal equivalence",
+    "full member request exceeded 64 MiB representation budget",
+    "complete coverage applies only to selected declaring type",
+    "same investigator sees artifacts and observations; no blinded baseline",
+    "current-clock behavior, negative epochs, arbitrary time zones, vaults and side channels excluded"
+  ],
+  "reproduction": {
+    "captured": "python reproduce.py",
+    "live": "python reproduce.py --live",
+    "fresh_outputs": "artifacts/replay-*; historical evidence preserved"
+  },
+  "license": "GPL-2.0-or-later conservative study-specific choice; upstream notices preserved",
+  "report": "REPORT.md",
+  "claims": "claims.json",
+  "artifact_manifest": "artifact-manifest.json",
+  "sources": [
+    "https://keepass.info/download.html",
+    "https://keepass.info/integrity.html",
+    "https://keepass.info/help/v2/license.html",
+    "https://github.com/JiriSko/KeePass/releases/tag/v2.61.1",
+    "https://www.rfc-editor.org/rfc/rfc4226"
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "schema": "rea-lab-study/v1",
+  "id": "01-vscode-monaco",
+  "product": "VS Code / Monaco",
+  "title": "Shipped internal Myers sequence-diff contract",
+  "status": "completed-bounded-study",
+  "study_date": "2026-10-12",
+  "package": "monaco-editor",
+  "version": "0.57.0",
+  "method": "source-assisted inspection of released production JavaScript, REA structural evidence, executable reconstruction, and differential testing",
+  "clean_room": false,
+  "automatic_reconstruction": false,
+  "full_product_recovery": false,
+  "artifact": {
+    "archive_url": "https://registry.npmjs.org/monaco-editor/-/monaco-editor-0.57.0.tgz",
+    "sha256": "3ea1712fbacd3290cf4751007e3a5b57cc279767607812d4c3e57925fb0b05c2",
+    "bytes": 18572937,
+    "registry_integrity_verified": true,
+    "scope_manifest": "scope.json"
+  },
+  "rea": {
+    "runtime": "published rea-agents 6.4.0",
+    "node_runtime": "v24.16.0",
+    "evidence_ids": {
+      "application_evidence_id": "ev_cfa4a7ce272f53354baa5ae82961658e7ec35dbc461c933f7d9c7a267dd7d861",
+      "summary_evidence_id": "ev_470cd96b28c834d87a0d9c84ca4083a5378491928eed0f3da5e9eec12e1ecfb5",
+      "trace_evidence_id": "ev_2ad5bf86838e79735a1ab5a52b1c944589ac990fae672096fbf74e1d2b413083",
+      "module_evidence_id": "ev_81c2d16912187e5be466d07b67343b5cdc655a40373b84998f6a383f352a8356",
+      "semantic_trace_evidence_id": "ev_4efd9211a7524075144a3b98b3350cae1ef7478cde766bc4803b1add6ba8be25"
+    },
+    "parsed_files": 3,
+    "parse_failures": 0,
+    "semantic_coverage": "unknown",
+    "semantic_nodes": 1703,
+    "semantic_relations": 1203,
+    "semantic_unknowns": 548,
+    "feature_trace": {
+      "total_seed_matches": 1,
+      "traversed_nodes": 1,
+      "traversed_relations": 0,
+      "traversed_functions": 1,
+      "traversed_modules": 1,
+      "relevant_unknowns": 26,
+      "coverage": "partial"
+    },
+    "selected_record": "results/rea-evidence.json",
+    "raw_evidence_local": "artifacts/evidence/"
+  },
+  "validation": {
+    "status": "passed",
+    "comparisons": 5002,
+    "passed": 5002,
+    "failed": 0,
+    "unit": "normalized edit-script results",
+    "case_corpus_sha256": "cff118bd879609418ea45ee5e0ffb65aad1b8e587f73f02ab4465d871bf1ad43",
+    "random_seed": "0x52454101",
+    "record": "results/differential.json",
+    "demos": "results/demo.json",
+    "replay_checks": 5002,
+    "optimality_checks": 4992,
+    "original_nonminimal_cases": 50,
+    "held_out_evaluation": false,
+    "statistical_independence_claimed": false
+  },
+  "documentation": {
+    "report": "REPORT.md",
+    "claims": "claims.json",
+    "license": "LICENSE.md",
+    "notices": "THIRD_PARTY_NOTICES.md"
+  },
+  "license": "MIT",
+  "reproduction": {
+    "existing_local_artifact": "npm run verify",
+    "fresh_checkout": [
+      "npm run obtain",
+      "npm run verify"
+    ],
+    "rea": "npm run analyze",
+    "rea_cli_override": "REA_CLI",
+    "outputs": "fresh ignored artifacts/replays directories",
+    "recorded_results_preserved": true
+  },
+  "limitations": [
+    "Finite corpus; no universal equivalence proof",
+    "Same corpus used for model refinement and evaluation",
+    "REA selected semantic trace has partial coverage and zero relations",
+    "No controlled comparison of REA with another tool",
+    "Full product and hosted service excluded"
+  ],
+  "publication": {
+    "original_release": "local only under ignored artifacts/",
+    "full_evidence": "local only under ignored artifacts/",
+    "detailed_case_corpus": "local only under ignored artifacts/",
+    "github_content": "reports, models, scripts, manifests, selected evidence, result summaries and project license notices"
+  },
+  "file_sha256": {
+    "REPORT.md": "2bedac59205af89e81cc09f0ec10e11544a15799ca03ec9fa39c4c2ee1753ea3",
+    "reconstruction.mjs": "638ec28eda6c29b638372c7858fb7a5cd397c3119c794ae61ed99fbe340b9715",
+    "results/differential.json": "e403cbfff05276a76b5c182b451c57be93bc0521aa32a07eac20b24e3bfad154",
+    "results/rea-evidence.json": "3cd305c606db8a8e1d6999a78c343a724c143985c23cd3f1a4336602a4f8540f"
+  }
+}

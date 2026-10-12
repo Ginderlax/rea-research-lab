@@ -1,0 +1,67 @@
+{
+  "schema": "rea-lab-claim-ledger/v1",
+  "project": "01-vscode-monaco",
+  "claims": [
+    {
+      "id": "M1",
+      "claim": "The archived monaco-editor 0.57.0 bytes match pinned SHA-256 and registry SHA-512 integrity.",
+      "class": "observed-acquisition",
+      "evidence": [
+        "acquisition.json",
+        "scope.json"
+      ],
+      "status": "supported"
+    },
+    {
+      "id": "M2",
+      "claim": "REA located compute at lines 12–84 of the pinned production module; its selected trace retained one node and zero relations.",
+      "class": "observed-tool-output",
+      "evidence": [
+        "results/rea-evidence.json",
+        "artifacts/evidence/semantic-trace.json"
+      ],
+      "status": "supported"
+    },
+    {
+      "id": "M3",
+      "claim": "The model matches exact edit spans and timeout flags on 5,002 recorded cases and replays all 5,002 transformations.",
+      "class": "observed-runtime-comparison",
+      "evidence": [
+        "results/differential.json",
+        "artifacts/tests/cases.json"
+      ],
+      "status": "supported-within-corpus"
+    },
+    {
+      "id": "M4",
+      "claim": "Every unlimited original result has minimum insertion/deletion cost.",
+      "class": "normative-hypothesis",
+      "evidence": [
+        "results/differential.json",
+        "results/counterexample.json"
+      ],
+      "status": "rejected",
+      "counterexample": "ABACDEACACFC → EFC: observed cost 11; independent LCS minimum 9"
+    },
+    {
+      "id": "M5",
+      "claim": "The reduced witness is locally irreducible under greedy contiguous deletion.",
+      "class": "procedure-limited-inference",
+      "evidence": [
+        "results/counterexample.json",
+        "scripts/reduce-counterexample.mjs"
+      ],
+      "status": "supported-within-procedure"
+    },
+    {
+      "id": "M6",
+      "claim": "The research model universally reconstructs VS Code or every Monaco diff behavior.",
+      "class": "out-of-scope-generalization",
+      "evidence": [
+        "scope.json",
+        "REPORT.md"
+      ],
+      "status": "not-claimed"
+    }
+  ]
+}

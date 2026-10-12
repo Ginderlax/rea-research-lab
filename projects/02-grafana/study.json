@@ -1,0 +1,120 @@
+{
+  "schema": "rea-lab-study/v1",
+  "id": "02-grafana",
+  "product": "Grafana",
+  "title": "Telemetry field reduction: 19 standard calculations",
+  "status": "completed-bounded-study",
+  "study_date": "2026-10-12",
+  "package": "@grafana/data",
+  "version": "13.2.3",
+  "method": "source-assisted inspection of released production JavaScript, REA structural evidence, executable reconstruction, and differential testing",
+  "clean_room": false,
+  "automatic_reconstruction": false,
+  "full_product_recovery": false,
+  "artifact": {
+    "archive_url": "https://registry.npmjs.org/@grafana/data/-/data-13.2.3.tgz",
+    "sha256": "954a03a68fa122ebe74c0c318dc801e434c17294c5374ef593cf491f73c81c41",
+    "bytes": 1231517,
+    "registry_integrity_verified": true,
+    "scope_manifest": "scope.json"
+  },
+  "rea": {
+    "runtime": "published rea-agents 6.4.0",
+    "node_runtime": "v24.16.0",
+    "evidence_ids": {
+      "application_evidence_id": "ev_190cbc73f78783f043aa02a05c392bb8dd919232caad475d0c9088098654f697",
+      "summary_evidence_id": "ev_fef6523ea9ef74f045a561c70ab30b6607bd4d696f84f9110c36f3de438073a5",
+      "trace_evidence_id": "ev_dcbf2403616f45edb3966ae78891a74ca1d0715272ba4b5d449f24d164752e91",
+      "module_evidence_id": "ev_cd6312fced6b3dee968040eefdcfe3d717a0af62b88f4de2a7c78db7ed510a84",
+      "semantic_trace_evidence_id": "ev_0f546291bbde9726c96a1c379ec73d13a5512ba864e4e40682efac5bef9d58c4"
+    },
+    "parsed_files": 5,
+    "parse_failures": 0,
+    "semantic_coverage": "unknown",
+    "semantic_nodes": 2126,
+    "semantic_relations": 1517,
+    "semantic_unknowns": 712,
+    "feature_trace": {
+      "total_seed_matches": 1,
+      "traversed_nodes": 1,
+      "traversed_relations": 0,
+      "traversed_functions": 1,
+      "traversed_modules": 1,
+      "relevant_unknowns": 6,
+      "coverage": "partial"
+    },
+    "selected_record": "results/rea-evidence.json",
+    "raw_evidence_local": "artifacts/evidence/"
+  },
+  "validation": {
+    "status": "passed",
+    "comparisons": 20720,
+    "passed": 20720,
+    "failed": 0,
+    "unit": "whole calculation result objects",
+    "case_corpus_sha256": "eaed67beb5e83f5dda7a4a11e5c7598cc89c2b74efdd4cae5cf2621d41083546",
+    "random_seed": "0x52454102",
+    "record": "results/differential.json",
+    "demos": "results/demo.json",
+    "fields": [
+      "sum",
+      "max",
+      "min",
+      "logmin",
+      "mean",
+      "last",
+      "first",
+      "lastNotNull",
+      "firstNotNull",
+      "count",
+      "nonNullCount",
+      "allIsNull",
+      "allIsZero",
+      "range",
+      "diff",
+      "delta",
+      "step",
+      "diffperc",
+      "previousDeltaUp"
+    ],
+    "held_out_evaluation": false,
+    "statistical_independence_claimed": false
+  },
+  "documentation": {
+    "report": "REPORT.md",
+    "claims": "claims.json",
+    "license": "LICENSE.md",
+    "notices": "THIRD_PARTY_NOTICES.md"
+  },
+  "license": "Apache-2.0",
+  "reproduction": {
+    "existing_local_artifact": "npm run verify",
+    "fresh_checkout": [
+      "npm run obtain",
+      "npm run verify"
+    ],
+    "rea": "npm run analyze",
+    "rea_cli_override": "REA_CLI",
+    "outputs": "fresh ignored artifacts/replays directories",
+    "recorded_results_preserved": true
+  },
+  "limitations": [
+    "Finite corpus; no universal equivalence proof",
+    "Same corpus used for model refinement and evaluation",
+    "REA selected semantic trace has partial coverage and zero relations",
+    "No controlled comparison of REA with another tool",
+    "Full product and hosted service excluded"
+  ],
+  "publication": {
+    "original_release": "local only under ignored artifacts/",
+    "full_evidence": "local only under ignored artifacts/",
+    "detailed_case_corpus": "local only under ignored artifacts/",
+    "github_content": "reports, models, scripts, manifests, selected evidence, result summaries and project license notices"
+  },
+  "file_sha256": {
+    "REPORT.md": "744e90458ac3f8886ca18608ec494d405d8d08da284f5ac62b4b3fb4011445e0",
+    "reconstruction.mjs": "e52379ddeee062752d8b314d625c04d6bf2feeca8b45cc857695a20bd164c2d1",
+    "results/differential.json": "6295ec89a5271c59b8326ce4fba3ae887b3e48b5e9ede11fc0f1ca1a75846761",
+    "results/rea-evidence.json": "d0ac2c79594f175c74d6283333bdc5fe3afe33fe2274c620e734b5e1d27eb108"
+  }
+}

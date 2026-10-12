@@ -1,0 +1,64 @@
+{
+  "product": "Joplin",
+  "version": "3.7.1",
+  "claims": [
+    {
+      "claimId": "JOP-01",
+      "classification": "observation",
+      "claim": "The npm tarball matches retained SHA-256 and registry SHA-512 values.",
+      "support": [
+        "provenance.json"
+      ],
+      "limitation": "Integrity agreement alone does not attest the publisher."
+    },
+    {
+      "claimId": "JOP-02",
+      "classification": "static-observation",
+      "claim": "The final REA run parsed both focused JavaScript files and the semantic graph retains 106 unknowns.",
+      "support": [
+        "rea-evidence-summary.json"
+      ],
+      "limitation": "Complete application inventory coverage is not complete semantic or full-product coverage."
+    },
+    {
+      "claimId": "JOP-03",
+      "classification": "execution-comparison",
+      "claim": "Resource recognition, parsing, decoding, and heading names agree on 1,630 comparisons.",
+      "support": [
+        "test-results.json",
+        "test.mjs"
+      ],
+      "limitation": "Heading host is mocked; names and error classes are compared."
+    },
+    {
+      "claimId": "JOP-04",
+      "classification": "artifact-interpretation",
+      "claim": "Identifiers use a 32-character ASCII alphanumeric grammar and heading allocation checks all previously used names.",
+      "support": [
+        "artifacts/package/urlUtils.js",
+        "artifacts/package/headerAnchor.js",
+        "reconstruction.mjs"
+      ],
+      "limitation": "Readable released code informed this source-assisted interpretation."
+    },
+    {
+      "claimId": "JOP-05",
+      "classification": "failure-observation",
+      "claim": "The first worker-limited REA run is partial despite zero parse failures; a later focused run covers both files.",
+      "support": [
+        "artifacts/partial-evidence-run/analysis.json",
+        "rea-evidence-summary.json"
+      ],
+      "limitation": "Resource failure is not evidence of absent product functionality."
+    },
+    {
+      "claimId": "JOP-06",
+      "classification": "unknown",
+      "claim": "Full rendering, synchronization, storage, and real-notebook interoperability remain unestablished.",
+      "support": [
+        "REPORT.md#Study limits"
+      ],
+      "limitation": "Only selected synthetic URL and heading contracts were executed."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {join} from 'node:path';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const expected=JSON.parse(await readFile(join(root,'acquisition.json')));
+await mkdir(join(root,'artifacts'),{recursive:true});
+const metadata=await (await fetch('https://registry.npmjs.org/'+encodeURIComponent(expected.package)+'/'+expected.version)).json();
+const bytes=Buffer.from(await(await fetch(expected.tarballUrl)).arrayBuffer());
+const digest=createHash('sha256').update(bytes).digest('hex');
+const integrity='sha512-'+createHash('sha512').update(bytes).digest('base64');
+if(digest!==expected.sha256 || integrity!==expected.registryIntegrity)throw new Error('Pinned artifact digest mismatch');
+await writeFile(join(root,'artifacts/release.tgz'),bytes);
+await writeFile(join(root,'artifacts/npm-metadata.json'),JSON.stringify(metadata,null,2)+'\n');
+execFileSync('tar',['-xf',join(root,'artifacts/release.tgz'),'-C',join(root,'artifacts')]);
+console.log(JSON.stringify({package:expected.package,version:expected.version,sha256:digest,verified:true}));

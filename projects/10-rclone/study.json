@@ -1,0 +1,96 @@
+{
+  "id": "10-rclone",
+  "product": "rclone",
+  "version": "v1.75.2",
+  "status": "completed-bounded-study",
+  "component": "Synthetic obscure wire format and non-character stdin preprocessing",
+  "report": "REPORT.md",
+  "claims": "CLAIMS.md",
+  "artifact": {
+    "product": "rclone",
+    "version": "v1.75.2",
+    "release_url": "https://github.com/rclone/rclone/releases/tag/v1.75.2",
+    "asset_url": "https://github.com/rclone/rclone/releases/download/v1.75.2/rclone-v1.75.2-windows-amd64.zip",
+    "asset_bytes": 31634900,
+    "asset_sha256": "8a9db2bad1dc79a65b3348fd857069598e2aab7cf4d118b77b1df23055aff818",
+    "publisher_digest": "sha256:8a9db2bad1dc79a65b3348fd857069598e2aab7cf4d118b77b1df23055aff818",
+    "publisher_digest_matched": true,
+    "executable_relative_path": "artifacts/unpacked/rclone-v1.75.2-windows-amd64/rclone.exe",
+    "executable_bytes": 85500928,
+    "executable_sha256": "41eab3e118d264920b62c3327966c5ece0dc4dd715ee617d9e30450d8ead95a4",
+    "acquired_date": "2026-10-12",
+    "rea_source_commit": "abc8c6dadf4f11b67de1cc2ee96bb55047416d71",
+    "rea_native_package": "6.4.0"
+  },
+  "method": "source-assisted reconstruction with original released executable as behavioral oracle",
+  "rea": {
+    "evidence_id": "ev_452ecd8d19932dba9a11b1f891362d6977a5ef0c862b9ecfe0c0f0ae6dade513",
+    "operation": "inspect_go_binary",
+    "provider": {
+      "id": "go-build-info",
+      "name": "REA Go build-information reader",
+      "version": "1"
+    },
+    "artifact_sha256": "41eab3e118d264920b62c3327966c5ece0dc4dd715ee617d9e30450d8ead95a4",
+    "authority": "shipped-artifact",
+    "confidence": "observed",
+    "build_header_offset": 80255488,
+    "go_version_claim": "go1.26.9",
+    "module_path_claim": "github.com/rclone/rclone",
+    "main_module": {
+      "path": "github.com/rclone/rclone",
+      "version": "v1.75.2",
+      "sum": "",
+      "replacement": null
+    },
+    "embedded_dependency_records": 240,
+    "metadata_parse_complete": true,
+    "locations": [
+      {
+        "kind": "file-offset-range",
+        "start": 80255488,
+        "end": 80255520
+      }
+    ],
+    "limitations": [
+      "Embedded build metadata is observed file content, not proof of compiler identity, dependency authenticity or runtime behavior.",
+      "Only Go build information is inspected; function names, source mappings, type metadata and decompiled code are not recovered.",
+      "Resource guards bound stable artifact reads to 256 MiB, aggregate embedded strings to 1 MiB, structural table decoding to 16 MiB and complete metadata payloads to 8 MiB; these are not operating-system memory or CPU limits."
+    ],
+    "source_assisted": true,
+    "native_analysis": {
+      "status": "no-successful-native-result",
+      "source_attempt": "provider-unavailable: source runtime has no built Windows native addon",
+      "published_attempt": "cancelled for resource contention during a large Go import",
+      "record": "artifacts/native-cancellation.json"
+    }
+  },
+  "results": {
+    "original_cli_executions": 115,
+    "differential_comparisons": 230,
+    "structural_assertions": 115,
+    "observed_distinct_ivs": 115,
+    "mismatches": 0,
+    "record": "results.json",
+    "count_unit": "Two assertions per original output; not 230 independent CLI executions"
+  },
+  "reproduction": {
+    "acquire": "node acquire.mjs",
+    "test": "node reproduce.mjs",
+    "analyze": "node analyze.mjs",
+    "demo": "node reconstruction.mjs",
+    "required_host": "Windows x64, Node.js 24+",
+    "fresh_outputs": "artifacts/replays/"
+  },
+  "limitations": [
+    "Real credentials or configuration files",
+    "Remote storage accounts",
+    "Character-device stdin behavior",
+    "Input lines at or above the Go Scanner limit",
+    "Malformed token equivalence with the private Go Reveal API",
+    "Independent RNG distribution or authentication claims"
+  ],
+  "upstream_license": "MIT",
+  "source_reference_manifest": "reference-manifest.json",
+  "original_artifact_and_full_evidence_location": "artifacts/ (retained locally, excluded from Git)"
+}

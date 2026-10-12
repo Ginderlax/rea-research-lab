@@ -1,0 +1,255 @@
+[
+  {
+    "label": "chain-extract",
+    "edges": [
+      [
+        "Trigger",
+        "Validate"
+      ],
+      [
+        "Validate",
+        "Transform"
+      ],
+      [
+        "Transform",
+        "Store"
+      ]
+    ],
+    "selection": [
+      "Validate",
+      "Transform"
+    ],
+    "result": {
+      "start": "Validate",
+      "end": "Transform"
+    }
+  },
+  {
+    "label": "branch-multiple-output",
+    "edges": [
+      [
+        "Trigger",
+        "A"
+      ],
+      [
+        "A",
+        "B"
+      ],
+      [
+        "A",
+        "SinkA"
+      ],
+      [
+        "B",
+        "SinkB"
+      ]
+    ],
+    "selection": [
+      "A",
+      "B"
+    ],
+    "result": [
+      {
+        "errorCode": "Output Edge From Non-Leaf Node",
+        "node": "A"
+      }
+    ]
+  },
+  {
+    "label": "input-to-inner-node",
+    "edges": [
+      [
+        "Trigger",
+        "A"
+      ],
+      [
+        "A",
+        "B"
+      ],
+      [
+        "Other",
+        "B"
+      ]
+    ],
+    "selection": [
+      "A",
+      "B"
+    ],
+    "result": [
+      {
+        "errorCode": "Input Edge To Non-Root Node",
+        "node": "B"
+      }
+    ]
+  },
+  {
+    "label": "multiple-root-inputs",
+    "edges": [
+      [
+        "Trigger",
+        "A"
+      ],
+      [
+        "Other",
+        "B"
+      ]
+    ],
+    "selection": [
+      "A",
+      "B"
+    ],
+    "result": [
+      {
+        "errorCode": "Multiple Input Nodes",
+        "nodes": [
+          "A",
+          "B"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "cycle-boundary-fallback",
+    "edges": [
+      [
+        "Trigger",
+        "A"
+      ],
+      [
+        "A",
+        "B"
+      ],
+      [
+        "B",
+        "A"
+      ],
+      [
+        "B",
+        "Sink"
+      ]
+    ],
+    "selection": [
+      "A",
+      "B"
+    ],
+    "result": {
+      "start": "A",
+      "end": "B"
+    }
+  },
+  {
+    "label": "self-loop",
+    "edges": [
+      [
+        "Trigger",
+        "A"
+      ],
+      [
+        "A",
+        "A"
+      ],
+      [
+        "A",
+        "Sink"
+      ]
+    ],
+    "selection": [
+      "A"
+    ],
+    "result": {
+      "start": "A",
+      "end": "A"
+    }
+  },
+  {
+    "label": "ai-edges-not-main",
+    "edges": [
+      [
+        "Agent",
+        "Model",
+        "ai_languageModel"
+      ],
+      [
+        "Agent",
+        "Sink"
+      ]
+    ],
+    "selection": [
+      "Model"
+    ],
+    "result": {}
+  },
+  {
+    "label": "disconnected-boundaries",
+    "edges": [
+      [
+        "Trigger",
+        "A"
+      ],
+      [
+        "B",
+        "Sink"
+      ]
+    ],
+    "selection": [
+      "A",
+      "B"
+    ],
+    "result": [
+      {
+        "errorCode": "No Continuous Path From Root To Leaf In Selection",
+        "start": "A",
+        "end": "B"
+      }
+    ]
+  },
+  {
+    "label": "isolated-selection",
+    "edges": [
+      [
+        "Trigger",
+        "Sink"
+      ]
+    ],
+    "selection": [
+      "X",
+      "Y"
+    ],
+    "result": {}
+  },
+  {
+    "label": "empty-selection",
+    "edges": [
+      [
+        "Trigger",
+        "Sink"
+      ]
+    ],
+    "selection": [],
+    "result": {}
+  },
+  {
+    "label": "output-bank-preservation",
+    "edges": [
+      [
+        "Trigger",
+        "A",
+        "main",
+        3
+      ],
+      [
+        "A",
+        "Sink",
+        "main",
+        2
+      ]
+    ],
+    "selection": [
+      "A"
+    ],
+    "result": {
+      "start": "A",
+      "end": "A"
+    }
+  }
+]

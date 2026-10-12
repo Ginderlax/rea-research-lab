@@ -1,0 +1,25 @@
+import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+import {join} from 'node:path';
+const root=fileURLToPath(new URL('../',import.meta.url));
+const expected=JSON.parse(await readFile(join(root,'acquisition.json')));
+await mkdir(join(root,'artifacts'),{recursive:true});
+const metadata=await (await fetch('https://registry.npmjs.org/'+encodeURIComponent(expected.package)+'/'+expected.version)).json();
+const bytes=Buffer.from(await(await fetch(expected.tarballUrl)).arrayBuffer());
+const digest=createHash('sha256').update(bytes).digest('hex');
+const integrity='sha512-'+createHash('sha512').update(bytes).digest('base64');
+if(digest!==expected.sha256 || integrity!==expected.registryIntegrity)throw new Error('Pinned artifact digest mismatch');
+await writeFile(join(root,'artifacts/release.tgz'),bytes);
+await writeFile(join(root,'artifacts/npm-metadata.json'),JSON.stringify(metadata,null,2)+'\n');
+execFileSync('tar',['-xf',join(root,'artifacts/release.tgz'),'-C',join(root,'artifacts')]);
+console.log(JSON.stringify({package:expected.package,version:expected.version,sha256:digest,verified:true}));
+
+const dependency=JSON.parse(await readFile(join(root,'dependency.json')));
+const dependencyBytes=Buffer.from(await(await fetch(dependency.url)).arrayBuffer());
+if(createHash('sha256').update(dependencyBytes).digest('hex')!==dependency.sha256 || 'sha512-'+createHash('sha512').update(dependencyBytes).digest('base64')!==dependency.integrity)throw new Error('Pinned dependency digest mismatch');
+await mkdir(join(root,'artifacts/node_modules/lodash'),{recursive:true});
+await writeFile(join(root,'artifacts/lodash-4.17.23.tgz'),dependencyBytes);
+execFileSync('tar',['-xf',join(root,'artifacts/lodash-4.17.23.tgz'),'--strip-components=1','-C',join(root,'artifacts/node_modules/lodash')]);
+console.log(JSON.stringify({package:dependency.package,version:dependency.version,verified:true}));

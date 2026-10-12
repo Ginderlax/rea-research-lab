@@ -1,0 +1,83 @@
+{
+  "project": "05-joplin",
+  "finalAnalysisEvidenceId": "ev_ef3bbb9acf96a74c7e45f1fa234877c5eb8d46ee4910a46cfdb8567c29f404c7",
+  "finalFeatureTraceEvidenceId": "ev_6225df352cf39a70ac5bbdb9174481d9fb552b50643af464109db6983dd7a4c6",
+  "semanticTrace": {
+    "evidenceId": "ev_eaa2d434e284964336b96f511fdcdb941513c5ad39ec7cdad566c9fba295f077",
+    "status": "found",
+    "coverage": "partial",
+    "relevantUnknowns": 1
+  },
+  "preservedRequestError": {
+    "operation": "trace-application-feature",
+    "code": "invalid_request",
+    "category": "invalid_input",
+    "issues": [
+      {
+        "path": [
+          "application"
+        ],
+        "reason": "missing_argument",
+        "expected": "object"
+      },
+      {
+        "path": [
+          "source"
+        ],
+        "reason": "unknown_argument"
+      }
+    ],
+    "rawPath": "artifacts/evidence/trace.invalid-request.json",
+    "rawSha256": "72f4b09201c1e98fc72ca022d3ece9bcce95711b93a09357662eebc02cf653c6",
+    "resolution": "Corrected the request field from source to application; preserved the rejected request result."
+  },
+  "notes": [
+    "Application graph complete-within-source coverage is restricted to the selected files and does not imply full-product or complete semantic coverage.",
+    "Original historical Evidence JSON and test-results.json are preserved; new replay outputs use fresh artifacts/replays directories."
+  ],
+  "partialAnalysis": {
+    "evidenceId": "ev_e82a598f507758a18233f8b504de56f288cb4cd700dab7cb729b44cd4be238a1",
+    "applicationGraphCoverage": {
+      "status": "partial",
+      "truncated": false,
+      "omitted_count": null,
+      "limits": [
+        {
+          "name": "javascript_analysis_worker_timeout_ms",
+          "value": 120000,
+          "unit": "milliseconds"
+        }
+      ]
+    },
+    "statistics": {
+      "relevant_files": 3,
+      "nested_asar_containers": 0,
+      "text_bytes_read": 6092,
+      "invalid_utf8_files": 0,
+      "parsed_javascript_files": 1,
+      "visited_ast_nodes": 148,
+      "findings": 7,
+      "modules": 0,
+      "parse_failures": 0
+    },
+    "limitations": [
+      "CommonJS and ESM binding relationships were recovered from inert syntax and resolved only within the inventoried artifact container.",
+      "Graph coverage is incomplete; unavailable facts remain explicit and must not be read as absence.",
+      "JavaScript and HTML were parsed as inert text; bundle bootstrap code was never executed.",
+      "Static imports, entrypoints, workers, endpoints, and storage relationships do not prove runtime execution.",
+      "Static paths and relationships may remain unresolved when expressions are dynamic or obfuscated.",
+      "Webpack/Rspack factories were recovered from AST literals; REA did not invoke push handlers or bundle bootstrap code.",
+      "headerAnchor.js: Resource constraint during analyze_javascript_application: Owned JavaScript worker exhausted its heap while analyzing worker startup during startup"
+    ],
+    "rawPath": "artifacts/partial-evidence-run/analysis.json",
+    "rawSha256": "f406d92912d8f2abc6a0491566be76310d77cb59a1aaf54124a0536a08fdf8dd",
+    "resolution": "Focused bounded rerun successfully parsed both selected JavaScript files after memory pressure was released."
+  },
+  "followupAllocationFailure": {
+    "operation": "inspect-analysis-view",
+    "rawPath": "artifacts/evidence/summary.allocation-failure.stderr.txt",
+    "rawSha256": "539845c3d6b6d142f8323f640a34f97bca757e151057d0ed233f92dc9e9709ee",
+    "failure": "Committing semi space failed. Allocation failed - JavaScript heap out of memory",
+    "resolution": "Retained the diagnostic and produced the later successful summary evidence separately."
+  }
+}

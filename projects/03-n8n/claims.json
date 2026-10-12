@@ -1,0 +1,66 @@
+{
+  "schema": "rea-lab-claim-ledger/v1",
+  "project": "03-n8n",
+  "claims": [
+    {
+      "id": "N1",
+      "claim": "The n8n-workflow 2.16.0 archive matches the pinned digests and registry integrity.",
+      "class": "observed-acquisition",
+      "evidence": [
+        "acquisition.json",
+        "scope.json"
+      ],
+      "status": "supported"
+    },
+    {
+      "id": "N2",
+      "claim": "REA located parseExtractableSubgraphSelection at lines 138–193; its selected semantic trace retained one node and zero relations with partial coverage.",
+      "class": "observed-tool-output",
+      "evidence": [
+        "results/rea-evidence.json",
+        "artifacts/evidence/semantic-trace.json"
+      ],
+      "status": "supported"
+    },
+    {
+      "id": "N3",
+      "claim": "Seven method contracts match in 40,611 recorded comparisons; 4,609 compare the extraction validator itself.",
+      "class": "observed-runtime-comparison",
+      "evidence": [
+        "results/differential.json",
+        "artifacts/tests/cases.json"
+      ],
+      "status": "supported-within-corpus"
+    },
+    {
+      "id": "N4",
+      "claim": "The corpus exhaustively covers all 512 three-node directed graphs including self-loops and all eight selections for that bounded universe.",
+      "class": "observed-test-design",
+      "evidence": [
+        "scripts/verify.mjs",
+        "results/differential.json"
+      ],
+      "status": "supported-within-bounded-universe"
+    },
+    {
+      "id": "N5",
+      "claim": "Cycle fallback, self-loop root/leaf treatment, main-edge filtering, ordered errors, and undefined endpoints occur in the selected contract.",
+      "class": "source-assisted-inference-confirmed-by-cases",
+      "evidence": [
+        "results/demo.json",
+        "reconstruction.mjs"
+      ],
+      "status": "supported-within-observed-domain"
+    },
+    {
+      "id": "N6",
+      "claim": "An accepted selection proves operational equivalence of extracted workflows or full n8n service recovery.",
+      "class": "out-of-scope-generalization",
+      "evidence": [
+        "scope.json",
+        "REPORT.md"
+      ],
+      "status": "not-claimed"
+    }
+  ]
+}

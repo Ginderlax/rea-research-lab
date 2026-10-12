@@ -1,0 +1,68 @@
+{
+  "schema": "rea-lab-claim-ledger/v1",
+  "project": "02-grafana",
+  "claims": [
+    {
+      "id": "G1",
+      "claim": "The Grafana and lodash archives match their pinned digests and registry integrity.",
+      "class": "observed-acquisition",
+      "evidence": [
+        "acquisition.json",
+        "dependency.json",
+        "scope.json"
+      ],
+      "status": "supported"
+    },
+    {
+      "id": "G2",
+      "claim": "REA located doStandardCalcs at lines 433–519; the selected semantic trace retained one node and zero relations with partial coverage.",
+      "class": "observed-tool-output",
+      "evidence": [
+        "results/rea-evidence.json",
+        "artifacts/evidence/semantic-trace.json"
+      ],
+      "status": "supported"
+    },
+    {
+      "id": "G3",
+      "claim": "All 19 returned fields match on 20,720 recorded input/type/null-policy combinations.",
+      "class": "observed-runtime-comparison",
+      "evidence": [
+        "results/differential.json",
+        "artifacts/tests/cases.json"
+      ],
+      "status": "supported-within-corpus"
+    },
+    {
+      "id": "G4",
+      "claim": "Null-policy precedence, reset state, NaN handling, signed-zero comparisons, and absent-versus-empty sentinels affect this reducer contract.",
+      "class": "source-assisted-inference-confirmed-by-cases",
+      "evidence": [
+        "results/demo.json",
+        "reconstruction.mjs",
+        "artifacts/tests/initial-differential.json"
+      ],
+      "status": "supported-within-observed-domain"
+    },
+    {
+      "id": "G5",
+      "claim": "The initial model had 98 mismatches; the final corrected model has zero on the recorded corpus.",
+      "class": "observed-experiment-revision",
+      "evidence": [
+        "artifacts/tests/initial-differential.json",
+        "results/differential.json"
+      ],
+      "status": "supported"
+    },
+    {
+      "id": "G6",
+      "claim": "The model reconstructs Grafana dashboards, hosted services, or every reducer.",
+      "class": "out-of-scope-generalization",
+      "evidence": [
+        "scope.json",
+        "REPORT.md"
+      ],
+      "status": "not-claimed"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "classification": "conservative source-assisted native artifact and calibrated oracle study; not clean-room",
+  "claims": [
+    {
+      "id": "Z01",
+      "claim": "The native target is 7-Zip Extra 26.04 x64 7za.dll bound to the recorded SHA256, not the full product 7z.dll.",
+      "status": "provenance-and-static-observation",
+      "evidence": ["artifact-manifest.json", "evidence/release-metadata.json", "evidence/native-overview.json"]
+    },
+    {
+      "id": "Z02",
+      "claim": "Ghidra through REA completed an overview containing 1639 procedures and 145 defined strings and supplied GetHandlerProperty2 pseudocode.",
+      "status": "observed-static",
+      "evidence": ["evidence/native-overview.json", "evidence/handler-property-decompile.json"],
+      "evidence_id": "ev_65c0f7468d1adf66fffc786aa482e6eada5b790de086efef944941e155fc0007",
+      "coordinate": "GetHandlerProperty2 at 0x1000d9cc"
+    },
+    {
+      "id": "Z03",
+      "claim": "The observed format count is one; invalid indices return 0x80070057, while unknown properties for index zero return success and an empty variant.",
+      "status": "static-and-execution-supported",
+      "evidence": ["evidence/registrar-decompile.json", "evidence/handler-property-decompile.json", "evidence/native-oracle.json", "evidence/heldout-oracle.json"],
+      "scope": "successful allocation and valid ABI use only"
+    },
+    {
+      "id": "Z04",
+      "claim": "The later global-reference request succeeded with six references to 0x10060770; the initial request failed due to JVM resource allocation.",
+      "status": "observed-success-and-failure",
+      "evidence": ["evidence/format-registry-xrefs.json", "evidence/format-registry-xrefs-retry.json"],
+      "evidence_id": "ev_ea7c7f3d981185ede8916f0150273515b9bd2aa79050d9432cc8ab646c3c00cc"
+    },
+    {
+      "id": "Z05",
+      "claim": "The Python property model matches 400 captured export rows, comprising 255 distinct pairs and 207 distinct pairs absent from calibration.",
+      "status": "finite-differential-result",
+      "evidence": ["evidence/verification.json", "evidence/heldout-oracle.json", "evidence/native-oracle.json", "reproduce.py"],
+      "scope": "single descriptor; the comparison corpus overlaps 48 calibration pairs"
+    },
+    {
+      "id": "Z06",
+      "claim": "Eleven signature candidate tests pass for the model; they are model-only checks and do not validate original archive recognition or integrity.",
+      "status": "model-only-check",
+      "evidence": ["evidence/verification.json", "reconstruction/property_model.py", "reproduce.py"]
+    },
+    {
+      "id": "Z07",
+      "claim": "The separate pwntools binary layout facet did not support the PE target.",
+      "status": "observed-limitation",
+      "evidence": ["evidence/pe-layout.json"]
+    }
+  ],
+  "excluded_claims": ["compression or decompression reconstruction", "complete 7-Zip recovery", "archive integrity validation", "400 wholly unseen or independent cases", "11 original-versus-model signature tests", "clean-room development", "automatic reconstruction by REA", "all REA native facets support Windows PE"]
+}

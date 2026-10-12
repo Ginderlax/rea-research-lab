@@ -1,0 +1,8 @@
+{
+  "stage": "first original backup inspection",
+  "initial_expectation": "Every original file node explicitly contains a numeric size field.",
+  "observation": "The empty-file node omits size; its decoded value is undefined rather than an explicit zero.",
+  "correction": "Normalize omitted size to zero for the metadata assertion; retain original_size_present in every published observation.",
+  "classification": "Harness interpretation correction, not a product defect.",
+  "preservation": "The initial replay repository, command results and plaintext tree observations remain under artifacts/replays. The corrected experiment uses a new replay directory."
+}

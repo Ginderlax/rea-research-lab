@@ -1,0 +1,62 @@
+{
+  "id": "08-7zip",
+  "product": "7-Zip Extra",
+  "version": "26.04",
+  "title": "7-Zip native format property reconstruction study",
+  "status": "completed-bounded-study",
+  "scope": "x64 7za.dll single format GetHandlerProperty2 descriptor dispatch; no archive compressor or decompressor",
+  "method": "conservative source-assisted and investigator-assisted; REA Ghidra pseudocode and xrefs, calibrated original native export observations, Python reconstruction",
+  "source_blind": false,
+  "clean_room": false,
+  "automatic_reconstruction": false,
+  "rea_runtime": "rea-agents published 6.4.0",
+  "provider": "Ghidra 12.1.4",
+  "evidence_ids": [
+    "ev_ccae51bca70feb437fa65620e87de16334736d3657c1b976599e8ba42be7efa4",
+    "ev_65c0f7468d1adf66fffc786aa482e6eada5b790de086efef944941e155fc0007",
+    "ev_58d5fc14cc4125d08cd905f9238fe8e70d7b6af53fdeeb43e29d1b2c3cb880fe",
+    "ev_ea7c7f3d981185ede8916f0150273515b9bd2aa79050d9432cc8ab646c3c00cc"
+  ],
+  "validation": {
+    "differential_rows": 400,
+    "passed": 400,
+    "mismatches": 0,
+    "unique_input_pairs": 255,
+    "novel_unique_pairs_after_calibration": 207,
+    "calibration_rows": 48,
+    "calibration_pairs_in_comparison": 48,
+    "model_only_signature_checks": 11,
+    "signature_checks_passed": true,
+    "seed": 726042026,
+    "latest_wrapper_check": "captured-oracle-replay passed",
+    "live_wrapper_not_rerun_during_finalization": true
+  },
+  "findings": [
+    "index beyond count returns invalid argument HRESULT",
+    "unknown property on valid index yields success and empty variant",
+    "signature and binary identifier stored as byte-length BSTR",
+    "registry xrefs succeeded on bounded retry after resource failure"
+  ],
+  "limitations": [
+    "one Extra DLL descriptor only",
+    "pseudocode is decompiler interpretation",
+    "calibrated constants and partly overlapping comparison set",
+    "model excludes allocation failure and ABI misuse",
+    "11 signature checks are model-only, not archive validation",
+    "separate pwntools PE layout facet unsupported"
+  ],
+  "reproduction": {
+    "captured": "python reproduce.py",
+    "live": "python reproduce.py --live",
+    "fresh_outputs": "artifacts/replay-*; historical evidence preserved"
+  },
+  "license": "LGPL-2.1-or-later conservative study-specific choice; upstream Extra notice preserved",
+  "report": "REPORT.md",
+  "claims": "claims.json",
+  "artifact_manifest": "artifact-manifest.json",
+  "sources": [
+    "https://github.com/ip7z/7zip/releases/tag/26.04",
+    "https://www.7-zip.org/",
+    "https://raw.githubusercontent.com/spdx/license-list-data/main/text/LGPL-2.1-or-later.txt"
+  ]
+}

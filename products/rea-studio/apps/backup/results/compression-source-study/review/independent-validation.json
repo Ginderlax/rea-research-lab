@@ -1,0 +1,283 @@
+{
+  "schema": "rea-restic-compression-independent-review/v1",
+  "startedAtUtc": "2026-10-12T18:34:39.286Z",
+  "checkedAtUtc": "2026-10-12T18:35:22.384Z",
+  "exitCode": 0,
+  "summary": {
+    "tests": 5,
+    "pass": 5,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "sourceBytesStableAcrossRun": true,
+  "productionChanges": false,
+  "stageChanges": false,
+  "originalSourceReceiptSha256": "aa349e4f6d0443f35b48ece52465d264705712a255c712e712bc2141907a75df",
+  "sourceFingerprints": [
+    {
+      "path": "apps/backup/restic-compression.mjs",
+      "bytes": 2439,
+      "sha256": "d82357e66725c0102b0908679d6f327c5c26b6f5006d9cc64ade9cf04be10055"
+    },
+    {
+      "path": "apps/backup/restic-crypto.mjs",
+      "bytes": 5262,
+      "sha256": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c"
+    },
+    {
+      "path": "apps/backup/restic-kdf-policy.mjs",
+      "bytes": 1923,
+      "sha256": "6118dcace475d83a77e5d7362316268893ef126387aae22e93601a73876620f1"
+    },
+    {
+      "path": "apps/backup/restic.mjs",
+      "bytes": 30810,
+      "sha256": "7f5cd6aaeabb8a561696a7290fb294107ad6308e310a844499558b29c54ad1de"
+    },
+    {
+      "path": "compression.test.mjs",
+      "bytes": 5382,
+      "sha256": "128adf053f00351e12a822d796956912b6d1580ef4327ebaacb608138f807e4d"
+    },
+    {
+      "path": "lib/storage.mjs",
+      "bytes": 3085,
+      "sha256": "729c2f9700b1239f04294b11c42bfd2754478b227e39ab03ec49a1be9141b633"
+    },
+    {
+      "path": "references/RESTIC-LICENSE.txt",
+      "bytes": 1345,
+      "sha256": "6f08a01a9fab5b24e139a09f15cc24a73087c7bc09e3bacf099fdf2d767bf897"
+    },
+    {
+      "path": "references/repository.go",
+      "bytes": 38128,
+      "sha256": "0e1e5b702f22377042a7f55d60b9fb2f7e4d7c5232818128431fd9d44f08d1c6"
+    },
+    {
+      "path": "source-provenance.json",
+      "bytes": 1090,
+      "sha256": "5f24dc73c7c7de1046bffca8c4bbddf865134a43ba5c4048a0177126a0c6a38a"
+    },
+    {
+      "path": "verify-stage.mjs",
+      "bytes": 2643,
+      "sha256": "e897c3695ecccd50f1e3801e2eea9d7c441eb86c8d7dbcc02078bed4e6ca298f"
+    }
+  ],
+  "reviewTestSha256": "609c9dc48ce293c6e524dea4a8ea26627d8b987250e49b5b644dd38758e5d802",
+  "reviewRunnerSha256": "a5510f3d923eb1cf3dcb746d4d4f2f1a4d32547a4f0087d1a4748a24cd56cf18",
+  "rawEvidence": {
+    "stdoutSha256": "12ecb06ff98d0c5d5e260e48779c83657af1f21067e96cab46cf4b21d416806d",
+    "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout": "TAP version 13\n# Subtest: independent compression boundaries, frame windows and incompressible growth remain bounded\nok 1 - independent compression boundaries, frame windows and incompressible growth remain bounded\n  ---\n  duration_ms: 84.852\n  type: 'test'\n  ...\n# Subtest: mixed legacy v2 plaintext and compressed candidate snapshots preserve old blobs and deduplicate across modes\nok 2 - mixed legacy v2 plaintext and compressed candidate snapshots preserve old blobs and deduplicate across modes\n  ---\n  duration_ms: 11859.8459\n  type: 'test'\n  ...\n# Subtest: candidate appends compressed data to an independently original-created v2 off repository\nok 3 - candidate appends compressed data to an independently original-created v2 off repository\n  ---\n  duration_ms: 7714.4082\n  type: 'test'\n  ...\n# Subtest: authenticated compressed corruption and pack/index disagreements reject before restore output, including original reader\nok 4 - authenticated compressed corruption and pack/index disagreements reject before restore output, including original reader\n  ---\n  duration_ms: 16707.3671\n  type: 'test'\n  ...\n# {\"case\":\"index-length\",\"candidateError\":\"Restic index and authenticated pack header disagree.\",\"restoreDestinationCreated\":false,\"appLocksBeforeOriginal\":[]}\n# {\"case\":\"payload-mac\",\"candidateError\":\"Restic authentication failed: wrong password or damaged data.\",\"restoreDestinationCreated\":false,\"appLocksBeforeOriginal\":[]}\n# {\"case\":\"header-mac\",\"candidateError\":\"Restic authentication failed: wrong password or damaged data.\",\"restoreDestinationCreated\":false,\"appLocksBeforeOriginal\":[]}\n# {\"case\":\"frame-magic\",\"candidateError\":\"Unknown frame descriptor\",\"restoreDestinationCreated\":false,\"appLocksBeforeOriginal\":[]}\n# {\"case\":\"frame-truncated-tree\",\"candidateError\":\"Restic decompressed blob length mismatch.\",\"restoreDestinationCreated\":false,\"appLocksBeforeOriginal\":[]}\n# {\"case\":\"decoded-budget\",\"candidateError\":\"Cannot create a Buffer larger than 25 bytes\",\"restoreDestinationCreated\":false,\"appLocksBeforeOriginal\":[]}\n# Subtest: authenticated unsupported metadata marker and compressed metadata output budget reject without restore output\nok 5 - authenticated unsupported metadata marker and compressed metadata output budget reject without restore output\n  ---\n  duration_ms: 6627.3261\n  type: 'test'\n  ...\n# {\"case\":\"unknown-marker\",\"originalAccepts\":false,\"candidateAccepts\":false,\"documentedBoundary\":null}\n# {\"case\":\"decoded-metadata-budget\",\"originalAccepts\":true,\"candidateAccepts\":false,\"documentedBoundary\":\"16 MiB metadata subset\"}\n1..5\n# tests 5\n# suites 0\n# pass 5\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 43051.4989\n",
+    "stderr": ""
+  },
+  "original": {
+    "version": "0.19.1",
+    "executableSha256": "b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830",
+    "archiveSha256": "da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d",
+    "authenticatedBeforeEveryExecution": true,
+    "observations": [
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 0,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  2 / 2 snapshots\nread all data\n[0:00] 100.00%  12 / 12 packs\nno errors were found\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "restore",
+          "e06775b7a109b3d625a65edf4b29fb1c57f244eb26e727a854eb937c49c18a9f",
+          "--target",
+          "C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-compression-review-vY9Fiu\\old-restored"
+        ],
+        "exitCode": 0,
+        "stdout": "restoring snapshot e06775b7 of [/source] at 2026-10-12 18:34:41.384 +0000 UTC by rea-studio@EvanH to C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-compression-review-vY9Fiu\\old-restored\nSummary: Restored 7 files/dirs (2.415 MiB) in 0:00\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "restore",
+          "d981072eef559533429bea7c78890b72574f34f10e594dd23385738b1c2ad2c2",
+          "--target",
+          "C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-compression-review-vY9Fiu\\new-restored"
+        ],
+        "exitCode": 0,
+        "stdout": "restoring snapshot d981072e of [/source] at 2026-10-12 18:34:43.599 +0000 UTC by rea-studio@EvanH to C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-compression-review-vY9Fiu\\new-restored\nSummary: Restored 8 files/dirs (2.472 MiB) in 0:00\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 0,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  3 / 3 snapshots\nread all data\n[0:00] 100.00%  15 / 15 packs\nno errors were found\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "restore",
+          "d56a6945217c143475e15acb0ea620e66fbf974ba37754dbc0eac8b17767c9cd",
+          "--target",
+          "C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-compression-review-vY9Fiu\\off-restored"
+        ],
+        "exitCode": 0,
+        "stdout": "restoring snapshot d56a6945 of [/source] at 2026-10-12 18:34:48.701 +0000 UTC by rea-studio@EvanH to C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-compression-review-vY9Fiu\\off-restored\nSummary: Restored 8 files/dirs (2.472 MiB) in 0:00\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "init",
+          "--repository-version",
+          "2"
+        ],
+        "exitCode": 0,
+        "stdout": "created restic repository e38c94b0e9 at C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-compression-review-MNFDGa\\workspace\\repository\n\nPlease note that knowledge of your password is required to access\nthe repository. Losing your password means that your data is\nirrecoverably lost.\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "backup",
+          "C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-compression-review-MNFDGa\\workspace\\source",
+          "--compression",
+          "off",
+          "--json"
+        ],
+        "exitCode": 0,
+        "stdout": "{\"message_type\":\"summary\",\"files_new\":4,\"files_changed\":0,\"files_unmodified\":0,\"dirs_new\":10,\"dirs_changed\":0,\"dirs_unmodified\":0,\"data_blobs\":3,\"tree_blobs\":11,\"data_added\":444990,\"data_added_packed\":440907,\"total_files_processed\":4,\"total_bytes_processed\":434633,\"total_duration\":0.7082997,\"backup_start\":\"2026-10-12T14:34:54.4547903-04:00\",\"backup_end\":\"2026-10-12T14:34:55.16309-04:00\",\"snapshot_id\":\"6624bcb6a2e930247c2337865f964c757b0551a9d99e81b06b9df2e763d9f286\"}\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 0,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  2 / 2 snapshots\nread all data\n[0:00] 100.00%  6 / 6 packs\nno errors were found\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "restore",
+          "3f703576628b03a0144825a5c10e31bdde04c9c69e0ea24dbfca923e26e8e064",
+          "--target",
+          "C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-compression-review-MNFDGa\\append-restored"
+        ],
+        "exitCode": 0,
+        "stdout": "restoring snapshot 3f703576 of [/source] at 2026-10-12 18:34:55.977 +0000 UTC by rea-studio@EvanH to C:\\Users\\evanh\\AppData\\Local\\Temp\\rea-compression-review-MNFDGa\\append-restored\nSummary: Restored 7 files/dirs (465.462 KiB) in 0:00\n",
+        "stderr": ""
+      },
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 1,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  1 / 1 snapshots\nread all data\n[0:00] 100.00%  6 / 6 packs\n",
+        "stderr": "pack 44a7e23f6e8fb6cadddb595a62804ff81d76fe4020bd74f7e75aae003cc27caf contains 1 errors: [blob ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad is not contained in index or position is incorrect]\n\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\n\nrestic repair packs 44a7e23f6e8fb6cadddb595a62804ff81d76fe4020bd74f7e75aae003cc27caf\nrestic repair snapshots --forget\n\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\nFatal: repository contains errors\n"
+      },
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 1,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  1 / 1 snapshots\nread all data\n[0:00] 100.00%  6 / 6 packs\n",
+        "stderr": "pack 8cee3153b87ed9244d41eb1991acb01b133346c12c95acf0b300d6b83765c948 contains 1 errors: [blob ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad: decrypting blob <data/ee466a8c> from pack 8cee3153b87ed9244d41eb1991acb01b133346c12c95acf0b300d6b83765c948 failed: ciphertext verification failed]\n\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\n\nrestic repair packs 8cee3153b87ed9244d41eb1991acb01b133346c12c95acf0b300d6b83765c948\nrestic repair snapshots --forget\n\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\nFatal: repository contains errors\n"
+      },
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 1,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  1 / 1 snapshots\nread all data\n[0:00] 100.00%  6 / 6 packs\n",
+        "stderr": "pack 8c5e8d3d5f80a1c42446b1f6b424370cb38996bb8fd73c27bf13d20b50987052 contains 1 errors: [ciphertext verification failed]\n\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\n\nrestic repair packs 8c5e8d3d5f80a1c42446b1f6b424370cb38996bb8fd73c27bf13d20b50987052\nrestic repair snapshots --forget\n\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\nFatal: repository contains errors\n"
+      },
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 1,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  1 / 1 snapshots\nread all data\n[0:00] 100.00%  6 / 6 packs\n",
+        "stderr": "pack 2d49ab01c54c7700b9801fe7d80c2e21ce14b6a16446262b9098a7af9e3c8454 contains 1 errors: [blob ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad: decompressing blob <data/ee466a8c> from pack 2d49ab01c54c7700b9801fe7d80c2e21ce14b6a16446262b9098a7af9e3c8454 failed: invalid input: magic number mismatch]\n\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\n\nrestic repair packs 2d49ab01c54c7700b9801fe7d80c2e21ce14b6a16446262b9098a7af9e3c8454\nrestic repair snapshots --forget\n\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\nFatal: repository contains errors\n"
+      },
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 1,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  1 / 1 snapshots\nread all data\n[0:00] 100.00%  6 / 6 packs\n",
+        "stderr": "error for tree fedfb0fe:\n  decompressing blob <tree/fedfb0fe> from pack 626d6357c7ccb202e107a22d4c864107b5a65beda1f684ea1b634c52e7bbd032 failed: unexpected EOF\npack 626d6357c7ccb202e107a22d4c864107b5a65beda1f684ea1b634c52e7bbd032 contains 1 errors: [blob fedfb0fe1a945aaebc2d0c868ee6e249b2849f19a1b9e46a57acd99bb9b4bf6b: decompressing blob <tree/fedfb0fe> from pack 626d6357c7ccb202e107a22d4c864107b5a65beda1f684ea1b634c52e7bbd032 failed: unexpected EOF]\n\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\n\nrestic repair packs 626d6357c7ccb202e107a22d4c864107b5a65beda1f684ea1b634c52e7bbd032\nrestic repair snapshots --forget\n\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\nFatal: repository contains errors\n"
+      },
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 1,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  1 / 1 snapshots\nread all data\n[0:00] 100.00%  6 / 6 packs\n",
+        "stderr": "pack 1e223f2875d9be366caa510a539c178ccf11d18086e89f63bf7f614e61aed27c contains 1 errors: [blob ee466a8c891c910d6867cea2d2d62148b8a4afb475db500490a3cc9e178b1cad: read blob <data/ee466a8c> from pack 1e223f2875d9be366caa510a539c178ccf11d18086e89f63bf7f614e61aed27c: wrong data returned, hash is 5b766f6d76a999636fd93b4e039d5a32187f84a19c0950449f0c721da0223914]\n\nThe repository contains damaged pack files. These damaged files must be removed to repair the repository. This can be done using the following commands. Please read the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html first.\n\nrestic repair packs 1e223f2875d9be366caa510a539c178ccf11d18086e89f63bf7f614e61aed27c\nrestic repair snapshots --forget\n\nDamaged pack files can be caused by backend problems, hardware problems or bugs in restic. Please open an issue at https://github.com/restic/restic/issues/new/choose for further troubleshooting!\nFatal: repository contains errors\n"
+      },
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 1,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00]          0 snapshots\nread all data\n[0:00] 100.00%  6 / 6 packs\n",
+        "stderr": "error: failed to load snapshot 0fc47adc: not supported encoding format\n\nThe repository is damaged and must be repaired. Please follow the troubleshooting guide at https://restic.readthedocs.io/en/stable/077_troubleshooting.html .\n\nFatal: repository contains errors\n"
+      },
+      {
+        "args": [
+          "check",
+          "--read-data"
+        ],
+        "exitCode": 0,
+        "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  1 / 1 snapshots\nread all data\n[0:00] 100.00%  6 / 6 packs\nno errors were found\n",
+        "stderr": ""
+      }
+    ],
+    "commandCounts": {
+      "check": 11,
+      "restore": 4,
+      "init": 1,
+      "backup": 1
+    },
+    "successfulExecutions": 10,
+    "expectedRejections": 7
+  },
+  "scope": "Independent primitive boundary/window, mixed legacy and original-created repository, mode-switch dedup, authenticated MAC/frame/index corruption and pre-output refusal. Original accepts 17 MiB decoded snapshot metadata deliberately beyond the candidate 16 MiB subset.",
+  "fullFeatureParity": false,
+  "productionSecurityVerified": false,
+  "reviewStatus": "ready",
+  "unresolvedConfirmedFindings": [],
+  "stagedHistoricalEvidence": {
+    "receiptSha256": "aa349e4f6d0443f35b48ece52465d264705712a255c712e712bc2141907a75df",
+    "rawTestOutputSha256": "f410ba6f0978759443441ff730936b61fd11df2df1911ab62ced606a4da8bb32",
+    "exactSourceSnapshots": "historical-stage/",
+    "allTenFingerprintMatches": true
+  },
+  "referencedFrozenLegacyWriter": {
+    "path": "outputs/rea-research-lab/products/rea-studio/apps/backup/restic.mjs",
+    "sha256": "70bf4a5bfd46041823fa00bd7cdbf880f6c0a9020f67ef9e7a807b4242fbb527",
+    "authentication": "Expected source hash checked before its first fixture operation and again after the complete independent run."
+  },
+  "explicitAcceptanceDeviation": "Original check --read-data accepts a valid snapshot followed by 17 MiB JSON whitespace; candidate check/restore reject it under the documented 16 MiB decoded metadata subset before output. This is a bounded-reader limitation, not a format-equality match.",
+  "additionalChecks": [
+    "Repeated identical 1 MiB source chunks share IDs, and a 17-byte tail has a distinct ID.",
+    "Mode switch preserves existing uncompressed/compressed data records without adding duplicate data blobs.",
+    "All eight candidate corruption/metadata cases reject check and restore with no destination created and no app-owned lock left before original execution.",
+    "512 KiB or smaller frame windows, disabled checksums, empty blobs/metadata, growing single-byte frames, exact 16 MiB and excess input boundaries."
+  ],
+  "finalizedAtUtc": "2026-10-12T18:37:16.262Z"
+}

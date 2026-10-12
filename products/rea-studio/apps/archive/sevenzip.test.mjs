@@ -91,13 +91,13 @@ test('candidate supported compressed header is accepted by original and reader',
   writeFileSync(path, archive); compared(read7z(archive)); cli(['t', path]);
   const out = join(run, 'out-encoded'); cli(['x', '-y', `-o${out}`, path]); compared(diskFiles(out)); retain(path, 'candidate native codec', { encodedHeader: 'DEFLATE' });
 });
-test('default original LZMA2 and header LZMA is an explicit unsupported-method gap', () => {
+test('default original LZMA2 data and LZMA encoded header extract exact bytes', () => {
   const path = join(run, 'original-default.7z'); cli(['a', '-t7z', path, '.'], source);
-  assert.throws(() => read7z(readFileSync(path)), /LZMA compression|compressed LZMA2/);
-  retain(path, 'authenticated complete original 7-Zip 26.04', { candidate_result: 'explicitly unsupported', args: ['-t7z defaults'] });
+  compared(read7z(readFileSync(path)));
+  retain(path, 'authenticated complete original 7-Zip 26.04', { candidate_result: 'exact extraction', args: ['-t7z defaults'] });
   const plain = join(run, 'original-default-plain-header.7z'); cli(['a', '-t7z', '-mhc=off', plain, '.'], source);
-  assert.throws(() => read7z(readFileSync(plain)), /compressed LZMA2/);
-  retain(plain, 'authenticated complete original 7-Zip 26.04', { candidate_result: 'explicitly unsupported compressed LZMA2', args: ['-t7z', '-mhc=off', 'default data coder'] });
+  compared(read7z(readFileSync(plain)));
+  retain(plain, 'authenticated complete original 7-Zip 26.04', { candidate_result: 'exact compressed LZMA2 extraction', args: ['-t7z', '-mhc=off', 'default data coder'] });
 });
 test('original multiple alignment properties and optional creation/access times decode', () => {
   for (const count of [1, 2, 3, 4, 7, 8, 9, 16, 17]) {
@@ -218,11 +218,11 @@ test('uncompressed LZMA2 enforces reset, controls, terminator, dictionary and ex
   const options = { method: B(0x21), properties: B(0), packed: B(1, 0, 3, 0x74, 0x65, 0x73, 0x74, 0) };
   assert.equal(read7z(ordinaryFixture(options))[0].data.toString(), 'test');
   for (const packed of [B(2, 0, 3, 0x74, 0x65, 0x73, 0x74, 0), B(3), B(1, 0, 3, 0x74), B(1, 0, 3, 0x74, 0x65, 0x73, 0x74), B(0, 0)]) {
-    assert.throws(() => read7z(ordinaryFixture({ ...options, packed })), /reset|control|truncated|trailing/);
+    assert.throws(() => read7z(ordinaryFixture({ ...options, packed })), /reset|control|truncated|trailing|output size/);
   }
   assert.throws(() => read7z(ordinaryFixture({ ...options, properties: B(40) })), /dictionary/);
   assert.throws(() => read7z(ordinaryFixture({ ...options, properties: B(41) })), /properties/);
-  assert.throws(() => read7z(ordinaryFixture({ ...options, packed: B(0x80) })), /compressed LZMA2/);
+  assert.throws(() => read7z(ordinaryFixture({ ...options, packed: B(0x80) })), /reset|truncated/);
   assert.throws(() => read7z(ordinaryFixture({ ...options, packed: B(0) })), /output size/);
 });
 test('7Z HTTP creation, listing, solid metadata, extraction and restart persistence', async t => {
@@ -255,17 +255,16 @@ test('7Z HTTP creation, listing, solid metadata, extraction and restart persiste
   assert.equal((await call('test', { path: 'deflate-true.7z' })).verified, true);
   await call('extract', { path: 'deflate-true.7z', destination: 'after-restart', confirm: true }); compared(diskFiles(join(workspace, 'after-restart')), sourceFiles);
   await call('create', { format: 'sevenzip', source: 'source', output: 'wrong.zip' }, 400);
-  await call('create', { format: 'sevenzip', source: 'source', output: 'unsupported.7z', compression: 'lzma2' }, 400);
+  await call('create', { format: 'sevenzip', source: 'source', output: 'unsupported.7z', compression: 'ppmd' }, 400);
   await call('extract', { path: 'deflate-true.7z', destination: 'unconfirmed' }, 400);
   await assert.rejects(fs.stat(join(workspace, 'unconfirmed')), /ENOENT/);
-  const client = await (await fetch(host.url + '/apps/archive/client.mjs')).text(); assert.match(client, /\['sevenzip','7Z'\]/); assert.match(client, /compressed LZMA or LZMA2/);
+  const client = await (await fetch(host.url + '/apps/archive/client.mjs')).text(); assert.match(client, /\['sevenzip','7Z'\]/); assert.match(client, /genuine LZMA2, LZMA/);
 });
-test('7Z HTTP refuses malformed archives and default unsupported original methods before any extraction writes', async t => {
+test('7Z HTTP refuses malformed archives before any extraction writes', async t => {
   const dataDir = join(run, 'http-refusal'), host = await start({ port: 0, dataDir }); t.after(() => host.close()); const workspace = join(dataDir, 'archive/workspace');
   const valid = write7z([{ name: 'safe', data: Buffer.from('test') }]); const corrupt = Buffer.from(valid); corrupt[32] ^= 1;
   const samples = [['bad.7z', corrupt], ['trailing.7z', Buffer.concat([valid, valid])], ['unsafe.7z', ordinaryFixture({ name: '../outside' })],
-    ['link.7z', ordinaryFixture({ attr: 0xa0008000 })], ['large.7z', ordinaryFixture({ folderSize: LIMITS.file + 1 })],
-    ['default.7z', readFileSync(join(run, 'original-default.7z'))], ['default-plain.7z', readFileSync(join(run, 'original-default-plain-header.7z'))]];
+    ['link.7z', ordinaryFixture({ attr: 0xa0008000 })], ['large.7z', ordinaryFixture({ folderSize: LIMITS.file + 1 })]];
   for (const [name, bytes] of samples) {
     await fs.writeFile(join(workspace, name), bytes, { flag: 'wx' });
     for (const action of ['list', 'test', 'extract']) {

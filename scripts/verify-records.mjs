@@ -35,6 +35,26 @@ for (const entry of [...nativeCoreHistory.receipts, ...nativeCoreHistory.source_
   const bytes = readFileSync(join(root, entry.snapshot_path)); assert.equal(bytes.length, entry.bytes); assert.equal(sha(bytes), entry.sha256, `Native core historical snapshot changed: ${entry.path}`);
 }
 for (const entry of nativeCoreHistory.source_snapshots) { assert.ok(!nativeCoreSources.has(entry.path)); nativeCoreSources.set(entry.path, entry); }
+const nativeWorkflowsMilestone = 'products/rea-studio/results/milestones/native-workflows-20261012/';
+const nativeWorkflowsHistory = JSON.parse(readFileSync(join(root, nativeWorkflowsMilestone, 'snapshot-manifest.json'), 'utf8'));
+assert.equal(nativeWorkflowsHistory.schema, 'rea-native-workflows-checkpoint-snapshot/v1');
+assert.equal(nativeWorkflowsHistory.source_revision, '64238267b332bb3a8ac5435a613a596a06311f59');
+assert.equal(nativeWorkflowsHistory.receipts.length, 8); assert.equal(nativeWorkflowsHistory.source_snapshots.length, 200);
+const nativeWorkflowsSources = new Map();
+for (const entry of [...nativeWorkflowsHistory.receipts, ...nativeWorkflowsHistory.source_snapshots]) {
+  safeRecordPath(entry.path); safeRecordPath(entry.snapshot_path); assert.ok(entry.snapshot_path.startsWith(nativeWorkflowsMilestone));
+  const bytes = readFileSync(join(root, entry.snapshot_path)); assert.equal(bytes.length, entry.bytes); assert.equal(sha(bytes), entry.sha256, `Native workflows historical snapshot changed: ${entry.path}`);
+}
+for (const entry of nativeWorkflowsHistory.source_snapshots) { assert.ok(!nativeWorkflowsSources.has(entry.path)); nativeWorkflowsSources.set(entry.path, entry); }
+function nativeWorkflowsFingerprint(entry, label) {
+  safeRecordPath(entry.path);
+  const bytes = readFileSync(join(root, entry.path));
+  if (sha(bytes) === entry.sha256) { if (entry.bytes !== undefined) assert.equal(bytes.length, entry.bytes); return; }
+  const snapshot = nativeWorkflowsSources.get(entry.path);
+  assert.ok(snapshot, `Missing historical native-workflows ${label} source: ${entry.path}`);
+  assert.equal(snapshot.sha256, entry.sha256, `Historical native-workflows ${label} receipt disagrees: ${entry.path}`);
+  if (entry.bytes !== undefined) assert.equal(snapshot.bytes, entry.bytes);
+}
 function nativeCoreFingerprint(entry, label) {
   safeRecordPath(entry.path);
   const currentBytes = readFileSync(join(root, entry.path));
@@ -99,7 +119,8 @@ for (const project of index.projects) {
   assert.equal(record.failed ?? record.mismatches ?? record.failures?.length ?? 0, 0, `Recorded failures: ${project.id}`);
   assert.ok(project.rea_evidence_ids.length > 0, `Missing REA reference: ${project.id}`);
 }
-const documentNames = [...new Set(['README.md', 'SERIES-STUDY.md', 'TOOLING.md', 'LICENSES.md', ...manifest.files.filter(entry => entry.path.startsWith('products/rea-studio/') && entry.path.endsWith('.md')).map(entry => entry.path)])];
+const historicalDocumentCorpus = /\/apps\/(?:archive\/results\/lzma-stage|sync\/results\/webdav-official-sources)\//;
+const documentNames = [...new Set(['README.md', 'SERIES-STUDY.md', 'TOOLING.md', 'LICENSES.md', ...manifest.files.filter(entry => entry.path.startsWith('products/rea-studio/') && entry.path.endsWith('.md') && !historicalDocumentCorpus.test(entry.path)).map(entry => entry.path)])];
 for (const name of documentNames) {
   const markdown = readFileSync(join(root, name), 'utf8');
   for (const match of markdown.matchAll(/\]\(([^)]+)\)/g)) {
@@ -170,12 +191,67 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     if (entry.bytes !== undefined) assert.equal(bytes.length, entry.bytes, `${label} size changed: ${entry.path}`);
     assert.equal(sha(bytes), entry.sha256, `${label} source changed: ${entry.path}`);
   }
+  const backupCompression = JSON.parse(readFileSync(join(developmentRoot, 'apps/backup/results/compression-validation.json'), 'utf8'));
+  assert.equal(backupCompression.schema, 'rea-restic-compression-integration-validation/v1');
+  assert.equal(backupCompression.summary.tests, 13); assert.equal(backupCompression.summary.pass, 13);
+  assert.equal(backupCompression.summary.fail + backupCompression.summary.cancelled + backupCompression.summary.skipped + backupCompression.summary.todo, 0);
+  assert.equal(backupCompression.exitCode, 0); assert.equal(backupCompression.sourceBytesStableAcrossRun, true);
+  for (const gate of ['fullFeatureParityEstablished', 'universalSuperiorityEstablished', 'productionSecurityVerified', 'compressionPerformanceCompared']) assert.equal(backupCompression[gate], false);
+  for (const entry of [...backupCompression.implementationFingerprints, ...backupCompression.rawEvidence]) currentFingerprint(entry, 'Backup compression');
+  assert.equal(backupCompression.original.version, '0.19.1'); assert.equal(backupCompression.original.sourceCommit, '6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf'); assert.equal(backupCompression.original.writerConfigurations, 6);
+  const compressionPreservation = JSON.parse(readFileSync(join(root, backupCompression.sourcePreservationManifest), 'utf8'));
+  assert.equal(compressionPreservation.schema, 'rea-restic-compression-source-preservation/v1');
+  assert.equal(compressionPreservation.snapshots.length, 20);
+  for (const entry of compressionPreservation.snapshots) { assert.ok(entry.path.startsWith('products/rea-studio/apps/backup/results/compression-source-study/')); currentFingerprint(entry, 'Preserved backup compression study'); }
+  const compressionStudyRoot = join(developmentRoot, 'apps/backup/results/compression-source-study');
+  const compressionStage = JSON.parse(readFileSync(join(compressionStudyRoot, 'stage/draft-validation.json'), 'utf8'));
+  const compressionReview = JSON.parse(readFileSync(join(compressionStudyRoot, 'review/independent-validation.json'), 'utf8'));
+  assert.equal(compressionStage.summary.pass, 8); assert.equal(compressionReview.summary.pass, 5);
+  assert.equal(compressionReview.originalSourceReceiptSha256, sha(readFileSync(join(compressionStudyRoot, 'stage/draft-validation.json'))));
+  for (const entry of compressionStage.fingerprints) {
+    const preserved = compressionPreservation.snapshots.find(row => row.group === 'stage' && row.originalPath === entry.path);
+    assert.ok(preserved); assert.equal(preserved.sha256, entry.sha256); assert.equal(preserved.bytes, entry.bytes);
+  }
+  for (const name of ['stdout','stderr']) assert.equal(sha(Buffer.from(compressionReview.rawEvidence[name])), compressionReview.rawEvidence[name + 'Sha256']);
+  const webdavRoot = 'products/rea-studio/apps/sync/';
+  const webdav = JSON.parse(readFileSync(join(root, webdavRoot, 'results/webdav-validation.json'), 'utf8'));
+  assert.equal(webdav.schemaVersion, 1); assert.equal(webdav.testRun.tests, 72); assert.equal(webdav.testRun.pass, 72);
+  assert.equal(webdav.testRun.newWebDAVTests, 37); assert.equal(webdav.testRun.legacyRegressionTests, 35);
+  assert.equal(webdav.testRun.fail + webdav.testRun.skipped + webdav.testRun.cancelled, 0);
+  for (const gate of ['comparisonOfSpeedOrResourcesToOriginal','runtimeRunsOriginalOrVendorCode','allDocumentedFeaturesEnumerated','fullProductComplete','universalSuperiorityEstablished']) assert.equal(webdav[gate], false);
+  assert.equal(webdav.oracle.authenticatedOriginalExecutions, 274); assert.equal(webdav.oracle.comparisonProfiles, 128); assert.equal(webdav.oracle.comparisonDecisions, 1408); assert.equal(webdav.oracle.heldOutFilteredTransferFolders, 8);
+  assert.equal(webdav.officialSourceFiles, 16); assert.equal(webdav.sourceContracts, 29);
+  for (const [path, sha256] of Object.entries(webdav.sourceFiles)) currentFingerprint({path:webdavRoot + path,sha256}, 'WebDAV');
+  for (const [path, sha256] of Object.entries(webdav.hostDependenciesAtTest)) { const target = resolve(root, webdavRoot, path); currentFingerprint({path:relative(root,target).replaceAll('\\','/'),sha256}, 'WebDAV host'); }
+  for (const [path, entry] of Object.entries(webdav.receipts)) currentFingerprint({...entry,path:webdavRoot + 'results/' + path}, 'WebDAV evidence');
+  const webdavProvenance = JSON.parse(readFileSync(join(root, webdavRoot, 'results/webdav-provenance.json'), 'utf8'));
+  for (const entry of webdavProvenance.stagedSource) currentFingerprint({path:webdavRoot + entry.preserved,sha256:entry.sha256}, 'WebDAV preserved stage');
+  currentFingerprint({...webdavProvenance.stagedAggregate,path:webdavRoot + webdavProvenance.stagedAggregate.path}, 'WebDAV preserved aggregate');
+  for (const [path, entry] of Object.entries(webdavProvenance.stagedReceipts)) currentFingerprint({...entry,path:webdavRoot + 'results/' + path}, 'WebDAV preserved receipts');
+  for (const [path, sha256] of Object.entries(webdavProvenance.unchangedHistoricalReceipts)) currentFingerprint({path:webdavRoot + 'results/' + path,sha256}, 'WebDAV unchanged historical receipts');
+  const webdavSources = JSON.parse(readFileSync(join(root, webdavRoot, 'results/webdav-source-verification.json'), 'utf8'));
+  assert.equal(webdavSources.allPassed, true); assert.equal(webdavSources.officialRecords.length, 16);
+  for (const entry of webdavSources.officialRecords) currentFingerprint({...entry,path:webdavRoot + entry.preserved}, 'WebDAV original source');
+  const archiveLzma = JSON.parse(readFileSync(join(developmentRoot, 'apps/archive/lzma-validation.json'), 'utf8'));
+  assert.equal(archiveLzma.schema, 'rea-lzma-application-validation/v1'); assert.equal(archiveLzma.integrated_application, true);
+  assert.equal(archiveLzma.test_run.tests, 169); assert.equal(archiveLzma.test_run.passed, 169); assert.equal(archiveLzma.test_run.failed + archiveLzma.test_run.skipped, 0);
+  for (const gate of ['full_feature_parity','all_ways_improved','original_compression_performance_parity','original_application_runtime_wrapper']) assert.equal(archiveLzma[gate], false);
+  const lzmaIntegrity = spawnSync(process.execPath, ['products/rea-studio/apps/archive/verify-lzma.mjs'], {cwd:root,encoding:'utf8',timeout:30000});
+  assert.equal(lzmaIntegrity.status, 0, lzmaIntegrity.stderr);
+  const lzmaIntegrityResult = JSON.parse(lzmaIntegrity.stdout); assert.equal(lzmaIntegrityResult.fingerprints, 124);
+  const compressionBrowser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-compression-remote-verification.json'), 'utf8'));
+  assert.equal(compressionBrowser.schema, 'rea-compression-remote-browser-verification/v1'); assert.deepEqual(compressionBrowser.checks.map(v=>v.app).sort(), ['archive','backup','sync']); assert.ok(compressionBrowser.checks.every(v=>v.passed));
+  for (const gate of ['every_documented_feature_verified','full_feature_parity_established','universal_superiority_established']) assert.equal(compressionBrowser[gate], false);
+  for (const entry of [...compressionBrowser.implementation_fingerprints,...compressionBrowser.screenshots]) currentFingerprint(entry, 'Compression/remote browser');
+  for (const [app,path] of [['archive','apps/archive/lzma-validation.json'],['backup','apps/backup/results/compression-validation.json'],['sync','apps/sync/results/webdav-validation.json']]) assert.equal(compressionBrowser.checks.find(v=>v.app===app).receipt_sha256, sha(readFileSync(join(developmentRoot,path))));
+  const remoteBrowser = compressionBrowser.checks.find(v=>v.app==='sync'); assert.equal(remoteBrowser.previewAndRefusedApplyChangedRemoteFiles, false); assert.equal(remoteBrowser.afterApply.priorBytesRetained, true); assert.equal(remoteBrowser.afterApply.passwordAbsentFromWorkspaceAndRecords, true); assert.equal(remoteBrowser.beforeApply.downloadHasNoCredentials, true);
+  const compressedBackupBrowser = compressionBrowser.checks.find(v=>v.app==='backup'); assert.equal(compressedBackupBrowser.filesystemAssertions.applicationRestoreExact, true); assert.equal(compressedBackupBrowser.filesystemAssertions.originalRestoreExact, true); assert.equal(compressedBackupBrowser.filesystemAssertions.allNewIndexedBlobsCompressed, true); assert.ok(compressedBackupBrowser.observations.every(v=>v.passwordCleared));
   const sevenzip = JSON.parse(readFileSync(join(developmentRoot, 'apps/archive/sevenzip-validation.json'), 'utf8'));
   assert.equal(sevenzip.schema, 'rea-sevenzip-validation/v1');
   assert.equal(sevenzip.test_run.passed, 68); assert.equal(sevenzip.test_run.sevenzip_passed, 26);
   assert.equal(sevenzip.test_run.failed + sevenzip.test_run.skipped, 0);
   assert.equal(sevenzip.full_feature_parity, false); assert.equal(sevenzip.all_ways_improved, false); assert.equal(sevenzip.original_application_runtime_wrapper, false);
-  for (const entry of [...sevenzip.implementation_fingerprints, ...sevenzip.preserved_previous_receipts]) currentFingerprint(entry, '7Z');
+  for (const entry of [...sevenzip.implementation_fingerprints, ...sevenzip.preserved_previous_receipts]) nativeWorkflowsFingerprint(entry, '7Z');
   const backupKdf = JSON.parse(readFileSync(join(developmentRoot, 'apps/backup/results/kdf-policy-validation.json'), 'utf8'));
   assert.equal(backupKdf.schema, 'rea-restic-kdf-policy-followup/v1');
   assert.equal(backupKdf.validation.tests, 4); assert.equal(backupKdf.validation.pass, 4);
@@ -183,7 +259,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(backupKdf.change.current.minimumP, 13); assert.equal(backupKdf.change.current.maximumP, 32);
   assert.equal(backupKdf.change.automaticExistingKeyMigration, false);
   assert.equal(backupKdf.fullFeatureParityEstablished, false); assert.equal(backupKdf.universalSuperiorityEstablished, false);
-  for (const entry of backupKdf.implementationFingerprints) currentFingerprint(entry, 'Backup KDF');
+  for (const entry of backupKdf.implementationFingerprints) nativeWorkflowsFingerprint(entry, 'Backup KDF');
   const metricsPerformance = JSON.parse(readFileSync(join(developmentRoot, 'results/metrics-performance-followup/followup.json'), 'utf8'));
   assert.equal(metricsPerformance.schema, 'rea-native-calculation-performance-followup/v1');
   assert.equal(metricsPerformance.fullFeatureParityEstablished, false); assert.equal(metricsPerformance.universalSuperiorityEstablished, false);
@@ -203,12 +279,12 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(nativeSync.differential.comparisonDecisions, 1400); assert.equal(nativeSync.differential.filterSettings, 56); assert.equal(nativeSync.differential.folderDryRunApplyScenarios, 21);
   assert.equal(nativeSync.runtimeRunsOriginalOrVendorCode, false); assert.equal(nativeSync.fullProductComplete, false); assert.equal(nativeSync.universalSuperiorityEstablished, false);
   assert.equal(nativeSync.comparisonOfSpeedOrResourcesToOriginal, false);
-  for (const [path, digest] of Object.entries(nativeSync.sourceFiles)) currentFingerprint({ path: 'products/rea-studio/apps/sync/' + path, sha256: digest }, 'Native Sync');
-  for (const [path, entry] of Object.entries(nativeSync.evidence)) currentFingerprint({ ...entry, path: 'products/rea-studio/apps/sync/results/' + path }, 'Native Sync evidence');
+  for (const [path, digest] of Object.entries(nativeSync.sourceFiles)) nativeWorkflowsFingerprint({ path: 'products/rea-studio/apps/sync/' + path, sha256: digest }, 'Native Sync');
+  for (const [path, entry] of Object.entries(nativeSync.evidence)) nativeWorkflowsFingerprint({ ...entry, path: 'products/rea-studio/apps/sync/results/' + path }, 'Native Sync evidence');
   for (const [path, digest] of Object.entries(nativeSync.hostDependenciesAtTest)) {
     const target = resolve(developmentRoot, 'apps/sync', path);
     assert.ok(target.startsWith(developmentRoot + '\\') || target.startsWith(developmentRoot + '/'));
-    nativeCoreFingerprint({ path: relative(root, target).replaceAll('\\', '/'), sha256: digest }, 'Native Sync host at focused test');
+    nativeWorkflowsFingerprint({ path: relative(root, target).replaceAll('\\', '/'), sha256: digest }, 'Native Sync host at focused test');
   }
   const nativeAutomation = JSON.parse(readFileSync(join(developmentRoot, 'apps/automation/native-validation.json'), 'utf8'));
   assert.equal(nativeAutomation.schema, 'rea-automation-native-validation/v1');
@@ -224,15 +300,15 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(accounting.exactOutputMatches, 473); assert.equal(accounting.rejectionOutcomeMatches, 85);
   assert.equal(accounting.normalizedHttpOutputMatches, 2); assert.equal(accounting.deliberateDeviations, 2);
   assert.equal(accounting.waitMethodOutputMatches, 6);
-  for (const entry of nativeAutomation.sourceFiles) currentFingerprint({ ...entry, path:'products/rea-studio/apps/automation/' + entry.path }, 'Native Automation');
-  for (const entry of nativeAutomation.sharedValidatedFiles) currentFingerprint(entry, 'Native Automation host');
+  for (const entry of nativeAutomation.sourceFiles) nativeWorkflowsFingerprint({ ...entry, path:'products/rea-studio/apps/automation/' + entry.path }, 'Native Automation');
+  for (const entry of nativeAutomation.sharedValidatedFiles) nativeWorkflowsFingerprint(entry, 'Native Automation host');
   for (const name of ['stdout','stderr']) assert.equal(sha(Buffer.from(nativeAutomation.rawTestEvidence[name])), nativeAutomation.rawTestEvidence[name+'Sha256']);
   const nativeWorkflowsBrowser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-native-workflows-verification.json'), 'utf8'));
   assert.equal(nativeWorkflowsBrowser.schema, 'rea-native-workflows-browser-verification/v1');
   assert.deepEqual(nativeWorkflowsBrowser.checks.map(check => check.app).sort(), ['archive','automation','backup','metrics','sync']);
   assert.ok(nativeWorkflowsBrowser.checks.every(check => check.passed === true));
   for (const gate of ['every_documented_feature_verified','full_feature_parity_established','universal_superiority_established']) assert.equal(nativeWorkflowsBrowser[gate], false);
-  for (const entry of [...nativeWorkflowsBrowser.implementation_fingerprints,...nativeWorkflowsBrowser.screenshots]) currentFingerprint(entry, 'Native workflows browser');
+  for (const entry of [...nativeWorkflowsBrowser.implementation_fingerprints,...nativeWorkflowsBrowser.screenshots]) nativeWorkflowsFingerprint(entry, 'Native workflows browser');
   for (const [app,path] of [['archive','apps/archive/sevenzip-validation.json'],['automation','apps/automation/native-validation.json'],['backup','apps/backup/results/kdf-policy-validation.json'],['sync','apps/sync/results/native-verification.json']]) assert.equal(nativeWorkflowsBrowser.checks.find(check => check.app === app).receipt_sha256, sha(readFileSync(join(developmentRoot,path))));
   const currentBackupBrowser = nativeWorkflowsBrowser.checks.find(check => check.app === 'backup');
   assert.equal(currentBackupBrowser.password_cleared_after_every_observed_operation, true);
@@ -357,16 +433,29 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(requirementIndex.full_product_parity_rows_passed, 0);
   productDevelopment = { applications: 10, recorded_tests_passed: validation.summary.pass, tested_source_hashes_checked: validation.source_files.length, browser_workflow_records: browser.checks.length, historical_native_browser_workflow_records: currentBrowser.checks.length, historical_execution_browser_workflow_records: executionBrowser.checks.length, historical_execution_archive_source_hashes_checked: historicalExecution.sources.size, historical_execution_archive_source_revision: historicalExecution.source_revision, joplin_original_method_checks: joplinOracle.passed, keepass_interoperability_test_collection: vaultOracle.result.passed, automation_execution_test_collection: automationExecution.summary.pass, historical_archive_zip_test_collection: archiveZip.checks.successful_result.passed, historical_archive_format_test_collection: archiveFormats.summary.pass, current_archive_test_collection: archiveZstd.checks.result.passed, grafana_unchanged_original_fixtures: grafanaSchema.fixtureChecks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
   Object.assign(productDevelopment, {
+    current_backup_compression_tests_passed: backupCompression.summary.pass,
+    current_backup_compression_source_hashes_checked: backupCompression.implementationFingerprints.length,
+    preserved_backup_compression_study_artifacts: compressionPreservation.snapshots.length,
+    current_sync_test_collection: webdav.testRun.pass,
+    current_webdav_test_collection: webdav.testRun.newWebDAVTests,
+    current_webdav_original_executions: webdav.oracle.authenticatedOriginalExecutions,
+    current_webdav_original_comparison_decisions: webdav.oracle.comparisonDecisions,
+    current_archive_test_collection: archiveLzma.test_run.passed,
+    current_archive_source_and_proof_hashes_checked: lzmaIntegrityResult.fingerprints,
+    current_native_browser_workflow_records: compressionBrowser.checks.length,
+    current_native_browser_source_hashes_checked: compressionBrowser.implementation_fingerprints.length,
     historical_native_core_browser_workflow_records: nativeBrowser.checks.length,
-    current_native_browser_workflow_records: nativeWorkflowsBrowser.checks.length,
-    current_native_browser_source_hashes_checked: nativeWorkflowsBrowser.implementation_fingerprints.length,
-    current_archive_test_collection: sevenzip.test_run.passed,
-    current_automation_test_collection: nativeAutomation.summary.pass,
+    historical_native_workflows_browser_workflow_records: nativeWorkflowsBrowser.checks.length,
+    historical_native_workflows_browser_source_hashes_checked: nativeWorkflowsBrowser.implementation_fingerprints.length,
+    historical_native_workflows_source_revision: nativeWorkflowsHistory.source_revision,
+    historical_native_workflows_source_hashes_checked: nativeWorkflowsSources.size,
+    historical_sevenzip_test_collection: sevenzip.test_run.passed,
+    historical_native_automation_test_collection: nativeAutomation.summary.pass,
     native_n8n_original_exact_outputs: accounting.exactOutputMatches,
     native_n8n_original_rejection_outcomes: accounting.rejectionOutcomeMatches,
     native_n8n_normalized_http_outputs: accounting.normalizedHttpOutputMatches,
     native_n8n_intentional_deviations: accounting.deliberateDeviations,
-    native_rclone_test_collection: nativeSync.testRun.pass,
+    historical_native_rclone_test_collection: nativeSync.testRun.pass,
     native_rclone_original_filter_settings: nativeSync.differential.filterSettings,
     native_rclone_original_comparison_decisions: nativeSync.differential.comparisonDecisions,
     node_red_original_runtime_cases: nativeFlow.runtimeCases.passed,
@@ -384,6 +473,7 @@ const receipt = {
   javascript_syntax_checks: checkedScripts, publication_sha256_checks: manifest.files.length,
   project_metadata_and_record_counts_consistent: true, excluded_artifacts_not_in_payload: true,
   credential_pattern_scan_passed: true, root_document_links_resolve: true,
+  preserved_vendor_and_historical_document_links_not_rebased: true,
   ...(productDevelopment ? { product_development: productDevelopment } : {}),
   scope: 'Publication integrity, syntax and existing record consistency; this does not rerun the original behavioral experiments or development tests.'
 };

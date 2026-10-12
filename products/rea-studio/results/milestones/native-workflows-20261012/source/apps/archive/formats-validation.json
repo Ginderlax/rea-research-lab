@@ -1,0 +1,122 @@
+{
+  "schema": "rea-archive-formats-validation/v1",
+  "checkedAtUtc": "2026-10-12T15:56:18.3340873Z",
+  "command": "node --test products/rea-studio/apps/archive/formats.test.mjs",
+  "runtime": "v24.16.0",
+  "platform": "win32",
+  "summary": {
+    "tests": 17,
+    "pass": 17,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationMs": 1074.2169
+  },
+  "sourceFiles": [
+    {
+      "path": "products/rea-studio/apps/archive/tar.mjs",
+      "sha256": "940ce0be9034b8b54813e5290f6b40af4a98b4b89f1ef4e31d07caed38585afd"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/gzip.mjs",
+      "sha256": "2d76ed467dbccd9263808d3a7efa9be0dbf78225b8c4d0c0184cd2a29d0e76c6"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/zip.mjs",
+      "sha256": "16f7fca85cbe81698b1621968bc5281f8e80723b46e27a0ef89028dc14f65b6e"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/server.mjs",
+      "sha256": "73f5f2cf1a232a0e954067bc28c6cde954dc64ec0b9aa390c1c670aaa5bc55b5"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/client.mjs",
+      "sha256": "889fbff75760334c19785767c83efffc0b3a8c337b57dfaefafdc08e8b302227"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/formats.test.mjs",
+      "sha256": "7a7847d60b34ead39b597aac54c1612f616ffe69b9a267e193bb01fc78554c98"
+    }
+  ],
+  "oracles": [
+    {
+      "name": "7-Zip 26.04 preserved original 7za.exe",
+      "package": "projects/08-7zip/artifacts/7z2604-extra.7z",
+      "packageSha256": "dc4b11d3399db18b063630137145f5585d8f7ac847bf3639bd1185d7d1f7cee0",
+      "bootstrapSha256": "256feca8e274e5da655e2a284fabafd9f554365eb164862089dacd4e8276d282",
+      "executableSha256": "15d4c788c148e3677e2fc1c4a01f191fb6669eba4f6acf8a465f0f1a6f1e1260",
+      "authentication": "Authenticate preserved package/bootstrap bytes, extract executable, authenticate its SHA-256, execute only private test copies.",
+      "observed": [
+        "TAR/PAX reads Unicode/CJK/emoji/long paths, binary data and empty directories from application archives",
+        "Application reads original-generated TAR",
+        "Raw GZIP reads/writes both directions including independently built optional extra/name/comment/headerCRC and concatenated members",
+        "Far future and negative PAX timestamps restore wrapped uint32 dates; payload extraction succeeds"
+      ]
+    },
+    {
+      "name": "Windows bsdtar 3.8.8 / libarchive 3.8.8",
+      "path": "C:/Windows/System32/tar.exe",
+      "executableSha256": "4e598a8cec84af779e3377442fce2b94b976f614ed4c6e5a665e19308fd1e379",
+      "authentication": "Authenticate bytes and execute a private test copy, asserting its version string.",
+      "observed": [
+        "Supported ASCII/Latin-1 and long-path TAR/ustar/PAX exchange both directions",
+        "GZIP-compressed TAR exchange both directions",
+        "Raw GZIP creation readable by application; bsdtar normal list/extract modes do not read raw GZIP",
+        "CJK/emoji PAX path reading rejects with empty or unreadable filename; assertion remains active"
+      ]
+    }
+  ],
+  "correctionsAndFindings": [
+    {
+      "category": "implementation bug fixed by parent",
+      "before": "makeTar rejected valid year-2300 timestamps because ustar octal mtime field overflowed, including fractional values already represented with PAX",
+      "after": "PAX mtime emitted for negative/fractional/positive overflow timestamps, main and PAX headers use bounded zero placeholder",
+      "regression": "Exact octal boundary, one second over boundary, exact/fractional year2300, and negative year1900 preserve timestamps in application reader"
+    },
+    {
+      "category": "native oracle limitation; test scope corrected explicitly",
+      "before": "Initial suite failed 14/15 because Windows bsdtar rejected full CJK/emoji fixture",
+      "after": "Positive bsdtar path exchange uses supported ASCII/Latin-1 names; active native rejection assertion records CJK/emoji limitation. Full Unicode positive exchange uses authenticated original 7za",
+      "additionalProbe": "Native bsdtar PAX creation of a synthetic CJK/emoji path exited 3221225477 (0xC0000005) and produced an invalid empty TAR; that crashing probe is not repeated in the final suite"
+    },
+    {
+      "category": "original behavior difference",
+      "before": "17-test suite failed 16/17 when asserting original 7za restored far-future PAX time unchanged",
+      "after": "Suite asserts the observed original wrapped date values and explicitly disclaims full timestamp parity",
+      "observedTimestampComparisons": [
+        {
+          "input": "2300-01-01T00:00:00.000Z",
+          "originalRestored": "2027-10-18T11:03:28.000Z"
+        },
+        {
+          "input": "2300-01-01T00:00:00.123Z",
+          "originalRestored": "2027-10-18T11:03:28.123Z"
+        },
+        {
+          "input": "1900-01-01T00:00:00.123Z",
+          "originalRestored": "2036-02-07T06:28:16.123Z"
+        }
+      ]
+    }
+  ],
+  "implementedChecks": [
+    "TAR metadata/ustar prefixes/GNU long names/global-local PAX/deletion records/base256/signed checksums",
+    "TAR malformed header/PAX/size/padding/unsupported entries and unsafe/duplicate/collision paths",
+    "16 MiB file,64 MiB total,96 MiB container bounds and header/entry/metadata limits",
+    "GZIP optional fields/concatenation/CRC/trailers/content/truncation/reserved flags/output budgets",
+    "Server create/list/test/extract TAR/TAR.GZ/TGZ/GZIP, exact payloads, timestamp restoration, first-member filename and malformed later-member refusal",
+    "Existing archives and destinations remain unchanged; unconfirmed/unsafe extraction produces no destination or staging residue"
+  ],
+  "standardReferences": [
+    "https://www.rfc-editor.org/rfc/rfc1952.html"
+  ],
+  "fullOriginalFeatureParityEstablished": false,
+  "universalSuperiorityEstablished": false,
+  "scope": "Selected implemented-contract and authenticated native exchange fixtures, not exhaustive original-product or format interoperability. No silent skips on this Windows run.",
+  "pendingCleanup": {
+    "path": "C:/Users/evanh/AppData/Local/Temp/rea-formats-probe-b3ddd3bb-25c7-4d12-8261-8aa97ad4ec19",
+    "content": "Two synthetic probe files only",
+    "reason": "Automatic approval review rejected removal with blocked by policy; left untouched"
+  }
+}

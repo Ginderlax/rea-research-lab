@@ -2,9 +2,20 @@ import * as fs from 'node:fs/promises';
 import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { handleNative,disposeNative,snapshotNativeInput } from './native.mjs';
+import { createDAVActions } from './dav-actions.mjs';
 
 const MAX_FILE = 64 * 1024 * 1024, MAX_TOTAL = 512 * 1024 * 1024;
 const plans = new Map(), queues = new Map();
+const davServices = new Map();
+export const webdavServiceLimits = Object.freeze({workspaces:4,plansPerWorkspace:100,serializedMetadataPerWorkspace:32*1024*1024,serializedMetadataAcrossWorkspaces:128*1024*1024});
+function davService(workspace,store) {
+  let service = davServices.get(workspace.root);
+  if (!service) {
+    if (davServices.size >= webdavServiceLimits.workspaces) throw new Error('The WebDAV workspace service limit is reached. Close an existing host workspace first.');
+    service = createDAVActions(workspace.root,store); davServices.set(workspace.root,service);
+  }
+  return service;
+}
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 function clean(value) {
   if (typeof value !== 'string' || !value || value.length > 4096 || value.includes('\\') || value.startsWith('/')) throw new Error('Use a relative workspace path with forward slashes.');
@@ -170,8 +181,9 @@ async function run({ action, input = {}, workspace, store }) {
   throw new Error('Unknown synchronization action.');
 }
 export async function handle(context) {
+  if (context.action.startsWith('webdav-')) return davService(context.workspace,context.store).handle(context.action,context.input ?? {});
   if (context.action.startsWith('rclone-')) context = {...context,input:snapshotNativeInput(context.action,context.input ?? {})};
   const key = context.workspace.root, previous = queues.get(key) ?? Promise.resolve(), current = previous.catch(() => {}).then(() => run(context)); queues.set(key,current);
   try { return await current; } finally { if (queues.get(key) === current) queues.delete(key); }
 }
-export function dispose(workspace) { disposeNative(workspace); for (const key of plans.keys()) if (key.startsWith(`${workspace.root}:`)) plans.delete(key); }
+export function dispose(workspace) { const service = davServices.get(workspace.root); if (service) { service.close(); davServices.delete(workspace.root); } disposeNative(workspace); for (const key of plans.keys()) if (key.startsWith(`${workspace.root}:`)) plans.delete(key); }

@@ -1,0 +1,504 @@
+{
+  "schema": "rea-compression-remote-browser-verification/v1",
+  "recordedAtUtc": "2026-10-12T19:07:24.315Z",
+  "scope": "Actual rendered interfaces and synthetic disk/network fixtures; Archive has separately attributed reviewer-owned Chrome proof. Shared host source identities apply to root Backup/Sync browser observations. Not exhaustive acceptance.",
+  "checks": [
+    {
+      "app": "backup",
+      "passed": true,
+      "receipt_sha256": "2e76342630934ea462eb8820a903fd45950606ebc4afbe4ebb31b4e24f8886aa",
+      "observations": [
+        {
+          "operation": "nativeInit",
+          "result": {
+            "format": "restic",
+            "version": 2,
+            "repository": "backup/compressed-v2",
+            "id": "5762e9ed45e3fcd0a890a9a8290bb7b1a6ca71094e7131ea595a4b27e6f36ba1",
+            "keyID": "83631c687020c7e9ac0110fb7039c70acf4df7fa22b932062667280fce7b46d5",
+            "encrypted": true,
+            "passwordDerivation": {
+              "N": 32768,
+              "r": 8,
+              "p": 14,
+              "minimumP": 13,
+              "calibrationTargetMilliseconds": 500
+            }
+          },
+          "passwordCleared": true
+        },
+        {
+          "operation": "nativeSnapshot",
+          "result": {
+            "format": "restic",
+            "id": "7024d1c73c3bbe562ed7c6935075d9a79e3db48ca74500f1b45097f020a1cd82",
+            "tree": "3f18d4badcef5e252754f04088ad2455b25845a7693711da10020b3cb48023bf",
+            "files": 1,
+            "bytes": 41000,
+            "entries": 2,
+            "newPacks": 3,
+            "repository": "backup/compressed-v2",
+            "compression": {
+              "repositoryVersion": 2,
+              "mode": "max",
+              "implementation": "Node/libzstd; original encoder byte equivalence and performance are unproven."
+            },
+            "chunking": "Fixed 1 MiB blobs; no Rabin chunk-boundary parity."
+          },
+          "passwordCleared": true
+        },
+        {
+          "operation": "nativeCheck",
+          "result": {
+            "format": "restic",
+            "verified": true,
+            "files": 1,
+            "checkedBytes": 41000,
+            "uniqueDataBlobs": 1,
+            "scope": "Selected snapshot: referenced trees and data, authenticated packs, storage/plaintext hashes and index agreement."
+          },
+          "passwordCleared": true
+        },
+        {
+          "operation": "nativeRestore",
+          "result": {
+            "format": "restic",
+            "restored": 1,
+            "destination": "backup/compressed-restored",
+            "verified": true,
+            "metadata": "Names, directory structure, file bytes and modification times; ACLs, ownership, hardlinks and other metadata are not restored."
+          },
+          "passwordCleared": true
+        }
+      ],
+      "filesystemAssertions": {
+        "fixtureBytes": 41000,
+        "fixtureSha256": "47b3fa2efd9f335ad7cd10ae111074de2bc12347c7b34840aac08d201d87977e",
+        "applicationRestoreExact": true,
+        "originalRestoreExact": true,
+        "allNewIndexedBlobsCompressed": true,
+        "passwordAbsentFromWorkspaceAndRecords": true,
+        "passwordScanFiles": 9,
+        "applicationRecordFiles": 0
+      },
+      "originalObservations": [
+        {
+          "args": [
+            "check",
+            "--read-data"
+          ],
+          "exitCode": 0,
+          "stdout": "create exclusive lock for repository\nload indexes\ncheck all packs\ncheck snapshots, trees and blobs\n[0:00] 100.00%  1 / 1 snapshots\nread all data\n[0:00] 100.00%  3 / 3 packs\nno errors were found\n",
+          "stderr": ""
+        },
+        {
+          "args": [
+            "cat",
+            "index",
+            "5d9b79547806837a785b39394613e706c9588c9388abc59fcd7426f82b4950a5"
+          ],
+          "exitCode": 0,
+          "stdout": "{\"packs\":[{\"id\":\"ff70e923d460704f539ac3da1a0dbe75a7f4b066a16aaabc2dc878f0fa1c6195\",\"blobs\":[{\"id\":\"47b3fa2efd9f335ad7cd10ae111074de2bc12347c7b34840aac08d201d87977e\",\"type\":\"data\",\"offset\":0,\"length\":93,\"uncompressed_length\":41000}]},{\"id\":\"ea21607898771c5188e9076f59a78802fcf7cf59c2064f2078e5e761f50a0245\",\"blobs\":[{\"id\":\"c81a72d8e783527505fe8433ba876ceccf59af47def20cb7b8948eec2248c4b7\",\"type\":\"tree\",\"offset\":0,\"length\":214,\"uncompressed_length\":284}]},{\"id\":\"908a52fe67724a5da970c28854d12ba3ed0ede856d91a9ffacf60adf1fe991f9\",\"blobs\":[{\"id\":\"3f18d4badcef5e252754f04088ad2455b25845a7693711da10020b3cb48023bf\",\"type\":\"tree\",\"offset\":0,\"length\":215,\"uncompressed_length\":278}]}]}\n",
+          "stderr": ""
+        },
+        {
+          "args": [
+            "restore",
+            "7024d1c73c3bbe562ed7c6935075d9a79e3db48ca74500f1b45097f020a1cd82",
+            "--target",
+            "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\.local\\rea-studio-compression-original-restored"
+          ],
+          "exitCode": 0,
+          "stdout": "restoring snapshot 7024d1c7 of [/compressed-source] at 2026-10-12 18:51:36.148 +0000 UTC by rea-studio@EvanH to C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\.local\\rea-studio-compression-original-restored\nSummary: Restored 2 files/dirs (40.039 KiB) in 0:00\n",
+          "stderr": ""
+        }
+      ]
+    },
+    {
+      "app": "sync",
+      "passed": true,
+      "receipt_sha256": "66632624c0055905823ceb4fe9270809f87c834331c72633a33edd7c65bd1eb4",
+      "observations": [
+        {
+          "operation": "list",
+          "result": "3 remote entries.",
+          "passwordCleared": true
+        },
+        {
+          "operation": "preview",
+          "result": "dav/source → http://127.0.0.1:59841/dav/out\n\n2 copies · 1 file removals · 1 folders created · 0 files skipped. Expires at 3:11:54 PM.\n\nCopy: replace.txt\n\nCreate folder: sub\n\nCopy: sub/new.txt\n\nRemove: extra.txt",
+          "passwordCleared": true
+        },
+        {
+          "operation": "applyWithoutRemovalApproval",
+          "result": "Explicit removal approval is required.",
+          "passwordCleared": true
+        },
+        {
+          "operation": "applyApprovedPreview",
+          "result": "4 operations verified. Prior bytes retained in .rea-sync-history/dav-77fdc762cf662cd60539b30fa43190f4763b7ae20f996d66.",
+          "passwordCleared": true
+        }
+      ],
+      "beforeApply": {
+        "phase": "before",
+        "checkedAtUtc": "2026-10-12T18:58:44.606Z",
+        "remoteFiles": [
+          {
+            "path": "excluded.tmp",
+            "bytes": 4,
+            "sha256": "6ca7ea2feefc88ecb5ed6356ed963f47dc9137f82526fdd25d618ea626d0803f"
+          },
+          {
+            "path": "extra.txt",
+            "bytes": 6,
+            "sha256": "7e5608ab610017afe6c1894fdd4f56848823dcb1d12302bd49751d16a290f774"
+          },
+          {
+            "path": "replace.txt",
+            "bytes": 3,
+            "sha256": "cba06b5736faf67e54b07b561eae94395e774c517a7d910a54369e1263ccfbd4"
+          }
+        ],
+        "downloadBytes": 2290,
+        "downloadSha256": "7da7ce4964e75b59f79ee2cdfa44258e39da981c4da5ffc1f4df17dbd80429c9",
+        "downloadHasNoCredentials": true
+      },
+      "afterApply": {
+        "phase": "after",
+        "checkedAtUtc": "2026-10-12T18:59:09.210Z",
+        "remoteFiles": [
+          {
+            "path": "excluded.tmp",
+            "bytes": 4,
+            "sha256": "6ca7ea2feefc88ecb5ed6356ed963f47dc9137f82526fdd25d618ea626d0803f"
+          },
+          {
+            "path": "replace.txt",
+            "bytes": 11,
+            "sha256": "95713e9cbdd1dfcb2d4080c2537f418d43ca0da25f0d7d6631f4f7c97b89dc47"
+          },
+          {
+            "path": "sub/new.txt",
+            "bytes": 3,
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437"
+          }
+        ],
+        "downloadBytes": 2290,
+        "downloadSha256": "7da7ce4964e75b59f79ee2cdfa44258e39da981c4da5ffc1f4df17dbd80429c9",
+        "downloadHasNoCredentials": true,
+        "priorBytesRetained": true,
+        "historyFolder": ".rea-sync-history/dav-77fdc762cf662cd60539b30fa43190f4763b7ae20f996d66",
+        "completedOperations": [
+          {
+            "type": "copy",
+            "path": "replace.txt"
+          },
+          {
+            "type": "mkdir",
+            "path": "sub"
+          },
+          {
+            "type": "copy",
+            "path": "sub/new.txt"
+          },
+          {
+            "type": "remove",
+            "path": "extra.txt"
+          }
+        ],
+        "retained": [
+          {
+            "path": "replace.txt",
+            "bytes": "0.bin",
+            "size": 3,
+            "sha256": "cba06b5736faf67e54b07b561eae94395e774c517a7d910a54369e1263ccfbd4",
+            "etag": "\"fixture-3\""
+          },
+          {
+            "path": "extra.txt",
+            "bytes": "1.bin",
+            "size": 6,
+            "sha256": "7e5608ab610017afe6c1894fdd4f56848823dcb1d12302bd49751d16a290f774",
+            "etag": "\"fixture-5\""
+          }
+        ],
+        "passwordAbsentFromWorkspaceAndRecords": true,
+        "passwordScanFiles": 6,
+        "applicationRecordFiles": 1
+      },
+      "previewAndRefusedApplyChangedRemoteFiles": false,
+      "priorBytesRetained": true,
+      "passwordClearedAfterEveryObservedRequest": true
+    },
+    {
+      "app": "archive",
+      "passed": true,
+      "receipt_sha256": "50ad460a9c5e2406895af3a53f6a7bb3f00b0298d22eaee3acad4a90eed617e4",
+      "observer": "Separate Archive integration reviewer, Chrome, private ephemeral preview stopped after verification.",
+      "evidence": {
+        "schema": 1,
+        "privatePreviewUrl": "http://127.0.0.1:56211",
+        "userOrSharedPreviewPortsTouched": false,
+        "observedDefaultCompression": "lzma2",
+        "observedProfiles": [
+          "fast",
+          "balanced",
+          "thorough"
+        ],
+        "sourceBound": {
+          "server.mjs": "f64a7d232552eb351ee15563b53abfe88afac667c7b005747b590ab9a580410d",
+          "client.mjs": "21a5ee67b639ebb56208defd56b195d6fe9ee2bbe911976033d106951ffe6b01",
+          "sevenzip.mjs": "7b8b775816951bd7fdbc25821503236732831169e0e35e7f4dfc3b9d719f016c",
+          "lzma.mjs": "0276e852c46cfe307c21d020eb8a13e2daafa689b1d6d4d9b53502846ab164df",
+          "encode-lzma.mjs": "7715a6e3aa27439db125e9534f3e499f0727b5c95938e94873776295773beecb",
+          "operation-budget.mjs": "828abefc3db2f1d2244c319435a6881079f8494eac4bd36047b7b762f5e65539"
+        },
+        "records": [
+          {
+            "archive": "archive/genuine.7z",
+            "method": "lzma2",
+            "bytes": 349,
+            "sha256": "d1d0b7517113123a5df9c910a72b229fe58d36598160249723b77e8f721fb3e8",
+            "encodedHeader": true,
+            "entries": [
+              {
+                "name": "hello.txt",
+                "bytes": 18000,
+                "sha256": "61c84238e88eb5c446ac39b538fdffa34187743b470791a8b4c114c218f4f23c",
+                "method": "lzma2",
+                "solid": true
+              },
+              {
+                "name": "second.txt",
+                "bytes": 3000,
+                "sha256": "dfd03fd8e2cac1fa6ec9586da0608ae5a3d4dc78459bd527ab166796e01c866b",
+                "method": "lzma2",
+                "solid": true
+              }
+            ],
+            "originalResult": "authenticated original t + extraction SHA256 exact",
+            "browserExtractResult": "filesystem SHA256 exact and mtime within1ms",
+            "archive_base64": "N3q8ryccAAThrGkzEwEAAAAAAAAqAAAAAAAAAAtfvX7gUgcAk10AIRyJ56sfH2iQKWAD5UJKK9iuMn8u9WF8SSieCwN7XkcSJ+gLFQLUpl9vRZV7Q5gz09H3Aj530YOZTnx2tCYqet3vNKDT8Irqwk+zhHKD84Gk+8JbFxfr1OAdb7NYj+0McOvQKF/Bagz2LTLQH8qB2CA7qb5aSh7pi7+0VQJLiGj8Bg/hDjmXaSYDZbRh+V/z0V3sAAAAgTMHrg/VMEC47vg2N9rAQ1yGkfKTJwoxGTrNrZqyHWm9sEnDh0uyBS3FSmyoSYatbxVpBwuCrH/GHWn/TLwbdnB/XV8QUMbnHKhOZ829Msitl3RkY4Jgdq49f+xCmxlIUaxqfSAF/ArOepCCTkJgJd0d8DQAABcGgJsBCXgKAftWdNMABwsBAAEjAwEBBV0AAIAADICHCgGalWPvAAgAAA==",
+            "synthetic_test_data": true
+          },
+          {
+            "archive": "archive/genuine-lzma.7z",
+            "method": "lzma",
+            "bytes": 347,
+            "sha256": "e46a5c0e60764725323d5c4c4305904294489fbde22dbfedd0e0a807b59f0612",
+            "encodedHeader": true,
+            "entries": [
+              {
+                "name": "hello.txt",
+                "bytes": 18000,
+                "sha256": "61c84238e88eb5c446ac39b538fdffa34187743b470791a8b4c114c218f4f23c",
+                "method": "lzma",
+                "solid": true
+              },
+              {
+                "name": "second.txt",
+                "bytes": 3000,
+                "sha256": "dfd03fd8e2cac1fa6ec9586da0608ae5a3d4dc78459bd527ab166796e01c866b",
+                "method": "lzma",
+                "solid": true
+              }
+            ],
+            "originalResult": "authenticated original t + extraction SHA256 exact",
+            "browserExtractResult": "filesystem SHA256 exact and mtime within1ms",
+            "archive_base64": "N3q8ryccAARw2KAsEQEAAAAAAAAqAAAAAAAAAOq2VwgAIRyJ56sfH2iQKWAD5UJKK9iuMn8u9WF8SSieCwN7XkcSJ+gLFQLUpl9vRZV7Q5gz09H3Aj530YOZTnx2tCYqet3vNKDT8Irqwk+zhHKD84Gk+8JbFxfr1OAdb7NYj+0McOvQKF/Bagz2LTLQH8qB2CA7qb5aSh7pi7+0VQJLiGj8Bg/hDjmXaSYDZbRh+V/z0V3sAACBMweuD9UwGQMvhrsJCMyHi53qTXb+o3mOPMdnFHLikEqRpengUNxt635JfrRhZblz8ZzCcLzp4mBldCQOvq0OLNj1gNtVccxmSQtOPnIE9b5jthrDlSjw5wPMi6McGi7mHFyZhUxcEVq8biRccUdFVbD3AYVPzLgAAAAXBoCUAQl9CgFqr4EMAAcLAQABIwMBAQVdAAABAAyAjQoBbdoTEwAIAAA=",
+            "synthetic_test_data": true
+          },
+          {
+            "archive": "archive/original-default.7z",
+            "bytes": 310,
+            "sha256": "66911a5718f58b3b2bec519ab70163a2353bea6cd70cbd3e9c1ddc203985afbc",
+            "producer": "authenticated complete original7Zip26.04 defaults",
+            "archive_base64": "N3q8ryccAATU+Bh59AAAAAAAAAAiAAAAAAAAABT7OJbgUgcAe10AIRyJ56sfH2iQKWAD5UJKK9iuMn8u9WF8SSieCwN7boj6m1WmCyGI4ei8w9T92AQV6T3+s6tEjFrV1t9KqsUhxScueXOpr+qdCAzmlF38so++s+ULRfL1rwXjcn4i6Bh7UKv6/QV2PmVV/caHWobeJ9maTDCV4MTIHIoAAAAAgTMHrg/VL7h11mwpH0gdmPRNWIR1u6mmfCSyeRdvui/hlLt002igdGPM6+j7EL7dMTx3sNDoYndehY5WN5U/OvXCsIatuluoeqTSFnjqW5vG28gvAQLSo8Ijoj1Fs68s0Iw9zqm/E0Lt/fEsvkwAFwaAgwEJcQAHCwEAASMDAQEFXQAQAAAMgI4KAV23r4AAAA==",
+            "synthetic_test_data": true,
+            "browserExtractResult": "browser list + extraction verified against filesystem SHA256 and modification dates",
+            "entries": [
+              {
+                "name": "hello.txt",
+                "bytes": 18000,
+                "sha256": "61c84238e88eb5c446ac39b538fdffa34187743b470791a8b4c114c218f4f23c",
+                "method": "lzma2",
+                "solid": true
+              },
+              {
+                "name": "second.txt",
+                "bytes": 3000,
+                "sha256": "dfd03fd8e2cac1fa6ec9586da0608ae5a3d4dc78459bd527ab166796e01c866b",
+                "method": "lzma2",
+                "solid": true
+              }
+            ]
+          }
+        ],
+        "screenshots": [
+          "results/lzma-browser-20261012.jpg",
+          "results/lzma-original-browser-20261012.jpg"
+        ],
+        "consoleErrors": [],
+        "controlsDuringOperation": "all Archive form controls observed disabled, restored on completion"
+      }
+    }
+  ],
+  "implementation_fingerprints": [
+    {
+      "path": "products/rea-studio/apps/archive/client.mjs",
+      "bytes": 8881,
+      "sha256": "21a5ee67b639ebb56208defd56b195d6fe9ee2bbe911976033d106951ffe6b01"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/encode-lzma.mjs",
+      "bytes": 13556,
+      "sha256": "7715a6e3aa27439db125e9534f3e499f0727b5c95938e94873776295773beecb"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/lzma.mjs",
+      "bytes": 13502,
+      "sha256": "0276e852c46cfe307c21d020eb8a13e2daafa689b1d6d4d9b53502846ab164df"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/operation-budget.mjs",
+      "bytes": 1526,
+      "sha256": "828abefc3db2f1d2244c319435a6881079f8494eac4bd36047b7b762f5e65539"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/server.mjs",
+      "bytes": 11633,
+      "sha256": "f64a7d232552eb351ee15563b53abfe88afac667c7b005747b590ab9a580410d"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip.mjs",
+      "bytes": 25949,
+      "sha256": "7b8b775816951bd7fdbc25821503236732831169e0e35e7f4dfc3b9d719f016c"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/client.mjs",
+      "bytes": 7695,
+      "sha256": "c16f934846241f37f1a05dffbf8c516b5ab16fe6fde1d72f9b645e561a088f9a"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic-compression.mjs",
+      "bytes": 2494,
+      "sha256": "843bb88384548859a4c5155ef9f181f6d037183819eda6512b9f02f6410810a0"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic-crypto.mjs",
+      "bytes": 5262,
+      "sha256": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic-kdf-policy.mjs",
+      "bytes": 1923,
+      "sha256": "6118dcace475d83a77e5d7362316268893ef126387aae22e93601a73876620f1"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic.mjs",
+      "bytes": 31021,
+      "sha256": "504807039c9edc340038b15b1c0c1935463f2b318a80d5f2fb9233406aa57e2b"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/server.mjs",
+      "bytes": 15107,
+      "sha256": "9d31285d5302a04c6bd67c1bbda5992e7b49f4db79c2576b35f09d3b0db44fa9"
+    },
+    {
+      "path": "products/rea-studio/apps/sync/client.mjs",
+      "bytes": 19289,
+      "sha256": "c33f5016ef816c333d678f52e22ee610eeb6751c4c5fcbec2adc3b30dafa058b"
+    },
+    {
+      "path": "products/rea-studio/apps/sync/dav-actions.mjs",
+      "bytes": 3414,
+      "sha256": "45e4fa34b33c8b463eb58364f7a388c440ac6a1913d1af04b8fbbd2afe9b7b92"
+    },
+    {
+      "path": "products/rea-studio/apps/sync/dav-comparison.mjs",
+      "bytes": 2028,
+      "sha256": "554d92002cee46a6438df932e3496a1a30984d6419d952299562aaa7e105df81"
+    },
+    {
+      "path": "products/rea-studio/apps/sync/dav-input.mjs",
+      "bytes": 2134,
+      "sha256": "66af7d796e81a44047de2d143113cc8afdfbad7023adc40604f084b941577230"
+    },
+    {
+      "path": "products/rea-studio/apps/sync/dav-transfer.mjs",
+      "bytes": 14717,
+      "sha256": "591146243ed9b378aed70ce4beedceeec1b12319d7747b1e21fad2282286c9bb"
+    },
+    {
+      "path": "products/rea-studio/apps/sync/dav-xml.mjs",
+      "bytes": 6705,
+      "sha256": "10a6eb69a61ecd30d1549e4063f823645f00112d16e2ab5b1a84392330fc88fb"
+    },
+    {
+      "path": "products/rea-studio/apps/sync/native-comparison.mjs",
+      "bytes": 2844,
+      "sha256": "f169dff550e3b5dfd95a11136791be88bfe6dc88768c949e0befd677aebdd767"
+    },
+    {
+      "path": "products/rea-studio/apps/sync/native-filters.mjs",
+      "bytes": 11483,
+      "sha256": "3e370373897364b61247da55be53ecd4b618da84df581d766120adafaba4d27b"
+    },
+    {
+      "path": "products/rea-studio/apps/sync/server.mjs",
+      "bytes": 14722,
+      "sha256": "8daefafce29ad21bf62ced55714a683fad78fbf609e1297ac77973ef002956ea"
+    },
+    {
+      "path": "products/rea-studio/apps/sync/webdav.mjs",
+      "bytes": 13844,
+      "sha256": "a9b69b4f766fc08f57594c6326b78e4945c36a1639093e30550b8bbf319f9eee"
+    },
+    {
+      "path": "products/rea-studio/catalog.mjs",
+      "bytes": 1836,
+      "sha256": "a99fcd3ae135fa1533d24f2de95a712267e34289767c2df30a1e83a91dc3ae71"
+    },
+    {
+      "path": "products/rea-studio/lib/storage.mjs",
+      "bytes": 3085,
+      "sha256": "729c2f9700b1239f04294b11c42bfd2754478b227e39ab03ec49a1be9141b633"
+    },
+    {
+      "path": "products/rea-studio/server.mjs",
+      "bytes": 7741,
+      "sha256": "807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "products/rea-studio/results/native-backup-compression-preview.png",
+      "bytes": 235280,
+      "sha256": "86d6c576bc7334fa463677309debb5f306ad7b6108edab7163c367ea06361328"
+    },
+    {
+      "path": "products/rea-studio/results/native-webdav-preview.png",
+      "bytes": 267588,
+      "sha256": "9d8d3cf8ef8191dfb0fbb978d22f61c408c51f4caa561e93f7f5e5c025bd2f5a"
+    },
+    {
+      "path": "products/rea-studio/results/native-webdav-card-preview.png",
+      "bytes": 72060,
+      "sha256": "61d04bec02780fdfee76aea80203354dfd78d0d3d5918d318f13cd576fbb4934"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/results/lzma-browser-20261012.jpg",
+      "bytes": 210308,
+      "sha256": "abf6874aae2829a9d7161039cd469ddd9b0ee4638d899ca571f9aa491f0f6747"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/results/lzma-original-browser-20261012.jpg",
+      "bytes": 215202,
+      "sha256": "52657bec07139b2c2d5c26b80aa410d7ab7cabab7ca7de4bf3426fd28be242dd"
+    }
+  ],
+  "every_documented_feature_verified": false,
+  "full_feature_parity_established": false,
+  "universal_superiority_established": false
+}

@@ -5,6 +5,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { zstdDecompressSync } from 'node:zlib';
 import { hash, seal, open, base64, password, passwordKey, masterKey, masterJSON, randomKey, randomPolynomial, validPolynomial } from './restic-crypto.mjs';
 import { calibrateWriter } from './restic-kdf-policy.mjs';
+import { compressionMode, encodeBlob, encodeMetadata } from './restic-compression.mjs';
 
 const MiB = 1024 * 1024;
 export const limits = { file: 64 * MiB,total: 512 * MiB,pack: 96 * MiB,metadata: 16 * MiB,metadataTotal: 64 * MiB,entries: 10000,blobs: 100000,packs: 4096,depth: 100,keys: 16,milliseconds: 120000 };
@@ -121,7 +122,7 @@ class Repository {
     finally { await fs.unlink(this.location(tempRelative)); }
     return hash(bytes);
   }
-  async saveObject(directory, document) { const bytes = seal(this.key,encode(document)), objectID = hash(bytes); await this.atomic(`${directory}/${objectID}`,bytes); return objectID; }
+  async saveObject(directory, document) { const bytes = seal(this.key,encodeMetadata(encode(document),this.config.version,this.compression)), objectID = hash(bytes); await this.atomic(`${directory}/${objectID}`,bytes); return objectID; }
   async lock() {
     if ((await this.names('locks')).length) throw new Error('Restic repository is locked. Existing locks, including stale locks, are never removed by this app.');
     const lockID = await this.saveObject('locks',{ time:new Date().toISOString(),exclusive:true,hostname:os.hostname(),username:'rea-studio',pid:process.pid }); this.lockID = lockID;
@@ -228,11 +229,11 @@ class Repository {
     if (this.packs.size + newPacks.length >= limits.packs || this.blobs.size >= limits.blobs) throw new Error('Native repository exceeds the bounded pack or blob limit.');
     // One independently authenticated blob per pack is valid, although less
     // space-efficient than restic's multi-blob pack batching.
-    const payload = seal(this.key,bytes), record = Buffer.alloc(37); record[0] = type === 'tree' ? 1:0; record.writeUInt32LE(payload.length,1); Buffer.from(blobID,'hex').copy(record,5);
+    const encoded = encodeBlob(bytes,type,this.config.version,this.compression), payload = seal(this.key,encoded.bytes), record = Buffer.alloc(encoded.uncompressedLength ? 41:37); record[0] = (type === 'tree' ? 1:0) + (encoded.uncompressedLength ? 2:0); record.writeUInt32LE(payload.length,1); if (encoded.uncompressedLength) record.writeUInt32LE(encoded.uncompressedLength,5); Buffer.from(blobID,'hex').copy(record,encoded.uncompressedLength ? 9:5);
     const header = seal(this.key,record), trailer = Buffer.alloc(4); trailer.writeUInt32LE(header.length);
     const packed = Buffer.concat([payload,header,trailer]), packID = hash(packed);
     await this.atomic(`data/${packID.slice(0,2)}/${packID}`,packed);
-    const blob = { id:blobID,type,offset:0,length:payload.length }; newPacks.push({ id:packID,blobs:[blob] }); this.blobs.set(identity,{ ...blob,pack:packID }); return blobID;
+    const blob = { id:blobID,type,offset:0,length:payload.length,...(encoded.uncompressedLength ? {uncompressed_length:encoded.uncompressedLength}:{}) }; newPacks.push({ id:packID,blobs:[blob] }); this.blobs.set(identity,{ ...blob,pack:packID }); return blobID;
   }
 }
 
@@ -294,7 +295,7 @@ async function snapshot(repo,input) {
   if (newPacks.length) await repo.saveObject('index',{ packs:newPacks });
   await repo.assertLock();
   const snapshotID = await repo.saveObject('snapshots',{ time:new Date().toISOString(),tree,paths:[`/${name}`],hostname:os.hostname(),username:'rea-studio',uid:0,gid:0,tags:input.label ? [input.label]:[] });
-  return { format:'restic',id:snapshotID,tree,files,bytes,entries,newPacks:newPacks.length,repository:repo.relative,chunking:'Fixed 1 MiB blobs; no Rabin chunk-boundary parity.' };
+  return { format:'restic',id:snapshotID,tree,files,bytes,entries,newPacks:newPacks.length,repository:repo.relative,compression:{repositoryVersion:repo.config.version,mode:repo.config.version===2?repo.compression:'uncompressed-v1',implementation:'Node/libzstd; original encoder byte equivalence and performance are unproven.'},chunking:'Fixed 1 MiB blobs; no Rabin chunk-boundary parity.' };
 }
 async function selected(repo,input) {
   // Read snapshot first, then indexes, as required by the native ordering contract.
@@ -338,6 +339,7 @@ export async function handleNative({ action,input,workspace }) {
   const repo = new Repository(workspace,input.repository);
   if (action === 'nativeInit') return initialize(repo,input);
   await repo.unlock(input.password);
+  repo.compression = compressionMode(input.compression);
   try {
     await repo.lock();
     if (action === 'nativeInfo') return { format:'restic',repository:repo.relative,version:repo.config.version,id:repo.config.id,chunker_polynomial:repo.config.chunker_polynomial,keyID:repo.keyID,encrypted:true };

@@ -12,7 +12,9 @@ function files(directory) {
 }
 const sourceFiles = [...['apps', 'lib', 'public', 'scripts', 'tests'].flatMap(directory => files(join(root, directory))), ...['server.mjs', 'catalog.mjs', 'package.json'].map(name => join(root, name))]
   .filter(path => /\.(mjs|json|html|css|ps1)$/.test(path)).sort();
-const testFiles = sourceFiles.filter(path => path.endsWith('.test.mjs'));
+// Results preserve exact historical tests, including failed experiments. They
+// are integrity-checked source snapshots, not members of the current suite.
+const testFiles = sourceFiles.filter(path => path.endsWith('.test.mjs') && !relative(root, path).split(/[\\/]/).includes('results'));
 const fingerprint = path => ({ path: relative(root, path).replaceAll('\\', '/'), sha256: createHash('sha256').update(readFileSync(path)).digest('hex') });
 const sourceBefore = sourceFiles.map(fingerprint);
 const run = spawnSync(process.execPath, ['--test', '--test-reporter=tap', '--test-concurrency=1', ...testFiles], { cwd: root, encoding: 'utf8', timeout: 600000, maxBuffer: 8 * 1024 * 1024 });
@@ -39,6 +41,7 @@ const record = {
   summary,
   source_files: sourceBefore,
   source_bytes_stable_across_run: true,
+  historical_test_snapshots_excluded_from_current_execution: true,
   browser_validation: 'Separate source-bound interactive records are identified in STATUS.json and the current milestone; historical native-core, execution, native-exchange and initial ten-app checks remain preserved. Browser checks are not rerun by this script.',
   comparison: 'editor-comparison.json (separate recorded exploratory component benchmark; not rerun by this script)',
   full_feature_parity_established: false,

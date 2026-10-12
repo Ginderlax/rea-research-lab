@@ -2,6 +2,9 @@
 // studied in the pinned official 7-Zip 26.04 SDK 7zFormat.txt / Methods.txt and
 // full-product 7zIn.cpp / 7zOut.cpp. No original application is invoked here.
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
+import { decodeLzma, decodeLzma2 } from './lzma.mjs';
+import { encodeLzma, encodeLzma2 } from './encode-lzma.mjs';
+import { operationBudget } from './operation-budget.mjs';
 
 export const LIMITS = Object.freeze({ file: 16 * 1024 ** 2, total: 64 * 1024 ** 2,
   container: 96 * 1024 ** 2, header: 16 * 1024 ** 2, entries: 10000, depth: 128 });
@@ -9,9 +12,13 @@ const SIG = Buffer.from([0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c]);
 const EPOCH = 116444736000000000n;
 const fail = message => { throw new Error(`7z: ${message}`); };
 const typedByteLength = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Uint8Array.prototype), 'byteLength').get;
+const typedBuffer = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(Uint8Array.prototype), 'buffer').get;
 function byteLength(data, label) {
   if (!(data instanceof Uint8Array)) fail(`${label} must be Buffer or Uint8Array bytes`);
-  try { return typedByteLength.call(data); } catch { fail(`${label} must be Buffer or Uint8Array bytes`); }
+  let size, buffer;
+  try { size = typedByteLength.call(data); buffer = typedBuffer.call(data); } catch { fail(`${label} must be Buffer or Uint8Array bytes`); }
+  if (!(buffer instanceof ArrayBuffer)) fail(`${label} must use an unshared buffer`);
+  return size;
 }
 function copyBytes(data, length) {
   const buffer = Buffer.allocUnsafe(length); Uint8Array.prototype.set.call(buffer, data); return buffer;
@@ -20,9 +27,13 @@ const table = Uint32Array.from({ length: 256 }, (_, n) => {
   for (let i = 0; i < 8; i++) n = (n & 1) ? 0xedb88320 ^ (n >>> 1) : n >>> 1;
   return n >>> 0;
 });
-export function crc32(data) {
+export function crc32(data, budget) {
   let crc = 0xffffffff;
-  for (const byte of data) crc = table[(crc ^ byte) & 255] ^ (crc >>> 8);
+  for (let i = 0; i < data.length; i++) {
+    crc = table[(crc ^ data[i]) & 255] ^ (crc >>> 8);
+    if ((i & 4095) === 4095) budget?.work(4096);
+  }
+  budget?.work(data.length & 4095); budget?.check();
   return (crc ^ 0xffffffff) >>> 0;
 }
 const byte = n => Buffer.from([n]);
@@ -44,9 +55,10 @@ export function encodeNumber(value) {
   return result;
 }
 class Reader {
-  constructor(data) { this.data = data; this.pos = 0; }
+  constructor(data, budget) { this.data = data; this.pos = 0; this.budget = budget; }
   take(size) {
     if (!Number.isSafeInteger(size) || size < 0 || size > this.data.length - this.pos) fail('truncated header');
+    this.budget?.work(size);
     const b = this.data.subarray(this.pos, this.pos + size); this.pos += size; return b;
   }
   byte() { return this.take(1)[0]; }
@@ -135,7 +147,8 @@ function storedLzma2Decode(data, size, properties) {
   }
   if (output !== size) fail('LZMA2 output size mismatch'); return join(chunks);
 }
-function decodeCoder(packed, folder) {
+function decodeCoder(packed, folder, budget) {
+  budget.check();
   const { method, properties, size } = folder; let data;
   if (method === '00') {
     if (properties.length) fail('Copy properties are not supported'); data = packed;
@@ -145,10 +158,10 @@ function decodeCoder(packed, folder) {
       const result = inflateRawSync(packed, { maxOutputLength: Math.max(1, size + 1), info: true });
       if (result.engine.bytesWritten !== packed.length) fail('trailing DEFLATE data'); data = result.buffer;
     } catch (error) { fail(`invalid DEFLATE stream: ${error.message}`); }
-  } else if (method === '21') data = storedLzma2Decode(packed, size, properties);
-  else if (method === '030101') fail('LZMA compression is not supported yet');
+  } else if (method === '21') data = decodeLzma2(packed, size, properties, { maxOutput: size, operationBudget: budget });
+  else if (method === '030101') data = decodeLzma(packed, size, properties, { maxOutput: size, operationBudget: budget });
   else fail(`unsupported coder ${method}`);
-  if (data.length !== size) fail('folder output size mismatch'); return data;
+  budget.check(); if (data.length !== size) fail('folder output size mismatch'); return data;
 }
 function parseStreams(r, outputBound) {
   let id = r.property(), packPos = 0, packSizes = [], packCRCs = [], folders = [];
@@ -251,21 +264,23 @@ function parseFiles(r) {
   });
   checkPaths(files); return files;
 }
-function readPacked(streams, archive, nextStart, ranges, outputBound) {
+function readPacked(streams, archive, nextStart, ranges, outputBound, budget) {
   let pos = 32 + streams.packPos, total = 0; const substreams = [];
   streams.folders.forEach((folder, i) => {
     const size = streams.packSizes[i];
     if (size > nextStart - pos || pos < 32) fail('packed stream overlaps next header');
     if (size) ranges.push([pos, pos + size]);
     const packed = archive.subarray(pos, pos + size); pos += size;
-    if (streams.packCRCs[i] !== null && crc32(packed) !== streams.packCRCs[i]) fail('packed stream CRC mismatch');
-    const output = decodeCoder(packed, folder); total += output.length; if (total > outputBound) fail('output exceeds bound');
-    if (folder.crc !== null && crc32(output) !== folder.crc) fail('folder CRC mismatch');
+    budget.check();
+    if (streams.packCRCs[i] !== null && crc32(packed, budget) !== streams.packCRCs[i]) fail('packed stream CRC mismatch');
+    const output = decodeCoder(packed, folder, budget); total += output.length; if (total > outputBound) fail('output exceeds bound');
+    if (folder.crc !== null && crc32(output, budget) !== folder.crc) fail('folder CRC mismatch');
     let offset = 0;
     folder.subSizes.forEach((size, j) => {
       const data = output.subarray(offset, offset + size); offset += size;
-      const crc = folder.subCRCs[j]; if (crc !== null && crc32(data) !== crc) fail('file CRC mismatch');
-      const method = folder.method === '00' ? 'store' : folder.method === '040108' ? 'deflate' : 'lzma2-store';
+      const crc = folder.subCRCs[j]; if (crc !== null && crc32(data, budget) !== crc) fail('file CRC mismatch');
+      budget.work(data.length);
+      const method = folder.method === '00' ? 'store' : folder.method === '040108' ? 'deflate' : folder.method === '030101' ? 'lzma' : 'lzma2';
       substreams.push({ data: Buffer.from(data), crc, method, solid: folder.subSizes.length > 1,
         block: i, compressedSize: folder.subSizes.length > 1 ? null : streams.packSizes[i] });
     });
@@ -273,24 +288,25 @@ function readPacked(streams, archive, nextStart, ranges, outputBound) {
   });
   return substreams;
 }
-export function read7z(archive) {
+export function read7z(archive, opts = {}) {
+  const budget = operationBudget(opts); budget.check();
   const length = byteLength(archive, 'archive input');
   if (length < 32 || length > LIMITS.container) fail('container size exceeds bound');
   if (!Buffer.isBuffer(archive)) archive = copyBytes(archive, length);
   if (!archive.subarray(0, 6).equals(SIG)) fail('invalid signature');
   if (archive[6] !== 0) fail('unsupported archive major version');
-  if (crc32(archive.subarray(12, 32)) !== archive.readUInt32LE(8)) fail('start header CRC mismatch');
+  if (crc32(archive.subarray(12, 32), budget) !== archive.readUInt32LE(8)) fail('start header CRC mismatch');
   const offset = archive.readBigUInt64LE(12), size = archive.readBigUInt64LE(20);
   if (offset > BigInt(LIMITS.container) || size > BigInt(LIMITS.header) || 32n + offset + size !== BigInt(archive.length)) fail('invalid next header bounds or trailing archive data');
   const nextStart = 32 + Number(offset), next = archive.subarray(nextStart);
-  if (crc32(next) !== archive.readUInt32LE(28)) fail('next header CRC mismatch');
+  if (crc32(next, budget) !== archive.readUInt32LE(28)) fail('next header CRC mismatch');
   if (!size) { if (offset) fail('unreferenced payload'); return []; }
-  const ranges = []; let r = new Reader(next), id = r.property();
+  const ranges = []; let r = new Reader(next, budget), id = r.property();
   if (id === 23) {
     const encoded = parseStreams(r, LIMITS.header); r.end();
-    const streams = readPacked(encoded, archive, nextStart, ranges, LIMITS.header);
+    const streams = readPacked(encoded, archive, nextStart, ranges, LIMITS.header, budget);
     if (streams.length !== 1) fail('encoded header must have one output stream');
-    r = new Reader(streams[0].data); id = r.property();
+    r = new Reader(streams[0].data, budget); id = r.property();
   }
   if (id !== 1) fail('missing plain Header or unsupported nested encoded header');
   id = r.property();
@@ -306,7 +322,7 @@ export function read7z(archive) {
   if (id === 5) { files = parseFiles(r); id = r.property(); }
   if (id !== 0) fail('unsupported Header property'); r.end();
   if (streams && streams.folders.some(f => f.subSizes.some(n => n > LIMITS.file))) fail('file size exceeds bound');
-  const unpacked = streams ? readPacked(streams, archive, nextStart, ranges, LIMITS.total) : [];
+  const unpacked = streams ? readPacked(streams, archive, nextStart, ranges, LIMITS.total, budget) : [];
   let index = 0;
   files.forEach(file => {
     if (file.hasStream) {
@@ -318,48 +334,61 @@ export function read7z(archive) {
   ranges.sort((a, b) => a[0] - b[0]); let end = 32;
   for (const [start, stop] of ranges) { if (start !== end) fail('overlapping or unreferenced packed data'); end = stop; }
   if (end !== nextStart) fail('unreferenced packed data');
-  return files.map(({ hasStream, attributes, ...file }) => file);
+  budget.check(); return files.map(({ hasStream, attributes, ...file }) => file);
 }
-function packStreams(groups, method, packPos = 0) {
-  const methodBytes = Buffer.from(method === 'copy' ? '00' : method === 'deflate' ? '040108' : '21', 'hex');
-  const props = method === 'lzma2-store' ? Buffer.from([0]) : Buffer.alloc(0);
+function packStreams(groups, method, packPos = 0, budget) {
+  const methodBytes = Buffer.from(method === 'copy' ? '00' : method === 'deflate' ? '040108' : method === 'lzma' ? '030101' : '21', 'hex');
+  const defaultProps = method === 'lzma2-store' ? Buffer.from([0]) : Buffer.alloc(0);
   const header = [byte(6), encodeNumber(packPos), encodeNumber(groups.length), byte(9), ...groups.map(g => encodeNumber(g.packed.length)),
-    writeDigests(groups.map(g => crc32(g.packed))), byte(0), byte(7), byte(11), encodeNumber(groups.length), byte(0)];
+    writeDigests(groups.map(g => crc32(g.packed, budget))), byte(0), byte(7), byte(11), encodeNumber(groups.length), byte(0)];
   for (const g of groups) {
+    const props = g.properties ?? defaultProps;
     header.push(encodeNumber(1), byte(methodBytes.length | (props.length ? 32 : 0)), methodBytes);
     if (props.length) header.push(encodeNumber(props.length), props);
   }
-  header.push(byte(12), ...groups.map(g => encodeNumber(g.raw.length)), writeDigests(groups.map(g => crc32(g.raw))), byte(0), byte(8));
+  header.push(byte(12), ...groups.map(g => encodeNumber(g.raw.length)), writeDigests(groups.map(g => crc32(g.raw, budget))), byte(0), byte(8));
   if (groups.some(g => g.files.length !== 1)) header.push(byte(13), ...groups.map(g => encodeNumber(g.files.length)));
   if (groups.some(g => g.files.length > 1)) header.push(byte(9), ...groups.flatMap(g => g.files.slice(0, -1).map(f => encodeNumber(f.data.length))));
-  const subCRCs = groups.flatMap(g => g.files.length === 1 ? [] : g.files.map(f => crc32(f.data)));
+  const subCRCs = groups.flatMap(g => g.files.length === 1 ? [] : g.files.map(f => crc32(f.data, budget)));
   if (subCRCs.length) header.push(writeDigests(subCRCs)); header.push(byte(0), byte(0));
   return join(header);
 }
 const prop = (id, data) => join([byte(id), encodeNumber(data.length), data]);
-export function write7z(input, { method = 'deflate', level = 6, solid = false, encodedHeader = false } = {}) {
-  if (!['copy', 'deflate', 'lzma2-store'].includes(method)) fail('unsupported writer method');
+export function write7z(input, opts = {}) {
+  const { method = 'deflate', level = 6, solid = false, encodedHeader = false, profile = 'balanced', dictionarySize, searchDepth, chunkSize, lc, lp, pb, endMarker = false, maxTimeMs, maxSteps } = opts;
+  const budget = operationBudget(opts), headerMethod = opts.headerMethod ?? (['lzma', 'lzma2', 'lzma2-store'].includes(method) ? 'lzma' : 'deflate');
+  if (!['copy', 'deflate', 'lzma2-store', 'lzma', 'lzma2'].includes(method)) fail('unsupported writer method');
   if (!Number.isInteger(level) || level < 0 || level > 9) fail('DEFLATE level must be 0..9');
   if (!Array.isArray(input) || input.length > LIMITS.entries) fail('entry count exceeds bound');
-  let total = 0;
+  let total = 0, nameBytes = 1;
   const files = input.map(entry => {
     if (!entry || typeof entry !== 'object') fail('entry must be an object');
     const data = entry.data ?? Buffer.alloc(0);
     const length = byteLength(data, 'file content');
     if (length > LIMITS.file || total + length > LIMITS.total) fail('input size exceeds bound');
     if (entry.directory && length) fail('directory has content');
+    const name = cleanPath(entry.name); nameBytes += (name.length + 1) * 2;
+    if (nameBytes > LIMITS.header) fail('header name bytes exceed bound');
+    budget.work(length + name.length + 1);
     total += length;
-    const file = { ...entry, directory: Boolean(entry.directory), data: copyBytes(data, length) };
+    const file = { ...entry, name, directory: Boolean(entry.directory), data: copyBytes(data, length) }; budget.check();
     if (file.mtimeMs != null && (!Number.isSafeInteger(file.mtimeMs) || file.mtimeMs < -11644473600000
       || file.mtimeMs > Number((0xffffffffffffffffn - EPOCH) / 10000n))) fail('unsupported timestamp');
     return file;
   }); checkPaths(files);
   const nonempty = files.filter(f => !f.directory && f.data.length);
+  let packedTotal = 0;
+  const encoderOptions = { profile, dictionarySize, searchDepth, chunkSize, lc, lp, pb, endMarker, maxTimeMs, maxSteps, operationBudget: budget };
   const groups = (solid && nonempty.length ? [nonempty] : nonempty.map(f => [f])).map(group => {
-    const raw = join(group.map(f => f.data));
-    return { files: group, raw, packed: method === 'copy' ? raw : method === 'deflate' ? deflateRawSync(raw, { level }) : storedLzma2Encode(raw) };
+    budget.check(); const raw = join(group.map(f => f.data)); budget.work(raw.length); budget.check();
+    const opts = { ...encoderOptions, maxOutput: LIMITS.container - packedTotal };
+    const encoded = method === 'lzma' ? encodeLzma(raw, opts) : method === 'lzma2' ? encodeLzma2(raw, opts) : { packed: method === 'copy' ? raw : method === 'deflate' ? deflateRawSync(raw, { level }) : storedLzma2Encode(raw) };
+    if (encoded.packed.length > LIMITS.container - packedTotal) fail('packed output exceeds container bound');
+    budget.check();
+    packedTotal += encoded.packed.length;
+    return { files: group, raw, ...encoded };
   });
-  const header = [byte(1)]; if (groups.length) header.push(byte(4), packStreams(groups, method));
+  const header = [byte(1)]; if (groups.length) header.push(byte(4), packStreams(groups, method, 0, budget));
   if (files.length) {
     header.push(byte(5), encodeNumber(files.length));
     const empty = files.map(f => f.directory || f.data.length === 0);
@@ -377,10 +406,13 @@ export function write7z(input, { method = 'deflate', level = 6, solid = false, e
   header.push(byte(0)); let next = join(header), packed = groups.map(g => g.packed);
   if (next.length > LIMITS.header) fail('header exceeds bound');
   if (encodedHeader) {
-    const g = { files: [{ data: next }], raw: next, packed: deflateRawSync(next, { level }) };
-    next = join([byte(23), packStreams([g], 'deflate', packed.reduce((n, p) => n + p.length, 0))]); packed.push(g.packed);
+    if (!['lzma', 'lzma2', 'deflate'].includes(headerMethod)) fail('unsupported header method');
+    const encoded = headerMethod === 'lzma' ? encodeLzma(next, { ...encoderOptions, endMarker: false, maxOutput: LIMITS.container - packedTotal }) : headerMethod === 'lzma2' ? encodeLzma2(next, { ...encoderOptions, endMarker: false, maxOutput: LIMITS.container - packedTotal }) : { packed: deflateRawSync(next, { level }) };
+    const g = { files: [{ data: next }], raw: next, ...encoded };
+    next = join([byte(23), packStreams([g], headerMethod, packedTotal, budget)]); packed.push(g.packed);
   }
-  const offset = packed.reduce((n, p) => n + p.length, 0), start = join([u64(BigInt(offset)), u64(BigInt(next.length)), u32(crc32(next))]);
-  const archive = join([SIG, Buffer.from([0, 4]), u32(crc32(start)), start, ...packed, next]);
+  const offset = packed.reduce((n, p) => n + p.length, 0), start = join([u64(BigInt(offset)), u64(BigInt(next.length)), u32(crc32(next, budget))]);
+  if (32 + offset + next.length > LIMITS.container) fail('container exceeds bound');
+  budget.check(); const archive = join([SIG, Buffer.from([0, 4]), u32(crc32(start, budget)), start, ...packed, next]); budget.check();
   if (archive.length > LIMITS.container) fail('container exceeds bound'); return archive;
 }

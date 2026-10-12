@@ -1,6 +1,6 @@
 {
   "schema": "rea-development-validation/v1",
-  "checked_at_utc": "2026-10-12T18:32:49.334Z",
+  "checked_at_utc": "2026-10-12T19:13:04.179Z",
   "scope": "Implemented development application contracts; does not establish every documented original-product feature or comparative superiority.",
   "runtime": "v24.16.0",
   "platform": "win32",
@@ -9,7 +9,10 @@
   "test_files": [
     "apps/archive/app.integration.test.mjs",
     "apps/archive/app.test.mjs",
+    "apps/archive/encoder.test.mjs",
     "apps/archive/formats.test.mjs",
+    "apps/archive/lzma.integration.test.mjs",
+    "apps/archive/lzma.test.mjs",
     "apps/archive/sevenzip.test.mjs",
     "apps/archive/zip.test.mjs",
     "apps/archive/zstd.test.mjs",
@@ -22,6 +25,8 @@
     "apps/backup/app.integration.test.mjs",
     "apps/backup/app.test.mjs",
     "apps/backup/native.test.mjs",
+    "apps/backup/restic-compression-review.test.mjs",
+    "apps/backup/restic-compression.test.mjs",
     "apps/backup/restic-kdf-policy.test.mjs",
     "apps/backup/restic-kdf.interop.test.mjs",
     "apps/editor/app.integration.test.mjs",
@@ -47,6 +52,10 @@
     "apps/sync/app.test.mjs",
     "apps/sync/native.integration.test.mjs",
     "apps/sync/native.test.mjs",
+    "apps/sync/webdav.actions.test.mjs",
+    "apps/sync/webdav.client.test.mjs",
+    "apps/sync/webdav.integration.test.mjs",
+    "apps/sync/webdav.test.mjs",
     "apps/vault/app.integration.test.mjs",
     "apps/vault/app.test.mjs",
     "apps/vault/kdbx.interop.test.mjs",
@@ -54,13 +63,13 @@
     "tests/host.test.mjs"
   ],
   "summary": {
-    "tests": 345,
-    "pass": 345,
+    "tests": 496,
+    "pass": 496,
     "fail": 0,
     "cancelled": 0,
     "skipped": 0,
     "todo": 0,
-    "duration_ms": 321582.6542
+    "duration_ms": 411844.8508
   },
   "source_files": [
     {
@@ -77,11 +86,19 @@
     },
     {
       "path": "apps/archive/client.mjs",
-      "sha256": "c65fb02402082f3774070b40da8528f1f26f57affd6de02fb90bc45e820eb765"
+      "sha256": "21a5ee67b639ebb56208defd56b195d6fe9ee2bbe911976033d106951ffe6b01"
     },
     {
       "path": "apps/archive/compatibility-evidence.json",
       "sha256": "42da73a58a9ac571cba78e05f3dd47272d2a373c48e55a4c00748babdc1beaf8"
+    },
+    {
+      "path": "apps/archive/encode-lzma.mjs",
+      "sha256": "7715a6e3aa27439db125e9534f3e499f0727b5c95938e94873776295773beecb"
+    },
+    {
+      "path": "apps/archive/encoder.test.mjs",
+      "sha256": "4d0bf5034fb57761f287264cee1b0a0574dda10a9dbdb41e9679a22f472b09eb"
     },
     {
       "path": "apps/archive/fixtures/generate-zstd-fixtures.mjs",
@@ -112,8 +129,276 @@
       "sha256": "353ce11d994033bca9f8e16cc0226b68db30d7cc55f7e5c8fb3b6d0f5a653558"
     },
     {
-      "path": "apps/archive/server.mjs",
+      "path": "apps/archive/lzma-provenance.json",
+      "sha256": "b7ac1020e021c4a89e9aa153f3439e8df8cbf8ed95774360f1830f31fa8aa153"
+    },
+    {
+      "path": "apps/archive/lzma-validation.json",
+      "sha256": "50ad460a9c5e2406895af3a53f6a7bb3f00b0298d22eaee3acad4a90eed617e4"
+    },
+    {
+      "path": "apps/archive/lzma.integration.test.mjs",
+      "sha256": "fe283fb95a4c236aff017b3789515b8171834948ddd2f5b13d54d7dc8af56dca"
+    },
+    {
+      "path": "apps/archive/lzma.mjs",
+      "sha256": "0276e852c46cfe307c21d020eb8a13e2daafa689b1d6d4d9b53502846ab164df"
+    },
+    {
+      "path": "apps/archive/lzma.test.mjs",
+      "sha256": "08ebfae60b02be1ca005bb950c744d3f8367488a07af321fabfc69bed6c0428c"
+    },
+    {
+      "path": "apps/archive/operation-budget.mjs",
+      "sha256": "828abefc3db2f1d2244c319435a6881079f8494eac4bd36047b7b762f5e65539"
+    },
+    {
+      "path": "apps/archive/original-lzma-test-helper.mjs",
+      "sha256": "eb3d275176a8544a5a453a67ae73ff516531e0cf992c92d70bc9e80605f4f81a"
+    },
+    {
+      "path": "apps/archive/results/lzma-browser-evidence.json",
+      "sha256": "3442181caffdc727a7aad3081d97202d63e57a1f1da1ccba67231ef8b9bd66ce"
+    },
+    {
+      "path": "apps/archive/results/lzma-current/decoder-wsy7gS.json",
+      "sha256": "e3640176ff883d24337e89137c8c7051151c1aa9f645f0f045d56658705bb2d4"
+    },
+    {
+      "path": "apps/archive/results/lzma-current/encoder-RrcOle.json",
+      "sha256": "3c494bb5c1c81c25c4afe3a6c38dbb73f758b61e16a71fb1c4b623a7d1b8721f"
+    },
+    {
+      "path": "apps/archive/results/lzma-current/http-xJFMqS.json",
+      "sha256": "4825ed2650021131550fbc8b67748ba17c31ccc3a72c7ceb854cf6fe01e0e4c4"
+    },
+    {
+      "path": "apps/archive/results/lzma-current/run-mWt79Y.json",
+      "sha256": "203705998ae5a854400229bf12973cfb74148b7d8f6a7478893dbd745e5ffc3e"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/decoder/benchmark.mjs",
+      "sha256": "fad851952fb16b7f0918b3c5eb57a7d9c3707214c7867a676cfdf56104bad70c"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/decoder/draft-validation.json",
+      "sha256": "ae9bc19b923b1ba8fab104a622e6298c6b1f20deeb1c75659426a3d333bccf44"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/decoder/freeze.mjs",
+      "sha256": "e8555845317b978d2cf8d922aed7e5fc23423a989bd4ddf9ea7d4afad38db088"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/decoder/lzma.mjs",
+      "sha256": "2fb51a5ec550d3964f3289f5d7d4a54a34a8999aed02fd1f57e0954b35a2a380"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/decoder/lzma.test.mjs",
+      "sha256": "2a929d71068b8712b3964f63ae275fd59e8f0540c5e0d77874bce89d79bc1d64"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/decoder/provenance.json",
+      "sha256": "2d29bb68c91006f461899e80d971495b91c18de116a3b8e6ff6a6c2cb78d91e8"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/decoder/sevenzip.mjs",
+      "sha256": "bc0c5dab196e8f06fef3058de9217c8577397f8285d6cdeb57c059232e4c2941"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/decoder/verify-draft.mjs",
+      "sha256": "bd8fdfa55c4f6f2574c14bc07db19209960b9aadeb69302159731ac680c2a116"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/benchmark-oracle.mjs",
+      "sha256": "69738c8428f4b81aafa0438eafd31de3e6440b5108b4aa9ae95f5a904d20e6df"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/benchmark-original-check-results.json",
+      "sha256": "fe43de1a3ec9b07427faf71d42a5116fcc89b895b374e7d80072f12ef0004f52"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/benchmark-results.json",
+      "sha256": "492b02ca17197a9a4a9cd0adc2ceac3a3b6d2dc10fc87d0bb39e12be99ccc535"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/benchmark.mjs",
+      "sha256": "7cb713ce37d8bb5eb833e9af6708229bc851cc9e0bfcad39e1aff9238b9df67a"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/draft-validation.json",
+      "sha256": "56b117a12710a75efa5760441900cdce9793d06f47314bed2529da53d15c8b96"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/encode-lzma.mjs",
+      "sha256": "c00ef88ea6313d324b48d58ff6bb031bb297bd78ee70a093b0261b78abefa7dc"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/encoder.test.mjs",
+      "sha256": "b86df70d9347f1ac153679477547736435caa5cef508f2f43d8dbc9117a3d92a"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/freeze.mjs",
+      "sha256": "4e1689ae72bc722b55b28b3278c2787fcc14de0bbe10c5b047e66d82417ec229"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/lzma.mjs",
+      "sha256": "2fb51a5ec550d3964f3289f5d7d4a54a34a8999aed02fd1f57e0954b35a2a380"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/prepare-provenance.mjs",
+      "sha256": "828ffb1450aaafecde88c5baf55debd18f8594e7f94800a281b584927dd078a2"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/provenance.json",
+      "sha256": "23d4d27ec6790862932e173d31c2305b079c2d5b804651fa655e3c79123c3884"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/sevenzip.mjs",
+      "sha256": "d3e4aaf5642aaeab6aa8a3dc9f3a7045f78217ba3b54a558a49c0057abe855f6"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/encoder/verify-draft.mjs",
+      "sha256": "8ea973147761710c7b05b7f8d2a469aa72454e859572b84e4ac23beee184a99a"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/first-ratio-attempt/attempt-result.json",
+      "sha256": "854f46733a60b3765f42af1b58c97c629e23c6c8087ebec0ed3fe4f65563b2eb"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/first-ratio-attempt/encode-lzma.mjs",
+      "sha256": "1cb4f0bc85247c2a64a343ef26a1eb6b12b7e87d91026cc0bb2281787010c90d"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/first-ratio-attempt/encoder.test.mjs",
+      "sha256": "2e0f16dd2e733a01f8edeb3e01d7b4619f70c37befa6a13367425cb06fc5e613"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/first-ratio-attempt/failed-case-fixtures.json",
+      "sha256": "373fdacae50496ba0fb1add110328ca4d0fc84ffe2fa1b8e468b6620e1b1af37"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/first-ratio-attempt/fixtures-manifest.json",
+      "sha256": "af15f87bf3bae09e7f5423a226d42f1c6d5de62ad0979d66ee9019a5c5b58e64"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/first-ratio-attempt/lzma.mjs",
+      "sha256": "2fb51a5ec550d3964f3289f5d7d4a54a34a8999aed02fd1f57e0954b35a2a380"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/first-ratio-attempt/sevenzip.mjs",
+      "sha256": "c2e960e65ff090d2ce990d90508d19595a862786826a65b459e873eecf77ec01"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/post-hoc-25pct/attempt-result.json",
+      "sha256": "44f29731b3421877d33c834dedcc91ab2296cb5860f8029480e2ad4dd379f742"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/post-hoc-25pct/encode-lzma.mjs",
+      "sha256": "1cb4f0bc85247c2a64a343ef26a1eb6b12b7e87d91026cc0bb2281787010c90d"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/post-hoc-25pct/encoder.test.mjs",
+      "sha256": "4020f3aa927685e08faed40d84edf478168b6d8abfe17b3a4ac1925383e7f032"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/post-hoc-25pct/fixtures-manifest.json",
+      "sha256": "6e856c56fe6002090465cfc509513b7fc81cc5913e7c37995387d3571e4522d2"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/post-hoc-25pct/lzma.mjs",
+      "sha256": "2fb51a5ec550d3964f3289f5d7d4a54a34a8999aed02fd1f57e0954b35a2a380"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/history/post-hoc-25pct/sevenzip.mjs",
+      "sha256": "d3e4aaf5642aaeab6aa8a3dc9f3a7045f78217ba3b54a558a49c0057abe855f6"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/app.integration.test.mjs",
+      "sha256": "fbd5086faefc79dc85dd3ed0725b0396ae30d279d555de749982baea087e052d"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/app.test.mjs",
+      "sha256": "5c30d065062125f67927681f95d4d4479d40372e6916915a495acd8176487dbc"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/bootstrap-original.mjs",
+      "sha256": "da65b62b349b5f4f3f69422244d21ddf1686998bc0f6aa54df8365ca72f3c22e"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/client.mjs",
+      "sha256": "c65fb02402082f3774070b40da8528f1f26f57affd6de02fb90bc45e820eb765"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/compatibility-evidence.json",
+      "sha256": "42da73a58a9ac571cba78e05f3dd47272d2a373c48e55a4c00748babdc1beaf8"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/formats-validation.json",
+      "sha256": "ebeffa9c835ebee99cd89b954f92d22539c7118d2c1445efe8c11e20700243b6"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/formats.test.mjs",
+      "sha256": "7a7847d60b34ead39b597aac54c1612f616ffe69b9a267e193bb01fc78554c98"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/gzip.mjs",
+      "sha256": "2d76ed467dbccd9263808d3a7efa9be0dbf78225b8c4d0c0184cd2a29d0e76c6"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/server.mjs",
       "sha256": "984e532d7d38d146ec9dbbe30d10166ad8519679e76aa8242bb59ce01d209c70"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/sevenzip-source-references.json",
+      "sha256": "320305de5a608881b85fbb182d777887043bd1bf9d1ae5e976cc961a3e575ccc"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/sevenzip-validation.json",
+      "sha256": "ff53f71c7ad81e1c9903011f3cda81ea0e3d257d1130d4a475c69b65741e5be5"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/sevenzip.mjs",
+      "sha256": "f38b23f53c8341e563277472004a0a762fcd4075d0d0d33fe1eb9c555981285e"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/sevenzip.test.mjs",
+      "sha256": "ebecd795f7bddbf02e68667dda9c30fb532f9da4b3b622ae8a49f5863cae7851"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/source-manifest.json",
+      "sha256": "488d9b194e4f5cbd9e68d69ac8080e30b4aa8ab1a8ed4698b9f3c26c86a367a4"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/tar.mjs",
+      "sha256": "940ce0be9034b8b54813e5290f6b40af4a98b4b89f1ef4e31d07caed38585afd"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/verify-sevenzip.mjs",
+      "sha256": "00f562078dcaaa8645eec487101895a8d9a41104e19a8ebbb364a6bd408b3202"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/zip.mjs",
+      "sha256": "a59b2cf92a5d83638beb238a3ffcb39796ff1a59aab0d241d1161f448ddd232d"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/zip.test.mjs",
+      "sha256": "f7732808c8e734fdfd400a3af56108c0c3e1c0a6abbed3141dda3b86d56cdc66"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/zstd-validation.json",
+      "sha256": "9500028a9423e8295cefd178b049ee0033e4518e3555363292618b54384aa6e1"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/zstd.mjs",
+      "sha256": "3413aa08a4c1b21df2a4ff6b68ee3bb0c1d456031ed4d85d921883469b102ec8"
+    },
+    {
+      "path": "apps/archive/results/lzma-stage/prior-app/zstd.test.mjs",
+      "sha256": "b50927498b32b96dd40096618a0a412b7a9a54a9548a40cd76fe23c0fba6dbaa"
+    },
+    {
+      "path": "apps/archive/server.mjs",
+      "sha256": "f64a7d232552eb351ee15563b53abfe88afac667c7b005747b590ab9a580410d"
     },
     {
       "path": "apps/archive/sevenzip-source-references.json",
@@ -125,19 +410,23 @@
     },
     {
       "path": "apps/archive/sevenzip.mjs",
-      "sha256": "f38b23f53c8341e563277472004a0a762fcd4075d0d0d33fe1eb9c555981285e"
+      "sha256": "7b8b775816951bd7fdbc25821503236732831169e0e35e7f4dfc3b9d719f016c"
     },
     {
       "path": "apps/archive/sevenzip.test.mjs",
-      "sha256": "ebecd795f7bddbf02e68667dda9c30fb532f9da4b3b622ae8a49f5863cae7851"
+      "sha256": "89c1c3aecb2a75c03f6c1e97186c895582f350cefb6deab2178b6f31e0575362"
     },
     {
       "path": "apps/archive/tar.mjs",
       "sha256": "940ce0be9034b8b54813e5290f6b40af4a98b4b89f1ef4e31d07caed38585afd"
     },
     {
+      "path": "apps/archive/verify-lzma.mjs",
+      "sha256": "ef2bf20c8dd0b1cfdc0eb60648781a1027c08a55b60278aae5fb42b10166aefb"
+    },
+    {
       "path": "apps/archive/verify-sevenzip.mjs",
-      "sha256": "00f562078dcaaa8645eec487101895a8d9a41104e19a8ebbb364a6bd408b3202"
+      "sha256": "5eac453d42c2c32e2ff1d4ac3e2345c5f5623b01bb08ec9b4148c13e5e937435"
     },
     {
       "path": "apps/archive/zip.mjs",
@@ -257,7 +546,11 @@
     },
     {
       "path": "apps/backup/client.mjs",
-      "sha256": "04c56655e166dd47f79530eac9e5d324360e6234be4184c8a15e7ff4878a3083"
+      "sha256": "c16f934846241f37f1a05dffbf8c516b5ab16fe6fde1d72f9b645e561a088f9a"
+    },
+    {
+      "path": "apps/backup/fixtures/legacy-v2-writer.mjs",
+      "sha256": "86cb5e5b3959e539905b21eb69bb71db3eba3e19d03fa4f69bb3c8260cc537de"
     },
     {
       "path": "apps/backup/native-source-references.json",
@@ -270,6 +563,18 @@
     {
       "path": "apps/backup/native.test.mjs",
       "sha256": "d665da4f65ff7c61d788935467234991a379fb32a1a1a6796c416de747de7b63"
+    },
+    {
+      "path": "apps/backup/restic-compression-review.test.mjs",
+      "sha256": "08cb9bc25585c4dd53ac5082539bacd5af2f12977dd33904b76d8b1ec6bedc70"
+    },
+    {
+      "path": "apps/backup/restic-compression.mjs",
+      "sha256": "843bb88384548859a4c5155ef9f181f6d037183819eda6512b9f02f6410810a0"
+    },
+    {
+      "path": "apps/backup/restic-compression.test.mjs",
+      "sha256": "e0ec070e02fee6f385c2a4a27893f1d54bc038c03a9e35c387e1fdf6d56f9b27"
     },
     {
       "path": "apps/backup/restic-crypto.mjs",
@@ -289,7 +594,31 @@
     },
     {
       "path": "apps/backup/restic.mjs",
-      "sha256": "70bf4a5bfd46041823fa00bd7cdbf880f6c0a9020f67ef9e7a807b4242fbb527"
+      "sha256": "504807039c9edc340038b15b1c0c1935463f2b318a80d5f2fb9233406aa57e2b"
+    },
+    {
+      "path": "apps/backup/results/compression-source-study/preservation-manifest.json",
+      "sha256": "74c91d706950744da4667d2d7ef1932e08e708fb27b87a9a38e9ba55c87d90b7"
+    },
+    {
+      "path": "apps/backup/results/compression-source-study/review/independent-validation.json",
+      "sha256": "82fa9cf9e2c28c755a2b5b79cf4ce77f48dcbc5e45aea8ba2d9948603647eabe"
+    },
+    {
+      "path": "apps/backup/results/compression-source-study/review/original-observations.json",
+      "sha256": "1be15a04b15e236c7448a32bd2f147f302e6d0508d0c016a57d77051fd47948c"
+    },
+    {
+      "path": "apps/backup/results/compression-source-study/stage/draft-validation.json",
+      "sha256": "aa349e4f6d0443f35b48ece52465d264705712a255c712e712bc2141907a75df"
+    },
+    {
+      "path": "apps/backup/results/compression-source-study/stage/source-provenance.json",
+      "sha256": "5f24dc73c7c7de1046bffca8c4bbddf865134a43ba5c4048a0177126a0c6a38a"
+    },
+    {
+      "path": "apps/backup/results/compression-validation.json",
+      "sha256": "2e76342630934ea462eb8820a903fd45950606ebc4afbe4ebb31b4e24f8886aa"
     },
     {
       "path": "apps/backup/results/kdf-policy-validation.json",
@@ -581,7 +910,27 @@
     },
     {
       "path": "apps/sync/client.mjs",
-      "sha256": "f64c9a3bceae28018cbb14e8ad216b5889f1209bd557637057f69db461b1c321"
+      "sha256": "c33f5016ef816c333d678f52e22ee610eeb6751c4c5fcbec2adc3b30dafa058b"
+    },
+    {
+      "path": "apps/sync/dav-actions.mjs",
+      "sha256": "45e4fa34b33c8b463eb58364f7a388c440ac6a1913d1af04b8fbbd2afe9b7b92"
+    },
+    {
+      "path": "apps/sync/dav-comparison.mjs",
+      "sha256": "554d92002cee46a6438df932e3496a1a30984d6419d952299562aaa7e105df81"
+    },
+    {
+      "path": "apps/sync/dav-input.mjs",
+      "sha256": "66af7d796e81a44047de2d143113cc8afdfbad7023adc40604f084b941577230"
+    },
+    {
+      "path": "apps/sync/dav-transfer.mjs",
+      "sha256": "591146243ed9b378aed70ce4beedceeec1b12319d7747b1e21fad2282286c9bb"
+    },
+    {
+      "path": "apps/sync/dav-xml.mjs",
+      "sha256": "10a6eb69a61ecd30d1549e4063f823645f00112d16e2ab5b1a84392330fc88fb"
     },
     {
       "path": "apps/sync/fixtures/native-local-workflow.json",
@@ -636,6 +985,110 @@
       "sha256": "fccc6eece7b152360d253b112e5a500cb3e30d35e419672106e242a4bf6ef64c"
     },
     {
+      "path": "apps/sync/results/webdav-artifact-source-binding.json",
+      "sha256": "cca09b9277f0e0d7339e254d2dbeeae6c11a1f362b9021d18e7fbc3e8ca77251"
+    },
+    {
+      "path": "apps/sync/results/webdav-primitive-verification.json",
+      "sha256": "92f2d23f1de9afe93688f308e26ad55f0510b71dec7a2cd4659ef7a28d660a75"
+    },
+    {
+      "path": "apps/sync/results/webdav-provenance.json",
+      "sha256": "5ff92115ba1de0397d5033827469f4ab41c031a448132537d8ec785e461c2244"
+    },
+    {
+      "path": "apps/sync/results/webdav-resources.json",
+      "sha256": "dcb403f04b71bfddb45a31fd10c00836f7cadf5644f9fd394e53932f7292c6be"
+    },
+    {
+      "path": "apps/sync/results/webdav-source-verification.json",
+      "sha256": "142a69dac9dded2a37147c855f7a2fb0471528e57d963f47cd215c3d2715b5e7"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-primitive.json",
+      "sha256": "0cd409f0d08f325ac426a9f916d530792b2a575abba8cbcb01213d85ba894810"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-resources.json",
+      "sha256": "64bf8484df931a41e5ebf338369bab3fb563da7c379525b0b13d3c4af24e29c4"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/client-webdav-snippet.mjs",
+      "sha256": "30e579946eeb27021cd3f1d0c0544832cbbef5eed2d6e1166026a8fd2a700c97"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/dav-actions.mjs",
+      "sha256": "80d6f348f734054610d7885a0c24f16d3930de5efc558ccea8f41ee91ba0d980"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/dav-comparison.mjs",
+      "sha256": "554d92002cee46a6438df932e3496a1a30984d6419d952299562aaa7e105df81"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/dav-input.mjs",
+      "sha256": "66af7d796e81a44047de2d143113cc8afdfbad7023adc40604f084b941577230"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/dav-transfer.mjs",
+      "sha256": "af12bccd8649c9edf530bac8bf0e2788f96f6973847b58d5f0933b73aac08829"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/dav-xml.mjs",
+      "sha256": "10a6eb69a61ecd30d1549e4063f823645f00112d16e2ab5b1a84392330fc88fb"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/fixture-server.mjs",
+      "sha256": "655f73e0b8408190c2ee33c027a44596ef7168b2953616f683ecc5eabdf51b92"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/http.test.mjs",
+      "sha256": "96a47b5c4d02e4ddf0cd98a209e042680debffc02ef8266acdfe0c9c56c72806"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/native-filters.mjs",
+      "sha256": "3e370373897364b61247da55be53ecd4b618da84df581d766120adafaba4d27b"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/oracle-basic.mjs",
+      "sha256": "4422eb384789fef1cd7c7cd45faff9a93b2e3d09f3cb3ab536d596f5d93f589d"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/oracle-transfer.mjs",
+      "sha256": "dcce3f8735910ad2410e28994e07d6bf4e066f9d8e7cfc4db2db22eb9aa398eb"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/resource-probes.mjs",
+      "sha256": "0f1ed8e4c28ec7e5e6cf8663c72fdab78dbf0c8f5a3fe5ba4250aea1485f8dbf"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/validate.mjs",
+      "sha256": "8c74e8f9ceedf6ed5717b3fd9caba5be7f26e9def708a6bec05f8bd007f83b93"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/webdav.mjs",
+      "sha256": "a9b69b4f766fc08f57594c6326b78e4945c36a1639093e30550b8bbf319f9eee"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-source/webdav.test.mjs",
+      "sha256": "b9195c2fd832cf69808c8ea5b12f2c42128db1674c3ba6a0ee658c8ae8e493c8"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-transfer.json",
+      "sha256": "efbf80708a07c25984808735c288c24c61312a0380a89ade60a6b420c057bc82"
+    },
+    {
+      "path": "apps/sync/results/webdav-staged-validation.json",
+      "sha256": "236271539e3316532f972e50834fab7f348d8e8c7653bf700d6a632b59ef45dd"
+    },
+    {
+      "path": "apps/sync/results/webdav-transfer-verification.json",
+      "sha256": "06098b649e9264698a1cccd84d1bc5d1f2b0949d182970624066c6e90de282b9"
+    },
+    {
+      "path": "apps/sync/results/webdav-validation.json",
+      "sha256": "66632624c0055905823ceb4fe9270809f87c834331c72633a33edd7c65bd1eb4"
+    },
+    {
       "path": "apps/sync/scripts/oracle.mjs",
       "sha256": "e32f55ea14dcee3141f97a86f82bae54b8d299ff1918e6a0e1b8ff2cc633296f"
     },
@@ -664,8 +1117,52 @@
       "sha256": "cc59cf78c58c479fd9fe90167650a582c0c1339dd78845d4aae485db805e19ea"
     },
     {
+      "path": "apps/sync/scripts/verify-webdav.mjs",
+      "sha256": "d65f979f139080fa8faa5a2ffff47b7f708d68d1d1fa7827da4df3562a83fbb6"
+    },
+    {
+      "path": "apps/sync/scripts/webdav-fixture.mjs",
+      "sha256": "655f73e0b8408190c2ee33c027a44596ef7168b2953616f683ecc5eabdf51b92"
+    },
+    {
+      "path": "apps/sync/scripts/webdav-oracle-basic.mjs",
+      "sha256": "3b323d26f6c55a5dfc7ca51eb2f492a7fb715413aa4c96f693da2a7972abfdef"
+    },
+    {
+      "path": "apps/sync/scripts/webdav-oracle-transfer.mjs",
+      "sha256": "da52b231bc993926900dcdcd9635bffacc1e2e03a8b96f5b284d4019ad14c890"
+    },
+    {
+      "path": "apps/sync/scripts/webdav-resource-probes.mjs",
+      "sha256": "b45557985855af2314fc4c9054261bac6dd452443a68551a95707a84191a238b"
+    },
+    {
       "path": "apps/sync/server.mjs",
-      "sha256": "72d049438c9a1c940a62f79beba54d8585e7ac5b882776713eede112fc00b915"
+      "sha256": "8daefafce29ad21bf62ced55714a683fad78fbf609e1297ac77973ef002956ea"
+    },
+    {
+      "path": "apps/sync/webdav-source-references.json",
+      "sha256": "4e9e623bb60996b6ed9717381ee58e0b30b0904a92e381c4b1155240119a19ac"
+    },
+    {
+      "path": "apps/sync/webdav.actions.test.mjs",
+      "sha256": "76c61954b5f8070d8a4ed98e8c8161ef38ad91c927e07aed5b0283040bd534f4"
+    },
+    {
+      "path": "apps/sync/webdav.client.test.mjs",
+      "sha256": "20e9b190bd4020f37fef651d84756a03a185817f10e370bb8946fec402729cca"
+    },
+    {
+      "path": "apps/sync/webdav.integration.test.mjs",
+      "sha256": "bc23e66f0c9b5542c4a1aaa5501cfa6b49467c35194c25592e7c0aab7eca26b8"
+    },
+    {
+      "path": "apps/sync/webdav.mjs",
+      "sha256": "a9b69b4f766fc08f57594c6326b78e4945c36a1639093e30550b8bbf319f9eee"
+    },
+    {
+      "path": "apps/sync/webdav.test.mjs",
+      "sha256": "50c8ff2fd2fc0b0df18e5f7d207a5a71b141bc51bb1c2f2678d8dd8d735f9982"
     },
     {
       "path": "apps/vault/app.integration.test.mjs",
@@ -717,7 +1214,7 @@
     },
     {
       "path": "package.json",
-      "sha256": "0ee1f8a1181468017b1a9a4fdebe9c9ca04bc62acc064237f86a2c16cd95ca17"
+      "sha256": "0c494648645e9fa906a720292ae611669b4be2cb34d7c958d0a19c632ee9fe77"
     },
     {
       "path": "public/index.html",
@@ -753,15 +1250,15 @@
     },
     {
       "path": "scripts/test-all.mjs",
-      "sha256": "5fe8dfb3a6ba8821fa524a71af266076de43430c1706fddc0ff2a984e176c881"
+      "sha256": "d4877dfde459ea16552d8eabb43e3f5cbde9720774cfdb367cee93853cef3db0"
     },
     {
       "path": "scripts/verify-development.mjs",
-      "sha256": "e51d5f87481a562ecd9807f76cbaaa5fef337478b9da01aa1ed369cc7db5838b"
+      "sha256": "3de351ba724cefce8d510845584c10844529c4e9c3623d3dc9c24f5666a5a998"
     },
     {
       "path": "server.mjs",
-      "sha256": "170a54ad81cf905768d52a68a86fb0ecacf0d02e069bc884ad6dffe5491440e0"
+      "sha256": "807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f"
     },
     {
       "path": "tests/host.test.mjs",
@@ -769,6 +1266,7 @@
     }
   ],
   "source_bytes_stable_across_run": true,
+  "historical_test_snapshots_excluded_from_current_execution": true,
   "browser_validation": "Separate source-bound interactive records are identified in STATUS.json and the current milestone; historical native-core, execution, native-exchange and initial ten-app checks remain preserved. Browser checks are not rerun by this script.",
   "comparison": "editor-comparison.json (separate recorded exploratory component benchmark; not rerun by this script)",
   "full_feature_parity_established": false,

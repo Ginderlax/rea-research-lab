@@ -1,5 +1,7 @@
 # Native workflows, synchronization and archive milestone
 
+Historical checkpoint at revision `64238267b332bb3a8ac5435a613a596a06311f59`. Its eight receipts and 200 source/proof snapshots are preserved in the [snapshot manifest](results/milestones/native-workflows-20261012/snapshot-manifest.json). The [compression/remote milestone](COMPRESSION-REMOTE-MILESTONE.md) supersedes its descriptions of current capabilities.
+
 Recorded on 12 October 2026. The accepted scope remains every documented feature of the ten original products, with improvements in speed, resource use, ease of use, compatibility and reliability. This checkpoint adds working capabilities and reproducible bounded comparisons. **Zero complete replacements meet the full acceptance standard. The goal remains active.**
 
 ## Working capabilities

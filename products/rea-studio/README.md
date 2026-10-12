@@ -13,7 +13,7 @@ cd products/rea-studio
 npm start
 ```
 
-Open `http://127.0.0.1:4310`. There are no third-party runtime packages to install. The shared application host provides isolated file workspaces, persisted JSON records, same-origin session protection and serialized per-application operations. Data defaults to the lab's ignored `.local/rea-studio/` directory. `REA_STUDIO_DATA` can select another data directory; `node server.mjs --port 4311` selects another port.
+Open `http://127.0.0.1:4310`. There are no third-party runtime packages to install. The shared application host provides isolated file workspaces, persisted JSON records, same-origin session protection and serialized local mutations and immediate WebDAV busy rejection. Data defaults to the lab's ignored `.local/rea-studio/` directory. `REA_STUDIO_DATA` can select another data directory; `node server.mjs --port 4311` selects another port.
 
 The host binds only to this machine. It is a development application for synthetic fixtures and evaluation; production security assessment, unrestricted files, remote accounts and broad vendor compatibility remain separate requirements. The encrypted local vault record uses its own format; supported KeePass KDBX databases can now be imported and exported.
 
@@ -26,9 +26,9 @@ The host binds only to this machine. It is a development application for synthet
 | Lab Notes | Notes, attachments, tags and Joplin JEX exchange | [Notes](apps/notes/README.md) |
 | Lab Flow | Native Node-RED flow editing, deploy and manual execution | [Flow](apps/flow/README.md) |
 | Lab Vault | Encrypted entries, utilities and supported KDBX exchange | [Vault](apps/vault/README.md) |
-| Lab Archive | 7Z Copy/DEFLATE, ZIP/ZIP64/ZIP93, TAR, GZIP and Zstandard exchange | [Archive](apps/archive/README.md) |
+| Lab Archive | 7Z Copy/DEFLATE/LZMA/LZMA2, ZIP/ZIP64/ZIP93, TAR, GZIP and Zstandard exchange | [Archive](apps/archive/README.md) |
 | Lab Backup | Encrypted restic repositories, snapshots, integrity and restore | [Backup](apps/backup/README.md) |
-| Lab Sync | Local comparison and copy synchronization | [Sync](apps/sync/README.md) |
+| Lab Sync | Local rules and generic WebDAV synchronization | [Sync](apps/sync/README.md) |
 
 ## Verify and compare
 
@@ -45,7 +45,7 @@ Tests exercise implemented contracts and actual persisted operations. The benchm
 
 The additional [getter-sequence comparison](results/sequence-comparison.json) times matching input representations and changed-span payloads over eight recorded cases. Its current eight-case run records seven faster medians and one tie; the separate line-interface run still has regressions. The [three-run optimization follow-up](results/editor-performance-followup.json) retains the pre-optimization evidence and slight regressions. It does not compare whole editors, deadline handling or the original result-class helper API. Git source control requires an installed Git executable.
 
-`npm run verify` reruns the development tests and records exact source hashes in the [validation receipt](results/development-validation.json). The current record contains 345 passing tests and 0 skips. The [native workflows and synchronization milestone](NATIVE-WORKFLOWS-MILESTONE.md) describes the current capabilities and measured follow-ups. The [native core milestone](NATIVE-CORE-MILESTONE.md) preserves the preceding 252-test checkpoint. The [execution and archive milestone](EXECUTION-ARCHIVE-MILESTONE.md) preserves the prior176-test checkpoint. The [native exchange milestone](NATIVE-EXCHANGE-MILESTONE.md) preserves the prior revision and its comparative losses. Separate [initial browser checks](results/browser-verification.json), [historical native-exchange browser checks](results/browser-compatibility-verification.json) and [historical execution/dashboard/archive browser checks](results/browser-execution-verification.json) and [historical native-flow/calculation/encrypted-backup browser checks](results/browser-native-core-verification.json) and [current native-workflow/synchronization checks](results/browser-native-workflows-verification.json) exercise the local interfaces with synthetic data. These receipts demonstrate the implemented capabilities, while the acceptance requirements and feature gaps remain open.
+`npm run verify` reruns the development tests and records exact source hashes in the [validation receipt](results/development-validation.json). The current record contains 496 passing tests and 0 skips. The [compression and remote synchronization milestone](COMPRESSION-REMOTE-MILESTONE.md) describes the current capabilities. The [native workflows milestone](NATIVE-WORKFLOWS-MILESTONE.md) preserves the preceding 345-test checkpoint. The [native core milestone](NATIVE-CORE-MILESTONE.md) preserves the preceding 252-test checkpoint. The [execution and archive milestone](EXECUTION-ARCHIVE-MILESTONE.md) preserves the prior176-test checkpoint. The [native exchange milestone](NATIVE-EXCHANGE-MILESTONE.md) preserves the prior revision and its comparative losses. Separate [initial browser checks](results/browser-verification.json), [historical native-exchange browser checks](results/browser-compatibility-verification.json) and [historical execution/dashboard/archive browser checks](results/browser-execution-verification.json) and [historical native-flow/calculation/encrypted-backup browser checks](results/browser-native-core-verification.json) and [historical native-workflow/synchronization checks](results/browser-native-workflows-verification.json) and [current compression/remote synchronization checks](results/browser-compression-remote-verification.json) exercise the local interfaces with synthetic data. These receipts demonstrate the implemented capabilities, while the acceptance requirements and feature gaps remain open.
 
 ![Native flow deployment with saved context and run history](results/native-flow-preview.png)
 

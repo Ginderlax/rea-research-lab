@@ -30,6 +30,9 @@ export async function render(root,api) {
   const native = node('section',undefined,'card'); native.append(node('h3','Encrypted restic repositories'),node('p','Create or open a local restic repository inside this workspace. Enter its password for each operation; it is cleared afterward and is never saved by the app. Keep your own copy of the password.','muted')); root.append(native);
   const nativeRepository = field(native,'Restic repository folder','backup/restic'), nativePassword = field(native,'Repository password','','password'); nativePassword.autocomplete = 'off'; nativePassword.spellcheck = false;
   const nativeVersion = field(native,'New repository format version (1 or 2)','1','number'); nativeVersion.min = '1'; nativeVersion.max = '2';
+  const compressionLabel = node('label','Compression for new snapshot data'), nativeCompression = node('select');
+  for (const [value,label] of [['auto','Automatic'],['off','Off for file data'],['fastest','Fastest'],['better','Better compression'],['max','Maximum compression']]) { const option = node('option',label); option.value = value; nativeCompression.append(option); }
+  compressionLabel.append(nativeCompression); native.append(compressionLabel,node('p','Compression requires repository format 2. Existing file data is reused; choosing a mode does not rewrite earlier backups.','muted'));
   const nativeSource = field(native,'Source folder','backup/source'), nativeLabel = field(native,'Snapshot label',''), nativeID = field(native,'Restic snapshot ID'), nativeDestination = field(native,'New restore folder','backup/restic-restored'), nativeConfirm = field(native,'Confirm restore','','checkbox');
   const nativeResult = node('pre',''); native.append(nativeResult);
   async function nativeCall(action,input = {}) {
@@ -39,7 +42,7 @@ export async function render(root,api) {
   button(native,'Create encrypted repository',() => nativeCall('nativeInit',{ version:Number(nativeVersion.value) }));
   button(native,'Open repository',() => nativeCall('nativeInfo'));
   button(native,'List restic snapshots',() => nativeCall('nativeList'));
-  button(native,'Save restic snapshot',async () => { const value = await nativeCall('nativeSnapshot',{ source:nativeSource.value,label:nativeLabel.value }); nativeID.value = value.id; });
+  button(native,'Save restic snapshot',async () => { const value = await nativeCall('nativeSnapshot',{ source:nativeSource.value,label:nativeLabel.value,compression:nativeCompression.value }); nativeID.value = value.id; });
   button(native,'Inspect restic snapshot',() => nativeCall('nativeInspect',{ id:nativeID.value }));
   button(native,'Verify restic snapshot',() => nativeCall('nativeCheck',{ id:nativeID.value }));
   button(native,'Restore restic snapshot',() => nativeCall('nativeRestore',{ id:nativeID.value,destination:nativeDestination.value,confirm:nativeConfirm.checked }));

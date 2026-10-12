@@ -15,6 +15,7 @@ export async function start({ port = 4310, dataDir = resolve(root, '../../.local
   const token = randomBytes(32).toString('hex');
   const contexts = new Map();
   const pending = new Map();
+  const inFlight = new Set();
   const loadedModules = new Map();
   for (const app of apps) {
     contexts.set(app.id, { store: await createStore(join(dataDir, app.id, 'records')), workspace: await createWorkspace(join(dataDir, app.id, 'workspace')) });
@@ -64,16 +65,24 @@ export async function start({ port = 4310, dataDir = resolve(root, '../../.local
         try { input = JSON.parse(Buffer.concat(chunks).toString('utf8') || '{}'); }
         catch { return reply(400, { error: 'Invalid JSON' }); }
         if (!input || typeof input !== 'object' || Array.isArray(input)) return reply(400, { error: 'Request must be a JSON object' });
-        // Serialize each application's mutations so read/modify/write operations do not lose updates.
-        const previous = pending.get(app) ?? Promise.resolve();
-        const operation = previous.catch(() => {}).then(async () => {
+        const execute = async () => {
           const module = await import(pathToFileURL(join(root, 'apps', app, 'server.mjs')).href);
           loadedModules.set(app, module);
           return module.handle({ action, input, ...contexts.get(app) });
-        });
-        pending.set(app, operation);
-        const result = await operation;
-        if (pending.get(app) === operation) pending.delete(app);
+        };
+        // WebDAV owns an immediate busy gate: waiting here would retain credentials
+        // behind a remote operation. Other mutations retain application serialization.
+        const immediate = app === 'sync' && action.startsWith('webdav-');
+        const previous = pending.get(app) ?? Promise.resolve();
+        const operation = immediate ? execute() : previous.catch(() => {}).then(execute);
+        inFlight.add(operation);
+        if (!immediate) pending.set(app, operation);
+        let result;
+        try { result = await operation; }
+        finally {
+          inFlight.delete(operation);
+          if (pending.get(app) === operation) pending.delete(app);
+        }
         return reply(200, { result });
       }
       if (req.method !== 'GET') return reply(405, { error: 'Method is not supported' });
@@ -99,7 +108,7 @@ export async function start({ port = 4310, dataDir = resolve(root, '../../.local
     server, token, url: `http://127.0.0.1:${actualPort}`, dataDir,
     async close() {
       await new Promise((done, reject) => server.close(error => error ? reject(error) : done()));
-      await Promise.allSettled([...pending.values()]);
+      await Promise.allSettled([...inFlight]);
       for (const [app, module] of loadedModules) if (typeof module.dispose === 'function') await module.dispose(contexts.get(app).workspace);
     }
   };

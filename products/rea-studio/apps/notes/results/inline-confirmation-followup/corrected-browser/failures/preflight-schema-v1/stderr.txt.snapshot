@@ -1,0 +1,10 @@
+file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-inline-cancel-no-read-browser-next/prepare.mjs:3
+async function inventory(dir,name,expected){const bytes=await fs.readFile(path.join(dir,name));assert.equal(sha(bytes),expected);const m=JSON.parse(bytes);for(const[p,r]of Object.entries(m.inventory)){const b=await fs.readFile(path.join(dir,p));assert.deepEqual({bytes:b.length,sha256:sha(b)},{bytes:r.bytes,sha256:r.sha256},p);}async function walk(d,p=''){const rows=[];for(const e of await fs.readdir(d,{withFileTypes:true})){const n=p+e.name;if(e.isDirectory())rows.push(...await walk(path.join(d,e.name),n+'/'));else rows.push(n);}return rows;}assert.deepEqual((await walk(dir)).sort(),[...Object.keys(m.inventory),name].sort());return {directory:path.relative(workspace,dir).replaceAll('\\','/'),manifest:name,sha256:expected,files:m.files,receipt:sha(await fs.readFile(path.join(dir,dir.endsWith('independent-review')?'review-validation.json':'validation.json')))};}
+                                                                                                                                                                                   ^
+
+TypeError: Cannot convert undefined or null to object
+    at Object.entries (<anonymous>)
+    at inventory (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-inline-cancel-no-read-browser-next/prepare.mjs:3:180)
+    at async file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-inline-cancel-no-read-browser-next/prepare.mjs:4:20
+
+Node.js v24.16.0

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "NOTES-CANCEL-READ-1",
+    "priority": "P3",
+    "status": "confirmed; candidate acceptance withheld",
+    "source": {
+      "path": "products/rea-studio/apps/notes/client.mjs",
+      "sha256": "7bff5337892cefd6cdd9e9de82c0e6660fefdf079bc523a748c927f2eac8a205",
+      "line": 85
+    },
+    "trigger": "Open a saved note, open notebook Trash or Restore confirmation, then Cancel/Escape/Space before submission.",
+    "expected": "The documented Cancel policy performs no follow-up backend read or mutation.",
+    "actual": "organize finally calls accept(current) after organizationBusy clears, issuing one attachment-list backend read.",
+    "modelFailure": "runs/final-model/tests.stdout.txt",
+    "actualBrowser": "browser/after-cancel.json",
+    "savedDataMutation": false,
+    "draftLossDemonstrated": false,
+    "originalSourceMismatchClaim": false
+  }
+]

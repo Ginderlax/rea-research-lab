@@ -1,0 +1,129 @@
+{
+  "schema": "rea-sketch-layout-current-path-adapters/v1",
+  "records": [
+    {
+      "source": "layout.test.mjs",
+      "sourceSHA256": "377dc2c8e88168d9fc0c573aff6b528dc5869d3335cf8d153c2f78392e47544b",
+      "destination": "products/rea-studio/apps/sketch/layout.test.mjs",
+      "proposedSHA256": "067cf46af2a68077ea8d7b46b808aa15025f5639a6c3c4b994b332d64c9e8473",
+      "replacements": [
+        [
+          "'./products/rea-studio/apps/sketch/layout.mjs'",
+          "'./layout.mjs'"
+        ],
+        [
+          "'./products/rea-studio/apps/sketch/core.mjs'",
+          "'./core.mjs'"
+        ],
+        [
+          "'./layout-oracle.mjs'",
+          "'./layout-original-oracle.mjs'"
+        ],
+        [
+          "import path from 'node:path';",
+          "import path from 'node:path';import os from 'node:os';"
+        ],
+        [
+          "const output=process.env.REA_LAYOUT_OBSERVATIONS;",
+          "const output=process.env.REA_LAYOUT_OBSERVATIONS||path.join(fs.mkdtempSync(path.join(os.tmpdir(),'rea-sketch-layout-')),'original-actions.json');"
+        ]
+      ],
+      "fixturesAssertionsOriginalBodiesEdited": false,
+      "scope": "Runtime/test imports and owned observation/source-authentication paths only."
+    },
+    {
+      "source": "precision.test.mjs",
+      "sourceSHA256": "939e72ea765afb2656443973acd45e7948ed4419cc7d92b5071bd253120fcc78",
+      "destination": "products/rea-studio/apps/sketch/precision.test.mjs",
+      "proposedSHA256": "758f6fb7b6fa98af785c7650e4024752cb19c789099b4d8c42e3a80aaaeb62cf",
+      "replacements": [
+        [
+          "'./products/rea-studio/apps/sketch/layout.mjs'",
+          "'./layout.mjs'"
+        ],
+        [
+          "'./products/rea-studio/apps/sketch/core.mjs'",
+          "'./core.mjs'"
+        ],
+        [
+          "'./layout-oracle.mjs'",
+          "'./layout-original-oracle.mjs'"
+        ],
+        [
+          "import path from 'node:path';",
+          "import path from 'node:path';import os from 'node:os';"
+        ],
+        [
+          "const shape=",
+          "const observationDirectory=process.env.REA_LAYOUT_PRECISION_OBSERVATIONS||fs.mkdtempSync(path.join(os.tmpdir(),'rea-sketch-precision-'));\nconst shape="
+        ],
+        [
+          "path.join(process.env.REA_LAYOUT_PRECISION_OBSERVATIONS,label+'.json')",
+          "path.join(observationDirectory,label+'.json')"
+        ]
+      ],
+      "fixturesAssertionsOriginalBodiesEdited": false,
+      "scope": "Runtime/test imports and owned observation/source-authentication paths only."
+    },
+    {
+      "source": "layout-ui.test.mjs",
+      "sourceSHA256": "b3636fb73a313b36b1b7f831f13ba797dca5d4f022683f033ec4d9f89a26a89c",
+      "destination": "products/rea-studio/apps/sketch/layout-ui.test.mjs",
+      "proposedSHA256": "674becdb662d22f77b50c96d034a9e485d9dd499a4588655b351b0fe94c57b8a",
+      "replacements": [
+        [
+          "'./products/rea-studio/apps/sketch/server.mjs'",
+          "'./server.mjs'"
+        ]
+      ],
+      "fixturesAssertionsOriginalBodiesEdited": false,
+      "scope": "Runtime/test imports and owned observation/source-authentication paths only."
+    },
+    {
+      "source": "layout-ui-fixture.mjs",
+      "sourceSHA256": "b04e45c02a554a35dd0fbdbc87e5fd5514a0ace0463a34a7993ad2303e0bf832",
+      "destination": "products/rea-studio/apps/sketch/layout-ui-fixture.mjs",
+      "proposedSHA256": "9010a0a538f3cc8e9dacad0a46eb9b93aa62e9909c8bfe70aabd2cdfd3359cf5",
+      "replacements": [
+        [
+          "'./products/rea-studio/apps/sketch/client.mjs'",
+          "'./client.mjs'"
+        ],
+        [
+          "'./products/rea-studio/apps/sketch/server.mjs'",
+          "'./server.mjs'"
+        ]
+      ],
+      "fixturesAssertionsOriginalBodiesEdited": false,
+      "scope": "Runtime/test imports and owned observation/source-authentication paths only."
+    },
+    {
+      "source": "layout-oracle.mjs",
+      "sourceSHA256": "1ab4582c869fbb52f7d0690229d92d263a1c58f06f5e5e7d55f994e698dac74e",
+      "destination": "products/rea-studio/apps/sketch/layout-original-oracle.mjs",
+      "proposedSHA256": "91fbfe3f828914a8266dc08e9613d86b94170b623b2a47d6f1f814d0a998382c",
+      "replacements": [
+        [
+          "const provenance=JSON.parse(fs.readFileSync(path.join(root,'source-provenance.json'))),sourceRows=[],parts=[];",
+          "const provenancePath=path.join(root,'results/layout-followup/correction/frozen/source-provenance.json.snapshot'),provenanceBytes=fs.readFileSync(provenancePath);assert.equal(hash(provenanceBytes),'69c3ca5c3707c1e7204e6497a0df33559dbc2ab54f66595e1b0de461c5ee168c','Pinned original layout provenance');assert.equal(hash(fs.readFileSync(process.execPath)),'b3094d0b49f9ad602262a9921551737bb97637c05dd357a06ae98188d7290aa3','Pinned Node layout oracle runtime');const provenance=JSON.parse(provenanceBytes),sourceRows=[],parts=[];assert.equal(provenance.release,'@excalidraw/excalidraw 0.18.1');assert.equal(provenance.commit,'a2ec2889babf7d2295469c6d90ebe77fae57df84');assert.equal(provenance.fetched.length,8);"
+        ],
+        [
+          "b=fs.readFileSync(path.join(root,filename))",
+          "b=fs.readFileSync(path.join(root,'results/layout-followup/correction/frozen',filename+'.snapshot'))"
+        ],
+        [
+          "assert.equal(hash(b),r.sha256);",
+          "assert.ok(r,'Pinned original source row');assert.equal(b.length,r.bytes);assert.equal(hash(b),r.sha256);"
+        ],
+        [
+          "sourceRows.push({path:filename,",
+          "sourceRows.push({path:'results/layout-followup/correction/frozen/'+filename+'.snapshot',originalPath:filename,"
+        ]
+      ],
+      "fixturesAssertionsOriginalBodiesEdited": false,
+      "scope": "Runtime/test imports and owned observation/source-authentication paths only."
+    }
+  ],
+  "originalFunctionBodiesFixturesAssertionsUnchanged": true,
+  "details": "The test-only oracle adds release/source/Node authentication guards and reads exact inert aliases. Test observations default to per-run os.tmpdir; collector env overrides remain supported. No app/results writes by normal tests."
+}

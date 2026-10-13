@@ -1,0 +1,25 @@
+import {render} from '../notes-inline-confirmation-next/products/rea-studio/apps/notes/client.mjs';
+import {handle} from '../notes-inline-confirmation-next/products/rea-studio/apps/notes/server.mjs';
+export class Element {
+ constructor(tag){this.tagName=tag;this.children=[];this.attributes={};this.value='';this.textContent='';this.disabled=false;this.checked=false;}
+ append(...nodes){this.children.push(...nodes);}replaceChildren(...nodes){this.children=[...nodes];}
+ insertBefore(node,before){const n=this.children.indexOf(before);this.children.splice(n<0?this.children.length:n,0,node);}
+ setAttribute(k,v){this.attributes[k]=v;}getAttribute(k){return this.attributes[k];}get options(){return this.children;}focus(){if(!this.disabled)document.activeElement=this;}
+}
+export function find(root,predicate){if(predicate(root))return root;for(const child of root.children){const result=find(child,predicate);if(result)return result;}return null;}
+export function memory(){let saved={schema:2,notes:{},records:{},resources:{}};const store={get:async(k,f)=>k==='notes-state-v2'?structuredClone(saved):f,set:async(k,v)=>{saved=structuredClone(v);},list:async()=>[]};return{store,read:()=>structuredClone(saved),call:(action,input={})=>handle({action,input,store})};}
+export async function ui(t,hook=async()=>{}){
+ const previous={document:globalThis.document,window:globalThis.window};
+ globalThis.document={createElement:tag=>new Element(tag),createTextNode:text=>Object.assign(new Element('#text'),{textContent:text})};globalThis.window={confirm:()=>true};t.after(()=>{globalThis.document=previous.document;globalThis.window=previous.window;});
+ const m=memory(),calls=[];let tree=await m.call('notebook-create',{title:'Parent',revision:0});const parent=tree.notebook.id;tree=await m.call('notebook-create',{title:'Child',revision:tree.revision,parentId:parent});const child=tree.notebook.id;
+ const note=await m.call('save',{title:'A note',body:'Saved body',notebookId:child,tags:[]}),root=new Element('root');
+ const api=async(action,input={})=>{calls.push({action,input:structuredClone(input)});const result=await m.call(action,input);await hook({action,input,result});return result;};const dispose=await render(root,api);t.after(dispose);
+ const byLabel=label=>find(root,n=>n.attributes['aria-label']===label),byText=text=>find(root,n=>n.textContent===text);
+ async function click(n){if(n.disabled)return false;await n.onclick();return true;}
+ function type(n,value){if(n.disabled)throw new Error('Cannot simulate typing into a disabled control');n.value=value;n.oninput?.();}
+ const open=()=>click(find(root,n=>n.tagName==='button'&&n.textContent.startsWith('A note ·')));
+ const manage=()=>{const n=byLabel('Manage notebook');n.value=parent;n.onchange();};
+ async function confirmNotebook(text,decision=true){const pending=click(byText(text)),dialog=find(root,n=>n.attributes.role==='alertdialog');if(!dialog)throw new Error('Expected visible notebook confirmation');await click(find(dialog,n=>n.tagName==='button'&&n.textContent===(decision?(text==='Restore notebook'?'Confirm restore notebook':'Confirm move to trash'):'Cancel')));return pending;}
+ return{...m,api,calls,root,parent,child,note,byLabel,byText,click,type,open,manage,confirmNotebook,dispose};
+}
+export function gate(){let release,enter;return{held:new Promise(r=>release=r),started:new Promise(r=>enter=r),release:()=>release(),enter:()=>enter()};}

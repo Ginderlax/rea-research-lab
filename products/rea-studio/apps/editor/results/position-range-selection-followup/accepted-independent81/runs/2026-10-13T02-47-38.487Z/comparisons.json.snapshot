@@ -1,0 +1,3133 @@
+{
+  "counts": {
+    "originalDispatches": 58,
+    "candidateDispatches": 58,
+    "exactPairs": 58,
+    "unequalPairs": 0
+  },
+  "oracleTelemetry": {
+    "preparations": 2,
+    "successful": 2,
+    "rejected": 0,
+    "sourceUnitsEvaluated": 10,
+    "vmEvaluations": 12,
+    "records": [
+      {
+        "label": "unmodified-script-descriptor-control",
+        "sourceRoot": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-position-range-selection-next",
+        "units": [
+          {
+            "source": {
+              "path": "source/src/vs/base/common/errors.ts.snapshot",
+              "url": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/base/common/errors.ts",
+              "responseURL": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/base/common/errors.ts",
+              "status": 200,
+              "bytes": 9084,
+              "sha256": "4771945225f0689ea9feef5fcf148dc493791edaf8693d5e11b057ce4a8d0b6e",
+              "acquisition": "Direct exact-commit official primary-source fetch"
+            },
+            "selectedUtf8Bytes": 172,
+            "selectedSha256": "c6ddbc6b55aa6ea64ec09983679570feeecdd77f75badeea1a3613ac9bc140c9",
+            "composedSha256": "88ea485c74e51e98b5fb846405739ba3523e657e6b464d1188f03f17ba9356b5",
+            "executedSha256": "ca113dfe93a8ed7db8b3cfa987cd59642f5211b4fee9e3649e2ca38e1f757596",
+            "executedCode": "function illegalArgument(name) {\n    if (name) {\n        return new Error(`Illegal argument: ${name}`);\n    }\n    else {\n        return new Error('Illegal argument');\n    }\n}\n",
+            "strictModuleDirective": false
+          },
+          {
+            "source": {
+              "path": "source/src/vs/workbench/api/common/extHostTypes/es5ClassCompat.ts.snapshot",
+              "url": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/es5ClassCompat.ts",
+              "responseURL": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/es5ClassCompat.ts",
+              "status": 200,
+              "bytes": 1176,
+              "sha256": "583e6a3a68d89ec9e63316943ec021ecede29592c24929b954b00dc4a1715502",
+              "acquisition": "Direct exact-commit official primary-source fetch"
+            },
+            "selectedUtf8Bytes": 1176,
+            "selectedSha256": "583e6a3a68d89ec9e63316943ec021ecede29592c24929b954b00dc4a1715502",
+            "composedSha256": "51ac7de351ea91e20451fa009c87f04ed1a00223d7f06f0ceb0c8547a2796883",
+            "executedSha256": "0262a197cc490752546de72c3c9ea5d677719d4eba37d4fe358498ea33bf5815",
+            "executedCode": "/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\n/**\n * @deprecated\n *\n * This utility ensures that old JS code that uses functions for classes still works. Existing usages cannot be removed\n * but new ones must not be added\n */\nfunction es5ClassCompat(target) {\n    const interceptFunctions = {\n        apply: function (...args) {\n            if (args.length === 0) {\n                return Reflect.construct(target, []);\n            }\n            else {\n                const argsList = args.length === 1 ? [] : args[1];\n                return Reflect.construct(target, argsList, args[0].constructor);\n            }\n        },\n        call: function (...args) {\n            if (args.length === 0) {\n                return Reflect.construct(target, []);\n            }\n            else {\n                const [thisArg, ...restArgs] = args;\n                return Reflect.construct(target, restArgs, thisArg.constructor);\n            }\n        }\n    };\n    return Object.assign(target, interceptFunctions);\n}\n",
+            "strictModuleDirective": false
+          },
+          {
+            "source": {
+              "path": "source/src/vs/workbench/api/common/extHostTypes/position.ts.snapshot",
+              "url": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/position.ts",
+              "responseURL": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/position.ts",
+              "status": 200,
+              "bytes": 5119,
+              "sha256": "0ea510e28831180e378efe9c20e8e8b666d5102b44ef1a2470905505a7ba2476",
+              "acquisition": "Direct exact-commit official primary-source fetch"
+            },
+            "selectedUtf8Bytes": 5119,
+            "selectedSha256": "0ea510e28831180e378efe9c20e8e8b666d5102b44ef1a2470905505a7ba2476",
+            "composedSha256": "6575065c04748b1798f8ddcb8f4f0d8b751fdc78867aec6e09712a13ca86d761",
+            "executedSha256": "68c6c29b945d5069664e38f08c2ecf506ba4d1f541214265cdd2c852e11e513c",
+            "executedCode": "var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {\n    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;\n    if (typeof Reflect === \"object\" && typeof Reflect.decorate === \"function\") r = Reflect.decorate(decorators, target, key, desc);\n    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;\n    return c > 3 && r && Object.defineProperty(target, key, r), r;\n};\nvar Position_1;\n/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\nlet Position = Position_1 = class Position {\n    static Min(...positions) {\n        if (positions.length === 0) {\n            throw new TypeError();\n        }\n        let result = positions[0];\n        for (let i = 1; i < positions.length; i++) {\n            const p = positions[i];\n            if (p.isBefore(result)) {\n                result = p;\n            }\n        }\n        return result;\n    }\n    static Max(...positions) {\n        if (positions.length === 0) {\n            throw new TypeError();\n        }\n        let result = positions[0];\n        for (let i = 1; i < positions.length; i++) {\n            const p = positions[i];\n            if (p.isAfter(result)) {\n                result = p;\n            }\n        }\n        return result;\n    }\n    static isPosition(other) {\n        if (!other) {\n            return false;\n        }\n        if (other instanceof Position_1) {\n            return true;\n        }\n        const { line, character } = other;\n        if (typeof line === 'number' && typeof character === 'number') {\n            return true;\n        }\n        return false;\n    }\n    static of(obj) {\n        if (obj instanceof Position_1) {\n            return obj;\n        }\n        else if (this.isPosition(obj)) {\n            return new Position_1(obj.line, obj.character);\n        }\n        throw new Error('Invalid argument, is NOT a position-like object');\n    }\n    _line;\n    _character;\n    get line() {\n        return this._line;\n    }\n    get character() {\n        return this._character;\n    }\n    constructor(line, character) {\n        if (line < 0) {\n            throw illegalArgument('line must be non-negative');\n        }\n        if (character < 0) {\n            throw illegalArgument('character must be non-negative');\n        }\n        this._line = line;\n        this._character = character;\n    }\n    isBefore(other) {\n        if (this._line < other._line) {\n            return true;\n        }\n        if (other._line < this._line) {\n            return false;\n        }\n        return this._character < other._character;\n    }\n    isBeforeOrEqual(other) {\n        if (this._line < other._line) {\n            return true;\n        }\n        if (other._line < this._line) {\n            return false;\n        }\n        return this._character <= other._character;\n    }\n    isAfter(other) {\n        return !this.isBeforeOrEqual(other);\n    }\n    isAfterOrEqual(other) {\n        return !this.isBefore(other);\n    }\n    isEqual(other) {\n        return this._line === other._line && this._character === other._character;\n    }\n    compareTo(other) {\n        if (this._line < other._line) {\n            return -1;\n        }\n        else if (this._line > other.line) {\n            return 1;\n        }\n        else {\n            // equal line\n            if (this._character < other._character) {\n                return -1;\n            }\n            else if (this._character > other._character) {\n                return 1;\n            }\n            else {\n                // equal line and character\n                return 0;\n            }\n        }\n    }\n    translate(lineDeltaOrChange, characterDelta = 0) {\n        if (lineDeltaOrChange === null || characterDelta === null) {\n            throw illegalArgument();\n        }\n        let lineDelta;\n        if (typeof lineDeltaOrChange === 'undefined') {\n            lineDelta = 0;\n        }\n        else if (typeof lineDeltaOrChange === 'number') {\n            lineDelta = lineDeltaOrChange;\n        }\n        else {\n            lineDelta = typeof lineDeltaOrChange.lineDelta === 'number' ? lineDeltaOrChange.lineDelta : 0;\n            characterDelta = typeof lineDeltaOrChange.characterDelta === 'number' ? lineDeltaOrChange.characterDelta : 0;\n        }\n        if (lineDelta === 0 && characterDelta === 0) {\n            return this;\n        }\n        return new Position_1(this.line + lineDelta, this.character + characterDelta);\n    }\n    with(lineOrChange, character = this.character) {\n        if (lineOrChange === null || character === null) {\n            throw illegalArgument();\n        }\n        let line;\n        if (typeof lineOrChange === 'undefined') {\n            line = this.line;\n        }\n        else if (typeof lineOrChange === 'number') {\n            line = lineOrChange;\n        }\n        else {\n            line = typeof lineOrChange.line === 'number' ? lineOrChange.line : this.line;\n            character = typeof lineOrChange.character === 'number' ? lineOrChange.character : this.character;\n        }\n        if (line === this.line && character === this.character) {\n            return this;\n        }\n        return new Position_1(line, character);\n    }\n    toJSON() {\n        return { line: this.line, character: this.character };\n    }\n    [Symbol.for('debug.description')]() {\n        return `(${this.line}:${this.character})`;\n    }\n};\nPosition = Position_1 = __decorate([\n    es5ClassCompat\n], Position);\n",
+            "strictModuleDirective": false
+          },
+          {
+            "source": {
+              "path": "source/src/vs/workbench/api/common/extHostTypes/range.ts.snapshot",
+              "url": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/range.ts",
+              "responseURL": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/range.ts",
+              "status": 200,
+              "bytes": 4699,
+              "sha256": "29247138cd98d009c356155d304745d36cff0d3c4f19b1117ab364446f779a38",
+              "acquisition": "Direct exact-commit official primary-source fetch"
+            },
+            "selectedUtf8Bytes": 4699,
+            "selectedSha256": "29247138cd98d009c356155d304745d36cff0d3c4f19b1117ab364446f779a38",
+            "composedSha256": "1b5ca4f8ad8d86b15d2fb0d65d3555abe866060256edf8d17a06aa38f7ec447b",
+            "executedSha256": "73c603de1d680f12dceb61bcaaa3ad7bb6017658db5d425fd6d9aef9daf91e21",
+            "executedCode": "var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {\n    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;\n    if (typeof Reflect === \"object\" && typeof Reflect.decorate === \"function\") r = Reflect.decorate(decorators, target, key, desc);\n    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;\n    return c > 3 && r && Object.defineProperty(target, key, r), r;\n};\nvar Range_1;\n/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\nlet Range = Range_1 = class Range {\n    static isRange(thing) {\n        if (thing instanceof Range_1) {\n            return true;\n        }\n        if (!thing || typeof thing !== 'object') {\n            return false;\n        }\n        return Position.isPosition(thing.start)\n            && Position.isPosition(thing.end);\n    }\n    static of(obj) {\n        if (obj instanceof Range_1) {\n            return obj;\n        }\n        if (this.isRange(obj)) {\n            return new Range_1(obj.start, obj.end);\n        }\n        throw new Error('Invalid argument, is NOT a range-like object');\n    }\n    _start;\n    _end;\n    get start() {\n        return this._start;\n    }\n    get end() {\n        return this._end;\n    }\n    constructor(startLineOrStart, startColumnOrEnd, endLine, endColumn) {\n        let start;\n        let end;\n        if (typeof startLineOrStart === 'number' && typeof startColumnOrEnd === 'number' && typeof endLine === 'number' && typeof endColumn === 'number') {\n            start = new Position(startLineOrStart, startColumnOrEnd);\n            end = new Position(endLine, endColumn);\n        }\n        else if (Position.isPosition(startLineOrStart) && Position.isPosition(startColumnOrEnd)) {\n            start = Position.of(startLineOrStart);\n            end = Position.of(startColumnOrEnd);\n        }\n        if (!start || !end) {\n            throw new Error('Invalid arguments');\n        }\n        if (start.isBefore(end)) {\n            this._start = start;\n            this._end = end;\n        }\n        else {\n            this._start = end;\n            this._end = start;\n        }\n    }\n    contains(positionOrRange) {\n        if (Range_1.isRange(positionOrRange)) {\n            return this.contains(positionOrRange.start)\n                && this.contains(positionOrRange.end);\n        }\n        else if (Position.isPosition(positionOrRange)) {\n            if (Position.of(positionOrRange).isBefore(this._start)) {\n                return false;\n            }\n            if (this._end.isBefore(positionOrRange)) {\n                return false;\n            }\n            return true;\n        }\n        return false;\n    }\n    isEqual(other) {\n        return this._start.isEqual(other._start) && this._end.isEqual(other._end);\n    }\n    intersection(other) {\n        const start = Position.Max(other.start, this._start);\n        const end = Position.Min(other.end, this._end);\n        if (start.isAfter(end)) {\n            // this happens when there is no overlap:\n            // |-----|\n            //          |----|\n            return undefined;\n        }\n        return new Range_1(start, end);\n    }\n    union(other) {\n        if (this.contains(other)) {\n            return this;\n        }\n        else if (other.contains(this)) {\n            return other;\n        }\n        const start = Position.Min(other.start, this._start);\n        const end = Position.Max(other.end, this.end);\n        return new Range_1(start, end);\n    }\n    get isEmpty() {\n        return this._start.isEqual(this._end);\n    }\n    get isSingleLine() {\n        return this._start.line === this._end.line;\n    }\n    with(startOrChange, end = this.end) {\n        if (startOrChange === null || end === null) {\n            throw illegalArgument();\n        }\n        let start;\n        if (!startOrChange) {\n            start = this.start;\n        }\n        else if (Position.isPosition(startOrChange)) {\n            start = startOrChange;\n        }\n        else {\n            start = startOrChange.start || this.start;\n            end = startOrChange.end || this.end;\n        }\n        if (start.isEqual(this._start) && end.isEqual(this.end)) {\n            return this;\n        }\n        return new Range_1(start, end);\n    }\n    toJSON() {\n        return [this.start, this.end];\n    }\n    [Symbol.for('debug.description')]() {\n        return getDebugDescriptionOfRange(this);\n    }\n};\nRange = Range_1 = __decorate([\n    es5ClassCompat\n], Range);\nfunction getDebugDescriptionOfRange(range) {\n    return range.isEmpty\n        ? `[${range.start.line}:${range.start.character})`\n        : `[${range.start.line}:${range.start.character} -> ${range.end.line}:${range.end.character})`;\n}\n",
+            "strictModuleDirective": false
+          },
+          {
+            "source": {
+              "path": "source/src/vs/workbench/api/common/extHostTypes/selection.ts.snapshot",
+              "url": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/selection.ts",
+              "responseURL": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/selection.ts",
+              "status": 200,
+              "bytes": 2767,
+              "sha256": "b4f72c89c11ec845b309402015d34e4676afe2e672acc2fd0d9ea56e3297fdd5",
+              "acquisition": "Direct exact-commit official primary-source fetch"
+            },
+            "selectedUtf8Bytes": 2767,
+            "selectedSha256": "b4f72c89c11ec845b309402015d34e4676afe2e672acc2fd0d9ea56e3297fdd5",
+            "composedSha256": "cc696afc9f6432bdbed317a021ab31291ffdbe87ca828c37339fc9828d2507b1",
+            "executedSha256": "1ef084718a7cf656853cf2acd1ba756accddc602d49712c3c3cb6da8eec06056",
+            "executedCode": "var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {\n    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;\n    if (typeof Reflect === \"object\" && typeof Reflect.decorate === \"function\") r = Reflect.decorate(decorators, target, key, desc);\n    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;\n    return c > 3 && r && Object.defineProperty(target, key, r), r;\n};\nvar Selection_1;\n/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\nlet Selection = Selection_1 = class Selection extends Range {\n    static isSelection(thing) {\n        if (thing instanceof Selection_1) {\n            return true;\n        }\n        if (!thing || typeof thing !== 'object') {\n            return false;\n        }\n        return Range.isRange(thing)\n            && Position.isPosition(thing.anchor)\n            && Position.isPosition(thing.active)\n            && typeof thing.isReversed === 'boolean';\n    }\n    _anchor;\n    get anchor() {\n        return this._anchor;\n    }\n    _active;\n    get active() {\n        return this._active;\n    }\n    constructor(anchorLineOrAnchor, anchorColumnOrActive, activeLine, activeColumn) {\n        let anchor;\n        let active;\n        if (typeof anchorLineOrAnchor === 'number' && typeof anchorColumnOrActive === 'number' && typeof activeLine === 'number' && typeof activeColumn === 'number') {\n            anchor = new Position(anchorLineOrAnchor, anchorColumnOrActive);\n            active = new Position(activeLine, activeColumn);\n        }\n        else if (Position.isPosition(anchorLineOrAnchor) && Position.isPosition(anchorColumnOrActive)) {\n            anchor = Position.of(anchorLineOrAnchor);\n            active = Position.of(anchorColumnOrActive);\n        }\n        if (!anchor || !active) {\n            throw new Error('Invalid arguments');\n        }\n        super(anchor, active);\n        this._anchor = anchor;\n        this._active = active;\n    }\n    get isReversed() {\n        return this._anchor === this._end;\n    }\n    toJSON() {\n        return {\n            start: this.start,\n            end: this.end,\n            active: this.active,\n            anchor: this.anchor\n        };\n    }\n    [Symbol.for('debug.description')]() {\n        return getDebugDescriptionOfSelection(this);\n    }\n};\nSelection = Selection_1 = __decorate([\n    es5ClassCompat\n], Selection);\nfunction getDebugDescriptionOfSelection(selection) {\n    let rangeStr = getDebugDescriptionOfRange(selection);\n    if (!selection.isEmpty) {\n        if (selection.active.isEqual(selection.start)) {\n            rangeStr = `|${rangeStr}`;\n        }\n        else {\n            rangeStr = `${rangeStr}|`;\n        }\n    }\n    return rangeStr;\n}\n",
+            "strictModuleDirective": false
+          }
+        ],
+        "vmEvaluations": 6,
+        "sourceGatePassed": true,
+        "nodeGatePassed": true,
+        "success": true
+      },
+      {
+        "label": "fresh-source-module-strict-library",
+        "sourceRoot": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-position-range-selection-next",
+        "units": [
+          {
+            "source": {
+              "path": "source/src/vs/base/common/errors.ts.snapshot",
+              "url": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/base/common/errors.ts",
+              "responseURL": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/base/common/errors.ts",
+              "status": 200,
+              "bytes": 9084,
+              "sha256": "4771945225f0689ea9feef5fcf148dc493791edaf8693d5e11b057ce4a8d0b6e",
+              "acquisition": "Direct exact-commit official primary-source fetch"
+            },
+            "selectedUtf8Bytes": 172,
+            "selectedSha256": "c6ddbc6b55aa6ea64ec09983679570feeecdd77f75badeea1a3613ac9bc140c9",
+            "composedSha256": "88ea485c74e51e98b5fb846405739ba3523e657e6b464d1188f03f17ba9356b5",
+            "executedSha256": "542d14a637d43cbac0ada31b5c919fe705e9f21af0c1f5d395142f90a35be8cf",
+            "executedCode": "\"use strict\";\nfunction illegalArgument(name) {\n    if (name) {\n        return new Error(`Illegal argument: ${name}`);\n    }\n    else {\n        return new Error('Illegal argument');\n    }\n}\n",
+            "strictModuleDirective": true
+          },
+          {
+            "source": {
+              "path": "source/src/vs/workbench/api/common/extHostTypes/es5ClassCompat.ts.snapshot",
+              "url": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/es5ClassCompat.ts",
+              "responseURL": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/es5ClassCompat.ts",
+              "status": 200,
+              "bytes": 1176,
+              "sha256": "583e6a3a68d89ec9e63316943ec021ecede29592c24929b954b00dc4a1715502",
+              "acquisition": "Direct exact-commit official primary-source fetch"
+            },
+            "selectedUtf8Bytes": 1176,
+            "selectedSha256": "583e6a3a68d89ec9e63316943ec021ecede29592c24929b954b00dc4a1715502",
+            "composedSha256": "51ac7de351ea91e20451fa009c87f04ed1a00223d7f06f0ceb0c8547a2796883",
+            "executedSha256": "8ead7f0cbf846e7a6a3d28747068be76b3949ea14ea8a3aef9b6a9cf345a3ab3",
+            "executedCode": "\"use strict\";\n/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\n/**\n * @deprecated\n *\n * This utility ensures that old JS code that uses functions for classes still works. Existing usages cannot be removed\n * but new ones must not be added\n */\nfunction es5ClassCompat(target) {\n    const interceptFunctions = {\n        apply: function (...args) {\n            if (args.length === 0) {\n                return Reflect.construct(target, []);\n            }\n            else {\n                const argsList = args.length === 1 ? [] : args[1];\n                return Reflect.construct(target, argsList, args[0].constructor);\n            }\n        },\n        call: function (...args) {\n            if (args.length === 0) {\n                return Reflect.construct(target, []);\n            }\n            else {\n                const [thisArg, ...restArgs] = args;\n                return Reflect.construct(target, restArgs, thisArg.constructor);\n            }\n        }\n    };\n    return Object.assign(target, interceptFunctions);\n}\n",
+            "strictModuleDirective": true
+          },
+          {
+            "source": {
+              "path": "source/src/vs/workbench/api/common/extHostTypes/position.ts.snapshot",
+              "url": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/position.ts",
+              "responseURL": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/position.ts",
+              "status": 200,
+              "bytes": 5119,
+              "sha256": "0ea510e28831180e378efe9c20e8e8b666d5102b44ef1a2470905505a7ba2476",
+              "acquisition": "Direct exact-commit official primary-source fetch"
+            },
+            "selectedUtf8Bytes": 5119,
+            "selectedSha256": "0ea510e28831180e378efe9c20e8e8b666d5102b44ef1a2470905505a7ba2476",
+            "composedSha256": "6575065c04748b1798f8ddcb8f4f0d8b751fdc78867aec6e09712a13ca86d761",
+            "executedSha256": "09b6db6f4be857bee83e4574609eb6cfe4275546449dde4f2da718caca00f8c5",
+            "executedCode": "\"use strict\";\nvar __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {\n    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;\n    if (typeof Reflect === \"object\" && typeof Reflect.decorate === \"function\") r = Reflect.decorate(decorators, target, key, desc);\n    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;\n    return c > 3 && r && Object.defineProperty(target, key, r), r;\n};\nvar Position_1;\n/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\nlet Position = Position_1 = class Position {\n    static Min(...positions) {\n        if (positions.length === 0) {\n            throw new TypeError();\n        }\n        let result = positions[0];\n        for (let i = 1; i < positions.length; i++) {\n            const p = positions[i];\n            if (p.isBefore(result)) {\n                result = p;\n            }\n        }\n        return result;\n    }\n    static Max(...positions) {\n        if (positions.length === 0) {\n            throw new TypeError();\n        }\n        let result = positions[0];\n        for (let i = 1; i < positions.length; i++) {\n            const p = positions[i];\n            if (p.isAfter(result)) {\n                result = p;\n            }\n        }\n        return result;\n    }\n    static isPosition(other) {\n        if (!other) {\n            return false;\n        }\n        if (other instanceof Position_1) {\n            return true;\n        }\n        const { line, character } = other;\n        if (typeof line === 'number' && typeof character === 'number') {\n            return true;\n        }\n        return false;\n    }\n    static of(obj) {\n        if (obj instanceof Position_1) {\n            return obj;\n        }\n        else if (this.isPosition(obj)) {\n            return new Position_1(obj.line, obj.character);\n        }\n        throw new Error('Invalid argument, is NOT a position-like object');\n    }\n    _line;\n    _character;\n    get line() {\n        return this._line;\n    }\n    get character() {\n        return this._character;\n    }\n    constructor(line, character) {\n        if (line < 0) {\n            throw illegalArgument('line must be non-negative');\n        }\n        if (character < 0) {\n            throw illegalArgument('character must be non-negative');\n        }\n        this._line = line;\n        this._character = character;\n    }\n    isBefore(other) {\n        if (this._line < other._line) {\n            return true;\n        }\n        if (other._line < this._line) {\n            return false;\n        }\n        return this._character < other._character;\n    }\n    isBeforeOrEqual(other) {\n        if (this._line < other._line) {\n            return true;\n        }\n        if (other._line < this._line) {\n            return false;\n        }\n        return this._character <= other._character;\n    }\n    isAfter(other) {\n        return !this.isBeforeOrEqual(other);\n    }\n    isAfterOrEqual(other) {\n        return !this.isBefore(other);\n    }\n    isEqual(other) {\n        return this._line === other._line && this._character === other._character;\n    }\n    compareTo(other) {\n        if (this._line < other._line) {\n            return -1;\n        }\n        else if (this._line > other.line) {\n            return 1;\n        }\n        else {\n            // equal line\n            if (this._character < other._character) {\n                return -1;\n            }\n            else if (this._character > other._character) {\n                return 1;\n            }\n            else {\n                // equal line and character\n                return 0;\n            }\n        }\n    }\n    translate(lineDeltaOrChange, characterDelta = 0) {\n        if (lineDeltaOrChange === null || characterDelta === null) {\n            throw illegalArgument();\n        }\n        let lineDelta;\n        if (typeof lineDeltaOrChange === 'undefined') {\n            lineDelta = 0;\n        }\n        else if (typeof lineDeltaOrChange === 'number') {\n            lineDelta = lineDeltaOrChange;\n        }\n        else {\n            lineDelta = typeof lineDeltaOrChange.lineDelta === 'number' ? lineDeltaOrChange.lineDelta : 0;\n            characterDelta = typeof lineDeltaOrChange.characterDelta === 'number' ? lineDeltaOrChange.characterDelta : 0;\n        }\n        if (lineDelta === 0 && characterDelta === 0) {\n            return this;\n        }\n        return new Position_1(this.line + lineDelta, this.character + characterDelta);\n    }\n    with(lineOrChange, character = this.character) {\n        if (lineOrChange === null || character === null) {\n            throw illegalArgument();\n        }\n        let line;\n        if (typeof lineOrChange === 'undefined') {\n            line = this.line;\n        }\n        else if (typeof lineOrChange === 'number') {\n            line = lineOrChange;\n        }\n        else {\n            line = typeof lineOrChange.line === 'number' ? lineOrChange.line : this.line;\n            character = typeof lineOrChange.character === 'number' ? lineOrChange.character : this.character;\n        }\n        if (line === this.line && character === this.character) {\n            return this;\n        }\n        return new Position_1(line, character);\n    }\n    toJSON() {\n        return { line: this.line, character: this.character };\n    }\n    [Symbol.for('debug.description')]() {\n        return `(${this.line}:${this.character})`;\n    }\n};\nPosition = Position_1 = __decorate([\n    es5ClassCompat\n], Position);\n",
+            "strictModuleDirective": true
+          },
+          {
+            "source": {
+              "path": "source/src/vs/workbench/api/common/extHostTypes/range.ts.snapshot",
+              "url": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/range.ts",
+              "responseURL": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/range.ts",
+              "status": 200,
+              "bytes": 4699,
+              "sha256": "29247138cd98d009c356155d304745d36cff0d3c4f19b1117ab364446f779a38",
+              "acquisition": "Direct exact-commit official primary-source fetch"
+            },
+            "selectedUtf8Bytes": 4699,
+            "selectedSha256": "29247138cd98d009c356155d304745d36cff0d3c4f19b1117ab364446f779a38",
+            "composedSha256": "1b5ca4f8ad8d86b15d2fb0d65d3555abe866060256edf8d17a06aa38f7ec447b",
+            "executedSha256": "c3431ffd8cfb7b53f280eafb7ea8ec3f801bd3bea8a09ba2ef478f35e3973d09",
+            "executedCode": "\"use strict\";\nvar __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {\n    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;\n    if (typeof Reflect === \"object\" && typeof Reflect.decorate === \"function\") r = Reflect.decorate(decorators, target, key, desc);\n    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;\n    return c > 3 && r && Object.defineProperty(target, key, r), r;\n};\nvar Range_1;\n/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\nlet Range = Range_1 = class Range {\n    static isRange(thing) {\n        if (thing instanceof Range_1) {\n            return true;\n        }\n        if (!thing || typeof thing !== 'object') {\n            return false;\n        }\n        return Position.isPosition(thing.start)\n            && Position.isPosition(thing.end);\n    }\n    static of(obj) {\n        if (obj instanceof Range_1) {\n            return obj;\n        }\n        if (this.isRange(obj)) {\n            return new Range_1(obj.start, obj.end);\n        }\n        throw new Error('Invalid argument, is NOT a range-like object');\n    }\n    _start;\n    _end;\n    get start() {\n        return this._start;\n    }\n    get end() {\n        return this._end;\n    }\n    constructor(startLineOrStart, startColumnOrEnd, endLine, endColumn) {\n        let start;\n        let end;\n        if (typeof startLineOrStart === 'number' && typeof startColumnOrEnd === 'number' && typeof endLine === 'number' && typeof endColumn === 'number') {\n            start = new Position(startLineOrStart, startColumnOrEnd);\n            end = new Position(endLine, endColumn);\n        }\n        else if (Position.isPosition(startLineOrStart) && Position.isPosition(startColumnOrEnd)) {\n            start = Position.of(startLineOrStart);\n            end = Position.of(startColumnOrEnd);\n        }\n        if (!start || !end) {\n            throw new Error('Invalid arguments');\n        }\n        if (start.isBefore(end)) {\n            this._start = start;\n            this._end = end;\n        }\n        else {\n            this._start = end;\n            this._end = start;\n        }\n    }\n    contains(positionOrRange) {\n        if (Range_1.isRange(positionOrRange)) {\n            return this.contains(positionOrRange.start)\n                && this.contains(positionOrRange.end);\n        }\n        else if (Position.isPosition(positionOrRange)) {\n            if (Position.of(positionOrRange).isBefore(this._start)) {\n                return false;\n            }\n            if (this._end.isBefore(positionOrRange)) {\n                return false;\n            }\n            return true;\n        }\n        return false;\n    }\n    isEqual(other) {\n        return this._start.isEqual(other._start) && this._end.isEqual(other._end);\n    }\n    intersection(other) {\n        const start = Position.Max(other.start, this._start);\n        const end = Position.Min(other.end, this._end);\n        if (start.isAfter(end)) {\n            // this happens when there is no overlap:\n            // |-----|\n            //          |----|\n            return undefined;\n        }\n        return new Range_1(start, end);\n    }\n    union(other) {\n        if (this.contains(other)) {\n            return this;\n        }\n        else if (other.contains(this)) {\n            return other;\n        }\n        const start = Position.Min(other.start, this._start);\n        const end = Position.Max(other.end, this.end);\n        return new Range_1(start, end);\n    }\n    get isEmpty() {\n        return this._start.isEqual(this._end);\n    }\n    get isSingleLine() {\n        return this._start.line === this._end.line;\n    }\n    with(startOrChange, end = this.end) {\n        if (startOrChange === null || end === null) {\n            throw illegalArgument();\n        }\n        let start;\n        if (!startOrChange) {\n            start = this.start;\n        }\n        else if (Position.isPosition(startOrChange)) {\n            start = startOrChange;\n        }\n        else {\n            start = startOrChange.start || this.start;\n            end = startOrChange.end || this.end;\n        }\n        if (start.isEqual(this._start) && end.isEqual(this.end)) {\n            return this;\n        }\n        return new Range_1(start, end);\n    }\n    toJSON() {\n        return [this.start, this.end];\n    }\n    [Symbol.for('debug.description')]() {\n        return getDebugDescriptionOfRange(this);\n    }\n};\nRange = Range_1 = __decorate([\n    es5ClassCompat\n], Range);\nfunction getDebugDescriptionOfRange(range) {\n    return range.isEmpty\n        ? `[${range.start.line}:${range.start.character})`\n        : `[${range.start.line}:${range.start.character} -> ${range.end.line}:${range.end.character})`;\n}\n",
+            "strictModuleDirective": true
+          },
+          {
+            "source": {
+              "path": "source/src/vs/workbench/api/common/extHostTypes/selection.ts.snapshot",
+              "url": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/selection.ts",
+              "responseURL": "https://raw.githubusercontent.com/microsoft/vscode/07f806f999227108933c2e30515b26eecc1fda74/src/vs/workbench/api/common/extHostTypes/selection.ts",
+              "status": 200,
+              "bytes": 2767,
+              "sha256": "b4f72c89c11ec845b309402015d34e4676afe2e672acc2fd0d9ea56e3297fdd5",
+              "acquisition": "Direct exact-commit official primary-source fetch"
+            },
+            "selectedUtf8Bytes": 2767,
+            "selectedSha256": "b4f72c89c11ec845b309402015d34e4676afe2e672acc2fd0d9ea56e3297fdd5",
+            "composedSha256": "cc696afc9f6432bdbed317a021ab31291ffdbe87ca828c37339fc9828d2507b1",
+            "executedSha256": "bd309cf3cc774525120473faaea48741d7394c99e3d4b8c0d48f42d44ddef9ef",
+            "executedCode": "\"use strict\";\nvar __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {\n    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;\n    if (typeof Reflect === \"object\" && typeof Reflect.decorate === \"function\") r = Reflect.decorate(decorators, target, key, desc);\n    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;\n    return c > 3 && r && Object.defineProperty(target, key, r), r;\n};\nvar Selection_1;\n/*---------------------------------------------------------------------------------------------\n *  Copyright (c) Microsoft Corporation. All rights reserved.\n *  Licensed under the MIT License. See License.txt in the project root for license information.\n *--------------------------------------------------------------------------------------------*/\nlet Selection = Selection_1 = class Selection extends Range {\n    static isSelection(thing) {\n        if (thing instanceof Selection_1) {\n            return true;\n        }\n        if (!thing || typeof thing !== 'object') {\n            return false;\n        }\n        return Range.isRange(thing)\n            && Position.isPosition(thing.anchor)\n            && Position.isPosition(thing.active)\n            && typeof thing.isReversed === 'boolean';\n    }\n    _anchor;\n    get anchor() {\n        return this._anchor;\n    }\n    _active;\n    get active() {\n        return this._active;\n    }\n    constructor(anchorLineOrAnchor, anchorColumnOrActive, activeLine, activeColumn) {\n        let anchor;\n        let active;\n        if (typeof anchorLineOrAnchor === 'number' && typeof anchorColumnOrActive === 'number' && typeof activeLine === 'number' && typeof activeColumn === 'number') {\n            anchor = new Position(anchorLineOrAnchor, anchorColumnOrActive);\n            active = new Position(activeLine, activeColumn);\n        }\n        else if (Position.isPosition(anchorLineOrAnchor) && Position.isPosition(anchorColumnOrActive)) {\n            anchor = Position.of(anchorLineOrAnchor);\n            active = Position.of(anchorColumnOrActive);\n        }\n        if (!anchor || !active) {\n            throw new Error('Invalid arguments');\n        }\n        super(anchor, active);\n        this._anchor = anchor;\n        this._active = active;\n    }\n    get isReversed() {\n        return this._anchor === this._end;\n    }\n    toJSON() {\n        return {\n            start: this.start,\n            end: this.end,\n            active: this.active,\n            anchor: this.anchor\n        };\n    }\n    [Symbol.for('debug.description')]() {\n        return getDebugDescriptionOfSelection(this);\n    }\n};\nSelection = Selection_1 = __decorate([\n    es5ClassCompat\n], Selection);\nfunction getDebugDescriptionOfSelection(selection) {\n    let rangeStr = getDebugDescriptionOfRange(selection);\n    if (!selection.isEmpty) {\n        if (selection.active.isEqual(selection.start)) {\n            rangeStr = `|${rangeStr}`;\n        }\n        else {\n            rangeStr = `${rangeStr}|`;\n        }\n    }\n    return rangeStr;\n}\n",
+            "strictModuleDirective": true
+          }
+        ],
+        "vmEvaluations": 6,
+        "sourceGatePassed": true,
+        "nodeGatePassed": true,
+        "success": true
+      }
+    ]
+  },
+  "observations": [
+    {
+      "label": "strictness control Position.call",
+      "nonstrictOwnKeys": [
+        "length",
+        "name",
+        "arguments",
+        "caller",
+        "prototype"
+      ],
+      "strictOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ],
+      "candidateOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ]
+    },
+    {
+      "label": "strictness control Position.apply",
+      "nonstrictOwnKeys": [
+        "length",
+        "name",
+        "arguments",
+        "caller",
+        "prototype"
+      ],
+      "strictOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ],
+      "candidateOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ]
+    },
+    {
+      "label": "strictness control Range.call",
+      "nonstrictOwnKeys": [
+        "length",
+        "name",
+        "arguments",
+        "caller",
+        "prototype"
+      ],
+      "strictOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ],
+      "candidateOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ]
+    },
+    {
+      "label": "strictness control Range.apply",
+      "nonstrictOwnKeys": [
+        "length",
+        "name",
+        "arguments",
+        "caller",
+        "prototype"
+      ],
+      "strictOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ],
+      "candidateOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ]
+    },
+    {
+      "label": "strictness control Selection.call",
+      "nonstrictOwnKeys": [
+        "length",
+        "name",
+        "arguments",
+        "caller",
+        "prototype"
+      ],
+      "strictOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ],
+      "candidateOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ]
+    },
+    {
+      "label": "strictness control Selection.apply",
+      "nonstrictOwnKeys": [
+        "length",
+        "name",
+        "arguments",
+        "caller",
+        "prototype"
+      ],
+      "strictOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ],
+      "candidateOwnKeys": [
+        "length",
+        "name",
+        "prototype"
+      ]
+    },
+    {
+      "label": "helper descriptors Position.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "call",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "call",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "call",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "call",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper descriptors Position.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "apply",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "apply",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "apply",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "apply",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper descriptors Range.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "call",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "call",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "call",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "call",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper descriptors Range.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "apply",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "apply",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "apply",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "apply",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper descriptors Selection.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "call",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "call",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "call",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "call",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper descriptors Selection.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "apply",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "apply",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "typeProperty": {
+            "value": {
+              "type": "function",
+              "name": "apply",
+              "length": 0
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          },
+          "keys": [
+            "length",
+            "name",
+            "prototype"
+          ],
+          "descriptors": {
+            "length": {
+              "value": 0,
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "name": {
+              "value": "apply",
+              "writable": false,
+              "enumerable": false,
+              "configurable": true
+            },
+            "prototype": {
+              "value": {
+                "type": "object"
+              },
+              "writable": true,
+              "enumerable": false,
+              "configurable": false
+            }
+          },
+          "prototypeConstructor": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "construct distinct newTarget Position.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "line": 12,
+            "character": 17
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_line",
+            "_character"
+          ]
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "line": 12,
+            "character": 17
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_line",
+            "_character"
+          ]
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "construct distinct newTarget Position.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "line": 12,
+            "character": 17
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_line",
+            "_character"
+          ]
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "line": 12,
+            "character": 17
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_line",
+            "_character"
+          ]
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "construct distinct newTarget Range.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_start",
+            "_end"
+          ]
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_start",
+            "_end"
+          ]
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "construct distinct newTarget Range.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_start",
+            "_end"
+          ]
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_start",
+            "_end"
+          ]
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "construct distinct newTarget Selection.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_start",
+            "_end",
+            "_anchor",
+            "_active"
+          ]
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_start",
+            "_end",
+            "_anchor",
+            "_active"
+          ]
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "construct distinct newTarget Selection.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_start",
+            "_end",
+            "_anchor",
+            "_active"
+          ]
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "receiverTarget": true,
+          "helperNewTarget": false,
+          "base": true,
+          "receiverKeys": [
+            "constructor",
+            "owned"
+          ],
+          "fields": [
+            "_start",
+            "_end",
+            "_anchor",
+            "_active"
+          ]
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "ES5 subclass chain Position.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "line": 12,
+            "character": 17
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "line": 12,
+            "character": 17
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "ES5 subclass chain Position.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "line": 12,
+            "character": 17
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "line": 12,
+            "character": 17
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "ES5 subclass chain Range.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "ES5 subclass chain Range.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "ES5 subclass chain Selection.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "ES5 subclass chain Selection.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "grandChild": true,
+          "child": true,
+          "base": true,
+          "receiverUnmodified": true,
+          "valueIsReceiver": false
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper this binding Position.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "line": 12,
+            "character": 17
+          },
+          "second": {
+            "line": 12,
+            "character": 17
+          },
+          "base": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "line": 12,
+            "character": 17
+          },
+          "second": {
+            "line": 12,
+            "character": 17
+          },
+          "base": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper this binding Position.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "line": 12,
+            "character": 17
+          },
+          "second": {
+            "line": 12,
+            "character": 17
+          },
+          "base": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "line": 12,
+            "character": 17
+          },
+          "second": {
+            "line": 12,
+            "character": 17
+          },
+          "base": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper this binding Range.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "second": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "base": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "second": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "base": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper this binding Range.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "second": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "base": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "second": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "base": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper this binding Selection.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "second": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "base": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "second": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "base": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "helper this binding Selection.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "second": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "base": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "value": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "second": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "base": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "array-like apply Position",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "line": 12,
+            "character": 17
+          },
+          "log": [
+            "constructor",
+            "length",
+            "index0",
+            "index1"
+          ]
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "line": 12,
+            "character": 17
+          },
+          "log": [
+            "constructor",
+            "length",
+            "index0",
+            "index1"
+          ]
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "array-like apply Range",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "log": [
+            "constructor",
+            "length",
+            "index0",
+            "index1",
+            "index2",
+            "index3"
+          ]
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "log": [
+            "constructor",
+            "length",
+            "index0",
+            "index1",
+            "index2",
+            "index3"
+          ]
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "array-like apply Selection",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "log": [
+            "constructor",
+            "length",
+            "index0",
+            "index1",
+            "index2",
+            "index3"
+          ]
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "log": [
+            "constructor",
+            "length",
+            "index0",
+            "index1",
+            "index2",
+            "index3"
+          ]
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "empty helper Position.call",
+      "original": {
+        "ok": true,
+        "value": {
+          "line": {
+            "special": "undefined"
+          },
+          "character": {
+            "special": "undefined"
+          }
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "line": {
+            "special": "undefined"
+          },
+          "character": {
+            "special": "undefined"
+          }
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Position.call [object Object]",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "[object Object] is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "#<Object> is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Position.call ()=>{}",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Position.call null",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "empty helper Position.apply",
+      "original": {
+        "ok": true,
+        "value": {
+          "line": {
+            "special": "undefined"
+          },
+          "character": {
+            "special": "undefined"
+          }
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "line": {
+            "special": "undefined"
+          },
+          "character": {
+            "special": "undefined"
+          }
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Position.apply [object Object]",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "[object Object] is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "#<Object> is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Position.apply ()=>{}",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Position.apply null",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "empty helper Range.call",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid arguments"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid arguments"
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Range.call [object Object]",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "[object Object] is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "#<Object> is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Range.call ()=>{}",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Range.call null",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "empty helper Range.apply",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid arguments"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid arguments"
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Range.apply [object Object]",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "[object Object] is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "#<Object> is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Range.apply ()=>{}",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Range.apply null",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "empty helper Selection.call",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid arguments"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid arguments"
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Selection.call [object Object]",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "[object Object] is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "#<Object> is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Selection.call ()=>{}",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Selection.call null",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "empty helper Selection.apply",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid arguments"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "Error",
+          "message": "Invalid arguments"
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Selection.apply [object Object]",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "[object Object] is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "#<Object> is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Selection.apply ()=>{}",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "()=>{} is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "invalid constructor Selection.apply null",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "null is not a constructor"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "null receiver call",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot read properties of null (reading 'constructor')"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot read properties of null (reading 'constructor')"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "null receiver apply",
+      "original": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot read properties of null (reading 'constructor')"
+        }
+      },
+      "candidate": {
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot read properties of null (reading 'constructor')"
+        }
+      },
+      "comparison": "Error rejection type only; engine raw labels retained",
+      "exact": true
+    },
+    {
+      "label": "subclass own fields Position",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "line": 12,
+            "character": 17
+          },
+          "child": true,
+          "descriptor": {
+            "value": 12,
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          }
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "line": 12,
+            "character": 17
+          },
+          "child": true,
+          "descriptor": {
+            "value": 12,
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          }
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "subclass own fields Range",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "child": true,
+          "descriptor": {
+            "value": {
+              "type": "object"
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          }
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "child": true,
+          "descriptor": {
+            "value": {
+              "type": "object"
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          }
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "subclass own fields Selection",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "child": true,
+          "descriptor": {
+            "value": {
+              "type": "object"
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          }
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 4,
+              "character": 29
+            },
+            "end": {
+              "line": 12,
+              "character": 17
+            },
+            "anchor": {
+              "line": 12,
+              "character": 17
+            },
+            "active": {
+              "line": 4,
+              "character": 29
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "child": true,
+          "descriptor": {
+            "value": {
+              "type": "object"
+            },
+            "writable": true,
+            "enumerable": true,
+            "configurable": true
+          }
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "accessor census",
+      "original": {
+        "ok": true,
+        "value": {
+          "Position": {
+            "line": {
+              "get": {
+                "type": "function",
+                "name": "get line",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "character": {
+              "get": {
+                "type": "function",
+                "name": "get character",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            }
+          },
+          "Range": {
+            "start": {
+              "get": {
+                "type": "function",
+                "name": "get start",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "end": {
+              "get": {
+                "type": "function",
+                "name": "get end",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "isEmpty": {
+              "get": {
+                "type": "function",
+                "name": "get isEmpty",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "isSingleLine": {
+              "get": {
+                "type": "function",
+                "name": "get isSingleLine",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            }
+          },
+          "Selection": {
+            "anchor": {
+              "get": {
+                "type": "function",
+                "name": "get anchor",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "active": {
+              "get": {
+                "type": "function",
+                "name": "get active",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "isReversed": {
+              "get": {
+                "type": "function",
+                "name": "get isReversed",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            }
+          }
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "Position": {
+            "line": {
+              "get": {
+                "type": "function",
+                "name": "get line",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "character": {
+              "get": {
+                "type": "function",
+                "name": "get character",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            }
+          },
+          "Range": {
+            "start": {
+              "get": {
+                "type": "function",
+                "name": "get start",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "end": {
+              "get": {
+                "type": "function",
+                "name": "get end",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "isEmpty": {
+              "get": {
+                "type": "function",
+                "name": "get isEmpty",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "isSingleLine": {
+              "get": {
+                "type": "function",
+                "name": "get isSingleLine",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            }
+          },
+          "Selection": {
+            "anchor": {
+              "get": {
+                "type": "function",
+                "name": "get anchor",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "active": {
+              "get": {
+                "type": "function",
+                "name": "get active",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            },
+            "isReversed": {
+              "get": {
+                "type": "function",
+                "name": "get isReversed",
+                "length": 0
+              },
+              "set": {
+                "special": "undefined"
+              },
+              "enumerable": false,
+              "configurable": true
+            }
+          }
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    },
+    {
+      "label": "selection inherited returns",
+      "original": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 19,
+              "character": 12
+            },
+            "end": {
+              "line": 21,
+              "character": 4
+            },
+            "anchor": {
+              "line": 21,
+              "character": 4
+            },
+            "active": {
+              "line": 19,
+              "character": 12
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "same": true,
+          "unionIsOther": true,
+          "intersectionIsRange": true,
+          "intersectionIsSelection": false,
+          "changedKind": "Range",
+          "changed": {
+            "start": {
+              "line": 17,
+              "character": 0
+            },
+            "end": {
+              "line": 21,
+              "character": 4
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "contains": true
+        }
+      },
+      "candidate": {
+        "ok": true,
+        "value": {
+          "state": {
+            "start": {
+              "line": 19,
+              "character": 12
+            },
+            "end": {
+              "line": 21,
+              "character": 4
+            },
+            "anchor": {
+              "line": 21,
+              "character": 4
+            },
+            "active": {
+              "line": 19,
+              "character": 12
+            },
+            "isEmpty": false,
+            "isSingleLine": false,
+            "isReversed": true
+          },
+          "same": true,
+          "unionIsOther": true,
+          "intersectionIsRange": true,
+          "intersectionIsSelection": false,
+          "changedKind": "Range",
+          "changed": {
+            "start": {
+              "line": 17,
+              "character": 0
+            },
+            "end": {
+              "line": 21,
+              "character": 4
+            },
+            "isEmpty": false,
+            "isSingleLine": false
+          },
+          "contains": true
+        }
+      },
+      "comparison": "Exact value/library error",
+      "exact": true
+    }
+  ],
+  "rawReadonlyEngineLabelEquivalence": false,
+  "sourceModuleStrictnessExplicit": true,
+  "originalWorkbench": 0,
+  "originalExtensionHost": 0,
+  "originalGUI": 0,
+  "benchmarks": 0
+}

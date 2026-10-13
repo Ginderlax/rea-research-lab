@@ -1,0 +1,56 @@
+INDEPENDENT_ORIGINAL_ACTION_PAIRS 42
+(node:26972) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ all eight actions match original signed line and freehand point geometry (11.9902ms)
+✔ outer nested groups and literal group-ID/shape-ID collision match original units (7.6432ms)
+✔ negative-gap unusual anchor order and same-wide-group anchors match literal original behavior (2.0967ms)
+✖ fractional geometry and signed-zero coordinates match without numeric normalization (2.4128ms)
+✔ partial outer selection expands; empty/single-unit selections are stable no-ops (0.2483ms)
+✔ overflow and malformed requests reject without partially changing caller data (0.5844ms)
+✔ native projection preserves opaque and unknown fields; geometry/version updates survive repeated roundtrips (1.632ms)
+✔ opaque mixed groups and selected external binding refuse; unrelated or deleted records remain inert (1.0383ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 116.9363
+
+✖ failing tests:
+
+test at review.test.mjs:11:1
+✖ fractional geometry and signed-zero coordinates match without numeric normalization (2.4128ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    [
+      {
+        id: 'a',
+        x: 0.3333333333333333,
+        y: -0
+  ...
+        id: 'c',
+  +     x: 1.3333333333333333,
+  -     x: 1.333333333333333,
+        y: 0.3
+      }
+    ]
+  
+      at compare (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-alignment-independent-review/review.test.mjs:6:716)
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-alignment-independent-review/review.test.mjs:11:507)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [ { id: 'a', x: 0.3333333333333333, y: -0 }, { id: 'b', x: 0.9603174603174601, y: 0 }, { id: 'c', x: 1.3333333333333333, y: 0.3 } ],
+    expected: [ { id: 'a', x: 0.3333333333333333, y: -0 }, { id: 'b', x: 0.9603174603174601, y: 0 }, { id: 'c', x: 1.333333333333333, y: 0.3 } ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

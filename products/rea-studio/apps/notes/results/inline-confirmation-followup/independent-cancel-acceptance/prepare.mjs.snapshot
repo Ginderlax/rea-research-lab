@@ -1,0 +1,42 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+const root=path.dirname(fileURLToPath(import.meta.url)),work=path.dirname(root);
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const pinned=[
+ ['notes-inline-cancel-no-read-next','freeze-manifest.json','5fcb71d9abddbbc6d0077da9cbbe0808b7be5ff4d66ce94a747f311ab6a3d7bb'],
+ ['notes-inline-confirmation-next','freeze-manifest.json','347ff80e93076df92144915e16257f92ff7910a78ea175be840b8d3fd829dc16'],
+ ['notes-inline-confirmation-independent-review','review-manifest.json','bb46812480086025a87028ac8dddc102e6548fc9bd57410fa10de67a28ce3322']
+];
+export async function authenticate(){const sets=[];for(const [dir,name,digest]of pinned){const base=path.join(work,dir),bytes=await fs.readFile(path.join(base,name));if(sha(bytes)!==digest)throw Error('Manifest changed: '+dir);const manifest=JSON.parse(bytes),records=manifest.records??Object.entries(manifest.inventory).map(([p,r])=>({path:p,...r}));let total=0;for(const r of records){const p=path.resolve(base,r.path);if(!p.startsWith(base+path.sep))throw Error('Unsafe manifest path');const b=await fs.readFile(p);if(b.length!==r.bytes||sha(b)!==r.sha256)throw Error('Frozen input changed: '+dir+'/'+r.path);total+=b.length;}const actual=[];async function walk(p){for(const row of await fs.readdir(p,{withFileTypes:true})){const full=path.join(p,row.name);if(row.isDirectory())await walk(full);else if(row.isFile())actual.push(path.relative(base,full).replaceAll('\\','/'));else throw Error('Nonregular frozen entry: '+full);}}await walk(base);if(JSON.stringify(actual.filter(p=>p!==name).sort())!==JSON.stringify(records.map(r=>r.path).sort()))throw Error('Frozen inventory changed: '+dir);sets.push({directory:dir,manifest:name,sha256:digest,files:records.length,totalBytes:total});}return sets;}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
+const authority=await authenticate();await fs.mkdir(path.join(root,'source'),{recursive:true});
+for(const [dir,name]of pinned)await fs.copyFile(path.join(work,dir,name),path.join(root,'source',dir+'-'+name+'.snapshot'));
+const adapters=[];
+for(const name of ['fixture.mjs','fresh-replay.test.mjs','independent-v2.test.mjs']){
+ const b=await fs.readFile(path.join(work,'notes-inline-confirmation-independent-review',name));
+ await fs.writeFile(path.join(root,'source',name+'.snapshot'),b);
+ const original=b.toString('utf8'),adapted=original.replaceAll('../notes-inline-confirmation-next/products/','../notes-inline-cancel-no-read-next/products/');
+ await fs.writeFile(path.join(root,name),adapted);adapters.push({path:name,originalSha256:sha(b),adaptedSha256:sha(Buffer.from(adapted)),changes:original===adapted?0:original.split('../notes-inline-confirmation-next/products/').length-1,policy:'Runtime import paths only; no assertions or test bodies changed.'});
+}
+await fs.writeFile(path.join(root,'adapters.json'),JSON.stringify({schema:'rea-review-path-only-adapters/v1',records:adapters},null,2)+'\n');
+const notes=path.join(work,'notes-inline-cancel-no-read-next/products/rea-studio/apps/notes');
+for(const name of ['client.mjs','server.mjs','jex.mjs','markdown.mjs','notebooks.mjs','notebook-trash.mjs','notebooks.test.mjs','notebook-trash.test.mjs','notebook-original-oracle.mjs','notebook-trash-original-oracle.mjs'])await fs.copyFile(path.join(notes,name),path.join(root,'source',name+'.snapshot'));
+const run='runs/focused-2026-10-13T01-48-28.020Z';const stage=path.join(work,'notes-inline-cancel-no-read-next');
+const raw=await fs.readFile(path.join(stage,run,'stdout.txt'),'utf8');
+await fs.writeFile(path.join(root,'source','author-final-focused.stdout.txt.snapshot'),raw);
+const markers=raw.split(/\r?\n/).filter(s=>s.startsWith('# {')).map(s=>{try{return JSON.parse(s.slice(2));}catch{return null;}}).filter(Boolean);
+const org=markers.find(m=>m.notebookOriginalObservations)?.notebookOriginalObservations;
+const trashMarker=markers.find(m=>m.notebookTrashOriginal)?.notebookTrashOriginal;
+const trashBytes=await fs.readFile(path.join(stage,'products/rea-studio/.local/notes-notebook-trash-observations/trash-original.json'));
+await fs.writeFile(path.join(root,'source','author-trash-original.json.snapshot'),trashBytes);
+const trash=JSON.parse(trashBytes);
+if(org?.length!==2||org[0].nestingComparisons!==20||org[0].pathComparisons!==4||org[0].originalMoveContractExecutions!==2||org[1].candidateOriginalMoveComparisons!==2||org[1].originalMoveExecutions!==2)throw Error('Unexpected organization observations');
+const top=trash.reduce((n,r)=>n+r.originalTopLevelExecutions,0),rows=trash.reduce((n,r)=>n+(r.matchedItemProjections??0),0);
+if(trash.length!==8||top!==13||rows!==73||trashMarker?.topLevelOriginalExecutions!==top||trashMarker?.matchedItemProjections!==rows)throw Error('Unexpected trash observations');
+const audit={schema:'rea-source-bound-original-helper-accounting-audit/v1',authority,authorRun:run,authorRunCounts:{tests:69,pass:69,fail:0},observedMarkers:{organization:org,trash:trashMarker,http:markers.filter(m=>m.notebookTrashHttp||m.notebookHttpObservation)},accounting:{organization:{oracleConstructions:3,selectedReleasedHelperTopLevelCalls:28,nestingCallsAndExactComparisons:20,pathCallsAndExactComparisons:4,moveCalls:4,moveContractSmokeExecutions:2,candidateMoveProjectionComparisons:2,uniqueReleasedMethodSlices:4,conflictConstantHelperAlsoEvaluated:true,compiledVMContexts:9},trash:{oracleConstructions:8,selectedReleasedHelperTopLevelCalls:13,mutationCalls:7,displayCallsAndComparisons:6,matchedItemProjections:73,comparedMetadataFieldsPerProjection:5,metadataFieldAssertions:365,uniqueReleasedMethodFunctionSlices:9,compiledVMContexts:8},totals:{oracleConstructions:11,selectedReleasedHelperTopLevelCalls:41,compiledVMContexts:17,originalApplicationExecutions:0,originalGUIExecutions:0,independentReviewOriginalExecutions:0}},limits:['This is a source-code and retained-observation audit; this review does not rerun the 69-test author campaign.','Top-level call counts exclude recursive/internal released calls; they are not complete runtime invocation telemetry.','Organization nesting/path predicates, two projection comparisons and two smoke calls remain distinct.','Trash item projections compare five selected fields, not whole item objects.','Released helpers execute under bounded in-memory/fixed-clock/model/SQL adapters, not the Joplin database, sync, plugin runtime or UI.'],readOnlyDiscoveryMistakes:{missingFilenameReads:['notebook-trash-original.test.mjs','notebook-original.test.mjs'],wrongGeneratedOutputPath:'.local/notes-notebook-trash-observations/trash-original.json',runtimeFailuresInferred:false}};
+await fs.writeFile(path.join(root,'helper-accounting-audit.json'),JSON.stringify(audit,null,2)+'\n');
+await fs.writeFile(path.join(root,'input-authentication.json'),JSON.stringify({at:new Date().toISOString(),authority},null,2)+'\n');
+console.log(JSON.stringify({authority,adapters,helperTopLevelCalls:41}));
+}

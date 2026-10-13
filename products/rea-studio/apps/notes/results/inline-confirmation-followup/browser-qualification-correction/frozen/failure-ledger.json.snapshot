@@ -1,0 +1,22 @@
+{
+  "schema": "rea-notes-qualification-proof-attempts/v1",
+  "attempts": [
+    {
+      "id": "final-verifier-windows-url-v1",
+      "source": "verify-final.mjs",
+      "stdout": "verify-final.stdout.txt",
+      "stderr": "verify-final.stderr.txt",
+      "exitCode": 1,
+      "errorCode": "ERR_UNSUPPORTED_ESM_URL_SCHEME",
+      "cause": "Own proof verifier used a Windows absolute path in dynamic import instead of a file URL.",
+      "successfulPreparationUnchanged": true,
+      "appExecution": false,
+      "originalExecution": false,
+      "browserExecution": false,
+      "correctionSource": "verify-final-v2.mjs",
+      "correction": "Import pathToFileURL and pass its href to dynamic import. All proof bodies and limits unchanged."
+    }
+  ],
+  "priorFrozen162And17Modified": false,
+  "productFinding": false
+}

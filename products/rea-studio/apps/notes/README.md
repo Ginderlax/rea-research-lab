@@ -1,5 +1,7 @@
 # Local Notes — working development version
 
+The prospective inline-confirmation candidate replaces native browser dialogs for notebook Trash and Restore with visible Confirm/Cancel controls. It names the selected notebook and recursive scope, initially focuses Cancel, supports Escape cancellation and a two-button Tab cycle, and makes the background inert while pending. After Confirm, both choices are disabled and focus stays on the pending dialog until the request settles. Cancel and closing Notes before Confirm submit no notebook operation. Closing after a committed request suppresses its old view publication; it does not undo the commit. Dirty drafts must still be saved first. Backend notebook recursion, revision and confirmation contracts are unchanged. Other actions retain their existing native dialogs. DOM model tests verify finite keyboard/focus behavior; actual browser and assistive-technology acceptance require separate review.
+
 An independently written local Markdown notebook with bounded Joplin JEX interoperability and source-assisted notebook organization. It is **not a complete Joplin replacement**. The application does not import the earlier Joplin reconstruction or run the original application as a wrapper.
 
 ## Implemented

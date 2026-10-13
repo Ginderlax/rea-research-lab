@@ -1,0 +1,22 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import {spawn} from 'node:child_process';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {authenticate} from './prepare.mjs';
+const root=path.dirname(fileURLToPath(import.meta.url)),digest=b=>crypto.createHash('sha256').update(b).digest('hex');
+const stamp=new Date().toISOString().replaceAll(':','-'),run=path.join(root,'runs',stamp);await fs.mkdir(path.join(run,'observations'),{recursive:true});
+const files=['fixture.mjs','fresh-replay.test.mjs','independent-v2.test.mjs','fresh-boundaries.test.mjs','prepare.mjs','run.mjs'];
+async function sources(){return Promise.all(files.map(async p=>{const b=await fs.readFile(path.join(root,p));return{path:p,bytes:b.length,sha256:digest(b)};}));}
+const authorityBefore=await authenticate(),before=await sources();await fs.writeFile(path.join(run,'sources-before.json'),JSON.stringify({authority:authorityBefore,review:before},null,2)+'\n');
+await fs.mkdir(path.join(run,'source'));for(const f of files)await fs.copyFile(path.join(root,f),path.join(run,'source',f+'.snapshot'));
+const env={...process.env,NOTES_REVIEW_OUTPUT:pathToFileURL(path.join(run,'observations')+path.sep).href};delete env.NODE_TEST_CONTEXT;
+const child=spawn(process.execPath,['--test','--test-reporter=tap','fresh-replay.test.mjs','independent-v2.test.mjs','fresh-boundaries.test.mjs'],{cwd:root,env,windowsHide:true,stdio:['ignore','pipe','pipe']});
+let out=[],err=[],outBytes=0,errBytes=0,termination=null;const cap=1024*1024,deadline=setTimeout(()=>{termination='deadline';child.kill();},60000);
+child.stdout.on('data',b=>{outBytes+=b.length;if(outBytes>cap){termination='stdout-budget';child.kill();return;}out.push(b);});child.stderr.on('data',b=>{errBytes+=b.length;if(errBytes>cap){termination='stderr-budget';child.kill();return;}err.push(b);});
+const {code,signal}=await new Promise(resolve=>{child.once('error',e=>resolve({code:null,signal:null,error:String(e)}));child.once('close',(code,signal)=>resolve({code,signal}));});clearTimeout(deadline);
+const stdout=Buffer.concat(out),stderr=Buffer.concat(err);await fs.writeFile(path.join(run,'stdout.txt'),stdout);await fs.writeFile(path.join(run,'stderr.txt'),stderr);
+const authorityAfter=await authenticate(),after=await sources();await fs.writeFile(path.join(run,'sources-after.json'),JSON.stringify({authority:authorityAfter,review:after},null,2)+'\n');
+const raw=stdout.toString('utf8'),summary=Object.fromEntries(['tests','pass','fail','cancelled','skipped','todo'].map(k=>[k,Number(raw.match(new RegExp('^# '+k+' (\\d+)$','m'))?.[1]??NaN)]));
+const attempt={schema:'rea-notes-cancel-independent-run/v1',at:new Date().toISOString(),run:path.relative(root,run).replaceAll('\\','/'),process:{nodeVersion:process.version,execPath:process.execPath,code,signal,termination,deadlineMs:60000,stdoutBudget:cap,stderrBudget:cap,outBytes,errBytes,inheritedNodeTestContextRemoved:true},summary,sourceStable:JSON.stringify(authorityBefore)===JSON.stringify(authorityAfter)&&JSON.stringify(before)===JSON.stringify(after),originalExecutions:0,actualBrowserExecutions:0,outputConfinedToReview:true};
+await fs.writeFile(path.join(run,'attempt.json'),JSON.stringify(attempt,null,2)+'\n');console.log(JSON.stringify(attempt));if(code!==0||!attempt.sourceStable)process.exitCode=1;

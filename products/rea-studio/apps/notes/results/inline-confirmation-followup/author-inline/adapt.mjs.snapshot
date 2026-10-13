@@ -1,0 +1,11 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {createHash} from 'node:crypto';import assert from 'node:assert/strict';
+const root=path.dirname(fileURLToPath(import.meta.url)),base='products/rea-studio/apps/notes/',hash=b=>createHash('sha256').update(b).digest('hex'),changes=[];
+for(const [name,replacements]of Object.entries({
+ 'notebook-trash-review.test.mjs':[['const p=f.click(f.byText(\'Move notebook to trash\'));','const p=f.confirmNotebook(\'Move notebook to trash\');'],['await f.click(f.byText(\'Move notebook to trash\'));assert.ok','await f.confirmNotebook(\'Move notebook to trash\');assert.ok']],
+ 'notebook-trash-publication-boundaries.test.mjs':[['await f.click(f.byText(\'Move notebook to trash\'));assert.equal(find','await f.confirmNotebook(\'Move notebook to trash\');assert.equal(find'],['await f.click(f.byText(\'Move notebook to trash\'));const choice','await f.confirmNotebook(\'Move notebook to trash\');const choice']],
+})){
+ const filename=path.join(root,base,name),before=await fs.readFile(filename),text=before.toString();let next=text;
+ for(const [from,to]of replacements){assert.equal(next.split(from).length-1,1,name+' exact adapter location');next=next.replace(from,to);}
+ await fs.writeFile(filename,next);changes.push({path:base+name,beforeSha256:hash(before),afterSha256:hash(next),replacements,scope:'Only successful simulated user actions explicitly press the visible new confirmation. Historical assertions unchanged; dirty rejection actions stay direct.'});
+}
+await fs.writeFile(path.join(root,'adapter-changes.json'),JSON.stringify(changes,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({explicitUserActionAdapters:changes.length}));

@@ -1,0 +1,19 @@
+{
+  "source": "outputs/rea-research-lab/products/rea-studio/server.mjs",
+  "before": {
+    "bytes": 7741,
+    "sha256": "807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f"
+  },
+  "after": {
+    "bytes": 7853,
+    "sha256": "cfbfa8e04b38eb54ee6c0b3d20e8bce8b9f135967301a00b56173c67cfa0c74d"
+  },
+  "adapter": {
+    "soleSubstitution": "Insert one exact Sketch layout static route before file resolution",
+    "before": "      const file = staticFiles.get(url.pathname);",
+    "addition": "      staticFiles.set('/apps/sketch/layout.mjs', ['apps/sketch/layout.mjs', 'text/javascript; charset=utf-8']);\n",
+    "after": "      staticFiles.set('/apps/sketch/layout.mjs', ['apps/sketch/layout.mjs', 'text/javascript; charset=utf-8']);\n      const file = staticFiles.get(url.pathname);"
+  },
+  "productionSharedHostUnmodified": true,
+  "privateProspectiveRouteOnly": true
+}

@@ -1,0 +1,15 @@
+// Verification tooling only. Authenticated official library bodies execute in
+// an isolated VM; this module is never imported by the candidate runtime.
+import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {createHash} from 'node:crypto';import {stripTypeScriptTypes} from 'node:module';import vm from 'node:vm';import assert from 'node:assert/strict';
+const root=path.dirname(fileURLToPath(import.meta.url)),hash=b=>createHash('sha256').update(b).digest('hex');
+export async function loadOriginal(){
+ const acquisition=JSON.parse(await fs.readFile(path.join(root,'acquisition.json'))),bindings=[],context=vm.createContext({});
+ async function source(name){const p='source/'+name+'.snapshot',r=acquisition.records.find(r=>r.path===p),b=await fs.readFile(path.join(root,p));assert.ok(r);assert.equal(b.length,r.bytes);assert.equal(hash(b),r.sha256);return{text:b.toString('utf8'),record:r};}
+ const errors=await source('src/vs/base/common/errors.ts'),start=errors.text.indexOf('export function illegalArgument('),stop=errors.text.indexOf('\nexport function illegalState(',start);assert.ok(start>=0&&stop>start);
+ const selected=errors.text.slice(start,stop).trimEnd(),illegal=stripTypeScriptTypes(selected.replace('export function','function'));new vm.Script(illegal,{filename:'official/errors.ts:illegalArgument'}).runInContext(context,{timeout:1000});bindings.push({source:errors.record,slice:{startLine:errors.text.slice(0,start).split('\n').length,endLine:errors.text.slice(0,start+selected.length).split('\n').length,bytes:Buffer.byteLength(selected),sha256:hash(selected)},executedSha256:hash(illegal)});
+ for(const name of ['es5ClassCompat','position','range','selection']){
+  const s=await source('src/vs/workbench/api/common/extHostTypes/'+name+'.ts'),rewritten=s.text.replace(/^import[^\n]*\n/gm,'').replace(/^@es5ClassCompat\s*$/gm,'').replace(/^export /gm,''),code=stripTypeScriptTypes(rewritten),type=name==='es5ClassCompat'?null:name[0].toUpperCase()+name.slice(1),decorator=type?'\nes5ClassCompat('+type+');':'';
+  new vm.Script(code+decorator,{filename:'official/'+name+'.ts'}).runInContext(context,{timeout:1000});bindings.push({source:s.record,wholeBody:true,transforms:['Remove module imports bound to exact previously evaluated source helpers','Remove export syntax','Erase TypeScript types using actual Node'+process.version,'Replace single legacy decorator syntax with an explicit call to its exact retained original body'],executedSha256:hash(code+decorator),executedCode:code+decorator});
+ }
+ const api=new vm.Script('({Position,Range,Selection})').runInContext(context,{timeout:1000});return{api,bindings,vmEvaluations:6,sourceLibraryUnits:5,originalWorkBenchExecutions:0,originalExtensionHostExecutions:0,compiler:'Node'+process.version+' stripTypeScriptTypes strip mode; no vendor transpiler',boundary:'Complete exact released source bodies for the selected three classes plus exact legacy decorator and illegalArgument helper slice. Imports are composed; no shipped extension-host bundle or extension runtime is executed.'};
+}

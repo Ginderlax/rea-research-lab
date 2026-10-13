@@ -1,0 +1,45 @@
+// Independent action/observation harness shared only by verification roles.
+export function encode(value,seen=new Set()){
+ if(value===undefined)return{special:'undefined'};if(typeof value==='number'){if(Number.isNaN(value))return{special:'NaN'};if(Object.is(value,-0))return{special:'-0'};if(!Number.isFinite(value))return{special:String(value)};return value;}if(typeof value==='bigint')return{special:'bigint',value:String(value)};if(typeof value==='symbol')return{special:'symbol',value:String(value)};
+ if(value===null||typeof value!=='object')return value;if(seen.has(value))return{special:'cycle'};seen.add(value);const out=Array.isArray(value)?Array.from(value,v=>encode(v,seen)):Object.fromEntries(Object.entries(value).map(([k,v])=>[k,encode(v,seen)]));seen.delete(value);return out;
+}
+export function observe(api,invoke,refs=[]){try{const value=invoke(),out={ok:true,value:encode(value)},Type=value?.constructor;if(value instanceof api.Position)out.state={kind:'Position',line:encode(value.line),character:encode(value.character)};else if(value instanceof api.Range)out.state={kind:value instanceof api.Selection?'Selection':'Range',start:[encode(value.start.line),encode(value.start.character)],end:[encode(value.end.line),encode(value.end.character)],empty:value.isEmpty,singleLine:value.isSingleLine,...(value instanceof api.Selection?{anchor:[encode(value.anchor.line),encode(value.anchor.character)],active:[encode(value.active.line),encode(value.active.character)],reversed:value.isReversed}:{})};out.aliases=refs.map(r=>value===r);out.typeName=Type?.name??null;return out;}catch(e){return{ok:false,error:{name:e.name,message:e.message,code:e.code??null}};}}
+export function packet(api,spec){
+ const {Position:P,Range:R,Selection:S}=api,rows=[],calls=[];
+ function call(name,fn,refs=[]){calls.push(name);const out=observe(api,fn,refs);rows.push({name,...out});return out;}
+ if(spec.kind==='pair'){
+  const p=new P(...spec.a),q=new P(...spec.b);calls.push('Position.constructor','Position.constructor');
+  for(const name of['isBefore','isBeforeOrEqual','isAfter','isAfterOrEqual','isEqual','compareTo'])call('Position.'+name,()=>p[name](q));
+  for(const [name,args]of[['translate',[]],['translate',[0,0]],['translate',[{lineDelta:1,characterDelta:2}]],['translate',[1,-spec.a[1]]],['with',[]],['with',[p.line,p.character]],['with',[{line:q.line,character:q.character}]],['with',[undefined,q.character]]])call('Position.'+name+':'+JSON.stringify(args),()=>p[name](...args),[p,q]);
+  call('Position.Min',()=>P.Min(p,q),[p,q]);call('Position.Max',()=>P.Max(p,q),[p,q]);
+  const r=new R(p,q),other=new R(...spec.c),s=new S(p,q);calls.push('Range.constructor','Range.constructor','Selection.constructor');
+  call('Range.properties',()=>({start:r.start,end:r.end,empty:r.isEmpty,singleLine:r.isSingleLine,startIsP:r.start===p,endIsQ:r.end===q}));
+  for(const value of[p,q,other,other.start,other.end,{line:other.end.line+1,character:0},null])call('Range.contains',()=>r.contains(value));
+  call('Range.isEqual',()=>r.isEqual(other));call('Range.intersection',()=>r.intersection(other),[r,other,s]);call('Range.union',()=>r.union(other),[r,other,s]);
+  for(const args of[[],[p,q],[{start:other.start,end:other.end}],[undefined,other.end],[{start:null,end:null}]])call('Range.with',()=>r.with(...args),[r,other]);
+  call('Selection.orientation',()=>({anchor:s.anchor,active:s.active,start:s.start,end:s.end,reversed:s.isReversed,empty:s.isEmpty,anchorIsP:s.anchor===p,activeIsQ:s.active===q,startIsAnchor:s.start===s.anchor,endIsAnchor:s.end===s.anchor}));
+  call('Selection.with unchanged',()=>s.with(),[s]);call('Selection.with changed',()=>s.with(new P(p.line+1,p.character)),[s]);call('Selection.intersection',()=>s.intersection(r),[s,r]);call('Selection.union',()=>s.union(r),[s,r]);
+  for(const [name,value]of[['Position',p],['Range',r],['Selection',s]]){call(name+'.toJSON',()=>value.toJSON());call(name+'.stringify',()=>JSON.stringify(value));call(name+'.debug',()=>value[Symbol.for('debug.description')]());}
+ }else if(spec.kind==='constructor'){
+  const Type=api[spec.type];call(spec.type+'.constructor',()=>new Type(...spec.args));
+ }else if(spec.kind==='positionOptions'){
+  const p=new P(3,5);calls.push('Position.constructor');for(const name of['translate','with'])call('Position.'+name,()=>p[name](...spec.args),[p]);
+ }else if(spec.kind==='rangeOptions'){
+  const p=new P(1,2),q=new P(4,5),r=new R(p,q);calls.push('Position.constructor','Position.constructor','Range.constructor');let args=spec.args.map(v=>v==='POSITION'?p:v==='END'?q:v);call('Range.with',()=>r.with(...args),[r]);
+ }else if(spec.kind==='predicate'){
+  for(const name of['Position','Range','Selection'])call(name+'.predicate',()=>api[name]['is'+name](spec.value));
+  for(const name of['Position','Range'])call(name+'.of',()=>api[name].of(spec.value));
+ }else if(spec.kind==='duck'){
+  const p=new P(1,2),r=new R(1,2,2,4),s=new S(2,4,1,2);calls.push('Position.constructor','Range.constructor','Selection.constructor');for(const name of['isBefore','isBeforeOrEqual','isAfter','isAfterOrEqual','isEqual','compareTo'])call('Position.'+name,()=>p[name](spec.value));call('Range.contains',()=>r.contains(spec.value));call('Range.isEqual',()=>r.isEqual(spec.value));call('Range.with',()=>r.with(spec.value));call('Selection.union',()=>s.union(spec.value));
+ }else if(spec.kind==='invariants'){
+  const p=new P(0,2),q=new P(0,2),r=new R(p,q),s=new S(p,q);calls.push('Position.constructor','Position.constructor','Range.constructor','Selection.constructor');call('equal endpoint identity',()=>({rangeStartIsQ:r.start===q,rangeEndIsP:r.end===p,selectionReversed:s.isReversed}));
+  for(const [label,value,property]of[['Position',p,'line'],['Range',r,'start'],['Range',r,'isEmpty'],['Selection',s,'anchor'],['Selection',s,'isReversed']]){call(label+'.readonly '+property,()=>{value[property]=99;return value[property];});call(label+'.readonly state '+property,()=>value[property]);}
+  call('UTF16 code unit value',()=>new P(0,'A🧪B'.indexOf('B')));call('Position.of existing',()=>P.of(p),[p]);call('Range.of existing',()=>R.of(s),[s]);call('Position.Min empty',()=>P.Min());call('Position.Max empty',()=>P.Max());
+  for(const [name,Type,args]of[['Position',P,[1,2]],['Range',R,[1,2,3,4]],['Selection',S,[3,4,1,2]]]){function Legacy(){}Legacy.prototype=Object.create(Type.prototype);Legacy.prototype.constructor=Legacy;call(name+'.call legacy',()=>Type.call({constructor:Legacy},...args));call(name+'.apply legacy',()=>Type.apply({constructor:Legacy},args));call(name+'.call no receiver',()=>Type.call());call(name+'.apply no receiver',()=>Type.apply());}
+ }else if(spec.kind==='accessors'){
+  const trace=[];const value={get line(){trace.push('line');return 'wrong';},get character(){trace.push('character');return 1;}};call('Position.isPosition getter order',()=>P.isPosition(value));call('getter trace',()=>trace);
+  const p=new P(1,2);calls.push('Position.constructor');const deltas={get lineDelta(){trace.push('lineDelta');return 1;},get characterDelta(){trace.push('characterDelta');return 2;}};call('translate getter reads',()=>p.translate(deltas));call('getter full trace',()=>trace);
+  class Derived extends P {set _line(v){throw new Error('Prototype setter must be shadowed by original field initialization');}}call('subclass field initialization',()=>new Derived(2,3));
+ }else throw new Error('Unknown bounded packet kind');
+ return{rows,directApiAttempts:calls.length,calls};
+}

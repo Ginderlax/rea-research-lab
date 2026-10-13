@@ -1,0 +1,63 @@
+{
+  "schema": "rea-named-historical-host-transition/v1",
+  "at": "2026-10-13T04:03:36.407Z",
+  "before": {
+    "bytes": 141272,
+    "sha256": "4bf3eed7cc7829005d24179f402dab7152bea989a2fc5d9b841ef9eed0a728e6"
+  },
+  "after": {
+    "bytes": 142095,
+    "sha256": "edcc34690d3d27a000cad52dbd945ef9e20d7f1985aaf26e428dcc22f6c6cbff"
+  },
+  "changes": [
+    {
+      "before": "function backup64SourceFingerprint(entry){if(entry.path!=='products/rea-studio/server.mjs')return currentPublicFingerprint(entry,'Current64 aggregate Backup source');",
+      "after": "function namedHistoricalHostFingerprint(entry,label){if(entry.path!=='products/rea-studio/server.mjs')return currentPublicFingerprint(entry,label);"
+    },
+    {
+      "before": "assert.equal(entry.bytes,7741);assert.equal(entry.sha256,'807a",
+      "after": "if(entry.bytes!==undefined)assert.equal(entry.bytes,7741);assert.equal(entry.sha256,'807a"
+    },
+    {
+      "before": "assert.deepEqual(transition.before,{bytes:entry.bytes,sha256:entry.sha256});",
+      "after": "assert.deepEqual(transition.before,{bytes:7741,sha256:entry.sha256});"
+    },
+    {
+      "before": "assert.equal(r.bytes,entry.bytes);assert.equal(r.sha256,entry.sha256);const old=readFileSync(join(root,r.snapshotPath));assert.equal(old.length,entry.bytes);",
+      "after": "assert.equal(r.bytes,7741);assert.equal(r.sha256,entry.sha256);const old=readFileSync(join(root,r.snapshotPath));assert.equal(old.length,7741);"
+    },
+    {
+      "before": "backup64SourceFingerprint({...e,path:'products/rea-studio/'+e.path});",
+      "after": "namedHistoricalHostFingerprint({...e,path:'products/rea-studio/'+e.path},'Backup64 nonhost current source');"
+    },
+    {
+      "before": "currentPublicFingerprint(e,'Current recovery browser source');",
+      "after": "namedHistoricalHostFingerprint(e,'Automation recovery browser nonhost current source');"
+    },
+    {
+      "before": "currentFingerprint({path:relative(root,target).replaceAll('\\\\','/'),sha256}, 'WebDAV host');",
+      "after": "namedHistoricalHostFingerprint({path:relative(root,target).replaceAll('\\\\','/'),sha256}, 'WebDAV nonhost current source');"
+    },
+    {
+      "before": "for(const e of [...automationRecovery.implementationFingerprints,...automationRecovery.artifacts])currentFingerprint({...e,path:'products/rea-studio/'+e.path},'Current Automation recovery evidence');",
+      "after": "for(const e of automationRecovery.implementationFingerprints)namedHistoricalHostFingerprint({...e,path:'products/rea-studio/'+e.path},'Automation recovery nonhost current source');for(const e of automationRecovery.artifacts)currentFingerprint({...e,path:'products/rea-studio/'+e.path},'Current Automation recovery artifact');"
+    },
+    {
+      "before": "  followup_evidence: followupEvidence,",
+      "after": "  followup_evidence: followupEvidence,\n  named_historical_shared_host_receipts: { backup64: { current_nonhost_rows:41, historical_host_rows:1 }, automation_recovery_browser: { current_nonhost_rows:40, historical_host_rows:1 }, automation_recovery: { current_nonhost_rows:42, historical_host_rows:1 }, webdav_host_dependencies: { current_nonhost_rows:2, historical_host_rows:1 }, historical_host_sha256:'807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f', current_host_sha256:'85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94', prior_receipts_rebound:false, original_behavior_rerun:false, current_host_still_required:true },"
+    }
+  ],
+  "inverseExact": true,
+  "namedReceipts": [
+    "backup64",
+    "automation-recovery-browser",
+    "automation-recovery",
+    "webdav-host-dependencies"
+  ],
+  "oldHostRowsPerReceipt": 1,
+  "allOtherRowsStrictCurrent": true,
+  "exactOld3baAndNew99ByteHostTransitionRequired": true,
+  "originalReceiptsRebound": false,
+  "appWrites": 0,
+  "behaviorTestsRerun": 0
+}

@@ -1,0 +1,34 @@
+[
+  {
+    "path": "products/rea-studio/apps/notes/notebook-trash-review.test.mjs",
+    "beforeSha256": "03c06071a8b58ce8b34fabafc0d39668f853b47351702cb848013f1aa686289b",
+    "afterSha256": "a2b47baadeab95035c1255865bb216943f685776e779495793607001fe897518",
+    "replacements": [
+      [
+        "const p=f.click(f.byText('Move notebook to trash'));",
+        "const p=f.confirmNotebook('Move notebook to trash');"
+      ],
+      [
+        "await f.click(f.byText('Move notebook to trash'));assert.ok",
+        "await f.confirmNotebook('Move notebook to trash');assert.ok"
+      ]
+    ],
+    "scope": "Only successful simulated user actions explicitly press the visible new confirmation. Historical assertions unchanged; dirty rejection actions stay direct."
+  },
+  {
+    "path": "products/rea-studio/apps/notes/notebook-trash-publication-boundaries.test.mjs",
+    "beforeSha256": "94ceb4a2df8dd7bd04c2f2668ebbde5a5569f8e1e69df9a7f7c7ea2af8e564a6",
+    "afterSha256": "9bb8f4dba56a0c5e7d106bed026aab7de67a7ed8627507edd883e75a087fe07b",
+    "replacements": [
+      [
+        "await f.click(f.byText('Move notebook to trash'));assert.equal(find",
+        "await f.confirmNotebook('Move notebook to trash');assert.equal(find"
+      ],
+      [
+        "await f.click(f.byText('Move notebook to trash'));const choice",
+        "await f.confirmNotebook('Move notebook to trash');const choice"
+      ]
+    ],
+    "scope": "Only successful simulated user actions explicitly press the visible new confirmation. Historical assertions unchanged; dirty rejection actions stay direct."
+  }
+]

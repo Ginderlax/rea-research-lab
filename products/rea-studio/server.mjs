@@ -89,6 +89,7 @@ export async function start({ port = 4310, dataDir = resolve(root, '../../.local
       const staticFiles = new Map([
         ['/', ['public/index.html', 'text/html; charset=utf-8']],
         ['/studio.mjs', ['public/studio.mjs', 'text/javascript; charset=utf-8']],
+        ['/apps/sketch/layout.mjs', ['apps/sketch/layout.mjs', 'text/javascript; charset=utf-8']],
         ['/style.css', ['public/style.css', 'text/css; charset=utf-8']]
       ]);
       const client = /^\/apps\/([a-z]+)\/(client|core|markdown)\.mjs$/.exec(url.pathname);

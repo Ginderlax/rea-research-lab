@@ -1,0 +1,20 @@
+{
+  "schema": "rea-sketch-layout-precision-runtime-change/v1",
+  "path": "products/rea-studio/apps/sketch/layout.mjs",
+  "before": {
+    "bytes": 3536,
+    "sha256": "5bdaa2d1c6a3dffec7ee8bbd9dac9c95cd5f7a347ec4678677b87b7a39a3708f"
+  },
+  "after": {
+    "bytes": 3910,
+    "sha256": "ac83dc4fdefaf55f4839424a5a2d7e3d417421f2e98e1e1f1eadcd82b97e9752"
+  },
+  "removedImport": "bounds",
+  "beforeBox": "function box(shapes){const boxes=shapes.map(bounds),minX=Math.min(...boxes.map(b=>b.x)),minY=Math.min(...boxes.map(b=>b.y)),maxX=Math.max(...boxes.map(b=>b.x+b.w)),maxY=Math.max(...boxes.map(b=>b.y+b.h));return {minX,minY,maxX,maxY,midX:(minX+maxX)/2,midY:(minY+maxY)/2,width:maxX-minX,height:maxY-minY};}",
+  "afterBox": "function box(shapes){const boxes=shapes.map(s=>{const xs=s.type==='freedraw'?s.points.map(p=>s.x+p[0]):[s.x,s.x+s.w],ys=s.type==='freedraw'?s.points.map(p=>s.y+p[1]):[s.y,s.y+s.h];return {minX:Math.min(...xs),minY:Math.min(...ys),maxX:Math.max(...xs),maxY:Math.max(...ys)};}),minX=Math.min(...boxes.map(b=>b.minX)),minY=Math.min(...boxes.map(b=>b.minY)),maxX=Math.max(...boxes.map(b=>b.maxX)),maxY=Math.max(...boxes.map(b=>b.maxY));return {minX,minY,maxX,maxY,midX:(minX+maxX)/2,midY:(minY+maxY)/2,width:maxX-minX,height:maxY-minY};}",
+  "onlyRuntimeFileChanged": true,
+  "inverseReconstructs277CandidateExactly": true,
+  "coreBoundsUnchanged": true,
+  "testsAndOracleUnchangedBetweenRuns": true,
+  "reason": "Use direct coordinate extrema rather than reconstructing max from min plus rounded extent; preserves exact literal original helper arithmetic on disclosed unrotated point-bounds fixtures."
+}

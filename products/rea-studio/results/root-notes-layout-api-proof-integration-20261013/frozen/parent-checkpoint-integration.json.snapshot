@@ -1,0 +1,37 @@
+{
+  "schema": "rea-root-followup-checkpoint-verifier-integration/v1",
+  "at": "2026-10-13T03:44:48.524Z",
+  "parentPath": "scripts/verify-followup-records.mjs",
+  "before": {
+    "bytes": 37101,
+    "sha256": "4f069fd26951fb74653f9cb52d5531aa98b5d638a5b85737eb3191b3bd5d5780"
+  },
+  "after": {
+    "bytes": 37311,
+    "sha256": "0d06219b7437fc99d27597713a176c108fd60c9c3a1fb016ffe3acf321a4d58d"
+  },
+  "transformations": [
+    {
+      "before": "import {verifyNotesInlineFollowups} from './verify-notes-inline-followups.mjs';",
+      "after": "import {verifyNotesInlineFollowups} from './verify-notes-inline-followups.mjs';\nimport {verifyNotesLayoutValueApiCheckpoint} from './verify-notes-layout-value-api-checkpoint.mjs';"
+    },
+    {
+      "before": " const notesInlineVerification=verifyNotesInlineFollowups(root),notesInlineResolver=notesInlineVerification.resolveHistorical;",
+      "after": " const notesLayoutValueApiCheckpoint=verifyNotesLayoutValueApiCheckpoint(root);\n const notesInlineVerification=verifyNotesInlineFollowups(root),notesInlineResolver=notesInlineVerification.resolveHistorical;"
+    },
+    {
+      "before": " return{editorHostTransition:",
+      "after": " return{notesLayoutValueApiCheckpoint,editorHostTransition:"
+    }
+  ],
+  "inverseExact": true,
+  "checkpointVerifier": {
+    "path": "scripts/verify-notes-layout-value-api-checkpoint.mjs",
+    "bytes": 10392,
+    "sha256": "d45b97e0f4a5b79a3e40291170a2f89e737fb14cc5f6c18e2f4222de7db7bc37"
+  },
+  "combinedPin": "1826eba75ba777edbe69bdb44874a0827dbf684e9305ea49f51af134549b7004",
+  "APIProofModuleInstallationPending": true,
+  "newAppMutations": 0,
+  "behaviorExecuted": 0
+}

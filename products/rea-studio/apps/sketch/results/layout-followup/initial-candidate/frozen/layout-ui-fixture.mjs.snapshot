@@ -1,0 +1,12 @@
+import {render} from './products/rea-studio/apps/sketch/client.mjs';
+import {handle} from './products/rea-studio/apps/sketch/server.mjs';
+class Element{
+ constructor(tag){this.tagName=tag;this.children=[];this.style={};this.listeners=new Map();this.attributes={};this.value='';this.calls=[];}
+ append(...children){this.children.push(...children);}replaceChildren(...children){this.children=children;}get childElementCount(){return this.children.length;}setAttribute(key,value){this.attributes[key]=value;}
+ addEventListener(type,fn){if(!this.listeners.has(type))this.listeners.set(type,[]);this.listeners.get(type).push(fn);}async event(type,values={}){for(const fn of this.listeners.get(type)||[])await fn({button:0,pointerId:1,clientX:0,clientY:0,preventDefault(){},...values});}click(){return this.event('click');}focus(){}setPointerCapture(){}
+ getBoundingClientRect(){return{left:0,top:0,width:800,height:560};}getContext(){return new Proxy({measureText:text=>({width:text.length*10})},{get:(target,key)=>key in target?target[key]:(...args)=>this.calls.push([key,...args])});}
+}
+export const nodes=root=>[root,...root.children.flatMap(nodes)],find=(root,tag,text)=>nodes(root).find(node=>node.tagName===tag&&(text===undefined||node.textContent===text));
+export async function harness(fn){const old={document:globalThis.document,window:globalThis.window,ResizeObserver:globalThis.ResizeObserver};globalThis.document={createElement:tag=>new Element(tag)};globalThis.window={devicePixelRatio:1};globalThis.ResizeObserver=class{observe(){}disconnect(){}};const saved=new Map(),store={get:async(key,fallback)=>structuredClone(saved.has(key)?saved.get(key):fallback),set:async(key,value)=>saved.set(key,structuredClone(value))},root=new Element('root'),cleanup=await render(root,(action,input)=>handle({action,input,store}));try{await fn({root,store,canvas:find(root,'canvas'),state:()=>JSON.parse(find(root,'textarea').value)});}finally{cleanup();for(const[key,value]of Object.entries(old))value===undefined?delete globalThis[key]:globalThis[key]=value;}}
+export const draw=async(canvas,start,end)=>{await canvas.event('pointerdown',{clientX:start[0],clientY:start[1]});await canvas.event('pointermove',{clientX:end[0],clientY:end[1]});await canvas.event('pointerup');};
+

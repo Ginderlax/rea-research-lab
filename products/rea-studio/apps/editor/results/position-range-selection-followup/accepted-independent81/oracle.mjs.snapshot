@@ -1,0 +1,19 @@
+import fs from 'node:fs/promises';import path from 'node:path';import vm from 'node:vm';import assert from 'node:assert/strict';import {stage,hash,parser,pins,authenticate} from './authority.mjs';
+export const oracleTelemetry={preparations:0,successful:0,rejected:0,sourceUnitsEvaluated:0,vmEvaluations:0,records:[]};
+export async function original({sourceRoot=stage,expectedNodeSHA=pins.node,label='independent',strictModule=false}={}){
+ oracleTelemetry.preparations++;const record={label,sourceRoot,units:[],vmEvaluations:0,sourceGatePassed:false,nodeGatePassed:false};oracleTelemetry.records.push(record);
+ try{
+  assert.equal(hash(await fs.readFile(process.execPath)),expectedNodeSHA,'Authenticated Node SHA before original composition');record.nodeGatePassed=true;
+  await authenticate();const acquisition=JSON.parse(await fs.readFile(path.join(stage,'acquisition.json'))),names=['src/vs/base/common/errors.ts',...['es5ClassCompat','position','range','selection'].map(n=>'src/vs/workbench/api/common/extHostTypes/'+n+'.ts')],sources=[];
+  for(const name of names){const p='source/'+name+'.snapshot',pin=acquisition.records.find(r=>r.path===p);assert.ok(pin);const b=await fs.readFile(path.join(sourceRoot,p));assert.equal(b.length,pin.bytes);assert.equal(hash(b),pin.sha256,'Original source gate: '+name);assert.ok(b.length<=128*1024);sources.push({name,pin,text:b.toString('utf8')});}record.sourceGatePassed=true;
+  const ts=await parser(),context=vm.createContext({});
+  for(const s of sources){let text=s.text;if(s.name.endsWith('errors.ts')){const a=text.indexOf('export function illegalArgument('),b=text.indexOf('\nexport function illegalState(',a);assert.ok(a>=0&&b>a);text=text.slice(a,b).trimEnd();}
+   const ast=ts.createSourceFile(s.name,text,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);assert.equal(ast.parseDiagnostics.length,0);
+   const stripModule=ctx=>file=>{const visit=n=>{if(ts.isImportDeclaration(n))return undefined;const mods=n.modifiers?.filter(m=>m.kind!==ts.SyntaxKind.ExportKeyword&&m.kind!==ts.SyntaxKind.DefaultKeyword);if(ts.isClassDeclaration(n))return ts.factory.updateClassDeclaration(n,mods,n.name,n.typeParameters,n.heritageClauses,n.members);if(ts.isFunctionDeclaration(n))return ts.factory.updateFunctionDeclaration(n,mods,n.asteriskToken,n.name,n.typeParameters,n.parameters,n.type,n.body);return ts.visitEachChild(n,visit,ctx);};return ts.visitNode(file,visit);};
+   const transformed=ts.transform(ast,[stripModule]),composed=ts.createPrinter({newLine:ts.NewLineKind.LineFeed}).printFile(transformed.transformed[0]);transformed.dispose();
+   const compiled=ts.transpileModule(composed,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None,experimentalDecorators:true,useDefineForClassFields:true,sourceMap:false,newLine:ts.NewLineKind.LineFeed},reportDiagnostics:true});assert.equal(compiled.diagnostics.filter(d=>d.category===ts.DiagnosticCategory.Error).length,0);
+   const executedCode=(strictModule?'"use strict";\n':'')+compiled.outputText;new vm.Script(executedCode,{filename:'independent-official/'+s.name}).runInContext(context,{timeout:1000});record.units.push({source:s.pin,selectedUtf8Bytes:Buffer.byteLength(text),selectedSha256:hash(Buffer.from(text)),composedSha256:hash(Buffer.from(composed)),executedSha256:hash(Buffer.from(executedCode)),executedCode,strictModuleDirective:strictModule});record.vmEvaluations++;oracleTelemetry.vmEvaluations++;oracleTelemetry.sourceUnitsEvaluated++;
+  }
+  const api=new vm.Script('({Position, Range, Selection})').runInContext(context,{timeout:1000});record.vmEvaluations++;oracleTelemetry.vmEvaluations++;record.success=true;oracleTelemetry.successful++;return{api,record};
+ }catch(e){record.success=false;record.rejection={name:e.name,message:e.message};oracleTelemetry.rejected++;throw e;}
+}

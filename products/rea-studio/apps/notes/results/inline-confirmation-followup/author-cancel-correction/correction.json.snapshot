@@ -1,0 +1,27 @@
+{
+  "schema": "rea-notes-cancel-no-read-correction-source-transform/v1",
+  "at": "2026-10-13T01:47:52.301Z",
+  "source": "products/rea-studio/apps/notes/client.mjs",
+  "before": {
+    "bytes": 22986,
+    "sha256": "7bff5337892cefd6cdd9e9de82c0e6660fefdf079bc523a748c927f2eac8a205"
+  },
+  "after": {
+    "bytes": 23038,
+    "sha256": "90886819feef847847fcae8c442e0a401a1146a7a4aa1fd862a54b5e01f41da9"
+  },
+  "transforms": [
+    {
+      "before": "try{const result=await operation();if(!mounted||result===false)return;",
+      "after": "let cancelled=false;try{const result=await operation();cancelled=result===false;if(!mounted||cancelled)return;"
+    },
+    {
+      "before": "moveNote.disabled=!current||Boolean(current.deletedAt);if(current)accept(current);}clearConfirmation();",
+      "after": "moveNote.disabled=!current||Boolean(current.deletedAt);if(current&&!cancelled)accept(current);}clearConfirmation();"
+    }
+  ],
+  "purpose": "A declined notebook confirmation restores controls/focus without reopening the saved note, resetting its generation or rereading attachments.",
+  "backendModified": false,
+  "productionModified": false,
+  "prior214Modified": false
+}

@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+const root=import.meta.dirname,sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const identity=p=>{const b=fs.readFileSync(path.join(root,p));if(b.length>32*1024*1024)throw Error('Oversized stage file');return{path:p,bytes:b.length,sha256:sha(b)};};
+if(fs.existsSync(path.join(root,'freeze-manifest.json')))throw Error('Existing frozen input must not be rewritten');
+if(identity('validation.json').sha256!=='0de8e54eb885e0021ed7cdae08e3663f37e91f31645fc8dd93c62def9ad185f9')throw Error('Root author receipt changed');
+if(identity('products/rea-studio/apps/notes/client.mjs').sha256!=='90886819feef847847fcae8c442e0a401a1146a7a4aa1fd862a54b5e01f41da9')throw Error('Root final client changed');
+function files(rel=''){return fs.readdirSync(path.join(root,rel),{withFileTypes:true}).flatMap(d=>{const p=rel?rel+'/'+d.name:d.name;if(d.isDirectory())return files(p);if(!d.isFile())throw Error('Nonregular frozen stage file');return[p];});}
+const rows=files().sort().map(identity);if(rows.length>10000||rows.reduce((n,r)=>n+r.bytes,0)>512*1024*1024)throw Error('Stage aggregate bound');
+const receipt={schema:'rea-notes-inline-cancel-correction-strict-input-manifest/v1',at:new Date().toISOString(),strict:true,excluded:['freeze-manifest.json'],rootAuthorReceipt:identity('validation.json'),rootFinalClient:identity('products/rea-studio/apps/notes/client.mjs'),files:rows.length,records:rows,includesLocalSyntheticGeneratedCarriers:true,wholeTreePublicClaim:false,existingRootAuthoredFilesModified:false,onlyReviewFreezeHelperAndManifestAdded:true};
+fs.writeFileSync(path.join(root,'freeze-manifest.json'),JSON.stringify(receipt,null,2)+'\n');
+for(const r of rows){const current=identity(r.path);if(current.bytes!==r.bytes||current.sha256!==r.sha256)throw Error('File changed during freeze');}
+console.log(JSON.stringify({count:rows.length,manifest:identity('freeze-manifest.json'),rootAuthorReceipt:receipt.rootAuthorReceipt,client:receipt.rootFinalClient}));

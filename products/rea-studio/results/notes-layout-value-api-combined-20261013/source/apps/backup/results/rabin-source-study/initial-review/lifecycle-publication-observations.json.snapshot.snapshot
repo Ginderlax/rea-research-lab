@@ -1,0 +1,31 @@
+{
+  "schema": "rea-rabin-independent-lifecycle-review/v1",
+  "startedAtUtc": "2026-10-12T19:27:22.216Z",
+  "stageReceiptSha256": "5db924be34d1b7d211a7ab9205b26e0218120593470f32f6169b591b71863fdc",
+  "baselineUnchangedBeforeRun": true,
+  "cases": [
+    {
+      "name": "deadline-expiry-at-snapshot-link-commit",
+      "fixture": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\backup-rabin-review\\publication-fixture-3gXibi",
+      "clockAdvanceMilliseconds": 120001,
+      "snapshotResolutions": 2,
+      "rejected": "The bounded native operation exceeded two minutes.",
+      "observedPublishedSnapshots": [
+        "dc1970e3bdab9f5e468b98a8e8d46d01068e75b27527d29dad188bb92b6faed4"
+      ],
+      "observedIndexes": [
+        "a71576340696cc361d26727622805849bbf8608fd89d6f01ce7ded50410f41b9"
+      ],
+      "observedLocks": [],
+      "observedPendingFiles": [
+        "499db859-27ab-4357-af47-d1e9c6a7ebe3.pending"
+      ],
+      "expectedPublishedSnapshotsOnFailure": 0,
+      "materialFinding": true,
+      "explanation": "Synthetic deadline advancement occurs after the final destination guard before link. atomic links the snapshot, then deadline-guarded temp cleanup throws. The API rejects despite publishing a snapshot and retaining its temp file."
+    }
+  ],
+  "scope": "Finite deterministic lifecycle probes on authenticated exact review copies, with owned synthetic data. No production changes, full parity or security claim.",
+  "completedAtUtc": "2026-10-12T19:27:24.205Z",
+  "originalStageUnchangedAcrossRun": true
+}

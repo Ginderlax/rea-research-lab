@@ -1,0 +1,73 @@
+✖ already aligned action creates no history entry and retains redo history (5.039ms)
+✔ overflowing layout displays refusal without replacing input or adding history (1.0544ms)
+✖ native grouped alignment saves and reopens with unknown records preserved through actual handle (0.4203ms)
+✖ keyboard alignment and distribution preserve one-step undo with outer groups (1.0293ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 1
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 65.5739
+
+✖ failing tests:
+
+test at ui-review.test.mjs:5:1
+✖ already aligned action creates no history entry and retains redo history (5.039ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  ... Skipped lines
+  
+    {
+      name: 'Owned alignment review',
+      shapes: [
+        {
+          fill: 'none',
+  ...
+          w: 30,
+  +       x: 90,
+  -       x: 60,
+          y: 100
+        },
+        {
+          fill: 'none',
+          groupIds: [],
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-alignment-independent-review/ui-review.test.mjs:5:636
+      at async harness (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-alignment-independent-review/ui-fixture.mjs:10:570)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: { version: 1, name: 'Owned alignment review', shapes: [ [Object], [Object], [Object] ], view: { zoom: 1, x: 0, y: 0 } },
+    expected: { version: 1, name: 'Owned alignment review', shapes: [ [Object], [Object], [Object] ], view: { zoom: 1, x: 0, y: 0 } },
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at ui-review.test.mjs:7:1
+✖ native grouped alignment saves and reopens with unknown records preserved through actual handle (0.4203ms)
+  TypeError: Cannot read properties of undefined (reading 'click')
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-alignment-independent-review/ui-review.test.mjs:7:483
+      at harness (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-alignment-independent-review/ui-fixture.mjs:10:576)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+
+test at ui-review.test.mjs:8:1
+✖ keyboard alignment and distribution preserve one-step undo with outer groups (1.0293ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  240 !== 235
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-alignment-independent-review/ui-review.test.mjs:8:872
+      at async harness (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sketch-alignment-independent-review/ui-fixture.mjs:10:570)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 240,
+    expected: 235,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

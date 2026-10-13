@@ -1,0 +1,109 @@
+// Browser-only action-body record, used in documented CUA REPL. This is inert
+// evidence, not an application runtime module or executable original product.
+// Exact recorder/import/finite-JSON comparator closures are in the separate
+// browser-recorder.mjs.snapshot. Initial failing cell is separately retained.
+
+// First-control recovery: no duplicate layout application.
+var control0before=sketchSteps.find(r=>r.label==='control-0-import').read.scene;
+var control0after=sketchSteps.find(r=>r.label==='control-0-layout').read;
+sketchEqual(control0after.scene.shapes.map(s=>s.x),sketchPlan.controls[0].values);
+await sketchTab.playwright.getByRole('button',{name:'Undo',exact:true}).click();
+sketchEqual((await sketchCapture('control-0-undo')).read.scene,control0before);
+await sketchTab.playwright.getByRole('button',{name:'Redo',exact:true}).click();
+sketchEqual((await sketchCapture('control-0-redo')).read.scene,control0after.scene);
+
+// The remaining controls were executed in two batches, indices1..3 and4..7.
+for(var i=1;i<8;i++){
+ var control=sketchPlan.controls[i],stem='control-'+i;
+ var before=(await sketchImport('three',stem+'-import')).scene;
+ await sketchTab.playwright.getByRole('button',{name:'Select all',exact:true}).click();
+ var selected=(await sketchCapture(stem+'-selected')).read;
+ sketchAssert.equal(selected.selection,'3 editable shapes selected');
+ await sketchTab.playwright.getByRole('button',{name:control.label,exact:true}).click();
+ var after=(await sketchCapture(stem+'-layout',i===2||i===7)).read;
+ sketchEqual(after.scene.shapes.map(s=>s[control.axis]),control.values);
+ sketchAssert.equal(after.status,i>=6?'Selection distributed':'Selection aligned');
+ await sketchTab.playwright.getByRole('button',{name:'Undo',exact:true}).click();
+ sketchEqual((await sketchCapture(stem+'-undo')).read.scene,before);
+ await sketchTab.playwright.getByRole('button',{name:'Redo',exact:true}).click();
+ sketchEqual((await sketchCapture(stem+'-redo')).read.scene,after.scene);
+}
+
+await sketchImport('group','group-import');
+await sketchTab.playwright.getByRole('button',{name:'Select all',exact:true}).click();
+var groupSelected=(await sketchCapture('group-all-selected',true)).read;
+sketchAssert.equal(groupSelected.selection,'3 editable shapes selected');
+await sketchTab.playwright.locator('canvas').press('Escape');
+var groupNone=(await sketchCapture('group-cleared')).read;
+sketchAssert.equal(groupNone.selection,'No shape selected');
+await sketchTab.click([groupNone.canvas.x+25+15.5,groupNone.canvas.y+25+45]);
+sketchAssert.equal((await sketchCapture('group-member-click')).read.selection,'2 editable shapes selected');
+await sketchTab.playwright.getByRole('button',{name:'Select all',exact:true}).click();
+await sketchCapture('group-reselected-all');
+await sketchTab.playwright.getByRole('button',{name:'Align right',exact:true}).click();
+var groupRight=(await sketchCapture('group-aligned-right',true)).read;
+sketchEqual(groupRight.scene.shapes.map(s=>s.x),sketchPlan.group.alignRightX);
+sketchAssert.equal(groupRight.scene.shapes[1].x-groupRight.scene.shapes[0].x,20.5);
+sketchAssert.equal(groupRight.scene.shapes[1].y-groupRight.scene.shapes[0].y,20.125);
+await sketchTab.playwright.getByRole('button',{name:'Undo',exact:true}).click();
+sketchEqual((await sketchCapture('group-undo')).read.scene,groupSelected.scene);
+await sketchTab.playwright.getByRole('button',{name:'Redo',exact:true}).click();
+sketchEqual((await sketchCapture('group-redo')).read.scene,groupRight.scene);
+
+await sketchTab.playwright.getByRole('button',{name:'Select all',exact:true}).click();
+await sketchTab.playwright.getByRole('button',{name:'Align right',exact:true}).click();
+var already=(await sketchCapture('already-aligned-noop')).read;
+sketchAssert.equal(already.status,'Selection already arranged');
+sketchEqual(already.scene,groupRight.scene);
+await sketchTab.playwright.getByRole('button',{name:'Undo',exact:true}).click();
+sketchEqual((await sketchCapture('already-aligned-noop-undo')).read.scene,groupSelected.scene);
+await sketchTab.playwright.getByRole('button',{name:'Redo',exact:true}).click();
+sketchEqual((await sketchCapture('already-aligned-noop-redo')).read.scene,groupRight.scene);
+var beforeAlone=(await sketchCapture('before-single-group-import')).read.scene;
+await sketchImport('groupAlone','single-group-import');
+await sketchTab.playwright.getByRole('button',{name:'Select all',exact:true}).click();
+await sketchTab.playwright.getByRole('button',{name:'Align left',exact:true}).click();
+var alone=(await sketchCapture('single-group-noop')).read;
+sketchAssert.equal(alone.status,'Select at least two separate shapes or groups');
+await sketchTab.playwright.getByRole('button',{name:'Undo',exact:true}).click();
+sketchEqual((await sketchCapture('single-group-noop-undo')).read.scene,beforeAlone);
+await sketchTab.playwright.getByRole('button',{name:'Redo',exact:true}).click();
+sketchEqual((await sketchCapture('single-group-noop-redo')).read.scene,alone.scene);
+await sketchTab.playwright.getByRole('button',{name:'Undo',exact:true}).click();
+sketchEqual((await sketchCapture('final-group-before-save')).read.scene,groupRight.scene);
+
+await sketchTab.playwright.locator('canvas').press('Escape');
+var gestureBefore=(await sketchCapture('gesture-before')).read;
+var sketchCdp=await sketchTab.capabilities.get('cdp');
+var params={type:'mousePressed',x:gestureBefore.canvas.x+25+215,y:gestureBefore.canvas.y+25+45,button:'left',buttons:1,clickCount:1};
+try{
+ await sketchCdp.send('Input.dispatchMouseEvent',params,{timeoutMs:10000});
+ sketchAssert.equal((await sketchCapture('gesture-held-pointer')).read.selection,'2 editable shapes selected');
+ await sketchTab.playwright.locator('canvas').press('Control+Shift+ArrowRight');
+ var gestureRefused=(await sketchCapture('gesture-layout-refused',true)).read;
+ sketchAssert.equal(gestureRefused.status,'Finish the current gesture before arranging shapes');
+ sketchEqual(gestureRefused.scene,gestureBefore.scene);
+}finally{await sketchCdp.send('Input.dispatchMouseEvent',{...params,type:'mouseReleased',buttons:0},{timeoutMs:10000});}
+sketchEqual((await sketchCapture('gesture-released')).read.scene,gestureBefore.scene);
+
+await sketchTab.playwright.getByRole('button',{name:'Save',exact:true}).click();
+await sketchTab.playwright.getByRole('status').filter({hasText:'Scene saved'}).waitFor({state:'visible',timeoutMs:10000});
+var browserSaved=(await sketchCapture('saved',true)).read;
+sketchEqual(browserSaved.scene.shapes,groupRight.scene.shapes);
+sketchAssert.ok(browserSaved.scene.id);
+await sketchTab.playwright.getByRole('button',{name:'New scene',exact:true}).click();
+sketchAssert.equal((await sketchCapture('new-before-reopen')).read.scene.shapes.length,0);
+await sketchTab.reload();
+await sketchTab.playwright.getByLabel('Saved scenes',{exact:true}).selectOption(browserSaved.scene.id);
+var browserReopened=(await sketchCapture('reopened-from-fresh-list',true)).read;
+sketchEqual(browserReopened.scene.shapes,browserSaved.scene.shapes);
+sketchAssert.equal(browserReopened.scene.id,browserSaved.scene.id);
+sketchAssert.equal(browserReopened.status,'Loaded scene');
+var event=sketchTab.playwright.waitForEvent('download',{timeoutMs:10000}).then(d=>({download:d}),e=>({error:{name:e.name,message:e.message}}));
+await sketchTab.playwright.getByRole('button',{name:'Export .excalidraw',exact:true}).click();
+await sketchTab.playwright.getByRole('status').filter({hasText:'Native Excalidraw version 2 document exported'}).waitFor({state:'visible',timeoutMs:10000});
+await sketchCapture('native-export',true);await event;
+// Actual bridge timed out. No downloaded-file path was returned/read, and no
+// permissions were changed. Native response bytes are in owned HTTP raw logs.
+await sketchCdp.readEvents({afterSequence:0,methods:['Browser.downloadWillBegin','Browser.downloadProgress'],limit:20});
+await sketchCapture('final-before-close',true);await sketchTab.close();

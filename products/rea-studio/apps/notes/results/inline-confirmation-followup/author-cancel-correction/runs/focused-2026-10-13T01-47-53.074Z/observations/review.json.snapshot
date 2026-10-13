@@ -1,0 +1,168 @@
+[
+  {
+    "case": "dirty guard",
+    "passed": true
+  },
+  {
+    "case": "held cascade",
+    "passed": true
+  },
+  {
+    "case": "old Save after cascade",
+    "body": "New typed draft after trash",
+    "saveEnabled": false,
+    "backend": {
+      "id": "fd448db8-023a-4b20-b6a3-d1939ff5ee02",
+      "title": "A note",
+      "body": "Saved body",
+      "notebook": "Parent / Child",
+      "tags": [],
+      "createdAt": "2026-10-13T01:47:54.062Z",
+      "updatedAt": "2026-10-13T01:47:54.062Z",
+      "revision": 3,
+      "deletedAt": "2026-10-13T01:47:54.062Z",
+      "history": [
+        {
+          "revision": 1,
+          "title": "A note",
+          "body": "Saved body",
+          "tags": [],
+          "notebook": "Parent / Child",
+          "notebookId": "3e854e866452e6645565b481f913be05",
+          "updatedAt": "2026-10-13T01:47:54.062Z"
+        },
+        {
+          "revision": 2,
+          "title": "A note",
+          "body": "Saved body",
+          "tags": [],
+          "notebook": "Parent / Child",
+          "notebookId": "3e854e866452e6645565b481f913be05",
+          "updatedAt": "2026-10-13T01:47:54.062Z"
+        }
+      ],
+      "notebookId": "3e854e866452e6645565b481f913be05",
+      "metadataEdited": true,
+      "userUpdatedAt": "2026-10-13T01:47:54.062Z"
+    },
+    "calls": [
+      {
+        "action": "list",
+        "input": {
+          "search": "",
+          "tag": "",
+          "notebookId": "",
+          "trash": false
+        }
+      },
+      {
+        "action": "notebook-list",
+        "input": {}
+      },
+      {
+        "action": "get",
+        "input": {
+          "id": "fd448db8-023a-4b20-b6a3-d1939ff5ee02"
+        }
+      },
+      {
+        "action": "attachment-list",
+        "input": {
+          "id": "fd448db8-023a-4b20-b6a3-d1939ff5ee02"
+        }
+      },
+      {
+        "action": "save",
+        "input": {
+          "id": "fd448db8-023a-4b20-b6a3-d1939ff5ee02",
+          "revision": 1,
+          "title": "A note",
+          "body": "Saved body",
+          "notebookId": "3e854e866452e6645565b481f913be05",
+          "tags": []
+        }
+      },
+      {
+        "action": "notebook-trash",
+        "input": {
+          "id": "629126945d5ed6f6cf5108075cf28f1c",
+          "revision": 2,
+          "confirmed": true
+        }
+      },
+      {
+        "action": "get",
+        "input": {
+          "id": "fd448db8-023a-4b20-b6a3-d1939ff5ee02"
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": "",
+          "tag": "",
+          "notebookId": "",
+          "trash": false
+        }
+      },
+      {
+        "action": "notebook-list",
+        "input": {}
+      },
+      {
+        "action": "attachment-list",
+        "input": {
+          "id": "fd448db8-023a-4b20-b6a3-d1939ff5ee02"
+        }
+      }
+    ]
+  },
+  {
+    "case": "caller mutation",
+    "requestedId": "4d0ed49c258f394cfc98a192133d963d",
+    "mutatedId": "06c1b5a57d84000ffc7ba47a91a0b5cc",
+    "rows": {
+      "revision": 3,
+      "notebooks": [
+        {
+          "id": "4d0ed49c258f394cfc98a192133d963d",
+          "title": "A",
+          "parentId": "",
+          "path": "A",
+          "depth": 1,
+          "notes": 0,
+          "editable": false,
+          "deletedTime": 1791856074063,
+          "trashed": true,
+          "displayParentId": "de1e7ede1e7ede1e7ede1e7ede1e7ede",
+          "trashEligible": false,
+          "restoreEligible": true
+        },
+        {
+          "id": "06c1b5a57d84000ffc7ba47a91a0b5cc",
+          "title": "B",
+          "parentId": "",
+          "path": "B",
+          "depth": 1,
+          "notes": 0,
+          "editable": true,
+          "deletedTime": 0,
+          "trashed": false,
+          "displayParentId": "",
+          "trashEligible": true,
+          "restoreEligible": false
+        }
+      ]
+    }
+  },
+  {
+    "case": "failed commit and disk reopen",
+    "passed": true,
+    "hostProcesses": 0,
+    "mode": "File-backed state plus fresh module; process restart not claimed"
+  },
+  {
+    "case": "bounds",
+    "passed": true
+  }
+]

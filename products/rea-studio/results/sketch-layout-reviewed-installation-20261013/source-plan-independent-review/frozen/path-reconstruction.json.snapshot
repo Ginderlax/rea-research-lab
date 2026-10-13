@@ -1,0 +1,127 @@
+[
+  {
+    "source": "layout.test.mjs",
+    "target": "products/rea-studio/apps/sketch/layout.test.mjs",
+    "anchors": [
+      {
+        "from": "'./products/rea-studio/apps/sketch/layout.mjs'",
+        "to": "'./layout.mjs'",
+        "occurrences": 1
+      },
+      {
+        "from": "'./products/rea-studio/apps/sketch/core.mjs'",
+        "to": "'./core.mjs'",
+        "occurrences": 1
+      },
+      {
+        "from": "'./layout-oracle.mjs'",
+        "to": "'./layout-original-oracle.mjs'",
+        "occurrences": 1
+      },
+      {
+        "from": "import path from 'node:path';",
+        "to": "import path from 'node:path';import os from 'node:os';",
+        "occurrences": 1
+      },
+      {
+        "from": "const output=process.env.REA_LAYOUT_OBSERVATIONS;",
+        "to": "const output=process.env.REA_LAYOUT_OBSERVATIONS||path.join(fs.mkdtempSync(path.join(os.tmpdir(),'rea-sketch-layout-')),'original-actions.json');",
+        "occurrences": 1
+      }
+    ],
+    "exactReconstruction": true
+  },
+  {
+    "source": "precision.test.mjs",
+    "target": "products/rea-studio/apps/sketch/precision.test.mjs",
+    "anchors": [
+      {
+        "from": "'./products/rea-studio/apps/sketch/layout.mjs'",
+        "to": "'./layout.mjs'",
+        "occurrences": 1
+      },
+      {
+        "from": "'./products/rea-studio/apps/sketch/core.mjs'",
+        "to": "'./core.mjs'",
+        "occurrences": 1
+      },
+      {
+        "from": "'./layout-oracle.mjs'",
+        "to": "'./layout-original-oracle.mjs'",
+        "occurrences": 1
+      },
+      {
+        "from": "import path from 'node:path';",
+        "to": "import path from 'node:path';import os from 'node:os';",
+        "occurrences": 1
+      },
+      {
+        "from": "const shape=",
+        "to": "const observationDirectory=process.env.REA_LAYOUT_PRECISION_OBSERVATIONS||fs.mkdtempSync(path.join(os.tmpdir(),'rea-sketch-precision-'));\nconst shape=",
+        "occurrences": 1
+      },
+      {
+        "from": "path.join(process.env.REA_LAYOUT_PRECISION_OBSERVATIONS,label+'.json')",
+        "to": "path.join(observationDirectory,label+'.json')",
+        "occurrences": 1
+      }
+    ],
+    "exactReconstruction": true
+  },
+  {
+    "source": "layout-ui.test.mjs",
+    "target": "products/rea-studio/apps/sketch/layout-ui.test.mjs",
+    "anchors": [
+      {
+        "from": "'./products/rea-studio/apps/sketch/server.mjs'",
+        "to": "'./server.mjs'",
+        "occurrences": 1
+      }
+    ],
+    "exactReconstruction": true
+  },
+  {
+    "source": "layout-ui-fixture.mjs",
+    "target": "products/rea-studio/apps/sketch/layout-ui-fixture.mjs",
+    "anchors": [
+      {
+        "from": "'./products/rea-studio/apps/sketch/client.mjs'",
+        "to": "'./client.mjs'",
+        "occurrences": 1
+      },
+      {
+        "from": "'./products/rea-studio/apps/sketch/server.mjs'",
+        "to": "'./server.mjs'",
+        "occurrences": 1
+      }
+    ],
+    "exactReconstruction": true
+  },
+  {
+    "source": "layout-oracle.mjs",
+    "target": "products/rea-studio/apps/sketch/layout-original-oracle.mjs",
+    "anchors": [
+      {
+        "from": "const provenance=JSON.parse(fs.readFileSync(path.join(root,'source-provenance.json'))),sourceRows=[],parts=[];",
+        "to": "const provenancePath=path.join(root,'results/layout-followup/correction/frozen/source-provenance.json.snapshot'),provenanceBytes=fs.readFileSync(provenancePath);assert.equal(hash(provenanceBytes),'69c3ca5c3707c1e7204e6497a0df33559dbc2ab54f66595e1b0de461c5ee168c','Pinned original layout provenance');assert.equal(hash(fs.readFileSync(process.execPath)),'b3094d0b49f9ad602262a9921551737bb97637c05dd357a06ae98188d7290aa3','Pinned Node layout oracle runtime');const provenance=JSON.parse(provenanceBytes),sourceRows=[],parts=[];assert.equal(provenance.release,'@excalidraw/excalidraw 0.18.1');assert.equal(provenance.commit,'a2ec2889babf7d2295469c6d90ebe77fae57df84');assert.equal(provenance.fetched.length,8);",
+        "occurrences": 1
+      },
+      {
+        "from": "b=fs.readFileSync(path.join(root,filename))",
+        "to": "b=fs.readFileSync(path.join(root,'results/layout-followup/correction/frozen',filename+'.snapshot'))",
+        "occurrences": 1
+      },
+      {
+        "from": "assert.equal(hash(b),r.sha256);",
+        "to": "assert.ok(r,'Pinned original source row');assert.equal(b.length,r.bytes);assert.equal(hash(b),r.sha256);",
+        "occurrences": 1
+      },
+      {
+        "from": "sourceRows.push({path:filename,",
+        "to": "sourceRows.push({path:'results/layout-followup/correction/frozen/'+filename+'.snapshot',originalPath:filename,",
+        "occurrences": 1
+      }
+    ],
+    "exactReconstruction": true
+  }
+]

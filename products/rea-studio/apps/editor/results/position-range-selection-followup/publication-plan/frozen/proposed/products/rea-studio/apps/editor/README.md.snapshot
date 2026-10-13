@@ -1,0 +1,58 @@
+# Workspace Editor — working development version
+
+An original local UTF-8 editor. Core editing and differences need only Node.js; source control additionally uses an installed Git executable. This is a working development application, **not a complete VS Code or Monaco replacement**. The new implementation does not import the earlier source-assisted research reconstruction.
+
+## Implemented
+
+- Create, list, open and save real files inside REA Studio's confined product workspace; nested directories are created when saving.
+- Multiple browser tabs keep separate drafts, with dirty markers, explicit save and Ctrl/Cmd+S. Literal find and replace, tab indentation, comparison with the saved version.
+- Saved-file workspace search with literal case modes, exact byte revisions, UTF-16 result positions, bounded traversal/results and explicit incomplete-result notices. Opening results retains existing unsaved drafts and rejects stale positions. See `SEARCH.md` for finite original-engine comparisons and remaining search gaps.
+- SHA-256 optimistic revisions reject stale saves and accidental overwrites; saves use same-directory temporary files and rename. In-process concurrent writes to the same path are serialized. UTF-8 validation and binary rejection precede editing.
+- Exact shortest line insertion/deletion scripts using common boundaries, disjoint-region detection and shortest-path diagonals, falling back to linear-space Hirschberg reconstruction. Large changed regions no longer require a quadratic-size table.
+- Real local Git initialization, author identity, saved-file status, staging/unstaging, working/staged patches, commits, recent history, branch creation/switching and rename records. Clean editor tabs refresh after switching; unsaved drafts remain in memory.
+- No executable terminal or evaluation of edited code.
+
+The recorded `ABACDEACACFC` → `EFC` line witness has edit cost **9** in this implementation, versus **11** in the studied Monaco 0.57.0 algorithm. This is a narrowly measured result, not evidence of overall editor superiority. Different diff tie breaks and character-level behavior remain separate comparisons. Tests check all 961 binary sequence pairs through four lines, 1,000 seeded random sequences against an independent minimum-cost recurrence, a 2,000-line sparse-overlap fallback and 10,000 disjoint lines. The getter-span benchmark publishes regressions as well as wins.
+
+## Run and verify
+
+From `products/rea-studio`, run `npm start`, open the local REA Studio URL and select **Editor**. The host supplies the storage/workspace and local browser interface.
+
+From the repository root:
+
+```sh
+node --test products/rea-studio/apps/editor/app.test.mjs products/rea-studio/apps/editor/app.integration.test.mjs
+node --test products/rea-studio/apps/editor/git.test.mjs products/rea-studio/apps/editor/sequence-diff.test.mjs
+node --test products/rea-studio/apps/editor/workspace-search.test.mjs products/rea-studio/apps/editor/workspace-search.integration.test.mjs products/rea-studio/apps/editor/workspace-search.ui.test.mjs
+```
+
+Tests exercise actual temporary files, Unicode, revision conflicts, simultaneous saves, binary rejection, traversal, exact script reconstruction and an independent edit-distance oracle. HTTP tests reopen files and Git history after actual host restarts. The editor supports 2 MiB files and 10,000 lines per side. Trace storage is bounded at one million diagonal cells before linear-row reconstruction; worst-case time remains quadratic. The file browser stops at 1,000 files or 12 directory levels and skips links, `.git` and `node_modules`.
+
+Source control accepts a standalone repository rooted in the application workspace. It rejects links/junctions throughout working files and metadata, nested repositories, shared metadata/worktrees, external object stores, configuration includes and index Git links. Traversal is bounded to 50,000 entries and 64 directory levels. Hooks, configured clean/smudge/process filters, fsmonitor, signature-verifier display, external diffs and text conversion are disabled. Tests verify native Git output, real commits/renames/branches, cold restart and audited pointer/filter/verifier regressions. External hostile processes changing the filesystem between checks remain outside this local application boundary.
+
+The parser follows [Git's porcelain status format](https://git-scm.com/docs/git-status); patches use [Git diff](https://git-scm.com/docs/git-diff) and existing-commit unstaging uses [Git restore](https://git-scm.com/docs/git-restore). These references define the protocol used here, not proof of every VS Code source-control workflow.
+
+## Documented original features still missing
+
+The [official VS Code feature overview](https://code.visualstudio.com/docs/editing/getting-started/overview), [editor tips](https://code.visualstudio.com/docs/editing/getting-started/tips-and-tricks) and [debugger documentation](https://code.visualstudio.com/docs/editor/debugging) describe substantially more functionality. Gaps include language servers, IntelliSense, syntax highlighting, snippets, multiple cursors, folding, diagnostics, code actions, refactoring, debugger adapters, breakpoints, integrated terminal, tasks, testing adapters, advanced Git/remote/submodule/signing workflows, merge conflict resolution, extension APIs/marketplace, settings/profiles/keymaps, remote development, accessibility parity, mobile/native packaging and broad encoding/large-file support. These are live references, not a frozen complete specification.
+
+Session drafts are in browser memory and disappear on page reload; saved files persist. No automatic save, autosave recovery, file watcher, renaming, deletion or cross-process write lock exists. An external program could modify a file after the revision check but before rename. Workspace link confinement is enforced by the host; the app alone is not a filesystem sandbox. The current host is for a local single-user workspace, not shared Internet hosting. Feature parity, all documented original features and superiority in every dimension are **not achieved**.
+
+A pending save captures one file revision and one text snapshot. Typing remains available; a completed write updates the saved baseline and revision while retaining any newer draft. Duplicate saves for that open document are refused while its request is pending; save again after it settles. Late responses cannot update a disposed view, a closed/reopened tab, or the status of another active document. Server-side direct calls capture the declared revision before entering the save queue; changing the caller object while queued does not change that precondition.
+
+
+## Finite Position, Range and Selection value API
+
+The ES module [position-range-selection.mjs](position-range-selection.mjs) exports source-assisted `Position`, `Range` and `Selection` value classes. This is a developer-consumable foundation; the current Editor interface does not bind its document cursor, selection or extension lifecycle to these classes. For example, import `{ Position, Range, Selection }` from this module in Node, create positions with `new Position(0, 3)`, and construct an ordered `new Range(start, end)` or directional `new Selection(anchor, active)`. No original/vendor/parser runtime is imported.
+
+The exact finite declaration scope is **30 direct entries** (Position13, Range12, Selection5), including overloads, plus **six nested optional fields**. Selection additionally inherits **ten nonconstructor Range declaration entries across nine names**; Range constructors are excluded and Selection owns its own two constructor forms. This census is complete only for these three selected classes, not the whole VS Code API, workbench or every documented editor feature. Public accessor assignment is readonly; this is not deep object freezing or a document-bound validation guarantee. The source-supported constructor behavior is retained rather than imposing document limits.
+
+The normal pure [regression test](position-range-selection.test.mjs) has thirteen groups covering the selected direct declarations/options, ordering and inclusive ranges, overlap/touching/disjoint behavior, identity aliases, directional selection, inherited return types, readonly accessors and six constructible call/apply compatibility helpers. Those extra helpers are outside the30-entry denominator. Run `node --test products/rea-studio/apps/editor/position-range-selection.test.mjs` from the repository root. It needs only Node and this new module, writes no source/result files, uses no original oracle and has no machine-specific compiler/cache dependency. These are production regressions authored from declared contracts, not a newly independent original differential campaign.
+
+Source binding is [VS Code1.140.0 commit07f806f999227108933c2e30515b26eecc1fda74](https://github.com/microsoft/vscode/tree/07f806f999227108933c2e30515b26eecc1fda74). The [retained original license](results/position-range-selection-followup/accepted-author319/source/LICENSE.txt.snapshot.snapshot), exact six source files and [study notice](results/position-range-selection-followup/accepted-author319/NOTICE.md.snapshot) preserve Microsoft MIT notices. See the accompanying [redistribution notice](position-range-selection.NOTICE.md). No clean-room or independent licensing opinion is implied.
+
+The [accepted319 correction](results/position-range-selection-followup/accepted-author319/validation.json.snapshot) preserves the complete historical145 author/43 negative epochs and their raw failures. Its22 groups are nine author plus thirteen exact reviewer replays. The author oracle evaluates five pinned TypeScript library units in six VM evaluations through Node stripping; the older independent-shaped replay separately compiles ten units in twelve evaluations, with179 exact semantic pairs and nine raw readonly receiver-label controls kept separate. These are source-composed class libraries, not the shipped extension-host/workbench. The240 separately shaped author cases use the common packet harness and are not relabeled as held-out independence.
+
+The [fresh independent81 review](results/position-range-selection-followup/accepted-independent81/review-validation.json.snapshot) adds nine groups with58 semantic differential pairs:38 exact encoded/library-error pairs and20 engine rejection-type comparisons preserving raw errors. Six descriptor controls compare the prior nonstrict composed script, explicit strict composition and candidate. The released sources are ES modules; the review restores strictness after removing module syntax. Script-oracle `caller`/`arguments` differences remain recorded as composition differences, without suppressing original errors or claiming candidate failures. Both compositions together evaluate ten source units in twelve VM evaluations. These counts remain separate from replay22 and the new pure13 regressions. This integration plan reexecutes no original library code.
+
+Complete extension APIs/host lifecycle, current document/cursor binding, arbitrary hostile objects/proxies/cycles, universal engine error text/prototype/function-source equivalence, accessibility/client/native packaging and full Editor parity remain open. Original native executable, original GUI, workbench and extension-host executions are zero for these campaigns. No performance, memory or superiority conclusion follows from this finite value API.

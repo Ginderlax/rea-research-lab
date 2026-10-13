@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync, readdirSync, lstatSync, realpathSync} from 'node:fs';
 import {resolve, relative, sep} from 'node:path';
 import {createHash} from 'node:crypto';
+import {createNotesInlineHistoricalResolver} from './verify-notes-inline-followups.mjs';
 
 const studio = 'products/rea-studio/';
 const notes = studio + 'apps/notes/results/notebook-trash-followup/';
@@ -66,7 +67,8 @@ export function assertInertProofBytes(b, p = 'synthetic.snapshot') {
  * No original programs, app modules, local carriers, network, hosts, or behavioral tests execute.
  * Reads are individually/aggregate bounded; this is not a hard I/O deadline or a race-free FS sandbox.
  */
-export function verifyNotesVaultFollowups(root, {onFile} = {}) {
+export function verifyNotesVaultFollowups(root, {onFile, resolveHistorical} = {}) {
+ resolveHistorical ??= createNotesInlineHistoricalResolver(root, {onFile});
  const base = realpathSync(resolve(root));
  const readRows = new Map();
  let total = 0;
@@ -204,7 +206,7 @@ export function verifyNotesVaultFollowups(root, {onFile} = {}) {
  for (const k of ['fullProductParity', 'universalSuperiority']) assert.equal(installation[k], false);
  read(notes + 'production-installation/installation.json.snapshot', ir); read(vault + 'production-installation/installation.json.snapshot', ir);
  const installed = new Map();
- for (const r of installation.installed) { safe(r.destination); assert.ok(!installed.has(r.destination), 'Duplicate installed destination'); installed.set(r.destination, r); read(r.destination, r.after); }
+ for (const r of installation.installed) { safe(r.destination); assert.ok(!installed.has(r.destination), 'Duplicate installed destination'); installed.set(r.destination, r); const resolution = resolveHistorical(r.destination, r.after); assert.ok(resolution, 'Missing explicit Notes inline historical mapping'); read(resolution.historicalPath, r.after); read(r.destination, resolution.currentExpected); }
  const copies = new Map(); for (const r of installation.copies) { safe(r.path); identity(r); const key = r.sourceRoot + ':' + r.sourcePath; assert.ok(!copies.has(key), 'Duplicate installer source mapping'); copies.set(key, r); read(r.path, r, true); }
  const nl = np.json('live-copy-list.json'); assert.equal(nl.proposals.length, 13);
  let noteAdapterReconstructions = 0;

@@ -1,0 +1,74 @@
+// Newly written, source-assisted VS Code1.140.0 API value-class compatibility.
+// Retained Microsoft source/notice identities are in acquisition.json.
+// No original/vendor module is imported or evaluated by this runtime module.
+const argumentError=reason=>new Error(reason?'Illegal argument: '+reason:'Illegal argument');
+function minimum(values,after){if(!values.length)throw new TypeError();let chosen=values[0];for(let i=1;i<values.length;i++)if(values[i][after?'isAfter':'isBefore'](chosen))chosen=values[i];return chosen;}
+
+export class Position {
+  _line;_character;
+  constructor(line,character){if(line<0)throw argumentError('line must be non-negative');if(character<0)throw argumentError('character must be non-negative');this._line=line;this._character=character;}
+  get line(){return this._line;}
+  get character(){return this._character;}
+  isBefore(other){return this._line<other._line?true:other._line<this._line?false:this._character<other._character;}
+  isBeforeOrEqual(other){return this._line<other._line?true:other._line<this._line?false:this._character<=other._character;}
+  isAfter(other){return !this.isBeforeOrEqual(other);}
+  isAfterOrEqual(other){return !this.isBefore(other);}
+  isEqual(other){return this._line===other._line&&this._character===other._character;}
+  compareTo(other){return this._line<other._line?-1:this._line>other.line?1:this._character<other._character?-1:this._character>other._character?1:0;}
+  translate(first,second=0){
+    if(first===null||second===null)throw argumentError();let lines;
+    if(first===undefined)lines=0;else if(typeof first==='number')lines=first;else{lines=typeof first.lineDelta==='number'?first.lineDelta:0;second=typeof first.characterDelta==='number'?first.characterDelta:0;}
+    return lines===0&&second===0?this:new Position(this.line+lines,this.character+second);
+  }
+  with(first,second=this.character){
+    if(first===null||second===null)throw argumentError();let line;
+    if(first===undefined)line=this.line;else if(typeof first==='number')line=first;else{line=typeof first.line==='number'?first.line:this.line;second=typeof first.character==='number'?first.character:this.character;}
+    return line===this.line&&second===this.character?this:new Position(line,second);
+  }
+  toJSON(){return{line:this.line,character:this.character};}
+  [Symbol.for('debug.description')](){return`(${this.line}:${this.character})`;}
+  static Min(...values){return minimum(values,false);}
+  static Max(...values){return minimum(values,true);}
+  static isPosition(value){if(!value)return false;if(value instanceof Position)return true;const coordinates=[value.line,value.character];return typeof coordinates[0]==='number'&&typeof coordinates[1]==='number';}
+  static of(value){if(value instanceof Position)return value;if(this.isPosition(value))return new Position(value.line,value.character);throw new Error('Invalid argument, is NOT a position-like object');}
+}
+
+function endpoints(a,b,c,d){if(typeof a==='number'&&typeof b==='number'&&typeof c==='number'&&typeof d==='number')return[new Position(a,b),new Position(c,d)];if(Position.isPosition(a)&&Position.isPosition(b))return[Position.of(a),Position.of(b)];throw new Error('Invalid arguments');}
+export class Range {
+  _start;_end;
+  constructor(a,b,c,d){const[p,q]=endpoints(a,b,c,d),ordered=p.isBefore(q);this._start=ordered?p:q;this._end=ordered?q:p;}
+  get start(){return this._start;}
+  get end(){return this._end;}
+  get isEmpty(){return this._start.isEqual(this._end);}
+  get isSingleLine(){return this._start.line===this._end.line;}
+  contains(value){if(Range.isRange(value))return this.contains(value.start)&&this.contains(value.end);if(!Position.isPosition(value))return false;return !Position.of(value).isBefore(this._start)&&!this._end.isBefore(value);}
+  isEqual(other){return this._start.isEqual(other._start)&&this._end.isEqual(other._end);}
+  intersection(other){const first=Position.Max(other.start,this._start),last=Position.Min(other.end,this._end);return first.isAfter(last)?undefined:new Range(first,last);}
+  union(other){if(this.contains(other))return this;if(other.contains(this))return other;return new Range(Position.Min(other.start,this._start),Position.Max(other.end,this.end));}
+  with(first,last=this.end){
+    if(first===null||last===null)throw argumentError();let start;
+    if(!first)start=this.start;else if(Position.isPosition(first))start=first;else{start=first.start||this.start;last=first.end||this.end;}
+    return start.isEqual(this._start)&&last.isEqual(this.end)?this:new Range(start,last);
+  }
+  toJSON(){return[this.start,this.end];}
+  [Symbol.for('debug.description')](){return describeRange(this);}
+  static isRange(value){return value instanceof Range||Boolean(value&&typeof value==='object'&&Position.isPosition(value.start)&&Position.isPosition(value.end));}
+  static of(value){if(value instanceof Range)return value;if(this.isRange(value))return new Range(value.start,value.end);throw new Error('Invalid argument, is NOT a range-like object');}
+}
+function describeRange(value){return value.isEmpty?`[${value.start.line}:${value.start.character})`:`[${value.start.line}:${value.start.character} -> ${value.end.line}:${value.end.character})`;}
+export class Selection extends Range {
+  _anchor;_active;
+  constructor(a,b,c,d){const[anchor,active]=endpoints(a,b,c,d);super(anchor,active);this._anchor=anchor;this._active=active;}
+  get anchor(){return this._anchor;}
+  get active(){return this._active;}
+  get isReversed(){return this._anchor===this._end;}
+  toJSON(){return{start:this.start,end:this.end,active:this.active,anchor:this.anchor};}
+  [Symbol.for('debug.description')](){const description=describeRange(this);return this.isEmpty?description:this.active.isEqual(this.start)?'|'+description:description+'|';}
+  static isSelection(value){return value instanceof Selection||Boolean(value&&typeof value==='object'&&Range.isRange(value)&&Position.isPosition(value.anchor)&&Position.isPosition(value.active)&&typeof value.isReversed==='boolean');}
+}
+// Released compatibility calls return a constructed object rather than mutate
+// the supplied ES5 receiver. Keep these calls separate from ordinary new usage.
+for(const Type of [Position,Range,Selection])Object.assign(Type,{
+  apply(...values){if(!values.length)return Reflect.construct(Type,[]);return Reflect.construct(Type,values.length===1?[]:values[1],values[0].constructor);},
+  call(...values){if(!values.length)return Reflect.construct(Type,[]);return Reflect.construct(Type,values.slice(1),values[0].constructor);}
+});

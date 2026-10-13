@@ -1,6 +1,6 @@
 {
   "schema": "rea-development-validation/v1",
-  "checked_at_utc": "2026-10-13T01:59:51.554Z",
+  "checked_at_utc": "2026-10-13T03:36:14.437Z",
   "scope": "Implemented development application contracts; does not establish every documented original-product feature or comparative superiority.",
   "runtime": "v24.16.0",
   "platform": "win32",
@@ -46,6 +46,7 @@
     "apps/editor/app.integration.test.mjs",
     "apps/editor/app.test.mjs",
     "apps/editor/git.test.mjs",
+    "apps/editor/position-range-selection.test.mjs",
     "apps/editor/save-publication.ui.test.mjs",
     "apps/editor/save-review-adjacent.test.mjs",
     "apps/editor/save-review-held.test.mjs",
@@ -70,6 +71,8 @@
     "apps/notes/app.integration.test.mjs",
     "apps/notes/app.test.mjs",
     "apps/notes/jex.test.mjs",
+    "apps/notes/notebook-confirmation-cancel-open-note.ui.test.mjs",
+    "apps/notes/notebook-confirmation.ui.test.mjs",
     "apps/notes/notebook-trash-fresh-boundaries.test.mjs",
     "apps/notes/notebook-trash-publication-boundaries.test.mjs",
     "apps/notes/notebook-trash-review.test.mjs",
@@ -82,6 +85,9 @@
     "apps/sketch/client.test.mjs",
     "apps/sketch/geometry-client.test.mjs",
     "apps/sketch/geometry.test.mjs",
+    "apps/sketch/layout-ui.test.mjs",
+    "apps/sketch/layout.test.mjs",
+    "apps/sketch/precision.test.mjs",
     "apps/sketch/vendor-oracle.test.mjs",
     "apps/sync/app.integration.test.mjs",
     "apps/sync/app.test.mjs",
@@ -117,16 +123,17 @@
     "apps/vault/unknown-time.test.mjs",
     "tests/host.test.mjs",
     "tests/rabin-recorder.test.mjs",
-    "tests/sketch-collector.test.mjs"
+    "tests/sketch-collector.test.mjs",
+    "tests/sketch-layout-static-route.test.mjs"
   ],
   "summary": {
-    "tests": 811,
-    "pass": 811,
+    "tests": 847,
+    "pass": 847,
     "fail": 0,
     "cancelled": 0,
     "skipped": 0,
     "todo": 0,
-    "duration_ms": 561818.109
+    "duration_ms": 553610.8534
   },
   "source_files": [
     {
@@ -1906,6 +1913,14 @@
       "sha256": "ab8213c182d1568254ea73db57133affbd48304b98f0d275d27c1fcf8b33f0cc"
     },
     {
+      "path": "apps/editor/position-range-selection.mjs",
+      "sha256": "9f5d89b260e88fc1c2197d23a9c2b0ca25fcff688c5eba839471c7a4fe499aa8"
+    },
+    {
+      "path": "apps/editor/position-range-selection.test.mjs",
+      "sha256": "69f897492b95db8125b6ac91c47c52039dfbed105ad0d1095570065a2cc3359b"
+    },
+    {
       "path": "apps/editor/save-publication.ui.test.mjs",
       "sha256": "30980c6c14879e3279f1715af159fb4357697e5b3c854d020dd8e221e2fc7191"
     },
@@ -2143,7 +2158,7 @@
     },
     {
       "path": "apps/notes/client.mjs",
-      "sha256": "c57fe2ee532fa9ce8c8afeaa1e777428fc74ce30bebc5c4e76782169ee602d87"
+      "sha256": "90886819feef847847fcae8c442e0a401a1146a7a4aa1fd862a54b5e01f41da9"
     },
     {
       "path": "apps/notes/fixtures/oracle-verification.json",
@@ -2170,6 +2185,14 @@
       "sha256": "409b2bcc489c785e725d3257f21af1c6a3cd4f1f78fa0d0ca74d538876f24915"
     },
     {
+      "path": "apps/notes/notebook-confirmation-cancel-open-note.ui.test.mjs",
+      "sha256": "bd6a5217713ead7019f298c64366097aebe372a4df9ec8bfb0997a8c3c1ba7f4"
+    },
+    {
+      "path": "apps/notes/notebook-confirmation.ui.test.mjs",
+      "sha256": "007fd300093c25cedf078ed0784c61e6b77f07eede734646a0517d950e87d693"
+    },
+    {
       "path": "apps/notes/notebook-original-oracle.mjs",
       "sha256": "9e5ec3357b64e2af290866da6453361c12716f82f7122b3fa9e82f817588045f"
     },
@@ -2183,15 +2206,15 @@
     },
     {
       "path": "apps/notes/notebook-trash-publication-boundaries.test.mjs",
-      "sha256": "94ceb4a2df8dd7bd04c2f2668ebbde5a5569f8e1e69df9a7f7c7ea2af8e564a6"
+      "sha256": "9bb8f4dba56a0c5e7d106bed026aab7de67a7ed8627507edd883e75a087fe07b"
     },
     {
       "path": "apps/notes/notebook-trash-review-fixture.mjs",
-      "sha256": "28990dbb92a6c3a1d155ee8aeefab28e4a9508ef35601adebc0783651d365551"
+      "sha256": "8ffd7a3c87ca203900bc9dc2806aef036034edbba9a947701d491828f001486c"
     },
     {
       "path": "apps/notes/notebook-trash-review.test.mjs",
-      "sha256": "03c06071a8b58ce8b34fabafc0d39668f853b47351702cb848013f1aa686289b"
+      "sha256": "a2b47baadeab95035c1255865bb216943f685776e779495793607001fe897518"
     },
     {
       "path": "apps/notes/notebook-trash.integration.test.mjs",
@@ -2207,7 +2230,7 @@
     },
     {
       "path": "apps/notes/notebook-trash.ui.test.mjs",
-      "sha256": "ff478b802a5687a1fb6175a8cbff9fc4970b3d76a045435d57ed15a299985ffe"
+      "sha256": "d00d0e84abaf6e18f3626f49e4eb7c29929e834542dc469370aeff5077e480a9"
     },
     {
       "path": "apps/notes/notebooks.integration.test.mjs",
@@ -2263,7 +2286,7 @@
     },
     {
       "path": "apps/sketch/client.mjs",
-      "sha256": "08066fce201ca8620204801c672a39261586e17544d61652e09effae1713cb16"
+      "sha256": "ab4017bcbad5041548cb2f8d2babcae215f17c6646e19583b222a29363091bb1"
     },
     {
       "path": "apps/sketch/client.test.mjs",
@@ -2288,6 +2311,30 @@
     {
       "path": "apps/sketch/geometry.test.mjs",
       "sha256": "343354a4172bd88d0dc8ae9894e7ee1b49915c45e5fda159b3daee7954529729"
+    },
+    {
+      "path": "apps/sketch/layout-original-oracle.mjs",
+      "sha256": "91fbfe3f828914a8266dc08e9613d86b94170b623b2a47d6f1f814d0a998382c"
+    },
+    {
+      "path": "apps/sketch/layout-ui-fixture.mjs",
+      "sha256": "9010a0a538f3cc8e9dacad0a46eb9b93aa62e9909c8bfe70aabd2cdfd3359cf5"
+    },
+    {
+      "path": "apps/sketch/layout-ui.test.mjs",
+      "sha256": "674becdb662d22f77b50c96d034a9e485d9dd499a4588655b351b0fe94c57b8a"
+    },
+    {
+      "path": "apps/sketch/layout.mjs",
+      "sha256": "ac83dc4fdefaf55f4839424a5a2d7e3d417421f2e98e1e1f1eadcd82b97e9752"
+    },
+    {
+      "path": "apps/sketch/layout.test.mjs",
+      "sha256": "067cf46af2a68077ea8d7b46b808aa15025f5639a6c3c4b994b332d64c9e8473"
+    },
+    {
+      "path": "apps/sketch/precision.test.mjs",
+      "sha256": "758f6fb7b6fa98af785c7650e4024752cb19c789099b4d8c42e3a80aaaeb62cf"
     },
     {
       "path": "apps/sketch/results/collector-followup/independent-review/preservation-manifest.json",
@@ -2943,7 +2990,7 @@
     },
     {
       "path": "server.mjs",
-      "sha256": "807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f"
+      "sha256": "85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94"
     },
     {
       "path": "tests/fixtures/sketch-collector/descendant.mjs",
@@ -2964,6 +3011,10 @@
     {
       "path": "tests/sketch-collector.test.mjs",
       "sha256": "fd7f055c77b26612c78fc36bce4ec7cbfc31b95b11fda30e1d127ba6309c6144"
+    },
+    {
+      "path": "tests/sketch-layout-static-route.test.mjs",
+      "sha256": "8cccee8500af70ea083c4166120447839caeaed024d86ca2e017cd1d64da9dff"
     }
   ],
   "source_bytes_stable_across_run": true,

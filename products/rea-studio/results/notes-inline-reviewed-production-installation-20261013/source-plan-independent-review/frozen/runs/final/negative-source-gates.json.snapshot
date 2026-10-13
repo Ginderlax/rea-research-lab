@@ -1,0 +1,49 @@
+{
+  "applicationTests": 0,
+  "originalCalls": 0,
+  "inMemorySourceGates": [
+    {
+      "gate": "unsafe-path",
+      "input": "../escape",
+      "rejected": true
+    },
+    {
+      "gate": "unsafe-path",
+      "input": "C:/absolute",
+      "rejected": true
+    },
+    {
+      "gate": "unsafe-path",
+      "input": "folder\\file",
+      "rejected": true
+    },
+    {
+      "gate": "unsafe-path",
+      "input": "folder//file",
+      "rejected": true
+    },
+    {
+      "gate": "unsafe-path",
+      "input": "/absolute",
+      "rejected": true
+    },
+    {
+      "gate": "unsafe-path",
+      "input": "public/.local/private",
+      "rejected": true
+    },
+    {
+      "gate": "unsafe-path",
+      "input": "bad\u0000name",
+      "rejected": true
+    },
+    {
+      "gate": "duplicate-public-path",
+      "rejected": true
+    },
+    {
+      "gate": "altered-byte-identity",
+      "rejected": true
+    }
+  ]
+}

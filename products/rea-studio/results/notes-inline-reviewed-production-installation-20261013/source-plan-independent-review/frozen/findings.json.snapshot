@@ -1,0 +1,33 @@
+{
+  "schema": "rea-notes-inline-publication-source-only-findings/v1",
+  "applicationFaults": 0,
+  "sourceOnlyMetadataFindings": [
+    {
+      "id": "NOTES.INLINE.PUBLICATION.IMAGE-EPOCH.001",
+      "priority": "P3",
+      "sourceRoot": "work/notes-inline-publication-plan-browser-next",
+      "sourcePath": "public-preservation-map.json",
+      "sourceSha256": "ec5839d46fd9ff16e0e752bfac86b850689731b0bfa6a9fb87ffd4d4aaa8c2d7",
+      "affectedRecords": 12,
+      "selector": "payload rows where epoch=corrected-browser and actualMediaType=image/jpeg",
+      "incorrectQualification": "Historical exact author214 browser evidence only; not corrected-client browser acceptance. Preserve exact bytes and original filename even when its suffix mislabels JPEG.",
+      "evidence": "The same rows have sourceRoot work/notes-inline-cancel-no-read-browser-next, authenticated by exact87 manifest402425b29671175caecf368661b21987205087d5fdef3025c06323f94029acfb and receipt5d284a148316c6bac3a30999bf5fa8fe61f0c32e369e2430ab8238d083f1c8bc against corrected client90886819feef847847fcae8c442e0a401a1146a7a4aa1fd862a54b5e01f41da9. The shared classifier hardcodes author214 qualification; the addendum reused it for the new images.",
+      "requiredCorrection": "Preserve frozen17 and exact map ec5839 unchanged. Add a separate source-only qualification correction or explicit override for these twelve image identities. It must not reinterpret the six earlier author214 images or alter image bytes, paths, epoch, hashes, acceptance counts or historical claims.",
+      "byteIntegrityAffected": false,
+      "applicationExecutionRequired": false,
+      "parentAndAuthorNotified": true,
+      "statusAtReviewFreeze": "awaiting-separate-source-only-correction"
+    }
+  ],
+  "independentCollectorMistakes": [
+    {
+      "attempt": "manifest-byte-schema-v1",
+      "raw": "failures/manifest-byte-schema-v1/audit.stderr.txt",
+      "source": "failures/manifest-byte-schema-v1/audit.mjs",
+      "cause": "Own scanner assumed every strict manifest used bytes/files; pinned older manifests use totalBytes or omit those optional totals. Hashes/rows remain explicit and exact. Corrected scanner computes authenticated totals and checks optional fields when present.",
+      "candidateOrApplicationFault": false,
+      "transportWrapperExit": 0,
+      "childExitSeparatelyRecorded": false
+    }
+  ]
+}

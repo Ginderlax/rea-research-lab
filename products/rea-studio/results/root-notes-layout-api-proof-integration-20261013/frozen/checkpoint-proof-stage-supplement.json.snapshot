@@ -1,0 +1,26 @@
+{
+  "schema": "rea-root-checkpoint-proof-stage-supplement/v1",
+  "at": "2026-10-13T03:49:35.189Z",
+  "path": "scripts/verify-notes-layout-value-api-checkpoint.mjs",
+  "before": {
+    "bytes": 10392,
+    "sha256": "d45b97e0f4a5b79a3e40291170a2f89e737fb14cc5f6c18e2f4222de7db7bc37"
+  },
+  "after": {
+    "bytes": 11518,
+    "sha256": "10336fac4f3a181ee33bf16761b023a4adbcd5dcc4d18d26f100fa5d1650a7d0"
+  },
+  "changes": [
+    {
+      "before": "const api=verifyEditorValueApiFollowups(root);",
+      "after": "const apiProof=generic('products/rea-studio/results/editor-value-api-public-verifier-20261013',60,'b21bc55354f8e2e07bcbc728ec4ebffd3c9d28c9714af12b03b554abbec19edc'),apiCampaign=apiProof.json('validation.json');assert.equal(apiCampaign.actualFilesystemAccepted,true);assert.equal(apiCampaign.negativeGuardsObserved,10);assert.equal(apiCampaign.negativeGuardsRejected,10);assert.equal(apiCampaign.sourceStable,true);assert.equal(apiCampaign.module.path,'verify-editor-value-api-followups.mjs');read('scripts/'+apiCampaign.module.path,apiCampaign.module);const api=verifyEditorValueApiFollowups(root);assert.equal(api.sourceOnly,true);assert.equal(api.currentMandatory,true);assert.equal(api.pureInstalledEvidence.groups,13);"
+    },
+    {
+      "before": "const db=read('products/rea-studio/results/development-validation.json');",
+      "after": "const factual=generic('products/rea-studio/results/notes-layout-value-api-finalizer-review-20261013',8,'f886ea2987cde837a5adba5a664505c011907559497bd364540b24b1aea64d04').json('review-validation.json');assert.equal(factual.sourceOnly,true);assert.equal(factual.remainingConfirmedFactualFindings,0);assert.equal(factual.reviewedSource.executed,false);assert.equal(rows.get('finalization-collector.mjs.snapshot').sha256,factual.reviewedSource.sha256);const db=read('products/rea-studio/results/development-validation.json');"
+    }
+  ],
+  "currentApiModuleMandatory": true,
+  "factualReviewPinsFinalizer": true,
+  "appWrites": 0
+}

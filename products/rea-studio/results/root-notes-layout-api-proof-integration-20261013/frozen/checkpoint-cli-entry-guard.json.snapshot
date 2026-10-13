@@ -1,0 +1,20 @@
+{
+  "schema": "rea-root-checkpoint-cli-entry-guard/v1",
+  "at": "2026-10-13T03:50:57.801Z",
+  "before": {
+    "bytes": 11518,
+    "sha256": "10336fac4f3a181ee33bf16761b023a4adbcd5dcc4d18d26f100fa5d1650a7d0"
+  },
+  "after": {
+    "bytes": 11580,
+    "sha256": "41a503447b3fc260bfe36141dbf8aa2420d5ec0a96735f78c456c1595e95b6e0"
+  },
+  "sourceChanges": [
+    {
+      "before": "if(process.argv.includes('--standalone'))console.log",
+      "after": "if(process.argv.includes('--standalone')&&resolve(process.argv[1]??'')===resolve(import.meta.filename))console.log"
+    }
+  ],
+  "reason": "Own new checkpoint module printed and reran itself when imported by parent --standalone. Limit standalone emission/execution to direct entry; preserve old Notes helper historical CLI behavior unchanged.",
+  "appChanges": 0
+}

@@ -1,0 +1,20 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+const lab=path.resolve(import.meta.dirname,'../outputs/rea-research-lab');
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const root=fs.readFileSync(path.join(lab,'scripts/verify-records.mjs'),'utf8');
+const candidates=[
+ ['browser','products/rea-studio/results/browser-automation-recovery-20261012/validation.json','sourceFingerprints'],
+ ['recovery','products/rea-studio/apps/automation/results/recovery-followup/integration-validation.json','implementationFingerprints'],
+ ['independent','products/rea-studio/apps/automation/results/recovery-followup/independent-review/review-validation.json','publicFingerprints'],
+ ['rabin','products/rea-studio/apps/backup/results/rabin-validation.json','implementationFingerprints'],
+ ['recorder','products/rea-studio/apps/backup/results/rabin-recorder-review/integration-validation.json','implementationFingerprints'],
+];
+for(const [name,p,key] of candidates){
+ const bytes=fs.readFileSync(path.join(lab,p));const r=JSON.parse(bytes),rows=r[key];
+ const mismatches=rows.flatMap(e=>{const n=e.path.startsWith('products/')?e.path:'products/rea-studio/'+e.path;const b=fs.readFileSync(path.join(lab,n));return sha(b)===e.sha256?[]:[{...e,path:n,currentBytes:b.length,currentSHA256:sha(b)}]});
+ console.log(JSON.stringify({name,receipt:p,receiptSHA256:sha(bytes),rows:rows.length,mismatches}));
+}
+const webdavMatch=root.match(/const webdavRoot\s*=\s*'([^']+)'/);
+if(webdavMatch){const p=webdavMatch[1]+'results/webdav-validation.json',b=fs.readFileSync(path.join(lab,p)),r=JSON.parse(b);console.log(JSON.stringify({name:'webdav',receipt:p,receiptSHA256:sha(b),hostDependenciesAtTest:r.hostDependenciesAtTest}));}

@@ -1,0 +1,156 @@
+// Independent source-only audit. No application/original imports, child, network or browser execution.
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+
+const root = import.meta.dirname, workspace = path.resolve(root, '../..');
+const repo = path.join(workspace, 'outputs/rea-research-lab');
+const plan = 'work/notes-inline-publication-plan-next';
+const addendum = 'work/notes-inline-publication-plan-browser-next';
+const prefix = 'products/rea-studio/apps/notes/results/inline-confirmation-followup/';
+const swaps = { '.local': 'private-study-records', work: 'workspace-records', artifacts: 'source-material', tooling: 'verification-tool-source', node_modules: 'dependency-source' };
+const inputReads = new Map(), negativeGates = [], findings = [], qualifications = [];
+let reads = 0, totalReadBytes = 0;
+const ident = b => ({bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')});
+function rel(p, publicMode=false) {
+ assert.equal(typeof p, 'string'); assert.ok(p.length && p.length<=4096);
+ assert.ok(!/[\\:\x00-\x1f\x7f]/.test(p)); assert.ok(!p.startsWith('/'));
+ for (const s of p.split('/')) {assert.ok(s && s!=='.' && s!=='..'); if(publicMode)assert.ok(!Object.hasOwn(swaps,s));}
+ return p;
+}
+function same(actual, expected, label) { assert.equal(actual.bytes, expected.bytes, label+' bytes'); assert.equal(actual.sha256, expected.sha256, label+' SHA'); }
+async function read(base, p, expected) {
+ rel(p);const actualBase=await fs.realpath(base);let at=actualBase;
+ for(const s of p.split('/')) {at=path.join(at,s);assert.equal((await fs.lstat(at)).isSymbolicLink(),false,at);}
+ const real=await fs.realpath(at), r=path.relative(actualBase,real);assert.ok(r && !r.startsWith('..') && !path.isAbsolute(r));
+ const stat=await fs.stat(real);assert.ok(stat.isFile() && stat.size<=32*1024*1024);
+ const b=await fs.readFile(real);assert.equal(b.length,stat.size);const id=ident(b);if(expected)same(id,expected,p);
+ inputReads.set(real,id);reads++;totalReadBytes+=b.length;assert.ok(totalReadBytes<=256*1024*1024);return b;
+}
+const at = (p,e) => read(workspace,p,e);
+const pj = async p=>JSON.parse(await at(plan+'/'+p));
+const aj = async p=>JSON.parse(await at(addendum+'/'+p));
+async function save(p,value) {rel(p);const dest=path.join(root,p);await fs.mkdir(path.dirname(dest),{recursive:true});await fs.writeFile(dest,typeof value==='string'||Buffer.isBuffer(value)?value:JSON.stringify(value,null,2)+'\n',{flag:'wx'});}
+async function walk(base, prefix='', depth=0) {
+ assert.ok(depth<=40);const out=[];
+ for(const e of (await fs.readdir(path.join(base,prefix),{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))) {
+  assert.equal(e.isSymbolicLink(),false);const p=prefix+e.name;rel(p);
+  if(e.isDirectory())out.push(...await walk(base,p+'/',depth+1));else {assert.ok(e.isFile());out.push(p);}assert.ok(out.length<=1200);
+ }return out;
+}
+function rows(m) {
+ const r=Array.isArray(m.records)?m.records:Object.entries(m.inventory).map(([path,v])=>({path,...v}));
+ assert.ok(r.length<=1200);const seen=new Set();for(const x of r){rel(x.path);assert.ok(!seen.has(x.path));seen.add(x.path);assert.ok(Number.isSafeInteger(x.bytes)&&x.bytes>=0&&x.bytes<=32*1024*1024);assert.match(x.sha256,/^[a-f0-9]{64}$/);}return r;
+}
+const specs=[
+ ['author-inline','notes-inline-confirmation-next','freeze-manifest.json',214,'347ff80e93076df92144915e16257f92ff7910a78ea175be840b8d3fd829dc16'],
+ ['independent-negative','notes-inline-confirmation-independent-review','review-manifest.json',74,'bb46812480086025a87028ac8dddc102e6548fc9bd57410fa10de67a28ce3322'],
+ ['author-cancel-correction','notes-inline-cancel-no-read-next','freeze-manifest.json',229,'5fcb71d9abddbbc6d0077da9cbbe0808b7be5ff4d66ce94a747f311ab6a3d7bb'],
+ ['independent-cancel-acceptance','notes-inline-cancel-no-read-independent-review','review-manifest.json',49,'dc5263f7197b2004f839ff53a9e2fceb96c265ae85002f9f9f2151fd38235198'],
+ ['prior-installation34','notes-vault-production-installation','freeze-manifest.json',7,'c4bba0db1afc6fb87f9290bec2117d2b483d831751cd72c89f48946b444d3d4c'],
+ ['prior-source-only-plan','notes-inline-publication-plan-next','freeze-manifest.json',162,'ab0bccd1aaf43da7b932193a0991531659b2e5017b72c28933b37bcc7ddcf3ae'],
+ ['corrected-browser','notes-inline-cancel-no-read-browser-next','freeze-manifest.json',87,'402425b29671175caecf368661b21987205087d5fdef3025c06323f94029acfb'],
+ ['browser-addendum','notes-inline-publication-plan-browser-next','freeze-manifest.json',17,'697af388815ed18acacdfebf69dd58eb6ddb601c84722e0ba2185401afaa9aff'],
+];
+async function authenticate(s) {
+ const [id,directory,manifest,count,sha256]=s,sourceRoot='work/'+directory,base=path.join(workspace,sourceRoot);
+ const mb=await at(sourceRoot+'/'+manifest);assert.equal(ident(mb).sha256,sha256);const m=JSON.parse(mb),r=rows(m);assert.equal(r.length,count);assert.equal(m.files,count);
+ assert.deepEqual((await walk(base)).sort(),[...r.map(x=>x.path),manifest].sort());
+ const record=[];for(const x of r){const b=await at(sourceRoot+'/'+x.path,x);record.push({epoch:id,sourceRoot,sourcePath:x.path,...ident(b)});}
+ assert.equal(record.reduce((n,r)=>n+r.bytes,0),m.bytes);
+ const out={epoch:id,sourceRoot,manifest,...ident(mb),schema:m.schema,payloadFiles:count,payloadBytes:m.bytes,records:[...record,{epoch:id,sourceRoot,sourcePath:manifest,...ident(mb)}]};
+ await save('authority/'+id+'/'+manifest+'.snapshot',mb);return out;
+}
+function key(r){return r.epoch+'\0'+r.sourcePath;}
+function publicPath(r){return rel(prefix+r.epoch+'/'+r.sourcePath.split('/').map(s=>swaps[s]??s).join('/')+'.snapshot',true);}
+function carrier(b) {
+ const h=b.subarray(0,8).toString('hex');if(b[0]===0x4d&&b[1]===0x5a)return'MZ';if(h.startsWith('7f454c46'))return'ELF';
+ if(['504b0304','504b0506','504b0708'].some(x=>h.startsWith(x)))return'ZIP';if(h.startsWith('1f8b'))return'GZIP';
+ if(h.startsWith('377abcaf271c'))return'7Z';if(h.startsWith('fd377a585a00'))return'XZ';if(h.startsWith('28b52ffd'))return'ZSTD';if(h.startsWith('03d9a29a'))return'KDBX';
+ if(b.length>=262&&b.subarray(257,262).toString()==='ustar')return'TAR';return null;
+}
+function uniquePaths(list) {const s=new Set();for(const r of list){rel(r.publicPath,true);assert.ok(!s.has(r.publicPath));s.add(r.publicPath);}return s;}
+async function partition(inputs,map,exclusions,expected) {
+ const im=new Map(inputs.map(r=>[key(r),r]));assert.equal(im.size,inputs.length);
+ const combined=[...map.payload,...exclusions.excluded],cm=new Map(combined.map(r=>[key(r),r]));assert.equal(cm.size,combined.length);assert.equal(cm.size,inputs.length);
+ assert.deepEqual([...im.keys()].sort(),[...cm.keys()].sort());uniquePaths(map.payload);
+ const signatures=[];let jpeg=0,png=0;
+ for(const r of combined){const i=im.get(key(r));same(r,i,key(r));assert.equal(r.sourceRoot,i.sourceRoot);const b=await at(r.sourceRoot+'/'+r.sourcePath,r),magic=carrier(b);
+  if(r.publishable){assert.equal(r.publicPath,publicPath(r));assert.equal(magic,null,key(r)+' native/archive carrier');assert.equal(r.inertExact,true);
+   if(b[0]===255&&b[1]===216&&b[2]===255){jpeg++;assert.equal(r.actualMediaType,'image/jpeg');}
+   else if(b.subarray(0,8).equals(Buffer.from('89504e470d0a1a0a','hex'))){png++;assert.match(r.kind,/PNG/);}
+   else new TextDecoder('utf-8',{fatal:true}).decode(b);
+  } else {assert.equal(r.localRetained,true);signatures.push({epoch:r.epoch,sourcePath:r.sourcePath,bytes:r.bytes,sha256:r.sha256,magic});}
+ }
+ assert.equal(map.payload.length,expected.public);assert.equal(exclusions.excluded.length,expected.local);assert.equal(new Set(map.payload.map(r=>r.sha256)).size,expected.unique);
+ return {inputRecords:inputs.length,publicRecords:map.payload.length,excludedRecords:exclusions.excluded.length,uniquePublicByteObjects:expected.unique,jpeg,png,excluded:signatures};
+}
+
+await save('review-source-before.json',{at:new Date().toISOString(),script:ident(await fs.readFile(import.meta.filename)),scope:'source-only; no application/original imports or executions'});
+const epochs=[];for(const s of specs)epochs.push(await authenticate(s));
+await save('source-before.json',epochs.map(({records,...e})=>e));
+const planReceipt=await pj('validation.json');assert.equal(ident(await at(plan+'/validation.json')).sha256,'62d2aa69fdc0b5b50ae0b2ff71e55a0fcc6d793ee38b8132bcf31868780909d4');
+const initial=epochs.slice(0,5).flatMap(e=>e.records);assert.equal(initial.length,578);
+const baseMap=await pj('public-preservation-map.json'),baseEx=await pj('local-exclusions.json');
+const baseAccounting=await partition(initial,baseMap,baseEx,{public:569,local:9,unique:209});assert.equal(baseAccounting.jpeg,6);assert.equal(baseAccounting.png,0);
+for(const x of baseAccounting.excluded){assert.equal(x.magic,'TAR');assert.equal(x.bytes,9728);assert.equal(x.sha256,'044885c906ba7d8cb97a95fbdd6bc2323ba31a3c301e7ed1d6e592acec8944af');}
+const census=await pj('content-classification.json');assert.equal(census.files.length,578);assert.deepEqual(census.files.map(key).sort(),initial.map(key).sort());
+for(const r of census.files){same(r,initial.find(x=>key(x)===key(r)),key(r));assert.equal(r.publishable,baseMap.payload.some(x=>key(x)===key(r)));}
+const self=await pj('plan-self-public-map.json'),pEpoch=epochs[5];assert.equal(self.records.length,161);
+assert.deepEqual(self.records.map(r=>r.sourcePath).sort(),pEpoch.records.filter(r=>!['freeze-manifest.json','plan-self-public-map.json'].includes(r.sourcePath)).map(r=>r.sourcePath).sort());
+for(const r of self.records){same(r,pEpoch.records.find(x=>x.sourcePath===r.sourcePath),r.sourcePath);assert.equal(r.publicPath,prefix+'publication-plan/frozen/'+r.sourcePath+'.snapshot');rel(r.publicPath,true);}
+qualifications.push('Original plan self-map161 omits its own map and manifest intentionally; preserve those two explicitly. Browser addendum maps all163 prior plan records.');
+
+const proposals=(await pj('live-copy-list.json')).proposals,before=await pj('installation-before34.json'),old=JSON.parse(await at('work/notes-vault-production-installation/installation.json'));
+assert.equal(proposals.length,8);assert.equal(new Set(proposals.map(r=>r.destination)).size,8);assert.equal(before.length,34);assert.equal(old.installed.length,34);
+const installed=[];for(const r of before){const original=old.installed.find(x=>x.destination===r.path);assert.ok(original);same(r,original.after,r.path);await read(repo,r.path,r);await at(plan+'/'+r.snapshot,r);installed.push({path:r.path,...ident(await read(repo,r.path))});}
+for(const r of proposals){rel(r.destination,true);assert.equal(r.sourcePath,r.destination);assert.equal(r.backendChange,false);await at(r.sourceRoot+'/'+r.sourcePath,r.sourceIdentity);await at(plan+'/'+r.proposalPath,r.after);same(r.after,r.sourceIdentity,r.destination);
+ const previous=before.find(x=>x.path===r.destination);if(previous){same(r.before,previous,r.destination);assert.equal(r.action,'replace-exact');}else{assert.equal(r.before,null);assert.equal(r.action,'add-exact');await assert.rejects(fs.access(path.join(repo,r.destination)),{code:'ENOENT'});}
+}
+assert.equal(proposals.filter(r=>r.before).length,6);assert.equal(proposals.filter(r=>!r.before).length,2);assert.equal(proposals.filter(r=>r.runtime).length,1);
+const replacements=await pj('historical34-current-replacement-map.json');assert.equal(replacements.rows.length,34);assert.equal(replacements.historicalBytesRemainRequired,true);
+for(const r of replacements.rows){const b=before.find(x=>x.path===r.destination);same(r.historicalAfter,b,r.destination);const p=proposals.find(x=>x.destination===r.destination);same(r.currentExpected,p?.after??b,r.destination);assert.equal(r.mode,p?'explicit-later-replacement':'retain-historical-installed-bytes');}
+assert.equal(replacements.rows.filter(r=>r.mode==='explicit-later-replacement').length,6);assert.deepEqual(replacements.newDestinations,proposals.filter(r=>!r.before));
+await save('installed-before34.json',installed);
+const correction=await pj('correction-reconstruction.json');let text=(await at('work/notes-inline-confirmation-next/'+correction.source,correction.before)).toString();
+assert.equal(correction.transforms.length,2);for(const t of correction.transforms){assert.equal(text.split(t.before).length-1,1);text=text.replace(t.before,t.after);}same(ident(Buffer.from(text)),correction.after,'reconstruction');assert.equal(text,(await at('work/notes-inline-cancel-no-read-next/'+correction.source)).toString());
+const adapted=(await pj('optional-review-path-adapters.json')).records;assert.equal(adapted.length,4);
+for(const r of adapted){const b=await at(r.sourceRoot+'/'+r.sourcePath,r.sourceIdentity),original=b.toString().split(/(?<=\n)/);let out=b.toString();for(const t of r.replacements){let count=0;out=out.split(/(?<=\n)/).map(line=>{if(!/^import\s/.test(line))return line;count+=line.split(t.from).length-1;return line.split(t.from).join(t.to);}).join('');assert.equal(count,t.occurrences);}same(ident(Buffer.from(out)),r.proposedIdentity,r.proposalPath);assert.equal(out,(await at(plan+'/'+r.proposalPath,r.proposedIdentity)).toString());const updated=out.split(/(?<=\n)/);assert.equal(original.length,updated.length);for(let i=0;i<original.length;i++)if(!/^import\s/.test(original[i]))assert.equal(original[i],updated[i]);}
+const historicPairs=await pj('historical-four-user-action-adapters.json.snapshot');assert.equal(historicPairs.length,4);for(const p of historicPairs){assert.equal(ident(Buffer.from(p.before)).sha256,p.beforeSha256);assert.equal(ident(Buffer.from(p.after)).sha256,p.afterSha256);}
+
+const license=await pj('license-source-provenance.json');assert.equal(license.sourcePrerequisites31.length,31);assert.equal(license.commit,'7e2765a3857754d12dbadea442b60ceaf9d4b23d');assert.equal(license.license,'AGPL-3.0-or-later');
+for(const r of license.sourcePrerequisites31)await read(repo,r.path,r);assert.match((await read(repo,license.licenseNotice.path,license.licenseNotice)).toString(),/AGPL-3\.0-or-later/);assert.equal(license.noticesOfMissingAncestorLicenseFiles.length,4);for(const r of license.noticesOfMissingAncestorLicenseFiles){assert.equal(r.status,404);assert.equal(r.sha256,'d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed');}
+const alias=await pj('current-notice-alias-reference.json');await read(repo,alias.path,alias);await read(repo,alias.repair.path,alias.repair);await at(plan+'/authority/current-notice-alias.md.snapshot',alias);await at(plan+'/authority/current-notice-link-repair.json.snapshot',alias.repair);assert.equal(alias.bytes,543);
+const req=await pj('requirements-identity-reference.json'),priorBinding=JSON.parse(await at(req.priorBinding.path,req.priorBinding));const registry=[];
+for(const r of req.registries){const b=await read(repo,r.path),j=JSON.parse(b),capabilityIDs=r.path.endsWith('system-products.json')?j.products.flatMap(p=>p.capabilities.map(c=>c.id)):r.path.endsWith('workspace-products.json')?j.capabilities.map(c=>c.id):j.baselineProducts.flatMap(p=>p.requirements.map(c=>c.id));const sources=j.sources.map(s=>({id:s.id,sha256:s.sha256}));const prior=priorBinding.registries.find(p=>r.path.endsWith(p.path));assert.deepEqual(sources,r.sources);assert.deepEqual(sources,prior.sources);assert.deepEqual(capabilityIDs,r.capabilityIDs);assert.deepEqual(capabilityIDs,prior.capabilityIDs);registry.push({path:r.path,...ident(b),wholeOldByteHashRequired:false,sourceCount:sources.length,capabilityCount:capabilityIDs.length});}
+assert.equal(req.registries.flatMap(r=>r.sources).length,159);assert.equal(new Set(req.registries.flatMap(r=>r.capabilityIDs)).size,232);await save('current-registry-identity-observation.json',{registry,sourceIDSHAPairs:159,capabilityIDs:232,oldWholeFingerprintRebound:false});
+const readmeProposal=proposals.find(r=>r.destination.endsWith('/README.md'));const md=(await at(plan+'/'+readmeProposal.proposalPath)).toString();const linkChecks=[];for(const match of md.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)){const target=match[1];if(/^(https?:|#)/.test(target))continue;const p=path.posix.normalize(path.posix.join(path.posix.dirname(readmeProposal.destination),target));await read(repo,p);linkChecks.push(p);}await save('readme-relative-links.json',{links:linkChecks,count:linkChecks.length,networkFetches:0});
+
+const addonReceipt=await aj('validation.json');assert.equal(ident(await at(addendum+'/validation.json')).sha256,'f2154c242c172f12cdefcaa8e8df7a527cc70060267084b2c430f856d6a3b09e');
+const incoming=[...initial,...epochs[5].records,...epochs[6].records];assert.equal(incoming.length,829);const finalMap=await aj('public-preservation-map.json'),finalEx=await aj('local-exclusions.json');const addonAccounting=await partition(incoming,finalMap,finalEx,{public:818,local:11,unique:330});
+for(const r of baseMap.payload)assert.deepEqual(finalMap.payload.find(x=>key(x)===key(r)),r);for(const r of baseEx.excluded)assert.deepEqual(finalEx.excluded.find(x=>key(x)===key(r)),r);
+const addedEx=finalEx.excluded.filter(r=>r.epoch==='corrected-browser');assert.equal(addedEx.length,2);for(const r of addedEx){assert.equal(r.bytes,63);assert.equal(r.sha256,'055503b5030e894c9ceaf9b0cd8feb8039569526fe720dc937442be4a82867f3');assert.equal(r.kind,'owned-generated-attachment-fixture');}
+const actualBrowser=JSON.parse(await at('work/notes-inline-cancel-no-read-browser-next/validation.json'));assert.equal(ident(await at('work/notes-inline-cancel-no-read-browser-next/validation.json')).sha256,'5d284a148316c6bac3a30999bf5fa8fe61f0c32e369e2430ab8238d083f1c8bc');
+assert.equal(actualBrowser.finiteBrowserAcceptance,true);assert.equal(actualBrowser.semanticGroups,8);assert.equal(actualBrowser.sourceFiles,12);assert.equal(actualBrowser.sourceStable,true);assert.equal(actualBrowser.clientSHA256,correction.after.sha256);assert.equal(actualBrowser.attachment.browserUploadAcceptance,false);assert.equal(actualBrowser.attachment.permissionChanged,false);assert.equal(actualBrowser.attachment.downloadEventBridgeTimedOut,true);assert.equal(actualBrowser.attachment.browserDownloadedFileVerified,true);assert.equal(actualBrowser.hostClosed&&actualBrowser.relayClosed&&actualBrowser.tabCloseResolved&&actualBrowser.tempDataRemoved,true);
+assert.equal(planReceipt.acceptance.correctedClientActualBrowser,false);assert.equal(addonReceipt.oldFrozen162PendingBrowserClaimRetained,true);for(const k of ['wholeProductParity','securityEquivalence','superiority','productionInstalled'])assert.equal(addonReceipt[k],false);
+const scope=await aj('browser-acceptance-scope.json');assert.equal(scope.actualBrowserCampaigns,1);assert.equal(scope.semanticGroups,8);assert.equal(scope.actualBrowserUploadAccepted,false);assert.equal(scope.sourceOnlyAddendumExecutedNoBrowserOrOriginal,true);
+assert.deepEqual((await aj('installation-plan-reference.json')).proposals,proposals);
+
+// In-memory source-validator negative controls; these execute no app or original methods.
+for(const p of ['../escape','C:/absolute','folder\\file','folder//file','/absolute','public/.local/private','bad\0name']){try{rel(p,true);assert.fail('unsafe path accepted');}catch(e){assert.notEqual(e.message,'unsafe path accepted');negativeGates.push({gate:'unsafe-path',input:p,rejected:true});}}
+try{uniquePaths([finalMap.payload[0],finalMap.payload[0]]);assert.fail('duplicate accepted');}catch(e){assert.notEqual(e.message,'duplicate accepted');negativeGates.push({gate:'duplicate-public-path',rejected:true});}
+try{same(ident(Buffer.from('tampered')),{...finalMap.payload[0]},'altered');assert.fail('hash mutation accepted');}catch(e){assert.notEqual(e.message,'hash mutation accepted');negativeGates.push({gate:'altered-byte-identity',rejected:true});}
+await save('negative-source-gates.json',{applicationTests:0,originalCalls:0,inMemorySourceGates:negativeGates});
+await save('accounting.json',{base:baseAccounting,addendum:addonAccounting,proposals:8,replacements:6,newTests:2,historicalInstalled:34,retainedUnchangedCurrent:28,optionalImportOnly:4,priorUserActionAdapters:4,selectedSourcePrerequisites:31,sourceIDSHAPairs:159,capabilityIDs:232,readmeRelativeLinks:linkChecks.length,planSelfMap:161,planExplicitlyPreservedIncludingSelfAndManifest:163,addendumOwnPublicPreservationRequired:{payloads:17,plusManifest:1}});
+const after=[];for(const [p,e] of inputReads){const b=await fs.readFile(p);same(ident(b),e,p);after.push({path:path.relative(workspace,p).replaceAll('\\','/'),...e});}
+await save('source-after.json',{sourceStable:true,readOnlyAuthenticatedFiles:after.length,files:after});
+for(const source of ['validation.json','public-preservation-map.json','local-exclusions.json','live-copy-list.json','historical34-current-replacement-map.json','correction-reconstruction.json','notes-inline-provenance.mjs','INTEGRATION.md','preparation-ledger.json'])await save('authority/plan-records/'+source+'.snapshot',await at(plan+'/'+source));
+for(const source of ['validation.json','browser-acceptance-scope.json','public-preservation-map.json','local-exclusions.json','INTEGRATION.md'])await save('authority/addendum-records/'+source+'.snapshot',await at(addendum+'/'+source));
+qualifications.push('No new behavior, original library, original app, browser, host, benchmark or public mutation was performed. Existing browser8 receipt is authenticated evidence only.');
+qualifications.push('Archive/native leading magic and strict UTF-8/PNG/JPEG classification are finite checks, not universal encoded secret or executable detection. Image decoders are not invoked.');
+qualifications.push('Original source prerequisites31 retain AGPL-3.0-or-later notice and four explicitly labeled404 acquisition responses. This review is not a legal compliance determination.');
+qualifications.push('Current installed34 before-image identities are a review-time gate; root must repeat immediately before installation. Historical34 remains immutable, with six exact later replacement identities and two additions.');
+qualifications.push('Root must preserve this addendum17 plus its manifest as a separate18-record package; its own merged818 map covers incoming epochs, not its own new files.');
+await save('review-validation.json',{schema:'rea-notes-inline-publication-plan-independent-review/v1',at:new Date().toISOString(),status:'finite-source-only-acceptance',sourceStable:true,sourceOnly:true,findings,qualifications,baseAccounting:{input578:578,public569:569,local9:9,unique209:209},addendumAccounting:{input829:829,public818:818,local11:11,unique330:330},exactPinnedPlanFiles:162,exactPinnedAddendumFiles:17,oldFourEpochPayloads:566,priorInstallationPayloads:7,actualBrowserEvidencePayloads:87,newReviewerBrowserExecutions:0,applicationTests:0,originalExecutions:0,hosts:0,benchmarks:0,productionWrites:0,registryWrites:0,publishedCopies:0,sourceOnlyValidatorProcesses:1,negativeSourceGates:negativeGates.length,uniqueAuthenticatedInputFiles:after.length,observedReadOperations:reads,observedReadBytes:totalReadBytes,sourceIDSHAPairs:159,capabilityIDs:232,wholeProductParity:false,securityEquivalence:false,superiority:false});
+console.log(JSON.stringify({status:'finite-source-only-acceptance',plan162:true,addendum17:true,base:baseAccounting.publicRecords,merged:addonAccounting.publicRecords,exclusions:11,sourceStable:true,findings:findings.length,uniqueAuthenticatedFiles:after.length,newBehaviorExecutions:0}));

@@ -1,0 +1,35 @@
+{
+  "schema": "rea-sketch-browser-source-only-finalizer-correction/v1",
+  "oldSource": {
+    "path": "finalize.mjs",
+    "bytes": 10336,
+    "sha256": "2111e646d5c89617cdafd0da3dd5b3d8e51a704c50624fc2e4d11e5554b3df4d"
+  },
+  "newSource": {
+    "path": "finalize-v2.mjs",
+    "bytes": 10545,
+    "sha256": "55de0e5a756f19a30804ffb740067f5a61022781d329f838e195adb10b6b2085"
+  },
+  "changes": [
+    {
+      "before": "json=async(p,v)=>fs.writeFile(path.join(root,p),JSON.stringify(v,null,2)+'\\n',{flag:'wx'})",
+      "after": "json=async(p,v)=>{const b=Buffer.from(JSON.stringify(v,null,2)+'\\n');try{await fs.writeFile(path.join(root,p),b,{flag:'wx'});}catch(e){if(e.code!=='EEXIST')throw e;assert.deepEqual(await read(p),b,'Retained successful partial output must remain exact: '+p);}}"
+    },
+    {
+      "before": "assert.ok(api.every(r=>r.upstreamStatus===200&&r.response.ok));",
+      "after": "assert.ok(api.every(r=>r.upstreamStatus===200&&r.response.result&&!Object.hasOwn(r.response,'error')));"
+    }
+  ],
+  "failedAttempt": {
+    "source": "finalize.mjs",
+    "stdout": "finalize.stdout.txt",
+    "stderr": "finalize.stderr.txt",
+    "exitCode": 1,
+    "cause": "Own collector expected nonexisting JSON ok flag. Authenticated actual host success envelope is {result}; HTTP status and result/error envelope are the correct evidence.",
+    "successfulPartialAuthorityAfterPreserved": true
+  },
+  "appFinding": false,
+  "GUIReruns": 0,
+  "candidateChanges": 0,
+  "StudioWrites": 0
+}

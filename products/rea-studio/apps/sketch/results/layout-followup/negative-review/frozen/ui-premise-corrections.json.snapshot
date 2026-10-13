@@ -1,0 +1,30 @@
+{
+  "run": "runs/2026-10-13T02-38-57.646Z",
+  "testFailures": 3,
+  "productFailures": 0,
+  "changes": [
+    [
+      "await importScene(root,fixture());const original=state();",
+      "const input=fixture();input.shapes[1].x=100;input.shapes[2].x=210;await importScene(root,input);const original=state();"
+    ],
+    [
+      "find(root,'button','Import Excalidraw as new scene')",
+      "find(root,'button','Import JSON as new scene')"
+    ],
+    [
+      "assert.equal(distributed.shapes[2].x,235)",
+      "assert.equal(distributed.shapes[2].x,240)"
+    ],
+    [
+      "await find(root,'button','Undo').click();assert.deepEqual(state().shapes,aligned.shapes);observations.push({case:'native-save-reopen'",
+      "observations.push({case:'native-save-reopen'"
+    ]
+  ],
+  "reason": [
+    "Initial unequal-gap fixture was incorrectly expected to be distribution no-op; corrected to exact 80-unit gaps.",
+    "Actual UI imports native JSON through Import JSON as new scene; invented button label removed.",
+    "Two-unit group width80, overall410,totalwidth110,gap150 implies middle x240.",
+    "Removed unexecuted assumption that load clears baseline undo history; no such contract is claimed."
+  ],
+  "candidateSourceChanges": 0
+}

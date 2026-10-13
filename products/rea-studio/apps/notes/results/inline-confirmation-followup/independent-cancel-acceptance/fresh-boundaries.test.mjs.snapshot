@@ -1,0 +1,57 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {ui,gate,find} from './fixture.mjs';
+import {handle} from '../notes-inline-cancel-no-read-next/products/rea-studio/apps/notes/server.mjs';
+import {createWorkspace} from '../notes-inline-cancel-no-read-next/products/rea-studio/lib/storage.mjs';
+const observations=[],dialog=f=>find(f.root,n=>n.attributes.role==='alertdialog'),button=(panel,text)=>find(panel,n=>n.tagName==='button'&&n.textContent===text),status=f=>find(f.root,n=>n.attributes.role==='status');
+async function settle(){await new Promise(resolve=>setImmediate(resolve));}
+async function attach(t,f){
+ const tmp=await fs.mkdtemp(path.join(os.tmpdir(),'rea-notes-cancel-review-'));
+ t.after(async()=>{assert.equal(path.dirname(tmp),path.resolve(os.tmpdir()));assert.ok(path.basename(tmp).startsWith('rea-notes-cancel-review-'));await fs.rm(tmp,{recursive:true,force:true});});
+ const workspace=await createWorkspace(path.join(tmp,'workspace')),payload=Buffer.from('Owned attachment bytes \u0000 🧪'),note=f.read().notes[f.note.id];
+ const value=await handle({action:'attachment-add',input:{id:note.id,revision:note.revision,filename:'owned-cancel.txt',mime:'text/plain',base64:payload.toString('base64')},store:f.store,workspace});
+ const downloaded=await handle({action:'attachment-get',input:{noteId:note.id,id:value.attachment.id},store:f.store,workspace});
+ assert.deepEqual(Buffer.from(downloaded.base64,'base64'),payload);return value;
+}
+function attachmentButton(f){return find(f.root,n=>n.tagName==='button'&&n.textContent.startsWith('Download owned-cancel.txt'));}
+for(const key of ['Cancel','Escape'])test(`opened real attachment survives ${key} without follow-up requests or editor publication`,async t=>{
+ const f=await ui(t);await attach(t,f);await f.open();await settle();f.manage();
+ const saved=JSON.stringify(f.read()),calls=f.calls.length,body=f.byLabel('Markdown note').value,oldButton=attachmentButton(f),versions=find(f.root,n=>n.textContent==='Previous saved versions'),oldStatus=status(f).textContent;
+ assert.ok(oldButton);const inert=f.root.children.map((n,i)=>{n.inert=i%2?false:undefined;return n.inert;});
+ const pending=f.click(f.byText('Move notebook to trash')),panel=dialog(f);if(key==='Cancel')await f.click(button(panel,'Cancel'));else{let prevented=false;panel.onkeydown({key:'Escape',preventDefault(){prevented=true;}});assert.equal(prevented,true);}await pending;await settle();
+ assert.equal(JSON.stringify(f.read()),saved);assert.deepEqual(f.calls.slice(calls),[]);assert.equal(f.byLabel('Markdown note').value,body);assert.equal(attachmentButton(f),oldButton);assert.equal(find(f.root,n=>n.textContent==='Previous saved versions'),versions);assert.equal(status(f).textContent,oldStatus);assert.deepEqual(f.root.children.map(n=>n.inert),inert);assert.equal(document.activeElement,f.byText('Move notebook to trash'));assert.equal(f.byLabel('Markdown note').disabled,false);
+ f.type(f.byLabel('Markdown note'),body+'\nDraft after cancel');await f.click(f.byText('Save note'));assert.equal(f.read().notes[f.note.id].body,body+'\nDraft after cancel');assert.ok(f.read().resources);
+ observations.push({case:key,realAttachmentBytesVerified:true,newCancelRequests:0,attachmentElementIdentityRetained:true,subsequentSave:true});
+});
+test('Restore cancellation with opened trashed attachment preserves disabled editor controls and trash identity',async t=>{
+ const f=await ui(t);await attach(t,f);const tree=await f.api('notebook-list');await f.api('notebook-trash',{id:f.parent,revision:tree.revision,confirmed:true});
+ const trash=find(f.root,n=>n.tagName==='input'&&n.type==='checkbox');trash.checked=true;await trash.onchange();await f.open();await settle();f.manage();
+ const before=JSON.stringify(f.read()),calls=f.calls.length,oldButton=attachmentButton(f),body=f.byLabel('Markdown note').value;assert.ok(oldButton);assert.equal(f.byText('Save note').disabled,true);
+ const pending=f.click(f.byText('Restore notebook'));await f.click(button(dialog(f),'Cancel'));await pending;await settle();
+ assert.equal(JSON.stringify(f.read()),before);assert.deepEqual(f.calls.slice(calls),[]);assert.equal(f.byLabel('Markdown note').value,body);assert.equal(attachmentButton(f),oldButton);assert.equal(f.byText('Save note').disabled,true);assert.equal(f.byText('Move to trash').disabled,true);assert.equal(f.byText('Restore note').disabled,false);assert.equal(document.activeElement,f.byText('Restore notebook'));
+ observations.push({case:'restore cancel with trashed attachment',newRequests:0,trashIdentityRetained:true,disabledStateRetained:true});
+});
+test('failed actual attachment-bearing Trash commit restores focus and controls; explicit retry commits once',async t=>{
+ const f=await ui(t);await attach(t,f);await f.open();await settle();f.manage();const before=JSON.stringify(f.read()),set=f.store.set;f.store.set=async()=>{throw Error('Owned failure before notebook commit');};
+ await f.confirmNotebook('Move notebook to trash');await settle();assert.equal(JSON.stringify(f.read()),before);assert.ok(attachmentButton(f));assert.equal(dialog(f),null);assert.equal(f.byLabel('Markdown note').disabled,false);assert.equal(document.activeElement,f.byText('Move notebook to trash'));assert.match(status(f).textContent,/Owned failure/);
+ f.store.set=set;await f.confirmNotebook('Move notebook to trash');await settle();assert.ok(f.read().notes[f.note.id].deletedAt);assert.equal(Object.keys(f.read().resources).length,1);assert.equal(f.calls.filter(r=>r.action==='notebook-trash').length,2);assert.equal(f.byText('Save note').disabled,true);
+ observations.push({case:'attachment failure/retry',attemptedMutations:2,successfulMutations:1,attachmentRetained:true});
+});
+test('Cancel does not duplicate an existing held attachment request or replace its matching editor',async t=>{
+ const g=gate();let held=false;const f=await ui(t,async({action})=>{if(held&&action==='attachment-list'){g.enter();await g.held;}});await attach(t,f);held=true;await f.open();await g.started;f.manage();
+ const count=f.calls.length,body=f.byLabel('Markdown note').value,versionHeader=find(f.root,n=>n.textContent==='Previous saved versions');
+ const pending=f.click(f.byText('Move notebook to trash'));await f.click(button(dialog(f),'Cancel'));await pending;assert.deepEqual(f.calls.slice(count),[]);assert.equal(f.byLabel('Markdown note').value,body);assert.equal(find(f.root,n=>n.textContent==='Previous saved versions'),versionHeader);
+ held=false;g.release();await settle();assert.ok(attachmentButton(f));assert.equal(f.calls.filter(r=>r.action==='attachment-list').length,1);assert.equal(f.byLabel('Markdown note').value,body);
+ observations.push({case:'preexisting held attachment response',newCancelRequests:0,totalAttachmentListRequests:1,matchingResponseAccepted:true});
+});
+test('Cancel retains a clean in-flight Save generation so its response advances the revision and next draft saves',async t=>{
+ const g=gate();let held=false;const f=await ui(t,async({action})=>{if(held&&action==='save'){g.enter();await g.held;}});await f.open();await settle();f.manage();held=true;
+ const save=f.click(f.byText('Save note'));await g.started;assert.equal(f.read().notes[f.note.id].revision,2);const count=f.calls.length;
+ const pending=f.click(f.byText('Move notebook to trash'));await f.click(button(dialog(f),'Cancel'));await pending;assert.deepEqual(f.calls.slice(count),[]);
+ held=false;g.release();await save;await settle();assert.match(status(f).textContent,/Saved revision 2/);f.type(f.byLabel('Markdown note'),'Draft after held clean save and cancellation');await f.click(f.byText('Save note'));assert.equal(f.read().notes[f.note.id].revision,3);assert.equal(f.read().notes[f.note.id].body,'Draft after held clean save and cancellation');
+ observations.push({case:'held clean Save then Cancel',newCancelRequests:0,acceptedSaveRevision:2,nextSaveRevision:3});
+});
+test.after(async()=>{const folder=new URL(process.env.NOTES_REVIEW_OUTPUT);await fs.mkdir(folder,{recursive:true});await fs.writeFile(new URL('fresh-boundaries.json',folder),JSON.stringify(observations,null,2)+'\n');});

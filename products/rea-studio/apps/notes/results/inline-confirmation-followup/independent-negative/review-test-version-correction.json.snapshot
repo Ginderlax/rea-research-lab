@@ -1,0 +1,20 @@
+{
+  "initial": {
+    "path": "independent.test.mjs",
+    "bytes": 6556,
+    "sha256": "85c9e00ae7bdf3700c69e67f747e3e1f71c18f3fffcfbb968e4907df014e3deb"
+  },
+  "corrected": {
+    "path": "independent-v2.test.mjs",
+    "bytes": 6561,
+    "sha256": "a7323f8bb708b0d172fa79c9acd54953940841d0c8cc112baa26e5fa5f83b4f4"
+  },
+  "change": {
+    "old": "f.read().records[f.parent].props.deleted_time,'0'",
+    "replacement": "f.read().records[f.parent].props.deleted_time??'0','0'",
+    "reason": "An active created folder may omit deleted_time. Omitted active time has the same semantic zero value; initial strict explicit0 assertion was a reviewer fixture mistake."
+  },
+  "cancelFollowupReadAssertion": "Unchanged: retains the genuine finite failing Cancel/no-follow-up-read policy check.",
+  "candidateSourceChanges": 0,
+  "initialRawAndObservationsUnchanged": true
+}

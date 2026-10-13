@@ -1,0 +1,30 @@
+{
+  "schema": "rea-rabin-historical-host-transition/v1",
+  "at": "2026-10-13T04:07:56.455Z",
+  "before": {
+    "bytes": 142187,
+    "sha256": "e07cfb27a144fd0ae85a3f059adf3c262c5c3e269e22ba8d9eed8d8b58ccba3d"
+  },
+  "after": {
+    "bytes": 142428,
+    "sha256": "8283f709444328e1dee3483c46322a07652c2be1d2ac71ff94269c2e645e6702"
+  },
+  "changes": [
+    {
+      "before": "    else currentFingerprint(entry, 'Backup Rabin integration');",
+      "after": "    else if(entry.path==='products/rea-studio/server.mjs')namedHistoricalHostFingerprint(entry,'Historical Backup Rabin shared host');\n    else currentFingerprint(entry, 'Backup Rabin integration');"
+    },
+    {
+      "before": "metrics_algorithm_baseline: { current_nonhost_rows:7, historical_host_rows:1 },",
+      "after": "metrics_algorithm_baseline: { current_nonhost_rows:7, historical_host_rows:1 }, backup_rabin_sources: { current_nonhost_rows:27, prior_other_historical_rows:6, historical_host_rows:1 },"
+    }
+  ],
+  "inverseExact": true,
+  "priorRabinReceiptRebound": false,
+  "currentNonhostSourceRows": 27,
+  "priorOtherHistoricalSourceRows": 6,
+  "historicalHostRows": 1,
+  "priorSixHistoricalGuardsUntouched": true,
+  "appWrites": 0,
+  "behaviorExecutions": 0
+}

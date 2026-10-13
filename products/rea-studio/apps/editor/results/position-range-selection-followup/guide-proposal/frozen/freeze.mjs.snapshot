@@ -1,0 +1,58 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
+
+const stage = path.dirname(fileURLToPath(import.meta.url));
+const root = path.resolve(stage, '../..');
+const base = path.join(root, 'work/editor-value-api-publication-plan-next');
+const repo = path.join(root, 'outputs/rea-research-lab');
+const oldManifestSHA = '0322b822798739f44b4d719a8a7d61647465532c19277c1523cc98af04b5ee9b';
+const oldReceiptSHA = '46bfda5afd39b4b022937004a8bfaaea6c2b13b77aae9d0a8d0256dabe48d1eb';
+const oldPureSHA = '6aa8e84bf3046ad1d4231b97470fab9040aaa824b46214e7d91241f5802b22fc';
+const guidePath = 'products/rea-studio/apps/editor/POSITION-RANGE-SELECTION.md';
+const id = bytes => ({ bytes: bytes.length, sha256: crypto.createHash('sha256').update(bytes).digest('hex') });
+const json = value => Buffer.from(JSON.stringify(value, null, 2) + '\n');
+const valid = relative => typeof relative === 'string' && relative && !relative.includes('\\') && !path.posix.isAbsolute(relative) && relative.split('/').every(p => p && p !== '.' && p !== '..');
+const read = (folder, relative) => { assert(valid(relative)); return fs.readFile(path.join(folder, ...relative.split('/'))); };
+async function save(relative, bytes) { assert(valid(relative)); await fs.mkdir(path.dirname(path.join(stage, relative)), { recursive: true }); await fs.writeFile(path.join(stage, relative), bytes, { flag: 'wx' }); }
+async function walk(folder, prefix = '') { const out=[]; for(const e of (await fs.readdir(folder, { withFileTypes:true })).sort((a,b)=>a.name.localeCompare(b.name))) { assert(!e.isSymbolicLink()); const relative=prefix+e.name; if(e.isDirectory())out.push(...await walk(path.join(folder,e.name),relative+'/'));else{assert(e.isFile());out.push(relative);} }return out; }
+async function authenticate() {
+  const bytes=await read(base,'freeze-manifest.json');assert.equal(id(bytes).sha256,oldManifestSHA);const m=JSON.parse(bytes);assert.equal(m.files,57);assert.equal(m.strict,true);assert.equal(m.schema,'rea-editor-value-api-publication-plan-strict-freeze/v1');
+  const actual=(await walk(base)).filter(x=>x!=='freeze-manifest.json');assert.deepEqual(actual.slice().sort(),Object.keys(m.inventory).sort());
+  const rows=[];for(const relative of actual){const measured=id(await read(base,relative));assert.deepEqual(measured,m.inventory[relative]);rows.push({sourceRoot:'work/editor-value-api-publication-plan-next',path:relative,...measured});}
+  rows.push({sourceRoot:'work/editor-value-api-publication-plan-next',path:'freeze-manifest.json',...id(bytes)});
+  const current=JSON.parse(await read(base,'current-editor24-before.json'));assert.equal(current.length,24);
+  for(const record of current){assert.deepEqual(id(await read(repo,record.path)),{bytes:record.bytes,sha256:record.sha256});rows.push({sourceRoot:'outputs/rea-research-lab',...record});}
+  assert.equal(id(await read(base,'validation.json')).sha256,oldReceiptSHA);assert.equal(id(await read(base,'runs/final-pure13/validation.json')).sha256,oldPureSHA);
+  return rows;
+}
+
+const before=await authenticate();
+await save('source-before.json',json(before));
+for(const [from,to] of [ ['freeze-manifest.json','authority/base-freeze-manifest.json.snapshot'],['validation.json','authority/base-validation.json.snapshot'],['live-copy-list.json','authority/base-live-copy-list.json.snapshot'],['runs/final-pure13/validation.json','authority/base-pure13-validation.json.snapshot'] ])await save(to,await read(base,from));
+const old=JSON.parse(await read(base,'live-copy-list.json'));
+assert.equal(old.proposals.length,4);assert.equal(old.proposals[3].destination,'products/rea-studio/apps/editor/README.md');
+const guide=await read(stage,'proposed/'+guidePath),guideIdentity=id(guide);
+const map=JSON.parse(await read(base,'public-preservation-map.json'));
+assert.equal(map.pathRecords,402);assert.equal(map.uniqueByteObjects,166);
+const newRow={destination:guidePath,proposalPath:'proposed/'+guidePath,after:guideIdentity,before:null,action:'add-exact',runtime:false,importsOriginal:false,sourceRoot:'work/editor-value-api-guide-proposal-next'};
+const proposals=[...old.proposals.slice(0,3),newRow];
+for(const row of proposals){await assert.rejects(fs.stat(path.join(repo,row.destination)),{code:'ENOENT'});if(row!==newRow)assert.deepEqual(id(await read(base,row.proposalPath)),row.after);}
+const currentReadme=old.proposals[3].before;assert.deepEqual(id(await read(repo,old.proposals[3].destination)),currentReadme);
+const permitted=new Set([...proposals.map(r=>r.destination),...map.payload.map(r=>r.publicPath)]);
+const text=guide.toString('utf8');assert.deepEqual(Buffer.from(text),guide);
+const links=[];for(const [,target] of text.matchAll(/\]\(([^)]+)\)/g)){if(/^https:\/\//.test(target))continue;const resolved=path.posix.normalize(path.posix.join(path.posix.dirname(guidePath),target));assert(valid(resolved));assert(permitted.has(resolved),resolved);links.push({target,resolved});}
+assert(text.includes('13 groups'));assert(text.includes('22 groups'));assert(text.includes('58 differential pairs'));assert(text.includes('not described as held-out independence'));assert(text.includes('current Editor client does not use these classes'));
+const override={schema:'rea-editor-value-api-documentation-proposal-override/v1',base:{sourceRoot:'work/editor-value-api-publication-plan-next',manifestSHA256:oldManifestSHA,receiptSHA256:oldReceiptSHA,payloads:57},unchangedFirstThreeProposals:true,replacedProposal:old.proposals[3],replacementProposal:newRow,onlyChangedLiveDestination:'README.md replacement becomes POSITION-RANGE-SELECTION.md addition',applyBaseReadmeProposal:false,READMERequiredUnchanged:currentReadme,sourceSemanticsChanges:0,productionWrites:0};
+await save('proposal-override.json',json(override));
+await save('live-copy-list.json',json({...old,proposals,newPaths:4,replacements:0,documentationOverride:true,basePlanSHA256:oldManifestSHA,READMERequiredUnchanged:currentReadme}));
+await save('guide-links.json',json(links));
+const after=await authenticate();assert.deepEqual(after,before);await save('source-after.json',json(after));
+await save('preservation-plan.json',json({schema:'rea-editor-value-api-guide-override-preservation/v1',basePlan:{payloads:57,manifestAdditional:1,sha256:oldManifestSHA,publicPrefix:'products/rea-studio/apps/editor/results/position-range-selection-followup/publication-plan/frozen/',preserveHistoricalREADMEProposal:true},acceptedPublicEvidence:{rows:402,uniqueByteObjects:166,mapPath:'work/editor-value-api-publication-plan-next/public-preservation-map.json',sha256:id(await read(base,'public-preservation-map.json')).sha256,unchanged:true},overridePublicPrefix:'products/rea-studio/apps/editor/results/position-range-selection-followup/documentation-proposal-override/frozen/',suffix:'.snapshot',includeEveryActualOverridePayloadAndManifest:true,excludedLocalCarrierFiles:0}));
+await save('INTEGRATION.md',Buffer.from(`Use this final four-addition live-copy-list.json instead of the frozen base plan's live-copy-list. Runtime, pure regression and MIT notice proposal bytes and source roots are unchanged. The fourth proposal adds POSITION-RANGE-SELECTION.md; do not install the old README append proposal. Require absence of all four destinations and exact existing README identity ${currentReadme.sha256} (${currentReadme.bytes} bytes). Existing Editor24 files remain unchanged.\n\nPreserve the original strict57 plan plus manifest exactly as historical documentation planning evidence. Its README proposal and provisional raw runs remain inert records, never current README equality claims. Preserve all402 accepted author/reviewer map rows and embedded190 history bindings exactly. Copy this separate override's own strict payloads plus manifest to its explicit inert prefix in preservation-plan.json. Count actual files from its freeze manifest.\n\nThe unchanged runtime/test passed the source-bound pure13 run ${oldPureSHA}; this override executes zero tests, original libraries, original programs, hosts or browsers. It performs source-only identity, strict inventory, destination absence and guide-link checks. Root must run installed pure regressions and validate publication byte aliases after installation. No client/host/document/extension-host binding or general static route is proposed.\n`));
+await save('validation.json',json({schema:'rea-editor-value-api-guide-proposal-override-validation/v1',at:new Date().toISOString(),sourceOnly:true,basePlanStrict57Unchanged:true,currentEditor24Unchanged:true,existingREADMEUnchanged:true,baseManifestSHA256:oldManifestSHA,baseReceiptSHA256:oldReceiptSHA,liveProposals:4,newPaths:4,replacements:0,guide:guideIdentity,runtime:proposals[0].after,test:proposals[1].after,notice:proposals[2].after,firstThreeProposalObjectsExact:true,accepted402MapUnchanged:true,linksVerified:links.length,testsExecutedByOverride:0,pure13HistoricalReceiptSHA256:oldPureSHA,originalLibraryExecutions:0,originalProgramExecutions:0,hostActions:0,browserActions:0,productionWrites:0,registryWrites:0,fullExtensionAPI:false,fullProductParity:false,securityEquivalence:false,superiority:false,rootInstallationPending:true}));
+const inventory={};let bytes=0;for(const relative of await walk(stage)){const b=await read(stage,relative);const value=id(b);inventory[relative]=value;bytes+=b.length;assert.deepEqual(Buffer.from(b.toString('utf8')),b);assert(!/^(MZ|PK)/.test(b.subarray(0,2).toString('latin1')));}
+const receipt=inventory['validation.json'];await save('freeze-manifest.json',json({schema:'rea-editor-value-api-guide-proposal-override-strict-freeze/v1',at:new Date().toISOString(),strict:true,selfExcluded:true,files:Object.keys(inventory).length,bytes,receiptSHA256:receipt.sha256,inventory}));
+process.stdout.write(JSON.stringify({files:Object.keys(inventory).length,manifest:id(await read(stage,'freeze-manifest.json')),receipt,guide:guideIdentity})+'\n');

@@ -1,0 +1,19 @@
+{
+  "schema": "rea-sketch-layout-oracle-mutation-correction/v1",
+  "negativeRun": "runs/2026-10-13T02-22-48.276Z",
+  "negativeSummary": {
+    "tests": 28,
+    "pass": 27,
+    "fail": 1,
+    "skipped": 0
+  },
+  "candidateRuntimeChanged": false,
+  "problem": "Owned Object.assign mutation adapter unconditionally converted -0 to 0 even when exact original mutateElement skips numerically equal updates. Exact original newElementWith has separate conditional copy semantics.",
+  "correction": "Execute both complete pinned original mutation helpers; disclose owned timestamp/random/scene/elbow/binding dependencies separately. No numeric comparison normalization.",
+  "baselinePreparationFailure": "Baseline14 listed storage.mjs but preparation copied only current stage bytes and omitted its separate baseline snapshot; exact missing3085-byte snapshot now restored from authenticated current stage. Original13 baseline snapshots unchanged.",
+  "addedOriginal": {
+    "path": "original/packages/excalidraw/element/mutateElement.ts.snapshot",
+    "bytes": 5738,
+    "sha256": "11bc0cfce93aaea374d7732708ca03aa59a10f82ea776621c0f01109ea8d2023"
+  }
+}

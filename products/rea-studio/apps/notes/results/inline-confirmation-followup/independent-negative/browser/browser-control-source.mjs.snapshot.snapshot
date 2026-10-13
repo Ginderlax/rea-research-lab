@@ -1,0 +1,1 @@
+async function recordNotes(label){const state=await notesReviewTab.getAXState({emit:false});const item={label,at:new Date().toISOString(),state};notesBrowserSteps.push(item);await notesFs.writeFile(notesBrowserFolder+'steps.json',JSON.stringify(notesBrowserSteps,null,2)+'\n');nodeRepl.write(state);}

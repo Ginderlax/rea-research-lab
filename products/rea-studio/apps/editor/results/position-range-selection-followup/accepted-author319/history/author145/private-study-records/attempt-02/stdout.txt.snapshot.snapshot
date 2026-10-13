@@ -1,0 +1,829 @@
+TAP version 13
+# Subtest: documented Position comparisons, numeric/object overloads, unchanged alias and UTF16 values match original
+not ok 1 - documented Position comparisons, numeric/object overloads, unchanged alias and UTF16 values match original
+  ---
+  duration_ms: 13.1985
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-position-range-selection-next\\compatibility.test.mjs:6:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    read-only and value identity
+    + actual - expected
+    ... Skipped lines
+    
+      {
+        calls: [
+          'Position.constructor',
+          'Position.constructor',
+          'Range.constructor',
+    ...
+              code: null,
+    +         message: 'Cannot set property line of #<Position> which has only a getter',
+    -         message: 'Cannot set property line of [object Object] which has only a getter',
+              name: 'TypeError'
+            },
+            name: 'Position.readonly line',
+            ok: false
+          },
+    ...
+              code: null,
+    +         message: 'Cannot set property start of #<Range> which has only a getter',
+    -         message: 'Cannot set property start of [object Object] which has only a getter',
+              name: 'TypeError'
+            },
+            name: 'Range.readonly start',
+            ok: false
+          },
+    ...
+              code: null,
+    +         message: 'Cannot set property isEmpty of #<Range> which has only a getter',
+    -         message: 'Cannot set property isEmpty of [object Object] which has only a getter',
+              name: 'TypeError'
+            },
+            name: 'Range.readonly isEmpty',
+            ok: false
+          },
+    ...
+              code: null,
+    +         message: 'Cannot set property anchor of #<Selection> which has only a getter',
+    -         message: 'Cannot set property anchor of [object Object] which has only a getter',
+              name: 'TypeError'
+            },
+            name: 'Selection.readonly anchor',
+            ok: false
+          },
+    ...
+              code: null,
+    +         message: 'Cannot set property isReversed of #<Selection> which has only a getter',
+    -         message: 'Cannot set property isReversed of [object Object] which has only a getter',
+              name: 'TypeError'
+            },
+            name: 'Selection.readonly isReversed',
+            ok: false
+          },
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    rows:
+      0:
+        name: 'equal endpoint identity'
+        ok: true
+        value:
+          rangeStartIsQ: true
+          rangeEndIsP: true
+          selectionReversed: true
+        aliases:
+        typeName: 'Object'
+      1:
+        name: 'Position.readonly line'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: 'Cannot set property line of [object Object] which has only a getter'
+          code: ~
+      2:
+        name: 'Range.readonly start'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: 'Cannot set property start of [object Object] which has only a getter'
+          code: ~
+      3:
+        name: 'Range.readonly isEmpty'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: 'Cannot set property isEmpty of [object Object] which has only a getter'
+          code: ~
+      4:
+        name: 'Selection.readonly anchor'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: 'Cannot set property anchor of [object Object] which has only a getter'
+          code: ~
+      5:
+        name: 'Selection.readonly isReversed'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: 'Cannot set property isReversed of [object Object] which has only a getter'
+          code: ~
+      6:
+        name: 'UTF16 code unit value'
+        ok: true
+        value:
+          _line: 0
+          _character: 3
+        state:
+          kind: 'Position'
+          line: 0
+          character: 3
+        aliases:
+        typeName: 'Position'
+      7:
+        name: 'Position.of existing'
+        ok: true
+        value:
+          _line: 0
+          _character: 2
+        state:
+          kind: 'Position'
+          line: 0
+          character: 2
+        aliases:
+          0: true
+        typeName: 'Position'
+      8:
+        name: 'Range.of existing'
+        ok: true
+        value:
+          _start:
+            _line: 0
+            _character: 2
+          _end:
+            _line: 0
+            _character: 2
+          _anchor:
+            _line: 0
+            _character: 2
+          _active:
+            _line: 0
+            _character: 2
+        state:
+          kind: 'Selection'
+          start:
+            0: 0
+            1: 2
+          end:
+            0: 0
+            1: 2
+          empty: true
+          singleLine: true
+          anchor:
+            0: 0
+            1: 2
+          active:
+            0: 0
+            1: 2
+          reversed: true
+        aliases:
+          0: true
+        typeName: 'Selection'
+      9:
+        name: 'Position.Min empty'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: ''
+          code: ~
+      10:
+        name: 'Position.Max empty'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: ''
+          code: ~
+      11:
+        name: 'Position.call legacy'
+        ok: true
+        value:
+          _line: 1
+          _character: 2
+        state:
+          kind: 'Position'
+          line: 1
+          character: 2
+        aliases:
+        typeName: 'Legacy'
+      12:
+        name: 'Position.apply legacy'
+        ok: true
+        value:
+          _line: 1
+          _character: 2
+        state:
+          kind: 'Position'
+          line: 1
+          character: 2
+        aliases:
+        typeName: 'Legacy'
+      13:
+        name: 'Position.call no receiver'
+        ok: true
+        value:
+          _line:
+            special: 'undefined'
+          _character:
+            special: 'undefined'
+        state:
+          kind: 'Position'
+          line:
+            special: 'undefined'
+          character:
+            special: 'undefined'
+        aliases:
+        typeName: 'Position'
+      14:
+        name: 'Position.apply no receiver'
+        ok: true
+        value:
+          _line:
+            special: 'undefined'
+          _character:
+            special: 'undefined'
+        state:
+          kind: 'Position'
+          line:
+            special: 'undefined'
+          character:
+            special: 'undefined'
+        aliases:
+        typeName: 'Position'
+      15:
+        name: 'Range.call legacy'
+        ok: true
+        value:
+          _start:
+            _line: 1
+            _character: 2
+          _end:
+            _line: 3
+            _character: 4
+        state:
+          kind: 'Range'
+          start:
+            0: 1
+            1: 2
+          end:
+            0: 3
+            1: 4
+          empty: false
+          singleLine: false
+        aliases:
+        typeName: 'Legacy'
+      16:
+        name: 'Range.apply legacy'
+        ok: true
+        value:
+          _start:
+            _line: 1
+            _character: 2
+          _end:
+            _line: 3
+            _character: 4
+        state:
+          kind: 'Range'
+          start:
+            0: 1
+            1: 2
+          end:
+            0: 3
+            1: 4
+          empty: false
+          singleLine: false
+        aliases:
+        typeName: 'Legacy'
+      17:
+        name: 'Range.call no receiver'
+        ok: false
+        error:
+          name: 'Error'
+          message: 'Invalid arguments'
+          code: ~
+      18:
+        name: 'Range.apply no receiver'
+        ok: false
+        error:
+          name: 'Error'
+          message: 'Invalid arguments'
+          code: ~
+      19:
+        name: 'Selection.call legacy'
+        ok: true
+        value:
+          _start:
+            _line: 1
+            _character: 2
+          _end:
+            _line: 3
+            _character: 4
+          _anchor:
+            _line: 3
+            _character: 4
+          _active:
+            _line: 1
+            _character: 2
+        state:
+          kind: 'Selection'
+          start:
+            0: 1
+            1: 2
+          end:
+            0: 3
+            1: 4
+          empty: false
+          singleLine: false
+          anchor:
+            0: 3
+            1: 4
+          active:
+            0: 1
+            1: 2
+          reversed: true
+        aliases:
+        typeName: 'Legacy'
+      20:
+        name: 'Selection.apply legacy'
+        ok: true
+        value:
+          _start:
+            _line: 1
+            _character: 2
+          _end:
+            _line: 3
+            _character: 4
+          _anchor:
+            _line: 3
+            _character: 4
+          _active:
+            _line: 1
+            _character: 2
+        state:
+          kind: 'Selection'
+          start:
+            0: 1
+            1: 2
+          end:
+            0: 3
+            1: 4
+          empty: false
+          singleLine: false
+          anchor:
+            0: 3
+            1: 4
+          active:
+            0: 1
+            1: 2
+          reversed: true
+        aliases:
+        typeName: 'Legacy'
+      21:
+        name: 'Selection.call no receiver'
+        ok: false
+        error:
+          name: 'Error'
+          message: 'Invalid arguments'
+          code: ~
+      22:
+        name: 'Selection.apply no receiver'
+        ok: false
+        error:
+          name: 'Error'
+          message: 'Invalid arguments'
+          code: ~
+    directApiAttempts: 27
+    calls:
+      0: 'Position.constructor'
+      1: 'Position.constructor'
+      2: 'Range.constructor'
+      3: 'Selection.constructor'
+      4: 'equal endpoint identity'
+      5: 'Position.readonly line'
+      6: 'Range.readonly start'
+      7: 'Range.readonly isEmpty'
+      8: 'Selection.readonly anchor'
+      9: 'Selection.readonly isReversed'
+      10: 'UTF16 code unit value'
+      11: 'Position.of existing'
+      12: 'Range.of existing'
+      13: 'Position.Min empty'
+      14: 'Position.Max empty'
+      15: 'Position.call legacy'
+      16: 'Position.apply legacy'
+      17: 'Position.call no receiver'
+      18: 'Position.apply no receiver'
+      19: 'Range.call legacy'
+      20: 'Range.apply legacy'
+      21: 'Range.call no receiver'
+      22: 'Range.apply no receiver'
+      23: 'Selection.call legacy'
+      24: 'Selection.apply legacy'
+      25: 'Selection.call no receiver'
+      26: 'Selection.apply no receiver'
+  actual:
+    rows:
+      0:
+        name: 'equal endpoint identity'
+        ok: true
+        value:
+          rangeStartIsQ: true
+          rangeEndIsP: true
+          selectionReversed: true
+        aliases:
+        typeName: 'Object'
+      1:
+        name: 'Position.readonly line'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: 'Cannot set property line of #<Position> which has only a getter'
+          code: ~
+      2:
+        name: 'Range.readonly start'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: 'Cannot set property start of #<Range> which has only a getter'
+          code: ~
+      3:
+        name: 'Range.readonly isEmpty'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: 'Cannot set property isEmpty of #<Range> which has only a getter'
+          code: ~
+      4:
+        name: 'Selection.readonly anchor'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: 'Cannot set property anchor of #<Selection> which has only a getter'
+          code: ~
+      5:
+        name: 'Selection.readonly isReversed'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: 'Cannot set property isReversed of #<Selection> which has only a getter'
+          code: ~
+      6:
+        name: 'UTF16 code unit value'
+        ok: true
+        value:
+          _line: 0
+          _character: 3
+        state:
+          kind: 'Position'
+          line: 0
+          character: 3
+        aliases:
+        typeName: 'Position'
+      7:
+        name: 'Position.of existing'
+        ok: true
+        value:
+          _line: 0
+          _character: 2
+        state:
+          kind: 'Position'
+          line: 0
+          character: 2
+        aliases:
+          0: true
+        typeName: 'Position'
+      8:
+        name: 'Range.of existing'
+        ok: true
+        value:
+          _start:
+            _line: 0
+            _character: 2
+          _end:
+            _line: 0
+            _character: 2
+          _anchor:
+            _line: 0
+            _character: 2
+          _active:
+            _line: 0
+            _character: 2
+        state:
+          kind: 'Selection'
+          start:
+            0: 0
+            1: 2
+          end:
+            0: 0
+            1: 2
+          empty: true
+          singleLine: true
+          anchor:
+            0: 0
+            1: 2
+          active:
+            0: 0
+            1: 2
+          reversed: true
+        aliases:
+          0: true
+        typeName: 'Selection'
+      9:
+        name: 'Position.Min empty'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: ''
+          code: ~
+      10:
+        name: 'Position.Max empty'
+        ok: false
+        error:
+          name: 'TypeError'
+          message: ''
+          code: ~
+      11:
+        name: 'Position.call legacy'
+        ok: true
+        value:
+          _line: 1
+          _character: 2
+        state:
+          kind: 'Position'
+          line: 1
+          character: 2
+        aliases:
+        typeName: 'Legacy'
+      12:
+        name: 'Position.apply legacy'
+        ok: true
+        value:
+          _line: 1
+          _character: 2
+        state:
+          kind: 'Position'
+          line: 1
+          character: 2
+        aliases:
+        typeName: 'Legacy'
+      13:
+        name: 'Position.call no receiver'
+        ok: true
+        value:
+          _line:
+            special: 'undefined'
+          _character:
+            special: 'undefined'
+        state:
+          kind: 'Position'
+          line:
+            special: 'undefined'
+          character:
+            special: 'undefined'
+        aliases:
+        typeName: 'Position'
+      14:
+        name: 'Position.apply no receiver'
+        ok: true
+        value:
+          _line:
+            special: 'undefined'
+          _character:
+            special: 'undefined'
+        state:
+          kind: 'Position'
+          line:
+            special: 'undefined'
+          character:
+            special: 'undefined'
+        aliases:
+        typeName: 'Position'
+      15:
+        name: 'Range.call legacy'
+        ok: true
+        value:
+          _start:
+            _line: 1
+            _character: 2
+          _end:
+            _line: 3
+            _character: 4
+        state:
+          kind: 'Range'
+          start:
+            0: 1
+            1: 2
+          end:
+            0: 3
+            1: 4
+          empty: false
+          singleLine: false
+        aliases:
+        typeName: 'Legacy'
+      16:
+        name: 'Range.apply legacy'
+        ok: true
+        value:
+          _start:
+            _line: 1
+            _character: 2
+          _end:
+            _line: 3
+            _character: 4
+        state:
+          kind: 'Range'
+          start:
+            0: 1
+            1: 2
+          end:
+            0: 3
+            1: 4
+          empty: false
+          singleLine: false
+        aliases:
+        typeName: 'Legacy'
+      17:
+        name: 'Range.call no receiver'
+        ok: false
+        error:
+          name: 'Error'
+          message: 'Invalid arguments'
+          code: ~
+      18:
+        name: 'Range.apply no receiver'
+        ok: false
+        error:
+          name: 'Error'
+          message: 'Invalid arguments'
+          code: ~
+      19:
+        name: 'Selection.call legacy'
+        ok: true
+        value:
+          _start:
+            _line: 1
+            _character: 2
+          _end:
+            _line: 3
+            _character: 4
+          _anchor:
+            _line: 3
+            _character: 4
+          _active:
+            _line: 1
+            _character: 2
+        state:
+          kind: 'Selection'
+          start:
+            0: 1
+            1: 2
+          end:
+            0: 3
+            1: 4
+          empty: false
+          singleLine: false
+          anchor:
+            0: 3
+            1: 4
+          active:
+            0: 1
+            1: 2
+          reversed: true
+        aliases:
+        typeName: 'Legacy'
+      20:
+        name: 'Selection.apply legacy'
+        ok: true
+        value:
+          _start:
+            _line: 1
+            _character: 2
+          _end:
+            _line: 3
+            _character: 4
+          _anchor:
+            _line: 3
+            _character: 4
+          _active:
+            _line: 1
+            _character: 2
+        state:
+          kind: 'Selection'
+          start:
+            0: 1
+            1: 2
+          end:
+            0: 3
+            1: 4
+          empty: false
+          singleLine: false
+          anchor:
+            0: 3
+            1: 4
+          active:
+            0: 1
+            1: 2
+          reversed: true
+        aliases:
+        typeName: 'Legacy'
+      21:
+        name: 'Selection.call no receiver'
+        ok: false
+        error:
+          name: 'Error'
+          message: 'Invalid arguments'
+          code: ~
+      22:
+        name: 'Selection.apply no receiver'
+        ok: false
+        error:
+          name: 'Error'
+          message: 'Invalid arguments'
+          code: ~
+    directApiAttempts: 27
+    calls:
+      0: 'Position.constructor'
+      1: 'Position.constructor'
+      2: 'Range.constructor'
+      3: 'Selection.constructor'
+      4: 'equal endpoint identity'
+      5: 'Position.readonly line'
+      6: 'Range.readonly start'
+      7: 'Range.readonly isEmpty'
+      8: 'Selection.readonly anchor'
+      9: 'Selection.readonly isReversed'
+      10: 'UTF16 code unit value'
+      11: 'Position.of existing'
+      12: 'Range.of existing'
+      13: 'Position.Min empty'
+      14: 'Position.Max empty'
+      15: 'Position.call legacy'
+      16: 'Position.apply legacy'
+      17: 'Position.call no receiver'
+      18: 'Position.apply no receiver'
+      19: 'Range.call legacy'
+      20: 'Range.apply legacy'
+      21: 'Range.call no receiver'
+      22: 'Range.apply no receiver'
+      23: 'Selection.call legacy'
+      24: 'Selection.apply legacy'
+      25: 'Selection.call no receiver'
+      26: 'Selection.apply no receiver'
+  operator: 'deepStrictEqual'
+  stack: |-
+    check (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/editor-position-range-selection-next/compatibility.test.mjs:4:323)
+    TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/editor-position-range-selection-next/compatibility.test.mjs:6:290)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1306:25)
+    Test.start (node:internal/test_runner/test:1177:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+  ...
+# Subtest: Range and Selection order, touching intersection, disjoint union and equal endpoint orientation match original
+ok 2 - Range and Selection order, touching intersection, disjoint union and equal endpoint orientation match original
+  ---
+  duration_ms: 2.0398
+  type: 'test'
+  ...
+# Subtest: released numeric boundaries preserve fractions, huge numbers, signed zero and nonfinite source behavior
+ok 3 - released numeric boundaries preserve fractions, huge numbers, signed zero and nonfinite source behavior
+  ---
+  duration_ms: 3.3173
+  type: 'test'
+  ...
+# Subtest: malformed constructors match exact errors and released coercion without applying document clipping
+ok 4 - malformed constructors match exact errors and released coercion without applying document clipping
+  ---
+  duration_ms: 0.9974
+  type: 'test'
+  ...
+# Subtest: optional overload null, undefined, wrong fields, boxed primitive and inherited-field boundaries match original
+ok 5 - optional overload null, undefined, wrong fields, boxed primitive and inherited-field boundaries match original
+  ---
+  duration_ms: 0.711
+  type: 'test'
+  ...
+# Subtest: structural type guards/conversion and malformed plain-position comparison quirks match original
+ok 6 - structural type guards/conversion and malformed plain-position comparison quirks match original
+  ---
+  duration_ms: 3.1715
+  type: 'test'
+  ...
+# Subtest: getter evaluation ordering and subclass field initialization match exact original source
+ok 7 - getter evaluation ordering and subclass field initialization match exact original source
+  ---
+  duration_ms: 0.2779
+  type: 'test'
+  ...
+# Subtest: deterministic broad corpus seed0x317ab9d2 remains finite and matches original packet/cache-free state
+ok 8 - deterministic broad corpus seed0x317ab9d2 remains finite and matches original packet/cache-free state
+  ---
+  duration_ms: 102.2476
+  type: 'test'
+  ...
+# Subtest: separately shaped held-out same-line/orientation corpus seed0xb49f0271 matches original
+ok 9 - separately shaped held-out same-line/orientation corpus seed0xb49f0271 matches original
+  ---
+  duration_ms: 35.5125
+  type: 'test'
+  ...
+REA_EDITOR_VALUE_API {"counts":{"packets":986,"originalDirectApiAttempts":45112,"candidateDirectApiAttempts":45112},"bytes":16443788,"sha256":"65ce22e26967c5d130a56d6f0cd99a1af44c65a7ee7d64b6bc5cd25e924a5fa8","sourceLibraryUnits":5,"vmEvaluations":6,"detail":"C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-position-range-selection-next\\.local\\attempt-02\\original-comparisons.json","originalWorkBenchExecutions":0,"originalExtensionHostExecutions":0}
+1..9
+# tests 9
+# suites 0
+# pass 8
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 298.9909

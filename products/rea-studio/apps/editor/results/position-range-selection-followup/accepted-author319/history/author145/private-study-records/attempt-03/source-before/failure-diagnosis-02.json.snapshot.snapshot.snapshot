@@ -1,0 +1,120 @@
+{
+  "schema": "rea-editor-value-api-verifier-failure-diagnosis/v1",
+  "raw": {
+    "bytes": 16443788,
+    "sha256": "65ce22e26967c5d130a56d6f0cd99a1af44c65a7ee7d64b6bc5cd25e924a5fa8"
+  },
+  "packets": 986,
+  "differences": [
+    {
+      "label": "read-only and value identity",
+      "original": {
+        "name": "Position.readonly line",
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot set property line of [object Object] which has only a getter",
+          "code": null
+        }
+      },
+      "candidate": {
+        "name": "Position.readonly line",
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot set property line of #<Position> which has only a getter",
+          "code": null
+        }
+      }
+    },
+    {
+      "label": "read-only and value identity",
+      "original": {
+        "name": "Range.readonly start",
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot set property start of [object Object] which has only a getter",
+          "code": null
+        }
+      },
+      "candidate": {
+        "name": "Range.readonly start",
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot set property start of #<Range> which has only a getter",
+          "code": null
+        }
+      }
+    },
+    {
+      "label": "read-only and value identity",
+      "original": {
+        "name": "Range.readonly isEmpty",
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot set property isEmpty of [object Object] which has only a getter",
+          "code": null
+        }
+      },
+      "candidate": {
+        "name": "Range.readonly isEmpty",
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot set property isEmpty of #<Range> which has only a getter",
+          "code": null
+        }
+      }
+    },
+    {
+      "label": "read-only and value identity",
+      "original": {
+        "name": "Selection.readonly anchor",
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot set property anchor of [object Object] which has only a getter",
+          "code": null
+        }
+      },
+      "candidate": {
+        "name": "Selection.readonly anchor",
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot set property anchor of #<Selection> which has only a getter",
+          "code": null
+        }
+      }
+    },
+    {
+      "label": "read-only and value identity",
+      "original": {
+        "name": "Selection.readonly isReversed",
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot set property isReversed of [object Object] which has only a getter",
+          "code": null
+        }
+      },
+      "candidate": {
+        "name": "Selection.readonly isReversed",
+        "ok": false,
+        "error": {
+          "name": "TypeError",
+          "message": "Cannot set property isReversed of #<Selection> which has only a getter",
+          "code": null
+        }
+      }
+    }
+  ],
+  "failedGroups": 1,
+  "passedGroups": 8,
+  "reason": "Five V8 getter-assignment TypeError receiver labels differ across VM realms. Keep raw errors, normalize only that receiver label in readonly assignment comparison, add post-attempt unchanged property reads. Explicit original library errors and every other observed engine error remain exact.",
+  "candidateUnchanged": true,
+  "originalApiExecutions": 0
+}

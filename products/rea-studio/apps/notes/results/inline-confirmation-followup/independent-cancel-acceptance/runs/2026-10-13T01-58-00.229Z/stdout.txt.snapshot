@@ -1,0 +1,142 @@
+TAP version 13
+# Subtest: opened real attachment survives Cancel without follow-up requests or editor publication
+ok 1 - opened real attachment survives Cancel without follow-up requests or editor publication
+  ---
+  duration_ms: 23.5519
+  type: 'test'
+  ...
+# Subtest: opened real attachment survives Escape without follow-up requests or editor publication
+ok 2 - opened real attachment survives Escape without follow-up requests or editor publication
+  ---
+  duration_ms: 8.4732
+  type: 'test'
+  ...
+# Subtest: Restore cancellation with opened trashed attachment preserves disabled editor controls and trash identity
+ok 3 - Restore cancellation with opened trashed attachment preserves disabled editor controls and trash identity
+  ---
+  duration_ms: 8.3575
+  type: 'test'
+  ...
+# Subtest: failed actual attachment-bearing Trash commit restores focus and controls; explicit retry commits once
+ok 4 - failed actual attachment-bearing Trash commit restores focus and controls; explicit retry commits once
+  ---
+  duration_ms: 7.7706
+  type: 'test'
+  ...
+# Subtest: Cancel does not duplicate an existing held attachment request or replace its matching editor
+ok 5 - Cancel does not duplicate an existing held attachment request or replace its matching editor
+  ---
+  duration_ms: 6.8086
+  type: 'test'
+  ...
+# Subtest: Cancel retains a clean in-flight Save generation so its response advances the revision and next draft saves
+ok 6 - Cancel retains a clean in-flight Save generation so its response advances the revision and next draft saves
+  ---
+  duration_ms: 1.5611
+  type: 'test'
+  ...
+# Subtest: visible Trash cancellation names recursive scope, keeps state and performs no backend read or mutation
+ok 7 - visible Trash cancellation names recursive scope, keeps state and performs no backend read or mutation
+  ---
+  duration_ms: 11.0724
+  type: 'test'
+  ...
+# Subtest: real Confirm Trash and Restore preserve recursive backend behavior and explicitly include separately trashed notes
+ok 8 - real Confirm Trash and Restore preserve recursive backend behavior and explicitly include separately trashed notes
+  ---
+  duration_ms: 2.4012
+  type: 'test'
+  ...
+# Subtest: keyboard Tab and reverse Tab stay in the dialog; Escape cancels and preserves preexisting inert state
+ok 9 - keyboard Tab and reverse Tab stay in the dialog; Escape cancels and preserves preexisting inert state
+  ---
+  duration_ms: 0.7348
+  type: 'test'
+  ...
+# Subtest: keyboard Enter on focused Confirm submits once and Space on focused Cancel does not restore
+ok 10 - keyboard Enter on focused Confirm submits once and Space on focused Cancel does not restore
+  ---
+  duration_ms: 1.2315
+  type: 'test'
+  ...
+# Subtest: one confirmation/request stays pending across actual commit, refusing duplicate triggers/buttons and cancellation after submission
+ok 11 - one confirmation/request stays pending across actual commit, refusing duplicate triggers/buttons and cancellation after submission
+  ---
+  duration_ms: 1.5059
+  type: 'test'
+  ...
+# Subtest: dirty draft refuses confirmation before any operation, retaining all typed content
+ok 12 - dirty draft refuses confirmation before any operation, retaining all typed content
+  ---
+  duration_ms: 1.0543
+  type: 'test'
+  ...
+# Subtest: failed real commit closes confirmation, restores controls and allows a subsequent explicit retry
+ok 13 - failed real commit closes confirmation, restores controls and allows a subsequent explicit retry
+  ---
+  duration_ms: 0.8689
+  type: 'test'
+  ...
+# Subtest: disposing an unanswered dialog cancels it without API calls and ignores retained old buttons
+ok 14 - disposing an unanswered dialog cancels it without API calls and ignores retained old buttons
+  ---
+  duration_ms: 0.4883
+  type: 'test'
+  ...
+# Subtest: disposing after committed held response prevents old publication while a fresh view reads the committed trash
+ok 15 - disposing after committed held response prevents old publication while a fresh view reads the committed trash
+  ---
+  duration_ms: 0.9626
+  type: 'test'
+  ...
+# Subtest: cancel then select child and reopen ignores retained old Confirm and mutates only newly named child
+ok 16 - cancel then select child and reopen ignores retained old Confirm and mutates only newly named child
+  ---
+  duration_ms: 12.5613
+  type: 'test'
+  ...
+# Subtest: confirmed Restore remains a single request while held; pending reverse Tab focuses dialog and Escape does not cancel commit
+ok 17 - confirmed Restore remains a single request while held; pending reverse Tab focuses dialog and Escape does not cancel commit
+  ---
+  duration_ms: 2.3095
+  type: 'test'
+  ...
+# Subtest: dispose during post-commit note read suppresses late acceptance and all later reads
+ok 18 - dispose during post-commit note read suppresses late acceptance and all later reads
+  ---
+  duration_ms: 2.1101
+  type: 'test'
+  ...
+# Subtest: dispose during post-commit first refresh read suppresses notebook-list and late view writes
+ok 19 - dispose during post-commit first refresh read suppresses notebook-list and late view writes
+  ---
+  duration_ms: 1.5464
+  type: 'test'
+  ...
+# Subtest: held second refresh read keeps typing and notebook selection disabled; disposing refuses late publication
+ok 20 - held second refresh read keeps typing and notebook selection disabled; disposing refuses late publication
+  ---
+  duration_ms: 1.7757
+  type: 'test'
+  ...
+# Subtest: late rejected persistence after disposal publishes no error and does not change owned state
+ok 21 - late rejected persistence after disposal publishes no error and does not change owned state
+  ---
+  duration_ms: 0.7754
+  type: 'test'
+  ...
+# Subtest: clean notebook cancellation preserves active note revision/body, all preexisting inert flags and trigger focus
+ok 22 - clean notebook cancellation preserves active note revision/body, all preexisting inert flags and trigger focus
+  ---
+  duration_ms: 1.0342
+  type: 'test'
+  ...
+1..22
+# tests 22
+# suites 0
+# pass 22
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 121.9248

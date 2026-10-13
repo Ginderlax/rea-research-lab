@@ -1,0 +1,97 @@
+{
+  "sourceAssisted": false,
+  "scope": "Narrow client coordinate fix and declared DOM-model correction, no backend/pattern/worker changes; inverse applies reverse substitutions in reverse order.",
+  "rows": [
+    {
+      "file": "candidate/products/rea-studio/apps/editor/client.mjs",
+      "label": "Insert trusted fixed-normalization + linear offset adapter; no new import/static route",
+      "before": "export async function render(root, api) {",
+      "idBefore": {
+        "bytes": 18504,
+        "sha256": "67150d5e5e00296c6835ea995c009649abece81a447420b657b3e81922828981"
+      },
+      "after": "function textareaSelection(content,start,end,value) {\n  if(typeof content!=='string'||typeof value!=='string'||!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||end<start||end>content.length)return null;\n  // Native textarea.value folds CRLF and bare CR to LF. Saved revisions and\n  // source offsets still describe the exact raw saved string.\n  if(content.replace(/\\r\\n?/g,'\\n')!==value)return null;\n  const interior=index=>{if(index===0||index===content.length)return false;const a=content.charCodeAt(index-1),b=content.charCodeAt(index);return a===13&&b===10||a>=0xd800&&a<=0xdbff&&b>=0xdc00&&b<=0xdfff;};\n  if(interior(start)||interior(end))return null;\n  let normalizedStart=start,normalizedEnd=end;\n  for(let i=0;i<end;i++)if(content.charCodeAt(i)===13&&content.charCodeAt(i+1)===10){if(i<start)normalizedStart--;normalizedEnd--;i++;}\n  return {start:normalizedStart,end:normalizedEnd};\n}\nexport async function render(root, api) {",
+      "idAfter": {
+        "bytes": 19416,
+        "sha256": "f5ca4e9b65fb4b4d6d78976c1a0bffb871a9d6d66f4b83951794288e006937f1"
+      },
+      "occurrences": 1
+    },
+    {
+      "file": "candidate/products/rea-studio/apps/editor/client.mjs",
+      "label": "Preserve previous revision/draft/generation guards and add exact shown-text/valid-interval guard before DOM selection",
+      "before": "          editor.focus();editor.setSelectionRange(match.start,match.end);state.textContent=",
+      "idBefore": {
+        "bytes": 19416,
+        "sha256": "f5ca4e9b65fb4b4d6d78976c1a0bffb871a9d6d66f4b83951794288e006937f1"
+      },
+      "after": "          const selection=textareaSelection(item.content,match.start,match.end,editor.value);\n          if(!selection){state.textContent='The saved result does not match the text shown or its positions. Save or reopen the file, then search again.';return;}\n          editor.focus();editor.setSelectionRange(selection.start,selection.end);state.textContent=",
+      "idAfter": {
+        "bytes": 19681,
+        "sha256": "113a0781b166c9fb4c8994abcefeac0818d55719975e35dfdbead13fa4f3d62a"
+      },
+      "occurrences": 1
+    },
+    {
+      "file": "candidate/products/rea-studio/apps/editor/search-pattern.ui.test.mjs",
+      "label": "Native textarea fixture stores private normalized value",
+      "before": "this.attributes={};this.value='';",
+      "idBefore": {
+        "bytes": 9409,
+        "sha256": "fc8540a685c77515e1a6172b9ff2442cc298a2609c05c514e87fb47ea77f48e3"
+      },
+      "after": "this.attributes={};this._value='';",
+      "idAfter": {
+        "bytes": 9410,
+        "sha256": "59eba1fb7135cbb0ab538976ec3e1686c0c725103fb1679af0a4e61f66348aa6"
+      },
+      "occurrences": 1
+    },
+    {
+      "file": "candidate/products/rea-studio/apps/editor/search-pattern.ui.test.mjs",
+      "label": "Declared fixture adapter: native CRLF/bare-CR normalization and changed-value caret reset",
+      "before": "this.selectionStart=this.selectionEnd=0;}append",
+      "idBefore": {
+        "bytes": 9410,
+        "sha256": "59eba1fb7135cbb0ab538976ec3e1686c0c725103fb1679af0a4e61f66348aa6"
+      },
+      "after": "this.selectionStart=this.selectionEnd=0;}get value(){return this._value;}set value(v){const value=this.tagName==='textarea'?String(v).replace(/\\r\\n?/g,'\\n'):String(v);if(value!==this._value){this._value=value;if(this.tagName==='textarea')this.selectionStart=this.selectionEnd=value.length;}}append",
+      "idAfter": {
+        "bytes": 9660,
+        "sha256": "efce11cf15e00504118eafa19a1b4faa4c6ae3e2d8dd5a02587f2f663f13a42f"
+      },
+      "occurrences": 1
+    },
+    {
+      "file": "candidate/products/rea-studio/apps/editor/search-pattern.ui.test.mjs",
+      "label": "Correct first CRLF normalized DOM endpoints; saved/source result body unchanged",
+      "before": "assert.equal(editor.selectionStart,12);assert.equal(editor.selectionEnd,20);",
+      "idBefore": {
+        "bytes": 9660,
+        "sha256": "efce11cf15e00504118eafa19a1b4faa4c6ae3e2d8dd5a02587f2f663f13a42f"
+      },
+      "after": "assert.equal(editor.selectionStart,11);assert.equal(editor.selectionEnd,19);",
+      "idAfter": {
+        "bytes": 9660,
+        "sha256": "5ba0647fde33e1bcf04c1490979ab9478d2e32b64f63e1ecd15b048965b44ea5"
+      },
+      "occurrences": 1
+    },
+    {
+      "file": "candidate/products/rea-studio/apps/editor/search-pattern.ui.test.mjs",
+      "label": "Three explicit textarea-value assertions use normalized LF; disk content assertion retains CRLF",
+      "before": "assert.equal(editor.value,'🧪cat cats\\r\\nnext cat\\n');",
+      "after": "assert.equal(editor.value,'🧪cat cats\\nnext cat\\n');",
+      "occurrences": 3,
+      "idBefore": {
+        "bytes": 9660,
+        "sha256": "5ba0647fde33e1bcf04c1490979ab9478d2e32b64f63e1ecd15b048965b44ea5"
+      },
+      "idAfter": {
+        "bytes": 9654,
+        "sha256": "c8ecdde9c4809bcc6d0209dc030e24dd1b7d1fdb87217b38df585c9c88ba6bb4"
+      }
+    }
+  ],
+  "old573AndOld78BodiesHistorical": true
+}

@@ -1,0 +1,6 @@
+import fs from'node:fs/promises';import path from'node:path';import assert from'node:assert/strict';
+const here=import.meta.dirname,stage=path.resolve(here,'../vault-group-publication-plan-next'),map=JSON.parse(await fs.readFile(path.join(stage,'source-proof/preservation-manifest.json'))),prefix='products/rea-studio/results/vault-group-recycle-reviewed-installation-20261013/source-proof/';
+function local(p){assert(p.startsWith(prefix));return path.join(stage,'source-proof',p.slice(prefix.length));}
+const records=map.records;const desired=records.filter(r=>r.sourcePath==='baseline-source.json'||r.sourcePath==='source-provenance.json'||r.sourcePath==='authority-baseline.json'||r.epoch.startsWith('root-')&&/\.json$/.test(r.sourcePath));
+const output={epochs:map.epochs,interesting:[]};for(const r of desired){const b=await fs.readFile(local(r.publicPath)),v=JSON.parse(b);output.interesting.push({epoch:r.epoch,path:r.sourcePath,bytes:b.length,keys:Object.keys(v),value:r.sourcePath==='baseline-source.json'||r.sourcePath==='source-provenance.json'?v:undefined});}
+await fs.writeFile(path.join(here,'record-inspection.json'),JSON.stringify(output,null,2)+'\n',{flag:'wx'});process.stdout.write(JSON.stringify(output,null,2)+'\n');

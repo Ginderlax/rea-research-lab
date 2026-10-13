@@ -1,0 +1,32 @@
+✔ older completed entry-bin list is invalidated before recursive purge and cannot republish its old rows (62.4607ms)
+✔ confirmed group effect scrubs an existing masked bin password immediately, before held persistence resolves (51.9047ms)
+✖ unconfirmed and dirty refusals leave current bin preview/private field untouched and issue zero group mutations (48.4693ms)
+✔ held group preview cannot append stale descendant details after purge starts (51.5654ms)
+✔ failed purge drops held old bin publication; explicit fresh reopen and reconfirmation retry preserve backend atomicity (48.5681ms)
+✔ disposal before held purge commit suppresses every late view read while the real durable mutation completes (51.6327ms)
+✔ held descendant entry-bin read after group purge must not republish purged password (59.5041ms)
+✔ held descendant entry-bin read after group purge explicit-close control (49.3096ms)
+✔ actual group UI previews descendants without passwords, confirms recursive recycle and restore (68.2507ms)
+✔ open entry and new dirty draft prevent group commands before any mutation transport (47.8484ms)
+✔ held real committed recursive deletion retains newly typed draft, blocks duplicate/entry Save, and suppresses closed-panel publication (49.472ms)
+✔ held group preview cannot publish after view disposal (46.8524ms)
+✔ failed group persistence allows explicit fresh list/reconfirmation retry of unchanged group (55.5536ms)
+✔ older real entry read cannot reopen a now-recycled descendant after group mutation starts (49.3848ms)
+✔ late committed group response performs no follow-up API read after disposal (45.7628ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 14
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 981.2953
+
+✖ failing tests:
+
+test at work\keepass-group-bin-coherence-fix-next\products\rea-studio\apps\vault\group-coherence-boundaries.test.mjs:8:1
+✖ unconfirmed and dirty refusals leave current bin preview/private field untouched and issue zero group mutations (48.4693ms)
+  TypeError: field(...).listeners.get(...) is not a function
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-group-bin-coherence-fix-next/products/rea-studio/apps/vault/group-coherence-boundaries.test.mjs:8:592)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7)

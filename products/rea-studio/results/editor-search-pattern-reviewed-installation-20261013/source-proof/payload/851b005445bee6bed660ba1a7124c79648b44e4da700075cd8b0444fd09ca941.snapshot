@@ -1,0 +1,53 @@
+[
+  {
+    "id": "escaped-bracket-Unicode-word",
+    "query": "[\\w\\]]+",
+    "originalPattern": "[\\w\\]]+",
+    "content": "] é中 á [ x‌ 7٢\r\n"
+  },
+  {
+    "id": "Unicode-decimal-boundary",
+    "query": "\\d{2}\\b",
+    "originalPattern": "\\d{2}\\b",
+    "content": "12x ٣٤ ４５ # 12\r\n"
+  },
+  {
+    "id": "common-Unicode-whitespace",
+    "query": "\\s+",
+    "originalPattern": "\\s+",
+    "content": "x\t x x x  x\r\n"
+  },
+  {
+    "id": "literal-whole-word-Unicode-neighbors",
+    "query": "beta",
+    "originalPattern": "\\bbeta\\b",
+    "wholeWord": true,
+    "useRegex": false,
+    "content": "beta 𠀀beta βbeta betá beta‍ !beta? beta_\r\n"
+  },
+  {
+    "id": "Unicode-case-alternation",
+    "query": "(?:Ω|K|é)+",
+    "originalPattern": "(?:Ω|K|é)+",
+    "matchCase": false,
+    "content": "Ω ω K k K é É Œ\r\n"
+  },
+  {
+    "id": "bare-CR-vs-CRLF-final-anchor",
+    "query": "^B$",
+    "originalPattern": "^B$",
+    "content": "A\rB\rC\r\nB\r\nB\r"
+  },
+  {
+    "id": "adjacent-empty-with-astral",
+    "query": "A|(?=.)",
+    "originalPattern": "A|(?=.)",
+    "content": "😀A😀\r\n😀Z\n"
+  },
+  {
+    "id": "all-boundary-positions",
+    "query": "\\b|\\B",
+    "originalPattern": "\\b|\\B",
+    "content": "😀_á\r\n😀Z\n\n"
+  }
+]

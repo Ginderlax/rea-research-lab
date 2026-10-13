@@ -1,0 +1,277 @@
+{
+  "schema": "rea-editor-vault-exact-verifier-transformations/v1",
+  "changes": [
+    {
+      "path": "scripts/verify-editor-value-api-followups.mjs",
+      "before": "import assert from 'node:assert/strict';",
+      "after": "import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';\nimport assert from 'node:assert/strict';",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-editor-value-api-followups.mjs",
+      "before": "const read=(p,r)=>{assertEditorValueApiPublicPath(p);const b=io.read(p);",
+      "after": "const migration=createEditorVaultProofMigration(io.read.bind(io));const read=(p,r)=>{assertEditorValueApiPublicPath(p);const b=io.read(migration.resolve(p,r)??p);",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-editor-value-api-followups.mjs",
+      "before": "unchangedEditor24:24,historical31Exact:30,",
+      "after": "historicalEditor24:24,unchangedEditor24:20,explicitLaterEditorReplacements:4,historical31Exact:30,old31CurrentEqualityClaim:false,",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-editor-value-api-followups.mjs",
+      "before": "sourceOnly:true,currentMandatory:true,publicApiAliases:475,",
+      "after": "sourceOnly:true,currentMandatory:true,sourceMigration:migration.summary(),publicApiAliases:475,",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-inline-followups.mjs",
+      "before": "import assert from 'node:assert/strict';",
+      "after": "import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';\nimport assert from 'node:assert/strict';",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-inline-followups.mjs",
+      "before": "function read(p, expected, inert=false){const at=location(p),",
+      "after": "function rawRead(p, expected, inert=false){const at=location(p),",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-inline-followups.mjs",
+      "before": "function json(p,expected){return JSON.parse(read(p,expected,true));}",
+      "after": "const migration=createEditorVaultProofMigration(rawRead);function read(p,expected,inert=false){return rawRead(migration.resolve(p,expected)??p,expected,inert);}function json(p,expected){return JSON.parse(read(p,expected,true));}",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-inline-followups.mjs",
+      "before": "function finish(){for(const [p,id]of seen)read(p,id);",
+      "after": "function finish(){for(const [p,id]of seen)rawRead(p,id);",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-vault-followups.mjs",
+      "before": "import assert from 'node:assert/strict';",
+      "after": "import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';\nimport assert from 'node:assert/strict';",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-vault-followups.mjs",
+      "before": "function read(p, expected, nativeCheck = false) {",
+      "after": "function rawRead(p, expected, nativeCheck = false) {",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-vault-followups.mjs",
+      "before": "const json = (p, expected) => JSON.parse(read(p, expected).toString('utf8'));",
+      "after": "const migration=createEditorVaultProofMigration(rawRead);function read(p,expected,nativeCheck=false){return rawRead(migration.resolve(p,expected)??p,expected,nativeCheck);}const json = (p, expected) => JSON.parse(read(p, expected).toString('utf8'));",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-editor-save-followup.mjs",
+      "before": "import fs from'node:fs/promises';",
+      "after": "import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';\nimport fs from'node:fs/promises';",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-editor-save-followup.mjs",
+      "before": "const planRoot=prefix+",
+      "after": "const migration=createEditorVaultProofMigrationFromRoot(repo);\nconst planRoot=prefix+",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-editor-save-followup.mjs",
+      "before": "if(requireCurrent)assert.deepEqual(liveMismatches,[],'Current implementation differs from the source-bound78 receipt; historical snapshots remain separate.');",
+      "after": "const declaredMismatches=migration.editorMismatchesIncludingHistoricalHost(current.currentSources);assert.deepEqual(liveMismatches,declaredMismatches,'Only fixed named replacements and the separately pinned historical host transition are allowed');for(const r of current.currentSources){const historical=migration.resolve(r.path,r);if(historical)await exact(historical,r);}if(requireCurrent)assert.deepEqual(liveMismatches,[],'Historical78 is not current implementation evidence; all installed after identities are mandatory separately.');",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-editor-save-followup.mjs",
+      "before": "currentSourceSnapshots:31,liveSourceMatch:",
+      "after": "sourceMigration:migration.summary(),historical78NotCurrentAcceptance:true,currentAfterIdentitiesMandatory:true,currentSourceSnapshots:31,liveSourceMatch:",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "before": "import assert from'node:assert/strict';",
+      "after": "import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';\nimport assert from'node:assert/strict';",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "before": "export function verifyNotesLayoutValueApiCheckpoint(root){let authenticated=0;function read(n,r){safe(n);const b=readFileSync(join(root,n));",
+      "after": "export function verifyNotesLayoutValueApiCheckpoint(root){const migration=createEditorVaultProofMigrationFromRoot(root);let authenticated=0;function read(n,r){safe(n);const b=readFileSync(join(root,migration.resolve(n,r)??n));",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "before": "const db=read('products/rea-studio/results/development-validation.json');",
+      "after": "const db=migration.historicalMetadata('development');",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "before": "const status=json('products/rea-studio/STATUS.json');",
+      "after": "const status=JSON.parse(migration.historicalMetadata('status'));",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "before": "sourceOnly:true,currentCombinedTests:847,currentCombinedSources:720,currentCombinedSnapshots:727,",
+      "after": "sourceOnly:true,historicalCombinedTests:847,historicalCombinedSources:720,historicalCombinedSnapshots:727,combined847CurrentSourceAcceptance:false,historicalDevelopmentAndStatusBeforeimages:true,sourceMigration:migration.summary(),",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-followup-records.mjs",
+      "before": "import assert from 'node:assert/strict';",
+      "after": "import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';\nimport assert from 'node:assert/strict';",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-followup-records.mjs",
+      "before": "export function verifyFollowupRecords(root){",
+      "after": "export function verifyFollowupRecords(root){\n const migration=createEditorVaultProofMigrationFromRoot(root);",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-followup-records.mjs",
+      "before": "function currentEditorBytes(r){safe(r.path);const live=readFileSync(join(root,r.path));",
+      "after": "function currentEditorBytes(r){safe(r.path);const historical=migration.resolve(r.path,r);if(historical)return readFileSync(join(root,historical));const live=readFileSync(join(root,r.path));",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-followup-records.mjs",
+      "before": "const inlineModule=readFileSync(join(root,'scripts/verify-notes-inline-followups.mjs'));",
+      "after": "const inlineModule=migration.historicalVerifier('scripts/verify-notes-inline-followups.mjs');",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-followup-records.mjs",
+      "before": "assert.deepEqual(editorVerification.liveMismatches,[{path:editorHostTransition.path,testedSha256:editorHostTransition.before.sha256,liveSha256:editorHostTransition.after.sha256}]);",
+      "after": "assert.deepEqual(editorVerification.liveMismatches,migration.editorMismatchesIncludingHistoricalHost(proofs[17].json('source-before.json')));assert.equal(editorVerification.historical78NotCurrentAcceptance,true);assert.equal(editorVerification.currentAfterIdentitiesMandatory,true);",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-followup-records.mjs",
+      "before": "return{notesLayoutValueApiCheckpoint,editorHostTransition:",
+      "after": "return{sourceMigration:migration.summary(),historicalEditorBrowserNotCurrentPatternAcceptance:true,notesLayoutValueApiCheckpoint,editorHostTransition:",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-followup-records.mjs",
+      "before": "currentEditorBrowserSemanticGroups:8,currentEditorBrowserCommittedHolds:3,currentEditorBrowserSaveRequests:6,currentEditorBrowserSourceFiles:31,",
+      "after": "historicalEditorBrowserSemanticGroups:8,historicalEditorBrowserCommittedHolds:3,historicalEditorBrowserSaveRequests:6,historicalEditorBrowserSourceFiles:31,",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-followup-records.mjs",
+      "before": "onlyEditorSaveLiveMismatch:true,currentEditorOther30RowsMandatory:true,",
+      "after": "onlyFixedNamedMigrationsAndHistoricalHostMismatch:true,historicalEditorOther30RowsAuthenticated:true,currentAfterIdentitiesMandatory:true,",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-records.mjs",
+      "before": "import { verifyFollowupRecords } from './verify-followup-records.mjs';",
+      "after": "import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';\nimport { verifyFollowupRecords } from './verify-followup-records.mjs';",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-records.mjs",
+      "before": "const followupEvidence = verifyFollowupRecords(root);",
+      "after": "const sourceProofMigration=createEditorVaultProofMigrationFromRoot(root);\nconst followupEvidence = verifyFollowupRecords(root);",
+      "occurrences": 1
+    },
+    {
+      "path": "scripts/verify-records.mjs",
+      "before": "followup_evidence: followupEvidence,",
+      "after": "source_proof_migration: sourceProofMigration.summary(),\n  followup_evidence: followupEvidence,",
+      "occurrences": 1
+    }
+  ],
+  "verifiers": [
+    {
+      "path": "scripts/verify-editor-value-api-followups.mjs",
+      "before": {
+        "bytes": 22213,
+        "sha256": "ff71c33e5f3261f5244af719722d83a651a2e41f3075466baeead16412631589"
+      },
+      "after": {
+        "bytes": 22551,
+        "sha256": "ef80f2ba98cf81b637fa8a361196ceab84f06fb9e1de5d87ccb1d0965e31017f"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-editor-value-api-followups.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-editor-save-followup.mjs",
+      "before": {
+        "bytes": 6745,
+        "sha256": "4b93961b46b79fe901eafcfc3e1eda564803b60a12be411feb58350da604f001"
+      },
+      "after": {
+        "bytes": 7424,
+        "sha256": "fb3f465eaaefab1197c170410355f30764308e3f5b4e58e30d0c8059fe3e96c3"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-editor-save-followup.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-notes-inline-followups.mjs",
+      "before": {
+        "bytes": 23739,
+        "sha256": "b4387535d7fcbdecab43688fef286bbeccb87b826949b314fff5e5bbd6169c5e"
+      },
+      "after": {
+        "bytes": 24029,
+        "sha256": "9e8ce71e3b5bf794b3788e97cbc695223265154d48426201f5aa22f5dedd995f"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-notes-inline-followups.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-notes-vault-followups.mjs",
+      "before": {
+        "bytes": 24952,
+        "sha256": "864794cf7fd9e875d05da339326a32e985182829a033324c014b7c2d775e6c6f"
+      },
+      "after": {
+        "bytes": 25251,
+        "sha256": "645cf96a7edd098f3d310b24ee949bc5a150190d9b0984cc61ab03f282bbe59c"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-notes-vault-followups.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-followup-records.mjs",
+      "before": {
+        "bytes": 37311,
+        "sha256": "0d06219b7437fc99d27597713a176c108fd60c9c3a1fb016ffe3acf321a4d58d"
+      },
+      "after": {
+        "bytes": 37879,
+        "sha256": "92a23a59963713966f8e6c630ea6f89e2dfe8248d8dadfacd662bf349bcd6f7e"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-followup-records.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "before": {
+        "bytes": 11580,
+        "sha256": "41a503447b3fc260bfe36141dbf8aa2420d5ec0a96735f78c456c1595e95b6e0"
+      },
+      "after": {
+        "bytes": 11915,
+        "sha256": "b7db454e0d08779c6f0c0307c9fad4bd3ef5dc66c2aef5ee89eb05f168d1014a"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-notes-layout-value-api-checkpoint.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-records.mjs",
+      "before": {
+        "bytes": 142428,
+        "sha256": "8283f709444328e1dee3483c46322a07652c2be1d2ac71ff94269c2e645e6702"
+      },
+      "after": {
+        "bytes": 142684,
+        "sha256": "42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-records.mjs.snapshot"
+    }
+  ]
+}

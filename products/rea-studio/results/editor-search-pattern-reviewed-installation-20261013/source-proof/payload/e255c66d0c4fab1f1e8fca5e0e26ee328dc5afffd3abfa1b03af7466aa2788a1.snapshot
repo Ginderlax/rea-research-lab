@@ -1,0 +1,62 @@
+{
+  "id": "EDITOR.SEARCH.TEXTAREA.CRLF.NAVIGATION",
+  "priority": "P2",
+  "confirmed": true,
+  "classification": "Pre-existing literal navigation issue retained in candidate and new regex path, confirmed against unchanged current production client.",
+  "source": [
+    {
+      "name": "candidate-client",
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-search-pattern-next\\candidate\\products\\rea-studio\\apps\\editor\\client.mjs",
+      "bytes": 18504,
+      "sha256": "67150d5e5e00296c6835ea995c009649abece81a447420b657b3e81922828981"
+    },
+    {
+      "name": "production-client",
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\products\\rea-studio\\apps\\editor\\client.mjs",
+      "bytes": 17759,
+      "sha256": "295e557ee7c341f2e1ca6fb68aac32e558455556d0c6490f6075970025afb65c"
+    },
+    {
+      "name": "candidate-server",
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-search-pattern-next\\candidate\\products\\rea-studio\\apps\\editor\\server.mjs",
+      "bytes": 6354,
+      "sha256": "b745eaf2b8702f2ca8b31fcbf01b377fbbede89425ebb87c83f6bd0dc0269572"
+    },
+    {
+      "name": "production-server",
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\products\\rea-studio\\apps\\editor\\server.mjs",
+      "bytes": 6303,
+      "sha256": "9036f3f139f6aeb31d07cf159694e8db127e3b65a136c1aaf20bebcf14e0acad"
+    },
+    {
+      "name": "candidate-workspace-search",
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-search-pattern-next\\candidate\\products\\rea-studio\\apps\\editor\\workspace-search.mjs",
+      "bytes": 8121,
+      "sha256": "8c9fe66723e8de6b81244a593653c22f11cd87d0cffaeb09381e29d434b97c4f"
+    },
+    {
+      "name": "production-workspace-search",
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\products\\rea-studio\\apps\\editor\\workspace-search.mjs",
+      "bytes": 6133,
+      "sha256": "e0c53274f2577754064870d3613ed3fc0348c8c62d523d58223f80d3d6f5c38d"
+    }
+  ],
+  "cause": "Client supplies saved-content absolute UTF-16 offsets to native textarea after the textarea value setter normalizes CRLF to LF. Every preceding collapsed CRLF shifts the visible position, including after preceding astral characters.",
+  "reproduction": {
+    "content": "😀 lead\r\nneedle here\r\nsecond needle\r\n",
+    "query": "needle",
+    "candidateLiteralSelection": [
+      "eedle ",
+      "edle\n"
+    ],
+    "candidateRegexSelection": "eedle ",
+    "productionLiteralSelection": [
+      "eedle ",
+      "edle\n"
+    ],
+    "expected": "needle"
+  },
+  "sourceGraphUnchanged": true,
+  "correctionEpochPending": true,
+  "author573MustRemainFrozen": true
+}

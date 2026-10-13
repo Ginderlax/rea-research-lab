@@ -1,0 +1,18 @@
+{
+  "schema": "rea-source-only-review-collector-correction/v1",
+  "before": {
+    "bytes": 17835,
+    "sha256": "817d5b76789af7cf7511698e0ff180d66d9d4c5c6f4740353f58299ddbd2ab62"
+  },
+  "after": {
+    "bytes": 18132,
+    "sha256": "9363f00051dc9fb34048c03c45fcca41a0522f48f61092748df5d88c9edcd5d0"
+  },
+  "substitution": {
+    "before": "assert.deepEqual((await tree(path.join(work,dir))).sort(),expected.sort());",
+    "after": "const entire=await tree(path.join(work,dir));const excluded=entire.filter(p=>p.split('/').includes('.local'));if(excluded.length)assert(manifest.excluded?.includes('.local/**'),'An original declared local-directory exclusion is mandatory');assert.deepEqual(entire.filter(p=>!p.split('/').includes('.local')).sort(),expected.sort());"
+  },
+  "classification": "Initial reviewer strict tree census ignored the original manifest explicit .local/** exclusion. Frozen public payloads were exact; original generated local-only observations are outside the source epoch. No plan/candidate/product bytes changed.",
+  "allFailuresRetained": true,
+  "sourceOnly": true
+}

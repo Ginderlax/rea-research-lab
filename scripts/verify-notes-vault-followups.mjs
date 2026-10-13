@@ -1,3 +1,4 @@
+import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync, readdirSync, lstatSync, realpathSync} from 'node:fs';
 import {resolve, relative, sep} from 'node:path';
@@ -80,7 +81,7 @@ export function verifyNotesVaultFollowups(root, {onFile, resolveHistorical} = {}
   assert.ok(rel && rel !== '..' && !rel.startsWith('..' + sep) && !rel.startsWith(sep), 'Escaping proof path: ' + p);
   return current;
  }
- function read(p, expected, nativeCheck = false) {
+ function rawRead(p, expected, nativeCheck = false) {
   const at = location(p), stat = lstatSync(at);
   assert.ok(stat.isFile() && stat.size <= 32 * 1024 * 1024, 'Nonregular/oversized proof: ' + p);
   const b = readFileSync(at), r = {bytes: b.length, sha256: hash(b)};
@@ -90,7 +91,7 @@ export function verifyNotesVaultFollowups(root, {onFile, resolveHistorical} = {}
   if (nativeCheck) noNative(b, p);
   return b;
  }
- const json = (p, expected) => JSON.parse(read(p, expected).toString('utf8'));
+ const migration=createEditorVaultProofMigration(rawRead);function read(p,expected,nativeCheck=false){return rawRead(migration.resolve(p,expected)??p,expected,nativeCheck);}const json = (p, expected) => JSON.parse(read(p, expected).toString('utf8'));
  function tree(prefix, rel = '', found = []) {
   assert.ok(rel.split('/').length < 40 && found.length < 20000, 'Proof inventory bound');
   const dir = location(prefix + (rel ? '/' + rel : ''));

@@ -1,0 +1,19 @@
+{
+  "schema": "rea-vault-group-coherence-test-adapters/v1",
+  "replay": {
+    "from": "work/keepass-group-postfreeze-review/probe.test.mjs",
+    "beforeSHA256": "5b07552d5f0646d20bcbb1aae8fbb441e2300f62e141d12d1d36956d793834d6",
+    "afterSHA256": "dc170a96d41520e4f479ee22df8517630442a13ece49f63f48571f3c802f143d",
+    "bodySHA256": "858667528dc75734f23243ca7a388a4f2d74c8232b569bc35987a5d1d0155a59",
+    "exactBodies": true,
+    "changes": "Three import paths +owned observation directory/mkdir only; no changed assertions."
+  },
+  "retry": {
+    "path": "work/keepass-group-bin-coherence-fix-next/products/rea-studio/apps/vault/group-ui.test.mjs",
+    "beforeSHA256": "2f2a1eecb7aa03ab2694cd282e3d85bf7d31d841b63debd1287b4804f5fedd6a",
+    "afterSHA256": "6f7be81d5f54f9766b34b29117827010335001ae2357dae72d9fe9256ad78c31",
+    "before": "f.store.set=real;await control.click();assert.equal((await f.call('list')).entries.length,0);",
+    "after": "f.store.set=real;await button(f.root,'Show groups').click();const fresh=row(f.root,'Selected');field(fresh,'Confirm recycle group and descendants').checked=true;await button(fresh,'Recycle group and descendants').click();assert.equal((await f.call('list')).entries.length,0);",
+    "reason": "Confirmed effects detach old controls at start; failed persistence requires explicit current list and reconfirmation before retry. Existing backend unchanged and same group UUID/token semantics retained."
+  }
+}

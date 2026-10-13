@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import {readFileSync,lstatSync,realpathSync} from 'node:fs';
+import {resolve,relative,sep} from 'node:path';
+import {createHash} from 'node:crypto';
+const fixed=/*FIXED_RECORDS*/null;
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const identity=b=>({bytes:b.length,sha256:sha(b)});
+function same(a,b,n){assert.equal(a.bytes,b.bytes,n+' bytes');assert.equal(a.sha256,b.sha256,n+' SHA256');}
+function safe(p){assert(typeof p==='string'&&p.length>0&&p.length<=4096&&!/[\\:\x00-\x1f\x7f]/.test(p)&&!p.startsWith('/'));for(const s of p.split('/'))assert(s&&s!=='.'&&s!=='..'&&!['.local','work','node_modules','artifacts','tooling'].includes(s),'Unsafe public proof path');return p;}
+function expected(r){assert(r&&Number.isSafeInteger(r.bytes)&&r.bytes>=0&&r.bytes<=32*1024*1024&&/^[0-9a-f]{64}$/.test(r.sha256));return {bytes:r.bytes,sha256:r.sha256};}
+/** Fixed source-only transition. No caller supplied routes or disable flag.
+ * The before bytes remain historical; every named installed after is required.
+ * This is bounded I/O authentication, not an atomic filesystem snapshot.
+ */
+export function createEditorVaultProofMigration(rawRead){assert.equal(typeof rawRead,'function');const seen=new Map();let total=0;
+ function read(p,r){safe(p);const b=rawRead(p);assert(Buffer.isBuffer(b)&&b.length<=32*1024*1024);const id=identity(b);if(r)same(id,expected(r),p);if(seen.has(p))same(id,seen.get(p),'Changed proof '+p);else{seen.set(p,id);total+=b.length;assert(seen.size<=100&&total<=16*1024*1024,'Transition aggregate bound');}return b;}
+ const manifest=JSON.parse(read(fixed.installation.manifest.path,fixed.installation.manifest));assert.equal(manifest.schema,'rea-editor-vault-root-installation-preservation/v1');assert.equal(manifest.records.length,1098);
+ const installed=JSON.parse(read(fixed.installation.record.path,fixed.installation.record));assert.equal(installed.installed.length,30);assert.deepEqual(installed.installed.map(r=>({path:r.destination,before:r.before,after:r.after})),fixed.sources);
+ const sourceRoutes=new Map(fixed.routes.map(r=>[r.path,r]));assert.equal(sourceRoutes.size,8);assert.equal(fixed.routes.filter(r=>r.affectedInOld720).length,6);
+ for(const r of fixed.sources)read(r.path,r.after);read(fixed.sharedHost.path,fixed.sharedHost);
+ const verifierRoutes=new Map(fixed.verifiers.map(r=>[r.path,r]));assert.equal(verifierRoutes.size,7);for(const r of fixed.verifiers)read(r.path,r.after);
+ for(const r of fixed.routes){read(r.historicalPath,r.before);const installationRow=installed.installed.find(s=>s.destination===r.path);assert(installationRow);same(installationRow.before,r.before,r.path);same(installationRow.after,r.after,r.path);}
+ for(const r of Object.values(fixed.metadata))read(r.historicalPath,r);
+ function resolveHistorical(p,r){safe(p);const row=sourceRoutes.get(p),v=verifierRoutes.get(p);if(!row&&!v)return null;assert(r,'Named transition requires an explicit expected identity: '+p);const id=expected(r);if(id.bytes===(row??v).after.bytes&&id.sha256===(row??v).after.sha256)return null;same(id,(row??v).before,'No unlisted historical identity allowed: '+p);return (row??v).historicalPath;}
+ function summary(){for(const [p,r]of seen)read(p,r);return{sourceOnly:true,namedSourceRoutes:8,old720ChangedCodeRoutes:6,docsOutside720:2,currentInstalledSourcesMandatory:30,currentSharedHostMandatory:1,currentVerifierAfterMandatory:7,historical847NotCurrentAcceptance:true,historical78NotCurrentAcceptance:true,unknownPathsNotMapped:true,authenticatedFiles:seen.size,authenticatedBytes:total,applicationExecutions:0,originalExecutions:0,browserExecutions:0,benchmarks:0,fullParity:false};}
+ return{resolve:resolveHistorical,historicalMetadata(name){assert(Object.hasOwn(fixed.metadata,name),'Only development/status beforemetadata');const r=fixed.metadata[name];return read(r.historicalPath,r);},historicalVerifier(p){assert(verifierRoutes.has(p),'Only named verifier beforeimages');const r=verifierRoutes.get(p);return read(r.historicalPath,r.before);},editorMismatchesIncludingHistoricalHost(rows){assert(Array.isArray(rows)&&rows.length===31);const result=[];for(const r of rows){const route=sourceRoutes.get(r.path);if(route){same(r,route.before,'Fixed old Editor source');result.push({path:r.path,testedSha256:r.sha256,liveSha256:route.after.sha256});}else if(r.path===fixed.sharedHost.path){assert.equal(r.bytes,7741);assert.equal(r.sha256,'807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f');result.push({path:r.path,testedSha256:r.sha256,liveSha256:fixed.sharedHost.sha256});}}assert.equal(result.length,5);return result;},summary};
+}
+export function createEditorVaultProofMigrationFromRoot(root){const base=realpathSync(resolve(root));return createEditorVaultProofMigration(p=>{safe(p);let at=base;for(const s of p.split('/')){at=resolve(at,s);assert(!lstatSync(at).isSymbolicLink(),'Reparse proof path');}const real=realpathSync(at),rel=relative(base,real);assert(rel&&rel!=='..'&&!rel.startsWith('..'+sep)&&!rel.startsWith(sep));const stat=lstatSync(at);assert(stat.isFile()&&stat.size<=32*1024*1024);const b=readFileSync(at);assert.equal(b.length,stat.size);return b;});}

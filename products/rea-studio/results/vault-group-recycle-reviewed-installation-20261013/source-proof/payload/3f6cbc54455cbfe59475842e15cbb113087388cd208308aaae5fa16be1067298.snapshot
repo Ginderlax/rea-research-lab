@@ -1,0 +1,27 @@
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {spawn} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+export const here=path.dirname(fileURLToPath(import.meta.url)),pass='Synthetic-history-master';
+export const fixtureRoot=path.resolve(here,'../../../..','.local/vault-history-fixtures',String(process.pid));
+export const observationsDirectory=path.join(fixtureRoot,'observations');
+export const oracle=process.env.REA_KEEPASS_EXE??path.resolve(here,'../../../..','projects/07-keepass/artifacts/portable/KeePass.exe');
+export const oracleSha='04d29636c393f0c1fc99ff739295494be3adefded93271e44591e8e300225a5a';
+export const observations=[];
+export async function temp(t,prefix='rea-keepass-history-'){const directory=await fs.mkdtemp(path.join(os.tmpdir(),prefix));t.after(async()=>{if(path.dirname(directory)!==path.resolve(os.tmpdir())||!path.basename(directory).startsWith(prefix))throw new Error('Unsafe synthetic cleanup target.');await fs.rm(directory,{recursive:true,force:true});});return directory;}
+export async function original(directory,config){
+  const exe=await fs.readFile(oracle);if(createHash('sha256').update(exe).digest('hex')!==oracleSha)throw new Error('Release SHA mismatch before spawning oracle.');
+  const cfg=path.join(directory,'oracle-'+observations.length+'-'+crypto.randomUUID()+'.json');await fs.writeFile(cfg,JSON.stringify({oracle,password:pass,...config}));
+  const env={...process.env};delete env.NODE_TEST_CONTEXT;
+  const result=await child('powershell.exe',['-NoProfile','-NonInteractive','-File',path.join(here,'history-oracle.ps1'),'-Config',cfg],{env});
+  let value;try{value=JSON.parse(result.stdout.trim())}catch(e){observations.push({config,result,error:e.message});throw new Error('Invalid original observation: '+result.stdout+' '+result.stderr)}
+  observations.push({config,result,value});return value;
+}
+export function child(command,args,{deadline=30000,cap=1024*1024,...options}={}){return new Promise((resolve,reject)=>{
+  const p=spawn(command,args,{windowsHide:true,...options}),chunks={stdout:[],stderr:[]},sizes={stdout:0,stderr:0};let problem;
+  const stop=reason=>{problem??=reason;p.kill();};const timer=setTimeout(()=>stop('Synthetic child deadline exceeded.'),deadline);
+  for(const name of ['stdout','stderr'])p[name].on('data',c=>{sizes[name]+=c.length;if(sizes[name]>cap)stop('Synthetic child '+name+' exceeds capture bound.');else chunks[name].push(c)});
+  p.on('error',e=>{problem??=e.message});p.on('close',(code,signal)=>{clearTimeout(timer);const result={code,signal,stdout:Buffer.concat(chunks.stdout).toString('utf8'),stderr:Buffer.concat(chunks.stderr).toString('utf8'),sizes};if(problem||code!==0){const error=new Error(problem??result.stderr??'Synthetic child failed.');error.observation=result;reject(error)}else resolve(result)});
+});}

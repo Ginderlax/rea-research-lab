@@ -1,6 +1,9 @@
 import {opendir, open} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
 import {editorRelativePath, MAX_EDITOR_PATH_CHARACTERS} from './file-path.mjs';
+import {createPatternSession,disposePatternSearches,PATTERN_LIMITS} from './search-pattern-session.mjs';
+
+export const disposeSearch=disposePatternSearches;
 
 export const SEARCH_LIMITS=Object.freeze({files:1000,entries:10000,depth:12,pathCharacters:MAX_EDITOR_PATH_CHARACTERS,fileBytes:2*1024*1024,scanBytes:32*1024*1024,matches:1000,queryBytes:32*1024,outputBytes:2*1024*1024,deadlineMs:5000});
 const ignored=name=>name==='.git'||name==='node_modules'||name.startsWith('.rea-save-');
@@ -9,10 +12,11 @@ const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
 
 /** Search saved UTF-8 text. Positions use one-based lines and UTF-16 columns. */
 export async function searchWorkspace(workspace,input={}) {
-  const query=input.query,matchCase=input.matchCase===undefined?true:input.matchCase;
+  const query=input.query,matchCase=input.matchCase===undefined?true:input.matchCase,wholeWord=input.wholeWord===undefined?false:input.wholeWord,useRegex=input.useRegex===undefined?false:input.useRegex;
   if(typeof query!=='string'||!query||/[\r\n\0]/.test(query)||Buffer.byteLength(query)>SEARCH_LIMITS.queryBytes)throw new Error('Enter nonempty single-line search text of at most32 KiB.');
   if(typeof matchCase!=='boolean')throw new Error('Match case must be true or false.');
-  const pattern=new RegExp(escape(query),matchCase?'gu':'giu'),started=performance.now(),files=[],matches=[],skipped=[],reasons=new Set();
+  if(typeof wholeWord!=='boolean'||typeof useRegex!=='boolean')throw new Error('Whole word and regular expression must be true or false.');
+  const isolated=wholeWord||useRegex,pattern=isolated?null:new RegExp(escape(query),matchCase?'gu':'giu'),started=performance.now(),files=[],matches=[],skipped=[],reasons=new Set();let session;
   let visitedEntries=0,inspectedFiles=0,searchedFiles=0,readBytes=0,outputBytes=Buffer.byteLength(query)+65536;
   const deadline=()=>{if(performance.now()-started>=SEARCH_LIMITS.deadlineMs){reasons.add('deadline');return true;}return false;};
   async function walk(folder='',depth=0) {
@@ -37,7 +41,9 @@ export async function searchWorkspace(workspace,input={}) {
       if(reasons.has('file-limit')||reasons.has('directory-entry-limit')||reasons.has('deadline'))return;
     }
   }
-  await walk();files.sort();const buffer=Buffer.alloc(files.length?SEARCH_LIMITS.fileBytes+1:0);
+  try {
+  if(isolated)try{session=await createPatternSession(workspace,{query,matchCase,wholeWord,useRegex},started+SEARCH_LIMITS.deadlineMs);}catch(error){if(['timeout','failed'].includes(error.code))reasons.add(error.code==='timeout'?'regex-time-limit':'regex-worker-failed');else throw error;}
+  if(!isolated||session)await walk();files.sort();const buffer=Buffer.alloc(files.length?SEARCH_LIMITS.fileBytes+1:0);
   if(!reasons.has('deadline'))for(const name of files) {
     if(deadline())break;
     inspectedFiles++;
@@ -62,6 +68,17 @@ export async function searchWorkspace(workspace,input={}) {
       let content;
       try {content=new TextDecoder('utf-8',{fatal:true}).decode(bytes);}catch{skipped.push({path:name,reason:'invalid-utf8'});continue;}
       searchedFiles++;const revision=digest(bytes);let offset=0,line=1;
+      if(isolated){
+        let rows;
+        try{rows=await session.match(content,SEARCH_LIMITS.matches-matches.length+1);}
+        catch(error){if(error.code==='disposed')throw error;reasons.add(error.code==='timeout'?'regex-time-limit':'regex-worker-failed');skipped.push({path:name,reason:error.code==='timeout'?'regex-time-limit':'regex-worker-failed'});break;}
+        for(const match of rows){
+          if(matches.length===SEARCH_LIMITS.matches){reasons.add('match-limit');break;}
+          const row={path:name,revision,...match},size=Buffer.byteLength(JSON.stringify(row));
+          if(outputBytes+size>SEARCH_LIMITS.outputBytes){reasons.add('output-byte-limit');break;}
+          matches.push(row);outputBytes+=size;
+        }
+      }else{
       // A streaming line cursor avoids creating an unbounded array of short lines.
       while(offset<content.length) {
         if(deadline())break;
@@ -79,12 +96,15 @@ export async function searchWorkspace(workspace,input={}) {
         if(reasons.has('match-limit')||reasons.has('output-byte-limit')||reasons.has('deadline'))break;
         if(newline<0)break;offset=next+1;line++;
       }
+      }
     }catch(error){if(['ENOENT','ENOTDIR','EISDIR'].includes(error.code))skipped.push({path:name,reason:'changed-during-search'});else throw error;}
     finally{if(file)await file.close();}
-    if(['match-limit','output-byte-limit','deadline','scan-byte-limit'].some(reason=>reasons.has(reason)))break;
+    if(['match-limit','output-byte-limit','deadline','scan-byte-limit','regex-time-limit','regex-worker-failed'].some(reason=>reasons.has(reason)))break;
   }
   const result={query,matchCase,matches,matchedFiles:new Set(matches.map(row=>row.path)).size,inspectedFiles,searchedFiles,readBytes,visitedEntries,skipped,truncated:reasons.size>0,limitReasons:[...reasons],source:'saved-files',positions:'one-based lines and UTF-16 columns; end is exclusive',limits:SEARCH_LIMITS};
+  if(isolated)Object.assign(result,{wholeWord,useRegex,patternLanguage:'JavaScript Unicode single-line regex with Unicode shorthand classes and word boundaries; not full Rust/PCRE2',patternLimits:PATTERN_LIMITS,zeroLength:'Unicode scalar advancement; empty files and virtual terminal lines excluded; original engine empty-match iteration can differ'});
   // Refuse an unexpected metadata/output expansion rather than returning a hidden overflow.
   if(Buffer.byteLength(JSON.stringify(result))>SEARCH_LIMITS.outputBytes)throw new Error('Search response exceeds the2 MiB output limit.');
   return result;
+  }finally{if(session)await session.close();}
 }

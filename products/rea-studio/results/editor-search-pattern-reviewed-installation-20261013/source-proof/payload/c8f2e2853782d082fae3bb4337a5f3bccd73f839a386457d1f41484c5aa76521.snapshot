@@ -1,0 +1,48 @@
+$ErrorActionPreference = 'Stop'
+$reviewPort = 50583
+$reviewRun = Join-Path $PSScriptRoot 'runs/browser-2026-10-13T04-21-26-695Z'
+$reviewListener = @(Get-NetTCPConnection -LocalPort $reviewPort -State Listen)
+if ($reviewListener.Count -ne 1) { throw 'Expected exactly the owned review listener.' }
+$reviewHostPid = [int]$reviewListener[0].OwningProcess
+$reviewProcess = Get-CimInstance Win32_Process -Filter "ProcessId=$reviewHostPid"
+if ($reviewProcess.CommandLine -notlike '*work/editor-search-pattern-independent-review/browser-host.mjs*') { throw 'Owned command line does not match.' }
+if ($reviewProcess.ExecutablePath -ne 'C:\Program Files\nodejs\node.exe') { throw 'Owned Node path does not match.' }
+$reviewSession = Invoke-RestMethod -Uri "http://127.0.0.1:$reviewPort/session"
+$reviewHeaders = @{ 'x-review-token' = $reviewSession.token }
+$reviewData = Invoke-RestMethod -Uri "http://127.0.0.1:$reviewPort/api/candidate/list" -Method Post -Headers $reviewHeaders -ContentType 'application/json' -Body '{}'
+$reviewRoot = [System.IO.Path]::GetFullPath($reviewData.root)
+$reviewTemp = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath()).TrimEnd('\') + '\'
+if (-not $reviewRoot.StartsWith($reviewTemp, [System.StringComparison]::OrdinalIgnoreCase)) { throw 'Owned synthetic root escapes temporary directory.' }
+if ([System.IO.Path]::GetFileName($reviewRoot) -notlike 'rea-editor-browser-review-*') { throw 'Owned synthetic root name mismatch.' }
+$reviewItem = Get-Item -LiteralPath $reviewRoot
+if (($reviewItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Owned root is a reparse point.' }
+$reviewContents = @(Get-ChildItem -LiteralPath $reviewRoot -Force)
+if ($reviewContents.Count -ne 1 -or $reviewContents[0].Name -ne 'fixture.txt' -or $reviewContents[0].PSIsContainer) { throw 'Unexpected owned synthetic contents.' }
+if (($reviewContents[0].Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'Owned fixture is a reparse point.' }
+Copy-Item -LiteralPath $reviewContents[0].FullName -Destination (Join-Path $reviewRun 'synthetic-fixture.txt.snapshot')
+Stop-Process -Id $reviewHostPid
+$reviewRemaining = Get-Process -Id $reviewHostPid -ErrorAction SilentlyContinue
+if ($reviewRemaining) { throw 'Owned process exit unconfirmed.' }
+Remove-Item -LiteralPath $reviewRoot -Recurse -Force
+if (Test-Path -LiteralPath $reviewRoot) { throw 'Owned synthetic cleanup unconfirmed.' }
+$reviewObservation = [ordered]@{
+  schema = 'rea-editor-owned-browser-host-forced-cleanup/v1'
+  ownedPort = $reviewPort
+  ownedPid = $reviewHostPid
+  executablePathVerified = $true
+  commandLineVerified = $true
+  nativeStdinUnavailable = $true
+  stdinToolError = 'write_stdin failed: stdin is closed for this session; rerun exec_command with tty=true to keep stdin open'
+  gracefulHostReceiptProduced = $false
+  hostInMemoryAPICallsAndCapturesPersisted = $false
+  CuaNativeDOMAndVisibleObserverRecordsPreservedSeparately = $true
+  processExitObserved = $true
+  ownedTemporaryDirectoryRemoved = $true
+  cleanupOnlySessionRequests = 1
+  cleanupOnlyListRequests = 1
+  sessionTokenPersisted = $false
+  browserTabCloseResolved = $true
+  user4311Touched = $false
+}
+$reviewObservation | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $reviewRun 'forced-cleanup.json') -Encoding utf8
+$reviewObservation | ConvertTo-Json -Compress

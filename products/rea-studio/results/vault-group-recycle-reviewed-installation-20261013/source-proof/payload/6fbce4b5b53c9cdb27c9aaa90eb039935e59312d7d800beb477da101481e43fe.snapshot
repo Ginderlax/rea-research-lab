@@ -1,0 +1,26 @@
+{
+  "schema": "rea-vault-group-active-list-transform/v1",
+  "before": {
+    "bytes": 24650,
+    "sha256": "df55f9917f5aa074d3026e0afaaa011bbc185f0c8022656ec7e75320f8eb801c"
+  },
+  "after": {
+    "bytes": 24831,
+    "sha256": "6409badcd044cadc07d17edd4d749165f5cd5498d206f946f299da48d05477a5"
+  },
+  "changes": [
+    {
+      "before": "    async function list() {\n",
+      "after": "    async function list(internal=false) {\n      if(groupEffects&&!internal)throw new Error('Wait for the pending group operation before searching entries.');\n"
+    },
+    {
+      "before": "    button(gate,'Search',list); await list();if(!viewCurrent())return;\n",
+      "after": "    button(gate,'Search',list); await list(true);if(!viewCurrent())return;\n"
+    },
+    {
+      "before": "        async function mutate(action,confirmation,permanent){if(!current())return;if(selected||editorDirty()||entryEffects)throw new Error('Close the entry editor and save or discard its draft before changing a group.');if(groupEffects)throw new Error('Wait for the pending group operation.');if(!confirmation.checked)throw new Error('Confirm the recursive group operation.');selectionGeneration++;editor();binGeneration++;function scrub(n){if('value'in n)n.value='';for(const child of n.children)scrub(child);}scrub(binPanel);binPanel.replaceChildren();const operation=++groupGeneration;groupPanel.replaceChildren(node('h3','Group operation pending'));button(groupPanel,'Close group panel',async()=>{groupGeneration++;groupPanel.replaceChildren();});const operationCurrent=()=>viewCurrent()&&operation===groupGeneration&&groupPanel.parentElement===gate;groupEffects++;try{await api(action,{id:item.id,revision:item.recycleRevision,confirm:true,...(permanent===undefined?{}:{permanent})});if(!operationCurrent())return;await list();if(operationCurrent())await groupList(bin,true);}finally{groupEffects--;}}\n",
+      "after": "        async function mutate(action,confirmation,permanent){if(!current())return;if(selected||editorDirty()||entryEffects)throw new Error('Close the entry editor and save or discard its draft before changing a group.');if(groupEffects)throw new Error('Wait for the pending group operation.');if(!confirmation.checked)throw new Error('Confirm the recursive group operation.');listGeneration++;results.replaceChildren();selectionGeneration++;editor();binGeneration++;function scrub(n){if('value'in n)n.value='';for(const child of n.children)scrub(child);}scrub(binPanel);binPanel.replaceChildren();const operation=++groupGeneration;groupPanel.replaceChildren(node('h3','Group operation pending'));button(groupPanel,'Close group panel',async()=>{groupGeneration++;groupPanel.replaceChildren();});const operationCurrent=()=>viewCurrent()&&operation===groupGeneration&&groupPanel.parentElement===gate;groupEffects++;try{await api(action,{id:item.id,revision:item.recycleRevision,confirm:true,...(permanent===undefined?{}:{permanent})});if(!operationCurrent())return;await list(true);if(operationCurrent())await groupList(bin,true);}finally{groupEffects--;}}\n"
+    }
+  ],
+  "inverseExact": true
+}

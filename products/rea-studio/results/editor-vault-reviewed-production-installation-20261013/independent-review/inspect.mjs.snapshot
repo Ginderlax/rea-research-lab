@@ -1,0 +1,6 @@
+import fs from'node:fs/promises';import path from'node:path';import{createHash}from'node:crypto';import assert from'node:assert/strict';
+const here=import.meta.dirname,stage=path.resolve(here,'../vault-group-publication-plan-next'),id=b=>({bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')});
+const raw=await fs.readFile(path.join(stage,'manifest.json'));assert.equal(id(raw).sha256,'8a575dd9610bf71a6b81169314d45b023aaff96f629a9648d4af9df5222d9521');const m=JSON.parse(raw);
+const p=JSON.parse(await fs.readFile(path.join(stage,'source-proof/preservation-manifest.json')));const output={manifest:{...id(raw),keys:Object.keys(m),files:m.files,inventoryRows:m.inventory.length},map:{keys:Object.keys(p)}};
+for(const[k,v]of Object.entries(p)){if(Array.isArray(v))output.map[k]={rows:v.length,first:v[0],last:v.at(-1)};else if(typeof v==='object'&&v!==null)output.map[k]=v;else output.map[k]=v;}
+await fs.writeFile(path.join(here,'inspection.json'),JSON.stringify(output,null,2)+'\n',{flag:'wx'});process.stdout.write(JSON.stringify(output,null,2)+'\n');

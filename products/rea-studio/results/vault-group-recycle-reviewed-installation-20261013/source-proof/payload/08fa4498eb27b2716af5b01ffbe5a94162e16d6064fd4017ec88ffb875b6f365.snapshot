@@ -1,0 +1,30 @@
+{
+  "schema": "rea-vault-group-client-coherence-transform/v1",
+  "before": {
+    "bytes": 23944,
+    "sha256": "7f44f0886ce2987f178235ba6b56a475f5a978b1bfb9b59739611b02bd4abc8e"
+  },
+  "after": {
+    "bytes": 24650,
+    "sha256": "df55f9917f5aa074d3026e0afaaa011bbc185f0c8022656ec7e75320f8eb801c"
+  },
+  "transforms": [
+    {
+      "line": 87,
+      "before": "    async function binList(){const request=++binGeneration,value=await api('recycleList',{});if(!viewCurrent()||request!==binGeneration)return;binPanel.replaceChildren(node('h3','Recycle bin'),node('p',value.enabled?'Deleted entries remain encrypted here until permanently deleted.':'Recycling is disabled in this imported database. Existing bin entries can still be restored.','muted'));\n",
+      "after": "    async function binList(){if(groupEffects)throw new Error('Wait for the pending group operation before reopening the entry recycle bin.');const request=++binGeneration,value=await api('recycleList',{});if(!viewCurrent()||request!==binGeneration)return;binPanel.replaceChildren(node('h3','Recycle bin'),node('p',value.enabled?'Deleted entries remain encrypted here until permanently deleted.':'Recycling is disabled in this imported database. Existing bin entries can still be restored.','muted'));\n"
+    },
+    {
+      "line": 153,
+      "before": "    async function groupList(bin=false){const request=++groupGeneration,value=await api('recycleGroupList',{bin});if(!viewCurrent()||request!==groupGeneration)return;groupPanel.replaceChildren(node('h3',bin?'Recycled groups':'Groups'),node('p','Group actions include every descendant. Close the entry editor and clear its draft before changing a group.','muted'));\n",
+      "after": "    async function groupList(bin=false,internal=false){if(groupEffects&&!internal)throw new Error('Wait for the pending group operation before refreshing groups.');const request=++groupGeneration,value=await api('recycleGroupList',{bin});if(!viewCurrent()||request!==groupGeneration)return;groupPanel.replaceChildren(node('h3',bin?'Recycled groups':'Groups'),node('p','Group actions include every descendant. Close the entry editor and clear its draft before changing a group.','muted'));\n"
+    },
+    {
+      "line": 157,
+      "before": "        async function mutate(action,confirmation,permanent){if(!current())return;if(selected||editorDirty()||entryEffects)throw new Error('Close the entry editor and save or discard its draft before changing a group.');if(groupEffects)throw new Error('Wait for the pending group operation.');if(!confirmation.checked)throw new Error('Confirm the recursive group operation.');selectionGeneration++;editor();groupEffects++;try{await api(action,{id:item.id,revision:item.recycleRevision,confirm:true,...(permanent===undefined?{}:{permanent})});if(!current())return;await list();if(current())await groupList(bin);}finally{groupEffects--;}}\n",
+      "after": "        async function mutate(action,confirmation,permanent){if(!current())return;if(selected||editorDirty()||entryEffects)throw new Error('Close the entry editor and save or discard its draft before changing a group.');if(groupEffects)throw new Error('Wait for the pending group operation.');if(!confirmation.checked)throw new Error('Confirm the recursive group operation.');selectionGeneration++;editor();binGeneration++;function scrub(n){if('value'in n)n.value='';for(const child of n.children)scrub(child);}scrub(binPanel);binPanel.replaceChildren();const operation=++groupGeneration;groupPanel.replaceChildren(node('h3','Group operation pending'));button(groupPanel,'Close group panel',async()=>{groupGeneration++;groupPanel.replaceChildren();});const operationCurrent=()=>viewCurrent()&&operation===groupGeneration&&groupPanel.parentElement===gate;groupEffects++;try{await api(action,{id:item.id,revision:item.recycleRevision,confirm:true,...(permanent===undefined?{}:{permanent})});if(!operationCurrent())return;await list();if(operationCurrent())await groupList(bin,true);}finally{groupEffects--;}}\n"
+    }
+  ],
+  "inverseExact": true,
+  "backendChanges": 0
+}

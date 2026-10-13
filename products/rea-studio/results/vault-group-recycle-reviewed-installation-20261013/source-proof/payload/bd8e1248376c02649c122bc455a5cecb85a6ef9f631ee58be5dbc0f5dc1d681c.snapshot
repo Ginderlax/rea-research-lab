@@ -1,0 +1,18 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+const own=path.dirname(fileURLToPath(import.meta.url)),workspace=path.resolve(own,'../..'),repo=path.join(workspace,'outputs/rea-research-lab'),studio=path.join(repo,'products/rea-studio');
+const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+async function save(relative,bytes){const target=path.join(own,relative);await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes);}
+async function bind(source,destination){const bytes=await fs.readFile(source);if(destination)await save(destination,bytes);return{source:path.relative(workspace,source).replaceAll('\\','/'),destination,bytes:bytes.length,sha256:hash(bytes)};}
+const baseline=[];for(const name of (await fs.readdir(path.join(studio,'apps/vault'),{withFileTypes:true})).filter(e=>e.isFile()).map(e=>e.name).sort()){const relative='apps/vault/'+name,source=path.join(studio,relative);baseline.push(await bind(source,'baseline/'+relative+'.snapshot'));await save('products/rea-studio/'+relative,await fs.readFile(source));}
+for(const relative of ['lib/storage.mjs','lib/workspace.mjs','lib/catalog.mjs']){try{baseline.push(await bind(path.join(studio,relative),'baseline/'+relative+'.snapshot'));await save('products/rea-studio/'+relative,await fs.readFile(path.join(studio,relative)));}catch(error){if(error.code!=='ENOENT')throw error;}}
+await save('baseline-source.json',JSON.stringify({schema:'rea-keepass-group-production-baseline/v1',createdAt:new Date().toISOString(),files:baseline},null,2)+'\n');
+const previous=path.join(workspace,'work/keepass-recycle-next'),provenance=JSON.parse(await fs.readFile(path.join(previous,'source-provenance.json'),'utf8')),original=[];
+for(const file of provenance.files){const source=path.join(previous,file.path),bytes=await fs.readFile(source);if(bytes.length!==file.bytes||hash(bytes)!==file.sha256)throw new Error('Pinned original source mismatch '+file.path);original.push(await bind(source,file.path));}
+await save('source-provenance.json',JSON.stringify({...provenance,derivation:'Selected exact prior source bytes; group orchestration studied at MainForm_Functions.cs DeleteSelectedGroup/GetPreviousParentGroupSafe/MoveToPreviousParentGroup; actual library differential runs are separately counted.',files:original.map((r,i)=>({...provenance.files[i],source:r.source}))},null,2)+'\n');
+const manual=[];for(const name of ['manual-contracts.json','manual-contracts.md','license-provenance.json','discovery-provenance.json','carrier-census-manifest.json','existing-requirements-binding.json','LICENSE.txt'])manual.push(await bind(path.join(studio,'requirements/keepass-manual-supplement',name),'manual-study/'+name+'.snapshot'));
+const originalExe=await bind(path.join(repo,'projects/07-keepass/artifacts/portable/KeePass.exe'),null);if(originalExe.sha256!=='04d29636c393f0c1fc99ff739295494be3adefded93271e44591e8e300225a5a')throw new Error('Original assembly pin mismatch');
+await save('authority-baseline.json',JSON.stringify({schema:'rea-keepass-group-authority/v1',originalExe,originalSource:original,manual,originalProgramExecutions:0,originalGUI:0,scope:'Finite source assisted group deletion/restore candidate; selected manual records supplement unchanged historical159/232. No original executable/archive bytes copied into this stage.'},null,2)+'\n');
+console.log(JSON.stringify({baseline:baseline.length,originalSource:original.length,manual:manual.length,originalExe:originalExe.sha256}));

@@ -1,0 +1,4 @@
+import {start} from './host/server.mjs';
+const host=await start({port:0,dataDir:process.argv[2]});
+process.send?.({url:host.url,token:host.token});
+process.on('message',async value=>{if(value==='close'){await host.close();process.disconnect();}});

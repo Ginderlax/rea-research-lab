@@ -1,0 +1,22 @@
+import fs from'node:fs/promises';import path from'node:path';import assert from'node:assert/strict';import{createHash}from'node:crypto';
+const here=import.meta.dirname,from=path.resolve(here,'../editor-search-pattern-independent-review'),id=b=>({bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')});
+const rows=[];
+for(const file of['fresh.test.mjs','ui-fixture.mjs','fault-worker-startup.mjs','fault-worker-exit.mjs','collect-fresh.mjs']){
+ const before=await fs.readFile(path.join(from,file));let text=before.toString('utf8');const adaptations=[];
+ const replace=(a,b,expected)=>{const count=text.split(a).length-1;assert.equal(count,expected,a);text=text.split(a).join(b);adaptations.push({before:a,after:b,occurrences:count});};
+ if(file==='fresh.test.mjs')replace('../editor-search-pattern-next/','../editor-search-pattern-textarea-fix-next/',4);
+ if(file==='ui-fixture.mjs')replace('../editor-search-pattern-next/','../editor-search-pattern-textarea-fix-next/',1);
+ if(file==='collect-fresh.mjs'){
+  replace('../editor-search-pattern-next','../editor-search-pattern-textarea-fix-next',1);
+  replace('7f975ae3f7a0827f5b9ade231bd121c5b4028f17d88758455fd680962ff0f878','0b4297c0d1d498ed614f6d98b8850fd05520594f850e7448c82e9652b9653f17',1);
+  replace('rea-editor-pattern-candidate-freeze/v1','rea-editor-pattern-textarea-correction-freeze/v1',1);
+  replace('manifest.inventory.length,573','manifest.inventory.length,852',1);
+  replace("candidate-final-sources.json'))).rows","candidate-final41.json')))",1);
+  replace('named.length,39','named.length,41',1);
+  replace('authorFrozenPayloads:573','authorFrozenPayloads:852',1);
+  replace('candidateNamedSources:39','candidateNamedSources:41',1);
+ }
+ const after=Buffer.from(text);await fs.writeFile(path.join(here,file),after,{flag:'wx'});assert((await fs.readFile(path.join(from,file))).equals(before));rows.push({file,input:id(before),output:id(after),adaptations});
+}
+await fs.writeFile(path.join(here,'replay-adapters.json'),JSON.stringify({schema:'rea-editor-textarea-review-path-only-behavior-replay-adapters/v1',rows,behaviorBodiesChanged:false,historicalTestTitlesRetained:true,newIndependentGroups:0,oldIndependentGroupsReplayed:16,modelTextareaDoesNotNormalizeCRLF:true,actualBrowserNormalizationEvidenceSeparate:true},null,2)+'\n',{flag:'wx'});
+process.stdout.write(JSON.stringify({prepared:true,behaviorBodiesChanged:false,oldGroupsToReplay:16,newIndependentGroups:0})+'\n');

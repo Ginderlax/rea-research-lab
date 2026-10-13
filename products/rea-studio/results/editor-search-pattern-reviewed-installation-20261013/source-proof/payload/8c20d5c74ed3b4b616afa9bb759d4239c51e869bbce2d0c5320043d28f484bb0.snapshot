@@ -1,0 +1,196 @@
+{
+  "seed": "0x19e74bc1",
+  "files": {
+    "plain.txt": "cat cats xcat cat_ cat́ cat‌b CAT\r\ncat! (cat) cat. .cat a|b a b ab ba\n^ $ [] .a a. --\n",
+    "unicode.txt": "🧪 café ١２ 42\r\n漢字 é Σ σ ς K K k\n",
+    "bom.txt": "﻿cat 🧪\n",
+    "blank.txt": "\r\n",
+    "empty.txt": "",
+    "generated.txt": "🧪 . 漢 3 🧪 á ١ é cat 3\r\n🧪 3 _ 3 cat . 漢 cats cat 3\r\n🧪 é cat cats cat á 漢 3 🧪 cats\r\n漢 cats cat é 漢 cats ١ 3 🧪 .\r\n_ cats ١ cats _ 3 cat . _ cats\r\n漢 é 🧪 3 cat 3 🧪 é 漢 á\r\ncat á cat cats ١ é ١ 3 漢 cats\r\n🧪 3 🧪 cats cat cats cat é 🧪 é\r\n١ é 🧪 á 🧪 é _ . 漢 á\r\ncat á _ cats 漢 3 _ é 🧪 3\r\n"
+  },
+  "inputs": [
+    {
+      "query": "cat",
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": ".a",
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": "a.",
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": "--",
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": "cat!",
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": "é",
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": "漢",
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": "[",
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": "a|b",
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": "🧪",
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": "cat",
+      "wholeWord": true,
+      "matchCase": false,
+      "expectedExact": true
+    },
+    {
+      "query": "cat",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "c.t",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "cat|漢",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "[a-c]+",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "\\w+",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "\\d+",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "\\bcat\\b",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "\\Bcat",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "\\p{L}+",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "(?<= )cat",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "cat(?=!)",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "(?:cat){1,2}",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "[\\w]+",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "[^\\d ]+",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "\\u00e9",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "^cat",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "$",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "^|$",
+      "useRegex": true,
+      "expectedExact": true
+    },
+    {
+      "query": "a|b",
+      "useRegex": true,
+      "wholeWord": true,
+      "expectedExact": true
+    },
+    {
+      "query": "cat",
+      "useRegex": true,
+      "matchCase": false,
+      "expectedExact": true
+    },
+    {
+      "query": "k|σ",
+      "useRegex": true,
+      "matchCase": false,
+      "expectedExact": true
+    },
+    {
+      "query": "(?:)",
+      "useRegex": true,
+      "expectedExact": false,
+      "qualification": "Known original empty-match byte iteration differs from safe Unicode scalar iterator."
+    },
+    {
+      "query": "a?",
+      "useRegex": true,
+      "expectedExact": false,
+      "qualification": "Known original empty-match byte iteration differs from safe Unicode scalar iterator."
+    },
+    {
+      "query": "cat|",
+      "useRegex": true,
+      "expectedExact": false,
+      "qualification": "Known original empty-match byte iteration differs from safe Unicode scalar iterator."
+    }
+  ],
+  "scope": "Predeclared finite single-line cases; original service/workbench not executed."
+}

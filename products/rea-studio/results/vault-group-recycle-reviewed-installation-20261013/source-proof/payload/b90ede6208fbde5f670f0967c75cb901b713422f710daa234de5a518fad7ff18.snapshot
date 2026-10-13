@@ -1,0 +1,68 @@
+{
+  "scope": "Own collector and harness correction only; first product cases passed2/2 but collector parsed spec output as TAP, recording null totals. Initial cleanup removed owned data before idle hosts closed. Frozen first17 and777 remain unchanged.",
+  "previousManifestSha256": "fcb9afdc781ca39cb43974dcad47869df324a21878feb1682d0aa20c87795327",
+  "changes": [
+    {
+      "path": "http.test.mjs",
+      "before": {
+        "bytes": 8340,
+        "sha256": "ef64022556a34a00cc309688c32486d0c19014619449fdc3176c70273775b4da"
+      },
+      "after": {
+        "bytes": 8518,
+        "sha256": "81863d303350f39515fa672923074748452273fe18230edbf1a7d7f6ceec85c5"
+      },
+      "replacements": [
+        [
+          "const observations=[],own=import.meta.dirname,master=",
+          "const activeHosts=new Map(),observations=[],own=import.meta.dirname,master="
+        ],
+        [
+          "t.after(async()=>{assert.equal(path.dirname(dir)",
+          "t.after(async()=>{for(const h of activeHosts.get(dir)??[])await h.close();assert.equal(path.dirname(dir)"
+        ],
+        [
+          "return {...ready,async close()",
+          "const value={...ready,async close()"
+        ],
+        [
+          "return expected===200?result.result:result;}};",
+          "return expected===200?result.result:result;}};const owned=activeHosts.get(dir)??[];owned.push(value);activeHosts.set(dir,owned);return value;"
+        ]
+      ]
+    },
+    {
+      "path": "host-runner.mjs",
+      "before": {
+        "bytes": 248,
+        "sha256": "e2ca0d02ad18c4b0d0ee8d286b5bc996148981a0fe9b4e544041c81519a2df98"
+      },
+      "after": {
+        "bytes": 248,
+        "sha256": "e2ca0d02ad18c4b0d0ee8d286b5bc996148981a0fe9b4e544041c81519a2df98"
+      },
+      "replacements": []
+    },
+    {
+      "path": "run.mjs",
+      "before": {
+        "bytes": 5070,
+        "sha256": "804d992874860554899fc31a535d75ed72f2e928dcb67a5826a52f8a15a774b4"
+      },
+      "after": {
+        "bytes": 5367,
+        "sha256": "22f9a9bdcbcbb97d277779858d16f8f6da90e367495fd69220591130f3db21bd"
+      },
+      "replacements": [
+        [
+          "['--test','--test-concurrency=1'",
+          "['--test','--test-reporter=tap','--test-concurrency=1'"
+        ],
+        [
+          "process.exitCode=exit.code??1;",
+          "assert(Object.values(counts).every(Number.isSafeInteger),'All finite test totals must be parsed');assert.equal(counts.tests,2);assert.equal(counts.pass,2);assert.equal(counts.fail,0);assert.equal(counts.cancelled,0);assert.equal(counts.skipped,0);assert.equal(counts.todo,0);process.exitCode=exit.code??1;"
+        ]
+      ]
+    }
+  ]
+}

@@ -4,12 +4,14 @@ function field(parent, label, type = 'text', value = '') {
   if (type !== 'textarea') input.type = type; input.value = value; wrapper.append(input); parent.append(wrapper); return input;
 }
 export async function render(root, api) {
-  const transport = api; let idleTimer,sessionEpoch=0,selectionGeneration=0,refreshGeneration=0,disposed=false;
+  const transport = api; let idleTimer,sessionEpoch=0,selectionGeneration=0,refreshGeneration=0,disposed=false,groupEffects=0,entryEffects=0;
   api = async (action,input) => {
     if(disposed)throw new Error('This vault view is closed.');
     if(['lock','create','unlock','importEncrypted','importKdbx'].includes(action)){sessionEpoch++;clearTimeout(idleTimer);}
     const epoch=sessionEpoch;
-    const result = await transport(action,input);
+    const entryEffect=['save','delete','historyRestore','recycleDelete','recycleRestore'].includes(action);
+    if(entryEffect&&groupEffects)throw new Error('Wait for the pending group operation before changing entries.');
+    let result;if(entryEffect)entryEffects++;try{result=await transport(action,input);}finally{if(entryEffect)entryEffects--;}
     if(disposed)throw new Error('This vault view is closed.');
     if (epoch===sessionEpoch&&content.parentElement===root&&!['status','generate'].includes(action)) {
       clearTimeout(idleTimer);
@@ -73,16 +75,17 @@ export async function render(root, api) {
     const results = node('div',undefined,'grid'); gate.append(results);
     let listGeneration=0;
     const viewCurrent=()=>!disposed&&view===refreshGeneration&&gate.parentElement===content&&content.parentElement===root;
-    async function list() {
+    async function list(internal=false) {
+      if(groupEffects&&!internal)throw new Error('Wait for the pending group operation before searching entries.');
       const generation=++listGeneration,data = await api('list',{ search: search.value });if(!viewCurrent()||generation!==listGeneration)return; results.replaceChildren();
       if (!data.entries.length) results.append(node('p','No entries yet. Create one below.','muted'));
       for (const item of data.entries) {
         const row = node('section',undefined,'card'); row.append(node('strong',item.title),node('p',[item.group,item.username].filter(Boolean).join(' · ')));
-        button(row,'Open entry',async () => { const generation=++selectionGeneration,result=await api('read',{ id: item.id });if(!viewCurrent()||generation!==selectionGeneration)return; selected=result.entry; editor(); }); results.append(row);
+        button(row,'Open entry',async () => {if(groupEffects)throw new Error('Wait for the pending group operation before opening an entry.'); const generation=++selectionGeneration,result=await api('read',{ id: item.id });if(!viewCurrent()||generation!==selectionGeneration)return; selected=result.entry; editor(); }); results.append(row);
       }
     }
     const binPanel=node('section',undefined,'card');gate.append(binPanel);let binGeneration=0;
-    async function binList(){const request=++binGeneration,value=await api('recycleList',{});if(!viewCurrent()||request!==binGeneration)return;binPanel.replaceChildren(node('h3','Recycle bin'),node('p',value.enabled?'Deleted entries remain encrypted here until permanently deleted.':'Recycling is disabled in this imported database. Existing bin entries can still be restored.','muted'));
+    async function binList(){if(groupEffects)throw new Error('Wait for the pending group operation before reopening the entry recycle bin.');const request=++binGeneration,value=await api('recycleList',{});if(!viewCurrent()||request!==binGeneration)return;binPanel.replaceChildren(node('h3','Recycle bin'),node('p',value.enabled?'Deleted entries remain encrypted here until permanently deleted.':'Recycling is disabled in this imported database. Existing bin entries can still be restored.','muted'));
       button(binPanel,'Close recycle bin',async()=>{binGeneration++;binPanel.replaceChildren();});
       if(!value.entries.length)binPanel.append(node('p','The recycle bin is empty.'));
       for(const item of value.entries){const row=node('section',undefined,'card');row.append(node('strong',item.title),node('p',item.canRestorePreviousGroup?'Previous group: '+item.previousGroup:'Previous group unavailable.'));binPanel.append(row);
@@ -95,9 +98,9 @@ export async function render(root, api) {
       }
     }
     button(gate,'Show recycle bin',binList);
-    button(gate,'Search',list); await list();if(!viewCurrent())return;
+    button(gate,'Search',list); await list(true);if(!viewCurrent())return;
     const edit = node('section',undefined,'card'); content.append(edit);
-    let editorVersion=0;
+    let editorVersion=0,editorDirty=()=>false;
     function editor(retainedDraft) {
       const version=++editorVersion,generation=selectionGeneration,entryId=selected?.id;
       const current=()=>viewCurrent()&&version===editorVersion&&generation===selectionGeneration&&selected?.id===entryId&&edit.parentElement===content;
@@ -106,7 +109,7 @@ export async function render(root, api) {
       const title = field(edit,'Title','text',values?.title ?? ''), group = field(edit,'Group','text',values?.group ?? ''), username = field(edit,'Username','text',values?.username ?? ''), secret = field(edit,'Password','password',values?.password ?? ''), url = field(edit,'URL','text',values?.url ?? ''), notes = field(edit,'Notes','textarea',values?.notes ?? ''), otp = field(edit,'TOTP Base32 secret','password',values?.totpSecret ?? '');
       let draftRevision=0,mutationGeneration=0;
       const draftValues=()=>({title:title.value,group:group.value,username:username.value,password:secret.value,url:url.value,notes:notes.value,totpSecret:otp.value});
-      const draftSignature=()=>JSON.stringify(draftValues());let initialSignature=JSON.stringify({title:selected?.title??'',group:selected?.group??'',username:selected?.username??'',password:selected?.password??'',url:selected?.url??'',notes:selected?.notes??'',totpSecret:selected?.totpSecret??''});
+      const draftSignature=()=>JSON.stringify(draftValues());let initialSignature=JSON.stringify({title:selected?.title??'',group:selected?.group??'',username:selected?.username??'',password:selected?.password??'',url:selected?.url??'',notes:selected?.notes??'',totpSecret:selected?.totpSecret??''});editorDirty=()=>current()&&draftSignature()!==initialSignature;
       const captureDraft=()=>({revision:draftRevision,signature:draftSignature()});
       const draftCurrent=captured=>current()&&captured.revision===draftRevision&&captured.signature===draftSignature();
       const pendingCurrent=request=>current()&&request===mutationGeneration;
@@ -147,6 +150,18 @@ export async function render(root, api) {
       }
     }
     editor();
+    const groupPanel=node('section',undefined,'card');gate.append(groupPanel);let groupGeneration=0;
+    async function groupList(bin=false,internal=false){if(groupEffects&&!internal)throw new Error('Wait for the pending group operation before refreshing groups.');const request=++groupGeneration,value=await api('recycleGroupList',{bin});if(!viewCurrent()||request!==groupGeneration)return;groupPanel.replaceChildren(node('h3',bin?'Recycled groups':'Groups'),node('p','Group actions include every descendant. Close the entry editor and clear its draft before changing a group.','muted'));
+      button(groupPanel,'Close group panel',async()=>{groupGeneration++;groupPanel.replaceChildren();});
+      for(const item of value.groups){const row=node('section',undefined,'card');row.append(node('strong',item.name),node('p',`${item.groupCount} groups · ${item.entryCount} entries`));groupPanel.append(row);const current=()=>viewCurrent()&&request===groupGeneration&&row.parentElement===groupPanel;
+        button(row,'Preview group descendants',async()=>{if(!current())return;const value=await api('recycleGroupRead',{id:item.id,revision:item.recycleRevision});if(!current())return;const preview=node('section',undefined,'card');row.append(preview);preview.append(node('p',value.group.notes));for(const g of value.group.descendantGroups)preview.append(node('p','Group: '+g.name));for(const e of value.group.entries)preview.append(node('p','Entry: '+e.title+' · '+e.username));});
+        async function mutate(action,confirmation,permanent){if(!current())return;if(selected||editorDirty()||entryEffects)throw new Error('Close the entry editor and save or discard its draft before changing a group.');if(groupEffects)throw new Error('Wait for the pending group operation.');if(!confirmation.checked)throw new Error('Confirm the recursive group operation.');listGeneration++;results.replaceChildren();selectionGeneration++;editor();binGeneration++;function scrub(n){if('value'in n)n.value='';for(const child of n.children)scrub(child);}scrub(binPanel);binPanel.replaceChildren();const operation=++groupGeneration;groupPanel.replaceChildren(node('h3','Group operation pending'));button(groupPanel,'Close group panel',async()=>{groupGeneration++;groupPanel.replaceChildren();});const operationCurrent=()=>viewCurrent()&&operation===groupGeneration&&groupPanel.parentElement===gate;groupEffects++;try{await api(action,{id:item.id,revision:item.recycleRevision,confirm:true,...(permanent===undefined?{}:{permanent})});if(!operationCurrent())return;await list(true);if(operationCurrent())await groupList(bin,true);}finally{groupEffects--;}}
+        if(bin&&item.canRestorePreviousGroup){const confirmation=field(row,'Confirm restoring this group and all descendants','checkbox');button(row,'Restore recycled group',async()=>mutate('recycleGroupRestore',confirmation));}
+        if(item.canDelete){const title=item.deleteIsPermanent?'Permanently delete group and descendants':'Recycle group and descendants',confirmation=field(row,'Confirm '+title.toLowerCase(),'checkbox');button(row,title,async()=>mutate('recycleGroupDelete',confirmation,item.deleteIsPermanent));}
+        if(bin&&!item.canRestorePreviousGroup)row.append(node('p','Previous parent unavailable or unsafe; no automatic fallback.','muted'));
+      }
+    }
+    button(gate,'Show groups',()=>groupList(false));button(gate,'Show recycled groups',()=>groupList(true));
     const maintenance = node('section',undefined,'card'); maintenance.append(node('h3','Encrypted backup and master password')); content.append(maintenance);
     const exported = field(maintenance,'Encrypted vault backup JSON','textarea'); exported.readOnly = true;
     button(maintenance,'Show encrypted backup JSON',async () => { exported.value = JSON.stringify((await api('exportEncrypted',{})).document,null,2); });

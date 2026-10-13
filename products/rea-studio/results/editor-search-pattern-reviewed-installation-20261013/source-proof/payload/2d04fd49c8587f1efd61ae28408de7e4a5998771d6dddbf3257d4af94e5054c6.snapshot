@@ -1,0 +1,194 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import { createHash, randomBytes } from 'node:crypto';
+import { createServer } from 'node:http';
+import { pathToFileURL } from 'node:url';
+import assert from 'node:assert/strict';
+
+// This is an owned synthetic review host. No original program or Git command runs.
+const here = import.meta.dirname;
+const workspace = path.resolve(here, '../..');
+const stage = path.resolve(workspace, 'work/editor-search-pattern-textarea-fix-next');
+const repo = path.join(workspace, 'outputs/rea-research-lab');
+const expectedManifest = process.env.REVIEW_CORRECTION_MANIFEST_SHA;
+assert.match(expectedManifest ?? '', /^[a-f0-9]{64}$/, 'An exact author freeze is mandatory');
+const digest = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+const json = value => Buffer.from(JSON.stringify(value, null, 2) + '\n');
+const run = 'runs/browser-' + new Date().toISOString().replace(/[:.]/g, '-');
+const runRoot = path.join(here, run);
+async function save(relative, bytes) {
+  const target = path.join(runRoot, relative);
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  await fs.writeFile(target, bytes, { flag: 'wx' });
+}
+const freezeBytes = await fs.readFile(path.join(stage, 'freeze-manifest.json'));
+assert.equal(digest(freezeBytes).sha256, expectedManifest);
+const freeze = JSON.parse(freezeBytes);
+const inventory = Array.isArray(freeze.inventory) ? freeze.inventory : Object.entries(freeze.inventory).map(([p, row]) => ({ path: p, ...row }));
+assert(inventory.length > 0 && inventory.length < 4000);
+async function authenticateAuthor() {
+  const rows = [], unique = new Set();
+  for (const row of inventory) {
+    assert(typeof row.path === 'string' && !path.isAbsolute(row.path));
+    assert(!row.path.split(/[\\/]/).some(part => ['.', '..', ''].includes(part)));
+    assert(!unique.has(row.path)); unique.add(row.path);
+    const bytes = await fs.readFile(path.join(stage, row.path));
+    assert.deepEqual(digest(bytes), { bytes: row.bytes, sha256: row.sha256 }, row.path);
+    rows.push({ path: row.path, ...digest(bytes) });
+  }
+  return rows;
+}
+const authorBefore = await authenticateAuthor();
+await save('author-before.json', json(authorBefore));
+await save('author-manifest.json.snapshot', freezeBytes);
+const app = path.join(stage, 'candidate/products/rea-studio/apps/editor');
+const currentApp = path.join(repo, 'products/rea-studio/apps/editor');
+const named = [
+  ['candidate-client', path.join(app, 'client.mjs')],
+  ['candidate-server', path.join(app, 'server.mjs')],
+  ['candidate-workspace-search', path.join(app, 'workspace-search.mjs')],
+  ['candidate-session', path.join(app, 'search-pattern-session.mjs')],
+  ['candidate-worker', path.join(app, 'search-pattern-worker.mjs')],
+  ['candidate-helper', path.join(app, 'search-pattern.mjs')],
+  ['candidate-storage', path.join(stage, 'candidate/products/rea-studio/lib/storage.mjs')],
+  ['production-client', path.join(currentApp, 'client.mjs')],
+  ['production-server', path.join(currentApp, 'server.mjs')],
+  ['production-workspace-search', path.join(currentApp, 'workspace-search.mjs')],
+  ['review-host', pathToFileURL(import.meta.filename)],
+];
+const sources = [], clients = {};
+for (const [name, source] of named) {
+  const bytes = await fs.readFile(source);
+  sources.push({ name, path: String(source), ...digest(bytes) });
+  await save('source/' + name + '.mjs.snapshot', bytes);
+  if (name.endsWith('-client')) clients[name.split('-')[0]] = bytes;
+}
+await save('source-before.json', json(sources));
+const candidate = await import(pathToFileURL(path.join(app, 'server.mjs')).href);
+const production = await import(pathToFileURL(path.join(currentApp, 'server.mjs')).href);
+const storage = await import(pathToFileURL(path.join(stage, 'candidate/products/rea-studio/lib/storage.mjs')).href);
+const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'rea-editor-textarea-correction-'));
+const ws = await storage.createWorkspace(temp);
+const fixtures = {
+  'lf.txt': '😀 head\nneedle alpha\nβ 😀 tail needle\n',
+  'crlf.txt': '😀 head\r\nneedle alpha\r\nβ 😀 tail needle\r\n',
+  'bare-cr.txt': '😀 head\rneedle alpha\rβ 😀 tail needle\r',
+  'mixed.txt': '😀 head\r\nneedle alpha\rβ 😀 tail needle\nlast needle\r\n',
+  'hold.txt': '😀 held\r\nneedle original\r\nsecond needle\r\n',
+  'draft.txt': 'A clean draft control\r\nsecond line\r\n',
+};
+for (const [name, content] of Object.entries(fixtures)) await fs.writeFile(await ws.resolve(name), content);
+await save('synthetic-fixtures.json', json(Object.entries(fixtures).map(([name, content]) => ({ name, content, ...digest(Buffer.from(content)), owned: true }))));
+const token = randomBytes(24).toString('hex');
+let port, closed = false, armed = null, held = null, stopPromise, logBytes = 0;
+const calls = [], captures = [], pending = new Set();
+let logTail = Promise.resolve();
+async function record(file, value) {
+  const bytes = Buffer.from(JSON.stringify(value) + '\n'); logBytes += bytes.length;
+  assert(logBytes <= 4 * 1024 * 1024 && calls.length <= 200 && captures.length <= 200, 'Owned observation cap');
+  logTail = logTail.then(() => fs.appendFile(path.join(runRoot, file), bytes));
+  await logTail;
+}
+function html(variant) {
+  return `<!doctype html><html><head><meta charset="utf-8"><title>Owned textarea correction ${variant}</title><style>body{font:16px sans-serif;max-width:1150px;margin:auto}textarea{width:95%}button,input{margin:4px}#qa{border:1px solid #aaa;padding:8px}</style></head><body><aside id="qa"><strong>Owned synthetic review controls</strong><button id="hold-read">Hold next read</button><button id="hold-search">Hold next search</button><button id="hold-save">Hold next Save response</button><button id="release">Release held response</button><button id="observe">Record current native selection</button><pre id="qa-state">No request held</pre></aside><main id="editor"></main><pre id="selection-proof">No selection observed</pre><script type="module">
+import { render } from '/${variant}-client.mjs';
+const session=await(await fetch('/session')).json();
+const send=async(route,input)=>{const r=await fetch(route,{method:'POST',headers:{'content-type':'application/json','x-review-token':session.token},body:JSON.stringify(input)});const j=await r.json();if(!r.ok)throw Error(j.error);return j;};
+const api=(action,input={})=>send('/api/${variant}/'+action,input);
+await render(document.getElementById('editor'),api);
+for(const action of ['read','search','save'])document.getElementById('hold-'+action).onclick=async()=>{document.getElementById('qa-state').textContent=JSON.stringify(await send('/qa/arm',{action}));};
+document.getElementById('release').onclick=async()=>{document.getElementById('qa-state').textContent=JSON.stringify(await send('/qa/release',{}));};
+const capture=async()=>{const t=document.querySelector('textarea[aria-label="File contents"]');const observation={variant:'${variant}',value:t.value,selectionStart:t.selectionStart,selectionEnd:t.selectionEnd,selected:t.value.slice(t.selectionStart,t.selectionEnd),disabled:t.disabled,status:[...document.querySelectorAll('[role="status"]')].map(n=>n.textContent)};document.getElementById('selection-proof').textContent=JSON.stringify(observation);await send('/capture',observation);};
+document.getElementById('observe').onclick=capture;
+document.addEventListener('selectionchange',()=>{const t=document.querySelector('textarea[aria-label="File contents"]');if(t&&t.selectionStart!==t.selectionEnd)capture().catch(e=>{document.getElementById('qa-state').textContent=e.message;});});
+</script></body></html>`;
+}
+const server = createServer((req, res) => {
+  const request = handle(req, res); pending.add(request); request.finally(() => pending.delete(request));
+});
+async function handle(req, res) {
+  const reply = (status, value, type = 'application/json') => {
+    if (res.destroyed) return;
+    res.writeHead(status, { 'content-type': type, 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
+    res.end(type === 'application/json' ? JSON.stringify(value) : value);
+  };
+  try {
+    assert.equal(req.headers.host, `127.0.0.1:${port}`);
+    assert(['127.0.0.1', '::ffff:127.0.0.1'].includes(req.socket.remoteAddress));
+    const url = new URL(req.url, `http://127.0.0.1:${port}`);
+    if (req.method === 'GET' && ['/candidate', '/production'].includes(url.pathname)) return reply(200, html(url.pathname.slice(1)), 'text/html; charset=utf-8');
+    if (req.method === 'GET' && url.pathname === '/session') return reply(200, { token });
+    const file = /^\/(candidate|production)-client\.mjs$/.exec(url.pathname);
+    if (req.method === 'GET' && file) return reply(200, clients[file[1]], 'text/javascript; charset=utf-8');
+    if (req.method !== 'POST' || req.headers['x-review-token'] !== token || closed) return reply(404, { error: 'Unknown owned route' });
+    const chunks = []; let bytes = 0;
+    for await (const chunk of req) { bytes += chunk.length; assert(bytes <= 65536); chunks.push(chunk); }
+    const input = JSON.parse(Buffer.concat(chunks));
+    if (url.pathname === '/capture') {
+      captures.push(input); await record('native-selections.jsonl', input); return reply(200, { recorded: true });
+    }
+    if (url.pathname === '/qa/arm') {
+      assert(['read', 'search', 'save'].includes(input.action)); assert(!armed && !held);
+      armed = input.action; await record('control-events.jsonl', { event: 'armed', action: armed }); return reply(200, { armed });
+    }
+    if (url.pathname === '/qa/release') {
+      const action = held?.action ?? null; if (held) held.release(); else armed = null;
+      await record('control-events.jsonl', { event: 'release', action }); return reply(200, { released: action });
+    }
+    if (url.pathname === '/qa/state') return reply(200, { armed, held: held?.action ?? null, calls: calls.length, captures: captures.length });
+    if (url.pathname === '/qa/stop') {
+      reply(200, { stopping: true }); setImmediate(() => stop('authenticated-loopback-stop').catch(fail)); return;
+    }
+    const api = /^\/api\/(candidate|production)\/(list|read|search|save|gitStatus)$/.exec(url.pathname);
+    if (!api) return reply(404, { error: 'Owned bounded actions only' });
+    const [, variant, action] = api;
+    const data = action === 'gitStatus' ? { initialized: false } : await (variant === 'candidate' ? candidate : production).handle({ action, input, workspace: ws });
+    const row = { variant, action, input: structuredClone(input), response: structuredClone(data), gitStatusStub: action === 'gitStatus', responseHeld: armed === action };
+    calls.push(row); await record('api-calls.jsonl', row);
+    if (armed === action) {
+      armed = null; let release;
+      const wait = new Promise(resolve => { release = resolve; }); held = { action, release };
+      const timer = setTimeout(() => release(), 45000);
+      await record('control-events.jsonl', { event: 'response-held', action });
+      await wait; clearTimeout(timer); held = null;
+      await record('control-events.jsonl', { event: 'response-published', action });
+    }
+    return reply(200, data);
+  } catch (error) { await record('host-errors.jsonl', { message: error.message }).catch(() => {}); reply(500, { error: error.message }); }
+}
+await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+port = server.address().port;
+await save('host-binding.json', json({ port, run, sourceFiles: sources.length, sharedStudioHostUsed: false, boundedOwnedHTTPBridge: true, gitStatusStubbed: true, sessionTokenPersisted: false, originalExecutions: 0 }));
+const lifetime = setTimeout(() => stop('owned-20-minute-deadline').catch(fail), 20 * 60 * 1000);
+process.stdout.write(JSON.stringify({ ready: true, url: `http://127.0.0.1:${port}/candidate`, productionURL: `http://127.0.0.1:${port}/production`, run }) + '\n');
+function fail(error) { process.stderr.write(String(error.stack) + '\n'); process.exitCode = 1; }
+async function stop(reason) {
+  if (stopPromise) return stopPromise;
+  stopPromise = (async () => {
+    closed = true; clearTimeout(lifetime); armed = null; held?.release();
+    server.closeAllConnections(); await new Promise(resolve => server.close(resolve));
+    await Promise.allSettled([...pending]);
+    await candidate.dispose(ws); await logTail;
+    const authorAfter = await authenticateAuthor(); assert.deepEqual(authorAfter, authorBefore);
+    await save('author-after.json', json(authorAfter));
+    const after = [];
+    for (const [name, source] of named) { const bytes = await fs.readFile(source); after.push({ name, path: String(source), ...digest(bytes) }); }
+    assert.deepEqual(after, sources); await save('source-after.json', json(after));
+    const files = [];
+    for (const name of Object.keys(fixtures)) {
+      const bytes = await fs.readFile(await ws.resolve(name)); files.push({ name, content: bytes.toString('utf8'), ...digest(bytes) });
+    }
+    await save('synthetic-files-after.json', json(files));
+    const absolute = path.resolve(temp); assert(absolute.startsWith(path.resolve(os.tmpdir()) + path.sep) && path.basename(absolute).startsWith('rea-editor-textarea-correction-'));
+    const stat = await fs.lstat(absolute); assert(stat.isDirectory() && !stat.isSymbolicLink());
+    assert.deepEqual((await fs.readdir(absolute)).sort(), Object.keys(fixtures).sort());
+    for (const name of Object.keys(fixtures)) assert(!(await fs.lstat(path.join(absolute, name))).isSymbolicLink());
+    await fs.rm(absolute, { recursive: true });
+    await save('host-validation.json', json({ schema: 'rea-editor-textarea-correction-owned-host/v1', reason, sourceStable: true, authorPayloads: inventory.length, sourceFiles: sources.length, nativeBrowserObserverEntries: captures.length, requests: calls.length, logBytes, durableWireLogs: true, sharedStudioHostUsed: false, gitStatusStubbed: true, sessionTokenPersisted: false, closed: true, tempGone: true, candidateWrites: 0, productionWrites: 0, originalExecutions: 0, fullProductParity: false }));
+    process.stdout.write(JSON.stringify({ stopped: true, reason, run, calls: calls.length, captures: captures.length, sourceStable: true, tempGone: true }) + '\n');
+  })();
+  return stopPromise;
+}
+process.on('SIGTERM', () => stop('SIGTERM').catch(fail));
+process.on('SIGINT', () => stop('SIGINT').catch(fail));

@@ -1,0 +1,66 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {resolve,dirname} from 'node:path';
+import {createHash} from 'node:crypto';
+const stage=resolve(import.meta.dirname),repo=resolve(stage,'../../outputs/rea-research-lab'),acq=JSON.parse(readFileSync(resolve(stage,'acquisition.json'))),sha=b=>createHash('sha256').update(b).digest('hex'),fp=b=>({bytes:b.length,sha256:sha(b)});
+const changes=[];
+function patch(name,edits){const original=readFileSync(resolve(stage,'verifier-before',name+'.snapshot'),'utf8');let text=original;for(const [before,after]of edits){assert.equal(text.split(before).length-1,1,name+' unique substitution');text=text.replace(before,after);changes.push({path:'scripts/'+name,before,after,occurrences:1});}writeFileSync(resolve(stage,'candidate/scripts',name),text);}
+const imp="import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';\n";
+patch('verify-editor-value-api-followups.mjs',[
+ ["import assert from 'node:assert/strict';",imp+"import assert from 'node:assert/strict';"],
+ ["const read=(p,r)=>{assertEditorValueApiPublicPath(p);const b=io.read(p);", "const migration=createEditorVaultProofMigration(io.read.bind(io));const read=(p,r)=>{assertEditorValueApiPublicPath(p);const b=io.read(migration.resolve(p,r)??p);"],
+ ['unchangedEditor24:24,historical31Exact:30,','historicalEditor24:24,unchangedEditor24:20,explicitLaterEditorReplacements:4,historical31Exact:30,old31CurrentEqualityClaim:false,'],
+ ['sourceOnly:true,currentMandatory:true,publicApiAliases:475,','sourceOnly:true,currentMandatory:true,sourceMigration:migration.summary(),publicApiAliases:475,']
+]);
+patch('verify-notes-inline-followups.mjs',[
+ ["import assert from 'node:assert/strict';",imp+"import assert from 'node:assert/strict';"],
+ ['function read(p, expected, inert=false){const at=location(p),', 'function rawRead(p, expected, inert=false){const at=location(p),'],
+ ['function json(p,expected){return JSON.parse(read(p,expected,true));}', 'const migration=createEditorVaultProofMigration(rawRead);function read(p,expected,inert=false){return rawRead(migration.resolve(p,expected)??p,expected,inert);}function json(p,expected){return JSON.parse(read(p,expected,true));}'],
+ ["function finish(){for(const [p,id]of seen)read(p,id);", "function finish(){for(const [p,id]of seen)rawRead(p,id);"]
+]);
+patch('verify-notes-vault-followups.mjs',[
+ ["import assert from 'node:assert/strict';",imp+"import assert from 'node:assert/strict';"],
+ ['function read(p, expected, nativeCheck = false) {','function rawRead(p, expected, nativeCheck = false) {'],
+ ["const json = (p, expected) => JSON.parse(read(p, expected).toString('utf8'));", "const migration=createEditorVaultProofMigration(rawRead);function read(p,expected,nativeCheck=false){return rawRead(migration.resolve(p,expected)??p,expected,nativeCheck);}const json = (p, expected) => JSON.parse(read(p, expected).toString('utf8'));"]
+]);
+patch('verify-editor-save-followup.mjs',[
+ ["import fs from'node:fs/promises';",imp+"import fs from'node:fs/promises';"],
+ ["const planRoot=prefix+", "const migration=createEditorVaultProofMigrationFromRoot(repo);\nconst planRoot=prefix+"],
+ ["if(requireCurrent)assert.deepEqual(liveMismatches,[],'Current implementation differs from the source-bound78 receipt; historical snapshots remain separate.');", "const declaredMismatches=migration.editorMismatchesIncludingHistoricalHost(current.currentSources);assert.deepEqual(liveMismatches,declaredMismatches,'Only fixed named replacements and the separately pinned historical host transition are allowed');for(const r of current.currentSources){const historical=migration.resolve(r.path,r);if(historical)await exact(historical,r);}if(requireCurrent)assert.deepEqual(liveMismatches,[],'Historical78 is not current implementation evidence; all installed after identities are mandatory separately.');"],
+ ['currentSourceSnapshots:31,liveSourceMatch:', 'sourceMigration:migration.summary(),historical78NotCurrentAcceptance:true,currentAfterIdentitiesMandatory:true,currentSourceSnapshots:31,liveSourceMatch:']
+]);
+patch('verify-notes-layout-value-api-checkpoint.mjs',[
+ ["import assert from'node:assert/strict';",imp+"import assert from'node:assert/strict';"],
+ ['export function verifyNotesLayoutValueApiCheckpoint(root){let authenticated=0;function read(n,r){safe(n);const b=readFileSync(join(root,n));','export function verifyNotesLayoutValueApiCheckpoint(root){const migration=createEditorVaultProofMigrationFromRoot(root);let authenticated=0;function read(n,r){safe(n);const b=readFileSync(join(root,migration.resolve(n,r)??n));'],
+ ["const db=read('products/rea-studio/results/development-validation.json');", "const db=migration.historicalMetadata('development');"],
+ ["const status=json('products/rea-studio/STATUS.json');", "const status=JSON.parse(migration.historicalMetadata('status'));"],
+ ['sourceOnly:true,currentCombinedTests:847,currentCombinedSources:720,', 'sourceOnly:true,historicalCombinedTests:847,historicalCombinedSources:720,currentCombinedTests:847,currentCombinedSources:720,combined847CurrentSourceAcceptance:false,historicalDevelopmentAndStatusBeforeimages:true,sourceMigration:migration.summary(),']
+]);
+patch('verify-followup-records.mjs',[
+ ["import assert from 'node:assert/strict';",imp+"import assert from 'node:assert/strict';"],
+ ['export function verifyFollowupRecords(root){','export function verifyFollowupRecords(root){\n const migration=createEditorVaultProofMigrationFromRoot(root);'],
+ ['function currentEditorBytes(r){safe(r.path);const live=readFileSync(join(root,r.path));', 'function currentEditorBytes(r){safe(r.path);const historical=migration.resolve(r.path,r);if(historical)return readFileSync(join(root,historical));const live=readFileSync(join(root,r.path));'],
+ ["const inlineModule=readFileSync(join(root,'scripts/verify-notes-inline-followups.mjs'));", "const inlineModule=migration.historicalVerifier('scripts/verify-notes-inline-followups.mjs');"],
+ ["assert.deepEqual(editorVerification.liveMismatches,[{path:editorHostTransition.path,testedSha256:editorHostTransition.before.sha256,liveSha256:editorHostTransition.after.sha256}]);", "assert.deepEqual(editorVerification.liveMismatches,migration.editorMismatchesIncludingHistoricalHost(proofs[17].json('source-before.json')));assert.equal(editorVerification.historical78NotCurrentAcceptance,true);assert.equal(editorVerification.currentAfterIdentitiesMandatory,true);"],
+ ['return{notesLayoutValueApiCheckpoint,editorHostTransition:', 'return{sourceMigration:migration.summary(),historicalEditorBrowserNotCurrentPatternAcceptance:true,notesLayoutValueApiCheckpoint,editorHostTransition:'],
+ ['onlyEditorSaveLiveMismatch:true,currentEditorOther30RowsMandatory:true,','onlyFixedNamedMigrationsAndHistoricalHostMismatch:true,historicalEditorOther30RowsAuthenticated:true,currentAfterIdentitiesMandatory:true,']
+]);
+// Current development assertions remain live. The added admission authenticates
+// the exact installed source transition before any historical proof reader runs.
+patch('verify-records.mjs',[
+ ["import { verifyFollowupRecords } from './verify-followup-records.mjs';", imp+"import { verifyFollowupRecords } from './verify-followup-records.mjs';"],
+ ['const followupEvidence = verifyFollowupRecords(root);','const sourceProofMigration=createEditorVaultProofMigrationFromRoot(root);\nconst followupEvidence = verifyFollowupRecords(root);'],
+ ['followup_evidence: followupEvidence,','source_proof_migration: sourceProofMigration.summary(),\n  followup_evidence: followupEvidence,']
+]);
+const installationPrefix='products/rea-studio/results/editor-vault-reviewed-production-installation-20261013',pb=readFileSync(resolve(repo,installationPrefix,'preservation-manifest.json')),pm=JSON.parse(pb);assert.equal(sha(pb),'3f810b748bfee60e396df83b668face23e52645871fcfcded3a4074445ce86d5');assert.equal(pm.records.length,1098);
+const rec=pm.records.find(r=>r.sourcePath==='installation.json');assert(rec);const ib=readFileSync(resolve(repo,rec.publicPath));assert.deepEqual(fp(ib),{bytes:rec.bytes,sha256:rec.sha256});const install=JSON.parse(ib);assert.equal(install.installed.length,30);
+const routes=acq.routes.map(r=>({...r,historicalPath:r.path.endsWith('apps/vault/README.md')?installationPrefix+'/before-images/'+r.path+'.snapshot':r.historicalPath}));
+const metadata={development:{...acq.historicalDevelopment,historicalPath:installationPrefix+'/before-metadata/'+acq.historicalDevelopment.path+'.snapshot'},status:{...JSON.parse(readFileSync(resolve(stage,'historical-status-before.json'))).record}};
+// Read actual capture schema; its identity is fixed before the new suite writes.
+const statusPath='products/rea-studio/STATUS.json',statusBytes=readFileSync(resolve(stage,'before-image',statusPath+'.snapshot'));metadata.status={path:statusPath,...fp(statusBytes),historicalPath:installationPrefix+'/before-metadata/'+statusPath+'.snapshot'};
+const verifiers=acq.verifierBefore.map(r=>({path:r.path,before:{bytes:r.bytes,sha256:r.sha256},after:fp(readFileSync(resolve(stage,'candidate',r.path))),historicalPath:r.publicBeforePath}));
+const records={schema:'rea-editor-vault-explicit-proof-transition/v1',installation:{manifest:{path:installationPrefix+'/preservation-manifest.json',...fp(pb)},record:{path:rec.publicPath,...fp(ib)},records:1098,installed:30},sources:acq.liveRows.map(r=>({path:r.path,before:r.before,after:r.after})),routes,sharedHost:acq.currentHost,metadata,verifiers,oldCapsule:acq.oldCapsule,scope:{historical847NotCurrentAcceptance:true,historical78NotCurrentAcceptance:true,namedMigrationsOnly:true,applicationExecutions:0,originalExecutions:0,browserExecutions:0,benchmarks:0,fullParity:false}};
+writeFileSync(resolve(stage,'transition-records.json'),JSON.stringify(records,null,2)+'\n');
+const template=readFileSync(resolve(stage,'module-template.mjs'),'utf8');writeFileSync(resolve(stage,'candidate/scripts/editor-vault-proof-migration.mjs'),template.replace('/*FIXED_RECORDS*/null',JSON.stringify(records,null,2)));
+writeFileSync(resolve(stage,'verifier-transformations.json'),JSON.stringify({schema:'rea-editor-vault-exact-verifier-transformations/v1',changes,verifiers},null,2)+'\n');
+console.log(JSON.stringify({sourceOnly:true,plans637And325AuthenticatedByPreparation:true,installedRows:30,namedRoutes:routes.length,old720Affected:routes.filter(r=>r.affectedInOld720).length,verifiers:verifiers.length,substitutions:changes.length,module:fp(readFileSync(resolve(stage,'candidate/scripts/editor-vault-proof-migration.mjs'))),newAppExecutions:0}));

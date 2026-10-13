@@ -3,10 +3,11 @@ import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { gitAction } from './git.mjs';
 import { minimalSequenceDiff } from './sequence-diff.mjs';
-import { searchWorkspace } from './workspace-search.mjs';
+import { searchWorkspace, disposeSearch } from './workspace-search.mjs';
 import { editorRelativePath as relative } from './file-path.mjs';
 
 const MAX_BYTES = 2 * 1024 * 1024;
+export const dispose=disposeSearch;
 const locks = new Map();
 const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 function text(value, name = 'text') {

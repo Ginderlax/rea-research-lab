@@ -1,0 +1,69 @@
+TAP version 13
+# Subtest: completed old entry-bin password read cannot publish after recursive permanent deletion
+ok 1 - completed old entry-bin password read cannot publish after recursive permanent deletion
+  ---
+  duration_ms: 79.2031
+  type: 'test'
+  ...
+# Subtest: completed old bin list cannot resurrect descendant rows after recursive restore
+ok 2 - completed old bin list cannot resurrect descendant rows after recursive restore
+  ---
+  duration_ms: 56.2526
+  type: 'test'
+  ...
+# Subtest: already displayed password is scrubbed in detached controls before recursive write starts
+ok 3 - already displayed password is scrubbed in detached controls before recursive write starts
+  ---
+  duration_ms: 55.9264
+  type: 'test'
+  ...
+# Subtest: unconfirmed group refusal leaves existing entry-bin preview intact and performs no group write
+ok 4 - unconfirmed group refusal leaves existing entry-bin preview intact and performs no group write
+  ---
+  duration_ms: 51.8506
+  type: 'test'
+  ...
+# Subtest: completed older active-entry list must not republish deleted descendant rows while group commit response is held
+not ok 5 - completed older active-entry list must not republish deleted descendant rows while group commit response is held
+  ---
+  duration_ms: 55.1841
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\root-vault-group-dom-review-next\\probe.test.mjs:22:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Earlier active list must be invalidated when the confirmed recursive group operation starts.
+    + actual - expected
+    
+    + [
+    +   'Root A',
+    +   'Root B'
+    + ]
+    - []
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+    0: 'Root A'
+    1: 'Root B'
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/root-vault-group-dom-review-next/probe.test.mjs:22:1274)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: view disposal while completed bin read is held scrubs current values and suppresses publication
+ok 6 - view disposal while completed bin read is held scrubs current values and suppresses publication
+  ---
+  duration_ms: 55.3926
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 5
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 420.1742

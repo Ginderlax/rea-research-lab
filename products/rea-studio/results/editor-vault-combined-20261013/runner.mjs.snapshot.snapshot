@@ -1,0 +1,29 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {spawn} from 'node:child_process';
+const work=import.meta.dirname,studio=path.resolve(work,'../outputs/rea-research-lab/products/rea-studio');
+const run=path.join(work,'editor-vault-suite-runs',new Date().toISOString().replaceAll(':','-'));
+const sha=b=>createHash('sha256').update(b).digest('hex');
+await fs.mkdir(run,{recursive:true});
+async function files(dir){const out=[];for(const e of await fs.readdir(dir,{withFileTypes:true})){if(e.isDirectory()){if(!['.local','node_modules'].includes(e.name))out.push(...await files(path.join(dir,e.name)));}else out.push(path.join(dir,e.name));}return out;}
+async function fingerprint(){const names=[...(await Promise.all(['apps','lib','public','scripts','tests'].map(n=>files(path.join(studio,n))))).flat(),...['server.mjs','catalog.mjs','package.json'].map(n=>path.join(studio,n))].filter(n=>/\.(mjs|json|html|css|ps1)$/.test(n)).sort();return Promise.all(names.map(async n=>{const b=await fs.readFile(n);return{path:path.relative(studio,n).replaceAll('\\','/'),bytes:b.length,sha256:sha(b)};}));}
+const before=await fingerprint();
+await fs.writeFile(path.join(run,'source-before.json'),JSON.stringify(before,null,2)+'\n');
+for(const e of before){const target=path.join(run,'source',e.path+'.snapshot');await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,await fs.readFile(path.join(studio,e.path)),{flag:'wx'});}
+await fs.writeFile(path.join(run,'runner.mjs.snapshot'),await fs.readFile(import.meta.filename));
+console.log(JSON.stringify({phase:'started',sourceFiles:before.length,runDirectory:run}));
+const startedAtUtc=new Date().toISOString(),env={...process.env};delete env.NODE_TEST_CONTEXT;
+const runtime={version:process.version,sha256:sha(await fs.readFile(process.execPath))};
+const result=await new Promise(resolve=>{const child=spawn(process.execPath,['scripts/verify-development.mjs'],{cwd:studio,env,shell:false,windowsHide:true,stdio:['ignore','pipe','pipe']}),out=[],err=[];let failure=null,outBytes=0,errBytes=0;
+const stop=reason=>{failure??=reason;child.kill('SIGKILL');};
+for(const [stream,parts,key,cap]of[[child.stdout,out,'out',20*1024*1024],[child.stderr,err,'err',4*1024*1024]])stream.on('data',b=>{const retained=key==='out'?outBytes:errBytes,take=Math.max(0,Math.min(cap-retained,b.length));parts.push(b.subarray(0,take));if(key==='out')outBytes+=take;else errBytes+=take;if(take<b.length)stop('outer retained-output cap');});
+const timer=setTimeout(()=>stop('31-minute outer deadline'),1860000);child.on('error',e=>failure??=e.message);child.on('close',(exitCode,signal)=>{clearTimeout(timer);resolve({exitCode,signal,failure,stdout:Buffer.concat(out),stderr:Buffer.concat(err)});});});
+await fs.writeFile(path.join(run,'stdout.txt'),result.stdout);await fs.writeFile(path.join(run,'stderr.txt'),result.stderr);
+const after=await fingerprint();await fs.writeFile(path.join(run,'source-after.json'),JSON.stringify(after,null,2)+'\n');
+const raw=result.stdout.toString(),summary=Object.fromEntries(['tests','pass','fail','cancelled','skipped','todo','duration_ms'].map(n=>[n,Number(raw.match(new RegExp('^# '+n+' ([\\d.]+)$','m'))?.[1]??-1)]));
+const sourceStable=JSON.stringify(before)===JSON.stringify(after),receipt={schema:'rea-editor-vault-suite-attempt/v1',startedAtUtc,completedAtUtc:new Date().toISOString(),exitCode:result.exitCode,signal:result.signal,failure:result.failure,summary,sourceFiles:before.length,sourceStable,runtime,sourceCapturedBeforeExecution:true,sourceSnapshotsInert:true,fullProductParity:false,universalSuperiority:false};
+await fs.writeFile(path.join(run,'attempt-validation.json'),JSON.stringify(receipt,null,2)+'\n');
+console.log(JSON.stringify({...receipt,runDirectory:run}));
+assert.equal(result.exitCode,0,result.stderr.toString());assert.equal(result.failure,null);assert.equal(sourceStable,true);assert.equal(summary.tests,summary.pass);assert.equal(summary.fail+summary.cancelled+summary.skipped+summary.todo,0);

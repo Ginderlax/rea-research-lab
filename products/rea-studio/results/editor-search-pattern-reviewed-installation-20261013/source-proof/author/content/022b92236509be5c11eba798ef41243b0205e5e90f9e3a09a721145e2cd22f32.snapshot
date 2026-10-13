@@ -1,0 +1,472 @@
+TAP version 13
+# {"editorSavePublicationObservation":{"id":"pending-retry","successfulRetry":true,"firstOutcome":{"input":{"path":"a.txt","content":"captured save A\\n","revision":"03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"},"result":{"path":"a.txt","content":"captured save A\\n","revision":"48ca7afd8d0da50ca511013e1af1dad2c35d18e04c26737d451ba6ee4a31615f","bytes":16,"saved":true},"diskA":"captured save A\\n"},"editorValue":"newer draft for retry\\n","editorDisabled":false,"saveDisabled":false,"status":["Search saved files; unsaved drafts are retained in their tabs.","Saved a.txt (22 bytes)."],"tabs":[{"label":"a.txt","active":"true"}],"calls":[{"action":"list","input":{}},{"action":"gitStatus","input":{}},{"action":"read","input":{"path":"a.txt"}},{"action":"save","input":{"path":"a.txt","content":"captured save A\\n","revision":"03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"}},{"action":"save","input":{"path":"a.txt","content":"newer draft for retry\\n","revision":"48ca7afd8d0da50ca511013e1af1dad2c35d18e04c26737d451ba6ee4a31615f"}}],"diskA":"newer draft for retry\\n","diskB":"original B\\n"}}
+# Subtest: pending duplicate requests are refused while typing stays enabled; later save uses the committed revision
+ok 1 - pending duplicate requests are refused while typing stays enabled; later save uses the committed revision
+  ---
+  duration_ms: 24.469
+  type: 'test'
+  ...
+# {"editorSavePublicationObservation":{"id":"real-conflict","realConflictRetry":true,"firstOutcome":{"input":{"path":"a.txt","content":"captured save A\\n","revision":"03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"},"error":"File changed since it was opened. Open it again before saving; your draft is still in the editor.","diskA":"external saved A\\n"},"editorValue":"successful reopened save\\n","editorDisabled":false,"saveDisabled":false,"status":["Search saved files; unsaved drafts are retained in their tabs.","Saved a.txt (25 bytes)."],"tabs":[{"label":"a.txt","active":"true"}],"calls":[{"action":"list","input":{}},{"action":"gitStatus","input":{}},{"action":"read","input":{"path":"a.txt"}},{"action":"save","input":{"path":"a.txt","content":"captured save A\\n","revision":"03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"}},{"action":"save","input":{"path":"a.txt","content":"newer draft after conflict\\n","revision":"03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"}},{"action":"read","input":{"path":"a.txt"}},{"action":"save","input":{"path":"a.txt","content":"successful reopened save\\n","revision":"753d13010c0c1b6d9240ba11ee7fe6cd44007d8da77b073e195cb73eba069e82"}}],"diskA":"successful reopened save\\n","diskB":"original B\\n"}}
+# Subtest: actual revision failure retains draft and releases pending state; reopened current revision can save
+ok 2 - actual revision failure retains draft and releases pending state; reopened current revision can save
+  ---
+  duration_ms: 17.6045
+  type: 'test'
+  ...
+# {"editorSavePublicationObservation":{"id":"disposed-activation","disposed":true,"before":["Search saved files; unsaved drafts are retained in their tabs.","Opened a.txt."],"firstOutcome":{"input":{"path":"a.txt","content":"captured save A\\n","revision":"03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"},"result":{"path":"a.txt","content":"captured save A\\n","revision":"48ca7afd8d0da50ca511013e1af1dad2c35d18e04c26737d451ba6ee4a31615f","bytes":16,"saved":true},"diskA":"captured save A\\n"},"editorValue":"captured save A\\n","editorDisabled":false,"saveDisabled":true,"status":["Search saved files; unsaved drafts are retained in their tabs.","Opened a.txt."],"tabs":[{"label":"a.txt •","active":"true"}],"calls":[{"action":"list","input":{}},{"action":"gitStatus","input":{}},{"action":"read","input":{"path":"a.txt"}},{"action":"save","input":{"path":"a.txt","content":"captured save A\\n","revision":"03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"}}],"diskA":"captured save A\\n","diskB":"original B\\n"}}
+# Subtest: disposed save views refuse fresh save activation and suppress their held completion
+ok 3 - disposed save views refuse fresh save activation and suppress their held completion
+  ---
+  duration_ms: 11.5391
+  type: 'test'
+  ...
+# {"editorSavePublicationObservation":{"id":"two-documents","twoDocuments":true,"before":["Search saved files; unsaved drafts are retained in their tabs.","Saved b.txt (25 bytes)."],"firstOutcome":{"input":{"path":"a.txt","content":"captured save A\\n","revision":"03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"},"result":{"path":"a.txt","content":"captured save A\\n","revision":"48ca7afd8d0da50ca511013e1af1dad2c35d18e04c26737d451ba6ee4a31615f","bytes":16,"saved":true},"diskA":"captured save A\\n"},"editorValue":"committed B while A held\\n","editorDisabled":false,"saveDisabled":false,"status":["Search saved files; unsaved drafts are retained in their tabs.","Saved b.txt (25 bytes)."],"tabs":[{"label":"a.txt","active":"false"},{"label":"b.txt","active":"true"}],"calls":[{"action":"list","input":{}},{"action":"gitStatus","input":{}},{"action":"read","input":{"path":"a.txt"}},{"action":"save","input":{"path":"a.txt","content":"captured save A\\n","revision":"03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"}},{"action":"read","input":{"path":"b.txt"}},{"action":"save","input":{"path":"b.txt","content":"committed B while A held\\n","revision":"1a69eb96c51582f99dfd22c31ea6d33a65e4b466593ea62f5d315c88d51ec322"}}],"diskA":"captured save A\\n","diskB":"committed B while A held\\n"}}
+# Subtest: another document can save while the first response is held without losing its active context
+ok 4 - another document can save while the first response is held without losing its active context
+  ---
+  duration_ms: 15.8995
+  type: 'test'
+  ...
+# Subtest: held old Save cannot overwrite a dirty reopened document with the same file path
+ok 5 - held old Save cannot overwrite a dirty reopened document with the same file path
+  ---
+  duration_ms: 28.5665
+  type: 'test'
+  ...
+# Subtest: new reopened Save revision survives old Save settlement and permits the next real Save
+ok 6 - new reopened Save revision survives old Save settlement and permits the next real Save
+  ---
+  duration_ms: 20.8212
+  type: 'test'
+  ...
+# Subtest: pending same-document keyboard Save is suppressed while enabled typing survives and later Save works
+ok 7 - pending same-document keyboard Save is suppressed while enabled typing survives and later Save works
+  ---
+  duration_ms: 14.3325
+  type: 'test'
+  ...
+# Subtest: a different document can save while A response waits; A settlement preserves B success context
+ok 8 - a different document can save while A response waits; A settlement preserves B success context
+  ---
+  duration_ms: 15.2965
+  type: 'test'
+  ...
+# Subtest: typing after a committed held save must remain a dirty draft through tab navigation
+ok 9 - typing after a committed held save must remain a dirty draft through tab navigation
+  ---
+  duration_ms: 24.6533
+  type: 'test'
+  ...
+# Subtest: control: no typing publishes the committed save and a clean current tab
+ok 10 - control: no typing publishes the committed save and a clean current tab
+  ---
+  duration_ms: 12.4829
+  type: 'test'
+  ...
+# Subtest: control: held save settlement preserves an unrelated new draft and captured disk commit
+ok 11 - control: held save settlement preserves an unrelated new draft and captured disk commit
+  ---
+  duration_ms: 11.8062
+  type: 'test'
+  ...
+# Subtest: control: selection during held save keeps the selected file active
+ok 12 - control: selection during held save keeps the selected file active
+  ---
+  duration_ms: 11.7479
+  type: 'test'
+  ...
+# Subtest: control: confirmed close during held save does not reopen the closed tab
+ok 13 - control: confirmed close during held save does not reopen the closed tab
+  ---
+  duration_ms: 11.4118
+  type: 'test'
+  ...
+# Subtest: disposal must suppress held successful save response publication
+ok 14 - disposal must suppress held successful save response publication
+  ---
+  duration_ms: 11.0634
+  type: 'test'
+  ...
+# Subtest: disposal must suppress held failed save response publication without a disk commit
+ok 15 - disposal must suppress held failed save response publication without a disk commit
+  ---
+  duration_ms: 7.5759
+  type: 'test'
+  ...
+# Subtest: queued Save keeps its originally stale revision even when caller mutates the input object
+ok 16 - queued Save keeps its originally stale revision even when caller mutates the input object
+  ---
+  duration_ms: 13.5081
+  type: 'test'
+  ...
+# Subtest: control: unchanged queued stale precondition rejects after first commit
+ok 17 - control: unchanged queued stale precondition rejects after first commit
+  ---
+  duration_ms: 9.9507
+  type: 'test'
+  ...
+# Subtest: control: queued precondition declared as the next revision succeeds with captured path and content
+ok 18 - control: queued precondition declared as the next revision succeeds with captured path and content
+  ---
+  duration_ms: 10.983
+  type: 'test'
+  ...
+# {"editorPatternHTTP":{"hostInstances":2,"restarts":1,"authenticatedRequests":7,"deniedRequests":1,"staticRequests":1,"originalCalls":0,"browserCalls":0}}
+# Subtest: actual authenticated HTTP regex/whole-word navigation revisions and invalid errors survive restart
+ok 19 - actual authenticated HTTP regex/whole-word navigation revisions and invalid errors survive restart
+  ---
+  duration_ms: 173.4021
+  type: 'test'
+  ...
+# Subtest: whole-word options preserve released edge wrapping and Unicode word adjacency
+ok 20 - whole-word options preserve released edge wrapping and Unicode word adjacency
+  ---
+  duration_ms: 38.3513
+  type: 'test'
+  ...
+# Subtest: regex Unicode classes CRLF BOM and UTF-16 spans map exact saved bytes
+ok 21 - regex Unicode classes CRLF BOM and UTF-16 spans map exact saved bytes
+  ---
+  duration_ms: 28.4319
+  type: 'test'
+  ...
+# Subtest: zero-length Unicode advancement is finite and never splits astral characters
+ok 22 - zero-length Unicode advancement is finite and never splits astral characters
+  ---
+  duration_ms: 52.2771
+  type: 'test'
+  ...
+# Subtest: invalid and unsupported options fail explicitly before filesystem traversal and release workers
+ok 23 - invalid and unsupported options fail explicitly before filesystem traversal and release workers
+  ---
+  duration_ms: 77.0525
+  type: 'test'
+  ...
+# Subtest: isolated match budget distinguishes exact1000 and additional empty matches
+ok 24 - isolated match budget distinguishes exact1000 and additional empty matches
+  ---
+  duration_ms: 58.7526
+  type: 'test'
+  ...
+# Subtest: request-scoped worker admission, disposal and retry preserve private ownership
+ok 25 - request-scoped worker admission, disposal and retry preserve private ownership
+  ---
+  duration_ms: 44.1431
+  type: 'test'
+  ...
+# Subtest: catastrophic expression times out off main thread and reports incomplete results after worker exit
+ok 26 - catastrophic expression times out off main thread and reports incomplete results after worker exit
+  ---
+  duration_ms: 5006.5958
+  type: 'test'
+  ...
+# Subtest: disposal of an active matcher rejects after exit and a later search succeeds
+ok 27 - disposal of an active matcher rejects after exit and a later search succeeds
+  ---
+  duration_ms: 129.1812
+  type: 'test'
+  ...
+# Subtest: default literal output retains exact historical object shape and escaping
+ok 28 - default literal output retains exact historical object shape and escaping
+  ---
+  duration_ms: 28.7734
+  type: 'test'
+  ...
+# Subtest: actual accessible toggles submit literal defaults then whole-word and regex with exact CRLF navigation
+ok 29 - actual accessible toggles submit literal defaults then whole-word and regex with exact CRLF navigation
+  ---
+  duration_ms: 74.7693
+  type: 'test'
+  ...
+# Subtest: invalid regex displays explicit error and does not retain older literal results
+ok 30 - invalid regex displays explicit error and does not retain older literal results
+  ---
+  duration_ms: 26.5481
+  type: 'test'
+  ...
+# Subtest: changing new pattern options rejects a held search publication and permits a fresh retry
+ok 31 - changing new pattern options rejects a held search publication and permits a fresh retry
+  ---
+  duration_ms: 36.4217
+  type: 'test'
+  ...
+# Subtest: held result read cannot replace dirty B after changing Whole word in workspace search
+ok 32 - held result read cannot replace dirty B after changing Whole word in workspace search
+  ---
+  duration_ms: 8.6174
+  type: 'test'
+  ...
+# Subtest: held result read cannot replace dirty B after changing Regular expression in workspace search
+ok 33 - held result read cannot replace dirty B after changing Regular expression in workspace search
+  ---
+  duration_ms: 8.6101
+  type: 'test'
+  ...
+# Subtest: regex results while real Save response is held preserve typed draft and later exact revision retry
+ok 34 - regex results while real Save response is held preserve typed draft and later exact revision retry
+  ---
+  duration_ms: 55.6805
+  type: 'test'
+  ...
+# Subtest: disposed actual client never publishes a held completed regex search
+ok 35 - disposed actual client never publishes a held completed regex search
+  ---
+  duration_ms: 25.585
+  type: 'test'
+  ...
+# Subtest: zero-length result navigation selects safe astral endpoint without changing content
+ok 36 - zero-length result navigation selects safe astral endpoint without changing content
+  ---
+  duration_ms: 25.2725
+  type: 'test'
+  ...
+# Subtest: closing active tab while a result read is held prevents that earlier open from republishing
+ok 37 - closing active tab while a result read is held prevents that earlier open from republishing
+  ---
+  duration_ms: 29.0946
+  type: 'test'
+  ...
+# Subtest: cancelled Close retains dirty tab and does not invalidate an explicitly requested held read
+ok 38 - cancelled Close retains dirty tab and does not invalidate an explicitly requested held read
+  ---
+  duration_ms: 8.845
+  type: 'test'
+  ...
+# Subtest: search and read share the exact1024 UTF-16 path boundary
+ok 39 - search and read share the exact1024 UTF-16 path boundary
+  ---
+  duration_ms: 36.2721
+  type: 'test'
+  ...
+# Subtest: search skips an overlong directory before resolving descendants and explicitly reports incomplete coverage
+ok 40 - search skips an overlong directory before resolving descendants and explicitly reports incomplete coverage
+  ---
+  duration_ms: 18.6439
+  type: 'test'
+  ...
+# Subtest: shared path validation preserves existing read/save semantics including astral code-unit length and normalization
+ok 41 - shared path validation preserves existing read/save semantics including astral code-unit length and normalization
+  ---
+  duration_ms: 0.2351
+  type: 'test'
+  ...
+# Subtest: held result read must not publish after search text options invalidate its generation
+ok 42 - held result read must not publish after search text options invalidate its generation
+  ---
+  duration_ms: 21.467
+  type: 'test'
+  ...
+# Subtest: held result read must not publish after a newer complete search generation
+ok 43 - held result read must not publish after a newer complete search generation
+  ---
+  duration_ms: 14.1793
+  type: 'test'
+  ...
+# Subtest: control: later explicit file selection suppresses the held old read
+ok 44 - control: later explicit file selection suppresses the held old read
+  ---
+  duration_ms: 10.7847
+  type: 'test'
+  ...
+# Subtest: control: later new draft suppresses held read and preserves disk bytes
+ok 45 - control: later new draft suppresses held read and preserves disk bytes
+  ---
+  duration_ms: 10.9682
+  type: 'test'
+  ...
+# Subtest: control: disposal suppresses held read publication
+ok 46 - control: disposal suppresses held read publication
+  ---
+  duration_ms: 10.8077
+  type: 'test'
+  ...
+# Subtest: exact old 1096-unit fixture is reported incomplete without an unopenable match
+ok 47 - exact old 1096-unit fixture is reported incomplete without an unopenable match
+  ---
+  duration_ms: 33.0077
+  type: 'test'
+  ...
+# Subtest: 1024-unit ASCII path can search, read and save through the same boundary
+ok 48 - 1024-unit ASCII path can search, read and save through the same boundary
+  ---
+  duration_ms: 42.5084
+  type: 'test'
+  ...
+# Subtest: 1025-unit ASCII file is skipped and both read and save refuse before disk changes
+ok 49 - 1025-unit ASCII file is skipped and both read and save refuse before disk changes
+  ---
+  duration_ms: 21.7125
+  type: 'test'
+  ...
+# Subtest: astral path bounds use UTF-16 units while UTF-8 saved revisions and selections stay exact
+ok 50 - astral path bounds use UTF-16 units while UTF-8 saved revisions and selections stay exact
+  ---
+  duration_ms: 34.3536
+  type: 'test'
+  ...
+# Subtest: whitespace validity is shared and valid leading-space names are preserved
+ok 51 - whitespace validity is shared and valid leading-space names are preserved
+  ---
+  duration_ms: 6.0309
+  type: 'test'
+  ...
+# Subtest: a valid 1024-unit directory is traversed but its 1026-unit child is explicitly skipped
+ok 52 - a valid 1024-unit directory is traversed but its 1026-unit child is explicitly skipped
+  ---
+  duration_ms: 21.9718
+  type: 'test'
+  ...
+# Subtest: exact file-byte boundary is searchable and an oversized neighboring file is disclosed
+ok 53 - exact file-byte boundary is searchable and an oversized neighboring file is disclosed
+  ---
+  duration_ms: 17.185
+  type: 'test'
+  ...
+# Subtest: maximum navigable Unicode path and preview pressure stop at the declared output limit
+ok 54 - maximum navigable Unicode path and preview pressure stop at the declared output limit
+  ---
+  duration_ms: 39.6992
+  type: 'test'
+  ...
+# Subtest: held search response does not publish after a case-option generation change
+ok 55 - held search response does not publish after a case-option generation change
+  ---
+  duration_ms: 18.3846
+  type: 'test'
+  ...
+# Subtest: newer search response remains published when an older held response settles
+ok 56 - newer search response remains published when an older held response settles
+  ---
+  duration_ms: 11.1938
+  type: 'test'
+  ...
+# Subtest: disposal prevents a held search response from publishing rows
+ok 57 - disposal prevents a held search response from publishing rows
+  ---
+  duration_ms: 7.4472
+  type: 'test'
+  ...
+# Subtest: ordinary saved-result navigation selects exact positions and preserves an existing unsaved draft
+ok 58 - ordinary saved-result navigation selects exact positions and preserves an existing unsaved draft
+  ---
+  duration_ms: 9.6653
+  type: 'test'
+  ...
+# Subtest: changed saved bytes after search open with revision warning and no stale selection
+ok 59 - changed saved bytes after search open with revision warning and no stale selection
+  ---
+  duration_ms: 9.214
+  type: 'test'
+  ...
+# {"editorSearchHTTP":{"actualHostProcesses":0,"actualInProcessHostInstances":2,"restarts":1,"source":"saved-files","originalGUIComparisons":0}}
+# Subtest: saved-file workspace search works through authenticated HTTP and survives an actual host restart
+ok 60 - saved-file workspace search works through authenticated HTTP and survives an actual host restart
+  ---
+  duration_ms: 82.265
+  type: 'test'
+  ...
+# Subtest: saved-file search reports exact UTF-16 positions, CRLF/BOM lines, literal text and byte revisions
+ok 61 - saved-file search reports exact UTF-16 positions, CRLF/BOM lines, literal text and byte revisions
+  ---
+  duration_ms: 13.9275
+  type: 'test'
+  ...
+# Subtest: Unicode case-insensitive literal search and non-overlap preserve single-line semantics
+ok 62 - Unicode case-insensitive literal search and non-overlap preserve single-line semantics
+  ---
+  duration_ms: 11.1512
+  type: 'test'
+  ...
+# Subtest: query errors, ignored metadata, binary/invalid UTF-8 and oversized files are explicit and leave bytes unchanged
+ok 63 - query errors, ignored metadata, binary/invalid UTF-8 and oversized files are explicit and leave bytes unchanged
+  ---
+  duration_ms: 15.3859
+  type: 'test'
+  ...
+# Subtest: a static directory junction is skipped and direct workspace resolution rejects it
+ok 64 - a static directory junction is skipped and direct workspace resolution rejects it
+  ---
+  duration_ms: 6.6325
+  type: 'test'
+  ...
+# Subtest: match and preview limits disclose truncation with bounded responses
+ok 65 - match and preview limits disclose truncation with bounded responses
+  ---
+  duration_ms: 7.421
+  type: 'test'
+  ...
+# Subtest: a complete exact-match-limit result does not claim unobserved extra matches
+ok 66 - a complete exact-match-limit result does not claim unobserved extra matches
+  ---
+  duration_ms: 6.2157
+  type: 'test'
+  ...
+# Subtest: file and directory-depth bounds identify incomplete searches
+ok 67 - file and directory-depth bounds identify incomplete searches
+  ---
+  duration_ms: 1415.3408
+  type: 'test'
+  ...
+# Subtest: the aggregate byte bound stops before another accepted-size file
+ok 68 - the aggregate byte bound stops before another accepted-size file
+  ---
+  duration_ms: 90.0869
+  type: 'test'
+  ...
+# Subtest: actual client opens saved results at UTF-16 positions while a dirty existing draft is retained
+ok 69 - actual client opens saved results at UTF-16 positions while a dirty existing draft is retained
+  ---
+  duration_ms: 19.7362
+  type: 'test'
+  ...
+# Subtest: changing search options while a response is held invalidates results and re-enables the button
+ok 70 - changing search options while a response is held invalidates results and re-enables the button
+  ---
+  duration_ms: 10.285
+  type: 'test'
+  ...
+# Subtest: disposed search views do not publish a held response
+ok 71 - disposed search views do not publish a held response
+  ---
+  duration_ms: 6.128
+  type: 'test'
+  ...
+# Subtest: a new enabled draft cannot be overwritten by an earlier held search-result read
+ok 72 - a new enabled draft cannot be overwritten by an earlier held search-result read
+  ---
+  duration_ms: 8.3483
+  type: 'test'
+  ...
+# Subtest: an earlier held result read cannot replace a later selected file
+ok 73 - an earlier held result read cannot replace a later selected file
+  ---
+  duration_ms: 8.7874
+  type: 'test'
+  ...
+# Subtest: a changed disk revision is opened without applying stale result positions
+ok 74 - a changed disk revision is opened without applying stale result positions
+  ---
+  duration_ms: 8.7646
+  type: 'test'
+  ...
+# Subtest: changed query options prevent an older result read from opening its file or replacing the current draft
+ok 75 - changed query options prevent an older result read from opening its file or replacing the current draft
+  ---
+  duration_ms: 9.9628
+  type: 'test'
+  ...
+# Subtest: a newer completed search prevents an earlier result read from changing the active file
+ok 76 - a newer completed search prevents an earlier result read from changing the active file
+  ---
+  duration_ms: 12.0418
+  type: 'test'
+  ...
+1..76
+# tests 76
+# suites 0
+# pass 76
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9136.6237

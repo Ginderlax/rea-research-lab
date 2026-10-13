@@ -1,0 +1,141 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+
+const work=import.meta.dirname,lab=path.resolve(work,'../outputs/rea-research-lab'),studio=path.join(lab,'products/rea-studio');
+const run=path.join(work,'editor-vault-suite-runs/2026-10-13T05-22-11.249Z');
+const prefix='results/editor-vault-combined-20261013',folder=path.join(studio,prefix);
+const baselineFolder=path.join(work,'editor-vault-finalization-next');
+const read=p=>JSON.parse(fs.readFileSync(p)),sha=b=>createHash('sha256').update(b).digest('hex');
+const identity=b=>({bytes:b.length,sha256:sha(b)});
+const attempt=read(path.join(run,'attempt-validation.json'));
+const db=fs.readFileSync(path.join(studio,'results/development-validation.json')),dev=JSON.parse(db);
+assert.deepEqual(identity(db),{bytes:137063,sha256:'333303c8bd8cd131da3f01e1414b0fba92bc321b2b63f178ab91d138b2bcfa44'});
+assert.equal(attempt.schema,'rea-editor-vault-suite-attempt/v1');
+assert.equal(attempt.exitCode,0);assert.equal(attempt.failure,null);assert.equal(attempt.signal,null);
+assert.deepEqual(attempt.summary,dev.summary);assert.equal(attempt.summary.tests,937);assert.equal(attempt.summary.pass,937);
+assert.equal(attempt.summary.fail+attempt.summary.skipped+attempt.summary.cancelled+attempt.summary.todo,0);
+assert.equal(attempt.sourceStable,true);assert.equal(dev.source_bytes_stable_across_run,true);
+assert.equal(dev.full_feature_parity_established,false);assert.equal(dev.universal_superiority_established,false);
+assert.equal(attempt.sourceFiles,737);assert.equal(dev.source_files.length,737);
+assert.deepEqual(attempt.runtime,{version:'v24.16.0',sha256:'b3094d0b49f9ad602262a9921551737bb97637c05dd357a06ae98188d7290aa3'});
+const before=read(path.join(run,'source-before.json')),after=read(path.join(run,'source-after.json'));
+assert.deepEqual(before,after);assert.equal(before.length,737);
+for(const row of before){const b=fs.readFileSync(path.join(studio,row.path));assert.deepEqual(identity(b),{bytes:row.bytes,sha256:row.sha256});assert.ok(fs.readFileSync(path.join(run,'source',row.path+'.snapshot')).equals(b));}
+const installed=read(path.join(work,'editor-vault-reviewed-installation-next/installation.json'));
+assert.equal(installed.installed.length,30);assert.equal(installed.oldReceiptsRebound,false);
+for(const row of installed.installed)assert.deepEqual(identity(fs.readFileSync(path.join(lab,row.destination))),row.after);
+const installationPath='results/editor-vault-reviewed-production-installation-20261013/preservation-manifest.json';
+assert.equal(sha(fs.readFileSync(path.join(studio,installationPath))),'3f810b748bfee60e396df83b668face23e52645871fcfcded3a4074445ce86d5');
+const registryNames=['workspace-products.json','visual-products.json','system-products.json'];
+const registries=registryNames.map(n=>read(path.join(studio,'requirements',n)));
+const project=(j,n)=>({sources:j.sources.map(s=>({id:s.id,sha256:s.sha256})),capabilities:n==='system-products.json'?j.products.flatMap(p=>p.capabilities.map(c=>c.id)):n==='workspace-products.json'?j.capabilities.map(c=>c.id):j.baselineProducts.flatMap(p=>p.requirements.map(c=>c.id))});
+const oldProjection=registries.map((j,i)=>project(j,registryNames[i]));
+const refreshed=[];
+for(const row of registries[0].localImplementationEvidence){
+  const b=fs.readFileSync(path.join(lab,row.path)),actual=identity(b);
+  if(actual.bytes===row.bytes&&actual.sha256===row.sha256)continue;
+  const authority=installed.installed.find(p=>p.destination===row.path);assert.ok(authority,'Unapproved stale implementation reference: '+row.path);
+  assert.deepEqual({bytes:row.bytes,sha256:row.sha256},authority.before);assert.deepEqual(actual,authority.after);
+  refreshed.push({path:row.path,before:authority.before,after:actual});Object.assign(row,actual);
+}
+assert.deepEqual(refreshed.map(r=>r.path).sort(),['products/rea-studio/apps/editor/SEARCH.md','products/rea-studio/apps/editor/client.mjs','products/rea-studio/apps/editor/server.mjs','products/rea-studio/apps/editor/workspace-search.mjs'].sort());
+const metadataPaths=['README.md','products/rea-studio/README.md','products/rea-studio/STATUS.json',...registryNames.map(n=>'products/rea-studio/requirements/'+n),'products/rea-studio/requirements/README.md'];
+const metadataBefore=metadataPaths.map(p=>({path:p,...identity(fs.readFileSync(path.join(lab,p)))}));
+const preflight={schema:'rea-editor-vault-finalizer-source-preflight/v1',at:new Date().toISOString(),summary:attempt.summary,sourceFiles:737,liveSourceBytesVerified:true,installationRows:30,refreshedImplementationReferences:refreshed,originalSourcePairs:oldProjection.reduce((s,p)=>s+p.sources.length,0),capabilityIds:oldProjection.reduce((s,p)=>s+p.capabilities.length,0),metadataBefore,collector:identity(fs.readFileSync(import.meta.filename)),appExecutions:0,productionWrites:0};
+assert.equal(preflight.originalSourcePairs,159);assert.equal(preflight.capabilityIds,232);
+if(process.argv.includes('--preflight')){
+  assert.equal(fs.existsSync(baselineFolder),false);fs.mkdirSync(baselineFolder);
+  for(const row of metadataBefore){const p=path.join(baselineFolder,'before',row.path+'.snapshot');fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,fs.readFileSync(path.join(lab,row.path)),{flag:'wx'});}
+  fs.writeFileSync(path.join(baselineFolder,'preflight.json'),JSON.stringify(preflight,null,2)+'\n',{flag:'wx'});
+  fs.writeFileSync(path.join(baselineFolder,'collector.mjs.snapshot'),fs.readFileSync(import.meta.filename),{flag:'wx'});
+  console.log(JSON.stringify(preflight));process.exit(0);
+}
+assert.ok(process.argv.includes('--finalize'),'Use --preflight or --finalize');
+const approvedBaseline=read(path.join(baselineFolder,'preflight.json'));assert.deepEqual(approvedBaseline.metadataBefore,metadataBefore);assert.deepEqual(approvedBaseline.collector,preflight.collector);
+assert.equal(fs.existsSync(folder),false);
+const snapshots=[];
+function save(n,b,sourcePath=n){const p=path.join(folder,n);fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,b,{flag:'wx'});snapshots.push({sourcePath,path:n,...identity(b)});}
+for(const row of before)save('source/'+row.path+'.snapshot',fs.readFileSync(path.join(run,'source',row.path+'.snapshot')),row.path);
+for(const n of ['runner.mjs.snapshot','source-before.json','source-after.json','stdout.txt','stderr.txt','attempt-validation.json'])save(n+'.snapshot',fs.readFileSync(path.join(run,n)));
+save('development-validation.json.snapshot',db,'results/development-validation.json');
+save('finalization-collector.mjs.snapshot',fs.readFileSync(import.meta.filename));
+for(const row of metadataBefore)save('before-metadata/'+row.path+'.snapshot',fs.readFileSync(path.join(baselineFolder,'before',row.path+'.snapshot')),row.path);
+save('finalization-preflight.json.snapshot',fs.readFileSync(path.join(baselineFolder,'preflight.json')));
+const preservation={schema:'rea-editor-vault-suite-preservation/v1',at:new Date().toISOString(),snapshots,summary:attempt.summary,sourceFiles:737,sourceStable:true,sourceCapturedBeforeExecution:true,sourceSnapshotsInert:true,developmentValidationSHA256:sha(db),priorPublishedCommit:'f0b4746eae49b2a83694de1a0a28fee63e004257',installationRecord:installationPath,historicalReceiptsRebound:false,originalSourceIdentitiesPreserved:true,capabilityIdsPreserved:true,fullProductParity:false,universalSuperiority:false};
+const mb=Buffer.from(JSON.stringify(preservation,null,2)+'\n');fs.writeFileSync(path.join(folder,'preservation-manifest.json'),mb,{flag:'wx'});
+
+const milestone='EDITOR-PATTERN-VAULT-GROUP-MILESTONE.md';
+const statusPath=path.join(studio,'STATUS.json'),status=read(statusPath);
+status.phase='editor-pattern-vault-group-recovery';status.current_milestone_record=milestone;
+status.implemented_milestone='Whole-word and selected JavaScript regular-expression workspace search with bounded workers and corrected native textarea navigation; recursive Vault group preview, recycle, purge and previous-parent restoration. 937 implemented-contract checks pass with no skips and 737 stable source files.';
+status.next_required_milestone='Continue every documented original feature and all requested quality dimensions. Correct the independently reproduced next-stage Vault group-editor draft loss; accept native Flow links; continue multiline/replace/encoding/extension lifecycle, dashboards/calculations, provider/plugin behavior, drawing bindings/fonts/rotation, synchronization, native formats and reliability. Complete release-bound atomic inventories and comparative speed, resource and usability acceptance.';
+status.prior_published_checkpoint={commit:preservation.priorPublishedCommit,checks:847,sourceFingerprints:720,record:'results/notes-layout-value-api-combined-20261013/preservation-manifest.json',historicalReceiptsRebound:false};
+status.source_stable_combined_checks={pass:937,fail:0,cancelled:0,skipped:0,todo:0,source_fingerprints:737,record:prefix+'/preservation-manifest.json'};
+for(const key of ['editor_search_save_integration','editor_search_independent_review','editor_save_independent_review','vault_history_recycle_integration','focused_notes_vault_original_keepass_library_processes']){status.historical_focus_checks[key]=status.current_focus_checks[key];delete status.current_focus_checks[key];}
+status.historical_editor_browser_record=status.current_editor_browser_record;status.historical_editor_browser=status.current_editor_browser;
+delete status.current_editor_browser_record;delete status.current_editor_browser;
+status.current_feature_evidence={installation:installationPath,currentCombinedSuite:prefix+'/preservation-manifest.json',editorSourcePlan:'results/editor-search-pattern-reviewed-installation-20261013/source-proof/preservation-manifest.json',vaultSourcePlan:'results/vault-group-recycle-reviewed-installation-20261013/source-proof/preservation-manifest.json',editorCandidateChecks:100,vaultCandidateChecks:77,countsAreSeparateOverlappingCampaigns:true,candidateCampaignsReboundToInstalledEpoch:false};
+status.current_browser_acceptance.editor_prior_source_bound_search_save_groups=8;
+status.current_browser_acceptance.editor_prior_host_and_editor_epoch_historical=true;
+status.current_browser_acceptance.editor_corrected_native_selection_observations=26;
+status.current_browser_acceptance.editor_corrected_held_response_controls=2;
+status.current_browser_acceptance.editor_corrected_browser_full_shared_host=false;
+status.current_browser_acceptance.editor_corrected_dirty_close_Cancel_acceptance=false;
+status.current_browser_acceptance.vault_recursive_groups_normal_shared_host_observations=8;
+status.current_evidence_limits.editorPatterns='Single-LF-line JavaScript Unicode regular expressions and selected whole-word characters differ from released Rust/PCRE2 empty matches, anchors, syntax and case folding. Bounded workers are not OS hard-preemption or full workbench acceptance. Native textarea browser selections pass 26 finite observations; Cancel and Save-specific acceptance remain separate.';
+status.current_evidence_limits.vaultGroups='Recursive recovery and purge have local depth/path/resource bounds and narrower UI policies. Original helper/library comparisons and independent DOM, shared-host HTTP and eight browser observations are separate epochs. Full original GUI, general group editing, whole-bin commands and comparative quality remain open.';
+status.current_evidence_limits.historicalFocus='Earlier Editor78, Vault79 and original37 focused totals are now explicitly historical; the current combined run is a fresh installed epoch.';
+assert.equal(status.complete_replacement_products,0);assert.equal(status.goal_status,'active');assert.equal(status.no_completion_notification_should_be_sent,true);
+fs.writeFileSync(statusPath,JSON.stringify(status,null,2)+'\n');
+
+const document=`# Editor pattern search and Vault group recovery checkpoint
+
+Editor now offers whole-word and selected regular-expression workspace search, with navigation that handles native textarea newline normalization and Unicode boundaries. Vault now previews, recursively recycles, permanently deletes and restores native groups. These are installed features in a continuing ten-product development program. **Zero products meet the requested complete replacement and comparative acceptance standard.**
+
+## Current installed run
+
+The combined suite passed **937/937 checks**, with no failures, cancellations, skips or unfinished tests. All **737 eligible source files** were captured before execution and stayed exact afterwards. The run took 612,194.3375 ms on Node 24.16.0. [Raw run, sources and metadata](${prefix}/preservation-manifest.json) and [current development receipt](results/development-validation.json) bind this installed epoch. [The reviewed installation](${installationPath}) preserves 30 live paths: eight replacements and 22 additions, plus their exact previous bytes and independent plan review. The shared Studio host is unchanged.
+
+| Product | Installed behavior | Explicit remaining limits |
+| --- | --- | --- |
+| Editor | Case and whole-word options, single-line JavaScript Unicode regex search, isolated bounded workers, stale-result guards and native textarea selection mapping. | Multiline search, replacements, broad encoding, original regex equivalence, extension lifecycle and full editor workflows. |
+| Vault | Native-ID group lists and previews, confirmed recursive recycle/purge, previous-parent restoration, tombstone ordering, preserved descendants/history/binaries and stale response guards. | General group editing, whole-bin commands, broader original move semantics, original GUI and full database compatibility. |
+
+Use the existing Studio start command, then Editor's workspace search or Vault's Show groups / Show recycled groups controls. [Editor search contract](apps/editor/SEARCH-PATTERNS.md), [textarea coordinates](apps/editor/TEXTAREA-COORDINATES.md) and [Vault group recovery](apps/vault/GROUP-RECYCLE.md) document actual behavior and bounds.
+
+## Evidence and corrections
+
+Editor retains the initial pattern candidate, the independent native-selection failures, the corrected candidate and its independent browser campaign. The corrected author campaign passes 100 finite checks. Actual Chrome inspection accepts 26 selected text ranges and two held-response controls. Sixteen retained model tests replay separately; they are not another 16 browser observations. Earlier CRLF and astral selections selected the wrong text; the correction validates saved-versus-native normalized text and maps UTF-16 endpoints without splitting CRLF or surrogate pairs. Dirty-close confirmation was observed, but native Cancel delivery remains incomplete. Save-specific browser checks were not run in that campaign. Its private bridge is distinct from the normal whole Studio host. [Complete Editor source map](results/editor-search-pattern-reviewed-installation-20261013/source-proof/preservation-manifest.json) keeps every negative and corrected epoch, selected original-source comparisons, licenses and exclusions inspectable. Earlier literal-search and Save receipts remain historical.
+
+Vault retains its initial 777-file group candidate, independent password-panel and held active-list failures, and two separate frontend corrections. The final candidate campaign passes 77 checks; six independent model cases pass on that final client. The real shared-host HTTP campaign passes two cases through five process starts. A separate normal Studio browser campaign accepts eight observations spanning confirmation refusal, recycle, password reveal, recursive restore and preview clearing. These denominators overlap and are never added to the 937 combined total. The initial candidate's 15 released KeePass managed loads stay bound to that epoch; this new installed run executes its own original-adapter tests, with the raw TAP output retained. Full original GUI execution remains zero. [Complete Vault source map](results/vault-group-recycle-reviewed-installation-20261013/source-proof/preservation-manifest.json) preserves the failed, corrected, original, HTTP and browser authorities. The GPL notice retains the selected exact official source and full license.
+
+Pattern search uses a five-second worker deadline and explicit query/content/output/heap/admission bounds. It returns only completed-file rows on timeout. JavaScript and released Rust/PCRE2 differ on empty-match iteration, Unicode classes, anchors, syntax and folding; no broad compatibility claim follows. Vault retains depth 63, path 256 and other documented local size limits, compared with the studied original group depth 126. Cooperative local limits do not prove a process RAM ceiling or hard wall-time preemption.
+
+## Preservation and continuing work
+
+The prior [847-check checkpoint](NOTES-LAYOUT-VALUE-API-MILESTONE.md) keeps its 720-source receipt unchanged. Named historical readers resolve only eight exact replaced paths through pinned previous bytes and also require all current installed identities. They do not rebind past browser or focused checks to this epoch. Four stale Editor implementation-byte references are refreshed using the reviewed installation's exact before/after authorities; all 159 original source-ID/hash pairs and 232 capability IDs remain intact. Synthetic database carriers and full vendor executables stay outside the public evidence. Screenshot observations without retained image files do not imply published screenshot artifacts.
+
+The next group-editor candidate is still under independent correction: a held final roster refresh can discard name and notes entered after Save/Create. That feature is not part of this installed checkpoint. Native Flow links are another staged feature awaiting independent acceptance. Every documented feature, speed, resource use, usability, compatibility, reliability and the retained Metrics regressions remain open work. Development continues; this checkpoint is not a completion notification.
+`;
+assert.equal(fs.existsSync(path.join(studio,milestone)),false);fs.writeFileSync(path.join(studio,milestone),document,{flag:'wx'});
+for(const [p,root]of[[path.join(lab,'README.md'),true],[path.join(studio,'README.md'),false]]){
+  let text=fs.readFileSync(p,'utf8');
+  const phrase='The current [notebook confirmation, drawing layout and editor value API checkpoint]';assert.equal(text.split(phrase).length,2);text=text.replace(phrase,'The historical [notebook confirmation, drawing layout and editor value API checkpoint]');
+  if(!root){const old='The current record contains **847 passing tests and0skips**, with720unchanged source fingerprints.';assert.ok(text.includes(old));text=text.replace(old,'The current record contains **937 passing tests and no skips**, with 737 unchanged source fingerprints.');}
+  text+=`\nThe current [Editor pattern search and Vault group recovery checkpoint](${root?'products/rea-studio/':''}${milestone}) passes **937 implemented-contract checks, no skips and 737 stable source fingerprints**. It adds bounded pattern search, corrected native textarea navigation and recursive Vault group recovery. Exact sources, independent negative reviews, original comparisons and finite browser limits are preserved. Full replacements and comparative acceptance remain under development.\n`;
+  fs.writeFileSync(p,text);
+}
+const crossFile=registries[0].capabilities.find(c=>c.id==='vscode.cross-file-search');assert.equal(crossFile.status,'partial');
+crossFile.implementation.current='Saved UTF-8 single-line workspace search with case and whole-word options, selected JavaScript Unicode regular expressions in bounded workers, revision-bound native textarea navigation, and dirty/stale guards. Resource, path and source-geometry bounds are explicit. Released Rust/PCRE2 differences, multiline, ignore/glob precedence, unsaved-buffer search, replacements, remote workspaces and broad encoding remain open.';
+crossFile.remaining=['Include/exclude and ignore precedence, multiline search, search editors, unsaved-buffer and remote scope, cross-file replacements and broad release-bound regex compatibility.'];
+crossFile.implementation.testReferences.push({path:'products/rea-studio/results/editor-vault-combined-20261013/preservation-manifest.json',scope:'Fresh installed937-check suite; a combined implemented-contract corpus, not a full original or product performance comparison.'});
+for(let i=0;i<registries.length;i++){
+  registries[i].currentEditorPatternVaultGroupMilestone={record:'products/rea-studio/'+milestone,currentCombinedTests:937,currentCombinedSources:737,installation:'products/rea-studio/'+installationPath,originalSourceIdentitiesPreserved:true,capabilityIdsPreserved:true,fullDocumentationInventoryClosed:false,completeProducts:0};
+  assert.deepEqual(project(registries[i],registryNames[i]),oldProjection[i]);fs.writeFileSync(path.join(studio,'requirements',registryNames[i]),JSON.stringify(registries[i],null,2)+'\n');
+}
+fs.appendFileSync(path.join(studio,'requirements/README.md'),'\nThe current [Editor pattern search and Vault group recovery checkpoint](../EDITOR-PATTERN-VAULT-GROUP-MILESTONE.md) adds installed finite evidence and refreshes four reviewed implementation-byte references. All 159 original source identities and 232 capability IDs remain unchanged; full release-bound inventories and comparative acceptance remain open.\n');
+const metadataAfter=metadataPaths.map(p=>({path:p,...identity(fs.readFileSync(path.join(lab,p)))}));
+const result={schema:'rea-editor-vault-checkpoint-finalization/v1',at:new Date().toISOString(),summary:attempt.summary,sourceFiles:737,snapshotCount:snapshots.length,preservationSHA256:sha(mb),developmentSHA256:sha(db),metadataBefore,metadataAfter,originalSourcePairs:159,capabilityIds:232,completeProducts:0,sourceOnlyCollector:true,appExecutions:0,oldReceiptsRebound:false};
+fs.writeFileSync(path.join(baselineFolder,'finalization.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(result));

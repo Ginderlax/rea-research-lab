@@ -4,12 +4,14 @@ import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';
 import { verifyFollowupRecords } from './verify-followup-records.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(readFileSync(join(root, 'PUBLICATION-MANIFEST.json'), 'utf8'));
 const index = JSON.parse(readFileSync(join(root, 'PROJECT-INDEX.json'), 'utf8'));
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+const sourceProofMigration=createEditorVaultProofMigrationFromRoot(root);
 const followupEvidence = verifyFollowupRecords(root);
 const historicalMilestone = 'products/rea-studio/results/milestones/execution-archive-20261012/';
 function safeRecordPath(path) { assert.ok(typeof path === 'string' && path.length && !path.startsWith('/') && !path.split('/').includes('..') && !path.includes('\\'), `Invalid record path: ${path}`); }
@@ -883,6 +885,7 @@ const receipt = {
   project_metadata_and_record_counts_consistent: true, excluded_artifacts_not_in_payload: true,
   credential_pattern_scan_passed: true, root_document_links_resolve: true,
   preserved_vendor_and_historical_document_links_not_rebased: true,
+  source_proof_migration: sourceProofMigration.summary(),
   followup_evidence: followupEvidence,
   named_historical_shared_host_receipts: { backup64: { current_nonhost_rows:41, historical_host_rows:1 }, automation_recovery_browser: { current_nonhost_rows:40, historical_host_rows:1 }, automation_recovery: { current_nonhost_rows:42, historical_host_rows:1 }, webdav_host_dependencies: { current_nonhost_rows:2, historical_host_rows:1 }, metrics_algorithm_baseline: { current_nonhost_rows:7, historical_host_rows:1 }, backup_rabin_sources: { current_nonhost_rows:27, prior_other_historical_rows:6, historical_host_rows:1 }, historical_host_sha256:'807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f', current_host_sha256:'85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94', prior_receipts_rebound:false, original_behavior_rerun:false, current_host_still_required:true },
   ...(productDevelopment ? { product_development: productDevelopment } : {}),

@@ -1,4 +1,15 @@
 function el(tag, text, className) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; }
+function textareaSelection(content,start,end,value) {
+  if(typeof content!=='string'||typeof value!=='string'||!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start<0||end<start||end>content.length)return null;
+  // Native textarea.value folds CRLF and bare CR to LF. Saved revisions and
+  // source offsets still describe the exact raw saved string.
+  if(content.replace(/\r\n?/g,'\n')!==value)return null;
+  const interior=index=>{if(index===0||index===content.length)return false;const a=content.charCodeAt(index-1),b=content.charCodeAt(index);return a===13&&b===10||a>=0xd800&&a<=0xdbff&&b>=0xdc00&&b<=0xdfff;};
+  if(interior(start)||interior(end))return null;
+  let normalizedStart=start,normalizedEnd=end;
+  for(let i=0;i<end;i++)if(content.charCodeAt(i)===13&&content.charCodeAt(i+1)===10){if(i<start)normalizedStart--;normalizedEnd--;i++;}
+  return {start:normalizedStart,end:normalizedEnd};
+}
 export async function render(root, api) {
   root.replaceChildren();
   const heading = el('h2', 'Workspace Editor'), description = el('p', 'Edit UTF-8 files, keep drafts in tabs, and compare exact minimal line edits.', 'muted');
@@ -15,7 +26,9 @@ export async function render(root, api) {
   findControls.append(findInput, replaceInput, findButton, replaceButton);
   const difference = el('pre'); difference.style.whiteSpace = 'pre-wrap'; difference.setAttribute('aria-label', 'Line difference');
   const searchPanel=el('section',undefined,'card'),searchControls=el('div',undefined,'row'),searchQuery=el('input'),caseControl=el('label',' Match case'),searchCase=el('input'),searchButton=el('button','Search saved files','button'),searchState=el('p','Search saved files; unsaved drafts are retained in their tabs.','muted'),searchResults=el('div');
-  searchQuery.placeholder='Literal text across files';searchQuery.setAttribute('aria-label','Find in saved files');searchCase.type='checkbox';searchCase.checked=true;searchCase.setAttribute('aria-label','Match case in workspace search');caseControl.prepend(searchCase);searchState.setAttribute('role','status');searchResults.setAttribute('aria-label','Workspace search results');searchControls.append(searchQuery,caseControl,searchButton);searchPanel.append(el('h3','Search workspace'),searchControls,searchState,searchResults);
+  const wordControl=el('label',' Whole word'),searchWord=el('input'),regexControl=el('label',' Regular expression'),searchRegex=el('input');
+  searchWord.type=searchRegex.type='checkbox';searchWord.checked=searchRegex.checked=false;searchWord.setAttribute('aria-label','Whole word in workspace search');searchRegex.setAttribute('aria-label','Regular expression in workspace search');wordControl.prepend(searchWord);regexControl.prepend(searchRegex);
+  searchQuery.placeholder='Text or single-line pattern across files';searchQuery.setAttribute('aria-label','Find in saved files');searchCase.type='checkbox';searchCase.checked=true;searchCase.setAttribute('aria-label','Match case in workspace search');caseControl.prepend(searchCase);searchState.setAttribute('role','status');searchResults.setAttribute('aria-label','Workspace search results');searchControls.append(searchQuery,caseControl,wordControl,regexControl,searchButton);searchPanel.append(el('h3','Search workspace'),searchControls,searchState,searchResults,el('p','Regular expressions use a bounded single-line Unicode engine. Rust/PCRE2 syntax and some empty-match behavior differ.','muted'));
   pane.append(tabs, editor, actions, findControls, difference); root.append(heading, description, controls, files, searchPanel, pane, state);
   const sourceControl = el('section', undefined, 'card'); sourceControl.append(el('h3', 'Git source control'));
   const gitState = el('p', 'Loading repository…', 'muted'), gitControls = el('div', undefined, 'row');
@@ -96,11 +109,11 @@ export async function render(root, api) {
     if(!documents.has(data.path))documents.set(data.path, { ...data, saved: data.content });active = data.path;editor.value=document().content;difference.textContent = ''; updateTabs(); state.textContent = `Opened ${data.path}.`;return true;
   }
   const invalidateSearch=()=>{searchGeneration++;searchResults.replaceChildren();searchState.textContent='Search options changed. Search again to refresh saved-file results.';};
-  searchQuery.oninput=invalidateSearch;searchCase.onchange=invalidateSearch;
+  searchQuery.oninput=invalidateSearch;searchCase.onchange=searchWord.onchange=searchRegex.onchange=invalidateSearch;
   searchButton.onclick=async()=>{
     const request=++searchGeneration;pendingSearch=request;searchButton.disabled=true;searchResults.replaceChildren();searchState.textContent='Searching saved files…';
     try {
-      const data=await api('search',{query:searchQuery.value,matchCase:searchCase.checked});
+      const data=await api('search',{query:searchQuery.value,matchCase:searchCase.checked,wholeWord:searchWord.checked,useRegex:searchRegex.checked});
       if(!mounted||request!==searchGeneration)return;
       searchState.textContent=`${data.matches.length} matches in ${data.matchedFiles} files. ${data.searchedFiles} text files searched.${data.skipped.length?` ${data.skipped.length} files skipped.`:''}${data.truncated?` Results are incomplete (${data.limitReasons.join(', ')}).`:''}`;
       for(const match of data.matches){
@@ -110,7 +123,9 @@ export async function render(root, api) {
           if(!await open(match.path,request)||!mounted||request!==searchGeneration)return;
           const item=document();
           if(item.revision!==match.revision||item.content!==item.saved){state.textContent='The result describes a saved-file snapshot. Your current draft was retained; search again after saving to refresh positions.';return;}
-          editor.focus();editor.setSelectionRange(match.start,match.end);state.textContent=`Opened ${match.path}, line${match.line}, column${match.column}.`;
+          const selection=textareaSelection(item.content,match.start,match.end,editor.value);
+          if(!selection){state.textContent='The saved result does not match the text shown or its positions. Save or reopen the file, then search again.';return;}
+          editor.focus();editor.setSelectionRange(selection.start,selection.end);state.textContent=`Opened ${match.path}, line${match.line}, column${match.column}.`;
         });row.append(button,el('span',match.preview));searchResults.append(row);
       }
     }catch(error){if(mounted&&request===searchGeneration)searchState.textContent=error.message;}
@@ -144,7 +159,7 @@ export async function render(root, api) {
   }
   saveButton.onclick = () => run(save);
   diffButton.onclick = () => run(async () => { const item = document(); if (!item) return; const diff = await api('diff', { before: item.saved, after: item.content }); difference.textContent = `Minimal line edits: ${diff.cost} (${diff.deleted} removed, ${diff.inserted} added)\n` + diff.operations.map(op => `${op.type === 'insert' ? '+' : op.type === 'delete' ? '-' : ' '} ${op.text}`).join('\n'); state.textContent = 'Comparison complete.'; });
-  closeButton.onclick = () => { const item = document(); if (!item || (item.content !== item.saved && !window.confirm('Discard this unsaved draft?'))) return; documents.delete(active); active = documents.keys().next().value ?? null; editor.value = document()?.content ?? ''; difference.textContent = ''; updateTabs(); };
+  closeButton.onclick = () => { const item = document(); if (!item || (item.content !== item.saved && !window.confirm('Discard this unsaved draft?'))) return; openingGeneration++;documents.delete(active); active = documents.keys().next().value ?? null; editor.value = document()?.content ?? ''; difference.textContent = ''; updateTabs(); };
   findButton.onclick = () => { if (!findInput.value) { state.textContent = 'Enter find text.'; return; } const start = editor.selectionEnd; let at = editor.value.indexOf(findInput.value, start); if (at < 0) at = editor.value.indexOf(findInput.value); if (at < 0) { state.textContent = 'No match.'; return; } editor.focus(); editor.setSelectionRange(at, at + findInput.value.length); state.textContent = `Found at character ${at + 1}.`; };
   replaceButton.onclick = () => run(async () => { const item = document(); if (!item) return; const result = await api('replace', { content: item.content, find: findInput.value, replacement: replaceInput.value }); item.content = editor.value = result.content; updateTabs(); state.textContent = `${result.count} replacements in this draft. Save to keep them.`; });
   editor.onkeydown = event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); run(save); } if (event.key === 'Tab') { event.preventDefault(); const start = editor.selectionStart, end = editor.selectionEnd; editor.setRangeText('  ', start, end, 'end'); editor.dispatchEvent(new Event('input')); } };

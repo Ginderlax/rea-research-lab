@@ -1,0 +1,34 @@
+✔ actual group UI previews descendants without passwords, confirms recursive recycle and restore (66.3949ms)
+✔ open entry and new dirty draft prevent group commands before any mutation transport (44.4236ms)
+✔ held real committed recursive deletion retains newly typed draft, blocks duplicate/entry Save, and suppresses closed-panel publication (47.6898ms)
+✔ held group preview cannot publish after view disposal (45.6436ms)
+✖ failed group persistence restores controls and explicit retry uses same uncommitted selection (47.748ms)
+✔ older real entry read cannot reopen a now-recycled descendant after group mutation starts (48.1279ms)
+✔ late committed group response performs no follow-up API read after disposal (47.4501ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 410.3865
+
+✖ failing tests:
+
+test at work\keepass-group-bin-coherence-fix-next\diagnostics\old-ui-exact.test.mjs:9:1
+✖ failed group persistence restores controls and explicit retry uses same uncommitted selection (47.748ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  2 !== 0
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-group-bin-coherence-fix-next/diagnostics/old-ui-exact.test.mjs:9:490)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 2,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

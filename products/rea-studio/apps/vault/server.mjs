@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, createHmac, randomBytes, randomInt, r
 import { promisify } from 'node:util';
 import { importKdbx, exportKdbx, base64 } from './kdbx.mjs';
 import {applyEntrySave,listEntryHistory,readEntryHistory,restoreEntryHistory} from './history.mjs';
-import {normalizeRecycleData,recycleView,recycleRead,activeEntry,deleteRecycleEntry,restoreRecycleEntry} from './recycle.mjs';
+import {normalizeRecycleData,recycleView,recycleRead,activeEntry,deleteRecycleEntry,restoreRecycleEntry,recycleGroupView,recycleGroupRead,deleteRecycleGroup,restoreRecycleGroup} from './recycle.mjs';
 
 const scrypt = promisify(derive);
 const sessions = new Map();
@@ -206,7 +206,13 @@ async function run({ action, input = {}, store, workspace }) {
     const staged=action==='recycleDelete'?deleteRecycleEntry(state.data,input.id,input.revision,state.key,{confirm:input.confirm,permanent:input.permanent??false}):restoreRecycleEntry(state.data,input.id,input.revision,state.key,{confirm:input.confirm});
     await store.set(KEY,encode(staged.data,state.key,state.salt));if(sessions.get(id)===state)state.data=staged.data;return staged.result;
   }
-  if(action==='deleteGroup'||action==='recycleGroup'||action==='emptyRecycleBin')throw new Error('Group deletion and emptying a bin containing groups are unsupported in this entry-only slice.');
+  if(action==='recycleGroupList')return recycleGroupView(state.data,state.key,{bin:input.bin??false});
+  if(action==='recycleGroupRead')return recycleGroupRead(state.data,input.id,input.revision,state.key);
+  if(action==='recycleGroupDelete'||action==='recycleGroupRestore'){
+    const staged=action==='recycleGroupDelete'?deleteRecycleGroup(state.data,input.id,input.revision,state.key,{confirm:input.confirm,permanent:input.permanent??false}):restoreRecycleGroup(state.data,input.id,input.revision,state.key,{confirm:input.confirm});
+    await store.set(KEY,encode(staged.data,state.key,state.salt));if(sessions.get(id)===state)state.data=staged.data;return staged.result;
+  }
+  if(action==='deleteGroup'||action==='recycleGroup'||action==='emptyRecycleBin')throw new Error('Use revision-bound group commands; whole-bin emptying is unsupported.');
   if (action === 'exportEncrypted') return { document: await store.get(KEY, null) };
   if (action === 'exportKdbx') {
     const buffer = await exportKdbx(state.data,{ password: input.password,usePassword: input.usePassword,keyFileBase64: input.keyFileBase64 },input.options);

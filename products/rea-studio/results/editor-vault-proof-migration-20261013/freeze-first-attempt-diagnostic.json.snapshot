@@ -1,0 +1,13 @@
+{
+  "schema": "rea-source-only-freeze-self-output-diagnostic/v1",
+  "attempt": "freeze-v1",
+  "acceptedImmutableFreeze": false,
+  "originalManifestSHA256": "df2195891370e9cdeaef8ca8e7af40f946eadd4a596df4b8e9410208ed54b556",
+  "originalInventoryCount": 185,
+  "defect": "The collector captured its redirected stdout as empty before emitting completion metadata. That later output changed the captured file; this first inventory is retained as an unsuccessful preparation artifact.",
+  "correction": "Final collector output is redirected outside the stage, leaving the retained first stdout bytes stable inside the final strict inventory.",
+  "preservedSourceAndManifest": "freeze-v1-source",
+  "candidateVerifierBodiesChanged": false,
+  "applicationFailure": false,
+  "productionWrites": 0
+}

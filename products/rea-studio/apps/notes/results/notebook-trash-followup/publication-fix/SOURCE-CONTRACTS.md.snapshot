@@ -1,0 +1,22 @@
+# Released notebook trash contract binding
+
+Source-assisted study of Joplin Desktop 3.6.14 at official commit `7e2765a3857754d12dbadea442b60ceaf9d4b23d`. Exact official source is retained under `original/`; new and prior provenance records give URLs, lengths and SHA-256. The code carries AGPL-3.0-or-later licensing. See retained `original/LICENSE.snapshot`; no library-specific replacement license was found at the recorded 404 paths.
+
+| Released file and lines | Contract / executed scope |
+| --- | --- |
+| `packages/lib/models/Folder.ts` 62–78 | `notes`: regular notes by parent, active-only by default; `includeDeleted` changes only deleted filtering. Exact slice executes against a restricted SQL adapter. |
+| Same file 80–86 | `noteIds`: invokes that selector. Exact slice executed. |
+| Same file 88–91 | `subFolderIds`: all immediate child folders, including trashed. Exact slice executed. |
+| Same file 124–180 | `batchDelete`: recursive children, optional trash and per-folder save. Only `toTrash:true` with ordinary local IDs and default child behavior executes. Permanent delete/read-only/event branches do not become product claims. |
+| Same file 382–403 | `childrenIds`: recursively collects descendants with `includeDeleted:true`. Exact slice executed. |
+| `packages/lib/models/Note.ts` 890–960 | `batchDelete`: trash SQL sets deleted/system time, preserving user time; chunks up to 50 IDs. Only trash branch executes, using owned restricted SQL update adapter. |
+| `packages/lib/BaseModel.ts` 536–614 | `saveQuery`: timestamp and update-object construction. Executes for existing rows; false `isNew`, true default autoTimestamp on folder trash, false on restore. Original save mutex/database/revision events do not execute. |
+| `packages/lib/services/trash/restoreItems.ts` 16–88 | Complete `restoreItems` function excluding imports/types/export. Restores root fallback, deleted descendants and regular notes, preserving user times. Ordinary default options only. |
+| `packages/lib/services/trash/index.ts` 20–35 | `getDisplayParentId`: virtual trash display-parent rules. Six input/parent states execute. |
+| `packages/lib/services/trash/getTrashFolderId.ts` 1–5 | Exact reserved virtual ID; retained source checked against the candidate and executed display-helper output. |
+| `readme/apps/trash.md` | Released user-facing promise: note restore to original notebook or root if unavailable; notebook restore includes subnotebooks and notes. Retained manual, no full UI execution. |
+| Folder and restoreItems tests | Official examples inspected; their complete released test runner/database are not executed. |
+
+The oracle extracts exact byte slices by explicit source boundaries, authenticates whole-source SHA-256 first, and records line spans plus slice SHA-256 in detailed observations. Node's type stripping removes TypeScript-only syntax. Fixed Date/time, SQL selection/update, load/save, logging, dispatch and property-check adapters are supplied independently. Any SQL shape outside the finite selector/update subset rejects. No arbitrary source method is silently replaced with candidate logic. `BaseModel.saveQuery` is actual released code; the adapter commits its returned object into owned maps.
+
+Important intentional differences: stricter valid-tree/bounds/shared-input acceptance, explicit API/UI confirmation, one atomic local record and one local note revision per final row, unchanged original app/database/sync not executed, no optional relocation/special restored-items folder and no permanent purge. Raw unknown **supported** JEX metadata remains retained; arbitrary unsupported fields continue to reject at JEX boundaries. Exact helpers and this table are only a finite contract study, not complete notebook parity.

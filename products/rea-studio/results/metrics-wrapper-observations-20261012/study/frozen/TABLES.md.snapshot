@@ -1,0 +1,43 @@
+Every row uses all seven recorded repetitions. A positive change means candidate is higher/slower. Medians of paired changes and changes of medians answer different questions. Ranges are observations, not confidence intervals.
+
+| Workload | Original median ms | Baseline median ms | Candidate median ms | Change of medians vs baseline | Median paired change | Slower pairs | Native ranges overlap |
+|---|---:|---:|---:|---:|---:|---:|---|
+| smallStandard | 0.000929 | 0.000893 | 0.000900 | 0.794159% | -0.516696% | 3/7 | true |
+| largeStandard | 0.139374 | 0.145224 | 0.139059 | -4.245160% | -4.085528% | 1/7 | true |
+| singlePercentile | 1.699073 | 1.635987 | 0.277888 | -83.014082% | -83.740881% | 0/7 | false |
+| allPercentiles | 164.831500 | 2.063967 | 1.901433 | -7.874804% | -11.066070% | 3/7 | true |
+| allCalculations | 169.051567 | 6.096433 | 6.039167 | -0.939347% | -3.963661% | 2/7 | true |
+| constructedPercentile | 4.196411 | 4.211032 | 0.387025 | -90.809259% | -91.080132% | 0/7 | false |
+| adversarialFallbackPercentile | 0.782509 | 0.806167 | 0.256891 | -68.134352% | -69.222146% | 0/7 | false |
+
+| Workload | Baseline timing range ms | Candidate timing range ms | Paired change range % | Change of medians vs original % |
+|---|---:|---:|---:|---:|
+| smallStandard | [0.000836, 0.001046] | [0.000835, 0.000961] | [-19.390759, 5.889519] | -3.121980 |
+| largeStandard | [0.135618, 0.149728] | [0.136878, 0.143611] | [-5.031462, 1.372970] | -0.225903 |
+| singlePercentile | [1.579705, 1.806430] | [0.251649, 0.281904] | [-84.394413, -83.014082] | -83.644758 |
+| allPercentiles | [1.826933, 3.073800] | [1.818267, 2.380367] | [-22.559481, 14.661155] | -98.846438 |
+| allCalculations | [5.922700, 7.714133] | [5.717433, 6.802933] | [-19.162662, 7.734577] | -96.427619 |
+| constructedPercentile | [4.069979, 4.697900] | [0.341500, 0.449829] | [-91.890336, -88.947635] | -90.777239 |
+| adversarialFallbackPercentile | [0.735602, 0.866418] | [0.227856, 0.265514] | [-73.354836, -64.717130] | -67.170900 |
+
+Lifetime RSS includes the entire child. Polled RSS is a separate100ms diagnostic and can miss peaks. The complete20 memory metrics, signed pairs and zero-control null percentages are in the CSV files.
+
+| Workload | Original lifetime RSS median MiB | Baseline lifetime RSS median MiB | Candidate lifetime RSS median MiB | Median paired lifetime difference MiB | Native lifetime ranges overlap |
+|---|---:|---:|---:|---:|---|
+| smallStandard | 94.937500 | 93.660156 | 93.742188 | 0.074219 | true |
+| largeStandard | 98.484375 | 97.343750 | 97.386719 | 0.023438 | true |
+| singlePercentile | 95.304688 | 79.394531 | 82.484375 | 3.246094 | false |
+| allPercentiles | 135.398438 | 77.914063 | 78.414063 | 0.238281 | true |
+| allCalculations | 238.253906 | 220.652344 | 216.679688 | -3.605469 | true |
+| constructedPercentile | 209.753906 | 209.035156 | 83.027344 | -126.125000 | false |
+| adversarialFallbackPercentile | 149.640625 | 147.316406 | 82.585938 | -64.851563 | false |
+
+| Workload | Original polled RSS median MiB | Baseline polled RSS median MiB | Candidate polled RSS median MiB | Median paired polled difference MiB |
+|---|---:|---:|---:|---:|
+| smallStandard | 94.152344 | 92.593750 | 93.093750 | 0.550781 |
+| largeStandard | 94.656250 | 94.074219 | 93.992188 | 0.324219 |
+| singlePercentile | 89.410156 | 79.308594 | 78.125000 | -1.570313 |
+| allPercentiles | 113.191406 | 70.531250 | 69.703125 | -0.429688 |
+| allCalculations | 225.648438 | 197.335938 | 174.632813 | -20.660156 |
+| constructedPercentile | 206.636719 | 206.019531 | 79.304688 | -126.671875 |
+| adversarialFallbackPercentile | 133.703125 | 128.578125 | 75.355469 | -53.117188 |

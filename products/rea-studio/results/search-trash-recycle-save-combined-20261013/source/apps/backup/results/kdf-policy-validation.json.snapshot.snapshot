@@ -1,0 +1,109 @@
+{
+  "schema": "rea-restic-kdf-policy-followup/v1",
+  "recordedAt": "2026-10-12T17:32:28.785Z",
+  "status": "passed-focused-implemented-contracts",
+  "historicalCheckpoint": "50155ea79ca43fd38842619e9acab7c0ea1976b0",
+  "baseline": {
+    "version": "restic0.19.1",
+    "commit": "6aa3a516ce654808a1f28f9fa21e9b7c8e6e90bf",
+    "zipSha256": "da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d",
+    "executableSha256": "b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830",
+    "observedParameters": [
+      {
+        "N": 32768,
+        "r": 8,
+        "p": 11
+      },
+      {
+        "N": 32768,
+        "r": 8,
+        "p": 12
+      },
+      {
+        "N": 32768,
+        "r": 8,
+        "p": 13
+      }
+    ]
+  },
+  "change": {
+    "prior": {
+      "N": 32768,
+      "r": 8,
+      "p": 1
+    },
+    "current": {
+      "N": 32768,
+      "r": 8,
+      "minimumP": 13,
+      "maximumP": 32,
+      "targetMilliseconds": 500
+    },
+    "automaticExistingKeyMigration": false
+  },
+  "validation": {
+    "command": "node --test products/rea-studio/apps/backup/restic-kdf-policy.test.mjs products/rea-studio/apps/backup/restic-kdf.interop.test.mjs",
+    "runtime": "v24.16.0",
+    "platform": "Windows x64",
+    "tests": 4,
+    "pass": 4,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "durationMs": 8127.5547,
+    "observedParallelization": [
+      13,
+      13
+    ],
+    "originalVersionsReadCheckedRestored": [
+      1,
+      2
+    ],
+    "scope": "Fresh four-test run after integration, not the entire previous native suite. Actual original version/ZIP/executable authentication, native snapshot, original whole repository check and restored-byte equality are assertions in the retained tests."
+  },
+  "implementationFingerprints": [
+    {
+      "path": "products/rea-studio/apps/backup/restic.mjs",
+      "bytes": 30261,
+      "sha256": "70bf4a5bfd46041823fa00bd7cdbf880f6c0a9020f67ef9e7a807b4242fbb527"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic-crypto.mjs",
+      "bytes": 5262,
+      "sha256": "dd39433472ebdc54235e3acf4f81bc03e2490a1c4adf731eabb0656157ee9f5c"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic-kdf-policy.mjs",
+      "bytes": 1923,
+      "sha256": "6118dcace475d83a77e5d7362316268893ef126387aae22e93601a73876620f1"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic-kdf-policy.test.mjs",
+      "bytes": 1414,
+      "sha256": "0992732971358bf407d375671c8b296c1d3e89f76a2dd26f086dfafb736e9ed3"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/restic-kdf.interop.test.mjs",
+      "bytes": 3405,
+      "sha256": "57128a1612aebe887e9c9f8350d321a975f19514296151627f0c923d6735faa7"
+    },
+    {
+      "path": "products/rea-studio/apps/backup/server.mjs",
+      "bytes": 15107,
+      "sha256": "9d31285d5302a04c6bd67c1bbda5992e7b49f4db79c2576b35f09d3b0db44fa9"
+    },
+    {
+      "path": "products/rea-studio/lib/storage.mjs",
+      "bytes": 3085,
+      "sha256": "729c2f9700b1239f04294b11c42bfd2754478b227e39ab03ec49a1be9141b633"
+    }
+  ],
+  "limitations": [
+    "Fixed observed-original floor and different calibration policy, not exact original calibration on every host.",
+    "Wall time and attack resistance are different quantities; no security audit or universal superiority proof.",
+    "Existing p=1 keys remain readable, with no automatic migration.",
+    "Variable-time MAC and broader backup format/metadata/provider gaps remain open."
+  ],
+  "fullFeatureParityEstablished": false,
+  "universalSuperiorityEstablished": false
+}

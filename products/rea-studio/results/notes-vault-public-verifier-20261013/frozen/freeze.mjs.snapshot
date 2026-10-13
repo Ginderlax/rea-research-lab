@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+const here=import.meta.dirname, sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const identity=p=>{const b=fs.readFileSync(path.join(here,p));return{path:p,bytes:b.length,sha256:sha(b)};};
+function files(rel=''){return fs.readdirSync(path.join(here,rel),{withFileTypes:true}).flatMap(d=>{const p=rel?rel+'/'+d.name:d.name;if(d.isDirectory())return files(p);if(!d.isFile())throw Error('Nonregular owned stage artifact');return[p];});}
+const rows=files().filter(p=>!['manifest.json','freeze.json'].includes(p)).sort().map(identity);
+const manifest={schema:'rea-source-only-public-proof-verifier-strict-manifest/v1',strict:true,excluded:['manifest.json','freeze.json'],records:rows};
+fs.writeFileSync(path.join(here,'manifest.json'),JSON.stringify(manifest,null,2)+'\n');
+const freeze={schema:'rea-source-only-public-proof-verifier-freeze/v1',at:new Date().toISOString(),manifest:identity('manifest.json'),receipt:identity('validation.json'),artifacts:rows.length,allExecutableTestDocAndReceiptSourceFrozen:true,productionRuntimeModified:false,onlyNewLabOutput:'scripts/verify-notes-vault-followups.mjs',originalProgramsExecuted:0,ownedTestsHostsBrowsersRunning:0};
+fs.writeFileSync(path.join(here,'freeze.json'),JSON.stringify(freeze,null,2)+'\n');
+for(const r of rows){const after=identity(r.path);if(after.bytes!==r.bytes||after.sha256!==r.sha256)throw Error('Changed during freeze: '+r.path);}
+console.log(JSON.stringify(freeze));

@@ -1,0 +1,86 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+
+const root=import.meta.dirname,work=path.dirname(root),go=path.dirname(work),studio=path.join(go,'outputs/rea-research-lab/products/rea-studio');
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const write=async(p,v)=>{const full=path.join(root,p);await fs.mkdir(path.dirname(full),{recursive:true});await fs.writeFile(full,typeof v==='string'?v:JSON.stringify(v,null,2)+'\n');};
+const fp=async p=>{const b=await fs.readFile(p);return{bytes:b.length,sha256:sha(b)};};
+async function walk(folder,prefix=''){const a=[];for(const e of await fs.readdir(path.join(folder,prefix),{withFileTypes:true})){const p=(prefix?prefix+'/':'')+e.name;if(e.isSymbolicLink())throw new Error('Symlink '+p);if(e.isDirectory())a.push(...await walk(folder,p));else a.push(p);}return a.sort();}
+const references=[
+ {id:'stage',folder:'notes-trash-next',manifest:'preservation-manifest.json',manifestSha256:'aaa0b6f1f3fcf3b642e6cf23aec76b7596006cb39d49b073bac55b6af2af563b',count:325,receipt:'trash-validation.final.json',receiptSha256:'f7d210df1eb4312a1de9a8c3d51a63a83b99de9c056964edfcfb525e1b99a9f3'},
+ {id:'prior-review',folder:'notes-trash-independent-review',manifest:'review-manifest.json',manifestSha256:'d6e485d9168f548709c69a30cd04e5fcc065cc6348892d3326606c34f0dff18f',count:37,receipt:'review-validation.json',receiptSha256:'b06f1734b84303568ee1ae9bee4b38ccb1f6214b494356f9bc22e4bf69531613'},
+ {id:'publication-fix',folder:'notes-trash-publication-fix-next',manifest:'manifest.json',manifestSha256:'50334e5366f39cb42ccf71dc4b6b6cc2544a63967705529fc377eb1cff5e7e51',count:504,receipt:'validation.json',receiptSha256:'322e1e5793a1204053a933e5ec0923a3d289289940780a8300fcf287c0e0599b'},
+ {id:'publication-review',folder:'notes-trash-publication-independent-review',manifest:'review-manifest.json',manifestSha256:'9596bacc7bc22e8b9b587c682c8427ca13ef29c0e1925a3c711b0fece68eec6f',count:61,receipt:'review-validation.json',receiptSha256:'c412875b52df34dd91cd9361370f8b250b83fcc50396aede781d3cdbdfa54d8b'},
+];
+function carrier(b){
+ if(b.subarray(0,2).toString()==='MZ')return'Windows native executable/library';
+ if(b.subarray(0,4).equals(Buffer.from([0x50,0x4b,3,4]))||b.subarray(0,4).equals(Buffer.from([0x50,0x4b,5,6]))||b.subarray(0,4).equals(Buffer.from([0x50,0x4b,7,8])))return'ZIP archive';
+ if(b.subarray(0,8).equals(Buffer.from('03d9a29a67fb4bb5','hex')))return'KDBX native database';
+ if(b.subarray(0,6).equals(Buffer.from('377abcaf271c','hex')))return'7z archive';
+ if(b.subarray(0,2).equals(Buffer.from([0x1f,0x8b])))return'GZIP archive';
+ if(b.subarray(0,4).equals(Buffer.from('7f454c46','hex')))return'ELF executable';
+ if(b.length>=512&&b.subarray(257,262).toString()==='ustar')return'TAR/JEX native archive';
+ return null;
+}
+const prefix='apps/notes/results/notebook-trash-followup';
+function inert(p){p=p.split('/').map(s=>s==='.local'?'private-study-records':s).join('/');return p+'.snapshot';}
+const mappings=[],excluded=[],generated=[],sourceBefore=[];
+for(const ref of references){
+ const folder=path.join(work,ref.folder),mb=await fs.readFile(path.join(folder,ref.manifest));if(sha(mb)!==ref.manifestSha256)throw new Error('Manifest changed '+ref.folder);
+ const manifest=JSON.parse(mb),rows=manifest.records??manifest.files;
+ if(rows.length!==ref.count)throw new Error('Artifact count changed');
+ if((await fp(path.join(folder,ref.receipt))).sha256!==ref.receiptSha256)throw new Error('Receipt changed');
+ sourceBefore.push({...ref,manifestBytes:mb.length});
+ const all=[...rows,{path:ref.manifest,...await fp(path.join(folder,ref.manifest))},{path:'freeze.json',...await fp(path.join(folder,'freeze.json'))}];
+ const known=new Set(all.map(r=>r.path));
+ for(const p of await walk(folder))if(!known.has(p))generated.push({reference:ref.id,path:p,...await fp(path.join(folder,p)),reason:'Outside frozen strict manifest; excluded generated/private file, not new public evidence'});
+ for(const row of all){
+  const b=await fs.readFile(path.join(folder,row.path));if(b.length!==row.bytes||sha(b)!==row.sha256)throw new Error('Changed source '+ref.folder+'/'+row.path);
+  const kind=carrier(b);
+  // Archive/database/executable payloads remain local even when a snapshot suffix hides the carrier.
+  if(kind){excluded.push({reference:ref.id,sourcePath:row.path,...row,reason:kind,localOnly:true});continue;}
+  let embedded=[];
+  if(b.length<=16*1024*1024){try{const value=JSON.parse(b.toString('utf8'));const visit=(v,p='')=>{if(Array.isArray(v))v.forEach((x,i)=>visit(x,p+'/'+i));else if(v&&typeof v==='object')for(const[k,x]of Object.entries(v))visit(x,p+'/'+k);else if(typeof v==='string'&&v.length>=24&&v.length<=16*1024*1024&&/^[A-Za-z0-9+/]+={0,2}$/.test(v)){const decoded=Buffer.from(v,'base64'),kind=carrier(decoded);if(kind)embedded.push({jsonPointer:p,kind,decodedBytes:decoded.length,sha256:sha(decoded)});}};visit(value);}catch{}}
+  if(embedded.length){excluded.push({reference:ref.id,sourcePath:row.path,...row,reason:'Embedded native carrier in JSON',embedded,localOnly:true});continue;}
+  mappings.push({reference:ref.id,sourceRoot:'work/'+ref.folder,sourcePath:row.path,bytes:row.bytes,sha256:row.sha256,destination:prefix+'/'+ref.id+'/'+inert(row.path),mode:'byte-identical inert preservation'});
+ }
+}
+if(new Set(mappings.map(r=>r.destination)).size!==mappings.length)throw new Error('Publication collision');
+if(mappings.some(r=>r.destination.split('/').includes('.local')))throw new Error('Private path segment');
+await write('references.json',{schema:'rea-notes-trash-publication-reference/v1',references:sourceBefore,totalStrictArtifacts:927,manifestAndFreezeCarriers:8,historicalIdentityNotRebound:true});
+await write('public-preservation-map.json',{schema:'rea-public-preservation-proposal/v1',prefix,publicCount:mappings.length,records:mappings,originalSourceOnly:true,sourceLicensing:'Joplin AGPL-3.0-or-later; exact original source and notices retained under stage/original',nativeCarriersExcluded:true});
+await write('local-exclusions.json',{schema:'rea-publication-local-exclusions/v1',inspectedManifestRecordsAndSelfCarriers:935,nativeOrEmbeddedCarrierCount:excluded.length,excluded,unmanifestedGeneratedPrivateCount:generated.length,unmanifestedGeneratedPrivate:generated,wholeTreesPublicClaim:false,originalSourceRuntimeWrapper:false});
+
+const candidate=path.join(work,'notes-trash-publication-fix-next'),app=path.join(candidate,'products/rea-studio/apps/notes'),review=path.join(work,'notes-trash-publication-independent-review');
+const proposals=[];
+async function proposal(src,destination,transform,changes){
+ const original=await fs.readFile(src),text=original.toString('utf8'),adapted=transform?transform(text):text;
+ const proposedPath='proposed/'+destination,bytes=Buffer.from(adapted);
+ await write(proposedPath,bytes.toString());
+ proposals.push({source:path.relative(go,src).replaceAll('\\','/'),sourceBytes:original.length,sourceSha256:sha(original),destination,proposalPath:proposedPath,proposedBytes:bytes.length,proposedSha256:sha(bytes),byteIdentical:bytes.equals(original),changes:changes??'None'});
+}
+const liveExact=['client.mjs','server.mjs','notebook-trash.mjs','notebook-trash.integration.test.mjs','notebook-trash.ui.test.mjs'];
+for(const name of liveExact)await proposal(path.join(app,name),'apps/notes/'+name);
+for(const name of ['notebook-original-oracle.mjs','notebook-trash-original-oracle.mjs'])await proposal(path.join(app,name),'apps/notes/'+name,t=>t.replace("new URL('../../../../',import.meta.url)","new URL('./results/notebook-trash-followup/stage/',import.meta.url)").replaceAll("new URL('prior-source-provenance.json',root)","new URL('prior-source-provenance.json.snapshot',root)").replaceAll("new URL('license-and-special-id-provenance.json',root)","new URL('license-and-special-id-provenance.json.snapshot',root)").replace("['prior-source-provenance.json','trash-source-provenance.json']","['prior-source-provenance.json.snapshot','trash-source-provenance.json.snapshot']").replaceAll('new URL(record.path,root)',"new URL(record.path+'.snapshot',root)").replaceAll('new URL(special.path,root)',"new URL(special.path+'.snapshot',root)"),'Only test provenance root, inert JSON filenames and one inert suffix for record.path/special.path reads; each preserved source receives one additional .snapshot suffix. Helper semantics unchanged.');
+await proposal(path.join(app,'notebook-trash.test.mjs'),'apps/notes/notebook-trash.test.mjs',t=>t.replace("'../../../../.local/observations/'","'../../.local/notes-notebook-trash-observations/'"),'Only generated observation output path, owned ignored Studio .local outside apps/results. Tests/assertions unchanged.');
+for(const name of ['review.test.mjs','publication-boundaries.test.mjs','fresh-boundaries.test.mjs','ui-fixture.mjs']){
+ const src=path.join(review,'regression',name),target=name==='ui-fixture.mjs'?'apps/notes/notebook-trash-review-fixture.mjs':'apps/notes/notebook-trash-'+({ 'review.test.mjs':'review','publication-boundaries.test.mjs':'publication-boundaries','fresh-boundaries.test.mjs':'fresh-boundaries'}[name])+'.test.mjs';
+ await proposal(src,target,t=>t.replaceAll('../../notes-trash-publication-fix-next/products/rea-studio/apps/notes/','./').replaceAll('../products/rea-studio/apps/notes/','./').replaceAll("'./ui-fixture.mjs'","'./notebook-trash-review-fixture.mjs'").replaceAll("process.env.NOTES_REVIEW_OUTPUT??'./observations/'","process.env.NOTES_REVIEW_OUTPUT??'../../.local/notes-notebook-trash-observations/'").replaceAll("process.env.NOTES_REVIEW_OUTPUT??'../.local/observations/'","process.env.NOTES_REVIEW_OUTPUT??'../../.local/notes-notebook-trash-observations/'"),'Only candidate import prefixes, fixture filename and generated private observation default; original 7+7+4 test bodies/assertions unchanged.');
+}
+await proposal(path.join(app,'README.md'),'apps/notes/README.md',t=>t.replace("This stage is not production. Its [scope](../../../../README.md) and [source contracts](../../../../SOURCE-CONTRACTS.md) bind the additional Desktop 3.6.14 study.","The retained [original scope](results/notebook-trash-followup/stage/README.md.snapshot), [source contracts](results/notebook-trash-followup/stage/SOURCE-CONTRACTS.md.snapshot) and [notice](results/notebook-trash-followup/stage/NOTICE.md.snapshot) bind the additional Desktop 3.6.14 study.")+'\n\nThe current notebook trash/restore correction captures editor generation, input revision and all four draft values for Save, guards both asynchronous refresh reads, and captures the two new lifecycle commands as four primitives before queueing. These guards preserve later drafts and newer notebook/search results in finite held-response cases; they do not cancel committed requests or establish universal lifecycle/input-ownership guarantees. The frozen correction has 55 author cases; the separate independent review has 18 passing local cases (seven original reviewer bodies, seven adjacent controls, four new controls). Its new original helper execution is one authenticated nine-slice context/top-level restore with eleven item projections and 55 scalar assertions. Complete original application/database/GUI executions are zero. Historical 22 serialization, 26 notebook organization comparisons, original trash campaign and new correction/review counts remain separate.\n\nThe independent Chrome attempt reached a genuine saved note and held a completed actual HTTP Save, but browser dialog/focus control stalled at the native JavaScript trash confirmation. No notebook-trash request reached the server and actual trash/restore browser acceptance is incomplete in that receipt. Its owned host and temporary data were cleaned; owned Chrome tab closure was unconfirmed. Source-only helper/oracle routes remain private. Retained [correction notice](results/notebook-trash-followup/publication-fix/NOTICE.md.snapshot) and [independent review](results/notebook-trash-followup/publication-review/REVIEW.md.snapshot) explain these finite limits. Full product parity, security parity and superiority remain unestablished.\n','Only stage-to-public links and explicitly scoped correction/review paragraph; historical receipt claims unchanged. Parent should append any later real browser acceptance as separate evidence.');
+await write('live-copy-list.json',{schema:'rea-notes-trash-live-copy-proposal/v1',runtimeSemanticsExact:true,originalHelperSemanticsExact:true,testsNotExecutedInProductionLayout:true,proposals,sharedHostModified:false,rootRegistryModified:false,excludedExistingNativeFixture:'fixtures/pinned-joplin.jex is already installed from separate historical evidence; do not recopy its TAR payload into new inert public evidence. Current-layout tests require that existing authenticated local fixture.',prospectiveNewLocalReviewTests:18,priorAuthorTests:55,notExecutedCurrentProductionCount:59});
+
+const registries=[];let sources=[],capabilities=[];
+for(const name of ['system-products.json','workspace-products.json','visual-products.json']){
+ const location=path.join(studio,'requirements',name),b=await fs.readFile(location),j=JSON.parse(b);
+ const ids=name==='system-products.json'?j.products.flatMap(p=>p.capabilities.map(r=>r.id)):name==='workspace-products.json'?j.capabilities.map(r=>r.id):j.baselineProducts.flatMap(p=>p.requirements.map(r=>r.id));
+ const sourceIdentities=j.sources.map(r=>({id:r.id,sha256:r.sha256}));sources.push(...sourceIdentities);capabilities.push(...ids);
+ registries.push({path:'requirements/'+name,bytes:b.length,sha256:sha(b),sourceCount:sourceIdentities.length,capabilityCount:ids.length,sources:sourceIdentities,capabilityIDs:ids});
+}
+if(sources.length!==159||capabilities.length!==232||capabilities.some(x=>!x)||new Set(capabilities).size!==232)throw new Error('Registry identity census mismatch');
+await write('registry-identity-binding.json',{at:new Date().toISOString(),purpose:'Current external parent-metadata observation only; immutable older stage registry provenance remains separate and is not rebound. No registry copy or edit is proposed.',sourceFingerprints:159,capabilityIDs:232,registries});
+const after=[];
+for(const ref of references){const folder=path.join(work,ref.folder);for(const r of JSON.parse(await fs.readFile(path.join(folder,ref.manifest))).records??JSON.parse(await fs.readFile(path.join(folder,ref.manifest))).files){const b=await fs.readFile(path.join(folder,r.path));if(b.length!==r.bytes||sha(b)!==r.sha256)throw new Error('Source changed while preparing');}after.push({reference:ref.id,allExact:true});}
+await write('source-after.json',{at:new Date().toISOString(),references:after,all927ManifestedArtifactsExact:true,productionModified:false,testsRun:0,originalExecutions:0,hosts:0,browserActions:0});
+console.log(JSON.stringify({public:mappings.length,excluded:excluded.length,unmanifestedPrivate:generated.length,live:proposals.length,sourceOnly:true}));

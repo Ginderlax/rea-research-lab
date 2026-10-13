@@ -1,0 +1,120 @@
+TAP version 13
+# Subtest: programmatic field changes without input events are retained after older Save and persist to the committed ID
+ok 1 - programmatic field changes without input events are retained after older Save and persist to the committed ID
+  ---
+  duration_ms: 12.0766
+  type: 'test'
+  ...
+# Subtest: new-note Save with a later draft uses its committed identity for the following Save
+ok 2 - new-note Save with a later draft uses its committed identity for the following Save
+  ---
+  duration_ms: 1.4548
+  type: 'test'
+  ...
+# Subtest: late second refresh response cannot republish an older search after a newer query
+ok 3 - late second refresh response cannot republish an older search after a newer query
+  ---
+  duration_ms: 1.1303
+  type: 'test'
+  ...
+# Subtest: both new lifecycle requests capture confirmation and revision before a held queue resumes
+ok 4 - both new lifecycle requests capture confirmation and revision before a held queue resumes
+  ---
+  duration_ms: 1.158
+  type: 'test'
+  ...
+# Subtest: enabled typing while Save response is held preserves all four fields and permits saving the newer revision
+ok 5 - enabled typing while Save response is held preserves all four fields and permits saving the newer revision
+  ---
+  duration_ms: 11.702
+  type: 'test'
+  ...
+# Subtest: edit then undo during Save still retains the enabled draft and dirty policy
+ok 6 - edit then undo during Save still retains the enabled draft and dirty policy
+  ---
+  duration_ms: 2.1253
+  type: 'test'
+  ...
+# Subtest: New note selection during Save prevents previous note publication into the new draft
+ok 7 - New note selection during Save prevents previous note publication into the new draft
+  ---
+  duration_ms: 2.6584
+  type: 'test'
+  ...
+# Subtest: typing while post-Save refresh is held retains body and dirty status
+ok 8 - typing while post-Save refresh is held retains body and dirty status
+  ---
+  duration_ms: 1.8513
+  type: 'test'
+  ...
+# Subtest: older post-Save active list cannot republish a note after a newer notebook-trash refresh
+ok 9 - older post-Save active list cannot republish a note after a newer notebook-trash refresh
+  ---
+  duration_ms: 1.9557
+  type: 'test'
+  ...
+# Subtest: Restore request captures id, revision and confirmation before yielding to the queue
+ok 10 - Restore request captures id, revision and confirmation before yielding to the queue
+  ---
+  duration_ms: 0.913
+  type: 'test'
+  ...
+# Subtest: older notebook-list completion cannot overwrite newer trashed organization after the second refresh await
+ok 11 - older notebook-list completion cannot overwrite newer trashed organization after the second refresh await
+  ---
+  duration_ms: 1.5393
+  type: 'test'
+  ...
+# Subtest: dirty draft prevents notebook cascade with no mutation request
+ok 12 - dirty draft prevents notebook cascade with no mutation request
+  ---
+  duration_ms: 10.3365
+  type: 'test'
+  ...
+# Subtest: held cascade disables real typing/selection and retains saved body after release
+ok 13 - held cascade disables real typing/selection and retains saved body after release
+  ---
+  duration_ms: 1.9292
+  type: 'test'
+  ...
+# Subtest: older completed Save response must preserve a draft typed after notebook trash
+ok 14 - older completed Save response must preserve a draft typed after notebook trash
+  ---
+  duration_ms: 1.4077
+  type: 'test'
+  ...
+# Subtest: queued notebook trash snapshots the caller request before yielding
+ok 15 - queued notebook trash snapshots the caller request before yielding
+  ---
+  duration_ms: 0.3323
+  type: 'test'
+  ...
+# Subtest: failed restore commit leaves persisted subtree and history unchanged; a later fresh server import restores
+ok 16 - failed restore commit leaves persisted subtree and history unchanged; a later fresh server import restores
+  ---
+  duration_ms: 14.3251
+  type: 'test'
+  ...
+# (node:56136) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: held-out multi-generation restore matches released helper final rows
+ok 17 - held-out multi-generation restore matches released helper final rows
+  ---
+  duration_ms: 27.2726
+  type: 'test'
+  ...
+# Subtest: invalid deep hierarchy and oversized aggregate refuse before modifying input
+ok 18 - invalid deep hierarchy and oversized aggregate refuse before modifying input
+  ---
+  duration_ms: 13.7362
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 297.6097

@@ -1,0 +1,31 @@
+/** Prospective pure summary rules. Inputs are recorded observations; this module
+ * performs no reduction, timing, resource sampling or process launch. */
+export function summarizeSigned(values, expectedSamples = 7) {
+  const finite = values.filter(value => typeof value === 'number' && Number.isFinite(value));
+  const sorted = finite.slice().sort((a, b) => a - b), n = sorted.length;
+  return { expectedSamples, samples: n, excludedOrMissing: Math.max(values.length, expectedSamples) - n, complete: n === expectedSamples && values.length === expectedSamples, censored: n !== expectedSamples || values.length !== expectedSamples,
+    median: n ? (n % 2 ? sorted[(n - 1) / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2) : null, min: n ? sorted[0] : null, max: n ? sorted[n - 1] : null, signedValues: values };
+}
+
+export function pairedDifferences(left, right, expectedSamples = 7) {
+  const rows = Array.from({ length: expectedSamples }, (_, runNumber) => {
+    const candidate = left[runNumber], control = right[runNumber], valid = typeof candidate === 'number' && Number.isFinite(candidate) && typeof control === 'number' && Number.isFinite(control);
+    return { runNumber, candidate: candidate ?? null, control: control ?? null, censored: !valid, difference: valid ? candidate - control : null, percentChange: valid && control !== 0 ? (candidate - control) / control * 100 : null };
+  });
+  return { rows, difference: summarizeSigned(rows.map(row => row.difference), expectedSamples), percentChange: summarizeSigned(rows.map(row => row.percentChange), expectedSamples), percentChangeUnavailableForZeroControl:true };
+}
+
+export function memoryMetrics(record) {
+  const points=record.result?.checkpoints??[],named=Object.fromEntries(points.map(row=>[row.name,row])),difference=(a,b,key)=>Number.isFinite(named[a]?.[key])&&Number.isFinite(named[b]?.[key])?named[a][key]-named[b][key]:null;
+  const missingCheckpoints=['beforeSelectedImport','afterSelectedInitialization','afterSharedInput','warmBase','afterTransient','beforeRetention','retainedAfterGC','releasedAfterGC'].filter(name=>!named[name]);
+  return { failure:record.failure??null, censored:Boolean(record.failure)||!record.result||missingCheckpoints.length>0,missingCheckpoints,
+    lifetimePeakRSS:points.length?Math.max(...points.map(row=>row.lifetimePeakResidentKiB*1024)):null,
+    polledPeakRSS:record.ownedPIDObserver?.peakRSS??null,
+    checkpointPeakRSS:points.length?Math.max(...points.map(row=>row.rss)):null,
+    importHeapDelta:difference('afterSelectedInitialization','beforeSelectedImport','heapUsed'),
+    importRSSDelta:difference('afterSelectedInitialization','beforeSelectedImport','rss'),
+    retainedHeapDelta:difference('retainedAfterGC','beforeRetention','heapUsed'),
+    releasedHeapDelta:difference('releasedAfterGC','warmBase','heapUsed'),
+    retainedRSSDelta:difference('retainedAfterGC','beforeRetention','rss'),
+    releasedRSSDelta:difference('releasedAfterGC','warmBase','rss') };
+}

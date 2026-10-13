@@ -1,0 +1,11 @@
+# Acquired original VS Code release
+
+The locally preserved original is Microsoft's stable Windows x64 archive for VS Code1.140.0, commit`07f806f999227108933c2e30515b26eecc1fda74`. The official update metadata supplied both digests; the355,156,158-byte archive matched SHA-256`52f47072473375767d63ea5be9ffb96a3092124223fe5ce036834a299715014e` and SHA-1. The extracted3,246 regular files total1,044,655,528 bytes and were hashed before and after preservation.
+
+The retained identity collector invoked the original CLI once and obtained the expected version, commit and architecture. Its historical `actualOriginalCLIIdentityProcesses:1` field means one collector invocation; it is not a complete operating-system descendant-process census. No original editor GUI or extension workflows were exercised. The Microsoft signature status is an acquisition-time observation; the later independent review authenticated the recorded signature evidence and actual archive/tree bytes, without repeating OS signature validation.
+
+The original archive and executable tree remain on the local research machine. This public folder contains15 exact inert snapshots, including the14-file acquisition record and its immutable manifest, together with this explanation and a [public copy map](preservation-manifest.json). [The acquisition receipt](frozen/validation.json.snapshot) distinguishes successful identity checks from the retained initial layout-assumption failure. The complete vendor application is not redistributed here.
+
+This establishes an acquired release identity. It does not bind the discovery documentation snapshot to every feature of that release, or rebind the earlier Monaco0.57.0 component study and its different upstream development commit. Release-specific documented-feature extraction, workbench behavior, extension APIs and complete replacement acceptance remain open.
+
+Official source: [Microsoft update metadata](https://update.code.visualstudio.com/api/versions/1.140.0/win32-x64-archive/stable). Acquisition and extraction collectors, raw identity output, both tree inventories and failed-attempt source are retained in `frozen/`. They name their original local paths; reproducing the archive acquisition requires a separate writable local destination and the official vendor download.

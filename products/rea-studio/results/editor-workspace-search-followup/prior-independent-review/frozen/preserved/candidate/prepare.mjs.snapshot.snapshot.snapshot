@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+const lab=path.join(import.meta.dirname,'../outputs/rea-research-lab'),stage=path.join(import.meta.dirname,'editor-search-next');
+const files=['products/rea-studio/server.mjs','products/rea-studio/catalog.mjs','products/rea-studio/lib/storage.mjs','products/rea-studio/public/index.html','products/rea-studio/public/studio.mjs','products/rea-studio/public/style.css',...['server.mjs','client.mjs','sequence-diff.mjs','sequence-diff.test.mjs','git.mjs','git.test.mjs','app.test.mjs','app.integration.test.mjs','README.md'].map(file=>`products/rea-studio/apps/editor/${file}`),'products/rea-studio/requirements/workspace-products.json'];
+await fs.mkdir(stage,{recursive:true});const rows=[];
+for(const file of files){const bytes=await fs.readFile(path.join(lab,file)),sha256=createHash('sha256').update(bytes).digest('hex');for(const destination of [path.join(stage,file),path.join(stage,'baseline',`${file}.snapshot`)]){await fs.mkdir(path.dirname(destination),{recursive:true});await fs.writeFile(destination,bytes,{flag:'wx'});}rows.push({path:file,bytes:bytes.length,sha256});}
+assert.equal(rows.length,16);await fs.writeFile(path.join(stage,'baseline.json'),JSON.stringify({schema:'rea-editor-search-isolated-baseline/v1',recordedAtUtc:new Date().toISOString(),files:rows,productionModified:false},null,2)+'\n',{flag:'wx'});await fs.writeFile(path.join(stage,'prepare.mjs.snapshot'),await fs.readFile(import.meta.filename),{flag:'wx'});console.log(JSON.stringify({status:'PASS',stage,baselineFiles:rows.length,productionModified:false}));

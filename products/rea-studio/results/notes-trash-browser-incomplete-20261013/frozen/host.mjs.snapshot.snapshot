@@ -1,0 +1,19 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import readline from 'node:readline';
+import {pathToFileURL} from 'node:url';
+const studio=path.resolve(import.meta.dirname,'../outputs/rea-research-lab/products/rea-studio'),out=path.join(import.meta.dirname,'notes-trash-production-browser');
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+await fs.mkdir(out,{recursive:true});
+const names=['server.mjs','catalog.mjs','package.json'];
+for(const dir of ['apps/notes','lib','public'])for(const e of await fs.readdir(path.join(studio,dir),{withFileTypes:true}))if(e.isFile()&&/\.(mjs|json|html|css|ps1)$/.test(e.name))names.push(dir+'/'+e.name);
+names.sort();const before=[];for(const name of names){const b=await fs.readFile(path.join(studio,name));before.push({path:name,bytes:b.length,sha256:sha(b)});}
+await fs.writeFile(path.join(out,'source-before.json'),JSON.stringify(before,null,2)+'\n',{flag:'wx'});
+await fs.writeFile(path.join(out,'host.mjs.snapshot'),await fs.readFile(import.meta.filename),{flag:'wx'});
+const {start}=await import(pathToFileURL(path.join(studio,'server.mjs'))),host=await start({port:0,dataDir:path.join(out,'synthetic-data')});
+const info={schema:'rea-notes-trash-owned-browser-host/v1',at:new Date().toISOString(),url:host.url,pid:process.pid,sourceFiles:before.length,syntheticOnly:true,userPort4311Touched:false};
+await fs.writeFile(path.join(out,'host.json'),JSON.stringify(info,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(info));
+let closing=false;async function close(){if(closing)return;closing=true;await host.close();const after=[];for(const row of before){const b=await fs.readFile(path.join(studio,row.path));after.push({path:row.path,bytes:b.length,sha256:sha(b)});}await fs.writeFile(path.join(out,'source-after.json'),JSON.stringify(after,null,2)+'\n',{flag:'wx'});await fs.writeFile(path.join(out,'host-closed.json'),JSON.stringify({at:new Date().toISOString(),pid:process.pid,normalClose:true,sourceStable:JSON.stringify(before)===JSON.stringify(after)},null,2)+'\n',{flag:'wx'});process.exit(0);}
+readline.createInterface({input:process.stdin}).on('line',line=>{if(line==='close')close().catch(error=>{console.error(error);process.exit(1);});});
+process.on('SIGINT',close);process.on('SIGTERM',close);

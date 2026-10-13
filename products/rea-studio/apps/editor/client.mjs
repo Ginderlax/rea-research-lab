@@ -14,7 +14,9 @@ export async function render(root, api) {
   findInput.placeholder = 'Find literal text'; findInput.setAttribute('aria-label', 'Find literal text'); replaceInput.placeholder = 'Replacement'; replaceInput.setAttribute('aria-label', 'Replacement');
   findControls.append(findInput, replaceInput, findButton, replaceButton);
   const difference = el('pre'); difference.style.whiteSpace = 'pre-wrap'; difference.setAttribute('aria-label', 'Line difference');
-  pane.append(tabs, editor, actions, findControls, difference); root.append(heading, description, controls, files, pane, state);
+  const searchPanel=el('section',undefined,'card'),searchControls=el('div',undefined,'row'),searchQuery=el('input'),caseControl=el('label',' Match case'),searchCase=el('input'),searchButton=el('button','Search saved files','button'),searchState=el('p','Search saved files; unsaved drafts are retained in their tabs.','muted'),searchResults=el('div');
+  searchQuery.placeholder='Literal text across files';searchQuery.setAttribute('aria-label','Find in saved files');searchCase.type='checkbox';searchCase.checked=true;searchCase.setAttribute('aria-label','Match case in workspace search');caseControl.prepend(searchCase);searchState.setAttribute('role','status');searchResults.setAttribute('aria-label','Workspace search results');searchControls.append(searchQuery,caseControl,searchButton);searchPanel.append(el('h3','Search workspace'),searchControls,searchState,searchResults);
+  pane.append(tabs, editor, actions, findControls, difference); root.append(heading, description, controls, files, searchPanel, pane, state);
   const sourceControl = el('section', undefined, 'card'); sourceControl.append(el('h3', 'Git source control'));
   const gitState = el('p', 'Loading repository…', 'muted'), gitControls = el('div', undefined, 'row');
   const initializeGit = el('button', 'Initialize Git repository', 'button'), refreshGit = el('button', 'Refresh source control', 'button'); gitControls.append(initializeGit, refreshGit);
@@ -26,15 +28,16 @@ export async function render(root, api) {
   newBranch.placeholder = 'New branch name'; newBranch.setAttribute('aria-label', 'New branch name'); branches.setAttribute('aria-label', 'Repository branch'); branchControls.append(newBranch, createBranch, branches, switchBranch);
   const gitPatch = el('pre'), history = el('div'); gitPatch.style.whiteSpace = 'pre-wrap'; gitPatch.setAttribute('aria-label', 'Git patch');
   sourceControl.append(gitState, gitControls, identityControls, changes, gitActions, commitControls, branchControls, gitPatch, history); root.insertBefore(sourceControl, state);
-  const documents = new Map(); let active = null;
+  const documents = new Map(); let active = null,mounted=true,searchGeneration=0,pendingSearch=null,openingGeneration=0;
   const document = () => documents.get(active);
   function updateTabs() {
     tabs.replaceChildren();
     for (const [name, item] of documents) {
       const button = el('button', `${name}${item.content !== item.saved ? ' •' : ''}`, 'button'); button.setAttribute('aria-pressed', String(name === active));
-      button.onclick = () => { active = name; editor.value = item.content; difference.textContent = ''; updateTabs(); }; tabs.append(button);
+      button.onclick = () => { openingGeneration++;active = name; editor.value = item.content; difference.textContent = ''; updateTabs(); }; tabs.append(button);
     }
-    editor.disabled = saveButton.disabled = diffButton.disabled = closeButton.disabled = !active;
+    editor.disabled = diffButton.disabled = closeButton.disabled = !active;
+    saveButton.disabled = !active || document()?.saving === true;
   }
   async function run(operation) { try { await operation(); } catch (error) { state.textContent = error.message; } }
   let repository = null;
@@ -85,19 +88,60 @@ export async function render(root, api) {
     if (data.truncated) files.append(el('p', 'Showing up to 1,000 files and 12 folder levels.', 'muted'));
     state.textContent = `Workspace: ${data.root}`;
   }
-  async function open(name) {
-    if (documents.has(name)) { active = name; editor.value = document().content; updateTabs(); return; }
-    const data = await api('read', { path: name }); documents.set(data.path, { ...data, saved: data.content }); active = data.path; editor.value = data.content; difference.textContent = ''; updateTabs(); state.textContent = `Opened ${data.path}.`;
+  async function open(name,searchContext=null) {
+    const request=++openingGeneration;
+    if(!mounted||(searchContext!==null&&searchContext!==searchGeneration))return false;
+    if (documents.has(name)) { active = name; editor.value = document().content; updateTabs(); return true; }
+    const data = await api('read', { path: name });if(!mounted||request!==openingGeneration||(searchContext!==null&&searchContext!==searchGeneration))return false;
+    if(!documents.has(data.path))documents.set(data.path, { ...data, saved: data.content });active = data.path;editor.value=document().content;difference.textContent = ''; updateTabs(); state.textContent = `Opened ${data.path}.`;return true;
   }
+  const invalidateSearch=()=>{searchGeneration++;searchResults.replaceChildren();searchState.textContent='Search options changed. Search again to refresh saved-file results.';};
+  searchQuery.oninput=invalidateSearch;searchCase.onchange=invalidateSearch;
+  searchButton.onclick=async()=>{
+    const request=++searchGeneration;pendingSearch=request;searchButton.disabled=true;searchResults.replaceChildren();searchState.textContent='Searching saved files…';
+    try {
+      const data=await api('search',{query:searchQuery.value,matchCase:searchCase.checked});
+      if(!mounted||request!==searchGeneration)return;
+      searchState.textContent=`${data.matches.length} matches in ${data.matchedFiles} files. ${data.searchedFiles} text files searched.${data.skipped.length?` ${data.skipped.length} files skipped.`:''}${data.truncated?` Results are incomplete (${data.limitReasons.join(', ')}).`:''}`;
+      for(const match of data.matches){
+        const row=el('div',undefined,'row'),button=el('button',`${match.path}:${match.line}:${match.column}`,'button');
+        button.onclick=()=>run(async()=>{
+          if(!mounted||request!==searchGeneration)return;
+          if(!await open(match.path,request)||!mounted||request!==searchGeneration)return;
+          const item=document();
+          if(item.revision!==match.revision||item.content!==item.saved){state.textContent='The result describes a saved-file snapshot. Your current draft was retained; search again after saving to refresh positions.';return;}
+          editor.focus();editor.setSelectionRange(match.start,match.end);state.textContent=`Opened ${match.path}, line${match.line}, column${match.column}.`;
+        });row.append(button,el('span',match.preview));searchResults.append(row);
+      }
+    }catch(error){if(mounted&&request===searchGeneration)searchState.textContent=error.message;}
+    finally{if(pendingSearch===request){pendingSearch=null;if(mounted)searchButton.disabled=false;}}
+  };
   openButton.onclick = () => run(() => open(pathInput.value));
   createButton.onclick = () => run(async () => {
     const name = pathInput.value.trim().replaceAll('\\', '/'); if (!name) throw new Error('Enter a file path first.');
     if (documents.has(name)) throw new Error('That file is already open.');
-    documents.set(name, { path: name, content: '', saved: '', revision: null }); active = name; editor.value = ''; difference.textContent = ''; updateTabs(); state.textContent = 'New draft. Save creates the file; existing files are protected.';
+    openingGeneration++;documents.set(name, { path: name, content: '', saved: '', revision: null }); active = name; editor.value = ''; difference.textContent = ''; updateTabs(); state.textContent = 'New draft. Save creates the file; existing files are protected.';
   });
   refreshButton.onclick = () => run(refresh);
   editor.oninput = () => { if (document()) { document().content = editor.value; updateTabs(); } };
-  async function save() { const item = document(); if (!item) return; const data = await api('save', { path: item.path, content: item.content, revision: item.revision }); Object.assign(item, data, { saved: data.content }); updateTabs(); state.textContent = `Saved ${data.path} (${data.bytes} bytes).`; }
+  async function save() {
+    const item = document(); if (!mounted || !item) return;
+    if (item.saving) { state.textContent = 'This file is still saving. Your current draft is retained.'; return; }
+    const name = item.path, content = item.content, revision = item.revision;
+    item.saving = true; updateTabs();
+    try {
+      const data = await api('save', { path: name, content, revision });
+      if (!mounted || documents.get(name) !== item) return;
+      // The response describes the captured write; later typing remains the current draft.
+      item.saved = data.content; item.revision = data.revision; item.bytes = data.bytes;
+      if (document() === item) state.textContent = `Saved ${data.path} (${data.bytes} bytes).${item.content !== item.saved ? ' Your newer draft is retained; save again to keep it.' : ''}`;
+    } catch (error) {
+      if (mounted && documents.get(name) === item && document() === item) state.textContent = error.message;
+    } finally {
+      item.saving = false;
+      if (mounted && documents.get(name) === item) updateTabs();
+    }
+  }
   saveButton.onclick = () => run(save);
   diffButton.onclick = () => run(async () => { const item = document(); if (!item) return; const diff = await api('diff', { before: item.saved, after: item.content }); difference.textContent = `Minimal line edits: ${diff.cost} (${diff.deleted} removed, ${diff.inserted} added)\n` + diff.operations.map(op => `${op.type === 'insert' ? '+' : op.type === 'delete' ? '-' : ' '} ${op.text}`).join('\n'); state.textContent = 'Comparison complete.'; });
   closeButton.onclick = () => { const item = document(); if (!item || (item.content !== item.saved && !window.confirm('Discard this unsaved draft?'))) return; documents.delete(active); active = documents.keys().next().value ?? null; editor.value = document()?.content ?? ''; difference.textContent = ''; updateTabs(); };
@@ -105,4 +149,5 @@ export async function render(root, api) {
   replaceButton.onclick = () => run(async () => { const item = document(); if (!item) return; const result = await api('replace', { content: item.content, find: findInput.value, replacement: replaceInput.value }); item.content = editor.value = result.content; updateTabs(); state.textContent = `${result.count} replacements in this draft. Save to keep them.`; });
   editor.onkeydown = event => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') { event.preventDefault(); run(save); } if (event.key === 'Tab') { event.preventDefault(); const start = editor.selectionStart, end = editor.selectionEnd; editor.setRangeText('  ', start, end, 'end'); editor.dispatchEvent(new Event('input')); } };
   updateTabs(); await run(refresh); await run(() => gitUpdate('gitStatus'));
+  return()=>{mounted=false;searchGeneration++;openingGeneration++;};
 }

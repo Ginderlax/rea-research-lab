@@ -1,0 +1,83 @@
+TAP version 13
+# REA_NOTES_VAULT_PROOF_TESTS {"sourceOnly":true,"originalExecutions":0,"behavioralTests":0,"mirrors":1,"sourceFiles":1579,"cases":[{"label":"anonymous mirror","accepted":true,"summary":{"schema":"rea-notes-vault-public-proof-verification/v1","notesOriginalPaths":935,"notesPublishedPaths":920,"notesExcludedJEXCopies":15,"vaultOriginalPaths":858,"vaultPublishedPathRecords":857,"vaultUniquePublicPaths":471,"vaultNewPublicPaths":444,"vaultReusedPublicPaths":27,"vaultExcludedKDBXCopies":1,"intentionalJPEGAliases":4,"strictNotesFinalPlan":26,"strictNotesHistoricalPlan":25,"strictVaultPlan":45,"installedFiles":34,"notesPathOnlyAdapterReconstructions":7,"vaultPathOnlyAdapterReconstructions":7,"immutable455BeforeImages":11,"vault455BaselineFiles":30,"vaultPlanOnlyBaselineFiles":1,"originalSourceIdentities":159,"originalCapabilityIDs":232,"authenticatedFiles":1579,"authenticatedBytes":25133352,"allSourceBytesStable":true,"localCarrierBytesRequired":false,"newBehaviorTests":0,"newOriginalExecutions":0,"notesNativeConfirmationBrowserAcceptance":false,"fullProductParity":false,"universalSuperiority":false}},{"label":"Notes original source corruption","rejected":true},{"label":"Vault shared object corruption","rejected":true},{"label":"Notes omitted local exclusion","rejected":true},{"label":"Vault epoch mapping tamper","rejected":true},{"label":"Installed adapter tamper","rejected":true},{"label":"455 before-image tamper","rejected":true},{"label":"Strict plan extra file","rejected":true},{"label":"Evolving metadata with stable identities","accepted":true},{"label":"Original source identity tamper","rejected":true},{"label":"Mid-interval source mutation","rejected":true},{"label":"Pure guards","badPaths":9,"rejectedBinaryCarriers":4,"acceptedJPEGCarrier":true}]}
+# Subtest: anonymous public mirror authenticates every path without local original carriers
+ok 1 - anonymous public mirror authenticates every path without local original carriers
+  ---
+  duration_ms: 7679.6537
+  type: 'test'
+  ...
+# Subtest: published original Notes source byte corruption is rejected
+ok 2 - published original Notes source byte corruption is rejected
+  ---
+  duration_ms: 152.7352
+  type: 'test'
+  ...
+# Subtest: deduplicated Vault object corruption is rejected
+ok 3 - deduplicated Vault object corruption is rejected
+  ---
+  duration_ms: 1977.9651
+  type: 'test'
+  ...
+# Subtest: removing a local-only Notes exclusion cannot silently shrink the denominator
+ok 4 - removing a local-only Notes exclusion cannot silently shrink the denominator
+  ---
+  duration_ms: 16.0985
+  type: 'test'
+  ...
+# Subtest: editing Vault mappings cannot rebind frozen epoch provenance
+ok 5 - editing Vault mappings cannot rebind frozen epoch provenance
+  ---
+  duration_ms: 136.2269
+  type: 'test'
+  ...
+# Subtest: installed path-only adapter corruption is rejected
+ok 6 - installed path-only adapter corruption is rejected
+  ---
+  duration_ms: 2968.9268
+  type: 'test'
+  ...
+# Subtest: immutable455 before-image corruption is rejected instead of rebinding it to current code
+ok 7 - immutable455 before-image corruption is rejected instead of rebinding it to current code
+  ---
+  duration_ms: 5424.9422
+  type: 'test'
+  ...
+# Subtest: unlisted files in the frozen plan inventory are rejected
+ok 8 - unlisted files in the frozen plan inventory are rejected
+  ---
+  duration_ms: 9.1106
+  type: 'test'
+  ...
+# Subtest: metadata additions preserve the original159-source and232-ID identity projection
+ok 9 - metadata additions preserve the original159-source and232-ID identity projection
+  ---
+  duration_ms: 7753.5196
+  type: 'test'
+  ...
+# Subtest: changing one original registry source identity is rejected despite mutable metadata
+ok 10 - changing one original registry source identity is rejected despite mutable metadata
+  ---
+  duration_ms: 5531.1883
+  type: 'test'
+  ...
+# Subtest: a proof byte mutation during the verification interval is rejected at the final read
+ok 11 - a proof byte mutation during the verification interval is rejected at the final read
+  ---
+  duration_ms: 2855.0647
+  type: 'test'
+  ...
+# Subtest: pure confinement and native-carrier guards reject traversal, local public segments and binary carriers
+ok 12 - pure confinement and native-carrier guards reject traversal, local public segments and binary carriers
+  ---
+  duration_ms: 0.5737
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 43814.6374

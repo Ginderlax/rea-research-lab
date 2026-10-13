@@ -3,6 +3,8 @@ import path from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { gitAction } from './git.mjs';
 import { minimalSequenceDiff } from './sequence-diff.mjs';
+import { searchWorkspace } from './workspace-search.mjs';
+import { editorRelativePath as relative } from './file-path.mjs';
 
 const MAX_BYTES = 2 * 1024 * 1024;
 const locks = new Map();
@@ -11,10 +13,6 @@ function text(value, name = 'text') {
   if (typeof value !== 'string') throw new Error(`${name} must be text.`);
   if (Buffer.byteLength(value) > MAX_BYTES) throw new Error(`${name} exceeds the 2 MiB limit.`);
   return value;
-}
-function relative(value) {
-  if (typeof value !== 'string' || !value.trim() || value.length > 1024 || value.includes('\0')) throw new Error('Choose a relative file path.');
-  return value.replaceAll('\\', '/');
 }
 async function exclusive(key, operation) {
   const previous = locks.get(key) ?? Promise.resolve();
@@ -61,6 +59,7 @@ export function minimalLineDiff(before, after) {
 }
 
 export async function handle({ action, input = {}, workspace }) {
+  if (action === 'search') return searchWorkspace(workspace, input);
   if (action.startsWith('git')) return gitAction({ action, input, workspace });
   if (action === 'diff') return minimalLineDiff(input.before, input.after);
   if (action === 'replace') {
@@ -95,11 +94,12 @@ export async function handle({ action, input = {}, workspace }) {
     return { path: name, ...existing };
   }
   if (action === 'save') {
-    const name = relative(input.path), content = text(input.content), file = await workspace.resolve(name);
-    if (input.revision !== null && typeof input.revision !== 'string') throw new Error('A revision is required; use null only for a new file.');
+    const name = relative(input.path), content = text(input.content), revision = input.revision;
+    if (revision !== null && typeof revision !== 'string') throw new Error('A revision is required; use null only for a new file.');
+    const file = await workspace.resolve(name);
     return exclusive(file, async () => {
       const current = await load(file);
-      if ((current?.revision ?? null) !== input.revision) throw new Error('File changed since it was opened. Open it again before saving; your draft is still in the editor.');
+      if ((current?.revision ?? null) !== revision) throw new Error('File changed since it was opened. Open it again before saving; your draft is still in the editor.');
       await mkdir(path.dirname(file), { recursive: true });
       // Resolve again after creating directories so the host can reject links.
       const checked = await workspace.resolve(name);

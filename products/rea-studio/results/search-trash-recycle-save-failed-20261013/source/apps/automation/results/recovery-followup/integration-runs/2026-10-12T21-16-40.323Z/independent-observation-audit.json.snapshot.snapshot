@@ -1,0 +1,276 @@
+{
+  "original": {
+    "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\outputs\\rea-research-lab\\.local\\automation-routing-original\\observations\\run-V7vSMN\\original-results.json",
+    "bytes": 4303977,
+    "sha256": "ecaef2ee3f73efd6fb80ea141131be8783efcd35ce357054349eea0160765146",
+    "observations": {
+      "switchNodeExecutions": 114,
+      "mergeModeExecutions": 1759,
+      "parameterResolutions": 7325,
+      "filterExtractions": 556,
+      "schemaValidations": 1751,
+      "coreEnqueueHelperExecutions": 7,
+      "corePartialDrainExecutions": 4
+    },
+    "counts": {
+      "exactOutputMatches": 1812,
+      "rejectionOutcomeMatches": 10,
+      "deliberateSafetyDeviations": 3,
+      "boundedRepresentationDeviations": 48
+    },
+    "scope": "Released SwitchV3.execute with real Workflow/core cleanup/filter extraction/schema validation; complete released Merge mode-helper execute functions with explicit static parameters; exact core enqueue helpers and waiting-input drain block with explicit materialized ports/parameters. Full WorkflowExecute, Merge class/router/UI-default schema, server/database/editor/SQL not run."
+  },
+  "host": {
+    "scope": "Actual shared host and disk store with own temporary folders and loopback endpoints; finite restart/preflight/cancel checks.",
+    "observations": [
+      {
+        "name": "shared-host-join-wait-restart-cancellation",
+        "sameRunId": true,
+        "mergeExecutions": 1,
+        "downstreamRequests": 2,
+        "completedAndCancelledHistory": true,
+        "publicBuffersOmitted": true,
+        "terminalBuffersCleared": true,
+        "staticRoutesBounded": true
+      },
+      {
+        "name": "shared-host-unreachable-import-preflight",
+        "httpStatus": 400,
+        "downstreamRequests": 0,
+        "persistedRecordUnchanged": true
+      }
+    ]
+  },
+  "synthetic": [
+    {
+      "name": "recovery-observations.json",
+      "bytes": 4049,
+      "sha256": "2322cc76359d7488a375339688388d0c42be1e5c375bc713d0e4d0079f0581ea",
+      "observations": [
+        {
+          "name": "expired-checkpoint",
+          "calls": 0,
+          "status": "failed",
+          "code": "NATIVE_LIMIT",
+          "activeMs": 120047.4274,
+          "scope": "Cooperative recheck after awaited IO; elapsed IO is not preempted"
+        },
+        {
+          "name": "premature-Effect-rejected",
+          "status": "waiting",
+          "fixture": {
+            "name": "Owned preserved Wait/Merge fixture",
+            "nodes": [
+              {
+                "name": "Start",
+                "id": "Start",
+                "type": "n8n-nodes-base.manualTrigger",
+                "typeVersion": 1,
+                "parameters": {},
+                "position": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "name": "Left",
+                "id": "Left",
+                "type": "n8n-nodes-base.set",
+                "typeVersion": 3.4,
+                "parameters": {
+                  "mode": "manual",
+                  "assignments": {
+                    "assignments": [
+                      {
+                        "name": "left",
+                        "value": 1,
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                "position": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "name": "Wait",
+                "id": "Wait",
+                "type": "n8n-nodes-base.wait",
+                "typeVersion": 1.1,
+                "parameters": {
+                  "resume": "timeInterval",
+                  "amount": 0.01,
+                  "unit": "seconds"
+                },
+                "position": [
+                  0,
+                  100
+                ]
+              },
+              {
+                "name": "Merge",
+                "id": "Merge",
+                "type": "n8n-nodes-base.merge",
+                "typeVersion": 3.2,
+                "parameters": {
+                  "mode": "chooseBranch",
+                  "numberInputs": 2,
+                  "chooseBranchMode": "waitForAll",
+                  "output": "specifiedInput",
+                  "useDataOfInput": 1
+                },
+                "position": [
+                  0,
+                  0
+                ]
+              },
+              {
+                "name": "Effect",
+                "id": "Effect",
+                "type": "n8n-nodes-base.httpRequest",
+                "typeVersion": 4.4,
+                "parameters": {
+                  "url": "http://127.0.0.1:1/owned",
+                  "options": {
+                    "timeout": 1000
+                  }
+                },
+                "position": [
+                  0,
+                  0
+                ]
+              }
+            ],
+            "connections": {
+              "Start": {
+                "main": [
+                  [
+                    {
+                      "node": "Left",
+                      "type": "main",
+                      "index": 0
+                    },
+                    {
+                      "node": "Wait",
+                      "type": "main",
+                      "index": 0
+                    }
+                  ]
+                ]
+              },
+              "Left": {
+                "main": [
+                  [
+                    {
+                      "node": "Merge",
+                      "type": "main",
+                      "index": 0
+                    }
+                  ]
+                ]
+              },
+              "Wait": {
+                "main": [
+                  [
+                    {
+                      "node": "Merge",
+                      "type": "main",
+                      "index": 1
+                    }
+                  ]
+                ]
+              },
+              "Merge": {
+                "main": [
+                  [
+                    {
+                      "node": "Effect",
+                      "type": "main",
+                      "index": 0
+                    }
+                  ]
+                ]
+              }
+            }
+          }
+        },
+        {
+          "name": "genuine-partial-join-resume",
+          "calls": 1,
+          "status": "completed"
+        },
+        {
+          "name": "genuine-ready-Merge-behind-Wait",
+          "calls": 2,
+          "status": "completed"
+        },
+        {
+          "name": "actual-shared-host-malformed-recovery",
+          "httpStatus": 400,
+          "requests": 0,
+          "recordUnchanged": true
+        }
+      ]
+    },
+    {
+      "name": "http-boundary-observations.json",
+      "bytes": 1271,
+      "sha256": "eed99cd58d01834e2fffce04654ffdbe269f2b2dad54bb08376ead8324bb210f",
+      "observations": [
+        {
+          "kind": "expired-before-first",
+          "calls": 0,
+          "chargedItemAttempts": 1,
+          "errorCode": "NATIVE_LIMIT",
+          "scope": "Owned Fetch/monotonic clock; no remote effects or blocked IO preemption claim"
+        },
+        {
+          "kind": "expired-between-items",
+          "calls": 1,
+          "chargedItemAttempts": 2,
+          "errorCode": "NATIVE_LIMIT",
+          "scope": "Owned Fetch/monotonic clock; no remote effects or blocked IO preemption claim"
+        },
+        {
+          "kind": "expired-before-redirect",
+          "calls": 1,
+          "chargedItemAttempts": 1,
+          "errorCode": "NATIVE_LIMIT",
+          "scope": "Owned Fetch/monotonic clock; no remote effects or blocked IO preemption claim"
+        },
+        {
+          "kind": "cancel-before-redirect",
+          "calls": 1,
+          "chargedItemAttempts": 1,
+          "errorCode": "NATIVE_CANCELLED",
+          "scope": "Owned Fetch/monotonic clock; no remote effects or blocked IO preemption claim"
+        },
+        {
+          "kind": "timeout-before-redirect",
+          "calls": 1,
+          "chargedItemAttempts": 1,
+          "errorCode": "NATIVE_HTTP_TIMEOUT",
+          "scope": "Owned Fetch/monotonic clock; no remote effects or blocked IO preemption claim"
+        }
+      ]
+    }
+  ],
+  "priorAccounting": [
+    {
+      "exactOutputMatches": 14,
+      "normalizedHttpOutputMatches": 2,
+      "rejectionOutcomeMatches": 3,
+      "deliberateDeviations": 0,
+      "waitMethodOutputMatches": 6
+    },
+    {
+      "exactOutputMatches": 459,
+      "normalizedHttpOutputMatches": 0,
+      "rejectionOutcomeMatches": 82,
+      "deliberateDeviations": 2,
+      "waitMethodOutputMatches": 0
+    }
+  ]
+}

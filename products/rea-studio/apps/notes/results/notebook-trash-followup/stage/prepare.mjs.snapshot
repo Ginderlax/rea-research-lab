@@ -1,0 +1,17 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const own=path.dirname(fileURLToPath(import.meta.url)),workspace=path.resolve(own,'../..'),repo=path.join(workspace,'outputs/rea-research-lab'),prior=path.resolve(own,'../notes-notebooks-next');
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const entries=[];async function preserve(source,target,originalPath){const b=await fs.readFile(source);await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,b,{flag:'wx'});entries.push({originalPath,preservedPath:path.relative(own,target).replaceAll('\\','/'),bytes:b.length,sha256:sha(b)});return b}
+async function clone(folder,relative=''){for(const e of await fs.readdir(path.join(folder,relative),{withFileTypes:true})){if(['results','.local'].includes(e.name))continue;const p=relative?relative+'/'+e.name:e.name;if(e.isDirectory())await clone(folder,p);else{const source=path.join(folder,p),r='products/rea-studio/apps/notes/'+p;const b=await preserve(source,path.join(own,'baseline',r+'.snapshot'),r);await fs.mkdir(path.dirname(path.join(own,r)),{recursive:true});await fs.writeFile(path.join(own,r),b,{flag:'wx'});}}}
+await clone(path.join(repo,'products/rea-studio/apps/notes'));
+for(const p of ['products/rea-studio/server.mjs','products/rea-studio/catalog.mjs','products/rea-studio/lib/storage.mjs']){const b=await preserve(path.join(repo,p),path.join(own,'baseline',p+'.snapshot'),p);await fs.mkdir(path.dirname(path.join(own,p)),{recursive:true});await fs.writeFile(path.join(own,p),b,{flag:'wx'});}
+for(const p of ['products/rea-studio/apps/notes/results/notebooks-followup/integration-validation.json','products/rea-studio/requirements/workspace-products.json'])await preserve(path.join(repo,p),path.join(own,'baseline',p+'.snapshot'),p);
+const provenance=JSON.parse(await fs.readFile(path.join(prior,'source-provenance.json'),'utf8'));assert.equal(provenance.sourceRelease.commit,'7e2765a3857754d12dbadea442b60ceaf9d4b23d');
+for(const e of provenance.sources){const b=await fs.readFile(path.join(prior,e.path));assert.equal(sha(b),e.sha256);await fs.mkdir(path.dirname(path.join(own,e.path)),{recursive:true});await fs.writeFile(path.join(own,e.path),b,{flag:'wx'});}
+await fs.writeFile(path.join(own,'prior-source-provenance.json'),JSON.stringify(provenance,null,2)+'\n',{flag:'wx'});
+await fs.writeFile(path.join(own,'baseline.json'),JSON.stringify({schema:'rea-notebook-trash-prospective-baseline/v1',createdAt:new Date().toISOString(),productionModified:false,records:entries},null,2)+'\n',{flag:'wx'});
+const url='https://api.github.com/repos/laurent22/joplin/contents/packages/lib/services/trash?ref='+provenance.sourceRelease.commit;const response=await fetch(url);assert.equal(response.status,200);const bytes=Buffer.from(await response.arrayBuffer());await fs.mkdir(path.join(own,'original/metadata'),{recursive:true});await fs.writeFile(path.join(own,'original/metadata/trash-directory.json.snapshot'),bytes,{flag:'wx'});const list=JSON.parse(bytes);console.log(JSON.stringify({baselineFiles:entries.length,originalCopied:provenance.sources.length,sourceRelease:provenance.sourceRelease,trashDirectory:{url,sha256:sha(bytes),files:list.map(x=>({name:x.name,url:x.download_url}))}},null,2));

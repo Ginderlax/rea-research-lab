@@ -1,0 +1,21 @@
+# Finite independent Notes notebook-trash review
+
+The immutable 325-artifact stage and its exact receipt were authenticated before and after the probes. This review changes no candidate, production or requirements bytes. Seven first-attempt tests yielded four passes, two confirmed application failures and one overly narrow diagnostic assertion. The bounds assertion was corrected to accept the valid earlier 200-character path refusal; its isolated rerun passed. Initial source, raw output and observations remain under `failures/bounds-expectation-v1/`.
+
+## Confirmed findings
+
+1. **P1, late Save publication discards a draft across notebook trash.** Open a clean saved note, invoke Save and hold its response after the actual server commit. Complete notebook trash. The notebook operation correctly disables the now-trashed note's Save button and releases its Markdown input. Type a new draft through that enabled field, then release the older Save response. `saveNote` calls `accept(note)` unconditionally: the new draft disappears and Save becomes enabled against a still-trashed backend note. The missing Save publication guard predates this slice (the baseline and candidate Save function bytes are identical); the finite new reproduction exercises the interaction with notebook trash. No claim of persistent data loss is made: the unsaved draft is lost, and backend trash state remains correct.
+
+2. **P2, new queued notebook mutation aliases mutable caller input.** Invoke `handle` for notebook-trash targeting A, then immediately change the same input object's `id` to B before the exclusive queue resumes. B is trashed and A remains active. The new action captures `input` by reference across an await. This is an in-process API contract failure. It does not imply that distinct HTTP requests share a parsed input object or demonstrate a remote exploit.
+
+Both failures have exact assertions, request traces and resulting state in the retained first attempt. No fix is made in this review.
+
+## Passing finite checks and original scope
+
+Dirty-before-notebook-trash refuses without sending a mutation and preserves the draft. The notebook operation's own held response disables editor and selection controls; the harness refuses to simulate typing into disabled controls. A failed restore persistence write leaves the complete persisted subtree/history unchanged; a fresh server module reading the owned disk state then restores it. This is file-backed reopen evidence, not a child-process restart. Oversized notes and an invalid deep/path hierarchy refuse before modifying caller state.
+
+One fresh held-out five-folder/six-note multi-generation restore context executes the authenticated released helper with owned in-memory SQL/load/save adapters and a fixed clock. One top-level restore call matches 11 final item projections across five fields each (55 scalar assertions). It preserves independently trashed/conflict notes, an active intermediate child, a deleted grandchild and a separate sibling. Actual complete Joplin application/database/sync/GUI executions: zero. Prior author counts (seven trash/restore calls, six display calls, 73 projections/365 fields) remain historical and are not new executions in this review.
+
+Source attribution remains Joplin Desktop 3.6.14, official commit `7e2765a3857754d12dbadea442b60ceaf9d4b23d`, AGPL-3.0-or-later. The stage's retained provenance, exact nine source slices, license and manual/source limitations were read and authenticated. Native final-row equality is a bounded source-assisted helper contract; per-item event/write order, varying clocks, original DB transactions, optional relocation, shared authorization, permanent purge, GUI and full-product parity are not established.
+
+No new hosts or browser tabs were used. Owned disk fixtures are confined to a uniquely created OS temporary directory and removed by test cleanup. The review has no timing, memory, superiority or security-parity claim. Parent coordinates separate fixes; all original failure evidence remains immutable.

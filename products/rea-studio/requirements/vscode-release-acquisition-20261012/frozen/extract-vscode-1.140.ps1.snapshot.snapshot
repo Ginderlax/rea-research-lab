@@ -1,0 +1,28 @@
+$ErrorActionPreference='Stop'
+$taskRoot='C:/Users/evanh/Documents/Codex/2026-10-12/go/work/original-products/vscode/1.140.0'
+$taskZip=Join-Path $taskRoot 'VSCode-win32-x64-1.140.0.zip'
+$taskExtract=Join-Path $taskRoot 'unpacked'
+if((Get-FileHash -LiteralPath $taskZip -Algorithm SHA256).Hash.ToLowerInvariant() -ne '52f47072473375767d63ea5be9ffb96a3092124223fe5ce036834a299715014e'){throw 'Official original archive identity differs'}
+$taskPrefix=[IO.Path]::GetFullPath($taskExtract)+[IO.Path]::DirectorySeparatorChar
+if(-not $taskPrefix.StartsWith([IO.Path]::GetFullPath($taskRoot)+[IO.Path]::DirectorySeparatorChar,[StringComparison]::OrdinalIgnoreCase)){throw 'Extraction target escaped intended local original directory'}
+if(Test-Path -LiteralPath $taskExtract){throw 'Original extraction destination already exists'}
+Add-Type -AssemblyName System.IO.Compression.FileSystem
+$taskArchive=[IO.Compression.ZipFile]::OpenRead($taskZip)
+$taskInventory=@()
+$taskTotal=0L
+try {
+  foreach($taskEntry in $taskArchive.Entries){
+    $taskTarget=[IO.Path]::GetFullPath((Join-Path $taskExtract $taskEntry.FullName))
+    if(-not $taskTarget.StartsWith($taskPrefix,[StringComparison]::OrdinalIgnoreCase)){throw 'Unsafe original archive target'}
+    if($taskEntry.FullName -match '(^|[\\/])\.\.([\\/]|$)' -or $taskEntry.FullName.Contains(':')){throw 'Unsafe original archive entry'}
+    $taskTotal+=$taskEntry.Length
+    if($taskTotal -gt 2147483648L){throw 'Original extraction exceeds2GiB bound'}
+    $taskInventory+=@{path=$taskEntry.FullName;bytes=$taskEntry.Length;compressedBytes=$taskEntry.CompressedLength}
+  }
+} finally {$taskArchive.Dispose()}
+[IO.Compression.ZipFile]::ExtractToDirectory($taskZip,$taskExtract)
+$taskExe=Join-Path $taskExtract 'Code.exe'
+$taskSignature=Get-AuthenticodeSignature -LiteralPath $taskExe
+$taskReport=@{schema='rea-local-vscode-original-extraction/v1';recordedAtUtc=[DateTime]::UtcNow.ToString('o');archiveSHA256='52f47072473375767d63ea5be9ffb96a3092124223fe5ce036834a299715014e';extractedDirectory=$taskExtract;files=$taskInventory.Count;uncompressedBytes=$taskTotal;inventory=$taskInventory;executableSHA256=(Get-FileHash -LiteralPath $taskExe -Algorithm SHA256).Hash.ToLowerInvariant();signatureStatus=$taskSignature.Status.ToString();signerSubject=$taskSignature.SignerCertificate.Subject;signerThumbprint=$taskSignature.SignerCertificate.Thumbprint;originalBehaviorExecutions=0;userEditorOrDataModified=$false;fullProductParity=$false}
+$taskReport | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $taskRoot 'extraction.json') -Encoding utf8
+$taskReport | Select-Object schema,files,uncompressedBytes,executableSHA256,signatureStatus,signerSubject | ConvertTo-Json

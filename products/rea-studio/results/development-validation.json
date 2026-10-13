@@ -1,6 +1,6 @@
 {
   "schema": "rea-development-validation/v1",
-  "checked_at_utc": "2026-10-12T23:32:57.313Z",
+  "checked_at_utc": "2026-10-13T01:59:51.554Z",
   "scope": "Implemented development application contracts; does not establish every documented original-product feature or comparative superiority.",
   "runtime": "v24.16.0",
   "platform": "win32",
@@ -46,7 +46,18 @@
     "apps/editor/app.integration.test.mjs",
     "apps/editor/app.test.mjs",
     "apps/editor/git.test.mjs",
+    "apps/editor/save-publication.ui.test.mjs",
+    "apps/editor/save-review-adjacent.test.mjs",
+    "apps/editor/save-review-held.test.mjs",
+    "apps/editor/save-review-revision.test.mjs",
     "apps/editor/sequence-diff.test.mjs",
+    "apps/editor/workspace-search-path.test.mjs",
+    "apps/editor/workspace-search-review-held.test.mjs",
+    "apps/editor/workspace-search-review-path.test.mjs",
+    "apps/editor/workspace-search-review-ui.test.mjs",
+    "apps/editor/workspace-search.integration.test.mjs",
+    "apps/editor/workspace-search.test.mjs",
+    "apps/editor/workspace-search.ui.test.mjs",
     "apps/flow/app.test.mjs",
     "apps/flow/native-original.test.mjs",
     "apps/flow/native.test.mjs",
@@ -59,6 +70,12 @@
     "apps/notes/app.integration.test.mjs",
     "apps/notes/app.test.mjs",
     "apps/notes/jex.test.mjs",
+    "apps/notes/notebook-trash-fresh-boundaries.test.mjs",
+    "apps/notes/notebook-trash-publication-boundaries.test.mjs",
+    "apps/notes/notebook-trash-review.test.mjs",
+    "apps/notes/notebook-trash.integration.test.mjs",
+    "apps/notes/notebook-trash.test.mjs",
+    "apps/notes/notebook-trash.ui.test.mjs",
     "apps/notes/notebooks.integration.test.mjs",
     "apps/notes/notebooks.test.mjs",
     "apps/sketch/app.test.mjs",
@@ -84,6 +101,14 @@
     "apps/vault/kdbx.interop.test.mjs",
     "apps/vault/kdbx.test.mjs",
     "apps/vault/preexisting-draft.test.mjs",
+    "apps/vault/recycle-boundaries.test.mjs",
+    "apps/vault/recycle-confirmation.test.mjs",
+    "apps/vault/recycle-controls.test.mjs",
+    "apps/vault/recycle-http.test.mjs",
+    "apps/vault/recycle-original.test.mjs",
+    "apps/vault/recycle-server.test.mjs",
+    "apps/vault/recycle-ui.test.mjs",
+    "apps/vault/recycle.test.mjs",
     "apps/vault/same-editor-draft.test.mjs",
     "apps/vault/selection-adjacent.test.mjs",
     "apps/vault/selection-boundaries.test.mjs",
@@ -95,13 +120,13 @@
     "tests/sketch-collector.test.mjs"
   ],
   "summary": {
-    "tests": 686,
-    "pass": 686,
+    "tests": 811,
+    "pass": 811,
     "fail": 0,
     "cancelled": 0,
     "skipped": 0,
     "todo": 0,
-    "duration_ms": 559696.0493
+    "duration_ms": 561818.109
   },
   "source_files": [
     {
@@ -1866,7 +1891,11 @@
     },
     {
       "path": "apps/editor/client.mjs",
-      "sha256": "6537ed329e48c1b4bb5e72fcec41f4f21bdc4dfecfc87f3bee1f29f6f749ff51"
+      "sha256": "295e557ee7c341f2e1ca6fb68aac32e558455556d0c6490f6075970025afb65c"
+    },
+    {
+      "path": "apps/editor/file-path.mjs",
+      "sha256": "de23d9554ccd99fac94775d74fc75f7a7b447258d4fe1883abd2805d58d02dd0"
     },
     {
       "path": "apps/editor/git.mjs",
@@ -1875,6 +1904,26 @@
     {
       "path": "apps/editor/git.test.mjs",
       "sha256": "ab8213c182d1568254ea73db57133affbd48304b98f0d275d27c1fcf8b33f0cc"
+    },
+    {
+      "path": "apps/editor/save-publication.ui.test.mjs",
+      "sha256": "30980c6c14879e3279f1715af159fb4357697e5b3c854d020dd8e221e2fc7191"
+    },
+    {
+      "path": "apps/editor/save-review-adjacent.test.mjs",
+      "sha256": "dd9f44164fe8c6874632d1a02b1187e443238ba13c993aab259ce863a52dd30d"
+    },
+    {
+      "path": "apps/editor/save-review-fixture.mjs",
+      "sha256": "b53be669ff5352670f4c9c7cfb1afd9df1adb0b0b43b5f1bce575b121ac1f218"
+    },
+    {
+      "path": "apps/editor/save-review-held.test.mjs",
+      "sha256": "6efd4555b0ec2b9b719b6004c79010a1c82314242e78eba9ac257a846ab53b46"
+    },
+    {
+      "path": "apps/editor/save-review-revision.test.mjs",
+      "sha256": "7e4d3b3aad1ec8b170f5cca73155483f28d180ed972ef42f363f5720426adef8"
     },
     {
       "path": "apps/editor/sequence-diff.mjs",
@@ -1886,7 +1935,39 @@
     },
     {
       "path": "apps/editor/server.mjs",
-      "sha256": "b7eaab9dcee52394936c415aa3abe4c861c481677349f62880704ca2023fafea"
+      "sha256": "9036f3f139f6aeb31d07cf159694e8db127e3b65a136c1aaf20bebcf14e0acad"
+    },
+    {
+      "path": "apps/editor/workspace-search-path.test.mjs",
+      "sha256": "f27bbfb5959463bc2c693bde445a01c604a0430b59bd0102cc4528bd47091756"
+    },
+    {
+      "path": "apps/editor/workspace-search-review-held.test.mjs",
+      "sha256": "8f3ef565633d83748fa21d4c1f7381a8873a1da657c6f4d53ec4bd2ad7a01674"
+    },
+    {
+      "path": "apps/editor/workspace-search-review-path.test.mjs",
+      "sha256": "ff91c57af39a8c884ef8af52cce2444facb2c38927d82c02bb90b25901178679"
+    },
+    {
+      "path": "apps/editor/workspace-search-review-ui.test.mjs",
+      "sha256": "e79cfcff77f2845c8b21b282d2e8b6417ab7a17710714df6493697cbdefb3594"
+    },
+    {
+      "path": "apps/editor/workspace-search.integration.test.mjs",
+      "sha256": "e4ea58023152ca44a08979b2ea2dd8709d8cc759ea93fa6317142208f897a50d"
+    },
+    {
+      "path": "apps/editor/workspace-search.mjs",
+      "sha256": "e0c53274f2577754064870d3613ed3fc0348c8c62d523d58223f80d3d6f5c38d"
+    },
+    {
+      "path": "apps/editor/workspace-search.test.mjs",
+      "sha256": "d775903625d8bf7e85dcfb2426d92c9ca543c4431e23b35b419939a521c2330f"
+    },
+    {
+      "path": "apps/editor/workspace-search.ui.test.mjs",
+      "sha256": "24f35e40ae7b91d277277829629d6f5405910a73c5ddbae0b2bf7e6a51485fe4"
     },
     {
       "path": "apps/flow/app.test.mjs",
@@ -2062,7 +2143,7 @@
     },
     {
       "path": "apps/notes/client.mjs",
-      "sha256": "799431e9d4e7af3135aa63393e9008133aa1d0ef3d1c1d5ebe812a1a93746c81"
+      "sha256": "c57fe2ee532fa9ce8c8afeaa1e777428fc74ce30bebc5c4e76782169ee602d87"
     },
     {
       "path": "apps/notes/fixtures/oracle-verification.json",
@@ -2090,7 +2171,43 @@
     },
     {
       "path": "apps/notes/notebook-original-oracle.mjs",
-      "sha256": "3cb650d3223daebd54ed5b357f8c2ef977d9749cc7e37189f1036fa0f13892b6"
+      "sha256": "9e5ec3357b64e2af290866da6453361c12716f82f7122b3fa9e82f817588045f"
+    },
+    {
+      "path": "apps/notes/notebook-trash-fresh-boundaries.test.mjs",
+      "sha256": "820b38cd108d3d392496225a298e42f6239dbdd1fa6971ef505a9682e0dea95d"
+    },
+    {
+      "path": "apps/notes/notebook-trash-original-oracle.mjs",
+      "sha256": "077fa22e13d0ba84eaf7553b117d54c3f95e1bd4a9c6fa27f79fcb35ce4a1b8a"
+    },
+    {
+      "path": "apps/notes/notebook-trash-publication-boundaries.test.mjs",
+      "sha256": "94ceb4a2df8dd7bd04c2f2668ebbde5a5569f8e1e69df9a7f7c7ea2af8e564a6"
+    },
+    {
+      "path": "apps/notes/notebook-trash-review-fixture.mjs",
+      "sha256": "28990dbb92a6c3a1d155ee8aeefab28e4a9508ef35601adebc0783651d365551"
+    },
+    {
+      "path": "apps/notes/notebook-trash-review.test.mjs",
+      "sha256": "03c06071a8b58ce8b34fabafc0d39668f853b47351702cb848013f1aa686289b"
+    },
+    {
+      "path": "apps/notes/notebook-trash.integration.test.mjs",
+      "sha256": "378d6499959631c3842df3ed142f45abe3d2ee66b1b71d4743d713f08a6b2b67"
+    },
+    {
+      "path": "apps/notes/notebook-trash.mjs",
+      "sha256": "a94a44d754ca5f20c5d5e8dbac9753c31650b7c929ceab6d196acc0c3690edb4"
+    },
+    {
+      "path": "apps/notes/notebook-trash.test.mjs",
+      "sha256": "e4f574932cee5c65b512f31a035f6c5066109ce5e075de63d101019dc4e18eba"
+    },
+    {
+      "path": "apps/notes/notebook-trash.ui.test.mjs",
+      "sha256": "ff478b802a5687a1fb6175a8cbff9fc4970b3d76a045435d57ed15a299985ffe"
     },
     {
       "path": "apps/notes/notebooks.integration.test.mjs",
@@ -2138,7 +2255,7 @@
     },
     {
       "path": "apps/notes/server.mjs",
-      "sha256": "971de4b1cf823424ee4548ef98b752876f3a0fa6a89e667b11ac58bc9d034a39"
+      "sha256": "e592e599c414cd38e8b3b278896792713e001a51950b8a4b3f3e0bc6662f900d"
     },
     {
       "path": "apps/sketch/app.test.mjs",
@@ -2542,7 +2659,7 @@
     },
     {
       "path": "apps/vault/app.integration.test.mjs",
-      "sha256": "82a3d5d346c706a09c12946eb50dad44888027847142330d3e25b612c5fd1d55"
+      "sha256": "09843c298d01af36937568ffa20dbbf25ec4e8ad10ea1abdff9d167e13942127"
     },
     {
       "path": "apps/vault/app.test.mjs",
@@ -2550,7 +2667,7 @@
     },
     {
       "path": "apps/vault/client.mjs",
-      "sha256": "1d392037160c2cdca8c53e0ab807d5215964cd00c248360e5c00532f3ba00bed"
+      "sha256": "85661f40f4176feeb8edf16d0dba77ec674c5123c1baf60a8fce2233d566f129"
     },
     {
       "path": "apps/vault/compatibility-evidence.json",
@@ -2598,7 +2715,7 @@
     },
     {
       "path": "apps/vault/kdbx.mjs",
-      "sha256": "ea774360332dbc7497a2e6a005fa10604cafbb92326293384d157d8827e0fe0c"
+      "sha256": "fbf1f31af3abd79993b87b78fa6608b939a95c69a8be8c3fa286d3b68b165f5e"
     },
     {
       "path": "apps/vault/kdbx.test.mjs",
@@ -2615,6 +2732,54 @@
     {
       "path": "apps/vault/preexisting-draft.test.mjs",
       "sha256": "c9ec466204154d2e4db9c7c6e8c1cf9b02d91063a45fc3ebd2d1ffade0ed7bbe"
+    },
+    {
+      "path": "apps/vault/recycle-boundaries.test.mjs",
+      "sha256": "ec0eca226829dfc510523c1bd7bfa5c7fe8c9bac972b0bf0ccbb9d85c16202ff"
+    },
+    {
+      "path": "apps/vault/recycle-boundary-fixture.mjs",
+      "sha256": "0a5bb056eddd2641913a259b1432c3581ec47a4cbe731d609a40d195a034a2df"
+    },
+    {
+      "path": "apps/vault/recycle-confirmation.test.mjs",
+      "sha256": "5e6882533e1143492962973d9303fa6112f768b21d845e0d5eabf957515ca4d3"
+    },
+    {
+      "path": "apps/vault/recycle-controls.test.mjs",
+      "sha256": "724873f3ab302bde0a1bf56bec0802d132b20639d390dc2cab10971869ea9465"
+    },
+    {
+      "path": "apps/vault/recycle-harness.mjs",
+      "sha256": "73f023f58f5f0d12c69b710fde9d5219e2af75cbfc4f61bff0717e15f75f92a2"
+    },
+    {
+      "path": "apps/vault/recycle-http.test.mjs",
+      "sha256": "5a3af08a1f42a297939d82e43feda5a06c058dd56ba17f4de696302b72c820a5"
+    },
+    {
+      "path": "apps/vault/recycle-oracle.ps1",
+      "sha256": "a5efd6e5fb30f63b81a946cccbccbfac847bfad04d1712a2a984b5e1897f37ae"
+    },
+    {
+      "path": "apps/vault/recycle-original.test.mjs",
+      "sha256": "53bd38af46865f4a756eaf66bb7932cc25264b522200aa98500720418051d854"
+    },
+    {
+      "path": "apps/vault/recycle-server.test.mjs",
+      "sha256": "7592583f2802a336782acc1da46d80d1fbf077094b396488c109bc7189ba4773"
+    },
+    {
+      "path": "apps/vault/recycle-ui.test.mjs",
+      "sha256": "f3be12e9e594d9ba88ee1f8329b907e5d69013d14b7fb2db715327232d3d7458"
+    },
+    {
+      "path": "apps/vault/recycle.mjs",
+      "sha256": "edcab6bd77e21bbc50924f593b88f3073860ff25d19db84bb234a5a3088061cb"
+    },
+    {
+      "path": "apps/vault/recycle.test.mjs",
+      "sha256": "7f7c46012438e86bb17bc9ac9e097b1752e624425a674ac2bdea91c2a422c490"
     },
     {
       "path": "apps/vault/results/history-followup/final-independent-review/preservation-mapping.json",
@@ -2682,7 +2847,7 @@
     },
     {
       "path": "apps/vault/server.mjs",
-      "sha256": "c4aa4d91d93a19de3aab0e4d9cc42759336e78bd1f853572586b542efbeb0fb9"
+      "sha256": "ac6db70cc12c5af760b6940af76b2f4dfdbc1d7921a6ee12edd73e7ed524ddbc"
     },
     {
       "path": "apps/vault/ui-fixture.mjs",

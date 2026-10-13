@@ -1,0 +1,361 @@
+{
+  "schema": "rea-independent-editor-search-review/v1",
+  "checkedAt": "2026-10-13T00:42:58.184Z",
+  "status": "completed with two concrete candidate defects and retained collector failures",
+  "acceptance": false,
+  "productionChanged": false,
+  "bindings": [
+    {
+      "stage": "editor-search-next",
+      "files": 140,
+      "manifestSHA256": "44e8efd72f09c7cc5caa598f43dbe099dd73982477249ecfed2fddfb2a26a7a6",
+      "authenticatedAfter": true
+    },
+    {
+      "stage": "editor-search-fix-next",
+      "files": 124,
+      "manifestSHA256": "b858a4cf15312f962bf0ac5ba2fd6b6c17466248ff1394c727a49ee0e665e9ef",
+      "authenticatedAfter": true
+    },
+    {
+      "stage": "vscode-original-acquisition-record",
+      "files": 14,
+      "manifestSHA256": "b592b223568ddc0736f9b6a9509b6eecbf9832b14e361cf31dcbf71878a636ec",
+      "authenticatedAfter": true
+    }
+  ],
+  "exactInertSnapshots": 281,
+  "sourceBoundTests": [
+    {
+      "name": "held-search.test.mjs",
+      "source": {
+        "bytes": 5680,
+        "sha256": "67dcbdc42446c94686c1fa003297b588e2541167156947042d4f6ddb80303362"
+      },
+      "stdout": {
+        "path": "source-bound-held-search.test.mjs-1791851686678.stdout.txt",
+        "bytes": 2768,
+        "sha256": "26fdd8a7662a0c39ac99b1723295855e78fb4d2bf9c1ddc5acda806b99802d3d"
+      },
+      "stderr": {
+        "path": "source-bound-held-search.test.mjs-1791851686678.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "counts": {
+        "tests": 5,
+        "pass": 3,
+        "fail": 2,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exitCode": 1,
+      "signal": null,
+      "start": "2026-10-13T00:34:46.511Z",
+      "end": "2026-10-13T00:34:46.679Z"
+    },
+    {
+      "name": "held-fixed.test.mjs",
+      "source": {
+        "bytes": 5692,
+        "sha256": "ee898c7ba46ae8da52b328ce14c9e717d673d6cdae3bf2c3e2a437f8681e6385"
+      },
+      "stdout": {
+        "path": "source-bound-held-fixed.test.mjs-1791851686841.stdout.txt",
+        "bytes": 1157,
+        "sha256": "05511a43333dffa22a1b6b0eb6fd788735141ebfa65c583c7e39dca0d18168dd"
+      },
+      "stderr": {
+        "path": "source-bound-held-fixed.test.mjs-1791851686841.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "counts": {
+        "tests": 5,
+        "pass": 5,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exitCode": 0,
+      "signal": null,
+      "start": "2026-10-13T00:34:46.680Z",
+      "end": "2026-10-13T00:34:46.843Z"
+    },
+    {
+      "name": "fresh-core.test.mjs",
+      "source": {
+        "bytes": 3872,
+        "sha256": "8b47f9ae17b5797b8470f31f43c5113d58d87df59365a54c092a525409a4978b"
+      },
+      "stdout": {
+        "path": "source-bound-fresh-core.test.mjs-1791851690168.stdout.txt",
+        "bytes": 2005,
+        "sha256": "2dc959e5e0f85024585d4e443387713ec520f343a73518260f1ca8b874d0f761"
+      },
+      "stderr": {
+        "path": "source-bound-fresh-core.test.mjs-1791851690168.stderr.txt",
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "counts": {
+        "tests": 4,
+        "pass": 3,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exitCode": 1,
+      "signal": null,
+      "start": "2026-10-13T00:34:46.843Z",
+      "end": "2026-10-13T00:34:50.169Z"
+    }
+  ],
+  "freshTestCounts": {
+    "tests": 14,
+    "pass": 11,
+    "fail": 3,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "exploratoryOldReplay": {
+    "tests": 5,
+    "pass": 3,
+    "fail": 2,
+    "includedInFreshCounts": false
+  },
+  "findings": [
+    {
+      "priority": "P1",
+      "epoch": "old140 only; resolved by fixed124 in five-case exact replay",
+      "title": "Search-result read publishes a stale file after the query or options change",
+      "test": "held-search.test.mjs",
+      "oldCounts": {
+        "pass": 3,
+        "fail": 2
+      },
+      "fixedExactReplay": "held-fixed.test.mjs",
+      "fixedCounts": {
+        "pass": 5,
+        "fail": 0
+      },
+      "source": "editor-search-next/products/rea-studio/apps/editor/client.mjs:90-108",
+      "limits": "Finite element model using actual client module and real read/search handlers; actual browser false."
+    },
+    {
+      "priority": "P2",
+      "epoch": "fixed124",
+      "title": "Search emits a 1096-unit path that Editor read refuses at its 1024-unit boundary",
+      "test": "fresh-core.test.mjs:5",
+      "observation": {
+        "path": "runs/long-path-1791851686930-0/observation.json",
+        "bytes": 2115,
+        "sha256": "79a2d88fdc54f4bef692e6e03983dc2b30a115670df47113053465a6535f0e56"
+      },
+      "pathLength": 1096,
+      "searchMatches": 1,
+      "searchTruncated": false,
+      "readError": "Choose a relative file path.",
+      "source": "editor-search-fix-next/products/rea-studio/apps/editor/server.mjs:16-18",
+      "sharedWorkspaceSource": "editor-search-fix-next/products/rea-studio/lib/storage.mjs:18",
+      "pendingSeparateCorrection": "editor-search-path-fix-next; not exercised or accepted by this receipt"
+    }
+  ],
+  "controls": [
+    "Later explicit file selection supersedes held read",
+    "Later new draft supersedes held read and creates no disk file",
+    "Disposal supersedes held read",
+    "BOM/astral UTF-16 positions and original saved-byte revision",
+    "Exact 32768-byte query accepted, overflow and null mode refused",
+    "10001 ignored entries stop traversal without text reads"
+  ],
+  "provenance": {
+    "receipt": {
+      "path": "provenance-validation.corrected.json",
+      "bytes": 62169,
+      "sha256": "04bf79b55eb55fe439832fe644c37a98ba22058502c0185635a26cb3e106866c"
+    },
+    "originalReceiptSHA256": "6e93be73c9fdc10d011272fbbd6a2c5219c01efda0ff614e201b59f821bf028d",
+    "extractedFilesAuthenticatedNow": 3246,
+    "extractedBytes": 1044655528,
+    "freshExtractedTreePasses": 1,
+    "freshBeforeAfterAllExtractedFiles": false,
+    "historicalBeforeAfterLedgersBound": true,
+    "archive": {
+      "bytes": 355156158,
+      "sha256": "52f47072473375767d63ea5be9ffb96a3092124223fe5ce036834a299715014e"
+    },
+    "archiveSHA1": "e3eb80ad085d2d245ecf2a548ade9c153dec0368",
+    "engine": {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\original-products\\vscode\\1.140.0\\unpacked\\07f806f999\\resources\\app\\node_modules.asar.unpacked\\@vscode\\ripgrep-universal\\bin\\win32-x64\\rg.exe",
+      "bytes": 5440824,
+      "sha256": "ba5105e5c9d2beb2af7b64d53d782a780f1d53e2a5e331d9ac71b06348cb533c",
+      "relativePath": "07f806f999/resources/app/node_modules.asar.unpacked/@vscode/ripgrep-universal/bin/win32-x64/rg.exe"
+    },
+    "historicalSignatureBound": true,
+    "freshOSSignatureCheck": false,
+    "archiveOrBinaryCopied": false
+  },
+  "freshBundledEngineAttempt": {
+    "receipt": {
+      "path": "fresh-original-validation.json",
+      "bytes": 3223,
+      "sha256": "905ea23fee82729ce227b6565bad4f6769c218023bbe0e71de50a59ef4077aa1"
+    },
+    "groupsPrepared": 12,
+    "groupsCompleted": 0,
+    "positionsVerified": 0,
+    "actualInvocations": 2,
+    "status": "failed",
+    "failure": "TypeError: The encoded data was not valid for encoding utf-8\n    at TextDecoder.decode (node:internal/encoding:494:28)\n    at decode (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/editor-search-independent-review/fresh-original-comparison.mjs:10:995)\n    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/editor-search-independent-review/fresh-original-comparison.mjs:10:1183",
+    "interpretation": "Own offset mapper decoded original raw file prefixes although bundled ripgrep strips the leading BOM before reporting byte offsets. This is a retained collector failure, not a candidate semantic mismatch or passed oracle comparison."
+  },
+  "retainedFailures": {
+    "authenticationPreparation": "First source capture used an incorrect Code.exe archive prefix; exact failed action source/logs retained before successful correction.",
+    "metadataPreparation": "Authenticated relative engine ledger path overwrote intended absolute metadata path; exact successful first receipt and failed zero-child preparation retained. Corrected receipt appended.",
+    "freshBundledMapper": "Version and first query children completed; mapper failed before any complete fresh group.",
+    "finalizationPreparation": "Own finalizer initially assumed the acquisition inventory used an object rather than its actual array. It failed twice before writing a receipt; one exact captured replay/source/log is retained and the preceding direct invocation is disclosed in finalization-preparation-note.json. Corrected finalizer accepts both manifest shapes.",
+    "intentionalCandidateFailures": "Two old140 generation cases and fixed124 long-path navigation case retained as failures."
+  },
+  "actions": [
+    {
+      "path": "action-authenticate-provenance-1791851193529.json",
+      "bytes": 454,
+      "sha256": "f3f3361972e53077d2452195503211cfaff23042cd4312419599e6fba5922160",
+      "record": {
+        "name": "authenticate-provenance.mjs",
+        "start": "2026-10-13T00:26:33.530Z",
+        "end": "2026-10-13T00:27:02.453Z",
+        "exitCode": 1,
+        "signal": null,
+        "sourceSHA256": "c1042203a52d30a7b7c38fc2b94a5b43884386f30bfbeeac640580c8889ffbdb",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "75ee05d2f282d8df98ea6067904e895498daa56e62607f1a263e8fc2279405da",
+        "newTimingMemoryOrProfilerRun": false
+      }
+    },
+    {
+      "path": "action-authenticate-provenance-1791851304200.json",
+      "bytes": 454,
+      "sha256": "2c8217dd3d01a802f1fe62132adde9a4168d9ff7a8b0c179592d4813fc8372eb",
+      "record": {
+        "name": "authenticate-provenance.mjs",
+        "start": "2026-10-13T00:28:24.201Z",
+        "end": "2026-10-13T00:28:28.715Z",
+        "exitCode": 0,
+        "signal": null,
+        "sourceSHA256": "a32c4f672aae4dc222945c4fcd1c03a66d09c7a9b2078d563c745193ad9abb77",
+        "stdoutSHA256": "156f5cb325696c9ddfa03802d9e0314f17835df978cc7618d3e83c6835e135a6",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTimingMemoryOrProfilerRun": false
+      }
+    },
+    {
+      "path": "action-correct-provenance-metadata-1791851904716.json",
+      "bytes": 458,
+      "sha256": "5083a44de9001e502c6f814c125c896f94b8b2271acdf63eb705e6570f4ffbb5",
+      "record": {
+        "name": "correct-provenance-metadata.mjs",
+        "start": "2026-10-13T00:38:24.717Z",
+        "end": "2026-10-13T00:38:25.007Z",
+        "exitCode": 0,
+        "signal": null,
+        "sourceSHA256": "17a13c401704c45a787cdf5ba227c2b5d8460d1b3fb1e61898b8a09ad2b48dc6",
+        "stdoutSHA256": "9e153f2ec8ea2f3482f6fa146b5a90c730aa2fffe8793bd15fdaca1e7b9a7032",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTimingMemoryOrProfilerRun": false
+      }
+    },
+    {
+      "path": "action-finalize-review-1791852158873.json",
+      "bytes": 446,
+      "sha256": "a28f434389b2eb78e7816fd9e72284d91484870232a42239ecd54957e4ee397c",
+      "record": {
+        "name": "finalize-review.mjs",
+        "start": "2026-10-13T00:42:38.874Z",
+        "end": "2026-10-13T00:42:39.052Z",
+        "exitCode": 1,
+        "signal": null,
+        "sourceSHA256": "0a56953f095c8c133106373781b8208e6228fa7818f856e5b5180023cc13663b",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "77abae5a84758484aebc578921ed89bff3ead0dee28dfeb36c57a483b2fc5fcd",
+        "newTimingMemoryOrProfilerRun": false
+      }
+    },
+    {
+      "path": "action-fresh-original-comparison-1791851824210.json",
+      "bytes": 456,
+      "sha256": "d78205b1c4cc262fac62077e11e735d29b6d88d00fadc07b8bde7275c457e4bd",
+      "record": {
+        "name": "fresh-original-comparison.mjs",
+        "start": "2026-10-13T00:37:04.211Z",
+        "end": "2026-10-13T00:37:04.262Z",
+        "exitCode": 1,
+        "signal": null,
+        "sourceSHA256": "ee4b71d0c04e5033794dd40e46ed83933cabf51b8f74ac218bcabcfd03003841",
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "a5d7540c117f8aaa3005fb1569a43bf01cea33198e28893ad8c5368b4490d649",
+        "newTimingMemoryOrProfilerRun": false
+      }
+    },
+    {
+      "path": "action-fresh-original-comparison-1791852048739.json",
+      "bytes": 456,
+      "sha256": "fea83f3d645582c9e5e10dbee330501957796a90baa2e7293067eb5660fe2b80",
+      "record": {
+        "name": "fresh-original-comparison.mjs",
+        "start": "2026-10-13T00:40:48.741Z",
+        "end": "2026-10-13T00:40:49.009Z",
+        "exitCode": 1,
+        "signal": null,
+        "sourceSHA256": "7ca8fd37dedf62aa39a3609f0f109d1f1a8330690b2daf36ff944f50c42664cc",
+        "stdoutSHA256": "b059234190935fe1186d85ef3c3484849bf87cc6aee686f8a02e0b37daff4f29",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTimingMemoryOrProfilerRun": false
+      }
+    },
+    {
+      "path": "action-held-search.test-1791851278105.json",
+      "bytes": 447,
+      "sha256": "86c2d75579445780302383bbcf491dbfb5f90677e77eca6180b661440dd2588b",
+      "record": {
+        "name": "held-search.test.mjs",
+        "start": "2026-10-13T00:27:58.106Z",
+        "end": "2026-10-13T00:27:58.331Z",
+        "exitCode": 1,
+        "signal": null,
+        "sourceSHA256": "67dcbdc42446c94686c1fa003297b588e2541167156947042d4f6ddb80303362",
+        "stdoutSHA256": "50fb4998ea7d7d9d4299bd09f020750fff348d8340d000fed1030abaf0c19c47",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTimingMemoryOrProfilerRun": false
+      }
+    },
+    {
+      "path": "action-run-held-review-1791851686222.json",
+      "bytes": 446,
+      "sha256": "d50f5ee9c7d0ecca050ae9a9ca16963a80b4d6dc96b6887e1beda986fc92b929",
+      "record": {
+        "name": "run-held-review.mjs",
+        "start": "2026-10-13T00:34:46.223Z",
+        "end": "2026-10-13T00:34:50.284Z",
+        "exitCode": 0,
+        "signal": null,
+        "sourceSHA256": "8a82d041276efe84e2f691fb07e7c8df21d4892c82246ac183bb9a2b83e574d7",
+        "stdoutSHA256": "d3c74a9cbd4cffd8f6a78d0c956e0ff892d75ab7962444d98e8f4a40037a8969",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "newTimingMemoryOrProfilerRun": false
+      }
+    }
+  ],
+  "rawObservationsRetained": true,
+  "newTimingMemoryOrProfilerRuns": 0,
+  "actualBrowserExecution": false,
+  "originalWorkbenchOrGUIExecutions": 0,
+  "universalCompatibility": false,
+  "fullProductParity": false,
+  "sourceStable": true,
+  "publicationBoundary": "This private complete review includes 10001 synthetic empty ignored-entry files and their exact path inventory. Native executable and original ZIP remain local only with identities; no binaries or archives were copied. A later source-only public subset must declare any synthetic fixture exclusions without changing this frozen record."
+}

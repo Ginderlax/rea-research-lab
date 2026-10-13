@@ -1,0 +1,90 @@
+TAP version 13
+# Subtest: Close bin during post-restore active-list refresh remains closed
+not ok 1 - Close bin during post-restore active-list refresh remains closed
+  ---
+  duration_ms: 79.5428
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-recycle-independent-review\\bin-boundaries.test.mjs:4:44'
+  failureType: 'testCodeFailure'
+  error: |-
+    Late active-list completion must not reopen a bin the user closed.
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-recycle-independent-review/bin-boundaries.test.mjs:7:555)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: Close bin during post-purge active-list refresh remains closed
+not ok 2 - Close bin during post-purge active-list refresh remains closed
+  ---
+  duration_ms: 50.9294
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-recycle-independent-review\\bin-boundaries.test.mjs:4:44'
+  failureType: 'testCodeFailure'
+  error: |-
+    Late active-list completion must not reopen a bin the user closed.
+    
+    false !== true
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-recycle-independent-review/bin-boundaries.test.mjs:7:555)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: post-restore active-list refresh does not erase a newer bin preview generation
+not ok 3 - post-restore active-list refresh does not erase a newer bin preview generation
+  ---
+  duration_ms: 54.911
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\keepass-recycle-independent-review\\bin-boundaries.test.mjs:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Late older operation must retain the newer bin preview.
+    + actual - expected
+    
+    + null
+    - 'B-owned-secret'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'B-owned-secret'
+  actual: ~
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-recycle-independent-review/bin-boundaries.test.mjs:10:1197)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: held recycled read rejected after cleanup cannot expose password or rearm detached controls
+ok 4 - held recycled read rejected after cleanup cannot expose password or rearm detached controls
+  ---
+  duration_ms: 49.4224
+  type: 'test'
+  ...
+# Subtest: held permanent-delete response keeps newer same-editor draft as a new entry without resurrecting deleted UUID
+ok 5 - held permanent-delete response keeps newer same-editor draft as a new entry without resurrecting deleted UUID
+  ---
+  duration_ms: 50.2866
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 2
+# fail 3
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 351.5586

@@ -1,0 +1,60 @@
+[
+  {
+    "check": "case-sensitive saved-file search",
+    "passed": true
+  },
+  {
+    "case": "astral UTF-16 result navigation",
+    "expected": {
+      "start": 2,
+      "end": 8
+    },
+    "observed": {
+      "end": 8,
+      "start": 2,
+      "value": "🧪needle\nNeedle repeated needle\n"
+    },
+    "passed": true
+  },
+  {
+    "case": "search navigation preserves unsaved draft",
+    "observed": {
+      "end": 34,
+      "start": 34,
+      "value": "Unsaved 🧪 draft with NEEDLE only\n"
+    },
+    "passed": false
+  },
+  {
+    "case": "case-insensitive search reads saved files despite dirty draft",
+    "passed": true,
+    "observed": "Browser tab: 13, Title: \"REA Studio — development applications\", URL: \"http://127.0.0.1:53800/#editor\".\nThe following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.\nRemoved element IDs: 75-81\n~\t\t\t\t41 checkbox (settable, integer) Description: Match case in workspace search, Value: 0\n+\t\t\t\t84 text 4 matches in 2 files. 2 text files searched.\n+\t\t\t\t\t85 button second.txt:1:8\n+\t\t\t\t\t86 text second needle\n+\t\t\t\t\t87 button src/unicode.txt:1:3\n+\t\t\t\t\t88 text 🧪needle\n+\t\t\t\t\t89 button src/unicode.txt:2:1\n+\t\t\t\t\t90 text Needle repeated needle\n+\t\t\t\t\t91 button src/unicode.txt:2:17\n+\t\t\t\t\t92 text Needle repeated needle\nThe focused UI element is 0 AXWebArea REA Studio — development applications, URL: 127.0.0.1:53800/#editor"
+  },
+  {
+    "case": "corrected draft preservation diagnostic",
+    "priorObservationIndex": 2,
+    "priorFailureReason": "Owned collector expected the wrong status wording; actual value and status show preservation.",
+    "expectedStatus": "Your current draft was retained",
+    "observedValue": "Unsaved 🧪 draft with NEEDLE only\n",
+    "passed": true
+  },
+  {
+    "case": "saved literal metacharacters are searched as text",
+    "passed": true,
+    "observed": "Browser tab: 13, Title: \"REA Studio — development applications\", URL: \"http://127.0.0.1:53800/#editor\".\nThe following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.\nRemoved element IDs: 84-92\n~\t\t\t\t40 text field (settable) Description: Find in saved files, Value: .*\n+\t\t\t\t96 text 1 matches in 1 files. 3 text files searched.\n+\t\t\t\t\t97 button literal.txt:1:9\n+\t\t\t\t\t98 text literal .* $& 🧪\nThe focused UI element is 0 AXWebArea REA Studio — development applications, URL: 127.0.0.1:53800/#editor"
+  },
+  {
+    "case": "empty query rejected visibly",
+    "observed": "Browser tab: 13, Title: \"REA Studio — development applications\", URL: \"http://127.0.0.1:53800/#editor\".\nThe following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.\nRemoved element IDs: 97-98\n~\t\t\t\t40 text field (settable) Find in saved files\n~\t\t\t\t96 text Enter nonempty single-line search text of at most32 KiB.\nThe focused UI element is 0 AXWebArea REA Studio — development applications, URL: 127.0.0.1:53800/#editor",
+    "passed": true
+  },
+  {
+    "case": "saved literal file survives reload and result navigation",
+    "observed": {
+      "end": 10,
+      "start": 8,
+      "value": "literal .* $& 🧪\n"
+    },
+    "passed": true
+  }
+]

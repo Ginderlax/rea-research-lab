@@ -1,0 +1,32 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import {spawn} from 'node:child_process';
+const here=import.meta.dirname,lab=path.resolve(here,'../../outputs/rea-research-lab'),mode=process.argv[2];
+if(!['baseline','corrected'].includes(mode))throw Error('Expected baseline or corrected');
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex'),baseline=JSON.parse(fs.readFileSync(path.join(here,'baseline.json')));
+const identity=(root,p)=>{const b=fs.readFileSync(path.join(root,p));return{path:p,bytes:b.length,sha256:hash(b)};};
+const before=baseline.sources.map(r=>identity(lab,r.path));
+if(JSON.stringify(before)!==JSON.stringify(baseline.sources.map(({snapshotPath,...r})=>r)))throw Error('Current production differs from preserved initial baseline');
+const run=path.join(here,'runs',mode+'-'+new Date().toISOString().replaceAll(':','-'));fs.mkdirSync(run,{recursive:true});
+let target=path.join(lab,'products/rea-studio/apps/vault/app.integration.test.mjs'),proposal;
+if(mode==='corrected'){
+ proposal=fs.readFileSync(path.join(here,'proposed/app.integration.test.mjs'));fs.writeFileSync(path.join(run,'proposal.mjs.snapshot'),proposal);
+ const replacements=[['../../server.mjs','../../../../outputs/rea-research-lab/products/rea-studio/server.mjs'],['./kdbx.mjs','../../../../outputs/rea-research-lab/products/rea-studio/apps/vault/kdbx.mjs'],['./recycle.mjs','../../../../outputs/rea-research-lab/products/rea-studio/apps/vault/recycle.mjs'],['./xml.mjs','../../../../outputs/rea-research-lab/products/rea-studio/apps/vault/xml.mjs']];
+ // The runner input sits four directories below the workspace root.
+ let t=proposal.toString('utf8');for(const[from,to]of replacements){if(!t.includes("from '"+from+"'"))throw Error('Missing path-only input '+from);t=t.replaceAll("from '"+from+"'","from '"+to+"'");}
+ target=path.join(run,'app.integration.test.mjs');fs.writeFileSync(target,t);fs.writeFileSync(path.join(run,'input-adapters.json'),JSON.stringify({schema:'rea-vault-http-test-import-only-adapter/v1',replacements,proposedHash:hash(proposal),executedHash:hash(Buffer.from(t)),assertionsChangedByAdapter:false},null,2)+'\n');
+}
+const input=fs.readFileSync(target);fs.writeFileSync(path.join(run,'executed-input.mjs.snapshot'),input);
+fs.copyFileSync(path.join(here,'run.mjs'),path.join(run,'run.mjs.snapshot'));
+const env={...process.env};delete env.NODE_TEST_CONTEXT;
+const child=spawn(process.execPath,['--test','--test-reporter=tap',target],{cwd:lab,env,windowsHide:true,stdio:['ignore','pipe','pipe']});
+let stdout=Buffer.alloc(0),stderr=Buffer.alloc(0),reason;
+const deadline=setTimeout(()=>{reason='Owned child60-second deadline';child.kill();},60000),cap=1024*1024;
+for(const[name,stream]of[['stdout',child.stdout],['stderr',child.stderr]])stream.on('data',b=>{const old=name==='stdout'?stdout:stderr;if(old.length+b.length>cap){reason='Owned stream1MiB cap';child.kill();}const retained=Buffer.concat([old,b.subarray(0,cap-old.length)]);if(name==='stdout')stdout=retained;else stderr=retained;});
+const result=await new Promise(r=>{child.on('error',error=>r({error:error.message}));child.on('close',(code,signal)=>r({code,signal}));});clearTimeout(deadline);
+fs.writeFileSync(path.join(run,'stdout.txt'),stdout);fs.writeFileSync(path.join(run,'stderr.txt'),stderr);
+const after=baseline.sources.map(r=>identity(lab,r.path)),summary=Object.fromEntries([...stdout.toString().matchAll(/^# (tests|pass|fail|cancelled|skipped|todo) (\d+)$/gm)].map(m=>[m[1],Number(m[2])]));
+const receipt={schema:'rea-vault-http-recycle-targeted-run/v1',at:new Date().toISOString(),mode,input:{bytes:input.length,sha256:hash(input)},proposal:proposal?{bytes:proposal.length,sha256:hash(proposal)}:null,result,reason,sourceBefore:before,sourceAfter:after,allProductionSourcesStable:JSON.stringify(before)===JSON.stringify(after),summary,stdout:{bytes:stdout.length,sha256:hash(stdout)},stderr:{bytes:stderr.length,sha256:hash(stderr)},originalExecutions:0,browserActions:0,actualOSProcessRestartClaim:false};
+fs.writeFileSync(path.join(run,'validation.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify({run,...receipt}));
+process.exitCode=reason||!receipt.allProductionSourcesStable||mode==='baseline'?(reason||!receipt.allProductionSourcesStable||summary.pass!==1||summary.fail!==1?1:0):(result.code===0&&summary.pass===2&&summary.fail===0?0:1);

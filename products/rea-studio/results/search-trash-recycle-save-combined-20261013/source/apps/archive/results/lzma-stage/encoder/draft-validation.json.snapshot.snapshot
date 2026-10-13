@@ -1,0 +1,5113 @@
+{
+  "schema": "rea-lzma-encoder-research-validation/v1",
+  "staging_only": true,
+  "integrated_application": false,
+  "full_feature_parity": false,
+  "all_ways_improved": false,
+  "original_ratio_speed_parity": false,
+  "original_application_runtime_wrapper": false,
+  "tests": {
+    "tests": 64,
+    "pass": 64,
+    "fail": 0,
+    "skipped": 0,
+    "duration_ms": 6596.0692,
+    "final_run": "run-u4M6Vc",
+    "original_7z_containers": 46,
+    "original_lzma_wrappers": 12,
+    "raw_vectors": 0
+  },
+  "prior_decoder_tests": {
+    "tests": 35,
+    "pass": 35,
+    "original_produced_positive_containers": 25,
+    "receipt_sha256": "ae9bc19b923b1ba8fab104a622e6298c6b1f20deeb1c75659426a3d333bccf44"
+  },
+  "validation_adjustments": [
+    {
+      "type": "initial failed assertion",
+      "run": "run-SxXTAn",
+      "tests": 58,
+      "pass": 52,
+      "fail": 6,
+      "threshold": "archive < input / 5",
+      "original_compatibility_failures": 0,
+      "exact_source_snapshot": "history/first-ratio-attempt",
+      "source_snapshot_reconstructed_and_manifest_authenticated": true
+    },
+    {
+      "type": "post-hoc validation adjustment",
+      "run": "run-au3HRA",
+      "tests": 58,
+      "pass": 58,
+      "fail": 0,
+      "threshold": "archive < input / 4",
+      "preregistered_performance_success": false,
+      "original_ratio_parity_evidence": false,
+      "exact_source_snapshot": "history/post-hoc-25pct",
+      "source_snapshot_reconstructed_and_manifest_authenticated": true
+    },
+    {
+      "type": "current assertion design",
+      "tests": 64,
+      "threshold": "known compressible data contains genuine symbols and archive is smaller than stored baseline",
+      "ratios_reported_separately": true,
+      "original_ratio_parity_evidence": false
+    }
+  ],
+  "benchmark": {
+    "run": "benchmark-vbZ6G3",
+    "measurements": 13,
+    "original_7z_containers": 13,
+    "single_observations_only": true,
+    "ratios_not_original_parity": true,
+    "memory_samples_not_peak": true,
+    "boundary": {
+      "name": "solid64m",
+      "inputBytes": 67108864,
+      "eachFileBytes": 16777216,
+      "files": 4,
+      "inputSha256Each": "51598f4c88d896df019a90a1f7f8dc89cf26c168d3b3fa185163e4773da7dc9a",
+      "archiveBytes": 288370,
+      "ratio": 0.004297047853469849,
+      "encodeMs": 1309.8948,
+      "mibPerSecond": 48.85888546164165,
+      "before": {
+        "rss": 87343104,
+        "heapTotal": 11476992,
+        "heapUsed": 5797792,
+        "external": 19233645,
+        "arrayBuffers": 16817375
+      },
+      "after": {
+        "rss": 223330304,
+        "heapTotal": 11739136,
+        "heapUsed": 6978176,
+        "external": 155106256,
+        "arrayBuffers": 152689986
+      },
+      "originalTestMs": 52.57390000000032,
+      "originalExtractMs": 64.19710000000032,
+      "originalResult": "t + extract all four paths, lengths and SHA256 exact",
+      "ownResult": "all four lengths and SHA256 exact"
+    },
+    "deadlines": [
+      {
+        "method": "lzma",
+        "requestedTimeMs": 1,
+        "elapsedMs": 1.3446999999996478,
+        "result": "LZMA encoder: encode elapsed-time budget exhausted"
+      },
+      {
+        "method": "lzma2",
+        "requestedTimeMs": 1,
+        "elapsedMs": 1.2800999999999476,
+        "result": "LZMA encoder: encode elapsed-time budget exhausted"
+      }
+    ]
+  },
+  "implementation_fingerprints": [
+    {
+      "path": "LICENSE.txt",
+      "bytes": 1806,
+      "sha256": "cd61e1fa448d138dd97cedd5fa772fb78f421fb278c953e8ff016f44746cdc5f"
+    },
+    {
+      "path": "README.md",
+      "bytes": 9353,
+      "sha256": "78ee40f62d6c7ae1453616c630153088a1851ee0706427cde8369dbd66f2fb54"
+    },
+    {
+      "path": "benchmark-oracle.mjs",
+      "bytes": 3007,
+      "sha256": "69738c8428f4b81aafa0438eafd31de3e6440b5108b4aa9ae95f5a904d20e6df"
+    },
+    {
+      "path": "benchmark.mjs",
+      "bytes": 6350,
+      "sha256": "7cb713ce37d8bb5eb833e9af6708229bc851cc9e0bfcad39e1aff9238b9df67a"
+    },
+    {
+      "path": "encode-lzma.mjs",
+      "bytes": 13386,
+      "sha256": "c00ef88ea6313d324b48d58ff6bb031bb297bd78ee70a093b0261b78abefa7dc"
+    },
+    {
+      "path": "encoder.test.mjs",
+      "bytes": 15068,
+      "sha256": "b86df70d9347f1ac153679477547736435caa5cef508f2f43d8dbc9117a3d92a"
+    },
+    {
+      "path": "freeze.mjs",
+      "bytes": 4718,
+      "sha256": "4e1689ae72bc722b55b28b3278c2787fcc14de0bbe10c5b047e66d82417ec229"
+    },
+    {
+      "path": "lzma.mjs",
+      "bytes": 13299,
+      "sha256": "2fb51a5ec550d3964f3289f5d7d4a54a34a8999aed02fd1f57e0954b35a2a380"
+    },
+    {
+      "path": "prepare-provenance.mjs",
+      "bytes": 5966,
+      "sha256": "828ffb1450aaafecde88c5baf55debd18f8594e7f94800a281b584927dd078a2"
+    },
+    {
+      "path": "provenance.json",
+      "bytes": 19974,
+      "sha256": "23d4d27ec6790862932e173d31c2305b079c2d5b804651fa655e3c79123c3884"
+    },
+    {
+      "path": "sevenzip.mjs",
+      "bytes": 24575,
+      "sha256": "d3e4aaf5642aaeab6aa8a3dc9f3a7045f78217ba3b54a558a49c0057abe855f6"
+    },
+    {
+      "path": "test-final.tap",
+      "bytes": 13165,
+      "sha256": "613e5bfe36d647adbd26f993635e0830871f234588ab81318a4f3a47f01169f2"
+    },
+    {
+      "path": "test-positive-spec.txt",
+      "bytes": 5516,
+      "sha256": "e929c5381e0abc6cad346af11404d9fe38bb12df0d8192286d214ce9fee7b3b8"
+    },
+    {
+      "path": "verify-draft.mjs",
+      "bytes": 2471,
+      "sha256": "8ea973147761710c7b05b7f8d2a469aa72454e859572b84e4ac23beee184a99a"
+    }
+  ],
+  "reference_fingerprints": [
+    {
+      "path": "reference/Lzma2Dec.c",
+      "bytes": 13372,
+      "sha256": "18c2fff9594dc9ab523087963f0a740ab5ffaea457746385c86771f32c8ef4a2"
+    },
+    {
+      "path": "reference/Lzma2Enc.c",
+      "bytes": 19730,
+      "sha256": "dde44e4ec42bda44d595012bbf0d7de9c414f088a7d99b4b167cd36654a2f5f0"
+    },
+    {
+      "path": "reference/LzmaDec.c",
+      "bytes": 39574,
+      "sha256": "8a9d33dd01259a71b3c3cfbf645d06944bef65a152d307671372c332e9e0e022"
+    },
+    {
+      "path": "reference/LzmaEnc.c",
+      "bytes": 83913,
+      "sha256": "ed1dd46205e3e55c39a2d3daaece5786492a11875150dc6df9dbf1101a244a50"
+    },
+    {
+      "path": "reference/cscott-lzma-purejs-README.md",
+      "bytes": 5219,
+      "sha256": "c0824136198faf2df489ef3750c094557a55a9f50fb426eed952a502b54fb0f5"
+    },
+    {
+      "path": "reference/cscott-lzma-purejs-lib-LZMA-Decoder.js",
+      "bytes": 10996,
+      "sha256": "0a755d554a01f111cc02bdd0f314119e20986a4772e226225437239f470275e7"
+    },
+    {
+      "path": "reference/cscott-lzma-purejs-lib-LZMA-Encoder.js",
+      "bytes": 46294,
+      "sha256": "0e433afc58dd8d59b677eb1a91f45f120460641db09c496567347ca078257007"
+    },
+    {
+      "path": "reference/lzma-sdk.txt",
+      "bytes": 15835,
+      "sha256": "b6be2de40819b3ba00b329548abaeaba97589e1a6169442ec78b062b3337247b"
+    },
+    {
+      "path": "reference/lzma.txt",
+      "bytes": 11194,
+      "sha256": "ab14139964693ac041f34319728bb96e0c924498e7dfcd1eabcde76c9caf15b8"
+    }
+  ],
+  "frozen_decoder_fingerprints": [
+    {
+      "path": "frozen-decoder/LICENSE.txt",
+      "bytes": 1481,
+      "sha256": "38a5f4989a96e4e71b10ad9124fd8209140c16d83c5dd5fb9f95dd256df241fb"
+    },
+    {
+      "path": "frozen-decoder/README.md",
+      "bytes": 7838,
+      "sha256": "090212417088525491ff8b00d28c96205e340b0f087f73e973cf11ce340437ee"
+    },
+    {
+      "path": "frozen-decoder/benchmark.mjs",
+      "bytes": 5851,
+      "sha256": "fad851952fb16b7f0918b3c5eb57a7d9c3707214c7867a676cfdf56104bad70c"
+    },
+    {
+      "path": "frozen-decoder/draft-validation.json",
+      "bytes": 27395,
+      "sha256": "ae9bc19b923b1ba8fab104a622e6298c6b1f20deeb1c75659426a3d333bccf44"
+    },
+    {
+      "path": "frozen-decoder/freeze.mjs",
+      "bytes": 10540,
+      "sha256": "e8555845317b978d2cf8d922aed7e5fc23423a989bd4ddf9ea7d4afad38db088"
+    },
+    {
+      "path": "frozen-decoder/lzma.mjs",
+      "bytes": 13299,
+      "sha256": "2fb51a5ec550d3964f3289f5d7d4a54a34a8999aed02fd1f57e0954b35a2a380"
+    },
+    {
+      "path": "frozen-decoder/lzma.test.mjs",
+      "bytes": 20704,
+      "sha256": "2a929d71068b8712b3964f63ae275fd59e8f0540c5e0d77874bce89d79bc1d64"
+    },
+    {
+      "path": "frozen-decoder/provenance.json",
+      "bytes": 10709,
+      "sha256": "2d29bb68c91006f461899e80d971495b91c18de116a3b8e6ff6a6c2cb78d91e8"
+    },
+    {
+      "path": "frozen-decoder/reference/Lzma2Dec.c",
+      "bytes": 13372,
+      "sha256": "18c2fff9594dc9ab523087963f0a740ab5ffaea457746385c86771f32c8ef4a2"
+    },
+    {
+      "path": "frozen-decoder/reference/LzmaDec.c",
+      "bytes": 39574,
+      "sha256": "8a9d33dd01259a71b3c3cfbf645d06944bef65a152d307671372c332e9e0e022"
+    },
+    {
+      "path": "frozen-decoder/reference/cscott-lzma-purejs-README.md",
+      "bytes": 5219,
+      "sha256": "c0824136198faf2df489ef3750c094557a55a9f50fb426eed952a502b54fb0f5"
+    },
+    {
+      "path": "frozen-decoder/reference/cscott-lzma-purejs-lib-LZMA-Decoder.js",
+      "bytes": 10996,
+      "sha256": "0a755d554a01f111cc02bdd0f314119e20986a4772e226225437239f470275e7"
+    },
+    {
+      "path": "frozen-decoder/reference/lzma-sdk.txt",
+      "bytes": 15835,
+      "sha256": "b6be2de40819b3ba00b329548abaeaba97589e1a6169442ec78b062b3337247b"
+    },
+    {
+      "path": "frozen-decoder/reference/lzma.txt",
+      "bytes": 11194,
+      "sha256": "ab14139964693ac041f34319728bb96e0c924498e7dfcd1eabcde76c9caf15b8"
+    },
+    {
+      "path": "frozen-decoder/sevenzip.mjs",
+      "bytes": 23275,
+      "sha256": "bc0c5dab196e8f06fef3058de9217c8577397f8285d6cdeb57c059232e4c2941"
+    },
+    {
+      "path": "frozen-decoder/test-output.tap",
+      "bytes": 6947,
+      "sha256": "fa52bbab6f1c76fe663638e71acc96927f5a9d2ca928de1949ecb7d39af9daa0"
+    },
+    {
+      "path": "frozen-decoder/verify-draft.mjs",
+      "bytes": 1865,
+      "sha256": "bd8fdfa55c4f6f2574c14bc07db19209960b9aadeb69302159731ac680c2a116"
+    }
+  ],
+  "current_evidence_fingerprints": [
+    {
+      "path": "run-u4M6Vc/fixtures-manifest.json",
+      "bytes": 78766,
+      "sha256": "81b6a548d22f4934ade75c9a053da6385940df7b36eb019eb6bac66d098fb744"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-balanced-false-false.7z",
+      "bytes": 16148,
+      "sha256": "55b99c10ea34a4c8302b6bf4ea65a5cb99fb0a4fc20e3a249f13962ad52dd96b"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-balanced-false-true.7z",
+      "bytes": 16110,
+      "sha256": "602a61ac4e58da4a9100780ae7abaf41d2bc00e7ae71f37af059ca64df6e3f5b"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-balanced-random.7z",
+      "bytes": 1067595,
+      "sha256": "ead034fc715412aececefbe99a24fabf37a9af5431f22b5f15650a0981df6431"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-balanced-true-false.7z",
+      "bytes": 16128,
+      "sha256": "6700ef9ec147f570f2bfdaa48622aff268cf11da1e88af555dd24ed6f5c986ed"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-balanced-true-true.7z",
+      "bytes": 16100,
+      "sha256": "2bab0dc56b9f06ba2a4a3c8bd22fa6e46d6e57512a12f117621f56e119404884"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-distant-balanced.7z",
+      "bytes": 183814,
+      "sha256": "9374397955d0117b1fd3372b14be14b34e36a7c3056cdffd8e77309ac03ad12a"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-distant-fast.7z",
+      "bytes": 365066,
+      "sha256": "b2cac3cc2c37270b913984892ab0907d365ece236787787f053fd1c9a299e58e"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-eos-container.7z",
+      "bytes": 16122,
+      "sha256": "14a6f1e3f65e5522705aded81accdff67f4484eb3dc6cde45edffe962dde92cf"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-fast-false-false.7z",
+      "bytes": 16327,
+      "sha256": "bd3aa843e5265585993fa59acc052f9f0b17df07e02903b092e4108180dff54f"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-fast-false-true.7z",
+      "bytes": 16289,
+      "sha256": "3e85dfe4aa28a78e79e9d751f06552bdcf3d98ff4c7cf16529fd9bcaf018be5d"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-fast-random.7z",
+      "bytes": 1063042,
+      "sha256": "b6d60533100402dbfb5a01df97fa4d394eb3989f1c62d794b056074509feb115"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-fast-true-false.7z",
+      "bytes": 16306,
+      "sha256": "228ac81537a774f94c5d6f51b245fc98d35aa14d5c048f4bc2aebed8095c64df"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-fast-true-true.7z",
+      "bytes": 16277,
+      "sha256": "9e0966ded125919a864ba2f5d72324dd2e45bef9d7ff1ea812bc8fa957d0da50"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-lc0-lp0-pb0.7z",
+      "bytes": 79220,
+      "sha256": "2627f8d466af883e6c4d9058ab4a91dac9ce0c4053d76b164b90aaf093ed89d3"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-lc0-lp4-pb1.7z",
+      "bytes": 77168,
+      "sha256": "ae84fd5a8142ffd50408f6547f7d8bacf27d0e42c35fb9bc289a22e98582790e"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-lc2-lp2-pb2.7z",
+      "bytes": 67846,
+      "sha256": "f386752a8d1e31be26937154b4c0f46e70016654fe567b77f2dce0af19fa0fb9"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-lc4-lp0-pb4.7z",
+      "bytes": 57648,
+      "sha256": "1193baf8bac464f57c07ef53f1d24369296b90fcadba29468d0b55aa22c4685c"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-thorough-false-false.7z",
+      "bytes": 16148,
+      "sha256": "e810b4dc2182fc2d9e2d71ed4026308ce1eab4bd43844f1a4cf2d8dbdb2c54c0"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-thorough-false-true.7z",
+      "bytes": 16110,
+      "sha256": "6a7e97fbe90a6cfedfdec65a04e5602b8db820413cb8bd12ac677c13ae3bbea3"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-thorough-random.7z",
+      "bytes": 1067637,
+      "sha256": "4178c5765801e5202a1cf005d7dc416428ffa2ec062ab6c26153237e354bd358"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-thorough-true-false.7z",
+      "bytes": 16128,
+      "sha256": "6177c879519f3bd5f48a99da56fecc29c5da5e0c2afcabb10d9680ab13cb5869"
+    },
+    {
+      "path": "run-u4M6Vc/lzma-thorough-true-true.7z",
+      "bytes": 16100,
+      "sha256": "fe50796005910891e71f80e46adac98ff5c129c5d09058077ef1b54a39567be8"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-balanced-false-false.7z",
+      "bytes": 46226,
+      "sha256": "bb463479be9810b94890a7e3a8f36ab6d6b723f251b7586338e728b982eb111e"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-balanced-false-true.7z",
+      "bytes": 46197,
+      "sha256": "c490ee532208a1fc5ac23201e0e44eb90a1649d463102b36d356dab88b333a7c"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-balanced-random.7z",
+      "bytes": 1048841,
+      "sha256": "d3d6a5711ed4a8b3e23ee3b68aa975ea38a593ed1597a342327f3750438bf162"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-balanced-true-false.7z",
+      "bytes": 49214,
+      "sha256": "8ca4016ae85bb567c63368f64161e88f70a33efab744236b303190bff24fa70d"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-balanced-true-true.7z",
+      "bytes": 49188,
+      "sha256": "81b542c3ab7040deb61bd6932313742d615489af63d3a70d724d40f514046c2a"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-chunk-1024.7z",
+      "bytes": 4881,
+      "sha256": "1f057ca9bb579b1cad19c4c3cc7177b21718ea64b2a233bfe83e8f0a185f17df"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-chunk-1024.raw",
+      "bytes": 4731,
+      "sha256": "0fb48c234ccd75a4705a7a3fb8930795a23db0398dee4adfb65120221635017c"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-chunk-32768.7z",
+      "bytes": 512,
+      "sha256": "49a20f5d5d35eeeaf19a14d346038f40815f2df0442f72743802a466c5f321a4"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-chunk-32768.raw",
+      "bytes": 362,
+      "sha256": "a899b47a1fa689bb5e6a6756330b257013e5c16b32409710d2f3f9c9e37050e4"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-chunk-4096.7z",
+      "bytes": 1824,
+      "sha256": "0d95d138ed3480fd3684dd9c48089d8ec9b228f30b396cfedd8e778f7d32aca1"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-chunk-4096.raw",
+      "bytes": 1673,
+      "sha256": "72b8b9bde22eb3967d492cbb75dc0afbc5d66c06c6fcc78a149d247a7865246c"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-fast-false-false.7z",
+      "bytes": 46509,
+      "sha256": "4679e29d5fe47c554ff5381144bf7ab6cdb3c996010d436eb676d9a6cea7f963"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-fast-false-true.7z",
+      "bytes": 46481,
+      "sha256": "66281f1068426d8a3fc9dfa4001e37718cbefd0969ab67a3496452db4187f765"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-fast-random.7z",
+      "bytes": 1048841,
+      "sha256": "8c40b6cc77b058da8b6e10a7f486244ed48da8f0a9fdf91da85c3a9a2108142e"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-fast-true-false.7z",
+      "bytes": 49446,
+      "sha256": "fb77669ef67f775aa88ad0c077039642552570dfc60b0af502547817b75291af"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-fast-true-true.7z",
+      "bytes": 49420,
+      "sha256": "18b34e17ca91fbe670155fcb101a02a44d2bf7998e470910b22126931b780cf5"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-header-lzma2.7z",
+      "bytes": 46198,
+      "sha256": "872af4898f20380575a0ab1fabb54df251f6d0708af7378dc92fce6396f79baf"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-lc0-lp0-pb0.7z",
+      "bytes": 80144,
+      "sha256": "9ef7490f0b2b42b2c63e18883f9c82b99d5600da4393b3c4d5867b0a4f67f7d6"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-lc0-lp4-pb1.7z",
+      "bytes": 78486,
+      "sha256": "4f59febfaa04ac3e78c64d583901a516e093080d0f19a42cb29ad732da3a0366"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-lc2-lp2-pb2.7z",
+      "bytes": 68978,
+      "sha256": "e92a30e585c85f15766397a5165c7102bc737140af2989cc0fce4c187a91d3be"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-lc4-lp0-pb4.7z",
+      "bytes": 59570,
+      "sha256": "d834362f860e73105d91101df50a9b0619b37233d0a67ff96f2c29b1222526fb"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-mixed.7z",
+      "bytes": 86418,
+      "sha256": "5d34572caae6bd33cfc917fc51b272a0440e3778f55b3d04f825eb2450c3719b"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-thorough-false-false.7z",
+      "bytes": 46226,
+      "sha256": "43b71155aa477ba74571578e23cfe843625bfb5fe18de964acfcbbf19cd3ca77"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-thorough-false-true.7z",
+      "bytes": 46197,
+      "sha256": "fcc254717a720fc1762957dafa90db064e23fec7e3d5d64495123f28d4758638"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-thorough-random.7z",
+      "bytes": 1048841,
+      "sha256": "1418115fa421971bf5e9077f020bb7034f5540d7f0e92f90d9da1d3808dc4dd7"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-thorough-true-false.7z",
+      "bytes": 49214,
+      "sha256": "d5661932d46fb42b36b90f3419ce7cf1d53e617e60f2dda8c192f9b2817d40de"
+    },
+    {
+      "path": "run-u4M6Vc/lzma2-thorough-true-true.7z",
+      "bytes": 49188,
+      "sha256": "19d7a0c6ba2f6a832e2f15ab46b02b85166f95ea65e96574e89b8783bddbcc72"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-balanced-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-distant-balanced/distance.bin",
+      "bytes": 360000,
+      "sha256": "3a4a5e8df2351974828a6990bf9ec191d8c054d3680be9a890426980d7a003b6"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-distant-fast/distance.bin",
+      "bytes": 360000,
+      "sha256": "3a4a5e8df2351974828a6990bf9ec191d8c054d3680be9a890426980d7a003b6"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-eos-container/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-eos-container/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-eos-container/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-fast-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc0-lp0-pb0/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc0-lp0-pb0/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc0-lp0-pb0/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc0-lp4-pb1/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc0-lp4-pb1/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc0-lp4-pb1/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc2-lp2-pb2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc2-lp2-pb2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc2-lp2-pb2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc4-lp0-pb4/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc4-lp0-pb4/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-lc4-lp0-pb4/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma-thorough-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-balanced-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-chunk-1024/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-chunk-32768/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-chunk-4096/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-fast-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-header-lzma2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-header-lzma2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-header-lzma2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc0-lp0-pb0/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc0-lp0-pb0/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc0-lp0-pb0/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc0-lp4-pb1/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc0-lp4-pb1/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc0-lp4-pb1/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc2-lp2-pb2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc2-lp2-pb2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc2-lp2-pb2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc4-lp0-pb4/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc4-lp0-pb4/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-lc4-lp0-pb4/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-mixed/mixed.bin",
+      "bytes": 197536,
+      "sha256": "6846f7d835c62b5d0f9d95d3bb1a2c5833d806d8ef1aa90d4fb7d305dc7f01a5"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-u4M6Vc/out-lzma2-thorough-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-u4M6Vc/raw-0-false.lzma",
+      "bytes": 18,
+      "sha256": "f0213c18d50c3406fb4b1c03e9e90aa936229a07605dc45789b8e9f11241d558"
+    },
+    {
+      "path": "run-u4M6Vc/raw-0-true.lzma",
+      "bytes": 23,
+      "sha256": "c2b340c40a9ea7e513d383f3913ac15269df08b3f73ce1ec10318e56f9f4ea3e"
+    },
+    {
+      "path": "run-u4M6Vc/raw-1-false.lzma",
+      "bytes": 19,
+      "sha256": "5fb45cdcb6569213e85716d239bc9bc9282f011c9db619a31c79a93b2bec8206"
+    },
+    {
+      "path": "run-u4M6Vc/raw-1-true.lzma",
+      "bytes": 24,
+      "sha256": "9c08b5b127d0d8b402748b96fc488df7939e307e56a4a1c8ba94272b2aa9c6f3"
+    },
+    {
+      "path": "run-u4M6Vc/raw-273-false.lzma",
+      "bytes": 262,
+      "sha256": "e83b0444ece37c624dcd58758438b8d8640e92e3b324b9169c503a3dab23f102"
+    },
+    {
+      "path": "run-u4M6Vc/raw-273-true.lzma",
+      "bytes": 267,
+      "sha256": "480d5e7b2947eba7d0d8547f4a4aaaecac849c700f2a24383358209b0b25f375"
+    },
+    {
+      "path": "run-u4M6Vc/raw-32768-false.lzma",
+      "bytes": 373,
+      "sha256": "33722bfc0319ba15e2198f98bffd04670fc9375f39156b6b516691cc0afab05f"
+    },
+    {
+      "path": "run-u4M6Vc/raw-32768-true.lzma",
+      "bytes": 378,
+      "sha256": "23107c1942b6045038597375aae9343100643d83cc7355067fc36f3e8f3d3ae5"
+    },
+    {
+      "path": "run-u4M6Vc/raw-32769-false.lzma",
+      "bytes": 373,
+      "sha256": "bd578c396e3643aacb3fc3f28f88c11a3b8ef3cbaa997b9da582942a0e2a35c6"
+    },
+    {
+      "path": "run-u4M6Vc/raw-32769-true.lzma",
+      "bytes": 378,
+      "sha256": "d12eec091730c87eb6b94598c4767bec72b2040412f46733c217223c51aed3ea"
+    },
+    {
+      "path": "run-u4M6Vc/raw-65537-false.lzma",
+      "bytes": 413,
+      "sha256": "132ba41769cd6d0f72ea7b0ab88ed8e7c121f5e9b17e8bd8252c9e9e0aa372a2"
+    },
+    {
+      "path": "run-u4M6Vc/raw-65537-true.lzma",
+      "bytes": 418,
+      "sha256": "705dd4eb270571e55822db3148d4495af14f393e077bc0c86bb608b9937103c1"
+    }
+  ],
+  "historical_evidence_fingerprints": [
+    {
+      "path": "history/first-ratio-attempt/attempt-result.json",
+      "bytes": 2458,
+      "sha256": "854f46733a60b3765f42af1b58c97c629e23c6c8087ebec0ed3fe4f65563b2eb"
+    },
+    {
+      "path": "history/first-ratio-attempt/encode-lzma.mjs",
+      "bytes": 12852,
+      "sha256": "1cb4f0bc85247c2a64a343ef26a1eb6b12b7e87d91026cc0bb2281787010c90d"
+    },
+    {
+      "path": "history/first-ratio-attempt/encoder.test.mjs",
+      "bytes": 13985,
+      "sha256": "2e0f16dd2e733a01f8edeb3e01d7b4619f70c37befa6a13367425cb06fc5e613"
+    },
+    {
+      "path": "history/first-ratio-attempt/fixtures-manifest.json",
+      "bytes": 75890,
+      "sha256": "af15f87bf3bae09e7f5423a226d42f1c6d5de62ad0979d66ee9019a5c5b58e64"
+    },
+    {
+      "path": "history/first-ratio-attempt/lzma.mjs",
+      "bytes": 13299,
+      "sha256": "2fb51a5ec550d3964f3289f5d7d4a54a34a8999aed02fd1f57e0954b35a2a380"
+    },
+    {
+      "path": "history/first-ratio-attempt/sevenzip.mjs",
+      "bytes": 24553,
+      "sha256": "c2e960e65ff090d2ce990d90508d19595a862786826a65b459e873eecf77ec01"
+    },
+    {
+      "path": "history/post-hoc-25pct/attempt-result.json",
+      "bytes": 453,
+      "sha256": "44f29731b3421877d33c834dedcc91ab2296cb5860f8029480e2ad4dd379f742"
+    },
+    {
+      "path": "history/post-hoc-25pct/encode-lzma.mjs",
+      "bytes": 12852,
+      "sha256": "1cb4f0bc85247c2a64a343ef26a1eb6b12b7e87d91026cc0bb2281787010c90d"
+    },
+    {
+      "path": "history/post-hoc-25pct/encoder.test.mjs",
+      "bytes": 14186,
+      "sha256": "4020f3aa927685e08faed40d84edf478168b6d8abfe17b3a4ac1925383e7f032"
+    },
+    {
+      "path": "history/post-hoc-25pct/fixtures-manifest.json",
+      "bytes": 78611,
+      "sha256": "6e856c56fe6002090465cfc509513b7fc81cc5913e7c37995387d3571e4522d2"
+    },
+    {
+      "path": "history/post-hoc-25pct/lzma.mjs",
+      "bytes": 13299,
+      "sha256": "2fb51a5ec550d3964f3289f5d7d4a54a34a8999aed02fd1f57e0954b35a2a380"
+    },
+    {
+      "path": "history/post-hoc-25pct/sevenzip.mjs",
+      "bytes": 24575,
+      "sha256": "d3e4aaf5642aaeab6aa8a3dc9f3a7045f78217ba3b54a558a49c0057abe855f6"
+    },
+    {
+      "path": "run-ODRFc2/fixtures-manifest.json",
+      "bytes": 78776,
+      "sha256": "2456c322e16cf8648b977911c87807f49aba3ca259ec55ddf147b6a6416603f4"
+    },
+    {
+      "path": "run-ODRFc2/lzma-balanced-false-false.7z",
+      "bytes": 16148,
+      "sha256": "55b99c10ea34a4c8302b6bf4ea65a5cb99fb0a4fc20e3a249f13962ad52dd96b"
+    },
+    {
+      "path": "run-ODRFc2/lzma-balanced-false-true.7z",
+      "bytes": 16110,
+      "sha256": "602a61ac4e58da4a9100780ae7abaf41d2bc00e7ae71f37af059ca64df6e3f5b"
+    },
+    {
+      "path": "run-ODRFc2/lzma-balanced-random.7z",
+      "bytes": 1067595,
+      "sha256": "ead034fc715412aececefbe99a24fabf37a9af5431f22b5f15650a0981df6431"
+    },
+    {
+      "path": "run-ODRFc2/lzma-balanced-true-false.7z",
+      "bytes": 16128,
+      "sha256": "6700ef9ec147f570f2bfdaa48622aff268cf11da1e88af555dd24ed6f5c986ed"
+    },
+    {
+      "path": "run-ODRFc2/lzma-balanced-true-true.7z",
+      "bytes": 16100,
+      "sha256": "2bab0dc56b9f06ba2a4a3c8bd22fa6e46d6e57512a12f117621f56e119404884"
+    },
+    {
+      "path": "run-ODRFc2/lzma-distant-balanced.7z",
+      "bytes": 183814,
+      "sha256": "9374397955d0117b1fd3372b14be14b34e36a7c3056cdffd8e77309ac03ad12a"
+    },
+    {
+      "path": "run-ODRFc2/lzma-distant-fast.7z",
+      "bytes": 365066,
+      "sha256": "b2cac3cc2c37270b913984892ab0907d365ece236787787f053fd1c9a299e58e"
+    },
+    {
+      "path": "run-ODRFc2/lzma-eos-container.7z",
+      "bytes": 16122,
+      "sha256": "14a6f1e3f65e5522705aded81accdff67f4484eb3dc6cde45edffe962dde92cf"
+    },
+    {
+      "path": "run-ODRFc2/lzma-fast-false-false.7z",
+      "bytes": 16327,
+      "sha256": "bd3aa843e5265585993fa59acc052f9f0b17df07e02903b092e4108180dff54f"
+    },
+    {
+      "path": "run-ODRFc2/lzma-fast-false-true.7z",
+      "bytes": 16289,
+      "sha256": "3e85dfe4aa28a78e79e9d751f06552bdcf3d98ff4c7cf16529fd9bcaf018be5d"
+    },
+    {
+      "path": "run-ODRFc2/lzma-fast-random.7z",
+      "bytes": 1063042,
+      "sha256": "b6d60533100402dbfb5a01df97fa4d394eb3989f1c62d794b056074509feb115"
+    },
+    {
+      "path": "run-ODRFc2/lzma-fast-true-false.7z",
+      "bytes": 16306,
+      "sha256": "228ac81537a774f94c5d6f51b245fc98d35aa14d5c048f4bc2aebed8095c64df"
+    },
+    {
+      "path": "run-ODRFc2/lzma-fast-true-true.7z",
+      "bytes": 16277,
+      "sha256": "9e0966ded125919a864ba2f5d72324dd2e45bef9d7ff1ea812bc8fa957d0da50"
+    },
+    {
+      "path": "run-ODRFc2/lzma-lc0-lp0-pb0.7z",
+      "bytes": 79220,
+      "sha256": "2627f8d466af883e6c4d9058ab4a91dac9ce0c4053d76b164b90aaf093ed89d3"
+    },
+    {
+      "path": "run-ODRFc2/lzma-lc0-lp4-pb1.7z",
+      "bytes": 77168,
+      "sha256": "ae84fd5a8142ffd50408f6547f7d8bacf27d0e42c35fb9bc289a22e98582790e"
+    },
+    {
+      "path": "run-ODRFc2/lzma-lc2-lp2-pb2.7z",
+      "bytes": 67846,
+      "sha256": "f386752a8d1e31be26937154b4c0f46e70016654fe567b77f2dce0af19fa0fb9"
+    },
+    {
+      "path": "run-ODRFc2/lzma-lc4-lp0-pb4.7z",
+      "bytes": 57648,
+      "sha256": "1193baf8bac464f57c07ef53f1d24369296b90fcadba29468d0b55aa22c4685c"
+    },
+    {
+      "path": "run-ODRFc2/lzma-thorough-false-false.7z",
+      "bytes": 16148,
+      "sha256": "e810b4dc2182fc2d9e2d71ed4026308ce1eab4bd43844f1a4cf2d8dbdb2c54c0"
+    },
+    {
+      "path": "run-ODRFc2/lzma-thorough-false-true.7z",
+      "bytes": 16110,
+      "sha256": "6a7e97fbe90a6cfedfdec65a04e5602b8db820413cb8bd12ac677c13ae3bbea3"
+    },
+    {
+      "path": "run-ODRFc2/lzma-thorough-random.7z",
+      "bytes": 1067637,
+      "sha256": "4178c5765801e5202a1cf005d7dc416428ffa2ec062ab6c26153237e354bd358"
+    },
+    {
+      "path": "run-ODRFc2/lzma-thorough-true-false.7z",
+      "bytes": 16128,
+      "sha256": "6177c879519f3bd5f48a99da56fecc29c5da5e0c2afcabb10d9680ab13cb5869"
+    },
+    {
+      "path": "run-ODRFc2/lzma-thorough-true-true.7z",
+      "bytes": 16100,
+      "sha256": "fe50796005910891e71f80e46adac98ff5c129c5d09058077ef1b54a39567be8"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-balanced-false-false.7z",
+      "bytes": 46226,
+      "sha256": "bb463479be9810b94890a7e3a8f36ab6d6b723f251b7586338e728b982eb111e"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-balanced-false-true.7z",
+      "bytes": 46197,
+      "sha256": "c490ee532208a1fc5ac23201e0e44eb90a1649d463102b36d356dab88b333a7c"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-balanced-random.7z",
+      "bytes": 1048841,
+      "sha256": "d3d6a5711ed4a8b3e23ee3b68aa975ea38a593ed1597a342327f3750438bf162"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-balanced-true-false.7z",
+      "bytes": 49214,
+      "sha256": "8ca4016ae85bb567c63368f64161e88f70a33efab744236b303190bff24fa70d"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-balanced-true-true.7z",
+      "bytes": 49188,
+      "sha256": "81b542c3ab7040deb61bd6932313742d615489af63d3a70d724d40f514046c2a"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-chunk-1024.7z",
+      "bytes": 4881,
+      "sha256": "1f057ca9bb579b1cad19c4c3cc7177b21718ea64b2a233bfe83e8f0a185f17df"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-chunk-1024.raw",
+      "bytes": 4731,
+      "sha256": "0fb48c234ccd75a4705a7a3fb8930795a23db0398dee4adfb65120221635017c"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-chunk-32768.7z",
+      "bytes": 512,
+      "sha256": "49a20f5d5d35eeeaf19a14d346038f40815f2df0442f72743802a466c5f321a4"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-chunk-32768.raw",
+      "bytes": 362,
+      "sha256": "a899b47a1fa689bb5e6a6756330b257013e5c16b32409710d2f3f9c9e37050e4"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-chunk-4096.7z",
+      "bytes": 1824,
+      "sha256": "0d95d138ed3480fd3684dd9c48089d8ec9b228f30b396cfedd8e778f7d32aca1"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-chunk-4096.raw",
+      "bytes": 1673,
+      "sha256": "72b8b9bde22eb3967d492cbb75dc0afbc5d66c06c6fcc78a149d247a7865246c"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-fast-false-false.7z",
+      "bytes": 46509,
+      "sha256": "4679e29d5fe47c554ff5381144bf7ab6cdb3c996010d436eb676d9a6cea7f963"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-fast-false-true.7z",
+      "bytes": 46481,
+      "sha256": "66281f1068426d8a3fc9dfa4001e37718cbefd0969ab67a3496452db4187f765"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-fast-random.7z",
+      "bytes": 1048841,
+      "sha256": "8c40b6cc77b058da8b6e10a7f486244ed48da8f0a9fdf91da85c3a9a2108142e"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-fast-true-false.7z",
+      "bytes": 49446,
+      "sha256": "fb77669ef67f775aa88ad0c077039642552570dfc60b0af502547817b75291af"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-fast-true-true.7z",
+      "bytes": 49420,
+      "sha256": "18b34e17ca91fbe670155fcb101a02a44d2bf7998e470910b22126931b780cf5"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-header-lzma2.7z",
+      "bytes": 46198,
+      "sha256": "872af4898f20380575a0ab1fabb54df251f6d0708af7378dc92fce6396f79baf"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-lc0-lp0-pb0.7z",
+      "bytes": 80144,
+      "sha256": "9ef7490f0b2b42b2c63e18883f9c82b99d5600da4393b3c4d5867b0a4f67f7d6"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-lc0-lp4-pb1.7z",
+      "bytes": 78486,
+      "sha256": "4f59febfaa04ac3e78c64d583901a516e093080d0f19a42cb29ad732da3a0366"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-lc2-lp2-pb2.7z",
+      "bytes": 68978,
+      "sha256": "e92a30e585c85f15766397a5165c7102bc737140af2989cc0fce4c187a91d3be"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-lc4-lp0-pb4.7z",
+      "bytes": 59570,
+      "sha256": "d834362f860e73105d91101df50a9b0619b37233d0a67ff96f2c29b1222526fb"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-mixed.7z",
+      "bytes": 86418,
+      "sha256": "5d34572caae6bd33cfc917fc51b272a0440e3778f55b3d04f825eb2450c3719b"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-thorough-false-false.7z",
+      "bytes": 46226,
+      "sha256": "43b71155aa477ba74571578e23cfe843625bfb5fe18de964acfcbbf19cd3ca77"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-thorough-false-true.7z",
+      "bytes": 46197,
+      "sha256": "fcc254717a720fc1762957dafa90db064e23fec7e3d5d64495123f28d4758638"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-thorough-random.7z",
+      "bytes": 1048841,
+      "sha256": "1418115fa421971bf5e9077f020bb7034f5540d7f0e92f90d9da1d3808dc4dd7"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-thorough-true-false.7z",
+      "bytes": 49214,
+      "sha256": "d5661932d46fb42b36b90f3419ce7cf1d53e617e60f2dda8c192f9b2817d40de"
+    },
+    {
+      "path": "run-ODRFc2/lzma2-thorough-true-true.7z",
+      "bytes": 49188,
+      "sha256": "19d7a0c6ba2f6a832e2f15ab46b02b85166f95ea65e96574e89b8783bddbcc72"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-balanced-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-distant-balanced/distance.bin",
+      "bytes": 360000,
+      "sha256": "3a4a5e8df2351974828a6990bf9ec191d8c054d3680be9a890426980d7a003b6"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-distant-fast/distance.bin",
+      "bytes": 360000,
+      "sha256": "3a4a5e8df2351974828a6990bf9ec191d8c054d3680be9a890426980d7a003b6"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-eos-container/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-eos-container/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-eos-container/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-fast-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc0-lp0-pb0/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc0-lp0-pb0/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc0-lp0-pb0/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc0-lp4-pb1/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc0-lp4-pb1/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc0-lp4-pb1/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc2-lp2-pb2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc2-lp2-pb2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc2-lp2-pb2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc4-lp0-pb4/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc4-lp0-pb4/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-lc4-lp0-pb4/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma-thorough-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-balanced-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-chunk-1024/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-chunk-32768/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-chunk-4096/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-fast-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-header-lzma2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-header-lzma2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-header-lzma2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc0-lp0-pb0/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc0-lp0-pb0/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc0-lp0-pb0/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc0-lp4-pb1/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc0-lp4-pb1/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc0-lp4-pb1/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc2-lp2-pb2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc2-lp2-pb2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc2-lp2-pb2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc4-lp0-pb4/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc4-lp0-pb4/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-lc4-lp0-pb4/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-mixed/mixed.bin",
+      "bytes": 197536,
+      "sha256": "6846f7d835c62b5d0f9d95d3bb1a2c5833d806d8ef1aa90d4fb7d305dc7f01a5"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-ODRFc2/out-lzma2-thorough-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-ODRFc2/raw-0-false.lzma",
+      "bytes": 18,
+      "sha256": "f0213c18d50c3406fb4b1c03e9e90aa936229a07605dc45789b8e9f11241d558"
+    },
+    {
+      "path": "run-ODRFc2/raw-0-true.lzma",
+      "bytes": 23,
+      "sha256": "c2b340c40a9ea7e513d383f3913ac15269df08b3f73ce1ec10318e56f9f4ea3e"
+    },
+    {
+      "path": "run-ODRFc2/raw-1-false.lzma",
+      "bytes": 19,
+      "sha256": "5fb45cdcb6569213e85716d239bc9bc9282f011c9db619a31c79a93b2bec8206"
+    },
+    {
+      "path": "run-ODRFc2/raw-1-true.lzma",
+      "bytes": 24,
+      "sha256": "9c08b5b127d0d8b402748b96fc488df7939e307e56a4a1c8ba94272b2aa9c6f3"
+    },
+    {
+      "path": "run-ODRFc2/raw-273-false.lzma",
+      "bytes": 262,
+      "sha256": "e83b0444ece37c624dcd58758438b8d8640e92e3b324b9169c503a3dab23f102"
+    },
+    {
+      "path": "run-ODRFc2/raw-273-true.lzma",
+      "bytes": 267,
+      "sha256": "480d5e7b2947eba7d0d8547f4a4aaaecac849c700f2a24383358209b0b25f375"
+    },
+    {
+      "path": "run-ODRFc2/raw-32768-false.lzma",
+      "bytes": 373,
+      "sha256": "33722bfc0319ba15e2198f98bffd04670fc9375f39156b6b516691cc0afab05f"
+    },
+    {
+      "path": "run-ODRFc2/raw-32768-true.lzma",
+      "bytes": 378,
+      "sha256": "23107c1942b6045038597375aae9343100643d83cc7355067fc36f3e8f3d3ae5"
+    },
+    {
+      "path": "run-ODRFc2/raw-32769-false.lzma",
+      "bytes": 373,
+      "sha256": "bd578c396e3643aacb3fc3f28f88c11a3b8ef3cbaa997b9da582942a0e2a35c6"
+    },
+    {
+      "path": "run-ODRFc2/raw-32769-true.lzma",
+      "bytes": 378,
+      "sha256": "d12eec091730c87eb6b94598c4767bec72b2040412f46733c217223c51aed3ea"
+    },
+    {
+      "path": "run-ODRFc2/raw-65537-false.lzma",
+      "bytes": 413,
+      "sha256": "132ba41769cd6d0f72ea7b0ab88ed8e7c121f5e9b17e8bd8252c9e9e0aa372a2"
+    },
+    {
+      "path": "run-ODRFc2/raw-65537-true.lzma",
+      "bytes": 418,
+      "sha256": "705dd4eb270571e55822db3148d4495af14f393e077bc0c86bb608b9937103c1"
+    },
+    {
+      "path": "run-SxXTAn/fixtures-manifest.json",
+      "bytes": 75890,
+      "sha256": "af15f87bf3bae09e7f5423a226d42f1c6d5de62ad0979d66ee9019a5c5b58e64"
+    },
+    {
+      "path": "run-SxXTAn/lzma-balanced-false-false.7z",
+      "bytes": 16148,
+      "sha256": "55b99c10ea34a4c8302b6bf4ea65a5cb99fb0a4fc20e3a249f13962ad52dd96b"
+    },
+    {
+      "path": "run-SxXTAn/lzma-balanced-false-true.7z",
+      "bytes": 16110,
+      "sha256": "602a61ac4e58da4a9100780ae7abaf41d2bc00e7ae71f37af059ca64df6e3f5b"
+    },
+    {
+      "path": "run-SxXTAn/lzma-balanced-random.7z",
+      "bytes": 1067595,
+      "sha256": "ead034fc715412aececefbe99a24fabf37a9af5431f22b5f15650a0981df6431"
+    },
+    {
+      "path": "run-SxXTAn/lzma-balanced-true-false.7z",
+      "bytes": 16128,
+      "sha256": "6700ef9ec147f570f2bfdaa48622aff268cf11da1e88af555dd24ed6f5c986ed"
+    },
+    {
+      "path": "run-SxXTAn/lzma-balanced-true-true.7z",
+      "bytes": 16100,
+      "sha256": "2bab0dc56b9f06ba2a4a3c8bd22fa6e46d6e57512a12f117621f56e119404884"
+    },
+    {
+      "path": "run-SxXTAn/lzma-distant-balanced.7z",
+      "bytes": 183814,
+      "sha256": "9374397955d0117b1fd3372b14be14b34e36a7c3056cdffd8e77309ac03ad12a"
+    },
+    {
+      "path": "run-SxXTAn/lzma-distant-fast.7z",
+      "bytes": 365066,
+      "sha256": "b2cac3cc2c37270b913984892ab0907d365ece236787787f053fd1c9a299e58e"
+    },
+    {
+      "path": "run-SxXTAn/lzma-eos-container.7z",
+      "bytes": 16122,
+      "sha256": "14a6f1e3f65e5522705aded81accdff67f4484eb3dc6cde45edffe962dde92cf"
+    },
+    {
+      "path": "run-SxXTAn/lzma-fast-false-false.7z",
+      "bytes": 16327,
+      "sha256": "bd3aa843e5265585993fa59acc052f9f0b17df07e02903b092e4108180dff54f"
+    },
+    {
+      "path": "run-SxXTAn/lzma-fast-false-true.7z",
+      "bytes": 16289,
+      "sha256": "3e85dfe4aa28a78e79e9d751f06552bdcf3d98ff4c7cf16529fd9bcaf018be5d"
+    },
+    {
+      "path": "run-SxXTAn/lzma-fast-random.7z",
+      "bytes": 1063042,
+      "sha256": "b6d60533100402dbfb5a01df97fa4d394eb3989f1c62d794b056074509feb115"
+    },
+    {
+      "path": "run-SxXTAn/lzma-fast-true-false.7z",
+      "bytes": 16306,
+      "sha256": "228ac81537a774f94c5d6f51b245fc98d35aa14d5c048f4bc2aebed8095c64df"
+    },
+    {
+      "path": "run-SxXTAn/lzma-fast-true-true.7z",
+      "bytes": 16277,
+      "sha256": "9e0966ded125919a864ba2f5d72324dd2e45bef9d7ff1ea812bc8fa957d0da50"
+    },
+    {
+      "path": "run-SxXTAn/lzma-lc0-lp0-pb0.7z",
+      "bytes": 79220,
+      "sha256": "2627f8d466af883e6c4d9058ab4a91dac9ce0c4053d76b164b90aaf093ed89d3"
+    },
+    {
+      "path": "run-SxXTAn/lzma-lc0-lp4-pb1.7z",
+      "bytes": 77168,
+      "sha256": "ae84fd5a8142ffd50408f6547f7d8bacf27d0e42c35fb9bc289a22e98582790e"
+    },
+    {
+      "path": "run-SxXTAn/lzma-lc2-lp2-pb2.7z",
+      "bytes": 67846,
+      "sha256": "f386752a8d1e31be26937154b4c0f46e70016654fe567b77f2dce0af19fa0fb9"
+    },
+    {
+      "path": "run-SxXTAn/lzma-lc4-lp0-pb4.7z",
+      "bytes": 57648,
+      "sha256": "1193baf8bac464f57c07ef53f1d24369296b90fcadba29468d0b55aa22c4685c"
+    },
+    {
+      "path": "run-SxXTAn/lzma-thorough-false-false.7z",
+      "bytes": 16148,
+      "sha256": "e810b4dc2182fc2d9e2d71ed4026308ce1eab4bd43844f1a4cf2d8dbdb2c54c0"
+    },
+    {
+      "path": "run-SxXTAn/lzma-thorough-false-true.7z",
+      "bytes": 16110,
+      "sha256": "6a7e97fbe90a6cfedfdec65a04e5602b8db820413cb8bd12ac677c13ae3bbea3"
+    },
+    {
+      "path": "run-SxXTAn/lzma-thorough-random.7z",
+      "bytes": 1067637,
+      "sha256": "4178c5765801e5202a1cf005d7dc416428ffa2ec062ab6c26153237e354bd358"
+    },
+    {
+      "path": "run-SxXTAn/lzma-thorough-true-false.7z",
+      "bytes": 16128,
+      "sha256": "6177c879519f3bd5f48a99da56fecc29c5da5e0c2afcabb10d9680ab13cb5869"
+    },
+    {
+      "path": "run-SxXTAn/lzma-thorough-true-true.7z",
+      "bytes": 16100,
+      "sha256": "fe50796005910891e71f80e46adac98ff5c129c5d09058077ef1b54a39567be8"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-balanced-false-false.7z",
+      "bytes": 46226,
+      "sha256": "bb463479be9810b94890a7e3a8f36ab6d6b723f251b7586338e728b982eb111e"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-balanced-false-true.7z",
+      "bytes": 46197,
+      "sha256": "c490ee532208a1fc5ac23201e0e44eb90a1649d463102b36d356dab88b333a7c"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-balanced-random.7z",
+      "bytes": 1048841,
+      "sha256": "d3d6a5711ed4a8b3e23ee3b68aa975ea38a593ed1597a342327f3750438bf162"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-balanced-true-false.7z",
+      "bytes": 49214,
+      "sha256": "8ca4016ae85bb567c63368f64161e88f70a33efab744236b303190bff24fa70d"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-balanced-true-true.7z",
+      "bytes": 49188,
+      "sha256": "81b542c3ab7040deb61bd6932313742d615489af63d3a70d724d40f514046c2a"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-chunk-1024.raw",
+      "bytes": 4731,
+      "sha256": "0fb48c234ccd75a4705a7a3fb8930795a23db0398dee4adfb65120221635017c"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-chunk-32768.raw",
+      "bytes": 362,
+      "sha256": "a899b47a1fa689bb5e6a6756330b257013e5c16b32409710d2f3f9c9e37050e4"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-chunk-4096.raw",
+      "bytes": 1673,
+      "sha256": "72b8b9bde22eb3967d492cbb75dc0afbc5d66c06c6fcc78a149d247a7865246c"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-fast-false-false.7z",
+      "bytes": 46509,
+      "sha256": "4679e29d5fe47c554ff5381144bf7ab6cdb3c996010d436eb676d9a6cea7f963"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-fast-false-true.7z",
+      "bytes": 46481,
+      "sha256": "66281f1068426d8a3fc9dfa4001e37718cbefd0969ab67a3496452db4187f765"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-fast-random.7z",
+      "bytes": 1048841,
+      "sha256": "8c40b6cc77b058da8b6e10a7f486244ed48da8f0a9fdf91da85c3a9a2108142e"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-fast-true-false.7z",
+      "bytes": 49446,
+      "sha256": "fb77669ef67f775aa88ad0c077039642552570dfc60b0af502547817b75291af"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-fast-true-true.7z",
+      "bytes": 49420,
+      "sha256": "18b34e17ca91fbe670155fcb101a02a44d2bf7998e470910b22126931b780cf5"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-header-lzma2.7z",
+      "bytes": 46198,
+      "sha256": "872af4898f20380575a0ab1fabb54df251f6d0708af7378dc92fce6396f79baf"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-lc0-lp0-pb0.7z",
+      "bytes": 80144,
+      "sha256": "9ef7490f0b2b42b2c63e18883f9c82b99d5600da4393b3c4d5867b0a4f67f7d6"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-lc0-lp4-pb1.7z",
+      "bytes": 78486,
+      "sha256": "4f59febfaa04ac3e78c64d583901a516e093080d0f19a42cb29ad732da3a0366"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-lc2-lp2-pb2.7z",
+      "bytes": 68978,
+      "sha256": "e92a30e585c85f15766397a5165c7102bc737140af2989cc0fce4c187a91d3be"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-lc4-lp0-pb4.7z",
+      "bytes": 59570,
+      "sha256": "d834362f860e73105d91101df50a9b0619b37233d0a67ff96f2c29b1222526fb"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-mixed.7z",
+      "bytes": 86418,
+      "sha256": "5d34572caae6bd33cfc917fc51b272a0440e3778f55b3d04f825eb2450c3719b"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-thorough-false-false.7z",
+      "bytes": 46226,
+      "sha256": "43b71155aa477ba74571578e23cfe843625bfb5fe18de964acfcbbf19cd3ca77"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-thorough-false-true.7z",
+      "bytes": 46197,
+      "sha256": "fcc254717a720fc1762957dafa90db064e23fec7e3d5d64495123f28d4758638"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-thorough-random.7z",
+      "bytes": 1048841,
+      "sha256": "1418115fa421971bf5e9077f020bb7034f5540d7f0e92f90d9da1d3808dc4dd7"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-thorough-true-false.7z",
+      "bytes": 49214,
+      "sha256": "d5661932d46fb42b36b90f3419ce7cf1d53e617e60f2dda8c192f9b2817d40de"
+    },
+    {
+      "path": "run-SxXTAn/lzma2-thorough-true-true.7z",
+      "bytes": 49188,
+      "sha256": "19d7a0c6ba2f6a832e2f15ab46b02b85166f95ea65e96574e89b8783bddbcc72"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-balanced-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-distant-balanced/distance.bin",
+      "bytes": 360000,
+      "sha256": "3a4a5e8df2351974828a6990bf9ec191d8c054d3680be9a890426980d7a003b6"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-distant-fast/distance.bin",
+      "bytes": 360000,
+      "sha256": "3a4a5e8df2351974828a6990bf9ec191d8c054d3680be9a890426980d7a003b6"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-eos-container/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-eos-container/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-eos-container/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-fast-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc0-lp0-pb0/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc0-lp0-pb0/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc0-lp0-pb0/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc0-lp4-pb1/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc0-lp4-pb1/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc0-lp4-pb1/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc2-lp2-pb2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc2-lp2-pb2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc2-lp2-pb2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc4-lp0-pb4/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc4-lp0-pb4/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-lc4-lp0-pb4/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma-thorough-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-balanced-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-fast-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-header-lzma2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-header-lzma2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-header-lzma2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc0-lp0-pb0/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc0-lp0-pb0/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc0-lp0-pb0/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc0-lp4-pb1/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc0-lp4-pb1/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc0-lp4-pb1/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc2-lp2-pb2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc2-lp2-pb2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc2-lp2-pb2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc4-lp0-pb4/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc4-lp0-pb4/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-lc4-lp0-pb4/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-mixed/mixed.bin",
+      "bytes": 197536,
+      "sha256": "6846f7d835c62b5d0f9d95d3bb1a2c5833d806d8ef1aa90d4fb7d305dc7f01a5"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-SxXTAn/out-lzma2-thorough-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-SxXTAn/raw-0-false.lzma",
+      "bytes": 18,
+      "sha256": "f0213c18d50c3406fb4b1c03e9e90aa936229a07605dc45789b8e9f11241d558"
+    },
+    {
+      "path": "run-SxXTAn/raw-0-true.lzma",
+      "bytes": 23,
+      "sha256": "c2b340c40a9ea7e513d383f3913ac15269df08b3f73ce1ec10318e56f9f4ea3e"
+    },
+    {
+      "path": "run-SxXTAn/raw-1-false.lzma",
+      "bytes": 19,
+      "sha256": "5fb45cdcb6569213e85716d239bc9bc9282f011c9db619a31c79a93b2bec8206"
+    },
+    {
+      "path": "run-SxXTAn/raw-1-true.lzma",
+      "bytes": 24,
+      "sha256": "9c08b5b127d0d8b402748b96fc488df7939e307e56a4a1c8ba94272b2aa9c6f3"
+    },
+    {
+      "path": "run-SxXTAn/raw-273-false.lzma",
+      "bytes": 262,
+      "sha256": "e83b0444ece37c624dcd58758438b8d8640e92e3b324b9169c503a3dab23f102"
+    },
+    {
+      "path": "run-SxXTAn/raw-273-true.lzma",
+      "bytes": 267,
+      "sha256": "480d5e7b2947eba7d0d8547f4a4aaaecac849c700f2a24383358209b0b25f375"
+    },
+    {
+      "path": "run-SxXTAn/raw-32768-false.lzma",
+      "bytes": 373,
+      "sha256": "33722bfc0319ba15e2198f98bffd04670fc9375f39156b6b516691cc0afab05f"
+    },
+    {
+      "path": "run-SxXTAn/raw-32768-true.lzma",
+      "bytes": 378,
+      "sha256": "23107c1942b6045038597375aae9343100643d83cc7355067fc36f3e8f3d3ae5"
+    },
+    {
+      "path": "run-SxXTAn/raw-32769-false.lzma",
+      "bytes": 373,
+      "sha256": "bd578c396e3643aacb3fc3f28f88c11a3b8ef3cbaa997b9da582942a0e2a35c6"
+    },
+    {
+      "path": "run-SxXTAn/raw-32769-true.lzma",
+      "bytes": 378,
+      "sha256": "d12eec091730c87eb6b94598c4767bec72b2040412f46733c217223c51aed3ea"
+    },
+    {
+      "path": "run-SxXTAn/raw-65537-false.lzma",
+      "bytes": 413,
+      "sha256": "132ba41769cd6d0f72ea7b0ab88ed8e7c121f5e9b17e8bd8252c9e9e0aa372a2"
+    },
+    {
+      "path": "run-SxXTAn/raw-65537-true.lzma",
+      "bytes": 418,
+      "sha256": "705dd4eb270571e55822db3148d4495af14f393e077bc0c86bb608b9937103c1"
+    },
+    {
+      "path": "run-au3HRA/fixtures-manifest.json",
+      "bytes": 78611,
+      "sha256": "6e856c56fe6002090465cfc509513b7fc81cc5913e7c37995387d3571e4522d2"
+    },
+    {
+      "path": "run-au3HRA/lzma-balanced-false-false.7z",
+      "bytes": 16148,
+      "sha256": "55b99c10ea34a4c8302b6bf4ea65a5cb99fb0a4fc20e3a249f13962ad52dd96b"
+    },
+    {
+      "path": "run-au3HRA/lzma-balanced-false-true.7z",
+      "bytes": 16110,
+      "sha256": "602a61ac4e58da4a9100780ae7abaf41d2bc00e7ae71f37af059ca64df6e3f5b"
+    },
+    {
+      "path": "run-au3HRA/lzma-balanced-random.7z",
+      "bytes": 1067595,
+      "sha256": "ead034fc715412aececefbe99a24fabf37a9af5431f22b5f15650a0981df6431"
+    },
+    {
+      "path": "run-au3HRA/lzma-balanced-true-false.7z",
+      "bytes": 16128,
+      "sha256": "6700ef9ec147f570f2bfdaa48622aff268cf11da1e88af555dd24ed6f5c986ed"
+    },
+    {
+      "path": "run-au3HRA/lzma-balanced-true-true.7z",
+      "bytes": 16100,
+      "sha256": "2bab0dc56b9f06ba2a4a3c8bd22fa6e46d6e57512a12f117621f56e119404884"
+    },
+    {
+      "path": "run-au3HRA/lzma-distant-balanced.7z",
+      "bytes": 183814,
+      "sha256": "9374397955d0117b1fd3372b14be14b34e36a7c3056cdffd8e77309ac03ad12a"
+    },
+    {
+      "path": "run-au3HRA/lzma-distant-fast.7z",
+      "bytes": 365066,
+      "sha256": "b2cac3cc2c37270b913984892ab0907d365ece236787787f053fd1c9a299e58e"
+    },
+    {
+      "path": "run-au3HRA/lzma-eos-container.7z",
+      "bytes": 16122,
+      "sha256": "14a6f1e3f65e5522705aded81accdff67f4484eb3dc6cde45edffe962dde92cf"
+    },
+    {
+      "path": "run-au3HRA/lzma-fast-false-false.7z",
+      "bytes": 16327,
+      "sha256": "bd3aa843e5265585993fa59acc052f9f0b17df07e02903b092e4108180dff54f"
+    },
+    {
+      "path": "run-au3HRA/lzma-fast-false-true.7z",
+      "bytes": 16289,
+      "sha256": "3e85dfe4aa28a78e79e9d751f06552bdcf3d98ff4c7cf16529fd9bcaf018be5d"
+    },
+    {
+      "path": "run-au3HRA/lzma-fast-random.7z",
+      "bytes": 1063042,
+      "sha256": "b6d60533100402dbfb5a01df97fa4d394eb3989f1c62d794b056074509feb115"
+    },
+    {
+      "path": "run-au3HRA/lzma-fast-true-false.7z",
+      "bytes": 16306,
+      "sha256": "228ac81537a774f94c5d6f51b245fc98d35aa14d5c048f4bc2aebed8095c64df"
+    },
+    {
+      "path": "run-au3HRA/lzma-fast-true-true.7z",
+      "bytes": 16277,
+      "sha256": "9e0966ded125919a864ba2f5d72324dd2e45bef9d7ff1ea812bc8fa957d0da50"
+    },
+    {
+      "path": "run-au3HRA/lzma-lc0-lp0-pb0.7z",
+      "bytes": 79220,
+      "sha256": "2627f8d466af883e6c4d9058ab4a91dac9ce0c4053d76b164b90aaf093ed89d3"
+    },
+    {
+      "path": "run-au3HRA/lzma-lc0-lp4-pb1.7z",
+      "bytes": 77168,
+      "sha256": "ae84fd5a8142ffd50408f6547f7d8bacf27d0e42c35fb9bc289a22e98582790e"
+    },
+    {
+      "path": "run-au3HRA/lzma-lc2-lp2-pb2.7z",
+      "bytes": 67846,
+      "sha256": "f386752a8d1e31be26937154b4c0f46e70016654fe567b77f2dce0af19fa0fb9"
+    },
+    {
+      "path": "run-au3HRA/lzma-lc4-lp0-pb4.7z",
+      "bytes": 57648,
+      "sha256": "1193baf8bac464f57c07ef53f1d24369296b90fcadba29468d0b55aa22c4685c"
+    },
+    {
+      "path": "run-au3HRA/lzma-thorough-false-false.7z",
+      "bytes": 16148,
+      "sha256": "e810b4dc2182fc2d9e2d71ed4026308ce1eab4bd43844f1a4cf2d8dbdb2c54c0"
+    },
+    {
+      "path": "run-au3HRA/lzma-thorough-false-true.7z",
+      "bytes": 16110,
+      "sha256": "6a7e97fbe90a6cfedfdec65a04e5602b8db820413cb8bd12ac677c13ae3bbea3"
+    },
+    {
+      "path": "run-au3HRA/lzma-thorough-random.7z",
+      "bytes": 1067637,
+      "sha256": "4178c5765801e5202a1cf005d7dc416428ffa2ec062ab6c26153237e354bd358"
+    },
+    {
+      "path": "run-au3HRA/lzma-thorough-true-false.7z",
+      "bytes": 16128,
+      "sha256": "6177c879519f3bd5f48a99da56fecc29c5da5e0c2afcabb10d9680ab13cb5869"
+    },
+    {
+      "path": "run-au3HRA/lzma-thorough-true-true.7z",
+      "bytes": 16100,
+      "sha256": "fe50796005910891e71f80e46adac98ff5c129c5d09058077ef1b54a39567be8"
+    },
+    {
+      "path": "run-au3HRA/lzma2-balanced-false-false.7z",
+      "bytes": 46226,
+      "sha256": "bb463479be9810b94890a7e3a8f36ab6d6b723f251b7586338e728b982eb111e"
+    },
+    {
+      "path": "run-au3HRA/lzma2-balanced-false-true.7z",
+      "bytes": 46197,
+      "sha256": "c490ee532208a1fc5ac23201e0e44eb90a1649d463102b36d356dab88b333a7c"
+    },
+    {
+      "path": "run-au3HRA/lzma2-balanced-random.7z",
+      "bytes": 1048841,
+      "sha256": "d3d6a5711ed4a8b3e23ee3b68aa975ea38a593ed1597a342327f3750438bf162"
+    },
+    {
+      "path": "run-au3HRA/lzma2-balanced-true-false.7z",
+      "bytes": 49214,
+      "sha256": "8ca4016ae85bb567c63368f64161e88f70a33efab744236b303190bff24fa70d"
+    },
+    {
+      "path": "run-au3HRA/lzma2-balanced-true-true.7z",
+      "bytes": 49188,
+      "sha256": "81b542c3ab7040deb61bd6932313742d615489af63d3a70d724d40f514046c2a"
+    },
+    {
+      "path": "run-au3HRA/lzma2-chunk-1024.7z",
+      "bytes": 4881,
+      "sha256": "1f057ca9bb579b1cad19c4c3cc7177b21718ea64b2a233bfe83e8f0a185f17df"
+    },
+    {
+      "path": "run-au3HRA/lzma2-chunk-1024.raw",
+      "bytes": 4731,
+      "sha256": "0fb48c234ccd75a4705a7a3fb8930795a23db0398dee4adfb65120221635017c"
+    },
+    {
+      "path": "run-au3HRA/lzma2-chunk-32768.7z",
+      "bytes": 512,
+      "sha256": "49a20f5d5d35eeeaf19a14d346038f40815f2df0442f72743802a466c5f321a4"
+    },
+    {
+      "path": "run-au3HRA/lzma2-chunk-32768.raw",
+      "bytes": 362,
+      "sha256": "a899b47a1fa689bb5e6a6756330b257013e5c16b32409710d2f3f9c9e37050e4"
+    },
+    {
+      "path": "run-au3HRA/lzma2-chunk-4096.7z",
+      "bytes": 1824,
+      "sha256": "0d95d138ed3480fd3684dd9c48089d8ec9b228f30b396cfedd8e778f7d32aca1"
+    },
+    {
+      "path": "run-au3HRA/lzma2-chunk-4096.raw",
+      "bytes": 1673,
+      "sha256": "72b8b9bde22eb3967d492cbb75dc0afbc5d66c06c6fcc78a149d247a7865246c"
+    },
+    {
+      "path": "run-au3HRA/lzma2-fast-false-false.7z",
+      "bytes": 46509,
+      "sha256": "4679e29d5fe47c554ff5381144bf7ab6cdb3c996010d436eb676d9a6cea7f963"
+    },
+    {
+      "path": "run-au3HRA/lzma2-fast-false-true.7z",
+      "bytes": 46481,
+      "sha256": "66281f1068426d8a3fc9dfa4001e37718cbefd0969ab67a3496452db4187f765"
+    },
+    {
+      "path": "run-au3HRA/lzma2-fast-random.7z",
+      "bytes": 1048841,
+      "sha256": "8c40b6cc77b058da8b6e10a7f486244ed48da8f0a9fdf91da85c3a9a2108142e"
+    },
+    {
+      "path": "run-au3HRA/lzma2-fast-true-false.7z",
+      "bytes": 49446,
+      "sha256": "fb77669ef67f775aa88ad0c077039642552570dfc60b0af502547817b75291af"
+    },
+    {
+      "path": "run-au3HRA/lzma2-fast-true-true.7z",
+      "bytes": 49420,
+      "sha256": "18b34e17ca91fbe670155fcb101a02a44d2bf7998e470910b22126931b780cf5"
+    },
+    {
+      "path": "run-au3HRA/lzma2-header-lzma2.7z",
+      "bytes": 46198,
+      "sha256": "872af4898f20380575a0ab1fabb54df251f6d0708af7378dc92fce6396f79baf"
+    },
+    {
+      "path": "run-au3HRA/lzma2-lc0-lp0-pb0.7z",
+      "bytes": 80144,
+      "sha256": "9ef7490f0b2b42b2c63e18883f9c82b99d5600da4393b3c4d5867b0a4f67f7d6"
+    },
+    {
+      "path": "run-au3HRA/lzma2-lc0-lp4-pb1.7z",
+      "bytes": 78486,
+      "sha256": "4f59febfaa04ac3e78c64d583901a516e093080d0f19a42cb29ad732da3a0366"
+    },
+    {
+      "path": "run-au3HRA/lzma2-lc2-lp2-pb2.7z",
+      "bytes": 68978,
+      "sha256": "e92a30e585c85f15766397a5165c7102bc737140af2989cc0fce4c187a91d3be"
+    },
+    {
+      "path": "run-au3HRA/lzma2-lc4-lp0-pb4.7z",
+      "bytes": 59570,
+      "sha256": "d834362f860e73105d91101df50a9b0619b37233d0a67ff96f2c29b1222526fb"
+    },
+    {
+      "path": "run-au3HRA/lzma2-mixed.7z",
+      "bytes": 86418,
+      "sha256": "5d34572caae6bd33cfc917fc51b272a0440e3778f55b3d04f825eb2450c3719b"
+    },
+    {
+      "path": "run-au3HRA/lzma2-thorough-false-false.7z",
+      "bytes": 46226,
+      "sha256": "43b71155aa477ba74571578e23cfe843625bfb5fe18de964acfcbbf19cd3ca77"
+    },
+    {
+      "path": "run-au3HRA/lzma2-thorough-false-true.7z",
+      "bytes": 46197,
+      "sha256": "fcc254717a720fc1762957dafa90db064e23fec7e3d5d64495123f28d4758638"
+    },
+    {
+      "path": "run-au3HRA/lzma2-thorough-random.7z",
+      "bytes": 1048841,
+      "sha256": "1418115fa421971bf5e9077f020bb7034f5540d7f0e92f90d9da1d3808dc4dd7"
+    },
+    {
+      "path": "run-au3HRA/lzma2-thorough-true-false.7z",
+      "bytes": 49214,
+      "sha256": "d5661932d46fb42b36b90f3419ce7cf1d53e617e60f2dda8c192f9b2817d40de"
+    },
+    {
+      "path": "run-au3HRA/lzma2-thorough-true-true.7z",
+      "bytes": 49188,
+      "sha256": "19d7a0c6ba2f6a832e2f15ab46b02b85166f95ea65e96574e89b8783bddbcc72"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-balanced-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-distant-balanced/distance.bin",
+      "bytes": 360000,
+      "sha256": "3a4a5e8df2351974828a6990bf9ec191d8c054d3680be9a890426980d7a003b6"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-distant-fast/distance.bin",
+      "bytes": 360000,
+      "sha256": "3a4a5e8df2351974828a6990bf9ec191d8c054d3680be9a890426980d7a003b6"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-eos-container/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-eos-container/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-eos-container/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-fast-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc0-lp0-pb0/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc0-lp0-pb0/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc0-lp0-pb0/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc0-lp4-pb1/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc0-lp4-pb1/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc0-lp4-pb1/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc2-lp2-pb2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc2-lp2-pb2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc2-lp2-pb2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc4-lp0-pb4/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc4-lp0-pb4/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-lc4-lp0-pb4/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma-thorough-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-balanced-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-chunk-1024/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-chunk-32768/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-chunk-4096/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-fast-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-header-lzma2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-header-lzma2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-header-lzma2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc0-lp0-pb0/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc0-lp0-pb0/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc0-lp0-pb0/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc0-lp4-pb1/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc0-lp4-pb1/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc0-lp4-pb1/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc2-lp2-pb2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc2-lp2-pb2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc2-lp2-pb2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc4-lp0-pb4/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc4-lp0-pb4/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-lc4-lp0-pb4/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-mixed/mixed.bin",
+      "bytes": 197536,
+      "sha256": "6846f7d835c62b5d0f9d95d3bb1a2c5833d806d8ef1aa90d4fb7d305dc7f01a5"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-au3HRA/out-lzma2-thorough-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-au3HRA/raw-0-false.lzma",
+      "bytes": 18,
+      "sha256": "f0213c18d50c3406fb4b1c03e9e90aa936229a07605dc45789b8e9f11241d558"
+    },
+    {
+      "path": "run-au3HRA/raw-0-true.lzma",
+      "bytes": 23,
+      "sha256": "c2b340c40a9ea7e513d383f3913ac15269df08b3f73ce1ec10318e56f9f4ea3e"
+    },
+    {
+      "path": "run-au3HRA/raw-1-false.lzma",
+      "bytes": 19,
+      "sha256": "5fb45cdcb6569213e85716d239bc9bc9282f011c9db619a31c79a93b2bec8206"
+    },
+    {
+      "path": "run-au3HRA/raw-1-true.lzma",
+      "bytes": 24,
+      "sha256": "9c08b5b127d0d8b402748b96fc488df7939e307e56a4a1c8ba94272b2aa9c6f3"
+    },
+    {
+      "path": "run-au3HRA/raw-273-false.lzma",
+      "bytes": 262,
+      "sha256": "e83b0444ece37c624dcd58758438b8d8640e92e3b324b9169c503a3dab23f102"
+    },
+    {
+      "path": "run-au3HRA/raw-273-true.lzma",
+      "bytes": 267,
+      "sha256": "480d5e7b2947eba7d0d8547f4a4aaaecac849c700f2a24383358209b0b25f375"
+    },
+    {
+      "path": "run-au3HRA/raw-32768-false.lzma",
+      "bytes": 373,
+      "sha256": "33722bfc0319ba15e2198f98bffd04670fc9375f39156b6b516691cc0afab05f"
+    },
+    {
+      "path": "run-au3HRA/raw-32768-true.lzma",
+      "bytes": 378,
+      "sha256": "23107c1942b6045038597375aae9343100643d83cc7355067fc36f3e8f3d3ae5"
+    },
+    {
+      "path": "run-au3HRA/raw-32769-false.lzma",
+      "bytes": 373,
+      "sha256": "bd578c396e3643aacb3fc3f28f88c11a3b8ef3cbaa997b9da582942a0e2a35c6"
+    },
+    {
+      "path": "run-au3HRA/raw-32769-true.lzma",
+      "bytes": 378,
+      "sha256": "d12eec091730c87eb6b94598c4767bec72b2040412f46733c217223c51aed3ea"
+    },
+    {
+      "path": "run-au3HRA/raw-65537-false.lzma",
+      "bytes": 413,
+      "sha256": "132ba41769cd6d0f72ea7b0ab88ed8e7c121f5e9b17e8bd8252c9e9e0aa372a2"
+    },
+    {
+      "path": "run-au3HRA/raw-65537-true.lzma",
+      "bytes": 418,
+      "sha256": "705dd4eb270571e55822db3148d4495af14f393e077bc0c86bb608b9937103c1"
+    },
+    {
+      "path": "run-nE7P26/fixtures-manifest.json",
+      "bytes": 78790,
+      "sha256": "6fa731c0412cfc2764faefd908cff52cd09ee18c0e64f6adc7bb82ad312f0516"
+    },
+    {
+      "path": "run-nE7P26/lzma-balanced-false-false.7z",
+      "bytes": 16148,
+      "sha256": "55b99c10ea34a4c8302b6bf4ea65a5cb99fb0a4fc20e3a249f13962ad52dd96b"
+    },
+    {
+      "path": "run-nE7P26/lzma-balanced-false-true.7z",
+      "bytes": 16110,
+      "sha256": "602a61ac4e58da4a9100780ae7abaf41d2bc00e7ae71f37af059ca64df6e3f5b"
+    },
+    {
+      "path": "run-nE7P26/lzma-balanced-random.7z",
+      "bytes": 1067595,
+      "sha256": "ead034fc715412aececefbe99a24fabf37a9af5431f22b5f15650a0981df6431"
+    },
+    {
+      "path": "run-nE7P26/lzma-balanced-true-false.7z",
+      "bytes": 16128,
+      "sha256": "6700ef9ec147f570f2bfdaa48622aff268cf11da1e88af555dd24ed6f5c986ed"
+    },
+    {
+      "path": "run-nE7P26/lzma-balanced-true-true.7z",
+      "bytes": 16100,
+      "sha256": "2bab0dc56b9f06ba2a4a3c8bd22fa6e46d6e57512a12f117621f56e119404884"
+    },
+    {
+      "path": "run-nE7P26/lzma-distant-balanced.7z",
+      "bytes": 183814,
+      "sha256": "9374397955d0117b1fd3372b14be14b34e36a7c3056cdffd8e77309ac03ad12a"
+    },
+    {
+      "path": "run-nE7P26/lzma-distant-fast.7z",
+      "bytes": 365066,
+      "sha256": "b2cac3cc2c37270b913984892ab0907d365ece236787787f053fd1c9a299e58e"
+    },
+    {
+      "path": "run-nE7P26/lzma-eos-container.7z",
+      "bytes": 16122,
+      "sha256": "14a6f1e3f65e5522705aded81accdff67f4484eb3dc6cde45edffe962dde92cf"
+    },
+    {
+      "path": "run-nE7P26/lzma-fast-false-false.7z",
+      "bytes": 16327,
+      "sha256": "bd3aa843e5265585993fa59acc052f9f0b17df07e02903b092e4108180dff54f"
+    },
+    {
+      "path": "run-nE7P26/lzma-fast-false-true.7z",
+      "bytes": 16289,
+      "sha256": "3e85dfe4aa28a78e79e9d751f06552bdcf3d98ff4c7cf16529fd9bcaf018be5d"
+    },
+    {
+      "path": "run-nE7P26/lzma-fast-random.7z",
+      "bytes": 1063042,
+      "sha256": "b6d60533100402dbfb5a01df97fa4d394eb3989f1c62d794b056074509feb115"
+    },
+    {
+      "path": "run-nE7P26/lzma-fast-true-false.7z",
+      "bytes": 16306,
+      "sha256": "228ac81537a774f94c5d6f51b245fc98d35aa14d5c048f4bc2aebed8095c64df"
+    },
+    {
+      "path": "run-nE7P26/lzma-fast-true-true.7z",
+      "bytes": 16277,
+      "sha256": "9e0966ded125919a864ba2f5d72324dd2e45bef9d7ff1ea812bc8fa957d0da50"
+    },
+    {
+      "path": "run-nE7P26/lzma-lc0-lp0-pb0.7z",
+      "bytes": 79220,
+      "sha256": "2627f8d466af883e6c4d9058ab4a91dac9ce0c4053d76b164b90aaf093ed89d3"
+    },
+    {
+      "path": "run-nE7P26/lzma-lc0-lp4-pb1.7z",
+      "bytes": 77168,
+      "sha256": "ae84fd5a8142ffd50408f6547f7d8bacf27d0e42c35fb9bc289a22e98582790e"
+    },
+    {
+      "path": "run-nE7P26/lzma-lc2-lp2-pb2.7z",
+      "bytes": 67846,
+      "sha256": "f386752a8d1e31be26937154b4c0f46e70016654fe567b77f2dce0af19fa0fb9"
+    },
+    {
+      "path": "run-nE7P26/lzma-lc4-lp0-pb4.7z",
+      "bytes": 57648,
+      "sha256": "1193baf8bac464f57c07ef53f1d24369296b90fcadba29468d0b55aa22c4685c"
+    },
+    {
+      "path": "run-nE7P26/lzma-thorough-false-false.7z",
+      "bytes": 16148,
+      "sha256": "e810b4dc2182fc2d9e2d71ed4026308ce1eab4bd43844f1a4cf2d8dbdb2c54c0"
+    },
+    {
+      "path": "run-nE7P26/lzma-thorough-false-true.7z",
+      "bytes": 16110,
+      "sha256": "6a7e97fbe90a6cfedfdec65a04e5602b8db820413cb8bd12ac677c13ae3bbea3"
+    },
+    {
+      "path": "run-nE7P26/lzma-thorough-random.7z",
+      "bytes": 1067637,
+      "sha256": "4178c5765801e5202a1cf005d7dc416428ffa2ec062ab6c26153237e354bd358"
+    },
+    {
+      "path": "run-nE7P26/lzma-thorough-true-false.7z",
+      "bytes": 16128,
+      "sha256": "6177c879519f3bd5f48a99da56fecc29c5da5e0c2afcabb10d9680ab13cb5869"
+    },
+    {
+      "path": "run-nE7P26/lzma-thorough-true-true.7z",
+      "bytes": 16100,
+      "sha256": "fe50796005910891e71f80e46adac98ff5c129c5d09058077ef1b54a39567be8"
+    },
+    {
+      "path": "run-nE7P26/lzma2-balanced-false-false.7z",
+      "bytes": 46226,
+      "sha256": "bb463479be9810b94890a7e3a8f36ab6d6b723f251b7586338e728b982eb111e"
+    },
+    {
+      "path": "run-nE7P26/lzma2-balanced-false-true.7z",
+      "bytes": 46197,
+      "sha256": "c490ee532208a1fc5ac23201e0e44eb90a1649d463102b36d356dab88b333a7c"
+    },
+    {
+      "path": "run-nE7P26/lzma2-balanced-random.7z",
+      "bytes": 1048841,
+      "sha256": "d3d6a5711ed4a8b3e23ee3b68aa975ea38a593ed1597a342327f3750438bf162"
+    },
+    {
+      "path": "run-nE7P26/lzma2-balanced-true-false.7z",
+      "bytes": 49214,
+      "sha256": "8ca4016ae85bb567c63368f64161e88f70a33efab744236b303190bff24fa70d"
+    },
+    {
+      "path": "run-nE7P26/lzma2-balanced-true-true.7z",
+      "bytes": 49188,
+      "sha256": "81b542c3ab7040deb61bd6932313742d615489af63d3a70d724d40f514046c2a"
+    },
+    {
+      "path": "run-nE7P26/lzma2-chunk-1024.7z",
+      "bytes": 4881,
+      "sha256": "1f057ca9bb579b1cad19c4c3cc7177b21718ea64b2a233bfe83e8f0a185f17df"
+    },
+    {
+      "path": "run-nE7P26/lzma2-chunk-1024.raw",
+      "bytes": 4731,
+      "sha256": "0fb48c234ccd75a4705a7a3fb8930795a23db0398dee4adfb65120221635017c"
+    },
+    {
+      "path": "run-nE7P26/lzma2-chunk-32768.7z",
+      "bytes": 512,
+      "sha256": "49a20f5d5d35eeeaf19a14d346038f40815f2df0442f72743802a466c5f321a4"
+    },
+    {
+      "path": "run-nE7P26/lzma2-chunk-32768.raw",
+      "bytes": 362,
+      "sha256": "a899b47a1fa689bb5e6a6756330b257013e5c16b32409710d2f3f9c9e37050e4"
+    },
+    {
+      "path": "run-nE7P26/lzma2-chunk-4096.7z",
+      "bytes": 1824,
+      "sha256": "0d95d138ed3480fd3684dd9c48089d8ec9b228f30b396cfedd8e778f7d32aca1"
+    },
+    {
+      "path": "run-nE7P26/lzma2-chunk-4096.raw",
+      "bytes": 1673,
+      "sha256": "72b8b9bde22eb3967d492cbb75dc0afbc5d66c06c6fcc78a149d247a7865246c"
+    },
+    {
+      "path": "run-nE7P26/lzma2-fast-false-false.7z",
+      "bytes": 46509,
+      "sha256": "4679e29d5fe47c554ff5381144bf7ab6cdb3c996010d436eb676d9a6cea7f963"
+    },
+    {
+      "path": "run-nE7P26/lzma2-fast-false-true.7z",
+      "bytes": 46481,
+      "sha256": "66281f1068426d8a3fc9dfa4001e37718cbefd0969ab67a3496452db4187f765"
+    },
+    {
+      "path": "run-nE7P26/lzma2-fast-random.7z",
+      "bytes": 1048841,
+      "sha256": "8c40b6cc77b058da8b6e10a7f486244ed48da8f0a9fdf91da85c3a9a2108142e"
+    },
+    {
+      "path": "run-nE7P26/lzma2-fast-true-false.7z",
+      "bytes": 49446,
+      "sha256": "fb77669ef67f775aa88ad0c077039642552570dfc60b0af502547817b75291af"
+    },
+    {
+      "path": "run-nE7P26/lzma2-fast-true-true.7z",
+      "bytes": 49420,
+      "sha256": "18b34e17ca91fbe670155fcb101a02a44d2bf7998e470910b22126931b780cf5"
+    },
+    {
+      "path": "run-nE7P26/lzma2-header-lzma2.7z",
+      "bytes": 46198,
+      "sha256": "872af4898f20380575a0ab1fabb54df251f6d0708af7378dc92fce6396f79baf"
+    },
+    {
+      "path": "run-nE7P26/lzma2-lc0-lp0-pb0.7z",
+      "bytes": 80144,
+      "sha256": "9ef7490f0b2b42b2c63e18883f9c82b99d5600da4393b3c4d5867b0a4f67f7d6"
+    },
+    {
+      "path": "run-nE7P26/lzma2-lc0-lp4-pb1.7z",
+      "bytes": 78486,
+      "sha256": "4f59febfaa04ac3e78c64d583901a516e093080d0f19a42cb29ad732da3a0366"
+    },
+    {
+      "path": "run-nE7P26/lzma2-lc2-lp2-pb2.7z",
+      "bytes": 68978,
+      "sha256": "e92a30e585c85f15766397a5165c7102bc737140af2989cc0fce4c187a91d3be"
+    },
+    {
+      "path": "run-nE7P26/lzma2-lc4-lp0-pb4.7z",
+      "bytes": 59570,
+      "sha256": "d834362f860e73105d91101df50a9b0619b37233d0a67ff96f2c29b1222526fb"
+    },
+    {
+      "path": "run-nE7P26/lzma2-mixed.7z",
+      "bytes": 86418,
+      "sha256": "5d34572caae6bd33cfc917fc51b272a0440e3778f55b3d04f825eb2450c3719b"
+    },
+    {
+      "path": "run-nE7P26/lzma2-thorough-false-false.7z",
+      "bytes": 46226,
+      "sha256": "43b71155aa477ba74571578e23cfe843625bfb5fe18de964acfcbbf19cd3ca77"
+    },
+    {
+      "path": "run-nE7P26/lzma2-thorough-false-true.7z",
+      "bytes": 46197,
+      "sha256": "fcc254717a720fc1762957dafa90db064e23fec7e3d5d64495123f28d4758638"
+    },
+    {
+      "path": "run-nE7P26/lzma2-thorough-random.7z",
+      "bytes": 1048841,
+      "sha256": "1418115fa421971bf5e9077f020bb7034f5540d7f0e92f90d9da1d3808dc4dd7"
+    },
+    {
+      "path": "run-nE7P26/lzma2-thorough-true-false.7z",
+      "bytes": 49214,
+      "sha256": "d5661932d46fb42b36b90f3419ce7cf1d53e617e60f2dda8c192f9b2817d40de"
+    },
+    {
+      "path": "run-nE7P26/lzma2-thorough-true-true.7z",
+      "bytes": 49188,
+      "sha256": "19d7a0c6ba2f6a832e2f15ab46b02b85166f95ea65e96574e89b8783bddbcc72"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-balanced-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-distant-balanced/distance.bin",
+      "bytes": 360000,
+      "sha256": "3a4a5e8df2351974828a6990bf9ec191d8c054d3680be9a890426980d7a003b6"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-distant-fast/distance.bin",
+      "bytes": 360000,
+      "sha256": "3a4a5e8df2351974828a6990bf9ec191d8c054d3680be9a890426980d7a003b6"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-eos-container/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-eos-container/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-eos-container/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-fast-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc0-lp0-pb0/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc0-lp0-pb0/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc0-lp0-pb0/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc0-lp4-pb1/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc0-lp4-pb1/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc0-lp4-pb1/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc2-lp2-pb2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc2-lp2-pb2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc2-lp2-pb2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc4-lp0-pb4/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc4-lp0-pb4/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-lc4-lp0-pb4/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma-thorough-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-balanced-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-chunk-1024/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-chunk-32768/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-chunk-4096/chunked.bin",
+      "bytes": 93000,
+      "sha256": "3264fb745582181119a6e9ccb478a7f879ece6fb763fb884e904a64278b2cf2b"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-fast-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-header-lzma2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-header-lzma2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-header-lzma2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc0-lp0-pb0/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc0-lp0-pb0/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc0-lp0-pb0/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc0-lp4-pb1/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc0-lp4-pb1/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc0-lp4-pb1/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc2-lp2-pb2/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc2-lp2-pb2/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc2-lp2-pb2/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc4-lp0-pb4/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc4-lp0-pb4/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-lc4-lp0-pb4/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-mixed/mixed.bin",
+      "bytes": 197536,
+      "sha256": "6846f7d835c62b5d0f9d95d3bb1a2c5833d806d8ef1aa90d4fb7d305dc7f01a5"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-false-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-false-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-false-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-false-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-false-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-false-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-random/random.bin",
+      "bytes": 1048579,
+      "sha256": "94528651244bb44a5d13691d4358f7124e87ee239fc41bb123fc5c15b0b6aa11"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-true-false/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-true-false/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-true-false/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-true-true/docs/雪-😀.txt",
+      "bytes": 148000,
+      "sha256": "4deb4e26acdc61d8109cf982547ff0255e58b0259e151afed25ff1f712406ec7"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-true-true/empty.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "run-nE7P26/out-lzma2-thorough-true-true/pattern.bin",
+      "bytes": 95001,
+      "sha256": "d2ae59a6a1107bc023888654a402973caeb90fe0d3dace6a0f5b65249540333c"
+    },
+    {
+      "path": "run-nE7P26/raw-0-false.lzma",
+      "bytes": 18,
+      "sha256": "f0213c18d50c3406fb4b1c03e9e90aa936229a07605dc45789b8e9f11241d558"
+    },
+    {
+      "path": "run-nE7P26/raw-0-true.lzma",
+      "bytes": 23,
+      "sha256": "c2b340c40a9ea7e513d383f3913ac15269df08b3f73ce1ec10318e56f9f4ea3e"
+    },
+    {
+      "path": "run-nE7P26/raw-1-false.lzma",
+      "bytes": 19,
+      "sha256": "5fb45cdcb6569213e85716d239bc9bc9282f011c9db619a31c79a93b2bec8206"
+    },
+    {
+      "path": "run-nE7P26/raw-1-true.lzma",
+      "bytes": 24,
+      "sha256": "9c08b5b127d0d8b402748b96fc488df7939e307e56a4a1c8ba94272b2aa9c6f3"
+    },
+    {
+      "path": "run-nE7P26/raw-273-false.lzma",
+      "bytes": 262,
+      "sha256": "e83b0444ece37c624dcd58758438b8d8640e92e3b324b9169c503a3dab23f102"
+    },
+    {
+      "path": "run-nE7P26/raw-273-true.lzma",
+      "bytes": 267,
+      "sha256": "480d5e7b2947eba7d0d8547f4a4aaaecac849c700f2a24383358209b0b25f375"
+    },
+    {
+      "path": "run-nE7P26/raw-32768-false.lzma",
+      "bytes": 373,
+      "sha256": "33722bfc0319ba15e2198f98bffd04670fc9375f39156b6b516691cc0afab05f"
+    },
+    {
+      "path": "run-nE7P26/raw-32768-true.lzma",
+      "bytes": 378,
+      "sha256": "23107c1942b6045038597375aae9343100643d83cc7355067fc36f3e8f3d3ae5"
+    },
+    {
+      "path": "run-nE7P26/raw-32769-false.lzma",
+      "bytes": 373,
+      "sha256": "bd578c396e3643aacb3fc3f28f88c11a3b8ef3cbaa997b9da582942a0e2a35c6"
+    },
+    {
+      "path": "run-nE7P26/raw-32769-true.lzma",
+      "bytes": 378,
+      "sha256": "d12eec091730c87eb6b94598c4767bec72b2040412f46733c217223c51aed3ea"
+    },
+    {
+      "path": "run-nE7P26/raw-65537-false.lzma",
+      "bytes": 413,
+      "sha256": "132ba41769cd6d0f72ea7b0ab88ed8e7c121f5e9b17e8bd8252c9e9e0aa372a2"
+    },
+    {
+      "path": "run-nE7P26/raw-65537-true.lzma",
+      "bytes": 418,
+      "sha256": "705dd4eb270571e55822db3148d4495af14f393e077bc0c86bb608b9937103c1"
+    }
+  ],
+  "benchmark_fingerprints": [
+    {
+      "path": "benchmark-vbZ6G3/benchmark-results.json",
+      "bytes": 19530,
+      "sha256": "492b02ca17197a9a4a9cd0adc2ceac3a3b6d2dc10fc87d0bb39e12be99ccc535"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-balanced-random2m-original-test.txt",
+      "bytes": 565,
+      "sha256": "474fee07e874fda6e275ae5ed336c187aaf086233c0f1d7334ae3a8ea5b20634"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-balanced-random2m.7z",
+      "bytes": 2139076,
+      "sha256": "c1b6d48208635ff5eb364159170de92b5edd529cf9c26d01d999183ca571d681"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-balanced-random2m.packed",
+      "bytes": 2138928,
+      "sha256": "14ea372e4dfc5d058715b31977e541b29a4472e0b27b2a816f9919a7e40261ce"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-balanced-repetitive16m-original-test.txt",
+      "bytes": 564,
+      "sha256": "1b15c51b4bd4f41621975f3f3fa6b9c9234cf2fa9e356a4642b9fd89b4cb250d"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-balanced-repetitive16m.7z",
+      "bytes": 4007,
+      "sha256": "3c0919b2a396543d4f568a0290acf66dddcde974abff89f4709ebee7973cbc5e"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-balanced-repetitive16m.packed",
+      "bytes": 3851,
+      "sha256": "736afaee868579a4059c11d67b282c4bffbe36eb436ac673daea28c0be5e28c8"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-fast-random2m-original-test.txt",
+      "bytes": 557,
+      "sha256": "b104f074b7f4e4440597351cbd5ba6da8fc0f639c667009f66e57682b93b7fa4"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-fast-random2m.7z",
+      "bytes": 2125877,
+      "sha256": "749de72c4994d2f014aa455490493e6e68e62b7db1f494f9542967a9cf48dfeb"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-fast-random2m.packed",
+      "bytes": 2125737,
+      "sha256": "01dc719985b48405d20372375c7f6b24af638c7ac894b75eeb73e0f4a37e747a"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-fast-repetitive16m-original-test.txt",
+      "bytes": 556,
+      "sha256": "e63d845ee995029d709471b0ead5fbd98030ca2f1e1ea3342c8cbcdbc76f5699"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-fast-repetitive16m.7z",
+      "bytes": 3999,
+      "sha256": "8ea053205eacf8103b7bf9aa4de28febc9dc8f8ecf1f46878658274807aaae0e"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-fast-repetitive16m.packed",
+      "bytes": 3851,
+      "sha256": "736afaee868579a4059c11d67b282c4bffbe36eb436ac673daea28c0be5e28c8"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-thorough-random2m-original-test.txt",
+      "bytes": 565,
+      "sha256": "fc74a47c29e79012a38c2e036b5ab93e7d68b13452d6f54cfd3bdd6532c7b0e1"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-thorough-random2m.7z",
+      "bytes": 2144123,
+      "sha256": "f4da88d8c44cedbf37742292bc3a3de19c093f1d972b834adeda28956476c69a"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-thorough-random2m.packed",
+      "bytes": 2143975,
+      "sha256": "271cd28bc58c990c65d72b28fca0eb718552ee978ca4ac0324785ab3c654d651"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-thorough-repetitive16m-original-test.txt",
+      "bytes": 564,
+      "sha256": "c0f0ec07718e734673e20e3cd1eab6a6224373ee9345b6aa1e6a048cf28abdca"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-thorough-repetitive16m.7z",
+      "bytes": 4007,
+      "sha256": "861a3bcd9ea1cdbac99051065740d624dceb217708c0405816cc1c4c66e7fee5"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma-thorough-repetitive16m.packed",
+      "bytes": 3851,
+      "sha256": "736afaee868579a4059c11d67b282c4bffbe36eb436ac673daea28c0be5e28c8"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-balanced-random2m-original-test.txt",
+      "bytes": 568,
+      "sha256": "fb0b23ba8d533619f14df1d063427e9dd1d5048fb1b1928659273795c6a1e6bd"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-balanced-random2m.7z",
+      "bytes": 2097489,
+      "sha256": "7d7a494a3f85f910c27ff1030526a36456497637fc83d382319abf05d6bb4b9e"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-balanced-random2m.packed",
+      "bytes": 2097345,
+      "sha256": "f94148b55bc5b0c0a5addadc99596d4e1553eafd3431eb297adb106be138850b"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-balanced-repetitive16m-original-test.txt",
+      "bytes": 571,
+      "sha256": "f79f19aaeb1c1c29c6dd1a0c95d1525e0ca8376b98a1bd7d04507fda0cec1d7c"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-balanced-repetitive16m.7z",
+      "bytes": 72199,
+      "sha256": "9e3c9e1904e6547f6699cbac4614e9b15e8fa6605e0ddda9abc2c2a0f22dbb62"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-balanced-repetitive16m.packed",
+      "bytes": 72046,
+      "sha256": "bc3723cfba56733f1483ffeb46836676c52d5ed7a95ac6312dfba2e49f1c27bd"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-fast-random2m-original-test.txt",
+      "bytes": 560,
+      "sha256": "a13cce8e4d9e45eb2e01d5ed1928169bb1c2597306c1c5605d55d12987a1442b"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-fast-random2m.7z",
+      "bytes": 2097481,
+      "sha256": "5d94d7e14ac94739b8947a32bccd0aa37ff9a4267c02deb5cc0086a5c4408b79"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-fast-random2m.packed",
+      "bytes": 2097345,
+      "sha256": "f94148b55bc5b0c0a5addadc99596d4e1553eafd3431eb297adb106be138850b"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-fast-repetitive16m-original-test.txt",
+      "bytes": 563,
+      "sha256": "0be8a30ed43da599089b136892984ee8cadad79784140afafd09aaa1a483a925"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-fast-repetitive16m.7z",
+      "bytes": 72191,
+      "sha256": "e1f2ae590e0835912832c279c9c79141603e53ea3981183da4528173c8fe888b"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-fast-repetitive16m.packed",
+      "bytes": 72046,
+      "sha256": "bc3723cfba56733f1483ffeb46836676c52d5ed7a95ac6312dfba2e49f1c27bd"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-thorough-random2m-original-test.txt",
+      "bytes": 568,
+      "sha256": "ab688d024c7cc52759b0555be5a53f043c0129d46fa1dab906992dd8ab74eab7"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-thorough-random2m.7z",
+      "bytes": 2097489,
+      "sha256": "48a838b56d5e3e1dcf798e7e0364651a03b8382e6bd6c21537f1fdaf3f132671"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-thorough-random2m.packed",
+      "bytes": 2097345,
+      "sha256": "f94148b55bc5b0c0a5addadc99596d4e1553eafd3431eb297adb106be138850b"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-thorough-repetitive16m-original-test.txt",
+      "bytes": 571,
+      "sha256": "540cb4413007f3e9e65e903ab3560887b8175b8d19127544ad562ac1403e6b88"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-thorough-repetitive16m.7z",
+      "bytes": 72199,
+      "sha256": "f712e7f9a69f116c1f099ca6241a2fece37088db0dfbf669dc635294b93c111a"
+    },
+    {
+      "path": "benchmark-vbZ6G3/lzma2-thorough-repetitive16m.packed",
+      "bytes": 72046,
+      "sha256": "bc3723cfba56733f1483ffeb46836676c52d5ed7a95ac6312dfba2e49f1c27bd"
+    },
+    {
+      "path": "benchmark-vbZ6G3/original-check-results.json",
+      "bytes": 6415,
+      "sha256": "fe43de1a3ec9b07427faf71d42a5116fcc89b895b374e7d80072f12ef0004f52"
+    },
+    {
+      "path": "benchmark-vbZ6G3/original-solid64m/boundary-0.bin",
+      "bytes": 16777216,
+      "sha256": "51598f4c88d896df019a90a1f7f8dc89cf26c168d3b3fa185163e4773da7dc9a"
+    },
+    {
+      "path": "benchmark-vbZ6G3/original-solid64m/boundary-1.bin",
+      "bytes": 16777216,
+      "sha256": "51598f4c88d896df019a90a1f7f8dc89cf26c168d3b3fa185163e4773da7dc9a"
+    },
+    {
+      "path": "benchmark-vbZ6G3/original-solid64m/boundary-2.bin",
+      "bytes": 16777216,
+      "sha256": "51598f4c88d896df019a90a1f7f8dc89cf26c168d3b3fa185163e4773da7dc9a"
+    },
+    {
+      "path": "benchmark-vbZ6G3/original-solid64m/boundary-3.bin",
+      "bytes": 16777216,
+      "sha256": "51598f4c88d896df019a90a1f7f8dc89cf26c168d3b3fa185163e4773da7dc9a"
+    },
+    {
+      "path": "benchmark-vbZ6G3/solid64m.7z",
+      "bytes": 288370,
+      "sha256": "aa41d21cd4e6d070e0e5c8345eaa0d94a58e3dc363b8a17d8eb8d6afef92e849"
+    }
+  ],
+  "protected_app_fingerprints": [
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/sevenzip-validation.json",
+      "bytes": 19686,
+      "sha256": "ff53f71c7ad81e1c9903011f3cda81ea0e3d257d1130d4a475c69b65741e5be5"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/sevenzip.mjs",
+      "bytes": 23155,
+      "sha256": "f38b23f53c8341e563277472004a0a762fcd4075d0d0d33fe1eb9c555981285e"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/sevenzip.test.mjs",
+      "bytes": 23736,
+      "sha256": "ebecd795f7bddbf02e68667dda9c30fb532f9da4b3b622ae8a49f5863cae7851"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/server.mjs",
+      "bytes": 10962,
+      "sha256": "984e532d7d38d146ec9dbbe30d10166ad8519679e76aa8242bb59ce01d209c70"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/client.mjs",
+      "bytes": 7140,
+      "sha256": "c65fb02402082f3774070b40da8528f1f26f57affd6de02fb90bc45e820eb765"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/README.md",
+      "bytes": 13550,
+      "sha256": "04fb1515b9829902655bf1387529ce7e33833cf8e93233b5be94f7a1b5009285"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/SEVENZIP-COMPATIBILITY.md",
+      "bytes": 8922,
+      "sha256": "9d9cd3c81ed780f9ab359edb7d49b424edbaa6a9a3308da9079a7aebb9f5c25f"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/verify-sevenzip.mjs",
+      "bytes": 1611,
+      "sha256": "00f562078dcaaa8645eec487101895a8d9a41104e19a8ebbb364a6bd408b3202"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/sevenzip-source-references.json",
+      "bytes": 22251,
+      "sha256": "320305de5a608881b85fbb182d777887043bd1bf9d1ae5e976cc961a3e575ccc"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/zip.mjs",
+      "bytes": 19556,
+      "sha256": "a59b2cf92a5d83638beb238a3ffcb39796ff1a59aab0d241d1161f448ddd232d"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/tar.mjs",
+      "bytes": 10044,
+      "sha256": "940ce0be9034b8b54813e5290f6b40af4a98b4b89f1ef4e31d07caed38585afd"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/gzip.mjs",
+      "bytes": 4384,
+      "sha256": "2d76ed467dbccd9263808d3a7efa9be0dbf78225b8c4d0c0184cd2a29d0e76c6"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/zstd.mjs",
+      "bytes": 5330,
+      "sha256": "3413aa08a4c1b21df2a4ff6b68ee3bb0c1d456031ed4d85d921883469b102ec8"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/app.test.mjs",
+      "bytes": 5404,
+      "sha256": "5c30d065062125f67927681f95d4d4479d40372e6916915a495acd8176487dbc"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/app.integration.test.mjs",
+      "bytes": 1729,
+      "sha256": "fbd5086faefc79dc85dd3ed0725b0396ae30d279d555de749982baea087e052d"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/zip.test.mjs",
+      "bytes": 13831,
+      "sha256": "f7732808c8e734fdfd400a3af56108c0c3e1c0a6abbed3141dda3b86d56cdc66"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/formats.test.mjs",
+      "bytes": 31783,
+      "sha256": "7a7847d60b34ead39b597aac54c1612f616ffe69b9a267e193bb01fc78554c98"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/zstd.test.mjs",
+      "bytes": 19409,
+      "sha256": "b50927498b32b96dd40096618a0a412b7a9a54a9548a40cd76fe23c0fba6dbaa"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/bootstrap-original.mjs",
+      "bytes": 3119,
+      "sha256": "da65b62b349b5f4f3f69422244d21ddf1686998bc0f6aa54df8365ca72f3c22e"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/.gitignore",
+      "bytes": 112,
+      "sha256": "5f119de142d44a9bd04a39d4cda1f1760abbbc25db480c6802e6cf9aed302497"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/fixtures/references/7zFormat-18.06.txt",
+      "bytes": 7577,
+      "sha256": "8ec976b73ca88710286be1e991e49dbab485d9c0bf2410a80fa87e657850f82b"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/fixtures/references/7z-Methods-26.04.txt",
+      "bytes": 3413,
+      "sha256": "b16ea5fdc50345fa2cb031f06fe410cea0b089f74a4138ac8141b9e2d816ffc7"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/fixtures/references/lzma-sdk-26.04.txt",
+      "bytes": 15835,
+      "sha256": "b6be2de40819b3ba00b329548abaeaba97589e1a6169442ec78b062b3337247b"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/results/sevenzip-browser-20261012.jpg",
+      "bytes": 194543,
+      "sha256": "d3074073795d067c707b212985aa2767951d9d3e29242e9a74f6ac0e83e1aa17"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/zstd-validation.json",
+      "bytes": 20024,
+      "sha256": "9500028a9423e8295cefd178b049ee0033e4518e3555363292618b54384aa6e1"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/compatibility-evidence.json",
+      "bytes": 6394,
+      "sha256": "42da73a58a9ac571cba78e05f3dd47272d2a373c48e55a4c00748babdc1beaf8"
+    },
+    {
+      "path": "../../outputs/rea-research-lab/products/rea-studio/apps/archive/formats-validation.json",
+      "bytes": 6447,
+      "sha256": "ebeffa9c835ebee99cd89b954f92d22539c7118d2c1445efe8c11e20700243b6"
+    }
+  ],
+  "limitations": [
+    "Greedy normal matches; no rep/shortrep, lazy/optimal parse, bit-price search, binary tree or threads",
+    "32 KiB maximum LZMA2 chunks reset dictionary/state/properties; no cross-chunk history",
+    "Raw LZMA can expand random input; LZMA2 stored fallback is counted honestly",
+    "Own profiles are not original mx levels",
+    "Optional per-primitive cooperative budgets, no aggregate host budget yet",
+    "Bounded allocations/copies, not process RSS/CPU isolation",
+    "No production HTTP/UI integration; old app unchanged",
+    "One coder per folder; encryption, pipelines/filters, original GUI and other platforms unsupported"
+  ]
+}

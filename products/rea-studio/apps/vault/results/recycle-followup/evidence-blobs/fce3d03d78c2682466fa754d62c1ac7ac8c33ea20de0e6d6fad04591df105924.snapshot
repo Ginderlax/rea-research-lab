@@ -1,0 +1,47 @@
+TAP version 13
+# Subtest: unknown native XML and preserved history/binaries survive recycle and restore without creating a history row
+ok 1 - unknown native XML and preserved history/binaries survive recycle and restore without creating a history row
+  ---
+  duration_ms: 19.2798
+  type: 'test'
+  ...
+# Subtest: graph MAC includes history-only unknown XML edits and binary protection changes; stale operations leave source intact
+ok 2 - graph MAC includes history-only unknown XML edits and binary protection changes; stale operations leave source intact
+  ---
+  duration_ms: 3.6727
+  type: 'test'
+  ...
+# Subtest: failed recycleRestore commit keeps encrypted bytes, bin placement and history unchanged
+ok 3 - failed recycleRestore commit keeps encrypted bytes, bin placement and history unchanged
+  ---
+  duration_ms: 56.6574
+  type: 'test'
+  ...
+# Subtest: failed recycleDelete commit keeps encrypted bytes, bin placement and history unchanged
+ok 4 - failed recycleDelete commit keeps encrypted bytes, bin placement and history unchanged
+  ---
+  duration_ms: 51.7648
+  type: 'test'
+  ...
+# Subtest: held durable restore makes queued purge stale and lock/reopen retains recovered history
+ok 5 - held durable restore makes queued purge stale and lock/reopen retains recovered history
+  ---
+  duration_ms: 98.5461
+  type: 'test'
+  ...
+# {"independentOriginalRecycle":{"assemblyLoads":4,"sourceComposedRestore":1,"sourceComposedDelete":1,"originalGUI":0,"heldOutNestedBin":true,"conditionalKdbx41":true}}
+# Subtest: released library agrees on held-out existing-bin descendant purge and previous-parent recovery, and reads candidate output
+ok 6 - released library agrees on held-out existing-bin descendant purge and previous-parent recovery, and reads candidate output
+  ---
+  duration_ms: 2265.9748
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2605.4565

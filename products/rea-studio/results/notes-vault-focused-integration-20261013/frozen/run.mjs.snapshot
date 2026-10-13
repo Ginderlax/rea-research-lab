@@ -1,0 +1,78 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {createHash} from 'node:crypto';
+import {spawn} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {collect} from '../../outputs/rea-research-lab/products/rea-studio/scripts/read-rabin-tap.mjs';
+
+const root=path.dirname(fileURLToPath(import.meta.url)),workspace=path.resolve(root,'../..'),lab=path.join(workspace,'outputs/rea-research-lab'),studio=path.join(lab,'products/rea-studio');
+const hash=b=>createHash('sha256').update(b).digest('hex'),startedAtUtc=new Date().toISOString();
+const write=async(name,bytes)=>{const target=path.join(root,name);await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,bytes,{flag:'wx'});};
+const json=(name,value)=>write(name,JSON.stringify(value,null,2)+'\n');
+const read=p=>fs.readFile(path.join(lab,p));
+const identity=async p=>{const b=await read(p);return{path:p,bytes:b.length,sha256:hash(b)};};
+const inside=(base,p)=>{const relative=path.relative(base,path.resolve(p));assert.ok(relative&&!path.isAbsolute(relative)&&relative!=='..'&&!relative.startsWith('..'+path.sep));return relative.replaceAll('\\','/');};
+const inputs=[['installation','work/notes-vault-production-installation/installation.json'],['notes-live-map','work/notes-trash-publication-plan-final/live-copy-list.json'],['vault-selection','work/vault-recycle-publication-plan/proposed-focused-selection.json']];
+const sourceSet=new Set(['products/rea-studio/server.mjs','products/rea-studio/catalog.mjs','products/rea-studio/lib/storage.mjs','products/rea-studio/scripts/read-rabin-tap.mjs']);
+const notesTests=['app.test.mjs','app.integration.test.mjs','jex.test.mjs','notebooks.test.mjs','notebooks.integration.test.mjs','notebook-trash.test.mjs','notebook-trash.integration.test.mjs','notebook-trash.ui.test.mjs','notebook-trash-review.test.mjs','notebook-trash-publication-boundaries.test.mjs','notebook-trash-fresh-boundaries.test.mjs'].map(n=>'apps/notes/'+n);
+const installation=JSON.parse(await fs.readFile(path.join(workspace,inputs[0][1]))),vaultSelection=JSON.parse(await fs.readFile(path.join(workspace,inputs[2][1])));
+const installed=installation.installed;
+assert.equal(installed.length,34);assert.equal(installed.filter(r=>r.study==='notes').length,13);assert.equal(installed.filter(r=>r.study==='vault').length,21);
+for(const [label,p]of inputs){const b=await fs.readFile(path.join(workspace,p));await write('authority/'+label+'.json.snapshot',b);}
+for(const app of ['notes','vault'])for(const row of await fs.readdir(path.join(studio,'apps',app),{withFileTypes:true}))if(row.isFile())sourceSet.add('products/rea-studio/apps/'+app+'/'+row.name);
+for(const row of await fs.readdir(path.join(studio,'apps/notes/fixtures'),{withFileTypes:true}))if(row.isFile())sourceSet.add('products/rea-studio/apps/notes/fixtures/'+row.name);
+const originalRoot='products/rea-studio/apps/notes/results/notebook-trash-followup/stage/',originalRecords=[];
+for(const name of ['prior-source-provenance.json.snapshot','trash-source-provenance.json.snapshot','license-and-special-id-provenance.json.snapshot']){
+ sourceSet.add(originalRoot+name);const v=JSON.parse(await read(originalRoot+name));
+ for(const r of Array.isArray(v)?v:v.sources??v.records){assert.ok(r.path&&!r.path.includes('..')&&!path.isAbsolute(r.path));const p=originalRoot+r.path+'.snapshot';const b=await read(p);assert.equal(hash(b),r.sha256,p);if(r.bytes!==undefined)assert.equal(b.length,r.bytes,p);sourceSet.add(p);originalRecords.push({manifest:name,path:p,url:r.url,bytes:b.length,sha256:hash(b)});}
+}
+const originalUnique=[...new Map(originalRecords.map(r=>[r.path,r])).values()];
+async function verifyInstalled(){for(const row of installed){const actual=await identity(row.destination);assert.equal(actual.bytes,row.after.bytes,row.destination);assert.equal(actual.sha256,row.after.sha256,row.destination);}}
+await verifyInstalled();
+const sourceNames=[...sourceSet].sort(),before=await Promise.all(sourceNames.map(identity));
+for(const r of before)await write('source/'+r.path+'.snapshot',await read(r.path));
+await json('source-before.json',before);await json('original-prerequisites.json',{releasedJoplinSource:originalUnique,recordBindings:originalRecords});
+const exeRelative='projects/07-keepass/artifacts/portable/KeePass.exe',exeBefore=await identity(exeRelative);
+assert.equal(exeBefore.sha256,'04d29636c393f0c1fc99ff739295494be3adefded93271e44591e8e300225a5a');assert.equal(process.env.REA_KEEPASS_EXE,undefined,'Use authenticated current-layout default; override not authorized');
+const fixture=before.find(r=>r.path.endsWith('/fixtures/pinned-joplin.jex'));assert.equal(fixture.bytes,9728);assert.equal(fixture.sha256,'044885c906ba7d8cb97a95fbdd6bc2323ba31a3c301e7ed1d6e592acec8944af');
+const runtimeBytes=await fs.readFile(process.execPath),runtime={version:process.version,path:process.execPath,bytes:runtimeBytes.length,sha256:hash(runtimeBytes),platform:process.platform,arch:process.arch};
+const nativeControls=[];for(const name of ['tar.exe','WindowsPowerShell/v1.0/powershell.exe']){const filename=path.join(process.env.SystemRoot,'System32',name),bytes=await fs.readFile(filename);nativeControls.push({path:filename,bytes:bytes.length,sha256:hash(bytes)});}await json('native-process-controls.json',nativeControls);
+const preexisting=['.local/notes-notebook-trash-observations/trash-original.json','.local/original-comparisons.json'];
+for(const p of preexisting){try{await write('preexisting/'+p+'.snapshot',await fs.readFile(path.join(studio,p)));}catch(e){if(e.code!=='ENOENT')throw e;}}
+const recycleDir=path.join(studio,'.local/recycle-observations');let priorRecycle=[];try{priorRecycle=await fs.readdir(recycleDir);}catch(e){if(e.code!=='ENOENT')throw e;}
+await json('preflight.json',{startedAtUtc,installedCount:34,notesDirectSourceFiles:before.filter(r=>r.path.startsWith('products/rea-studio/apps/notes/')&&!r.path.includes('/results/')).length,notes28Scope:25+3,allSourceFingerprints:before.length,originalUniqueFiles:originalUnique.length,exe:exeBefore,fixture,runtime,originalExecutableCopied:false,selections:{notes:notesTests,vault:vaultSelection.testFiles},expected:{notes:59,vault:79},prospectiveLimits:{childDeadlineMs:600000,stdoutBytes:16*1024*1024,stderrBytes:4*1024*1024,fingerprintDeadline:null},environment:{REA_KEEPASS_EXE:null,NOTES_REVIEW_OUTPUT:'owned stage observations/notes/',NODE_TEST_CONTEXT:'removed'}});
+const env={...process.env,NOTES_REVIEW_OUTPUT:pathToFileURL(path.join(root,'observations/notes')+path.sep).href};delete env.NODE_TEST_CONTEXT;
+async function child(label,args,cwd=studio){
+ const start=new Date().toISOString();console.log(JSON.stringify({label,state:'starting',at:start,arguments:args}));
+ const r=await new Promise(resolve=>{const p=spawn(process.execPath,args,{cwd,env,windowsHide:true,shell:false,stdio:['ignore','pipe','pipe']}),chunks={stdout:[],stderr:[]},sizes={stdout:0,stderr:0};let problem=null,done=false;
+  const stop=reason=>{problem??=reason;p.kill('SIGKILL');};
+  for(const [name,cap]of [['stdout',16*1024*1024],['stderr',4*1024*1024]])p[name].on('data',b=>{const take=Math.max(0,Math.min(cap-sizes[name],b.length));if(take)chunks[name].push(Buffer.from(b.subarray(0,take)));sizes[name]+=take;if(take!==b.length)stop(name+' retention cap');});
+  const timer=setTimeout(()=>stop('600-second focused child deadline'),600000);p.on('error',e=>problem??=e.message);p.on('close',(code,signal)=>{if(done)return;done=true;clearTimeout(timer);resolve({pid:p.pid??null,code,signal,problem,sizes,stdout:Buffer.concat(chunks.stdout),stderr:Buffer.concat(chunks.stderr)});});
+ });
+ const end=new Date().toISOString();await write(label+'.stdout.txt',r.stdout);await write(label+'.stderr.txt',r.stderr);
+ const text=r.stdout.toString('utf8'),summary=Object.fromEntries(['tests','pass','fail','cancelled','skipped','todo'].map(k=>[k,Number(text.match(new RegExp('^# '+k+' (\\d+)$','m'))?.[1]??-1)]));
+ const record={label,start,end,durationMs:Date.parse(end)-Date.parse(start),arguments:args,summary,...r,stdout:undefined,stderr:undefined,stdoutSha256:hash(r.stdout),stderrSha256:hash(r.stderr)};await json(label+'-attempt.json',record);console.log(JSON.stringify({label,state:'complete',at:end,code:r.code,problem:r.problem,summary}));return{record,text};
+}
+const notes=await child('notes',['--test','--test-concurrency=1','--test-reporter=tap',...notesTests]);
+const vault=await child('vault',['--test','--test-concurrency=1','--test-reporter=tap',...vaultSelection.testFiles]);
+const after=await Promise.all(sourceNames.map(identity));await json('source-after.json',after);
+const stable=JSON.stringify(before)===JSON.stringify(after);await verifyInstalled();assert.deepEqual(await identity(exeRelative),exeBefore);assert.equal(hash(await fs.readFile(process.execPath)),runtime.sha256);
+for(const r of nativeControls)assert.equal(hash(await fs.readFile(r.path)),r.sha256,r.path);
+const observations={notes:{},vault:{}};
+if(notes.record.code===0){for(const label of ['notebookOriginalObservations','notebookTrashOriginal','notebookTrashHttp','notebookHttpObservation'])observations.notes[label]=collect(notes.text,label);}
+const capture=async(source,dest,max=8*1024*1024)=>{const stat=await fs.stat(source);assert.ok(stat.isFile()&&stat.size<=max);assert.ok(stat.mtimeMs>=Date.parse(startedAtUtc)-1000,'Current observation '+source);const b=await fs.readFile(source);await write(dest,b);return{sourcePath:path.relative(workspace,source).replaceAll('\\','/'),path:dest,bytes:b.length,sha256:hash(b),value:JSON.parse(b)};};
+await capture(path.join(studio,preexisting[0]),'observations/notes/trash-original.json');
+for(const label of ['REA_KEEPASS_HISTORY_ORIGINAL','REA_KEEPASS_HISTORY_UNKNOWN','REA_RECYCLE_ORIGINAL']){
+ const line=vault.text.split(/\r?\n/).find(r=>r.startsWith('# '+label+' '));if(!line){observations.vault[label]={missing:true};continue;}
+ // These compact plain path markers contain no TAP-escaped literal '#' or backslash on this host.
+ const {unescapeTapJson}=await import('../../outputs/rea-research-lab/products/rea-studio/scripts/read-rabin-tap.mjs');
+ const marker=JSON.parse(unescapeTapJson(line.slice(('# '+label+' ').length)));const source=path.resolve(marker.detail),allowed=label==='REA_RECYCLE_ORIGINAL'?path.join(studio,'.local'):path.join(lab,'.local/vault-history-fixtures');inside(allowed,source);
+ const saved=await capture(source,'observations/vault/'+label+'.json');observations.vault[label]={marker,...saved};
+}
+const newRecycle=[];for(const name of await fs.readdir(recycleDir)){if(priorRecycle.includes(name))continue;assert.match(name,/^[a-f0-9-]+\.json$/);newRecycle.push(await capture(path.join(recycleDir,name),'observations/vault/recycle-processes/'+name,2*1024*1024));}
+await json('observation-audit.json',{...observations,newRecycleProcesses:newRecycle.map(({value,...r})=>r)});
+const counts={historyOriginalProcesses:observations.vault.REA_KEEPASS_HISTORY_ORIGINAL?.value?.originalProcessExecutions??null,unknownTimeOriginalProcesses:observations.vault.REA_KEEPASS_HISTORY_UNKNOWN?.value?.originalProcessExecutions??null,recycleOriginalProcesses:newRecycle.length,recycleAssemblyLoads:newRecycle.filter(r=>r.value.assemblyLoaded).length,recycleLibraryCalls:Object.fromEntries([...new Set(newRecycle.flatMap(r=>Object.keys(r.value.value?.calls??{})))].map(k=>[k,newRecycle.reduce((n,r)=>n+(r.value.value?.calls?.[k]??0),0)]))};
+const outcomes=[notes,vault],passed=stable&&outcomes.every(r=>r.record.code===0&&!r.record.problem&&r.record.summary.fail===0&&r.record.summary.skipped===0&&r.record.summary.cancelled===0)&&notes.record.summary.tests===59&&vault.record.summary.tests===79;
+const receipt={schema:'rea-notes-vault-current-layout-focused-integration/v1',startedAtUtc,completedAtUtc:new Date().toISOString(),finiteAcceptance:passed,notes:notes.record,vault:vault.record,tests:{expected:138,actual:notes.record.summary.tests+vault.record.summary.tests,pass:notes.record.summary.pass+vault.record.summary.pass,fail:notes.record.summary.fail+vault.record.summary.fail,skipped:notes.record.summary.skipped+vault.record.summary.skipped,cancelled:notes.record.summary.cancelled+vault.record.summary.cancelled},sourceStable:stable,sourceFingerprints:before,installedAuthenticatedBeforeAfter:34,notesSourceScope:28,sourceOriginalUniqueFiles:originalUnique.length,originalPrerequisites:{KeePassExe:exeBefore,JoplinSyntheticFixture:fixture,runtime,executableCopied:false},actualOriginalCounts:counts,notesOriginalObservations:observations.notes,originalScopes:{Joplin:'Exact released method slices with owned fixed-clock in-memory SQL/load/save adapters. Historical original-serializer JEX fixture is consumed; current Joplin executable/database/GUI executions zero.',KeePass:'Authenticated released2.61.1 executable loaded as .NET library in synthetic PowerShell fixture processes. Source-composed deterministic orchestration and actual released database/library methods; originalGUI executions zero.',TAR:'Current jex test invokes installed native tar listing, seven serialized-record reads and one binary read; independent container verification, not released Joplin application.'},limits:{childDeadlineMs:600000,retainedStdoutBytesEach:16*1024*1024,retainedStderrBytesEach:4*1024*1024,originalPowerShellHelperDeadlineMs:30000,originalPowerShellRetentionBytesPerStream:1024*1024,outerCleanup:'Owned root signal on failure; no Windows atomic descendant containment or hard process-memory bound claim. All tested ordinary child runs settled.',fingerprintIODedicatedDeadline:false},boundaries:{browserExecuted:false,performanceMeasured:false,productionRuntimeChanged:false,historicalEvidenceRebound:false,fullProductParity:false,universalAcceptance:false},knownCollectorLimits:'Test totals are actual TAP totals. Original process accounting is based on current immutable helper observations, not full process-tree telemetry. No unrelated existing host is closed.'};
+await json('integration-validation.json',receipt);console.log(JSON.stringify({receipt:'work/notes-vault-focused-integration-next/integration-validation.json',sha256:hash(Buffer.from(JSON.stringify(receipt,null,2)+'\n')),finiteAcceptance:passed,tests:receipt.tests,sourceStable:stable,sourceFingerprints:before.length,originalCounts:counts}));if(!passed)process.exitCode=1;

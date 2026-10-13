@@ -1,0 +1,3 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {createHash} from 'node:crypto';import {createRequire} from 'node:module';
+const root=import.meta.dirname,sha=b=>createHash('sha256').update(b).digest('hex');
+export async function loadParser(){const record=JSON.parse(await fs.readFile(path.join(root,'acquisition.json')));for(const r of record.parser.selectedFiles){const b=await fs.readFile(path.join(root,r.path));if(b.length!==r.bytes||sha(b)!==r.sha256)throw new Error('Parser source changed: '+r.path);}const ts=createRequire(import.meta.url)(path.join(root,'.local/parser/lib/typescript.js'));if(ts.version!==record.parser.version)throw new Error('Parser runtime version');return ts;}

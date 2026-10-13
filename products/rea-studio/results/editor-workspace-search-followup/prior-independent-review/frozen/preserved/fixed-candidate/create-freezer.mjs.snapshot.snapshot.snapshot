@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';import fs from 'node:fs/promises';import path from 'node:path';
+let source=await fs.readFile(path.join(import.meta.dirname,'freeze-editor-search-stage.mjs'),'utf8');
+const replacements=[
+ ["'editor-search-next'","'editor-search-fix-next'"],
+ ['{tests:37,pass:37,fail:0,cancelled:0,skipped:0,todo:0}','{tests:39,pass:39,fail:0,cancelled:0,skipped:0,todo:0}'],
+ ["'rea-editor-search-candidate-freeze/v1'","'rea-editor-search-corrected-candidate-freeze/v1'"],
+ ["'rea-editor-search-candidate-preservation/v1'","'rea-editor-search-corrected-candidate-preservation/v1'"],
+ ["status:'frozen for independent review; unaccepted'","status:'frozen correction awaiting independent review; unaccepted',priorStageReference:JSON.parse(await fs.readFile(path.join(root,'prior-stage-reference.json'),'utf8')),correctionReceipt:JSON.parse(await fs.readFile(path.join(root,'correction-validation.json'),'utf8'))"],
+ ["suspectedIndependentFinding:'A held search-result read may still change active file after newer query/options invalidate the search. open() checks its own openingGeneration, while the search result checks searchGeneration only after open() has published. Reproduction pending independently.'","knownPriorFinding:'The prior frozen source lacked an originating-search-generation check before open() publication. This separate candidate carries and checks the search context before mutating file/draft state; independent regression confirmation is pending.'"]
+];for(const[from,to]of replacements){assert.equal(source.split(from).length,2,from);source=source.replace(from,to);}
+const root=path.join(import.meta.dirname,'editor-search-fix-next'),old=path.join(import.meta.dirname,'editor-search-next'),oldManifest=JSON.parse(await fs.readFile(path.join(old,'freeze-manifest.json'),'utf8')),sha=(await import('node:crypto')).createHash;const changed=[];
+for(const[name,row]of Object.entries(oldManifest.inventory)){if(!name.startsWith('products/'))continue;const b=await fs.readFile(path.join(root,name));if(sha('sha256').update(b).digest('hex')!==row.sha256)changed.push(name);}
+assert.deepEqual(changed.sort(),['products/rea-studio/apps/editor/client.mjs','products/rea-studio/apps/editor/workspace-search.mjs','products/rea-studio/apps/editor/workspace-search.ui.test.mjs'].sort());
+await fs.writeFile(path.join(root,'correction-validation.json'),JSON.stringify({schema:'rea-editor-search-originating-generation-correction/v1',checkedAtUtc:new Date().toISOString(),changedProductFiles:changed,allOtherCopiedProductFilesExactlyPriorEpoch:true,priorManifestSHA256:'44e8efd72f09c7cc5caa598f43dbe099dd73982477249ecfed2fddfb2a26a7a6',addedRegressionGroups:2,formalFocusedPass:39,originalQueryCorpusReplayed:true,independentAcceptancePending:true,productionModified:false},null,2)+'\n',{flag:'wx'});
+await fs.writeFile(path.join(root,'create-freezer.mjs.snapshot'),await fs.readFile(import.meta.filename),{flag:'wx'});await fs.writeFile(path.join(import.meta.dirname,'freeze-editor-search-fix-stage.mjs'),source,{flag:'wx'});console.log('Prepared exact separate corrected-candidate freeze.');

@@ -1,0 +1,20 @@
+// Fixed prospective inputs. First five preserve exact preceding measurement data.
+export function valuesForSpec(spec){
+ const n=spec.n;
+ if(spec.input==='previous')return Array.from({length:n},(_,i)=>i%23===0?null:((i*7879)%7919)-3959.25);
+ if(spec.input==='constructed'){let state=spec.seed>>>0;const random=()=>{state^=state<<13;state^=state>>>17;state^=state<<5;return(state>>>0)/4294967296;};return Array.from({length:n},(_,i)=>i%41===0?null:((i*i*17)%104729)*.00390625+(random()-.5)*.125+Math.floor(i/701)*3.25);}
+ if(spec.input==='organ-pipe')return Array.from({length:n},(_,i)=>i<n/2?i+.125:n-i+.125);
+ throw Error('Unknown fixed input '+spec.input);
+}
+export function specsFor(original){
+ const all=Object.keys(original.ReducerID),percentiles=all.filter(id=>/^p\d+$/.test(id));
+ return {
+  smallStandard:{n:100,input:'previous',reducers:['mean','min','max','sum','delta'],iterations:100000,warmup:20000,transient:100000,retained:10000},
+  largeStandard:{n:25000,input:'previous',reducers:['mean','min','max','sum','delta'],iterations:2000,warmup:500,transient:2000,retained:10000},
+  singlePercentile:{n:25000,input:'previous',reducers:['p95'],iterations:200,warmup:100,transient:200,retained:256},
+  allPercentiles:{n:25000,input:'previous',reducers:percentiles,iterations:3,warmup:2,transient:16,retained:16},
+  allCalculations:{n:25000,input:'previous',reducers:all,iterations:3,warmup:2,transient:16,retained:16},
+  constructedPercentile:{n:25000,input:'constructed',seed:0x41d7be69,reducers:['p95'],iterations:200,warmup:100,transient:200,retained:256},
+  adversarialFallbackPercentile:{n:25000,input:'organ-pipe',reducers:['p95'],iterations:200,warmup:100,transient:200,retained:256}
+ };
+}

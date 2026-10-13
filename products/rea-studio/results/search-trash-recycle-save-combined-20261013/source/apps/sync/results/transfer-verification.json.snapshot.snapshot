@@ -1,0 +1,4246 @@
+{
+  "checkedAt": "2026-10-12T17:54:09.556Z",
+  "baseline": "rclone v1.75.2",
+  "sourceCommit": "be8d6044eacb843b74d335db0c5fbe09222031fe",
+  "version": "rclone v1.75.2\n- os/version: Microsoft Windows 11 Home 26H2 26H2 (64 bit)\n- os/kernel: 10.0.26300.9550 (x86_64)\n- os/type: windows\n- os/arch: amd64\n- go/version: go1.26.9\n- go/linking: static\n- go/tags: cmount\n",
+  "originalSHA256": "41eab3e118d264920b62c3327966c5ece0dc4dd715ee617d9e30450d8ead95a4",
+  "originalCLIExecutions": 43,
+  "allFixturesSynthetic": true,
+  "priorReconstructionReadOrImported": false,
+  "moduleHashes": {
+    "native.mjs": "3b6483d80b958ff70e42cb9df9205cf1757b5e481715c7240cd92e0c6e336aaf",
+    "native-filters.mjs": "3e370373897364b61247da55be53ecd4b618da84df581d766120adafaba4d27b",
+    "native-comparison.mjs": "f169dff550e3b5dfd95a11136791be88bfe6dc88768c949e0befd677aebdd767"
+  },
+  "records": [
+    {
+      "index": 0,
+      "input": {
+        "mode": "copy"
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "6e8552de-a8fe-4248-be49-2f96cecf9857",
+        "source": "source",
+        "target": "target",
+        "mode": "copy",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "3096224746780500"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359186"
+            },
+            "previous": null
+          },
+          {
+            "type": "updateModtime",
+            "reason": "matching-md5-different-time",
+            "mtimeNs": "1800000005000000000",
+            "path": "metadata.txt",
+            "source": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000005000000000",
+              "inode": "2814749770069839"
+            },
+            "previous": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2814749770069856"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "3377699723491152"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "2814749770069838"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "3096224746780511"
+            }
+          }
+        ],
+        "skipped": [
+          {
+            "path": "same-time-different.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 4,
+        "timestampsUpdated": 1,
+        "removed": 0,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 0,
+        "skipped": 2,
+        "historyFolder": ".rea-sync-history/6e8552de-a8fe-4248-be49-2f96cecf9857",
+        "completedAt": "2026-10-12T17:53:58.531Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/extra.bin": {
+            "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/extra.txt": {
+            "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "extra.txt": {
+            "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000005000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/private/empty",
+          "dir/sub",
+          "old",
+          "old/child",
+          "target-empty"
+        ]
+      },
+      "originalDryRunLogSHA256": "25f76f9eed51628ff99a2ac49682dd6564b828a8337109c99b7412dd9acd9949",
+      "originalApplyLogSHA256": "477700f6bd2f202ee5ddeefcec047d998b06e6f83ee487034dd8f5eb99c0b497"
+    },
+    {
+      "index": 1,
+      "input": {
+        "mode": "sync"
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "4d0fff9b-163a-47e7-a9e4-427f41e392d8",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359264"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359262"
+            },
+            "previous": null
+          },
+          {
+            "type": "updateModtime",
+            "reason": "matching-md5-different-time",
+            "mtimeNs": "1800000005000000000",
+            "path": "metadata.txt",
+            "source": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000005000000000",
+              "inode": "2814749770069915"
+            },
+            "previous": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "3096224746780588"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2814749770069916"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "2814749770069914"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2814749770069931"
+            }
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359278"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "3377699723491250"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "3377699723491245"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "same-time-different.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 4,
+        "timestampsUpdated": 1,
+        "removed": 3,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 4,
+        "skipped": 2,
+        "historyFolder": ".rea-sync-history/4d0fff9b-163a-47e7-a9e4-427f41e392d8",
+        "completedAt": "2026-10-12T17:53:59.138Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000005000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "92f99336af6190411c8ad903ea6ac315cebb1a1d4202092f80c60d187f0af592",
+      "originalApplyLogSHA256": "d323414312622e6636ce7c2c8cdb6d08dc167aca44fa743db89cd4ee67c9bca2"
+    },
+    {
+      "index": 2,
+      "input": {
+        "mode": "copy",
+        "comparison": {
+          "checksum": true
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "47eb90af-6420-422f-a618-afa39a5ae4b4",
+        "source": "source",
+        "target": "target",
+        "mode": "copy",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648679"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "3377699723491301"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648674"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "2251799816648672"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "3659174700201970"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "same-time-different.txt",
+            "source": {
+              "size": 4,
+              "sha256": "360f84035942243c6a36537ae2f8673485e6c04455a0a85a0db19690f2541480",
+              "md5": "811882fecd5c7618d7099ebbd39ea254",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2814749770069983"
+            },
+            "previous": {
+              "size": 4,
+              "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+              "md5": "905b4f757dbfe5cbe766c5be0e45212d",
+              "mtimeNs": "1800000000000000000",
+              "inode": "3377699723491313"
+            }
+          }
+        ],
+        "skipped": [
+          {
+            "path": "metadata.txt",
+            "reason": "matching-md5",
+            "byteHashesEqual": true
+          },
+          {
+            "path": "same.txt",
+            "reason": "matching-md5",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": true,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 5,
+        "timestampsUpdated": 0,
+        "removed": 0,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 0,
+        "skipped": 2,
+        "historyFolder": ".rea-sync-history/47eb90af-6420-422f-a618-afa39a5ae4b4",
+        "completedAt": "2026-10-12T17:53:59.742Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/extra.bin": {
+            "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/extra.txt": {
+            "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "extra.txt": {
+            "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000000000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "360f84035942243c6a36537ae2f8673485e6c04455a0a85a0db19690f2541480",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/private/empty",
+          "dir/sub",
+          "old",
+          "old/child",
+          "target-empty"
+        ]
+      },
+      "originalDryRunLogSHA256": "559dde4902b1ae2f53d867d1a7631f485329bbe49fafda4b5027c1057ed53ae4",
+      "originalApplyLogSHA256": "c9fdf229bd21f4d834525fe7128bae9fb43101794fab9b45caeec0e35697051f"
+    },
+    {
+      "index": 3,
+      "input": {
+        "mode": "sync",
+        "comparison": {
+          "checksum": true
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "6a4f1150-2d7e-4e22-923a-740730eba9a1",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648756"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359410"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648752"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "2251799816648750"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938111"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "same-time-different.txt",
+            "source": {
+              "size": 4,
+              "sha256": "360f84035942243c6a36537ae2f8673485e6c04455a0a85a0db19690f2541480",
+              "md5": "811882fecd5c7618d7099ebbd39ea254",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938093"
+            },
+            "previous": {
+              "size": 4,
+              "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+              "md5": "905b4f757dbfe5cbe766c5be0e45212d",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938110"
+            }
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648770"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359427"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648769"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "metadata.txt",
+            "reason": "matching-md5",
+            "byteHashesEqual": true
+          },
+          {
+            "path": "same.txt",
+            "reason": "matching-md5",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": true,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 5,
+        "timestampsUpdated": 0,
+        "removed": 3,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 4,
+        "skipped": 2,
+        "historyFolder": ".rea-sync-history/6a4f1150-2d7e-4e22-923a-740730eba9a1",
+        "completedAt": "2026-10-12T17:54:00.380Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000000000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "360f84035942243c6a36537ae2f8673485e6c04455a0a85a0db19690f2541480",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "0b9a76023e7f9cca19d5192b11d04d6da2622a330cf2dedee3a44740b51d05e2",
+      "originalApplyLogSHA256": "a0e781c6a9a442436f05b175063b8e060c44f260153ee949961cdc1409178a45"
+    },
+    {
+      "index": 4,
+      "input": {
+        "mode": "copy",
+        "comparison": {
+          "ignoreTimes": true
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "308ac46e-5d13-492e-a8f6-8f9b1def6967",
+        "source": "source",
+        "target": "target",
+        "mode": "copy",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938170"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648824"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "ignore-times",
+            "path": "metadata.txt",
+            "source": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1970324839938164"
+            },
+            "previous": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938181"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "3096224746780790"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "ignore-times",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "2533274793359475"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938180"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "ignore-times",
+            "path": "same-time-different.txt",
+            "source": {
+              "size": 4,
+              "sha256": "360f84035942243c6a36537ae2f8673485e6c04455a0a85a0db19690f2541480",
+              "md5": "811882fecd5c7618d7099ebbd39ea254",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648818"
+            },
+            "previous": {
+              "size": 4,
+              "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+              "md5": "905b4f757dbfe5cbe766c5be0e45212d",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648835"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "ignore-times",
+            "path": "same.txt",
+            "source": {
+              "size": 4,
+              "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+              "md5": "51037a4a37730f52c8732586d3aaa316",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359473"
+            },
+            "previous": {
+              "size": 4,
+              "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+              "md5": "51037a4a37730f52c8732586d3aaa316",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359490"
+            }
+          }
+        ],
+        "skipped": [],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": true,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 7,
+        "timestampsUpdated": 0,
+        "removed": 0,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 0,
+        "skipped": 0,
+        "historyFolder": ".rea-sync-history/308ac46e-5d13-492e-a8f6-8f9b1def6967",
+        "completedAt": "2026-10-12T17:54:00.966Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/extra.bin": {
+            "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/extra.txt": {
+            "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "extra.txt": {
+            "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000005000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "360f84035942243c6a36537ae2f8673485e6c04455a0a85a0db19690f2541480",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/private/empty",
+          "dir/sub",
+          "old",
+          "old/child",
+          "target-empty"
+        ]
+      },
+      "originalDryRunLogSHA256": "273b6614477cbb4de33b001f45609e42da29f4cc226810e1f5957c7aaff62068",
+      "originalApplyLogSHA256": "ac6431dfa4d3c29c1eababa29893f58e271965bb96a571128e2945b22d9f818e"
+    },
+    {
+      "index": 5,
+      "input": {
+        "mode": "sync",
+        "comparison": {
+          "ignoreExisting": true
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "c88ab1fa-d16b-4e48-9235-bd7bd5e3d591",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938251"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938249"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359559"
+            },
+            "previous": null
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648920"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648921"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359575"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "metadata.txt",
+            "reason": "ignore-existing",
+            "byteHashesEqual": true
+          },
+          {
+            "path": "older.txt",
+            "reason": "ignore-existing",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same-time-different.txt",
+            "reason": "ignore-existing",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "ignore-existing",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": true,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 3,
+        "timestampsUpdated": 0,
+        "removed": 3,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 4,
+        "skipped": 4,
+        "historyFolder": ".rea-sync-history/c88ab1fa-d16b-4e48-9235-bd7bd5e3d591",
+        "completedAt": "2026-10-12T17:54:01.564Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000000000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "7d542db9b4d3034b0791d38df3120851feb8b97157d8a3389772080c1cef5c39",
+      "originalApplyLogSHA256": "57f502a84425e14f2627d23dae2fc5366262309fc60cff2ce79898f0b623f476"
+    },
+    {
+      "index": 6,
+      "input": {
+        "mode": "sync",
+        "comparison": {
+          "sizeOnly": true
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "429d7fe7-ee7b-45c7-8109-a3f33cd8aa48",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938313"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938311"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648965"
+            },
+            "previous": null
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648982"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648983"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816648981"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "metadata.txt",
+            "reason": "size-only",
+            "byteHashesEqual": true
+          },
+          {
+            "path": "older.txt",
+            "reason": "size-only",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same-time-different.txt",
+            "reason": "size-only",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "size-only",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": true,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 3,
+        "timestampsUpdated": 0,
+        "removed": 3,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 4,
+        "skipped": 4,
+        "historyFolder": ".rea-sync-history/429d7fe7-ee7b-45c7-8109-a3f33cd8aa48",
+        "completedAt": "2026-10-12T17:54:02.144Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000000000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "fa30b633ff60ac6ac8975994c00f021ae21edf3d2f45e798805270e430b25581",
+      "originalApplyLogSHA256": "483b6d6020f4cf4534034fdc50d574f41894840e38521b80a0c77f48e9dfd286"
+    },
+    {
+      "index": 7,
+      "input": {
+        "mode": "sync",
+        "comparison": {
+          "update": true
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "ceebdc9e-df5c-4c92-9a1e-16b498257874",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816649063"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938378"
+            },
+            "previous": null
+          },
+          {
+            "type": "updateModtime",
+            "reason": "matching-md5-different-time",
+            "mtimeNs": "1800000005000000000",
+            "path": "metadata.txt",
+            "source": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000005000000000",
+              "inode": "3377699723491651"
+            },
+            "previous": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227774"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816649029"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1970324839938369"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227773"
+            }
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938433"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227778"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2533274793359744"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "same-time-different.txt",
+            "reason": "size-only",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "size-only",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": true,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 4,
+        "timestampsUpdated": 1,
+        "removed": 3,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 4,
+        "skipped": 2,
+        "historyFolder": ".rea-sync-history/ceebdc9e-df5c-4c92-9a1e-16b498257874",
+        "completedAt": "2026-10-12T17:54:02.753Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000005000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "ec5dfc17782202403c91809fa72092539a3ea2f2d5bd4d5efa16a58286e59d0d",
+      "originalApplyLogSHA256": "c69571e7c46b272e49d2c0c5d51b80bcd594ac0ad5dd95edbe8a0df33cea4740"
+    },
+    {
+      "index": 8,
+      "input": {
+        "mode": "sync",
+        "comparison": {
+          "noUpdateModtime": true
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "37623465-c8f9-46be-a8e5-ccd3f17b8f16",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227829"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227827"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1407374886517169"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "2251799816649134"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227840"
+            }
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227843"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227844"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227842"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "metadata.txt",
+            "reason": "matching-md5-with-time-retained",
+            "byteHashesEqual": true
+          },
+          {
+            "path": "same-time-different.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": true,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 4,
+        "timestampsUpdated": 0,
+        "removed": 3,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 4,
+        "skipped": 3,
+        "historyFolder": ".rea-sync-history/37623465-c8f9-46be-a8e5-ccd3f17b8f16",
+        "completedAt": "2026-10-12T17:54:03.374Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000000000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "398991d6c87cd97862c5b6bbf97a8a334ff9be4e2b45c80b4f9378e20ace3051",
+      "originalApplyLogSHA256": "9c7152040f9223fcc29f719b8a117437527c0568e50d2f5cde5e1c564833969b"
+    },
+    {
+      "index": 9,
+      "input": {
+        "mode": "sync",
+        "comparison": {
+          "modifyWindowNs": "10000000000"
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "e3add902-28a6-4ca0-814f-da2cbf4d729d",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227895"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938549"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816649203"
+            },
+            "previous": null
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227909"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227910"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227908"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "metadata.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": true
+          },
+          {
+            "path": "older.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same-time-different.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "10000000000"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 3,
+        "timestampsUpdated": 0,
+        "removed": 3,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 4,
+        "skipped": 4,
+        "historyFolder": ".rea-sync-history/e3add902-28a6-4ca0-814f-da2cbf4d729d",
+        "completedAt": "2026-10-12T17:54:03.958Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000000000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "f56dc8952644e95ec0d65917dfd52968bc2d961a967a7cf3d5e873271de23bae",
+      "originalApplyLogSHA256": "303d155b27e6c2bb4c957ae70db7608273dedf13dc4c1dd17e299b2e96593b20"
+    },
+    {
+      "index": 10,
+      "input": {
+        "mode": "copy",
+        "createEmptySrcDirs": true
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "773e4b2a-d173-435b-bae3-a946fb23feb8",
+        "source": "source",
+        "target": "target",
+        "mode": "copy",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816649272"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227958"
+            },
+            "previous": null
+          },
+          {
+            "type": "updateModtime",
+            "reason": "matching-md5-different-time",
+            "mtimeNs": "1800000005000000000",
+            "path": "metadata.txt",
+            "source": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1688849863227955"
+            },
+            "previous": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227971"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863227956"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1688849863227954"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938626"
+            }
+          },
+          {
+            "type": "mkdir",
+            "path": "source-empty",
+            "reason": "create-empty-source-directories"
+          },
+          {
+            "type": "mkdir",
+            "path": "dir/source-empty",
+            "reason": "create-empty-source-directories"
+          },
+          {
+            "type": "mkdir",
+            "path": "dir/sub",
+            "reason": "create-empty-source-directories"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "same-time-different.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 4,
+        "timestampsUpdated": 1,
+        "removed": 0,
+        "directoriesCreated": 3,
+        "directoriesRemoved": 0,
+        "skipped": 2,
+        "historyFolder": ".rea-sync-history/773e4b2a-d173-435b-bae3-a946fb23feb8",
+        "completedAt": "2026-10-12T17:54:04.517Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/extra.bin": {
+            "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/extra.txt": {
+            "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "extra.txt": {
+            "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000005000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/private/empty",
+          "dir/source-empty",
+          "dir/sub",
+          "old",
+          "old/child",
+          "source-empty",
+          "target-empty"
+        ]
+      },
+      "originalDryRunLogSHA256": "15cd8fd1f9f80b38a719f3a0076266a17820177738769fbec954883c700a7e1a",
+      "originalApplyLogSHA256": "0168d0e5a218c6f58b804906a3f2c331513e59d579138ba22192d18b7c26f1ed"
+    },
+    {
+      "index": 11,
+      "input": {
+        "mode": "sync",
+        "createEmptySrcDirs": true
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "c27f4226-d083-4db1-a095-00c4effa3c13",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228037"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228035"
+            },
+            "previous": null
+          },
+          {
+            "type": "updateModtime",
+            "reason": "matching-md5-different-time",
+            "mtimeNs": "1800000005000000000",
+            "path": "metadata.txt",
+            "source": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1688849863228032"
+            },
+            "previous": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938704"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228033"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1970324839938687"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "2251799816649359"
+            }
+          },
+          {
+            "type": "mkdir",
+            "path": "source-empty",
+            "reason": "create-empty-source-directories"
+          },
+          {
+            "type": "mkdir",
+            "path": "dir/source-empty",
+            "reason": "create-empty-source-directories"
+          },
+          {
+            "type": "mkdir",
+            "path": "dir/sub",
+            "reason": "create-empty-source-directories"
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228050"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938707"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228049"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "same-time-different.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 4,
+        "timestampsUpdated": 1,
+        "removed": 3,
+        "directoriesCreated": 3,
+        "directoriesRemoved": 4,
+        "skipped": 2,
+        "historyFolder": ".rea-sync-history/c27f4226-d083-4db1-a095-00c4effa3c13",
+        "completedAt": "2026-10-12T17:54:05.106Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000005000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/source-empty",
+          "dir/sub",
+          "source-empty"
+        ]
+      },
+      "originalDryRunLogSHA256": "ba45b8b7474c4802ad77c8111090a105e62c7053dcc5ab47a133551076cb0bc5",
+      "originalApplyLogSHA256": "3cc74f91b719260986a6c8d599cac00f2ad7c425f5af7942d6226bca1bdcbd69"
+    },
+    {
+      "index": 12,
+      "input": {
+        "mode": "sync",
+        "filters": {
+          "exclude": [
+            "/dir/private/**"
+          ]
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "e195feb5-782c-4124-9981-486a89a695d4",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228106"
+            },
+            "previous": null
+          },
+          {
+            "type": "updateModtime",
+            "reason": "matching-md5-different-time",
+            "mtimeNs": "1800000005000000000",
+            "path": "metadata.txt",
+            "source": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1688849863228103"
+            },
+            "previous": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228119"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228104"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1688849863228102"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228118"
+            }
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228121"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228120"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "same-time-different.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [
+            {
+              "pattern": "/dir/private/**",
+              "include": false
+            }
+          ],
+          "directoryRules": [
+            {
+              "pattern": "/dir/private/**",
+              "include": false
+            }
+          ],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 1,
+        "excludedTargetFiles": 1,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 3,
+        "timestampsUpdated": 1,
+        "removed": 2,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 3,
+        "skipped": 2,
+        "historyFolder": ".rea-sync-history/e195feb5-782c-4124-9981-486a89a695d4",
+        "completedAt": "2026-10-12T17:54:05.657Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/extra.txt": {
+            "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000005000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/private/empty",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "323cbc669add898267e6df99592e9ee6cb8a50d8ef7ee19da1ebad26c2b3f756",
+      "originalApplyLogSHA256": "80f8a0db81704a806a42e139fd7b3c92ecdc0435025aae04cd58758761b01d1d"
+    },
+    {
+      "index": 13,
+      "input": {
+        "mode": "sync",
+        "filters": {
+          "include": [
+            "*.txt"
+          ],
+          "exclude": [
+            "same.txt"
+          ]
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "1b4fdc25-1e91-45fd-b330-3f9cff43b874",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228173"
+            },
+            "previous": null
+          },
+          {
+            "type": "updateModtime",
+            "reason": "matching-md5-different-time",
+            "mtimeNs": "1800000005000000000",
+            "path": "metadata.txt",
+            "source": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000005000000000",
+              "inode": "2533274793360136"
+            },
+            "previous": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938840"
+            }
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228169"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1688849863228167"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228183"
+            }
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228187"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228185"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [
+          {
+            "path": "same-time-different.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": false
+          },
+          {
+            "path": "same.txt",
+            "reason": "matching-size-and-time",
+            "byteHashesEqual": true
+          }
+        ],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [
+            {
+              "pattern": "*.txt",
+              "include": true
+            },
+            {
+              "pattern": "same.txt",
+              "include": false
+            },
+            {
+              "pattern": "/**",
+              "include": false
+            }
+          ],
+          "directoryRules": [
+            {
+              "pattern": "/**",
+              "include": true
+            },
+            {
+              "pattern": "/**",
+              "include": false
+            }
+          ],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 1,
+        "excludedTargetFiles": 1,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 3,
+        "timestampsUpdated": 1,
+        "removed": 2,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 4,
+        "skipped": 2,
+        "historyFolder": ".rea-sync-history/1b4fdc25-1e91-45fd-b330-3f9cff43b874",
+        "completedAt": "2026-10-12T17:54:06.231Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/extra.bin": {
+            "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000005000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private"
+        ]
+      },
+      "originalDryRunLogSHA256": "4ac4e5a6a0d866b5b9730b46ddcaf352572f2aedda255df67dea59926a5667e6",
+      "originalApplyLogSHA256": "afd9eb2ff9574224bad62bc51118011a287f875addca77c9506f0d1f47355b90"
+    },
+    {
+      "index": 14,
+      "input": {
+        "mode": "sync",
+        "filters": {
+          "filter": [
+            "- /dir/private/**",
+            "+ /dir/**",
+            "- **"
+          ]
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "98f30de5-4566-4f0b-9a7e-882f46599bce",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1970324839938887"
+            },
+            "previous": null
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228246"
+            },
+            "reason": "selected-target-only-file"
+          }
+        ],
+        "skipped": [],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [
+            {
+              "pattern": "/dir/private/**",
+              "include": false
+            },
+            {
+              "pattern": "/dir/**",
+              "include": true
+            },
+            {
+              "pattern": "**",
+              "include": false
+            }
+          ],
+          "directoryRules": [
+            {
+              "pattern": "/dir/private/**",
+              "include": false
+            },
+            {
+              "pattern": "/dir/**/",
+              "include": true
+            },
+            {
+              "pattern": "/dir/",
+              "include": true
+            },
+            {
+              "pattern": "/dir/**",
+              "include": true
+            },
+            {
+              "pattern": "**",
+              "include": false
+            }
+          ],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 6,
+        "excludedTargetFiles": 6,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 1,
+        "timestampsUpdated": 0,
+        "removed": 1,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 0,
+        "skipped": 0,
+        "historyFolder": ".rea-sync-history/98f30de5-4566-4f0b-9a7e-882f46599bce",
+        "completedAt": "2026-10-12T17:54:06.741Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/extra.txt": {
+            "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "extra.txt": {
+            "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/private/empty",
+          "dir/sub",
+          "old",
+          "old/child",
+          "target-empty"
+        ]
+      },
+      "originalDryRunLogSHA256": "6a8084375d346d43a99d27ca5b45b4dfa5ba1b828b400abe2e06a5c337d9939b",
+      "originalApplyLogSHA256": "31ec5885be00581fd7fca413f6d15bcbd2d0b9937338a40a27e5240520dfa601"
+    },
+    {
+      "index": 15,
+      "input": {
+        "mode": "sync",
+        "filters": {
+          "filesFrom": [
+            "new.txt\ndir/sub/data.bin\nextra.txt\n"
+          ]
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "a88fc06f-8a5e-4632-b114-bc1eb893e3b4",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228299"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1688849863228297"
+            },
+            "previous": null
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1407374886517657"
+            },
+            "reason": "selected-target-only-file"
+          }
+        ],
+        "skipped": [],
+        "filters": {
+          "filesFrom": true,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 5,
+        "excludedTargetFiles": 6,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 2,
+        "timestampsUpdated": 0,
+        "removed": 1,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 0,
+        "skipped": 0,
+        "historyFolder": ".rea-sync-history/a88fc06f-8a5e-4632-b114-bc1eb893e3b4",
+        "completedAt": "2026-10-12T17:54:07.222Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/extra.bin": {
+            "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/extra.txt": {
+            "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000000000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/private/empty",
+          "dir/sub",
+          "old",
+          "old/child",
+          "target-empty"
+        ]
+      },
+      "originalDryRunLogSHA256": "a5920aafcc9fc9cfafa4f5a653399c8a0958a9af7d4ca0678f51eb84aae080de",
+      "originalApplyLogSHA256": "a97bbd8e641aab63ea22fff3fdc64d504aa0acfed8eb3fdad93f1c29754be693"
+    },
+    {
+      "index": 16,
+      "input": {
+        "mode": "sync",
+        "filters": {
+          "minSize": 5,
+          "maxSize": 8
+        }
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "87b2f4a9-5451-4b06-b6d7-967f771d9fd7",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807060"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1407374886517714"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "different-md5",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1407374886517710"
+            },
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807070"
+            }
+          },
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807073"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807074"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807072"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false,
+          "minSize": 5,
+          "maxSize": 8
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 4,
+        "excludedTargetFiles": 3,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 3,
+        "timestampsUpdated": 0,
+        "removed": 3,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 4,
+        "skipped": 0,
+        "historyFolder": ".rea-sync-history/87b2f4a9-5451-4b06-b6d7-967f771d9fd7",
+        "completedAt": "2026-10-12T17:54:07.778Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "949fd24c9795474a99b6f68addd856dc02355a16d309c558fa897332cc6849ba",
+      "originalApplyLogSHA256": "2ad6b64ed9ad22fb0d0260b801d52811745436feb091419029c673973fb2080f"
+    },
+    {
+      "index": 17,
+      "input": {
+        "mode": "copy",
+        "targetMissing": true
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "a8a88183-3724-4dd6-aa29-988ae2dd78b7",
+        "source": "source",
+        "target": "target",
+        "mode": "copy",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807125"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807123"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "metadata.txt",
+            "source": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1125899909807120"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807121"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1125899909807119"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "same-time-different.txt",
+            "source": {
+              "size": 4,
+              "sha256": "360f84035942243c6a36537ae2f8673485e6c04455a0a85a0db19690f2541480",
+              "md5": "811882fecd5c7618d7099ebbd39ea254",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807118"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "same.txt",
+            "source": {
+              "size": 4,
+              "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+              "md5": "51037a4a37730f52c8732586d3aaa316",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807117"
+            },
+            "previous": null
+          }
+        ],
+        "skipped": [],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 7,
+        "timestampsUpdated": 0,
+        "removed": 0,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 0,
+        "skipped": 0,
+        "historyFolder": null,
+        "completedAt": "2026-10-12T17:54:08.223Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000005000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "360f84035942243c6a36537ae2f8673485e6c04455a0a85a0db19690f2541480",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "6e57974695536b93485f7cfd60c8843d4b7b95ce78f360e0376ede2217aa769a",
+      "originalApplyLogSHA256": "bbd073d675f573344a664f9ec44954efedba782dd7c7071ccc01dee95deba1d9"
+    },
+    {
+      "index": 18,
+      "input": {
+        "mode": "sync",
+        "targetMissing": true
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "a485467b-67ab-43fa-b9f9-cd98dbcd39e0",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/private/keep.txt",
+            "source": {
+              "size": 7,
+              "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+              "md5": "2c17c6393771ee3048ae34d6b380c5ec",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807189"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "dir/sub/data.bin",
+            "source": {
+              "size": 5,
+              "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+              "md5": "4b3a6218bb3e3a7303e8a171a60fcf92",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807187"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "metadata.txt",
+            "source": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1125899909807184"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "new.txt",
+            "source": {
+              "size": 3,
+              "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+              "md5": "22af645d1859cb5ca6da0c484f1f37ea",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807185"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "older.txt",
+            "source": {
+              "size": 5,
+              "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+              "md5": "76010858c8362d7302ef5f9436aa6639",
+              "mtimeNs": "1800000005000000000",
+              "inode": "1125899909807183"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "same-time-different.txt",
+            "source": {
+              "size": 4,
+              "sha256": "360f84035942243c6a36537ae2f8673485e6c04455a0a85a0db19690f2541480",
+              "md5": "811882fecd5c7618d7099ebbd39ea254",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807182"
+            },
+            "previous": null
+          },
+          {
+            "type": "copy",
+            "reason": "missing-destination",
+            "path": "same.txt",
+            "source": {
+              "size": 4,
+              "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+              "md5": "51037a4a37730f52c8732586d3aaa316",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807181"
+            },
+            "previous": null
+          }
+        ],
+        "skipped": [],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 7,
+        "timestampsUpdated": 0,
+        "removed": 0,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 0,
+        "skipped": 0,
+        "historyFolder": null,
+        "completedAt": "2026-10-12T17:54:08.692Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/private/keep.txt": {
+            "sha256": "715dc8493c36579a5b116995100f635e3572fdf8703e708ef1a08d943b36774e",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/sub/data.bin": {
+            "sha256": "277089d91c0bdf4f2e6862ba7e4a07605119431f5d13f726dd352b06f1b206a9",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000005000000000"
+          },
+          "new.txt": {
+            "sha256": "11507a0e2f5e69d5dfa40a62a1bd7b6ee57e6bcd85c67c9b8431b36fff21c437",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "d098ab5e44b9aabb755f76d806598f43573c662b35e4a2eab1e312ec9ad195e2",
+            "mtimeNs": "1800000005000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "360f84035942243c6a36537ae2f8673485e6c04455a0a85a0db19690f2541480",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/sub"
+        ]
+      },
+      "originalDryRunLogSHA256": "2a691c9230d3667d4c11fee2a84b82a0158b3f1345a9d8fb6b900953405cb065",
+      "originalApplyLogSHA256": "006e2aee97df73b38eba425b444417fc0185ec8a0b5abd0ba8a790dec7d61af5"
+    },
+    {
+      "index": 19,
+      "input": {
+        "mode": "copy",
+        "emptySource": true,
+        "createEmptySrcDirs": true
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "8b96c1ad-0c2d-41a1-bd76-e1532c1ae060",
+        "source": "source",
+        "target": "target",
+        "mode": "copy",
+        "operations": [],
+        "skipped": [],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 0,
+        "timestampsUpdated": 0,
+        "removed": 0,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 0,
+        "skipped": 0,
+        "historyFolder": null,
+        "completedAt": "2026-10-12T17:54:09.072Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {
+          "dir/extra.bin": {
+            "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+            "mtimeNs": "1800000000000000000"
+          },
+          "dir/private/extra.txt": {
+            "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+            "mtimeNs": "1800000000000000000"
+          },
+          "extra.txt": {
+            "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+            "mtimeNs": "1800000000000000000"
+          },
+          "metadata.txt": {
+            "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+            "mtimeNs": "1800000000000000000"
+          },
+          "older.txt": {
+            "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same-time-different.txt": {
+            "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+            "mtimeNs": "1800000000000000000"
+          },
+          "same.txt": {
+            "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+            "mtimeNs": "1800000000000000000"
+          }
+        },
+        "directories": [
+          "dir",
+          "dir/private",
+          "dir/private/empty",
+          "old",
+          "old/child",
+          "target-empty"
+        ]
+      },
+      "originalDryRunLogSHA256": "8797af12594641fb4ecc937d65124b80d21854e2e59fca1619c97ed071ee93d1",
+      "originalApplyLogSHA256": "3e65d7364a7e763ab5fa926dd83956c2c249b8f36de1507c6c044d1dc39cefe8"
+    },
+    {
+      "index": 20,
+      "input": {
+        "mode": "sync",
+        "emptySource": true
+      },
+      "passed": true,
+      "plan": {
+        "format": "local-rclone-v1.75.2-subset",
+        "token": "c55309f2-7216-4658-95ff-22a45fbe2102",
+        "source": "source",
+        "target": "target",
+        "mode": "sync",
+        "operations": [
+          {
+            "type": "delete",
+            "path": "dir/extra.bin",
+            "previous": {
+              "size": 6,
+              "sha256": "34a04005bcaf206eec990bd9637d9fdb6725e0a0c0d4aebf003f17f4c956eb5c",
+              "md5": "42aefbae01d2dfd981f7da7d823d689e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807759"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "dir/private/extra.txt",
+            "previous": {
+              "size": 8,
+              "sha256": "cfa5ad96f5be4fc290f591b8afd957551315abbb0a68cdf7660849d8829d644f",
+              "md5": "c2413b3d6b0162ee66c1ee1a90828706",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1407374886518417"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "extra.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "c8dee78f8c7b466c881847accc196998bad00e2b96c5ef913dfbe454d3807c96",
+              "md5": "ea9f91b2cda019730f2891bd12a7a4d6",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807757"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "metadata.txt",
+            "previous": {
+              "size": 10,
+              "sha256": "58100dc8fc06562ce3e578231dc948e083520ee49c4b4ee5a5a28bb4b4003feb",
+              "md5": "b7c7a19ff9841101a57b7867181d267e",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1125899909807756"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "older.txt",
+            "previous": {
+              "size": 5,
+              "sha256": "da925a30e31f7fdaa7044e3e5ba4ae17670de82d677b0e7adf5700428a137a36",
+              "md5": "6a3a6f6e33217afa6373df9d6b2e8a00",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1407374886518410"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "same-time-different.txt",
+            "previous": {
+              "size": 4,
+              "sha256": "d2e59e81809a54419ed7277b970fc7e9b26dbcb9753e57f3cb285ae9a6bcc542",
+              "md5": "905b4f757dbfe5cbe766c5be0e45212d",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1407374886518408"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "delete",
+            "path": "same.txt",
+            "previous": {
+              "size": 4,
+              "sha256": "0967115f2813a3541eaef77de9d9d5773f1c0c04314b0bbfe4ff3b3b1c55b5d5",
+              "md5": "51037a4a37730f52c8732586d3aaa316",
+              "mtimeNs": "1800000000000000000",
+              "inode": "1407374886518406"
+            },
+            "reason": "selected-target-only-file"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private/empty",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir/private",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old/child",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "dir",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "old",
+            "reason": "empty-target-only-directory"
+          },
+          {
+            "type": "rmdir",
+            "path": "target-empty",
+            "reason": "empty-target-only-directory"
+          }
+        ],
+        "skipped": [],
+        "filters": {
+          "filesFrom": false,
+          "fileRules": [],
+          "directoryRules": [],
+          "ignoreCase": false
+        },
+        "comparison": {
+          "checksum": false,
+          "sizeOnly": false,
+          "ignoreSize": false,
+          "ignoreTimes": false,
+          "ignoreExisting": false,
+          "update": false,
+          "noUpdateModtime": false,
+          "modifyWindowNs": "100"
+        },
+        "excludedSourceFiles": 0,
+        "excludedTargetFiles": 0,
+        "expiresInMinutes": 30,
+        "dryRun": true,
+        "scope": "Regular local files; preview changes nothing. Source contents are preferred on apply, and previous target bytes are preserved."
+      },
+      "result": {
+        "format": "local-rclone-v1.75.2-subset",
+        "status": "completed",
+        "copied": 0,
+        "timestampsUpdated": 0,
+        "removed": 7,
+        "directoriesCreated": 0,
+        "directoriesRemoved": 6,
+        "skipped": 0,
+        "historyFolder": ".rea-sync-history/c55309f2-7216-4658-95ff-22a45fbe2102",
+        "completedAt": "2026-10-12T17:54:09.555Z"
+      },
+      "output": {
+        "exists": true,
+        "files": {},
+        "directories": []
+      },
+      "originalDryRunLogSHA256": "89509110184501b4403010ac6a5143f835986a9d4e8dfd4a87553cb98fdaca2e",
+      "originalApplyLogSHA256": "e7b0d8a6820c35e818c026efbc6225becda651a03590a60d99b297389485a0ba"
+    }
+  ],
+  "failures": [],
+  "fullProductComplete": false,
+  "universalSuperiorityEstablished": false
+}

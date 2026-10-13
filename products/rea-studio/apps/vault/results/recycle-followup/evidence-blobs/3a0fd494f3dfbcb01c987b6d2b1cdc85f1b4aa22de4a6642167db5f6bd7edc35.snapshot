@@ -1,0 +1,46 @@
+✔ actual encrypted session recycle/recover/purge persists across lock/reload and retains history (156.6921ms)
+✔ failed persistence publishes neither deletion nor history/bin mutation (48.2274ms)
+✔ queued caller input is captured and stale competing deletion rejects after durable commit (50.3235ms)
+✔ group deletion and whole-bin emptying explicitly reject with encrypted bytes unchanged (59.7652ms)
+✖ normal deletion creates a real native bin, keeps content/history, and restores identity to previous UUID (8.0311ms)
+✔ bin source defaults have trash icon, searching/Auto-Type disabled and no new history version (1.7725ms)
+✔ permanent delete adds native UUID/time tombstone and cannot restore (1.791ms)
+✔ disabled bin setting permanently deletes; deleting an existing bin entry also adds tombstone (2.9082ms)
+✔ MAC rejects stale dataset, cross-key, mutated entry and missing confirmation without input changes (1.3449ms)
+✔ permissive/malformed clocks reject without writing and uint64 touch wraps exactly (2.1926ms)
+✔ absent/zero previous group rejects recover and keeps encrypted-representation data unchanged (1.6819ms)
+✔ malformed root-bin UUID and invalid boolean settings reject before mutation (1.2477ms)
+✔ explicit preview returns a copy and attachment values are included in selection binding (1.4594ms)
+✔ duplicate names do not redirect UUID recovery; existing bin is reused (4.2413ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 13
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 380.5607
+
+✖ failing tests:
+
+test at products\rea-studio\apps\vault\recycle.test.mjs:11:1
+✖ normal deletion creates a real native bin, keeps content/history, and restores identity to previous UUID (8.0311ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '2024-01-02T00:00:00.000Z'
+  - '2024-01-02T00:00:00Z'
+                        ^
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-recycle-next/products/rea-studio/apps/vault/recycle.test.mjs:11:551)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.start (node:internal/test_runner/test:1177:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '2024-01-02T00:00:00.000Z',
+    expected: '2024-01-02T00:00:00Z',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

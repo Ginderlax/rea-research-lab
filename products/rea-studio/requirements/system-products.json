@@ -542,7 +542,7 @@
             "kp.kdbx"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Original dependency-free KDBX 3.1 import and 4.0/4.1 import/export support bounded native AES/ChaCha20, AES-KDF/Argon2, compression, protected fields and preserved XML/attachments. UI exports 4.1. KDB/KDBX 2.x/3.0, 3.1 export, future/plugin formats, full schema validation and broad real-world files remain absent or unverified.",
+          "current_app_scope": "Original dependency-free KDBX 3.1 import and 4.0/4.1 import/export support bounded native AES/ChaCha20, AES-KDF/Argon2, compression, protected fields and preserved XML/attachments. UI exports 4.1. KDB/KDBX 2.x/3.0, 3.1 export, future/plugin formats, full schema validation and broad real-world files remain absent or unverified. Native PreviousParentGroup metadata is preserved for supported4.1 export. The released default4.0 writer omits that field; original4.1 comparison fixtures explicitly enable4.1 and disable QualityCheck. Those persistence epochs remain distinct.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/vault/kdbx.test.mjs",
@@ -693,7 +693,7 @@
             "kp.security"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Five-minute native idle locking, UI field clearing and host disposal are implemented.",
+          "current_app_scope": "Five-minute native idle locking, UI field clearing and host disposal are implemented. Recycle/history callbacks are guarded across lock/dispose, selection and pending list publication within finite reviewed cases.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/vault/app.test.mjs",
@@ -719,7 +719,7 @@
             "kp.help"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Basic entry fields/group paths plus native backup-on-change history and confirmed restore preserve UUID/parent/location identity and supported XML. No-op saves update access without a history version. Default 10-item/6 MiB pruning uses selected KeePass size/time semantics within explicit local bounds. Pending Save/Restore/Delete drafts, selection changes and detached idle callbacks are guarded. Expiration/recycle-bin, group-management UI, arbitrary history settings/age policy and full original product parity remain open.",
+          "current_app_scope": "Basic entry fields/group paths plus native backup-on-change history and confirmed restore preserve UUID/parent/location identity and supported XML. No-op saves update access without a history version. Default 10-item/6 MiB pruning uses selected KeePass size/time semantics within explicit local bounds. Pending Save/Restore/Delete drafts, selection changes and detached idle callbacks are guarded. Expiration, group-management UI, arbitrary history settings/age policy and full original product parity remain open. Entry recycling, read-only preview, confirmed restore to supported previous parent or fallback, and permanent deletion preserve UUID/tombstone/history contracts within finite bounds. Group recycling/restore, empty-bin and arbitrary history settings remain open.",
           "evidence": [
             {
               "path": "products/rea-studio/apps/vault/app.test.mjs",
@@ -1026,20 +1026,20 @@
         {
           "kind": "original-implementation-source",
           "path": "products/rea-studio/apps/vault/server.mjs",
-          "bytes": 14576,
-          "sha256": "c4aa4d91d93a19de3aab0e4d9cc42759336e78bd1f853572586b542efbeb0fb9"
+          "bytes": 16483,
+          "sha256": "ac6db70cc12c5af760b6940af76b2f4dfdbc1d7921a6ee12edd73e7ed524ddbc"
         },
         {
           "kind": "original-implementation-source",
           "path": "products/rea-studio/apps/vault/client.mjs",
-          "bytes": 17933,
-          "sha256": "1d392037160c2cdca8c53e0ab807d5215964cd00c248360e5c00532f3ba00bed"
+          "bytes": 20650,
+          "sha256": "85661f40f4176feeb8edf16d0dba77ec674c5123c1baf60a8fce2233d566f129"
         },
         {
           "kind": "original-implementation-source",
           "path": "products/rea-studio/apps/vault/kdbx.mjs",
-          "bytes": 34007,
-          "sha256": "ea774360332dbc7497a2e6a005fa10604cafbb92326293384d157d8827e0fe0c"
+          "bytes": 34006,
+          "sha256": "fbf1f31af3abd79993b87b78fa6608b939a95c69a8be8c3fa286d3b68b165f5e"
         },
         {
           "kind": "original-implementation-source",
@@ -1062,8 +1062,8 @@
         {
           "kind": "local-development-or-original-fixture-test",
           "path": "products/rea-studio/apps/vault/app.integration.test.mjs",
-          "bytes": 5515,
-          "sha256": "82a3d5d346c706a09c12946eb50dad44888027847142330d3e25b612c5fd1d55"
+          "bytes": 12648,
+          "sha256": "09843c298d01af36937568ffa20dbbf25ec4e8ad10ea1abdff9d167e13942127"
         },
         {
           "kind": "local-development-or-original-fixture-test",
@@ -1080,8 +1080,8 @@
         {
           "kind": "implementation-coverage-and-limitations",
           "path": "products/rea-studio/apps/vault/README.md",
-          "bytes": 7739,
-          "sha256": "30dbc0f5d04f131e385f049d0efd0462939289d9203a9ed41d11c3de6c1f2ff3"
+          "bytes": 9017,
+          "sha256": "8d3a2adf135a05c75cde799cf716d26073714f630b7302691b0662813eedd336"
         },
         {
           "kind": "implementation-coverage-and-limitations",
@@ -1134,6 +1134,188 @@
           "path": "products/rea-studio/apps/vault/results/history-followup/production-integration/integration-validation.json",
           "bytes": 8590,
           "sha256": "a5883d66bd314c0b5ae1a741ea39dec4767bf9b86b2ed39ce7a52cbdecfabc6c"
+        },
+        {
+          "id": "vault.disposal-adjacent.test.mjs",
+          "path": "products/rea-studio/apps/vault/disposal-adjacent.test.mjs",
+          "bytes": 3489,
+          "sha256": "1202a8711b710e9ea1dce2d2e17f1533ab70fecadd8e3eaa478f71ce2dac3167",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.draft-adjacent.test.mjs",
+          "path": "products/rea-studio/apps/vault/draft-adjacent.test.mjs",
+          "bytes": 6106,
+          "sha256": "05fecb80855c30786448d0a83ac85d3932b1b79dd01f557cbe9feee71e8dad12",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.harness.mjs",
+          "path": "products/rea-studio/apps/vault/harness.mjs",
+          "bytes": 2922,
+          "sha256": "3f6cbc54455cbfe59475842e15cbb113087388cd208308aaae5fa16be1067298",
+          "kind": "original-implementation-source"
+        },
+        {
+          "id": "vault.http-runner.mjs",
+          "path": "products/rea-studio/apps/vault/http-runner.mjs",
+          "bytes": 236,
+          "sha256": "6007eb262bdfbcb87e5249a54bcd66264fac170daaf35066a99fc70a5cd152c2",
+          "kind": "original-implementation-source"
+        },
+        {
+          "id": "vault.http.test.mjs",
+          "path": "products/rea-studio/apps/vault/http.test.mjs",
+          "bytes": 7072,
+          "sha256": "e150f9fc00bb67cf6edb43fb5b37b72f02cafef67578a713f08319c67226a56b",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.lifecycle-ui-fixture.mjs",
+          "path": "products/rea-studio/apps/vault/lifecycle-ui-fixture.mjs",
+          "bytes": 4320,
+          "sha256": "42b2d0473a76e33d10a7a9ebf2fdb83b99ec8d96e20ede3e66f451d826403160",
+          "kind": "original-implementation-source"
+        },
+        {
+          "id": "vault.recycle-boundaries.test.mjs",
+          "path": "products/rea-studio/apps/vault/recycle-boundaries.test.mjs",
+          "bytes": 4586,
+          "sha256": "ec0eca226829dfc510523c1bd7bfa5c7fe8c9bac972b0bf0ccbb9d85c16202ff",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.recycle-boundary-fixture.mjs",
+          "path": "products/rea-studio/apps/vault/recycle-boundary-fixture.mjs",
+          "bytes": 3537,
+          "sha256": "0a5bb056eddd2641913a259b1432c3581ec47a4cbe731d609a40d195a034a2df",
+          "kind": "original-implementation-source"
+        },
+        {
+          "id": "vault.recycle-confirmation.test.mjs",
+          "path": "products/rea-studio/apps/vault/recycle-confirmation.test.mjs",
+          "bytes": 933,
+          "sha256": "5e6882533e1143492962973d9303fa6112f768b21d845e0d5eabf957515ca4d3",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.recycle-controls.test.mjs",
+          "path": "products/rea-studio/apps/vault/recycle-controls.test.mjs",
+          "bytes": 3498,
+          "sha256": "724873f3ab302bde0a1bf56bec0802d132b20639d390dc2cab10971869ea9465",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.recycle-harness.mjs",
+          "path": "products/rea-studio/apps/vault/recycle-harness.mjs",
+          "bytes": 2686,
+          "sha256": "73f023f58f5f0d12c69b710fde9d5219e2af75cbfc4f61bff0717e15f75f92a2",
+          "kind": "original-implementation-source"
+        },
+        {
+          "id": "vault.recycle-http.test.mjs",
+          "path": "products/rea-studio/apps/vault/recycle-http.test.mjs",
+          "bytes": 6750,
+          "sha256": "5a3af08a1f42a297939d82e43feda5a06c058dd56ba17f4de696302b72c820a5",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.RECYCLE-NOTICE.md",
+          "path": "products/rea-studio/apps/vault/RECYCLE-NOTICE.md",
+          "bytes": 5244,
+          "sha256": "bb336199ad59a54a975221d877dc28c4519ec22f7ccc20d3740f3a9ddd02e525",
+          "kind": "implementation-coverage-and-limitations"
+        },
+        {
+          "id": "vault.recycle-oracle.ps1",
+          "path": "products/rea-studio/apps/vault/recycle-oracle.ps1",
+          "bytes": 9446,
+          "sha256": "a5efd6e5fb30f63b81a946cccbccbfac847bfad04d1712a2a984b5e1897f37ae",
+          "kind": "original-implementation-source"
+        },
+        {
+          "id": "vault.recycle-original.test.mjs",
+          "path": "products/rea-studio/apps/vault/recycle-original.test.mjs",
+          "bytes": 8549,
+          "sha256": "53bd38af46865f4a756eaf66bb7932cc25264b522200aa98500720418051d854",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.recycle-server.test.mjs",
+          "path": "products/rea-studio/apps/vault/recycle-server.test.mjs",
+          "bytes": 4542,
+          "sha256": "7592583f2802a336782acc1da46d80d1fbf077094b396488c109bc7189ba4773",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.recycle-ui.test.mjs",
+          "path": "products/rea-studio/apps/vault/recycle-ui.test.mjs",
+          "bytes": 5467,
+          "sha256": "f3be12e9e594d9ba88ee1f8329b907e5d69013d14b7fb2db715327232d3d7458",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.RECYCLE.md",
+          "path": "products/rea-studio/apps/vault/RECYCLE.md",
+          "bytes": 9729,
+          "sha256": "f5031338ed7376721f57199248aa96f2dd3cfb664625e8866a4e8b4cde5f9ad1",
+          "kind": "implementation-coverage-and-limitations"
+        },
+        {
+          "id": "vault.recycle.mjs",
+          "path": "products/rea-studio/apps/vault/recycle.mjs",
+          "bytes": 9424,
+          "sha256": "edcab6bd77e21bbc50924f593b88f3073860ff25d19db84bb234a5a3088061cb",
+          "kind": "original-implementation-source"
+        },
+        {
+          "id": "vault.recycle.test.mjs",
+          "path": "products/rea-studio/apps/vault/recycle.test.mjs",
+          "bytes": 9792,
+          "sha256": "7f7c46012438e86bb17bc9ac9e097b1752e624425a674ac2bdea91c2a422c490",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.selection-adjacent.test.mjs",
+          "path": "products/rea-studio/apps/vault/selection-adjacent.test.mjs",
+          "bytes": 2877,
+          "sha256": "aeb6f287ca4e9a8f6e09ecf94a39856995df4ff3a391646727174283af196b0d",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.selection-boundaries.test.mjs",
+          "path": "products/rea-studio/apps/vault/selection-boundaries.test.mjs",
+          "bytes": 5567,
+          "sha256": "8a0d8e4198907563e55d61d9115bb8f0d2045c6af2822a05f025d6df96f13a53",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.selection-independent.test.mjs",
+          "path": "products/rea-studio/apps/vault/selection-independent.test.mjs",
+          "bytes": 5013,
+          "sha256": "d444deba7eb5aa3ae4fcd6ebfb352e2d38f96844b851890d273472f190d2e19b",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.ui-fixture.mjs",
+          "path": "products/rea-studio/apps/vault/ui-fixture.mjs",
+          "bytes": 4298,
+          "sha256": "230304bddd749cbe2044982c1eeef4fc342406e9bf52a997c737a7b8b9f3f8ca",
+          "kind": "original-implementation-source"
+        },
+        {
+          "id": "vault.ui.test.mjs",
+          "path": "products/rea-studio/apps/vault/ui.test.mjs",
+          "bytes": 4344,
+          "sha256": "3233e8b904b2a730b5ec0f2e6b1a5bb8d1c8d333d11271e8e72deee386efe914",
+          "kind": "local-development-test"
+        },
+        {
+          "id": "vault.unknown-time.test.mjs",
+          "path": "products/rea-studio/apps/vault/unknown-time.test.mjs",
+          "bytes": 2683,
+          "sha256": "908d309a2c5447a7d3f7bad62a2822ee94416ddf00504de492c69a86f6e89b61",
+          "kind": "local-development-test"
         }
       ],
       "currentHistoryMilestone": {
@@ -1148,6 +1330,65 @@
         "independent_review_manifest": "products/rea-studio/apps/vault/results/history-followup/production-integration/installation-manifest.json",
         "source_archive_carriers_kept_local": 12,
         "full_product_parity": false
+      },
+      "currentRecycleMilestone": {
+        "record": "products/rea-studio/apps/vault/RECYCLE.md",
+        "epochs": [
+          {
+            "name": "current-history",
+            "focusedGroups": 41,
+            "originalAssemblyLoads": 24,
+            "scope": "Frozen accepted history before recycle; preserve exact receipt and sources."
+          },
+          {
+            "name": "initial-recycle-author",
+            "focusedGroups": 68,
+            "originalAssemblyLoads": 38,
+            "scope": "41 prior+27 new; original38=24 prior+14 new; final client superseded by exactly two guards."
+          },
+          {
+            "name": "initial-recycle-independent",
+            "groups": 11,
+            "passed": 8,
+            "failed": 3,
+            "originalAssemblyLoads": 4,
+            "browserChecks": 1,
+            "scope": "Six semantics plus five UI boundaries; three confirmed stale bin publications retained."
+          },
+          {
+            "name": "client-two-guard-author",
+            "groups": 38,
+            "passed": 38,
+            "originalAssemblyLoads": 0,
+            "browserChecks": 0,
+            "scope": "Frontend-only campaign; same-generation failure diagnostic has invalid stale-token premise, retained as diagnosis rather than candidate defect."
+          },
+          {
+            "name": "client-two-guard-independent",
+            "groups": 7,
+            "passed": 7,
+            "originalAssemblyLoads": 0,
+            "browserChecks": 1,
+            "scope": "Five unchanged bodies plus two unchecked-confirmation controls; normal private browser acceptance."
+          }
+        ],
+        "fullProductParity": false,
+        "universalSuperiority": false,
+        "currentLayoutFocusedValidationPending": false,
+        "entryOnly": true,
+        "groupRecoveryImplemented": false,
+        "currentLayoutFocusedValidation": {
+          "record": "products/rea-studio/results/notes-vault-focused-integration-20261013/frozen/integration-validation.json.snapshot",
+          "vaultGroups": 79,
+          "sourceFingerprintsInCombinedFocusedEpoch": 105,
+          "originalLibraryProcesses": 37,
+          "historyProcesses": 14,
+          "unknownTimeProcesses": 9,
+          "recycleProcesses": 14,
+          "laterHTTPTestOnlySourceChange": true,
+          "priorAuthor38AssemblyEpochNotRebound": true,
+          "originalGUIExecutions": 0
+        }
       }
     },
     {

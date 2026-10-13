@@ -1,0 +1,7 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+const here=path.dirname(fileURLToPath(import.meta.url)),sha=bytes=>createHash('sha256').update(bytes).digest('hex'),plan=JSON.parse(await fs.readFile(path.join(here,'plan.json'))),proof=await fs.readFile(path.resolve(here,plan.frozenWrapperReview.receiptPath));assert.equal(sha(proof),plan.frozenWrapperReview.receiptSHA256);const prior=await fs.readFile(path.resolve(here,'../metrics-wrapper-measurement-review-next/freeze-manifest.json'));assert.equal(sha(prior),plan.frozenWrapperReview.manifestSHA256);
+const inventory={};for(const name of ['PLAN.md','plan.json','freeze-plan.mjs']){const bytes=await fs.readFile(path.join(here,name));inventory[name]={bytes:bytes.length,sha256:sha(bytes)};}const freeze={schema:'rea-metrics-wrapper-diagnostic-plan-freeze/v1',frozenAt:new Date().toISOString(),inventory,files:3,planSHA256:inventory['plan.json'].sha256,newMeasurements:false,newSourcesImplemented:0};await fs.writeFile(path.join(here,'freeze-manifest.json'),JSON.stringify(freeze,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({files:3,planSHA256:freeze.planSHA256,manifestSHA256:sha(await fs.readFile(path.join(here,'freeze-manifest.json')))}));

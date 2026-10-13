@@ -1,0 +1,86 @@
+✔ dirty draft prevents notebook cascade with no mutation request (11.3569ms)
+✔ held cascade disables real typing/selection and retains saved body after release (2.8269ms)
+✖ older completed Save response must preserve a draft typed after notebook trash (2.9171ms)
+✖ queued notebook trash snapshots the caller request before yielding (0.5373ms)
+✔ failed restore commit leaves persisted subtree and history unchanged; a later fresh server import restores (17.5761ms)
+(node:53576) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ held-out multi-generation restore matches released helper final rows (32.654ms)
+✖ invalid deep hierarchy and oversized aggregate refuse before modifying input (1.3827ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 4
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 142.458
+
+✖ failing tests:
+
+test at review.test.mjs:14:1
+✖ older completed Save response must preserve a draft typed after notebook trash (2.9171ms)
+  AssertionError [ERR_ASSERTION]: Older Save completion replaced the enabled-field draft
+  + actual - expected
+  
+  + 'Saved body'
+  - 'New typed draft after trash'
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-trash-independent-review/review.test.mjs:14:825)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'Saved body',
+    expected: 'New typed draft after trash',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at review.test.mjs:15:1
+✖ queued notebook trash snapshots the caller request before yielding (0.5373ms)
+  AssertionError [ERR_ASSERTION]: Original request target changed during the queue await
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-trash-independent-review/review.test.mjs:15:542)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at review.test.mjs:20:1
+✖ invalid deep hierarchy and oversized aggregate refuse before modifying input (1.3827ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /64|depth/. Input:
+  
+  'Error: Notebook display path exceeds 200 characters.'
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-trash-independent-review/review.test.mjs:20:443)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1306:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:897:18)
+      at Test.postRun (node:internal/test_runner/test:1447:19)
+      at Test.run (node:internal/test_runner/test:1372:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: Notebook display path exceeds 200 characters.
+        at notebookPath (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-trash-next/products/rea-studio/apps/notes/notebooks.mjs:9:160)
+        at validate (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-trash-next/products/rea-studio/apps/notes/notebooks.mjs:12:264)
+        at ensureOrganization (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-trash-next/products/rea-studio/apps/notes/notebooks.mjs:14:610)
+        at validate (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-trash-next/products/rea-studio/apps/notes/notebook-trash.mjs:12:22)
+        at changeNotebookTrash (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-trash-next/products/rea-studio/apps/notes/notebook-trash.mjs:19:37)
+        at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-trash-independent-review/review.test.mjs:20:454
+        at getActual (node:assert:611:5)
+        at strict.throws (node:assert:759:24)
+        at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-trash-independent-review/review.test.mjs:20:443)
+        at Test.runInAsyncScope (node:async_hooks:227:14),
+    expected: /64|depth/,
+    operator: 'throws',
+    diff: 'simple'
+  }

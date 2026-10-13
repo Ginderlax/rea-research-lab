@@ -1,0 +1,325 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+... Skipped lines
+
+  '/** Source-assisted, newly written compatibility implementation. No original runtime imports.\n' +
+    ' * See GRAFANA-CALCULATIONS.md and fixtures/reducers/sources.json for the pinned contract. */\n' +
+    "export const NullValueMode = Object.freeze({ Null: 'null', Ignore: 'connected', AsZero: 'null as zero' });\n" +
+    'const rows = [\n' +
+    "  ['lastNotNull', 'Last *', 'Last non-null value (also excludes NaNs)', true, true, 'current'],\n" +
+...
+    '  if (/^p\\d+$/.test(id)) {\n' +
++   '        let sorted = shared?.percentiles;\n' +
+-   '    let sorted = shared?.percentiles;\n' +
+    '    if (!sorted) {\n' +
+    '      let candidates = values;\n' +
+    '      if (ignore) candidates = candidates.filter(value => value !== null);\n' +
+    '      if (zero) candidates = candidates.map(value => value === null ? 0 : value);\n' +
+    '      sorted = candidates.slice().sort((a, b) => a - b);\n' +
+...
+    '  getIfExists: id => id ? registryById.get(id) : undefined,\n' +
++   '  get: id => { const found = registryById.get(id); if (!found) throw new Er'... 3489 more characters
+-   '  get: id => { const found = registryById.get(id); if (!found) throw new Error('... 3485 more characters
+
+    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-wrapper-diagnosis-next/freeze-stage.mjs:12:166 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: '/** Source-assisted, newly written compatibility implementation. No original runtime imports.\n' +
+    ' * See GRAFANA-CALCULATIONS.md and fixtures/reducers/sources.json for the pinned contract. */\n' +
+    "export const NullValueMode = Object.freeze({ Null: 'null', Ignore: 'connected', AsZero: 'null as zero' });\n" +
+    'const rows = [\n' +
+    "  ['lastNotNull', 'Last *', 'Last non-null value (also excludes NaNs)', true, true, 'current'],\n" +
+    "  ['last', 'Last', 'Last value', true, true],\n" +
+    "  ['firstNotNull', 'First *', 'First non-null value (also excludes NaNs)', true, true],\n" +
+    "  ['first', 'First', 'First Value', true, true],\n" +
+    "  ['min', 'Min', 'Minimum Value', true, true],\n" +
+    "  ['max', 'Max', 'Maximum Value', true, true],\n" +
+    "  ['mean', 'Mean', 'Average Value', true, true, 'avg'],\n" +
+    "  ['median', 'Median', 'Median Value', false, true, 'median'],\n" +
+    "  ['variance', 'Variance', 'Variance of all values in a field', false, true],\n" +
+    "  ['stdDev', 'StdDev', 'Standard deviation of all values in a field', false, true],\n" +
+    "  ['sum', 'Total', 'The sum of all values', true, true, 'total', 0],\n" +
+    "  ['count', 'Count', 'Number of values in response', true, false, undefined, 0],\n" +
+    "  ['countAll', 'Count all', 'Number of values (including empty)', false, false, undefined, 0],\n" +
+    "  ['range', 'Range', 'Difference between minimum and maximum values', true, true],\n" +
+    "  ['delta', 'Delta', 'Cumulative change in value', true, true],\n" +
+    "  ['step', 'Step', 'Minimum interval between values', true, true],\n" +
+    "  ['diff', 'Difference', 'Difference between first and last values', true, true],\n" +
+    "  ['logmin', 'Min (above zero)', 'Used for log min scale', true, true],\n" +
+    "  ['allIsZero', 'All Zeros', 'All values are zero', true, true, undefined, false],\n" +
+    "  ['allIsNull', 'All Nulls', 'All values are null', true, false, undefined, true],\n" +
+    "  ['changeCount', 'Change Count', 'Number of times the value changes', false, false],\n" +
+    "  ['distinctCount', 'Distinct Count', 'Number of distinct values', false, false],\n" +
+    "  ['diffperc', 'Difference percent', 'Percentage difference between first and last values', true, false],\n" +
+    "  ['allValues', 'All values', 'Returns an array with all values', false, false],\n" +
+    "  ['uniqueValues', 'All unique values', 'Returns an array with all unique values', false, false],\n" +
+    '];\n' +
+    "const ordinal = value => value > 3 && value < 21 ? 'th' : ['th', 'st', 'nd', 'rd'][value % 10] ?? 'th';\n" +
+    'export const calculationDefinitions = Object.freeze([\n' +
+    '  ...rows.map(([id, name, description, standard, preservesUnits, alias, empty], index) => Object.freeze({ id, name, description, standard, preservesUnits, ...(alias ? { aliasIds: [alias] } : {}), ...(rows[index].length === 7 ? { emptyInputResult: empty } : {}) })),\n' +
+    '  ...Array.from({ length: 99 }, (_, index) => { const p = index + 1; return Object.freeze({ id: `p${p}`, name: `${p}${ordinal(p)} %`, description: `${p}${ordinal(p)} percentile value`, standard: false, preservesUnits: true }); }),\n' +
+    ']);\n' +
+    'const definitions = new Map();\n' +
+    'for (const definition of calculationDefinitions) { definitions.set(definition.id, definition); for (const alias of definition.aliasIds ?? []) if (!definitions.has(alias)) definitions.set(alias, definition); }\n' +
+    "const enumOrder = ['sum', 'max', 'min', 'logmin', 'mean', 'variance', 'stdDev', 'last', 'median', 'first', 'count', 'countAll', 'range', 'diff', 'diffperc', 'delta', 'step', 'firstNotNull', 'lastNotNull', 'changeCount', 'distinctCount', 'allIsZero', 'allIsNull', 'allValues', 'uniqueValues', ...Array.from({ length: 99 }, (_, index) => `p${index + 1}`)];\n" +
+    'export const ReducerID = Object.freeze(Object.fromEntries(enumOrder.map(id => [id, id])));\n' +
+    "export function isReducerID(id) { return typeof id === 'string' && Object.hasOwn(ReducerID, id); }\n" +
+    "export function getFieldTypeForReducer(id, fallback) { return ['count', 'countAll', 'distinctCount', 'changeCount'].includes(id) ? 'number' : ['allIsNull', 'allIsZero'].includes(id) ? 'boolean' : fallback; }\n" +
+    'export const defaultCalcs = Object.freeze({ sum: 0, max: -Number.MAX_VALUE, min: Number.MAX_VALUE, logmin: Number.MAX_VALUE, mean: null, last: null, first: null, lastNotNull: null, firstNotNull: null, count: 0, nonNullCount: 0, allIsNull: true, allIsZero: true, range: null, diff: null, delta: 0, step: Number.MAX_VALUE, diffperc: 0, previousDeltaUp: true });\n' +
+    "const numericField = field => field.type === 'number' || field.type === 'time';\n" +
+    "const isNumber = value => typeof value === 'number' || Object.prototype.toString.call(value) === '[object Number]';\n" +
+    '\n' +
+    'export function doStandardCalcs(field, ignoreNulls, nullAsZero) {\n' +
+    '  const result = { ...defaultCalcs }, values = field.values;\n' +
+    '  if (!values) return result;\n' +
+    '  const numeric = numericField(field);\n' +
+    '  for (let index = 0; index < values.length; index++) {\n' +
+    '    let value = values[index];\n' +
+    '    if (!index) result.first = value;\n' +
+    '    result.last = value;\n' +
+    '    if (value == null) { if (ignoreNulls) continue; if (nullAsZero) value = 0; }\n' +
+    '    result.count++;\n' +
+    '    if (value == null || Number.isNaN(value)) continue;\n' +
+    '    const first = result.firstNotNull === null;\n' +
+    '    if (first) result.firstNotNull = value;\n' +
+    '    if (numeric) {\n' +
+    '      result.sum += value || 0;\n' +
+    '      result.allIsNull = false; result.nonNullCount++;\n' +
+    '      if (!first) {\n' +
+    '        const difference = value - result.lastNotNull;\n' +
+    '        if (difference < result.step) result.step = difference;\n' +
+    '        if (result.lastNotNull > value) result.previousDeltaUp = false;\n' +
+    '        else { if (result.previousDeltaUp) result.delta += difference; result.previousDeltaUp = true; }\n' +
+    '      }\n' +
+    '      if (value > result.max) result.max = value;\n' +
+    '      if (value < result.min) result.min = value;\n' +
+    '      if (value > 0 && value < result.logmin) result.logmin = value;\n' +
+    '    }\n' +
+    '    if (value !== 0) result.allIsZero = false;\n' +
+    '    result.lastNotNull = value;\n' +
+    '  }\n' +
+    '  if (result.max === -Number.MAX_VALUE) result.max = null;\n' +
+    '  if (result.min === Number.MAX_VALUE) result.min = null;\n' +
+    '  if (result.step === Number.MAX_VALUE) result.step = null;\n' +
+    '  if (result.nonNullCount) result.mean = result.sum / result.nonNullCount;\n' +
+    '  if (result.allIsNull) result.allIsZero = false;\n' +
+    '  if (result.max !== null && result.min !== null) result.range = result.max - result.min;\n' +
+    '  if (isNumber(result.firstNotNull) && isNumber(result.lastNotNull)) result.diff = result.lastNotNull - result.firstNotNull;\n' +
+    '  if (isNumber(result.firstNotNull) && isNumber(result.diff)) result.diffperc = result.diff / result.firstNotNull * 100;\n' +
+    '  return result;\n' +
+    '}\n' +
+    '\n' +
+    'function special(id, field, ignore, zero, shared) {\n' +
+    '  const values = field.values;\n' +
+    "  if (id === 'first') return { first: values[0] };\n" +
+    "  if (id === 'last') return { last: values[values.length - 1] };\n" +
+    "  if (id === 'firstNotNull' || id === 'lastNotNull') {\n" +
+    '    let found = null;\n' +
+    "    for (let index = id === 'firstNotNull' ? 0 : values.length - 1; index >= 0 && index < values.length; index += id === 'firstNotNull' ? 1 : -1) {\n" +
+    '      if (values[index] != null && !Number.isNaN(values[index])) { found = values[index]; break; }\n' +
+    '    }\n' +
+    '    return { [id]: found };\n' +
+    '  }\n' +
+    "  if (id === 'countAll') return { countAll: values.length };\n" +
+    "  if (id === 'allValues') return { allValues: [...values] };\n" +
+    "  if (id === 'uniqueValues') return { uniqueValues: [...new Set(values)] };\n" +
+    "  if (id === 'variance' || id === 'stdDev') {\n" +
+    '    if (!numericField(field)) return { variance: 0, stdDev: 0 };\n' +
+    '    let count = 0, mean = 0, squared = 0;\n' +
+    '    for (const value of values) if (value != null) { const previous = mean; count++; mean += (value - previous) / count; squared += (value - previous) * (value - mean); }\n' +
+    '    const variance = count ? squared / count : 0;\n' +
+    '    return { variance, stdDev: Math.sqrt(variance) };\n' +
+    '  }\n' +
+    "  if (id === 'changeCount' || id === 'distinctCount') {\n" +
+    '    const distinct = new Set(); let changes = 0, started = false, previous = null;\n' +
+    '    for (let value of values) {\n' +
+    '      // These two released reducers deliberately treat undefined differently from null.\n' +
+    '      if (value === null) { if (ignore) continue; if (zero) value = 0; }\n' +
+    '      if (started && previous !== value) changes++;\n' +
+    '      started = true; previous = value; distinct.add(value);\n' +
+    '    }\n' +
+    "    return { [id]: id === 'changeCount' ? changes : distinct.size };\n" +
+    '  }\n' +
+    "  if (id === 'median') {\n" +
+    '    const sorted = [];\n' +
+    '    for (let value of values) { if (value == null) { if (ignore) continue; if (zero) value = 0; } sorted.push(value); }\n' +
+    '    sorted.sort((a, b) => a - b);\n' +
+    '    const middle = Math.floor(sorted.length / 2);\n' +
+    '    return { median: sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2 };\n' +
+    '  }\n' +
+    '  if (/^p\\d+$/.test(id)) {\n' +
+    '        let sorted = shared?.percentiles;\n' +
+    '    if (!sorted) {\n' +
+    '      let candidates = values;\n' +
+    '      if (ignore) candidates = candidates.filter(value => value !== null);\n' +
+    '      if (zero) candidates = candidates.map(value => value === null ? 0 : value);\n' +
+    '      sorted = candidates.slice().sort((a, b) => a - b);\n' +
+    '      if (shared) shared.percentiles = sorted;\n' +
+    '    }\n' +
+    '    return { [id]: sorted[Math.round((sorted.length - 1) * (Number(id.slice(1)) / 100))] };\n' +
+    '  }\n' +
+    '  return null;\n' +
+    '}\n' +
+    "const specialIds = new Set(['first', 'last', 'firstNotNull', 'lastNotNull', 'median', 'variance', 'stdDev', 'countAll', 'changeCount', 'distinctCount', 'allValues', 'uniqueValues', ...Array.from({ length: 99 }, (_, index) => `p${index + 1}`)]);\n" +
+    'const registryEntries = calculationDefinitions.map(definition => ({ ...definition, ...(specialIds.has(definition.id) ? { reduce: (field, ignore, zero) => special(definition.id, field, ignore, zero) } : {}) }));\n' +
+    'const registryById = new Map();\n' +
+    'for (const definition of registryEntries) { registryById.set(definition.id, definition); for (const alias of definition.aliasIds ?? []) if (!registryById.has(alias)) registryById.set(alias, definition); }\n' +
+    '/** Fixed built-in registry lookup surface. Custom registration and initialization are outside this contract. */\n' +
+    'export const fieldReducers = Object.freeze({\n' +
+    '  list: ids => ids ? ids.map(id => registryById.get(id)).filter(Boolean) : registryEntries,\n' +
+    '  getIfExists: id => id ? registryById.get(id) : undefined,\n' +
+    '  get: id => { const found = registryById.get(id); if (!found) throw new Er'... 3489 more characters,
+  expected: '/** Source-assisted, newly written compatibility implementation. No original runtime imports.\n' +
+    ' * See GRAFANA-CALCULATIONS.md and fixtures/reducers/sources.json for the pinned contract. */\n' +
+    "export const NullValueMode = Object.freeze({ Null: 'null', Ignore: 'connected', AsZero: 'null as zero' });\n" +
+    'const rows = [\n' +
+    "  ['lastNotNull', 'Last *', 'Last non-null value (also excludes NaNs)', true, true, 'current'],\n" +
+    "  ['last', 'Last', 'Last value', true, true],\n" +
+    "  ['firstNotNull', 'First *', 'First non-null value (also excludes NaNs)', true, true],\n" +
+    "  ['first', 'First', 'First Value', true, true],\n" +
+    "  ['min', 'Min', 'Minimum Value', true, true],\n" +
+    "  ['max', 'Max', 'Maximum Value', true, true],\n" +
+    "  ['mean', 'Mean', 'Average Value', true, true, 'avg'],\n" +
+    "  ['median', 'Median', 'Median Value', false, true, 'median'],\n" +
+    "  ['variance', 'Variance', 'Variance of all values in a field', false, true],\n" +
+    "  ['stdDev', 'StdDev', 'Standard deviation of all values in a field', false, true],\n" +
+    "  ['sum', 'Total', 'The sum of all values', true, true, 'total', 0],\n" +
+    "  ['count', 'Count', 'Number of values in response', true, false, undefined, 0],\n" +
+    "  ['countAll', 'Count all', 'Number of values (including empty)', false, false, undefined, 0],\n" +
+    "  ['range', 'Range', 'Difference between minimum and maximum values', true, true],\n" +
+    "  ['delta', 'Delta', 'Cumulative change in value', true, true],\n" +
+    "  ['step', 'Step', 'Minimum interval between values', true, true],\n" +
+    "  ['diff', 'Difference', 'Difference between first and last values', true, true],\n" +
+    "  ['logmin', 'Min (above zero)', 'Used for log min scale', true, true],\n" +
+    "  ['allIsZero', 'All Zeros', 'All values are zero', true, true, undefined, false],\n" +
+    "  ['allIsNull', 'All Nulls', 'All values are null', true, false, undefined, true],\n" +
+    "  ['changeCount', 'Change Count', 'Number of times the value changes', false, false],\n" +
+    "  ['distinctCount', 'Distinct Count', 'Number of distinct values', false, false],\n" +
+    "  ['diffperc', 'Difference percent', 'Percentage difference between first and last values', true, false],\n" +
+    "  ['allValues', 'All values', 'Returns an array with all values', false, false],\n" +
+    "  ['uniqueValues', 'All unique values', 'Returns an array with all unique values', false, false],\n" +
+    '];\n' +
+    "const ordinal = value => value > 3 && value < 21 ? 'th' : ['th', 'st', 'nd', 'rd'][value % 10] ?? 'th';\n" +
+    'export const calculationDefinitions = Object.freeze([\n' +
+    '  ...rows.map(([id, name, description, standard, preservesUnits, alias, empty], index) => Object.freeze({ id, name, description, standard, preservesUnits, ...(alias ? { aliasIds: [alias] } : {}), ...(rows[index].length === 7 ? { emptyInputResult: empty } : {}) })),\n' +
+    '  ...Array.from({ length: 99 }, (_, index) => { const p = index + 1; return Object.freeze({ id: `p${p}`, name: `${p}${ordinal(p)} %`, description: `${p}${ordinal(p)} percentile value`, standard: false, preservesUnits: true }); }),\n' +
+    ']);\n' +
+    'const definitions = new Map();\n' +
+    'for (const definition of calculationDefinitions) { definitions.set(definition.id, definition); for (const alias of definition.aliasIds ?? []) if (!definitions.has(alias)) definitions.set(alias, definition); }\n' +
+    "const enumOrder = ['sum', 'max', 'min', 'logmin', 'mean', 'variance', 'stdDev', 'last', 'median', 'first', 'count', 'countAll', 'range', 'diff', 'diffperc', 'delta', 'step', 'firstNotNull', 'lastNotNull', 'changeCount', 'distinctCount', 'allIsZero', 'allIsNull', 'allValues', 'uniqueValues', ...Array.from({ length: 99 }, (_, index) => `p${index + 1}`)];\n" +
+    'export const ReducerID = Object.freeze(Object.fromEntries(enumOrder.map(id => [id, id])));\n' +
+    "export function isReducerID(id) { return typeof id === 'string' && Object.hasOwn(ReducerID, id); }\n" +
+    "export function getFieldTypeForReducer(id, fallback) { return ['count', 'countAll', 'distinctCount', 'changeCount'].includes(id) ? 'number' : ['allIsNull', 'allIsZero'].includes(id) ? 'boolean' : fallback; }\n" +
+    'export const defaultCalcs = Object.freeze({ sum: 0, max: -Number.MAX_VALUE, min: Number.MAX_VALUE, logmin: Number.MAX_VALUE, mean: null, last: null, first: null, lastNotNull: null, firstNotNull: null, count: 0, nonNullCount: 0, allIsNull: true, allIsZero: true, range: null, diff: null, delta: 0, step: Number.MAX_VALUE, diffperc: 0, previousDeltaUp: true });\n' +
+    "const numericField = field => field.type === 'number' || field.type === 'time';\n" +
+    "const isNumber = value => typeof value === 'number' || Object.prototype.toString.call(value) === '[object Number]';\n" +
+    '\n' +
+    'export function doStandardCalcs(field, ignoreNulls, nullAsZero) {\n' +
+    '  const result = { ...defaultCalcs }, values = field.values;\n' +
+    '  if (!values) return result;\n' +
+    '  const numeric = numericField(field);\n' +
+    '  for (let index = 0; index < values.length; index++) {\n' +
+    '    let value = values[index];\n' +
+    '    if (!index) result.first = value;\n' +
+    '    result.last = value;\n' +
+    '    if (value == null) { if (ignoreNulls) continue; if (nullAsZero) value = 0; }\n' +
+    '    result.count++;\n' +
+    '    if (value == null || Number.isNaN(value)) continue;\n' +
+    '    const first = result.firstNotNull === null;\n' +
+    '    if (first) result.firstNotNull = value;\n' +
+    '    if (numeric) {\n' +
+    '      result.sum += value || 0;\n' +
+    '      result.allIsNull = false; result.nonNullCount++;\n' +
+    '      if (!first) {\n' +
+    '        const difference = value - result.lastNotNull;\n' +
+    '        if (difference < result.step) result.step = difference;\n' +
+    '        if (result.lastNotNull > value) result.previousDeltaUp = false;\n' +
+    '        else { if (result.previousDeltaUp) result.delta += difference; result.previousDeltaUp = true; }\n' +
+    '      }\n' +
+    '      if (value > result.max) result.max = value;\n' +
+    '      if (value < result.min) result.min = value;\n' +
+    '      if (value > 0 && value < result.logmin) result.logmin = value;\n' +
+    '    }\n' +
+    '    if (value !== 0) result.allIsZero = false;\n' +
+    '    result.lastNotNull = value;\n' +
+    '  }\n' +
+    '  if (result.max === -Number.MAX_VALUE) result.max = null;\n' +
+    '  if (result.min === Number.MAX_VALUE) result.min = null;\n' +
+    '  if (result.step === Number.MAX_VALUE) result.step = null;\n' +
+    '  if (result.nonNullCount) result.mean = result.sum / result.nonNullCount;\n' +
+    '  if (result.allIsNull) result.allIsZero = false;\n' +
+    '  if (result.max !== null && result.min !== null) result.range = result.max - result.min;\n' +
+    '  if (isNumber(result.firstNotNull) && isNumber(result.lastNotNull)) result.diff = result.lastNotNull - result.firstNotNull;\n' +
+    '  if (isNumber(result.firstNotNull) && isNumber(result.diff)) result.diffperc = result.diff / result.firstNotNull * 100;\n' +
+    '  return result;\n' +
+    '}\n' +
+    '\n' +
+    'function special(id, field, ignore, zero, shared) {\n' +
+    '  const values = field.values;\n' +
+    "  if (id === 'first') return { first: values[0] };\n" +
+    "  if (id === 'last') return { last: values[values.length - 1] };\n" +
+    "  if (id === 'firstNotNull' || id === 'lastNotNull') {\n" +
+    '    let found = null;\n' +
+    "    for (let index = id === 'firstNotNull' ? 0 : values.length - 1; index >= 0 && index < values.length; index += id === 'firstNotNull' ? 1 : -1) {\n" +
+    '      if (values[index] != null && !Number.isNaN(values[index])) { found = values[index]; break; }\n' +
+    '    }\n' +
+    '    return { [id]: found };\n' +
+    '  }\n' +
+    "  if (id === 'countAll') return { countAll: values.length };\n" +
+    "  if (id === 'allValues') return { allValues: [...values] };\n" +
+    "  if (id === 'uniqueValues') return { uniqueValues: [...new Set(values)] };\n" +
+    "  if (id === 'variance' || id === 'stdDev') {\n" +
+    '    if (!numericField(field)) return { variance: 0, stdDev: 0 };\n' +
+    '    let count = 0, mean = 0, squared = 0;\n' +
+    '    for (const value of values) if (value != null) { const previous = mean; count++; mean += (value - previous) / count; squared += (value - previous) * (value - mean); }\n' +
+    '    const variance = count ? squared / count : 0;\n' +
+    '    return { variance, stdDev: Math.sqrt(variance) };\n' +
+    '  }\n' +
+    "  if (id === 'changeCount' || id === 'distinctCount') {\n" +
+    '    const distinct = new Set(); let changes = 0, started = false, previous = null;\n' +
+    '    for (let value of values) {\n' +
+    '      // These two released reducers deliberately treat undefined differently from null.\n' +
+    '      if (value === null) { if (ignore) continue; if (zero) value = 0; }\n' +
+    '      if (started && previous !== value) changes++;\n' +
+    '      started = true; previous = value; distinct.add(value);\n' +
+    '    }\n' +
+    "    return { [id]: id === 'changeCount' ? changes : distinct.size };\n" +
+    '  }\n' +
+    "  if (id === 'median') {\n" +
+    '    const sorted = [];\n' +
+    '    for (let value of values) { if (value == null) { if (ignore) continue; if (zero) value = 0; } sorted.push(value); }\n' +
+    '    sorted.sort((a, b) => a - b);\n' +
+    '    const middle = Math.floor(sorted.length / 2);\n' +
+    '    return { median: sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2 };\n' +
+    '  }\n' +
+    '  if (/^p\\d+$/.test(id)) {\n' +
+    '    let sorted = shared?.percentiles;\n' +
+    '    if (!sorted) {\n' +
+    '      let candidates = values;\n' +
+    '      if (ignore) candidates = candidates.filter(value => value !== null);\n' +
+    '      if (zero) candidates = candidates.map(value => value === null ? 0 : value);\n' +
+    '      sorted = candidates.slice().sort((a, b) => a - b);\n' +
+    '      if (shared) shared.percentiles = sorted;\n' +
+    '    }\n' +
+    '    return { [id]: sorted[Math.round((sorted.length - 1) * (Number(id.slice(1)) / 100))] };\n' +
+    '  }\n' +
+    '  return null;\n' +
+    '}\n' +
+    "const specialIds = new Set(['first', 'last', 'firstNotNull', 'lastNotNull', 'median', 'variance', 'stdDev', 'countAll', 'changeCount', 'distinctCount', 'allValues', 'uniqueValues', ...Array.from({ length: 99 }, (_, index) => `p${index + 1}`)]);\n" +
+    'const registryEntries = calculationDefinitions.map(definition => ({ ...definition, ...(specialIds.has(definition.id) ? { reduce: (field, ignore, zero) => special(definition.id, field, ignore, zero) } : {}) }));\n' +
+    'const registryById = new Map();\n' +
+    'for (const definition of registryEntries) { registryById.set(definition.id, definition); for (const alias of definition.aliasIds ?? []) if (!registryById.has(alias)) registryById.set(alias, definition); }\n' +
+    '/** Fixed built-in registry lookup surface. Custom registration and initialization are outside this contract. */\n' +
+    'export const fieldReducers = Object.freeze({\n' +
+    '  list: ids => ids ? ids.map(id => registryById.get(id)).filter(Boolean) : registryEntries,\n' +
+    '  getIfExists: id => id ? registryById.get(id) : undefined,\n' +
+    '  get: id => { const found = registryById.get(id); if (!found) throw new Error('... 3485 more characters,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.16.0

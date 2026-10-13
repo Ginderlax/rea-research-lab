@@ -1,0 +1,208 @@
+{
+  "schema": "rea-editor-save-direct-revision-negative/v1",
+  "checkedAt": "2026-10-13T00:57:29.208Z",
+  "candidateManifestSHA256": "d071d370be094646a4738de79adadca9c28d794de53dfb940604f5d52d056edf",
+  "all126BeforeAfterAuthenticated": true,
+  "status": "queued caller revision mutation defect confirmed",
+  "acceptance": false,
+  "test": {
+    "path": "queued-revision.test.mjs",
+    "source": {
+      "bytes": 3618,
+      "sha256": "6c0236422fe497aadad3e00b28501d21591dd1bddb6184e7d8d5ce2effe9f7e3"
+    },
+    "start": "2026-10-13T00:57:29.011Z",
+    "end": "2026-10-13T00:57:29.208Z",
+    "exitCode": 1,
+    "signal": null,
+    "counts": {
+      "tests": 3,
+      "pass": 2,
+      "fail": 1,
+      "cancelled": 0,
+      "skipped": 0,
+      "todo": 0
+    },
+    "stdout": {
+      "path": "tests.stdout.txt",
+      "bytes": 1559,
+      "sha256": "2510eada835858aa980d46aa9bb532f461e07d02422b1a6729d9f6a6cb19281d"
+    },
+    "stderr": {
+      "path": "tests.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "observations": [
+    {
+      "path": "runs/declared-next-1791853049128-2/observation.json",
+      "bytes": 1195,
+      "sha256": "b8d5c7235eaa8a1e14c8976e3e9deb0e34177bf6b4f29553902e511766e72c87",
+      "observation": {
+        "id": "declared-next",
+        "initial": {
+          "path": "a.txt",
+          "content": "second captured\n",
+          "revision": "1ddfd403089e04741d9e9d413b1aa9afc1cf0bb8d628749f42473f5e0117d338"
+        },
+        "afterCallerMutation": {
+          "path": "b.txt",
+          "content": "caller mutation must not change captured content\n",
+          "revision": "1ddfd403089e04741d9e9d413b1aa9afc1cf0bb8d628749f42473f5e0117d338"
+        },
+        "revision": "25718360e05d3c2d0963d1381e9dd4dae5fca789244ee4b9f861adcc0cc96218",
+        "nextRevision": "1ddfd403089e04741d9e9d413b1aa9afc1cf0bb8d628749f42473f5e0117d338",
+        "firstResult": {
+          "path": "a.txt",
+          "content": "first committed\n",
+          "revision": "1ddfd403089e04741d9e9d413b1aa9afc1cf0bb8d628749f42473f5e0117d338",
+          "bytes": 16,
+          "saved": true
+        },
+        "secondResult": {
+          "accepted": true,
+          "result": {
+            "path": "a.txt",
+            "content": "second captured\n",
+            "revision": "ed40feb4bf0ff1ad5842a407f829148747794e7194eef1ce9138817692be3193",
+            "bytes": 16,
+            "saved": true
+          }
+        },
+        "diskA": "second captured\n",
+        "diskB": "protected B\n",
+        "resolves": 4,
+        "actualRealSaveHandlers": true,
+        "heldInsideFirstExclusiveCallback": true,
+        "httpRequest": false
+      }
+    },
+    {
+      "path": "runs/mutated-stale-1791853049103-0/observation.json",
+      "bytes": 1195,
+      "sha256": "e77ed135ac5e32f8358ba43a322d33b44244870fd8c84be55efff414d90e3e5a",
+      "observation": {
+        "id": "mutated-stale",
+        "initial": {
+          "path": "a.txt",
+          "content": "second captured\n",
+          "revision": "25718360e05d3c2d0963d1381e9dd4dae5fca789244ee4b9f861adcc0cc96218"
+        },
+        "afterCallerMutation": {
+          "path": "b.txt",
+          "content": "caller mutation must not change captured content\n",
+          "revision": "1ddfd403089e04741d9e9d413b1aa9afc1cf0bb8d628749f42473f5e0117d338"
+        },
+        "revision": "25718360e05d3c2d0963d1381e9dd4dae5fca789244ee4b9f861adcc0cc96218",
+        "nextRevision": "1ddfd403089e04741d9e9d413b1aa9afc1cf0bb8d628749f42473f5e0117d338",
+        "firstResult": {
+          "path": "a.txt",
+          "content": "first committed\n",
+          "revision": "1ddfd403089e04741d9e9d413b1aa9afc1cf0bb8d628749f42473f5e0117d338",
+          "bytes": 16,
+          "saved": true
+        },
+        "secondResult": {
+          "accepted": true,
+          "result": {
+            "path": "a.txt",
+            "content": "second captured\n",
+            "revision": "ed40feb4bf0ff1ad5842a407f829148747794e7194eef1ce9138817692be3193",
+            "bytes": 16,
+            "saved": true
+          }
+        },
+        "diskA": "second captured\n",
+        "diskB": "protected B\n",
+        "resolves": 4,
+        "actualRealSaveHandlers": true,
+        "heldInsideFirstExclusiveCallback": true,
+        "httpRequest": false
+      }
+    },
+    {
+      "path": "runs/unchanged-stale-1791853049118-1/observation.json",
+      "bytes": 1070,
+      "sha256": "daa300acee13c068d3af7969d2468c88ead5e7e1397eef43471ad5d22b2a9d5a",
+      "observation": {
+        "id": "unchanged-stale",
+        "initial": {
+          "path": "a.txt",
+          "content": "second captured\n",
+          "revision": "25718360e05d3c2d0963d1381e9dd4dae5fca789244ee4b9f861adcc0cc96218"
+        },
+        "afterCallerMutation": {
+          "path": "a.txt",
+          "content": "second captured\n",
+          "revision": "25718360e05d3c2d0963d1381e9dd4dae5fca789244ee4b9f861adcc0cc96218"
+        },
+        "revision": "25718360e05d3c2d0963d1381e9dd4dae5fca789244ee4b9f861adcc0cc96218",
+        "nextRevision": "1ddfd403089e04741d9e9d413b1aa9afc1cf0bb8d628749f42473f5e0117d338",
+        "firstResult": {
+          "path": "a.txt",
+          "content": "first committed\n",
+          "revision": "1ddfd403089e04741d9e9d413b1aa9afc1cf0bb8d628749f42473f5e0117d338",
+          "bytes": 16,
+          "saved": true
+        },
+        "secondResult": {
+          "accepted": false,
+          "error": "File changed since it was opened. Open it again before saving; your draft is still in the editor."
+        },
+        "diskA": "first committed\n",
+        "diskB": "protected B\n",
+        "resolves": 3,
+        "actualRealSaveHandlers": true,
+        "heldInsideFirstExclusiveCallback": true,
+        "httpRequest": false
+      }
+    }
+  ],
+  "snapshots": [
+    {
+      "sourcePath": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-search-path-fix-next\\products\\rea-studio\\apps\\editor\\server.mjs",
+      "path": "preserved/server.mjs.snapshot",
+      "bytes": 6284,
+      "sha256": "a537faa148c2e8f4a97a35e203ec550925b7543b0c00794525b9a50649c299b0"
+    },
+    {
+      "sourcePath": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-search-path-fix-next\\products\\rea-studio\\apps\\editor\\file-path.mjs",
+      "path": "preserved/file-path.mjs.snapshot",
+      "bytes": 383,
+      "sha256": "de23d9554ccd99fac94775d74fc75f7a7b447258d4fe1883abd2805d58d02dd0"
+    },
+    {
+      "sourcePath": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-search-path-fix-next\\products\\rea-studio\\lib\\storage.mjs",
+      "path": "preserved/storage.mjs.snapshot",
+      "bytes": 3085,
+      "sha256": "729c2f9700b1239f04294b11c42bfd2754478b227e39ab03ec49a1be9141b633"
+    },
+    {
+      "sourcePath": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-search-path-fix-next\\validation.json",
+      "path": "preserved/validation.json.snapshot",
+      "bytes": 7407,
+      "sha256": "62a30543071d2962d2e978fd880d23840b9e797d788087cd9d6776ef1d3b183e"
+    },
+    {
+      "sourcePath": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-search-path-fix-next\\freeze-manifest.json",
+      "path": "preserved/freeze-manifest.json.snapshot",
+      "bytes": 22877,
+      "sha256": "d071d370be094646a4738de79adadca9c28d794de53dfb940604f5d52d056edf"
+    }
+  ],
+  "finding": {
+    "priority": "P2",
+    "source": "editor-search-path-fix-next/products/rea-studio/apps/editor/server.mjs:100-106",
+    "contract": "Capture declared revision before queuing the public Save operation",
+    "mechanism": "Path and content are captured before awaiting exclusive; the callback reads shared input.revision again. A queued stale object can be changed to the first commit hash and bypass the initial declared precondition.",
+    "distinctFromHTTP": true,
+    "httpExploitClaim": false
+  },
+  "actualRealSaveHandlers": true,
+  "originalEngineExecutions": 0,
+  "actualBrowser": false,
+  "benchmarkMemoryProfilerRuns": 0,
+  "productionChanged": false,
+  "priorNegative166Changed": false
+}

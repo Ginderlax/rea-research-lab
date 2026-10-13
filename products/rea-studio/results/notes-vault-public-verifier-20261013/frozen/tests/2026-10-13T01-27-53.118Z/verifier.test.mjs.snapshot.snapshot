@@ -1,0 +1,90 @@
+import test, {before, after} from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import {verifyNotesVaultFollowups, assertPublicProofPath, assertInertProofBytes} from './verify-notes-vault-followups.mjs';
+
+const root = path.resolve(import.meta.dirname, '../../outputs/rea-research-lab');
+const n = 'products/rea-studio/apps/notes/results/notebook-trash-followup/';
+const v = 'products/rea-studio/apps/vault/results/recycle-followup/';
+let mirror, sourceRows, observed, baseline;
+before(() => {
+ sourceRows = [];
+ baseline = verifyNotesVaultFollowups(root, {onFile: r => sourceRows.push(r)});
+ mirror = fs.mkdtempSync(path.join(os.tmpdir(), 'rea-notes-vault-proof-'));
+ for (const r of sourceRows) { const dest = path.join(mirror, r.path); fs.mkdirSync(path.dirname(dest), {recursive: true}); fs.copyFileSync(path.join(root, r.path), dest); }
+ observed = {sourceOnly: true, originalExecutions: 0, behavioralTests: 0, mirrors: 1, sourceFiles: sourceRows.length, cases: []};
+});
+after(() => {
+ if (observed) console.log('REA_NOTES_VAULT_PROOF_TESTS ' + JSON.stringify(observed));
+ if (mirror) { const resolved = path.resolve(mirror), tmp = path.resolve(os.tmpdir()); assert.ok(resolved.startsWith(tmp + path.sep) && path.basename(resolved).startsWith('rea-notes-vault-proof-')); fs.rmSync(resolved, {recursive: true, force: true}); }
+});
+function rejection(p, mutate, pattern, label) {
+ const target = path.join(mirror, p), old = fs.readFileSync(target);
+ try { fs.writeFileSync(target, mutate(old)); assert.throws(() => verifyNotesVaultFollowups(mirror), pattern); observed.cases.push({label, rejected: true}); }
+ finally { fs.writeFileSync(target, old); }
+}
+
+test('anonymous public mirror authenticates every path without local original carriers', () => {
+ const result = verifyNotesVaultFollowups(mirror);
+ assert.deepEqual(result, baseline);
+ assert.equal(result.localCarrierBytesRequired, false);
+ assert.equal(result.installedFiles, 34);
+ assert.equal(result.notesExcludedJEXCopies, 15);
+ assert.equal(result.vaultExcludedKDBXCopies, 1);
+ assert.ok(!sourceRows.some(r => r.path.split('/').includes('.local')));
+ observed.cases.push({label: 'anonymous mirror', accepted: true, summary: result});
+});
+test('published original Notes source byte corruption is rejected', () => {
+ rejection(n + 'stage/acquire-trash.mjs.snapshot', b => Buffer.concat([b, Buffer.from('\nCORRUPT')]), /Byte length|SHA256/, 'Notes original source corruption');
+});
+test('deduplicated Vault object corruption is rejected', () => {
+ const map = JSON.parse(fs.readFileSync(path.join(mirror, v + 'publication-plan/selected-file-map.final.json.snapshot')));
+ const shared = map.payload.find(r => r.publicPath && map.payload.filter(q => q.publicPath === r.publicPath).length > 1);
+ assert.ok(shared);
+ rejection(shared.publicPath, b => {const result = Buffer.from(b); result[result.length - 1] ^= 1; return result;}, /SHA256/, 'Vault shared object corruption');
+});
+test('removing a local-only Notes exclusion cannot silently shrink the denominator', () => {
+ rejection(n + 'publication-plan/local-exclusions.json.snapshot', b => {const o = JSON.parse(b); o.excluded.pop(); return Buffer.from(JSON.stringify(o));}, /Byte length|SHA256/, 'Notes omitted local exclusion');
+});
+test('editing Vault mappings cannot rebind frozen epoch provenance', () => {
+ rejection(v + 'publication-plan/selected-file-map.final.json.snapshot', b => {const o = JSON.parse(b); o.payload[0].sha256 = '0'.repeat(64); return Buffer.from(JSON.stringify(o));}, /Byte length|SHA256/, 'Vault epoch mapping tamper');
+});
+test('installed path-only adapter corruption is rejected', () => {
+ rejection('products/rea-studio/apps/vault/recycle-boundaries.test.mjs', b => Buffer.concat([b, Buffer.from('\n// altered assertion')]), /Byte length|SHA256/, 'Installed adapter tamper');
+});
+test('immutable455 before-image corruption is rejected instead of rebinding it to current code', () => {
+ const manifest = JSON.parse(fs.readFileSync(path.join(mirror, 'products/rea-studio/results/milestones/packs-notebooks-history-455ab6c-20261012/snapshot-manifest.json')));
+ const image = manifest.sourceSnapshots.find(r => r.sourcePath === 'products/rea-studio/apps/vault/client.mjs'); assert.ok(image);
+ rejection(image.snapshotPath, b => Buffer.concat([b, Buffer.from('!')]), /Byte length|SHA256/, '455 before-image tamper');
+});
+test('unlisted files in the frozen plan inventory are rejected', () => {
+ const p = path.join(mirror, n + 'publication-plan/unlisted.json.snapshot');
+ try { fs.writeFileSync(p, '{}'); assert.throws(() => verifyNotesVaultFollowups(mirror), /Strict plan inventory/); observed.cases.push({label: 'Strict plan extra file', rejected: true}); }
+ finally { fs.unlinkSync(p); }
+});
+test('metadata additions preserve the original159-source and232-ID identity projection', () => {
+ const p = path.join(mirror, 'products/rea-studio/requirements/system-products.json'), old = fs.readFileSync(p);
+ try { const doc = JSON.parse(old); doc.syntheticMetadataOnly = 'This fixture is not application state'; fs.writeFileSync(p, JSON.stringify(doc)); const result = verifyNotesVaultFollowups(mirror); assert.equal(result.originalSourceIdentities, 159); assert.equal(result.originalCapabilityIDs, 232); observed.cases.push({label: 'Evolving metadata with stable identities', accepted: true}); }
+ finally { fs.writeFileSync(p, old); }
+});
+test('changing one original registry source identity is rejected despite mutable metadata', () => {
+ rejection('products/rea-studio/requirements/system-products.json', b => {const doc = JSON.parse(b); doc.sources[0].sha256 = '0'.repeat(64); return Buffer.from(JSON.stringify(doc));}, /Expected values to be strictly deep-equal/, 'Original source identity tamper');
+});
+test('a proof byte mutation during the verification interval is rejected at the final read', () => {
+ const p = n + 'stage/acquire-trash.mjs.snapshot', at = path.join(mirror, p), old = fs.readFileSync(at); let changed = false;
+ try {
+  assert.throws(() => verifyNotesVaultFollowups(mirror, {onFile:r=>{if(r.path===p){fs.writeFileSync(at, Buffer.concat([old, Buffer.from('!')]));changed=true;}}}), /Byte length|SHA256/);
+  assert.equal(changed, true); observed.cases.push({label: 'Mid-interval source mutation', rejected: true});
+ } finally { fs.writeFileSync(at, old); }
+});
+test('pure confinement and native-carrier guards reject traversal, local public segments and binary carriers', () => {
+ const bad = ['../x','a/../x','a\\x','C:/x','/x','a//x','a/.local/x','a/./x','a\u0000b'];
+ for (const p of bad) assert.throws(() => assertPublicProofPath(p));
+ assert.equal(assertPublicProofPath('evidence/private-study-records/fixture.json.snapshot'), 'evidence/private-study-records/fixture.json.snapshot');
+ for (const bytes of [Buffer.from('4d5a0000','hex'),Buffer.from('504b0304','hex'),Buffer.from('03d9a29a','hex')]) assert.throws(() => assertInertProofBytes(bytes));
+ const tar = Buffer.alloc(512); tar.write('ustar',257); assert.throws(() => assertInertProofBytes(tar));
+ assertInertProofBytes(Buffer.from('ffd8ff00','hex'),'intentional-image.png');
+ observed.cases.push({label:'Pure guards', badPaths:bad.length, rejectedBinaryCarriers:4, acceptedJPEGCarrier:true});
+});

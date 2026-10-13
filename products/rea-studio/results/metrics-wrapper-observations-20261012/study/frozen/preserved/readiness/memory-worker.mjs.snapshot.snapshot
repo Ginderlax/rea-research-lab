@@ -1,0 +1,37 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+import {canonical,packet,metadataFor} from './canonical.mjs';
+import {valuesForSpec} from './workloads.mjs';
+const here=path.dirname(fileURLToPath(import.meta.url)),sha=bytes=>createHash('sha256').update(bytes).digest('hex'),[mode,implementation,caseName,quietFrom,variant='control']=process.argv.slice(2);
+assert.ok(mode==='check-only'||mode==='measure');assert.ok(['original','baseline','candidate'].includes(implementation));
+assert.ok(variant==='control','Unexpected candidate manifest.');const manifestBytes=await fs.readFile(path.join(here,'memory-preflight.'+variant+'.json')),manifest=JSON.parse(manifestBytes),selected=manifest.implementations[implementation];assert.equal(manifest.variant,variant);assert.equal(process.version,manifest.runtime.version);assert.equal(process.execPath,manifest.runtime.execPath);assert.equal(sha(await fs.readFile(path.join(here,'canonical.mjs'))),manifest.canonicalSourceSHA256);
+if(mode==='measure'){assert.ok(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{3})?Z$/.test(quietFrom)&&Date.parse(quietFrom)>Date.parse(manifest.checkedAt)&&Date.parse(quietFrom)<=Date.now(),'A new coordinated quiet timestamp after this preflight is required.');assert.equal(typeof globalThis.gc,'function','Memory measurement requires --expose-gc.');await new Promise((resolve,reject)=>{let text='';process.stdin.on('data',bytes=>{text+=bytes;if(text.length>16)reject(Error('Invalid measurement-start handshake.'));if(text==='start\n'){process.stdin.pause();resolve();}});process.stdin.once('end',()=>{if(text!=='start\n')reject(Error('Owned-PID observer did not authorize start.'));});});}
+for(const [name,hash]of Object.entries(selected.files))assert.equal(sha(await fs.readFile(name)),hash);
+assert.equal(sha(await fs.readFile(path.join(here,'workloads.mjs'))),manifest.workloadSourceSHA256);
+const checkpoints=[],settle=async()=>{for(let count=0;count<3;count++){globalThis.gc?.();await new Promise(resolve=>setImmediate(resolve));}};
+const snapshot=name=>{const value={name,at:new Date().toISOString(),pid:process.pid,...process.memoryUsage(),lifetimePeakResidentKiB:process.resourceUsage().maxRSS};assert.ok(value.rss<=manifest.limits.childRSSMiB*1024*1024,'RSS bound exceeded at a measurement checkpoint.');checkpoints.push(value);console.log(JSON.stringify({kind:'snapshot',...value}));};
+if(mode==='measure'){await settle();snapshot('beforeSelectedImport');}
+const require=createRequire(import.meta.url),native=selected.format==='cjs'?require(selected.entry):await import(pathToFileURL(selected.entry).href);
+native.fieldReducers.list();assert.equal(sha(canonical(metadataFor(native))),manifest.expectedMetadataSHA256);
+const loadedCJSModules=Object.keys(require.cache);if(selected.format==='cjs'){assert.equal(path.resolve(createRequire(selected.entry).resolve('lodash')),path.resolve(selected.lodashPath));for(const name of loadedCJSModules)assert.ok(Object.hasOwn(selected.files,name),'Unexpected original CJS module: '+name);}else assert.equal(loadedCJSModules.length,0,'Application worker loaded a CJS/original reducer module.');
+if(mode==='measure'){await settle();snapshot('afterSelectedInitialization');}
+const names=mode==='check-only'?Object.keys(manifest.expectedFiles):[caseName];assert.ok(names.every(name=>Object.hasOwn(manifest.expectedFiles,name)));
+let comparisons=0;
+for(const name of names){const fixture=manifest.expectedFiles[name],spec=fixture.spec,values=valuesForSpec(spec),inputSHA256=sha(canonical(values)),field=()=>({name:'synthetic',type:'number',config:{nullValueMode:'connected'},values,state:{}}),calculate=()=>{const next=field();return {field:next,result:native.reduceField({field:next,reducers:spec.reducers})};},check=(pair,checkInput=true)=>{assert.equal(sha(canonical(packet(pair.field,pair.result))),fixture.canonicalOutputSHA256);if(checkInput)assert.equal(sha(canonical(values)),fixture.inputSHA256);comparisons++;assert.equal(sha(canonical(packet(pair.field,native.reduceField({field:pair.field,reducers:spec.reducers})))),fixture.repeatOutputSHA256);comparisons++;assert.equal(sha(canonical(packet(pair.field,native.reduceField({field:pair.field,reducers:[spec.reducers[0]]})))),fixture.subsetOutputSHA256);comparisons++;};assert.equal(inputSHA256,fixture.inputSHA256);
+  if(mode==='check-only'){check(calculate());continue;}
+  await settle();snapshot('afterSharedInput');let latest=calculate();check(latest);latest=undefined;
+  for(let index=0;index<spec.warmup;index++)calculate();await settle();snapshot('warmBase');
+  const block=Math.max(1,Math.ceil(spec.transient/16));for(let index=0;index<spec.transient;index++){latest=calculate();if((index+1)%block===0||index===spec.transient-1){snapshot('transientBlock-'+(index+1));await new Promise(resolve=>setImmediate(resolve));}}
+  snapshot('afterTransient');check(latest);latest=undefined;await settle();snapshot('beforeRetention');
+  let retained=Array.from({length:spec.retained},calculate);await settle();snapshot('retainedAfterGC');
+  // Validation runs outside measured operation loops and retained snapshots.
+  // Its temporary serializer allocations are released before the release-only GC
+  // checkpoint. Heap capacity/RSS can still retain that common observer pressure.
+  for(let index=0;index<retained.length;index++)check(retained[index],false);assert.equal(sha(canonical(values)),fixture.inputSHA256);retained=undefined;await settle();snapshot('releasedAfterGC');
+}
+for(const [name,hash]of Object.entries(selected.files))assert.equal(sha(await fs.readFile(name)),hash);
+console.log(JSON.stringify({kind:'result',mode,implementation,variant,caseName:mode==='check-only'?'all-seven':caseName,pid:process.pid,loadedReducerImplementations:1,loadedNativeModuleFiles:selected.format==='esm'?Object.keys(selected.files).length:undefined,loadedCJSModules,selectedSources:selected.files,manifestSHA256:sha(manifestBytes),canonicalSourceSHA256:manifest.canonicalSourceSHA256,comparisons,checkpoints:mode==='measure'?checkpoints:undefined,measurementRun:mode==='measure',quietFrom:mode==='measure'?quietFrom:undefined,releaseSnapshotObserverDisclosure:mode==='measure'?'Returned/cache results and two cached rereads per retained field are validated after retained snapshot and before release/GC. Serializer objects are dropped, but their common heap-capacity/RSS pressure can persist; release is a diagnostic, not pure allocator/leak evidence.':undefined,fullProductComplete:false,universalSuperiorityEstablished:false}));

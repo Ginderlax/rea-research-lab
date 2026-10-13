@@ -1,0 +1,17 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import {pathToFileURL} from 'node:url';
+const here=import.meta.dirname, root=path.resolve(here,'../../outputs/rea-research-lab');
+const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+const rows=[], source=fs.readFileSync(path.join(here,'verify-notes-vault-followups.mjs'));
+const installedPath='scripts/verify-notes-vault-followups.mjs', installed=fs.readFileSync(path.join(root,installedPath));
+if(!source.equals(installed))throw Error('Installed verifier source differs from accepted stage');
+const {verifyNotesVaultFollowups}=await import(pathToFileURL(path.join(root,installedPath)).href);
+const result=verifyNotesVaultFollowups(root,{onFile:r=>rows.push(r)});
+const identity=p=>{const b=fs.readFileSync(path.join(here,p));return{path:p,bytes:b.length,sha256:hash(b)};};
+const tests=JSON.parse(fs.readFileSync(path.join(here,'tests/2026-10-13T01-30-41.496Z/validation.json')));
+if(!tests.sourceStable||tests.result.code!==0||tests.summary.pass!==12||tests.summary.tests!==12||tests.summary.fail!==0)throw Error('Final focused regression receipt mismatch');
+fs.writeFileSync(path.join(here,'source-map.json'),JSON.stringify({schema:'rea-notes-vault-public-proof-source-map/v1',rootIsPublicLab:true,publicVerifier:{path:installedPath,bytes:installed.length,sha256:hash(installed)},readOnlySourceFiles:rows,localOriginalCarrierRequired:false,wholeRegistryHashesAreIntervalObservationsOnly:true,noAppsOrResultsChanged:true},null,2)+'\n');
+const receipt={schema:'rea-notes-vault-public-proof-verifier-validation/v1',at:new Date().toISOString(),sourceOnly:true,status:'PASS',verification:result,regression:{receipt:'tests/2026-10-13T01-30-41.496Z/validation.json',...tests.summary,sourceStable:tests.sourceStable},installedVerifier:{path:installedPath,bytes:installed.length,sha256:hash(installed)},sourceMap:identity('source-map.json'),sources:['verify-notes-vault-followups.mjs','verifier.test.mjs','run-tests.mjs','check.mjs','finalize.mjs'].map(identity),failedDirectVerifierAttempts:6,priorCompleteDirectChecks:2,priorRegressionAttemptWithoutTests:1,priorPassingTwelveTestsWithRecorderSummaryFailure:1,finalTwelveSourceOnlyTests:12,totalSourceOnlyRegressionCaseExecutions:24,finalizerWindowsImportFailurePreserved:1,newAppBehaviorTests:0,newOriginalProgramExecutions:0,newHosts:0,newBrowserActions:0,localMirrorRemovedAfterTests:true,sourceBeforeAfterStable:true,appsResultsAndOriginalEvidenceModified:false,existingRootVerifierModified:false,old455AndOriginalPlansRebound:false,currentWholeRegistryHashPinned:false,fullProductParity:false,securityParity:false,universalSuperiority:false,limitations:['Finite public-proof integrity verification, not app runtime acceptance.','The prior erroneous Notes73 prospective total remains immutable; final Notes59 is distinct.','The Vault31-file plan baseline resolves30 files to455; KDBX-COVERAGE.md is separately plan-bound and unchanged current bytes.','Four historically named PNG public aliases intentionally contain exact JPEG bytes.','Notes native confirmation browser acceptance remains incomplete in the retained evidence.','Regular/reparse path checks and bounded reads are not hard I/O deadlines or race-free filesystem isolation.','The owned test runner has a150s child deadline and1MiB stream caps; it does not claim generic Windows descendant isolation.']};
+fs.writeFileSync(path.join(here,'validation.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));

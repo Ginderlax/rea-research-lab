@@ -1,0 +1,21 @@
+{
+  "schema": "rea-vault-http-recycle-integration-proposal-map/v1",
+  "destination": "products/rea-studio/apps/vault/app.integration.test.mjs",
+  "before": {
+    "path": "products/rea-studio/apps/vault/app.integration.test.mjs",
+    "bytes": 5515,
+    "sha256": "82a3d5d346c706a09c12946eb50dad44888027847142330d3e25b612c5fd1d55"
+  },
+  "proposal": {
+    "path": "proposed/app.integration.test.mjs",
+    "bytes": 12648,
+    "sha256": "09843c298d01af36937568ffa20dbbf25ec4e8ad10ea1abdff9d167e13942127"
+  },
+  "runtimeChanged": false,
+  "firstTestBodyByteIdentical": true,
+  "preDeleteKDBXAssertionsByteIdentical": true,
+  "oldFinalLine": "  await call('delete',{ id: entry.id,confirm: true }); const empty = await call('exportKdbx',{ password: credentials.password,options }); assert.equal((await importKdbx(Buffer.from(empty.fileBase64,'base64'),credentials)).entries.length,0);",
+  "obsoletePremise": "Confirmed normal delete permanently removes total exported entries",
+  "replacementPremise": "Normal delete recycles and remains exported; confirmed per-entry permanent delete removes and records a tombstone",
+  "executionAdapter": "runs/corrected-2026-10-13T01-42-55.099Z/input-adapters.json"
+}

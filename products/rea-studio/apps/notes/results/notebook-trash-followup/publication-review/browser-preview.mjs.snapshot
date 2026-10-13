@@ -1,0 +1,3 @@
+import {render} from '/apps/notes/client.mjs';
+const {token}=await(await fetch('/api/session')).json();
+await render(document.querySelector('main'),async(action,input={})=>{const response=await fetch('/api/notes/'+action,{method:'POST',headers:{'content-type':'application/json','x-rea-token':token},body:JSON.stringify(input)}),value=await response.json();if(!response.ok)throw new Error(value.error);return value.result;});

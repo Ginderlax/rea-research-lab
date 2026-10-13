@@ -88,7 +88,7 @@
       "inventoryCoverageGaps": [
         "The Monaco source catalogue includes 13 Markdown files and 134 playground example source files; generated monaco.d.ts is fingerprinted separately.",
         "Every public API declaration, namespace, member, overload, event, option, provider and inherited contract still needs extraction.",
-        "VS Code is a separate complete product. Its documentation snapshot includes non-product pages and release updates; applicability is unclassified and it is not bound to an acquired original release.",
+        "VS Code1.140.0 shipped win32-x64 archive is independently acquired and identity-verified. The earlier documentation snapshot includes unclassified non-product pages and is still not proven release-bound.",
         "The 28 capability rows are a selective seed, not an exhaustive editor inventory. Tasks, tests, notebooks, AI features, extension APIs, command inventories, configuration, protocols and linked docs require full review.",
         "No complete VS Code or Monaco compatibility test suite has been executed against the new Editor application."
       ],
@@ -109,8 +109,29 @@
           "sourceId": "vscode.core-package"
         },
         "completeProduct": {
-          "selectedRelease": null,
-          "status": "not-acquired-or-bound",
+          "selectedRelease": {
+            "product": "VS Code",
+            "version": "1.140.0",
+            "commit": "07f806f999227108933c2e30515b26eecc1fda74",
+            "platform": "win32-x64-archive",
+            "channel": "stable",
+            "metadataURL": "https://update.code.visualstudio.com/api/versions/1.140.0/win32-x64-archive/stable",
+            "archive": {
+              "bytes": 355156158,
+              "sha256": "52f47072473375767d63ea5be9ffb96a3092124223fe5ce036834a299715014e",
+              "publisherSHA1": "e3eb80ad085d2d245ecf2a548ade9c153dec0368"
+            },
+            "unpacked": {
+              "files": 3246,
+              "bytes": 1044655528
+            },
+            "record": "products/rea-studio/requirements/vscode-release-acquisition-20261012/frozen/validation.json.snapshot",
+            "historicalCLIIdentityInvocations": 1,
+            "totalOriginalOSProcessCountVerified": false,
+            "originalGUISessions": 0,
+            "fullReleaseDocumentationBound": false
+          },
+          "status": "original-acquired-identity-verified-documentation-and-full-acceptance-open",
           "candidate": {
             "product": "VS Code",
             "tag": "1.140.0",
@@ -141,7 +162,24 @@
       "documentationCatalogues": [
         "monaco-documents",
         "vscode-documents"
-      ]
+      ],
+      "extensionAPIDiscovery": {
+        "release": "1.140.0",
+        "commit": "07f806f999227108933c2e30515b26eecc1fda74",
+        "record": "products/rea-studio/requirements/vscode-extension-api-discovery-20261013/frozen/validation.json.snapshot",
+        "publicSyntacticDeclarations": 2909,
+        "namedExcludingInline": 2727,
+        "documentedDeclarations": 2850,
+        "overloadGroups": 42,
+        "overloadDeclarations": 102,
+        "directHeritageLinks": 22,
+        "unresolvedHeritageLinks": 8,
+        "originalProgramExecutions": 0,
+        "completeWorkbenchInventory": false,
+        "atomicRequirementDenominatorClosed": false,
+        "sourceDeclarationLineEndingDifference": "Pinned Git LF versus shipped CRLF; raw hashes separately preserved and equality only after CRLF normalization.",
+        "original159SourcesAnd232CapabilityIDsRebound": false
+      }
     },
     {
       "app": "metrics",
@@ -13829,13 +13867,30 @@
       "sourceIds": [
         "vscode.editing"
       ],
-      "status": "missing",
+      "status": "partial",
       "implementation": {
-        "current": null,
+        "current": "Saved UTF-8 literal single-line workspace search, case-sensitive or insensitive, UTF-16 positions and revision-bound navigation retaining dirty drafts. Shared1024-character file path contract and explicit file/entry/depth/read/match/preview/response budgets. Regex, multiline, whole-word, inclusion/exclusion precedence, unsaved-buffer search, replace, remote workspaces and broad encoding parity remain unimplemented or unverified.",
         "evidence": [
-          "editor.README.md"
+          "editor.workspace-search.mjs",
+          "editor.file-path.mjs",
+          "editor.server.mjs",
+          "editor.client.mjs",
+          "editor.SEARCH.md"
         ],
-        "testReferences": []
+        "testReferences": [
+          {
+            "path": "products/rea-studio/apps/editor/workspace-search.test.mjs",
+            "scope": "Finite literal query, Unicode/UTF-8 and resource contracts."
+          },
+          {
+            "path": "products/rea-studio/apps/editor/workspace-search-path.test.mjs",
+            "scope": "Finite shared path boundary contracts1024/1025 and overlong directory exclusion."
+          },
+          {
+            "path": "products/rea-studio/results/editor-workspace-search-followup/current-independent-review/frozen/review-validation.json.snapshot",
+            "scope": "18 independent generation/path/draft checks, plus12 prepared original rg groups267 positions; no complete original GUI, held-out corpus or performance proof."
+          }
+        ]
       },
       "remaining": [
         "Include/exclude globs, regular expressions, search editors, ignore settings and cross-file replacements."
@@ -14747,17 +14802,26 @@
       ],
       "status": "partial",
       "implementation": {
-        "current": "Soft-delete and restore individual notes.",
+        "current": "Individual note trash/restore and confirmed recursive local notebook trash/restore, preserving supported note IDs, attachments, tags and original asymmetric timestamp behavior. Stale writes, mutable direct-call identity and late Save/list publication are guarded. Native browser confirmation remains an incomplete acceptance workflow after browser-control failure; purge, shared-folder rules, synchronization and full original client/database behavior remain open.",
         "evidence": [
           "notes.server.mjs",
           "notes.client.mjs",
-          "notes.README.md"
+          "notes.README.md",
+          "notes.notebook-trash.mjs"
         ],
         "testReferences": [
           {
             "path": "products/rea-studio/apps/notes/app.test.mjs",
             "testName": "notes CRUD, search/tag/notebook filtering, revisions, history, trash and restore",
             "scope": "bounded local behavior only"
+          },
+          {
+            "path": "products/rea-studio/apps/notes/notebook-trash.integration.test.mjs",
+            "scope": "Finite recursive identity, cold persistence, JEX, resource/tag and original released helper contracts."
+          },
+          {
+            "path": "products/rea-studio/results/notes-trash-browser-incomplete-20261013/frozen/browser-validation.json.snapshot",
+            "scope": "Five setup/draft observations; no confirmed notebook-trash or restore browser acceptance."
           }
         ]
       },
@@ -14894,7 +14958,7 @@
       ],
       "status": "partial",
       "implementation": {
-        "current": "Exact-ID notebook creation, rename, reparenting and note moves with duplicate sibling identity checks, nested paths, cycle/depth limits, optimistic organization/note revisions and atomic persistence. Legacy flat names and supported JEX metadata remain available.",
+        "current": "Exact-ID notebook creation, rename, reparenting and note moves with duplicate sibling identity checks, nested paths, cycle/depth limits, optimistic organization/note revisions and atomic persistence. Legacy flat names and supported JEX metadata remain available. Confirmed recursive local notebook trash/restore preserves supported hierarchy/IDs; source-assisted finite helper contracts and UI race checks are recorded separately.",
         "evidence": [
           "notes.server.mjs",
           "notes.client.mjs",
@@ -14904,7 +14968,8 @@
           "notes.notebooks.mjs",
           "notes.notebooks.test.mjs",
           "notes.notebooks.integration.test.mjs",
-          "notes.results.notebooks-followup.integration-validation.json"
+          "notes.results.notebooks-followup.integration-validation.json",
+          "notes.notebook-trash.mjs"
         ],
         "testReferences": [
           {
@@ -15166,15 +15231,15 @@
     {
       "id": "editor.server.mjs",
       "path": "products/rea-studio/apps/editor/server.mjs",
-      "bytes": 6304,
-      "sha256": "b7eaab9dcee52394936c415aa3abe4c861c481677349f62880704ca2023fafea",
+      "bytes": 6303,
+      "sha256": "9036f3f139f6aeb31d07cf159694e8db127e3b65a136c1aaf20bebcf14e0acad",
       "kind": "original-implementation-source"
     },
     {
       "id": "editor.client.mjs",
       "path": "products/rea-studio/apps/editor/client.mjs",
-      "bytes": 13596,
-      "sha256": "6537ed329e48c1b4bb5e72fcec41f4f21bdc4dfecfc87f3bee1f29f6f749ff51",
+      "bytes": 17759,
+      "sha256": "295e557ee7c341f2e1ca6fb68aac32e558455556d0c6490f6075970025afb65c",
       "kind": "original-implementation-source"
     },
     {
@@ -15194,8 +15259,8 @@
     {
       "id": "editor.README.md",
       "path": "products/rea-studio/apps/editor/README.md",
-      "bytes": 5591,
-      "sha256": "b94e3cd3ccae730e89dd7a9b502272e52a2e24ad7ac7f9380c144c37760a13f9",
+      "bytes": 6685,
+      "sha256": "954fe5be0e897e334bc32085875392a5359f8a3b8be9745cc1ab3380f07569e9",
       "kind": "implementation-limitations"
     },
     {
@@ -15236,15 +15301,15 @@
     {
       "id": "notes.server.mjs",
       "path": "products/rea-studio/apps/notes/server.mjs",
-      "bytes": 22424,
-      "sha256": "971de4b1cf823424ee4548ef98b752876f3a0fa6a89e667b11ac58bc9d034a39",
+      "bytes": 23320,
+      "sha256": "e592e599c414cd38e8b3b278896792713e001a51950b8a4b3f3e0bc6662f900d",
       "kind": "original-implementation-source"
     },
     {
       "id": "notes.client.mjs",
       "path": "products/rea-studio/apps/notes/client.mjs",
-      "bytes": 17796,
-      "sha256": "799431e9d4e7af3135aa63393e9008133aa1d0ef3d1c1d5ebe812a1a93746c81",
+      "bytes": 19994,
+      "sha256": "c57fe2ee532fa9ce8c8afeaa1e777428fc74ce30bebc5c4e76782169ee602d87",
       "kind": "original-implementation-source"
     },
     {
@@ -15264,8 +15329,8 @@
     {
       "id": "notes.README.md",
       "path": "products/rea-studio/apps/notes/README.md",
-      "bytes": 12785,
-      "sha256": "916c6ac01e288a5c772c7425a69379c034d98e2e17b4a30f5b4841d65b97d660",
+      "bytes": 15599,
+      "sha256": "8bf374c5d5c8125fd074a546c89486c13591b8be2b0fd6fd2d5bc12944aedf41",
       "kind": "implementation-limitations"
     },
     {
@@ -15443,8 +15508,8 @@
     },
     {
       "path": "products/rea-studio/apps/notes/notebook-original-oracle.mjs",
-      "bytes": 3688,
-      "sha256": "3cb650d3223daebd54ed5b357f8c2ef977d9749cc7e37189f1036fa0f13892b6",
+      "bytes": 3699,
+      "sha256": "9e5ec3357b64e2af290866da6453361c12716f82f7122b3fa9e82f817588045f",
       "id": "notes.notebook-original-oracle.mjs",
       "kind": "original-implementation-source",
       "scope": "Finite native notebook organization and note moves; full Joplin parity remains open."
@@ -15456,6 +15521,174 @@
       "id": "notes.results.notebooks-followup.integration-validation.json",
       "kind": "source-bound-focused-validation",
       "scope": "Finite native notebook organization and note moves; full Joplin parity remains open."
+    },
+    {
+      "id": "editor.file-path.mjs",
+      "path": "products/rea-studio/apps/editor/file-path.mjs",
+      "bytes": 383,
+      "sha256": "de23d9554ccd99fac94775d74fc75f7a7b447258d4fe1883abd2805d58d02dd0",
+      "kind": "original-implementation-source"
+    },
+    {
+      "id": "editor.save-publication.ui.test.mjs",
+      "path": "products/rea-studio/apps/editor/save-publication.ui.test.mjs",
+      "bytes": 6942,
+      "sha256": "30980c6c14879e3279f1715af159fb4357697e5b3c854d020dd8e221e2fc7191",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "editor.save-review-adjacent.test.mjs",
+      "path": "products/rea-studio/apps/editor/save-review-adjacent.test.mjs",
+      "bytes": 4165,
+      "sha256": "dd9f44164fe8c6874632d1a02b1187e443238ba13c993aab259ce863a52dd30d",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "editor.save-review-fixture.mjs",
+      "path": "products/rea-studio/apps/editor/save-review-fixture.mjs",
+      "bytes": 3514,
+      "sha256": "b53be669ff5352670f4c9c7cfb1afd9df1adb0b0b43b5f1bce575b121ac1f218",
+      "kind": "original-implementation-source"
+    },
+    {
+      "id": "editor.save-review-held.test.mjs",
+      "path": "products/rea-studio/apps/editor/save-review-held.test.mjs",
+      "bytes": 4199,
+      "sha256": "6efd4555b0ec2b9b719b6004c79010a1c82314242e78eba9ac257a846ab53b46",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "editor.save-review-revision.test.mjs",
+      "path": "products/rea-studio/apps/editor/save-review-revision.test.mjs",
+      "bytes": 3551,
+      "sha256": "7e4d3b3aad1ec8b170f5cca73155483f28d180ed972ef42f363f5720426adef8",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "editor.SEARCH.md",
+      "path": "products/rea-studio/apps/editor/SEARCH.md",
+      "bytes": 4604,
+      "sha256": "3c13316ea1332fefdd86dbfdda55114cc0eae2f234094abbaa6ce9d7aa5878b4",
+      "kind": "implementation-coverage-and-limitations"
+    },
+    {
+      "id": "editor.workspace-search-path.test.mjs",
+      "path": "products/rea-studio/apps/editor/workspace-search-path.test.mjs",
+      "bytes": 2661,
+      "sha256": "f27bbfb5959463bc2c693bde445a01c604a0430b59bd0102cc4528bd47091756",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "editor.workspace-search-review-held.test.mjs",
+      "path": "products/rea-studio/apps/editor/workspace-search-review-held.test.mjs",
+      "bytes": 5912,
+      "sha256": "8f3ef565633d83748fa21d4c1f7381a8873a1da657c6f4d53ec4bd2ad7a01674",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "editor.workspace-search-review-path.test.mjs",
+      "path": "products/rea-studio/apps/editor/workspace-search-review-path.test.mjs",
+      "bytes": 8646,
+      "sha256": "ff91c57af39a8c884ef8af52cce2444facb2c38927d82c02bb90b25901178679",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "editor.workspace-search-review-ui.test.mjs",
+      "path": "products/rea-studio/apps/editor/workspace-search-review-ui.test.mjs",
+      "bytes": 6580,
+      "sha256": "e79cfcff77f2845c8b21b282d2e8b6417ab7a17710714df6493697cbdefb3594",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "editor.workspace-search.integration.test.mjs",
+      "path": "products/rea-studio/apps/editor/workspace-search.integration.test.mjs",
+      "bytes": 2188,
+      "sha256": "e4ea58023152ca44a08979b2ea2dd8709d8cc759ea93fa6317142208f897a50d",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "editor.workspace-search.mjs",
+      "path": "products/rea-studio/apps/editor/workspace-search.mjs",
+      "bytes": 6133,
+      "sha256": "e0c53274f2577754064870d3613ed3fc0348c8c62d523d58223f80d3d6f5c38d",
+      "kind": "original-implementation-source"
+    },
+    {
+      "id": "editor.workspace-search.test.mjs",
+      "path": "products/rea-studio/apps/editor/workspace-search.test.mjs",
+      "bytes": 5869,
+      "sha256": "d775903625d8bf7e85dcfb2426d92c9ca543c4431e23b35b419939a521c2330f",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "editor.workspace-search.ui.test.mjs",
+      "path": "products/rea-studio/apps/editor/workspace-search.ui.test.mjs",
+      "bytes": 8117,
+      "sha256": "24f35e40ae7b91d277277829629d6f5405910a73c5ddbae0b2bf7e6a51485fe4",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "notes.notebook-trash-fresh-boundaries.test.mjs",
+      "path": "products/rea-studio/apps/notes/notebook-trash-fresh-boundaries.test.mjs",
+      "bytes": 4480,
+      "sha256": "820b38cd108d3d392496225a298e42f6239dbdd1fa6971ef505a9682e0dea95d",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "notes.notebook-trash-original-oracle.mjs",
+      "path": "products/rea-studio/apps/notes/notebook-trash-original-oracle.mjs",
+      "bytes": 5974,
+      "sha256": "077fa22e13d0ba84eaf7553b117d54c3f95e1bd4a9c6fa27f79fcb35ce4a1b8a",
+      "kind": "original-implementation-source"
+    },
+    {
+      "id": "notes.notebook-trash-publication-boundaries.test.mjs",
+      "path": "products/rea-studio/apps/notes/notebook-trash-publication-boundaries.test.mjs",
+      "bytes": 6778,
+      "sha256": "94ceb4a2df8dd7bd04c2f2668ebbde5a5569f8e1e69df9a7f7c7ea2af8e564a6",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "notes.notebook-trash-review-fixture.mjs",
+      "path": "products/rea-studio/apps/notes/notebook-trash-review-fixture.mjs",
+      "bytes": 2802,
+      "sha256": "28990dbb92a6c3a1d155ee8aeefab28e4a9508ef35601adebc0783651d365551",
+      "kind": "original-implementation-source"
+    },
+    {
+      "id": "notes.notebook-trash-review.test.mjs",
+      "path": "products/rea-studio/apps/notes/notebook-trash-review.test.mjs",
+      "bytes": 8836,
+      "sha256": "03c06071a8b58ce8b34fabafc0d39668f853b47351702cb848013f1aa686289b",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "notes.notebook-trash.integration.test.mjs",
+      "path": "products/rea-studio/apps/notes/notebook-trash.integration.test.mjs",
+      "bytes": 4078,
+      "sha256": "378d6499959631c3842df3ed142f45abe3d2ee66b1b71d4743d713f08a6b2b67",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "notes.notebook-trash.mjs",
+      "path": "products/rea-studio/apps/notes/notebook-trash.mjs",
+      "bytes": 6150,
+      "sha256": "a94a44d754ca5f20c5d5e8dbac9753c31650b7c929ceab6d196acc0c3690edb4",
+      "kind": "original-implementation-source"
+    },
+    {
+      "id": "notes.notebook-trash.test.mjs",
+      "path": "products/rea-studio/apps/notes/notebook-trash.test.mjs",
+      "bytes": 14015,
+      "sha256": "e4f574932cee5c65b512f31a035f6c5066109ce5e075de63d101019dc4e18eba",
+      "kind": "local-development-test"
+    },
+    {
+      "id": "notes.notebook-trash.ui.test.mjs",
+      "path": "products/rea-studio/apps/notes/notebook-trash.ui.test.mjs",
+      "bytes": 4645,
+      "sha256": "ff478b802a5687a1fb6175a8cbff9fc4970b3d76a045435d57ed15a299985ffe",
+      "kind": "local-development-test"
     }
   ],
   "catalogueCoverage": {

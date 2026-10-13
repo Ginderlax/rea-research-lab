@@ -1,0 +1,32 @@
+{
+  "schema": "rea-editor-bundled-engine-collector-correction/v1",
+  "sourcePath": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\editor-search-independent-review\\fresh-original-comparison.mjs",
+  "priorSourceSHA256": "7ca8fd37dedf62aa39a3609f0f109d1f1a8330690b2daf36ff944f50c42664cc",
+  "currentSourceSHA256": "c0544ac1631749af5b442021383af86c69a8af476b71bb30e1539baaeaf3a82f",
+  "substitutions": [
+    [
+      "../editor-search-fix-next/",
+      "../editor-search-path-fix-next/"
+    ],
+    [
+      "path.join(here,'provenance-validation.corrected.json')",
+      "path.resolve(here,'../editor-search-independent-review/provenance-validation.corrected.json')"
+    ],
+    [
+      "../editor-search-fix-next'",
+      "../editor-search-path-fix-next'"
+    ],
+    [
+      "b858a4cf15312f962bf0ac5ba2fd6b6c17466248ff1394c727a49ee0e665e9ef",
+      "d071d370be094646a4738de79adadca9c28d794de53dfb940604f5d52d056edf"
+    ],
+    [
+      "raw=await fs.readFile(workspace.resolve(name)),decode=bytes=>new TextDecoder('utf-8',{fatal:true}).decode(bytes),lineStart=decode(raw.subarray(0,data.absolute_offset)).length",
+      "saved=await fs.readFile(workspace.resolve(name)),raw=Buffer.from(new TextDecoder('utf-8',{fatal:true}).decode(saved)),decode=bytes=>new TextDecoder('utf-8',{fatal:true,ignoreBOM:true}).decode(bytes),lineStart=decode(raw.subarray(0,data.absolute_offset)).length"
+    ]
+  ],
+  "reason": "The released engine strips a leading UTF-8 BOM before reporting byte offsets. Convert prefixes of canonical decoded saved content and preserve internal BOMs. This fixes only the independent collector, not candidate code.",
+  "productionChanged": false,
+  "priorReviewChanged": false,
+  "newMeasurements": false
+}

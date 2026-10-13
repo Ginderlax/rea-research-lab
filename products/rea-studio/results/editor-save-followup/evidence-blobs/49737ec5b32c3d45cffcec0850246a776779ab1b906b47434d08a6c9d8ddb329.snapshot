@@ -1,0 +1,284 @@
+[
+  {
+    "id": "pending-retry",
+    "successfulRetry": true,
+    "firstOutcome": {
+      "input": {
+        "path": "a.txt",
+        "content": "captured save A\\n",
+        "revision": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"
+      },
+      "result": {
+        "path": "a.txt",
+        "content": "captured save A\\n",
+        "revision": "48ca7afd8d0da50ca511013e1af1dad2c35d18e04c26737d451ba6ee4a31615f",
+        "bytes": 16,
+        "saved": true
+      },
+      "diskA": "captured save A\\n"
+    },
+    "editorValue": "newer draft for retry\\n",
+    "editorDisabled": false,
+    "saveDisabled": false,
+    "status": [
+      "Search saved files; unsaved drafts are retained in their tabs.",
+      "Saved a.txt (22 bytes)."
+    ],
+    "tabs": [
+      {
+        "label": "a.txt",
+        "active": "true"
+      }
+    ],
+    "calls": [
+      {
+        "action": "list",
+        "input": {}
+      },
+      {
+        "action": "gitStatus",
+        "input": {}
+      },
+      {
+        "action": "read",
+        "input": {
+          "path": "a.txt"
+        }
+      },
+      {
+        "action": "save",
+        "input": {
+          "path": "a.txt",
+          "content": "captured save A\\n",
+          "revision": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"
+        }
+      },
+      {
+        "action": "save",
+        "input": {
+          "path": "a.txt",
+          "content": "newer draft for retry\\n",
+          "revision": "48ca7afd8d0da50ca511013e1af1dad2c35d18e04c26737d451ba6ee4a31615f"
+        }
+      }
+    ],
+    "diskA": "newer draft for retry\\n",
+    "diskB": "original B\\n"
+  },
+  {
+    "id": "real-conflict",
+    "realConflictRetry": true,
+    "firstOutcome": {
+      "input": {
+        "path": "a.txt",
+        "content": "captured save A\\n",
+        "revision": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"
+      },
+      "error": "File changed since it was opened. Open it again before saving; your draft is still in the editor.",
+      "diskA": "external saved A\\n"
+    },
+    "editorValue": "successful reopened save\\n",
+    "editorDisabled": false,
+    "saveDisabled": false,
+    "status": [
+      "Search saved files; unsaved drafts are retained in their tabs.",
+      "Saved a.txt (25 bytes)."
+    ],
+    "tabs": [
+      {
+        "label": "a.txt",
+        "active": "true"
+      }
+    ],
+    "calls": [
+      {
+        "action": "list",
+        "input": {}
+      },
+      {
+        "action": "gitStatus",
+        "input": {}
+      },
+      {
+        "action": "read",
+        "input": {
+          "path": "a.txt"
+        }
+      },
+      {
+        "action": "save",
+        "input": {
+          "path": "a.txt",
+          "content": "captured save A\\n",
+          "revision": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"
+        }
+      },
+      {
+        "action": "save",
+        "input": {
+          "path": "a.txt",
+          "content": "newer draft after conflict\\n",
+          "revision": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"
+        }
+      },
+      {
+        "action": "read",
+        "input": {
+          "path": "a.txt"
+        }
+      },
+      {
+        "action": "save",
+        "input": {
+          "path": "a.txt",
+          "content": "successful reopened save\\n",
+          "revision": "753d13010c0c1b6d9240ba11ee7fe6cd44007d8da77b073e195cb73eba069e82"
+        }
+      }
+    ],
+    "diskA": "successful reopened save\\n",
+    "diskB": "original B\\n"
+  },
+  {
+    "id": "disposed-activation",
+    "disposed": true,
+    "before": [
+      "Search saved files; unsaved drafts are retained in their tabs.",
+      "Opened a.txt."
+    ],
+    "firstOutcome": {
+      "input": {
+        "path": "a.txt",
+        "content": "captured save A\\n",
+        "revision": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"
+      },
+      "result": {
+        "path": "a.txt",
+        "content": "captured save A\\n",
+        "revision": "48ca7afd8d0da50ca511013e1af1dad2c35d18e04c26737d451ba6ee4a31615f",
+        "bytes": 16,
+        "saved": true
+      },
+      "diskA": "captured save A\\n"
+    },
+    "editorValue": "captured save A\\n",
+    "editorDisabled": false,
+    "saveDisabled": true,
+    "status": [
+      "Search saved files; unsaved drafts are retained in their tabs.",
+      "Opened a.txt."
+    ],
+    "tabs": [
+      {
+        "label": "a.txt •",
+        "active": "true"
+      }
+    ],
+    "calls": [
+      {
+        "action": "list",
+        "input": {}
+      },
+      {
+        "action": "gitStatus",
+        "input": {}
+      },
+      {
+        "action": "read",
+        "input": {
+          "path": "a.txt"
+        }
+      },
+      {
+        "action": "save",
+        "input": {
+          "path": "a.txt",
+          "content": "captured save A\\n",
+          "revision": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"
+        }
+      }
+    ],
+    "diskA": "captured save A\\n",
+    "diskB": "original B\\n"
+  },
+  {
+    "id": "two-documents",
+    "twoDocuments": true,
+    "before": [
+      "Search saved files; unsaved drafts are retained in their tabs.",
+      "Saved b.txt (25 bytes)."
+    ],
+    "firstOutcome": {
+      "input": {
+        "path": "a.txt",
+        "content": "captured save A\\n",
+        "revision": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"
+      },
+      "result": {
+        "path": "a.txt",
+        "content": "captured save A\\n",
+        "revision": "48ca7afd8d0da50ca511013e1af1dad2c35d18e04c26737d451ba6ee4a31615f",
+        "bytes": 16,
+        "saved": true
+      },
+      "diskA": "captured save A\\n"
+    },
+    "editorValue": "committed B while A held\\n",
+    "editorDisabled": false,
+    "saveDisabled": false,
+    "status": [
+      "Search saved files; unsaved drafts are retained in their tabs.",
+      "Saved b.txt (25 bytes)."
+    ],
+    "tabs": [
+      {
+        "label": "a.txt",
+        "active": "false"
+      },
+      {
+        "label": "b.txt",
+        "active": "true"
+      }
+    ],
+    "calls": [
+      {
+        "action": "list",
+        "input": {}
+      },
+      {
+        "action": "gitStatus",
+        "input": {}
+      },
+      {
+        "action": "read",
+        "input": {
+          "path": "a.txt"
+        }
+      },
+      {
+        "action": "save",
+        "input": {
+          "path": "a.txt",
+          "content": "captured save A\\n",
+          "revision": "03d821ef9c10a4d9772123eccd38f303600302e9cd4538137c3421cfdaa61a62"
+        }
+      },
+      {
+        "action": "read",
+        "input": {
+          "path": "b.txt"
+        }
+      },
+      {
+        "action": "save",
+        "input": {
+          "path": "b.txt",
+          "content": "committed B while A held\\n",
+          "revision": "1a69eb96c51582f99dfd22c31ea6d33a65e4b466593ea62f5d315c88d51ec322"
+        }
+      }
+    ],
+    "diskA": "captured save A\\n",
+    "diskB": "committed B while A held\\n"
+  }
+]

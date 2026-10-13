@@ -1,0 +1,159 @@
+{
+  "schema": "rea-notebook-trash-independent-finite-review/v1",
+  "completedAt": "2026-10-13T00:24:28.415Z",
+  "status": "frozen-findings-parent-coordinated",
+  "productionModified": false,
+  "candidateModified": false,
+  "requirementsModified": false,
+  "stage": {
+    "root": "work/notes-trash-next",
+    "manifest": {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\preservation-manifest.json",
+      "bytes": 63357,
+      "sha256": "aaa0b6f1f3fcf3b642e6cf23aec76b7596006cb39d49b073bac55b6af2af563b"
+    },
+    "receipt": {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\trash-validation.final.json",
+      "bytes": 39975,
+      "sha256": "f7d210df1eb4312a1de9a8c3d51a63a83b99de9c056964edfcfb525e1b99a9f3"
+    },
+    "authenticatedArtifacts": 325,
+    "unchangedBeforeAfter": true
+  },
+  "runs": [
+    {
+      "path": "run.json",
+      "tests": 7,
+      "pass": 4,
+      "applicationFailures": 2,
+      "harnessExpectationFailures": 1,
+      "exitCode": 1,
+      "sourceStable": true
+    },
+    {
+      "path": "bounds-corrected/run.json",
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceStable": true,
+      "scope": "Only corrected bounds assertion; initial failure retained"
+    }
+  ],
+  "findings": [
+    {
+      "id": "NOTES-TRASH-REVIEW-01",
+      "priority": 1,
+      "contract": "Enabled-field draft preservation across late Save after notebook trash",
+      "source": "client.mjs saveNote/accept",
+      "classification": "Pre-existing Save publisher; new cascade interaction",
+      "baselineSaveFunctionExactEqual": true,
+      "trace": "failures/bounds-expectation-v1/observations.json",
+      "unresolved": true
+    },
+    {
+      "id": "NOTES-TRASH-REVIEW-02",
+      "priority": 2,
+      "contract": "Snapshot new notebook mutation input before public-entry await",
+      "source": "server.mjs notebook-trash/restore -> exclusive",
+      "classification": "In-process request alias; HTTP request sharing not claimed",
+      "trace": "failures/bounds-expectation-v1/observations.json",
+      "unresolved": true
+    }
+  ],
+  "originalEvidence": {
+    "tag": "v3.6.14",
+    "commit": "7e2765a3857754d12dbadea442b60ceaf9d4b23d",
+    "license": "AGPL-3.0-or-later",
+    "exactSlices": 9,
+    "newContexts": 1,
+    "newTopLevelRestoreExecutions": 1,
+    "newMatchedItemProjections": 11,
+    "newMatchedScalarFields": 55,
+    "fullApplicationExecutions": 0,
+    "originalDatabaseExecutions": 0,
+    "originalGUIExecutions": 0,
+    "scope": "Exact released helper slices; owned in-memory SQL/load/save adapters and fixed clock. No released database, desktop, sync, shared authorization or application executable execution.",
+    "priorAuthorCountsSeparate": true
+  },
+  "candidateEvidence": {
+    "domModelCases": 3,
+    "newHostProcesses": 0,
+    "newBrowserChecks": 0,
+    "fileBackedReopenCases": 1,
+    "processRestartClaim": false,
+    "failedCommitCase": 1,
+    "boundsCases": 2
+  },
+  "sources": [
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\products\\rea-studio\\apps\\notes\\client.mjs",
+      "bytes": 19204,
+      "sha256": "acaca53cca0bb84b4f8b6a217ef0d2e304984e30bcfff33060ae39ce0d777d40"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\products\\rea-studio\\apps\\notes\\server.mjs",
+      "bytes": 23215,
+      "sha256": "6fc6134229db2ec3f397039b46b438216c073b09b43875f095c9ab46694cce55"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\products\\rea-studio\\apps\\notes\\notebook-trash.mjs",
+      "bytes": 6150,
+      "sha256": "a94a44d754ca5f20c5d5e8dbac9753c31650b7c929ceab6d196acc0c3690edb4"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\products\\rea-studio\\apps\\notes\\notebook-trash-original-oracle.mjs",
+      "bytes": 5916,
+      "sha256": "3dbc4d9db184e328176f5a0fb00cd8a5c320e35e5fb0356832482b2eb640652c"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\products\\rea-studio\\apps\\notes\\notebooks.mjs",
+      "bytes": 6902,
+      "sha256": "4ba3d49563b87d1a37ebb4314d4f513f84e0c8681f9404842c380bc49175edc9"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\README.md",
+      "bytes": 9002,
+      "sha256": "64f9688d9d5bebbd168c1b2172e0c0d875ec669eec00ea213c6cd4f4392b4faf"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\trash-source-provenance.json",
+      "bytes": 2978,
+      "sha256": "21b9296457c84eed1912856eabb157863a80acb894e1505475497f3905212f72"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\prior-source-provenance.json",
+      "bytes": 6281,
+      "sha256": "4d4c59f87eb5c8bfecbc2e6ffadd305d744cf3333cbc2cabbf3bbc112ecc840f"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\preservation-manifest.json",
+      "bytes": 63357,
+      "sha256": "aaa0b6f1f3fcf3b642e6cf23aec76b7596006cb39d49b073bac55b6af2af563b"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\freeze.json",
+      "bytes": 2872,
+      "sha256": "bb12dbf1156c74e5d4c445f84f259058cbb9c3f3470a7273dac5f09a518f72a2"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-trash-next\\trash-validation.final.json",
+      "bytes": 39975,
+      "sha256": "f7d210df1eb4312a1de9a8c3d51a63a83b99de9c056964edfcfb525e1b99a9f3"
+    }
+  ],
+  "limits": {
+    "fullProductParity": false,
+    "securityParity": false,
+    "superiority": false,
+    "memoryIsolation": false,
+    "distributedTransaction": false,
+    "timingOrMemoryMeasurements": false
+  },
+  "cleanup": {
+    "ownedTemporaryStateRemovedByTest": true,
+    "ownedHosts": 0,
+    "ownedBrowserTabs": 0
+  }
+}

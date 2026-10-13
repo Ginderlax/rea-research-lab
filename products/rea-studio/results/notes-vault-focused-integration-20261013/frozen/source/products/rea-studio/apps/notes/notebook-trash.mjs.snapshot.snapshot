@@ -1,0 +1,40 @@
+// Source-assisted finite Joplin Desktop 3.6.14 trash/restore study.
+// Released source provenance and AGPL-3.0-or-later notice: stage SOURCE-CONTRACTS.md.
+import {isJoplinId} from './jex.mjs';
+import {ensureOrganization,notebookAncestors,notebookPath,checkOrganizationRevision,CONFLICT_NOTEBOOK_ID} from './notebooks.mjs';
+
+export const TRASH_NOTEBOOK_ID='de1e7ede1e7ede1e7ede1e7ede1e7ede';
+const timestamp=record=>Number(record.props.deleted_time??0);
+const conflict=note=>Number(note.joplin?.props.is_conflict??0)!==0;
+function clock(time){const ms=Date.parse(time);if(!Number.isSafeInteger(ms)||ms<=0||ms>8.64e15)throw new Error('Invalid notebook operation timestamp.');return ms;}
+function local(records,id){for(const record of notebookAncestors(records,id))if(record.props.id===CONFLICT_NOTEBOOK_ID||record.props.share_id)throw new Error('Shared or reserved notebook trash is outside this local subset.');}
+function descendants(records,id){const result=[],pending=[id];while(pending.length){const next=pending.shift();result.push(next);for(const record of Object.values(records))if(record.type===2&&record.props.parent_id===next)pending.push(record.props.id);}return result;}
+function validate(s){ensureOrganization(s);if(Object.keys(s.notes).length>1000)throw new Error('Notebook trash supports at most 1,000 notes.');for(const record of Object.values(s.records))if(record.type===2){const deleted=timestamp(record);if(!Number.isSafeInteger(deleted)||deleted<0||deleted>8.64e15)throw new Error('Invalid notebook deleted timestamp.');}}
+function remember(note){const {revision,title,body,tags,notebook,notebookId,updatedAt}=note;return{revision,title,body,tags,notebook,notebookId,updatedAt};}
+function changeNote(s,id,{deletedAt,parentId,time},changed){const note=s.notes[id];local(s.records,note.notebookId);if(note.joplin?.props.share_id)throw new Error('Shared note trash is outside this local subset.');const next={...note,deletedAt,notebookId:parentId,updatedAt:time,userUpdatedAt:note.userUpdatedAt??note.joplin?.props.user_updated_time??note.updatedAt,metadataEdited:true};if(next.joplin)next.joplin={...next.joplin,props:{...next.joplin.props,parent_id:parentId,updated_time:time,deleted_time:String(deletedAt?Date.parse(deletedAt):0)}};s.notes[id]=next;changed.add(id);}
+function finish(s,original,changed){for(const [id,note]of Object.entries(s.notes)){const next=note.notebookId?notebookPath(s.records,note.notebookId):'Imported';if(next!==note.notebook){note.notebook=next;changed.add(id);}if(changed.has(id)){const previous=original.notes[id];note.history=[...(previous.history??[]),remember(previous)].slice(-20);note.revision=previous.revision+1;}}validate(s);s.organization.revision++;return s;}
+export function trashDisplayParent(record,parent){if(!timestamp(record))return record.props.parent_id??'';return!parent||!timestamp(parent)?TRASH_NOTEBOOK_ID:(record.props.parent_id??'');}
+export function changeNotebookTrash(original,{action,id,revision,confirmed},time){
+  if(confirmed!==true)throw new Error('Confirm this notebook trash or restore operation.');
+  const s=structuredClone(original);validate(s);checkOrganizationRevision(s,revision);
+  if(!isJoplinId(id)||id===TRASH_NOTEBOOK_ID||s.records[id]?.type!==2)throw new Error('Choose an existing real notebook.');
+  if(action!=='notebook-trash'&&action!=='notebook-restore')throw new Error('Unknown notebook trash action.');
+  const ms=clock(time);
+  local(s.records,id);const all=descendants(s.records,id),members=new Set(all),changed=new Set();
+  for(const key of all)local(s.records,key);
+  for(const note of Object.values(s.notes))if(members.has(note.notebookId)&&note.joplin?.props.share_id)throw new Error('Shared note trash is outside this local subset.');
+  if(action==='notebook-trash'){
+    if(timestamp(s.records[id]))throw new Error('This notebook is already in trash.');
+    for(const key of all){const record=s.records[key];s.records[key]={...record,props:{...record.props,deleted_time:String(ms),updated_time:time,user_updated_time:time}};}
+    for(const note of Object.values(s.notes))if(members.has(note.notebookId)&&!note.deletedAt&&!conflict(note))changeNote(s,note.id,{deletedAt:time,parentId:note.notebookId,time},changed);
+  }else{
+    if(!timestamp(s.records[id]))throw new Error('This notebook is not in trash.');
+    // The released helper restores deleted descendants, including notes trashed separately.
+    // Use each current row once; fixed-clock final metadata matches its repeated recursive saves.
+    const restoreIds=[id,...all.slice(1).filter(key=>timestamp(s.records[key]))];
+    for(const key of restoreIds){const record=s.records[key],parent=record.props.parent_id??'',parentId=parent&&s.records[parent]&&!timestamp(s.records[parent])?parent:'';s.records[key]={...record,props:{...record.props,parent_id:parentId,deleted_time:'0',updated_time:time}};for(const note of Object.values(s.notes))if(note.notebookId===key&&!conflict(note))changeNote(s,note.id,{deletedAt:null,parentId:key,time},changed);}
+  }
+  return{state:finish(s,original,changed),changedNotes:[...changed],changedNotebooks:action==='notebook-trash'?all:all.filter(key=>timestamp(original.records[key]))};
+}
+export function restoreNoteFromTrash(original,id,time){clock(time);const s=structuredClone(original);validate(s);const note=s.notes[id];if(!note)throw new Error('Note does not exist.');if(!note.deletedAt)throw new Error('This note is not in trash.');local(s.records,note.notebookId);const parent=s.records[note.notebookId],parentId=parent&&!timestamp(parent)?note.notebookId:'';const changed=new Set();changeNote(s,id,{deletedAt:null,parentId,time},changed);return{state:finish(s,original,changed),note:s.notes[id]};}
+export function trashOrganizationRows(s,rows){return rows.map(row=>{const record=s.records[row.id],parent=s.records[row.parentId];let localSubset=true;try{local(s.records,row.id);}catch{localSubset=false;}return{...row,deletedTime:timestamp(record),trashed:Boolean(timestamp(record)),displayParentId:trashDisplayParent(record,parent),trashEligible:localSubset&&!timestamp(record),restoreEligible:localSubset&&Boolean(timestamp(record))};});}

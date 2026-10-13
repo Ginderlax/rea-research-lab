@@ -1,0 +1,82 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import { createReadStream } from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+
+const original = path.join(import.meta.dirname, 'original-products/vscode/1.140.0');
+const destination = path.join(import.meta.dirname, 'vscode-original-acquisition-record');
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+async function fileHash(file) {
+  const digest = createHash('sha256'); let bytes = 0;
+  for await (const chunk of createReadStream(file)) { bytes += chunk.length; digest.update(chunk); }
+  return { bytes, sha256: digest.digest('hex') };
+}
+const json = async file => JSON.parse((await fs.readFile(file, 'utf8')).replace(/^\uFEFF/, ''));
+const acquisition = await json(path.join(original, 'acquisition.json'));
+const extraction = await json(path.join(original, 'extraction.json'));
+const identity = await json(path.join(original, 'identity-validation.json'));
+assert.equal(acquisition.productVersion, '1.140.0');
+assert.equal(acquisition.productCommit, '07f806f999227108933c2e30515b26eecc1fda74');
+assert.equal(acquisition.publisherDigestsMatched, true);
+assert.equal(extraction.signatureStatus, 'Valid');
+assert.equal(identity.exitCode, 0); assert.equal(identity.originalGUISessions, 0);
+assert.equal(identity.originalEditorBehaviorComparisons, 0);
+await fs.mkdir(destination, { recursive: true });
+const startedAtUtc = new Date().toISOString();
+await fs.writeFile(path.join(destination, 'collector.mjs.snapshot'), await fs.readFile(import.meta.filename), { flag: 'wx' });
+const archive = await fileHash(path.join(original, 'VSCode-win32-x64-1.140.0.zip'));
+assert.equal(archive.sha256, acquisition.sha256); assert.equal(archive.bytes, acquisition.bytes);
+const expected = new Map(extraction.inventory.filter(entry => !/[\\/]$/.test(entry.path)).map(entry => [entry.path.replaceAll('\\', '/'), entry.bytes]));
+assert.equal(expected.size, extraction.inventory.filter(entry => !/[\\/]$/.test(entry.path)).length);
+async function census() {
+  const rows = [], unpacked = path.join(original, 'unpacked');
+  async function visit(relative = '') {
+    const folder = path.join(unpacked, relative);
+    for (const entry of (await fs.readdir(folder, { withFileTypes: true })).sort((a,b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0)) {
+      const name = relative ? `${relative}/${entry.name}` : entry.name;
+      assert.equal(entry.isSymbolicLink(), false, `Original tree link: ${name}`);
+      if (entry.isDirectory()) await visit(name);
+      else { assert.equal(entry.isFile(), true); const row = { path: name, ...await fileHash(path.join(unpacked, name)) };
+        assert.equal(row.bytes, expected.get(name), `ZIP inventory size mismatch: ${name}`); rows.push(row); }
+    }
+  }
+  await visit(); assert.equal(rows.length, expected.size);
+  assert.equal(rows.reduce((sum,row) => sum + row.bytes, 0), extraction.uncompressedBytes);
+  return rows;
+}
+const before = await census();
+await fs.writeFile(path.join(destination, 'unpacked-source-before.json'), JSON.stringify(before, null, 2) + '\n', { flag: 'wx' });
+const carried = [];
+for (const file of ['microsoft-update-metadata.json', 'acquisition.json', 'extraction.json', 'identity-validation.json', 'identity.stdout.txt', 'identity.stderr.txt', 'acquire.mjs.snapshot', 'verify-identity.mjs.snapshot', 'identity-attempt0.mjs.snapshot']) {
+  const bytes = await fs.readFile(path.join(original, file));
+  await fs.writeFile(path.join(destination, `${file}.snapshot`), bytes, { flag: 'wx' });
+  carried.push({ source: file, storedAs: `${file}.snapshot`, bytes: bytes.length, sha256: hash(bytes) });
+}
+await fs.writeFile(path.join(destination, 'extract-vscode-1.140.ps1.snapshot'), await fs.readFile(path.join(import.meta.dirname, 'extract-vscode-1.140.ps1')), { flag: 'wx' });
+const after = await census(); assert.deepEqual(after, before);
+await fs.writeFile(path.join(destination, 'unpacked-source-after.json'), JSON.stringify(after, null, 2) + '\n', { flag: 'wx' });
+const receipt = {
+  schema: 'rea-vscode-original-acquisition-preservation/v1', startedAtUtc, completedAtUtc: new Date().toISOString(),
+  release: acquisition.productVersion, commit: acquisition.productCommit, architecture: identity.architecture,
+  archive, publisherMetadataURL: acquisition.publisherMetadataURL, archiveURL: acquisition.archiveURL,
+  signatureStatus: extraction.signatureStatus, signerSubject: extraction.signerSubject,
+  unpackedFiles: before.length, unpackedBytes: extraction.uncompressedBytes, allUnpackedFileHashesStable: true,
+  archivePublisherDigestsMatched: true, originalTreeReexecuted: false,
+  historicalCLIIdentityInvocations: 1, totalOriginalOSProcessCountVerified: false,
+  historicalCLIIdentityProcessesFieldInterpretation: 'The retained actualOriginalCLIIdentityProcesses:1 field counts one collector spawn/invocation. No complete descendant-process census was recorded; it is not a verified total OS process count.',
+  originalGUISessions: 0, originalEditorBehaviorComparisons: 0, oldMonacoComponentStudyRebound: false,
+  fullProductReleaseDocumentationBound: false, fullReplacementParity: false, universalSuperiority: false,
+  binariesAndFullThirdPartyArchivesPublic: false, originalArchiveAndRuntimeRemainLocal: true,
+  carried,
+  attemptHistory: [{ attempt: 'identity-attempt0.mjs.snapshot', outcome: 'Pre-execution ENOENT caused by assuming the earlier resources/app directory layout.', originalExecutionOccurred: false, automaticStandaloneRawStderrSaved: false },
+    { attempt: 'verify-identity.mjs.snapshot', outcome: 'The installed bin/code.cmd path was inspected and the official cli.js location used. One invocation exited0 with the expected version, commit and architecture.', originalExecutionOccurred: true }],
+  coverage: 'Byte identity, local preservation and one original CLI identity invocation only. No original editor GUI/extension/workflow behavior or full documented-feature equivalence has been established.'
+};
+await fs.writeFile(path.join(destination, 'validation.json'), JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx' });
+const inventory = [];
+for (const entry of (await fs.readdir(destination, { withFileTypes: true })).sort((a,b) => a.name < b.name ? -1 : 1)) {
+  assert.ok(entry.isFile()); inventory.push({ path: entry.name, ...await fileHash(path.join(destination, entry.name)) });
+}
+await fs.writeFile(path.join(destination, 'freeze-manifest.json'), JSON.stringify({ schema: 'rea-vscode-original-acquisition-freeze/v1', recordedAtUtc: new Date().toISOString(), files: inventory.length, inventory }, null, 2) + '\n', { flag: 'wx' });
+console.log(JSON.stringify({ status: 'PASS', unpackedFiles: before.length, unpackedBytes: extraction.uncompressedBytes, preservedFiles: inventory.length, receiptSHA256: hash(Buffer.from(JSON.stringify(receipt, null, 2) + '\n')), destination }));

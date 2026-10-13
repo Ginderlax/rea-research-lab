@@ -3,6 +3,8 @@ import { promises as fs } from 'node:fs';
 import { decodeBase64, MAX_ARCHIVE, MAX_RESOURCE, digest, readJex, serializeRecord, writeTar, resourceName, isJoplinId } from './jex.mjs';
 import {ensureOrganization,bindNotebook,organizationList,changeNotebook,checkOrganizationRevision} from './notebooks.mjs';
 
+import {changeNotebookTrash,restoreNoteFromTrash,trashOrganizationRows} from './notebook-trash.mjs';
+
 const stateKey = 'notes-state-v2', legacyPrefix = 'notes-note-';
 let queue = Promise.resolve();
 const uuid = () => randomBytes(16).toString('hex');
@@ -54,7 +56,11 @@ export async function handle({ action, input = {}, store, workspace }) {
     const visible = notes.filter(note => Boolean(note.deletedAt) === Boolean(input.trash) && (!input.notebook || note.notebook === input.notebook) && (!input.notebookId || note.notebookId === input.notebookId) && (!input.tag || note.tags.includes(input.tag)) && tokens.every(token => `${note.title}\n${note.body}\n${note.tags.join(' ')}\n${note.notebook}`.toLowerCase().includes(token))).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     return { notes: visible.map(note => summary(note, tokens[0])), tags: [...new Set(notes.filter(note => !note.deletedAt).flatMap(note => note.tags))].sort(), notebooks: [...new Set(notes.filter(note => !note.deletedAt).map(note => note.notebook))].sort(), total: visible.length };
   }
-  if(action==='notebook-list')return organizationList(await state(store));
+  if(action==='notebook-list'){const s=await state(store),rows=organizationList(s);return{...rows,notebooks:trashOrganizationRows(s,rows.notebooks)};}
+  if(['notebook-trash','notebook-restore'].includes(action)){
+    const request=Object.freeze({action,id:input.id,revision:input.revision,confirmed:input.confirmed});
+    return exclusive(async()=>{const original=await state(store),result=changeNotebookTrash(original,request,new Date().toISOString());await store.set(stateKey,result.state);const rows=organizationList(result.state);return{...rows,notebooks:trashOrganizationRows(result.state,rows.notebooks),changedNotes:result.changedNotes,changedNotebooks:result.changedNotebooks};});
+  }
   if(['notebook-create','notebook-rename','notebook-move'].includes(action))return exclusive(async()=>{const s=await state(store),title=action==='notebook-move'?undefined:label(input.title,'Notebook title',200).trim();if(action!=='notebook-move'&&!title)throw new Error('Give the notebook a title.');const result=changeNotebook(s,{...input,title,action},new Date().toISOString());await store.set(stateKey,s);return result;});
   if(action==='note-move')return exclusive(async()=>{const s=await state(store),note=get(s,input.id);checkRevision(note,input.revision);checkOrganizationRevision(s,input.organizationRevision);if(note.deletedAt)throw new Error('Restore this note before moving it.');if(note.joplin?.props.share_id||(note.notebookId&&organizationList(s).notebooks.find(row=>row.id===note.notebookId)?.editable===false))throw new Error('Shared or trashed notebook organization is outside this local subset.');if(typeof input.notebookId!=='string')throw new Error('Choose a valid notebook ID.');const selected=bindNotebook(s,note,{notebookId:input.notebookId}),now=new Date().toISOString(),updated={...selected,revision:note.revision+1,updatedAt:now,userUpdatedAt:note.userUpdatedAt??note.updatedAt,history:[...note.history,historical(note)].slice(-20)};if(updated.joplin)updated.joplin={...updated.joplin,props:{...updated.joplin.props,parent_id:updated.notebookId,updated_time:now,is_conflict:'0',conflict_original_id:'',deleted_time:'0'}};s.notes[note.id]=updated;s.organization.revision++;await store.set(stateKey,s);return{note:updated,...organizationList(s)};});
   if (action === 'get') return get(await state(store), input.id);
@@ -86,7 +92,7 @@ export async function handle({ action, input = {}, store, workspace }) {
   });
   if (action === 'delete' || action === 'restore') return exclusive(async () => {
     const s = await state(store), note = get(s, input.id); checkRevision(note, input.revision);
-    const time=new Date().toISOString(),updated = { ...note, metadataEdited:true,userUpdatedAt:time, deletedAt: action === 'delete' ? time : null, updatedAt:time, revision: note.revision + 1 };
+    const time=new Date().toISOString();if(action==='restore'){const result=restoreNoteFromTrash(s,note.id,time);await store.set(stateKey,result.state);return result.note;}const updated = { ...note, metadataEdited:true,userUpdatedAt:note.userUpdatedAt??note.joplin?.props.user_updated_time??note.updatedAt, deletedAt:time, updatedAt:time, revision: note.revision + 1 };
     s.notes[note.id] = updated; await store.set(stateKey, s); return updated;
   });
   if (action === 'history-restore') return exclusive(async () => {

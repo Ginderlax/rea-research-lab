@@ -1,0 +1,264 @@
+TAP version 13
+# Subtest: notes HTTP save/history/export/trash survive host restarts on real disk
+ok 1 - notes HTTP save/history/export/trash survive host restarts on real disk
+  ---
+  duration_ms: 106.5983
+  type: 'test'
+  ...
+# Subtest: JEX imports and binary attachments survive HTTP host restarts with exact IDs and metadata
+ok 2 - JEX imports and binary attachments survive HTTP host restarts with exact IDs and metadata
+  ---
+  duration_ms: 61.2093
+  type: 'test'
+  ...
+# Subtest: notes CRUD, search/tag/notebook filtering, revisions, history, trash and restore
+ok 3 - notes CRUD, search/tag/notebook filtering, revisions, history, trash and restore
+  ---
+  duration_ms: 4.7677
+  type: 'test'
+  ...
+# Subtest: concurrent revision writes cannot overwrite the winning draft
+ok 4 - concurrent revision writes cannot overwrite the winning draft
+  ---
+  duration_ms: 0.3288
+  type: 'test'
+  ...
+# Subtest: Markdown export and JSON bundle re-import create independent note copies
+ok 5 - Markdown export and JSON bundle re-import create independent note copies
+  ---
+  duration_ms: 5.5338
+  type: 'test'
+  ...
+# Subtest: safe Markdown subset never emits HTML or dangerous link schemes
+ok 6 - safe Markdown subset never emits HTML or dangerous link schemes
+  ---
+  duration_ms: 0.5566
+  type: 'test'
+  ...
+# Subtest: history bounds and input validation prevent unbounded individual notes
+ok 7 - history bounds and input validation prevent unbounded individual notes
+  ---
+  duration_ms: 2.0131
+  type: 'test'
+  ...
+# Subtest: long malformed Markdown openers stay plain text without repeated delimiter scans
+ok 8 - long malformed Markdown openers stay plain text without repeated delimiter scans
+  ---
+  duration_ms: 12.2673
+  type: 'test'
+  ...
+# Subtest: multiline labels reject API and bundle writes before mutation while note bodies retain line breaks
+ok 9 - multiline labels reject API and bundle writes before mutation while note bodies retain line breaks
+  ---
+  duration_ms: 3.5344
+  type: 'test'
+  ...
+# Subtest: saved multiline legacy labels remain intact during body edits and JSON backup
+ok 10 - saved multiline legacy labels remain intact during body edits and JSON backup
+  ---
+  duration_ms: 0.472
+  type: 'test'
+  ...
+# Subtest: internal Joplin links navigate local notes and download referenced resources without replacing retained drafts
+ok 11 - internal Joplin links navigate local notes and download referenced resources without replacing retained drafts
+  ---
+  duration_ms: 21.0685
+  type: 'test'
+  ...
+# Subtest: native-TAR original-serialized fixture imports with IDs, hierarchy, metadata, links, tags and bytes intact
+ok 12 - native-TAR original-serialized fixture imports with IDs, hierarchy, metadata, links, tags and bytes intact
+  ---
+  duration_ms: 91.9218
+  type: 'test'
+  ...
+# Subtest: edits and new attachments retain original metadata and produce valid raw relationships
+ok 13 - edits and new attachments retain original metadata and produce valid raw relationships
+  ---
+  duration_ms: 18.8209
+  type: 'test'
+  ...
+# Subtest: colliding IDs and unsupported or broken records reject the whole import before mutation
+ok 14 - colliding IDs and unsupported or broken records reject the whole import before mutation
+  ---
+  duration_ms: 19.2812
+  type: 'test'
+  ...
+# Subtest: saving an unchanged imported title, notebook or tag never normalizes metadata away
+ok 15 - saving an unchanged imported title, notebook or tag never normalizes metadata away
+  ---
+  duration_ms: 10.5484
+  type: 'test'
+  ...
+# Subtest: TAR checksum, truncation, duplicates, traversal, links, missing resources and trailing payload fail closed
+ok 16 - TAR checksum, truncation, duplicates, traversal, links, missing resources and trailing payload fail closed
+  ---
+  duration_ms: 1.3275
+  type: 'test'
+  ...
+# Subtest: checksum-valid high-bit TAR names and numeric fields reject before storing anything
+ok 17 - checksum-valid high-bit TAR names and numeric fields reject before storing anything
+  ---
+  duration_ms: 7.4985
+  type: 'test'
+  ...
+# Subtest: binary bounds, tamper detection and failed storage commits protect attachments
+ok 18 - binary bounds, tamper detection and failed storage commits protect attachments
+  ---
+  duration_ms: 21.6422
+  type: 'test'
+  ...
+# Subtest: existing legacy notes migrate without deletion and export as valid Joplin identifiers
+ok 19 - existing legacy notes migrate without deletion and export as valid Joplin identifiers
+  ---
+  duration_ms: 9.5225
+  type: 'test'
+  ...
+# {"notebookTrashHttp":{"hostRestarts":2,"independentImportHosts":1,"originalApplicationExecutions":0,"attachmentSha256":"0150a92bb1212cd00516b65fde0704614760000963874fcbb11eaa734ee87809","trashExportSha256":"78a5540df2cdd61330aab0230a0311896123d27141952bf15887a485a33cbed7","restoreExportSha256":"02a4865832283ecc9901e797b7d24dacaee5a8630d832dbef48476329b19b1f8","defaultExportDanglingTrashedLinkRefused":true}}
+# Subtest: actual HTTP notebook trash and detached child restore survive cold restart with JEX and exact attachment bytes
+ok 20 - actual HTTP notebook trash and detached child restore survive cold restart with JEX and exact attachment bytes
+  ---
+  duration_ms: 192.273
+  type: 'test'
+  ...
+# (node:55772) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: released recursive folder/note trash matches native final metadata, including prior trash and conflicts
+ok 21 - released recursive folder/note trash matches native final metadata, including prior trash and conflicts
+  ---
+  duration_ms: 58.6161
+  type: 'test'
+  ...
+# Subtest: released notebook restore restores independently trashed notes and deleted descendants with user times retained
+ok 22 - released notebook restore restores independently trashed notes and deleted descendants with user times retained
+  ---
+  duration_ms: 9.6466
+  type: 'test'
+  ...
+# Subtest: released restoring a child under a trashed parent detaches only the child subtree to root
+ok 23 - released restoring a child under a trashed parent detaches only the child subtree to root
+  ---
+  duration_ms: 8.239
+  type: 'test'
+  ...
+# Subtest: released active child under trashed root leaves that active child notes untouched but restores trashed grandchild
+ok 24 - released active child under trashed root leaves that active child notes untouched but restores trashed grandchild
+  ---
+  duration_ms: 7.2939
+  type: 'test'
+  ...
+# Subtest: released direct note restore under a trashed parent falls back to unfiled and preserves conflict metadata
+ok 25 - released direct note restore under a trashed parent falls back to unfiled and preserves conflict metadata
+  ---
+  duration_ms: 14.1931
+  type: 'test'
+  ...
+# Subtest: released display parent helper matches virtual trash projection for six parent states
+ok 26 - released display parent helper matches virtual trash projection for six parent states
+  ---
+  duration_ms: 7.4766
+  type: 'test'
+  ...
+# Subtest: trash and restore refuse unconfirmed stale missing shared reserved cyclic and excessive states without source mutation
+ok 27 - trash and restore refuse unconfirmed stale missing shared reserved cyclic and excessive states without source mutation
+  ---
+  duration_ms: 11.1514
+  type: 'test'
+  ...
+# Subtest: single failed state commit leaves entire cascade unchanged; held commits serialize stale organization and note writers
+ok 28 - single failed state commit leaves entire cascade unchanged; held commits serialize stale organization and note writers
+  ---
+  duration_ms: 10.2089
+  type: 'test'
+  ...
+# Subtest: actual server JEX preserves IDs unknown metadata and tag relations through notebook trash/restore
+ok 29 - actual server JEX preserves IDs unknown metadata and tag relations through notebook trash/restore
+  ---
+  duration_ms: 10.2354
+  type: 'test'
+  ...
+# Subtest: actual server single note trash preserves user time and export matches released Note.batchDelete
+ok 30 - actual server single note trash preserves user time and export matches released Note.batchDelete
+  ---
+  duration_ms: 10.3049
+  type: 'test'
+  ...
+# {"notebookTrashOriginal":{"topLevelOriginalExecutions":13,"matchedItemProjections":73,"displayComparisons":6,"helperFixtureCases":8,"fullApplicationExecutions":0}}
+# Subtest: actual staged client confirms notebook cascade, allows management of trash, restores and keeps dirty drafts
+ok 31 - actual staged client confirms notebook cascade, allows management of trash, restores and keeps dirty drafts
+  ---
+  duration_ms: 10.5397
+  type: 'test'
+  ...
+# Subtest: held notebook operation disables selection/editor controls and refuses duplicate requests until one commit
+ok 32 - held notebook operation disables selection/editor controls and refuses duplicate requests until one commit
+  ---
+  duration_ms: 1.169
+  type: 'test'
+  ...
+# {"notebookHttpObservation":{"privateEphemeralHost":true,"hostRestarts":2,"parentId":"dec20465cc61085b20b50b19f8de7260","childId":"af9b2c44ab7f8476298c531e68e94741","noteId":"bed9cb53-4bef-4f3b-bc34-c00f5b6cd7a6","attachmentSha256":"096a5d78ca5b29ff53b6c48451fafa47e26208c96719ff5e79d03941018ea597","exportSha256":"3e4bba39fff41ab6fa6a5680103b721a3156a1580bcf6cc3a358e215e154c360","identityFilterVerified":true}}
+# Subtest: notebook identity tree operations and note moves persist through actual HTTP host cold restarts and JEX export
+ok 33 - notebook identity tree operations and note moves persist through actual HTTP host cold restarts and JEX export
+  ---
+  duration_ms: 119.4518
+  type: 'test'
+  ...
+# Subtest: notebook create rename reparent and note move preserve native IDs metadata relationships bytes and roundtrip
+ok 34 - notebook create rename reparent and note move preserve native IDs metadata relationships bytes and roundtrip
+  ---
+  duration_ms: 51.2642
+  type: 'test'
+  ...
+# Subtest: identity notebook filters distinguish duplicate sibling titles and separator-containing titles
+ok 35 - identity notebook filters distinguish duplicate sibling titles and separator-containing titles
+  ---
+  duration_ms: 10.1674
+  type: 'test'
+  ...
+# Subtest: cycle missing IDs stale revisions multiline titles oversized descendant paths and failed commits do not mutate saved state
+ok 36 - cycle missing IDs stale revisions multiline titles oversized descendant paths and failed commits do not mutate saved state
+  ---
+  duration_ms: 20.5125
+  type: 'test'
+  ...
+# Subtest: legacy notebook text saves still create flat folders while stable-ID history restoration follows current hierarchy
+ok 37 - legacy notebook text saves still create flat folders while stable-ID history restoration follows current hierarchy
+  ---
+  duration_ms: 10.655
+  type: 'test'
+  ...
+# Subtest: shared or trashed notebook mutations and trashed note moves reject while retained metadata can export
+ok 38 - shared or trashed notebook mutations and trashed note moves reject while retained metadata can export
+  ---
+  duration_ms: 31.8881
+  type: 'test'
+  ...
+# Subtest: notebook graph rejects excessive depth record counts and paths without assuming title separators are depth
+ok 39 - notebook graph rejects excessive depth record counts and paths without assuming title separators are depth
+  ---
+  duration_ms: 4.3336
+  type: 'test'
+  ...
+# (node:15764) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: released original Folder nesting/path/move and Note move helpers match finite regular unshared fixtures
+ok 40 - released original Folder nesting/path/move and Note move helpers match finite regular unshared fixtures
+  ---
+  duration_ms: 25.8153
+  type: 'test'
+  ...
+# {"notebookOriginalObservations":[{"comparisons":24,"bindings":[{"path":"packages/lib/models/Folder.ts","method":"folderPath","startLine":867,"endLine":884,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"557e5c49fdc9a48a6179db9be4bdf3767454a4de1b148113ccb816f10b595584"},{"path":"packages/lib/models/Folder.ts","method":"canNestUnder","startLine":981,"endLine":1000,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"b08c139defcd9df89bf9f6d7b0f319a0eeed740d728d29b0e0cd0a5e0f7c01dc"},{"path":"packages/lib/models/Folder.ts","method":"moveToFolder","startLine":1002,"endLine":1028,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"381dc1ed8feb7e422aef2167063f861aee34c5a6e8ef5a0ce65965ae1cac092b"},{"path":"packages/lib/models/Note.ts","method":"moveToFolder","startLine":633,"endLine":654,"sourceSha256":"5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647","sliceSha256":"7665835c01e79de3dcc44e014a48133000b78ac64b8d84cadb2ca66be30d1af7"}],"scope":"Four exact released Desktop3.6.14 methods; in-memory load/save and fixed-clock stubs. No original database, synchronization, desktop UI or release executable is executed.","nestingComparisons":20,"pathComparisons":4,"originalMoveContractExecutions":2},{"candidateOriginalMoveComparisons":2,"originalMoveExecutions":2,"bindings":[{"path":"packages/lib/models/Folder.ts","method":"folderPath","startLine":867,"endLine":884,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"557e5c49fdc9a48a6179db9be4bdf3767454a4de1b148113ccb816f10b595584"},{"path":"packages/lib/models/Folder.ts","method":"canNestUnder","startLine":981,"endLine":1000,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"b08c139defcd9df89bf9f6d7b0f319a0eeed740d728d29b0e0cd0a5e0f7c01dc"},{"path":"packages/lib/models/Folder.ts","method":"moveToFolder","startLine":1002,"endLine":1028,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"381dc1ed8feb7e422aef2167063f861aee34c5a6e8ef5a0ce65965ae1cac092b"},{"path":"packages/lib/models/Note.ts","method":"moveToFolder","startLine":633,"endLine":654,"sourceSha256":"5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647","sliceSha256":"7665835c01e79de3dcc44e014a48133000b78ac64b8d84cadb2ca66be30d1af7"}],"scope":"Four exact released Desktop3.6.14 methods; in-memory load/save and fixed-clock stubs. No original database, synchronization, desktop UI or release executable is executed.","priorUserEditTimestampPreserved":true}]}
+# Subtest: actual candidate notebook and note move exports match released original helper effects with user times retained
+ok 41 - actual candidate notebook and note move exports match released original helper effects with user times retained
+  ---
+  duration_ms: 33.3241
+  type: 'test'
+  ...
+1..41
+# tests 41
+# suites 0
+# pass 41
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1522.061

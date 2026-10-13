@@ -1,0 +1,22 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {createRequire} from 'node:module';import {pathToFileURL} from 'node:url';import {performance} from 'node:perf_hooks';import assert from 'node:assert/strict';import {here,sha,authenticateOriginal} from './authenticate-original.mjs';import {canonical,packet,metadataFor} from './canonical.mjs';import {valuesForSpec} from './workloads.mjs';
+const[mode,implementation,caseName,quietFrom]=process.argv.slice(2);assert.ok(['check-only','measure'].includes(mode));assert.ok(['original','baseline','candidate'].includes(implementation));
+const manifestBytes=await fs.readFile(path.join(here,'memory-preflight.control.json')),manifest=JSON.parse(manifestBytes);
+if(mode==='measure')assert.ok(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d{3})?Z$/.test(quietFrom)&&Date.parse(quietFrom)>Date.parse(manifest.checkedAt)&&Date.parse(quietFrom)<=Date.now(),'New coordinator quiet timestamp must follow preflight.');
+assert.equal(process.version,manifest.runtime.version);assert.equal(process.execPath,manifest.runtime.execPath);assert.equal(sha(await fs.readFile(process.execPath)),manifest.runtime.executableSHA256);assert.equal(sha(await fs.readFile(path.join(here,'canonical.mjs'))),manifest.canonicalSourceSHA256);assert.equal(sha(await fs.readFile(path.join(here,'workloads.mjs'))),manifest.workloadSourceSHA256);
+const authority=await authenticateOriginal();assert.deepEqual(authority.files,manifest.authority.files);
+const natives={};for(const[name,binding]of Object.entries(manifest.implementations)){for(const[file,digest]of Object.entries(binding.files))assert.equal(sha(await fs.readFile(file)),digest);natives[name]=binding.format==='cjs'?createRequire(binding.entry)(binding.entry):await import(pathToFileURL(binding.entry).href);natives[name].fieldReducers.list();assert.equal(sha(canonical(metadataFor(natives[name]))),manifest.expectedMetadataSHA256);}
+const names=mode==='check-only'?Object.keys(manifest.expectedFiles):[caseName];assert.ok(names.every(name=>Object.hasOwn(manifest.expectedFiles,name)));let comparisons=0;
+let output;
+for(const name of names){const fixture=manifest.expectedFiles[name],spec=fixture.spec,values=valuesForSpec(spec);assert.equal(sha(canonical(values)),fixture.inputSHA256);
+ const field=()=>({name:'synthetic',type:'number',config:{nullValueMode:'connected'},values,state:{}});
+ for(const native of Object.values(natives)){const fresh=field(),result=native.reduceField({field:fresh,reducers:spec.reducers});assert.equal(sha(canonical(packet(fresh,result))),fixture.canonicalOutputSHA256);comparisons++;assert.equal(sha(canonical(packet(fresh,native.reduceField({field:fresh,reducers:spec.reducers})))),fixture.repeatOutputSHA256);comparisons++;assert.equal(sha(canonical(packet(fresh,native.reduceField({field:fresh,reducers:[spec.reducers[0]]})))),fixture.subsetOutputSHA256);comparisons++;}
+ if(mode==='check-only')continue;
+ const fn=natives[implementation].reduceField;for(let i=0;i<spec.warmup;i++)fn({field:field(),reducers:spec.reducers});global.gc?.();
+ const beforeMemory=process.memoryUsage(),beforeCpu=process.cpuUsage(),start=performance.now();let actual,lastField;
+ for(let i=0;i<spec.iterations;i++){lastField=field();actual=fn({field:lastField,reducers:spec.reducers});}
+ const elapsedMilliseconds=performance.now()-start,cpu=process.cpuUsage(beforeCpu),afterMemory=process.memoryUsage();
+ assert.equal(sha(canonical(packet(lastField,actual))),fixture.canonicalOutputSHA256);assert.equal(sha(canonical(values)),fixture.inputSHA256);
+ output={implementation,caseName:name,iterations:spec.iterations,warmup:spec.warmup,samples:values.length,selectionCount:spec.reducers.length,elapsedMilliseconds,millisecondsPerCall:elapsedMilliseconds/spec.iterations,cpuMicroseconds:cpu.user+cpu.system,beforeMemory,afterMemory,peakResidentKiB:process.resourceUsage().maxRSS,inputSHA256:fixture.inputSHA256,outputCacheSHA256:fixture.canonicalOutputSHA256};
+}
+for(const binding of Object.values(manifest.implementations))for(const[file,digest]of Object.entries(binding.files))assert.equal(sha(await fs.readFile(file)),digest);
+console.log(JSON.stringify({kind:'result',mode,measurementRun:mode==='measure',comparisons,manifestSHA256:sha(manifestBytes),loadedReducerImplementations:3,allImplementationFiles:Object.fromEntries(Object.entries(manifest.implementations).map(([name,binding])=>[name,binding.files])),memoryIsNotIsolated:true,...output}));

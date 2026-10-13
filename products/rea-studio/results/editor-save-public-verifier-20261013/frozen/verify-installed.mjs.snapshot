@@ -1,0 +1,73 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
+
+const here = import.meta.dirname;
+const workspace = path.resolve(here, '../..');
+const repo = path.join(workspace, 'outputs/rea-research-lab');
+const targetRelative = 'scripts/verify-editor-save-followup.mjs';
+const target = path.join(repo, targetRelative);
+const hash = b => createHash('sha256').update(b).digest('hex');
+const identify = async p => { const b = await fs.readFile(p); return { bytes: b.length, sha256: hash(b) }; };
+const save = (name, value) => fs.writeFile(path.join(here, name), JSON.stringify(value, null, 2) + '\n', { flag: 'wx' });
+const oldDeclaration = "const studio=fileURLToPath(new URL('../',import.meta.url)),repo=path.resolve(studio,'../..'),prefix=";
+const newDeclaration = "const repo=path.resolve(fileURLToPath(new URL('../',import.meta.url))),prefix=";
+const source = await fs.readFile(path.join(here, 'misplaced-verifier.mjs.snapshot'));
+assert.equal(hash(source), '00c25f3c8dade731d5a60595126bd49a93fec8b9ce395a9c3f529c5896f1634f');
+assert.equal(source.toString('utf8').split(oldDeclaration).length, 2);
+const adapted = Buffer.from(source.toString('utf8').replace(oldDeclaration, newDeclaration));
+await fs.writeFile(target, adapted, { flag: 'wx' });
+await fs.writeFile(path.join(here, 'installed-verifier.mjs.snapshot'), adapted, { flag: 'wx' });
+await save('source-transform.json', {
+  classification: 'Repository location/root-resolution adapter; no app runtime or assertion changes.',
+  original: { path: 'products/rea-studio/scripts/verify-editor-save-followup.mjs', bytes: source.length, sha256: hash(source) },
+  installed: { path: targetRelative, bytes: adapted.length, sha256: hash(adapted) },
+  replacement: { oldDeclaration, newDeclaration },
+  historical43Unchanged: true,
+  tested78SourceReceiptNotRebound: true,
+  transientMisplacedLiveCopyRemoved: true,
+  rootFullSuiteCensusInterpretationOwnedByRoot: true,
+});
+const anchors = [
+  { path: 'work/editor-save-focused-integration-next/validation.json', sha256: 'f4edee0afc7d40a169576ae9b87fe9d4c9227a1ea355ef19c80fa273b26eee25' },
+  { path: 'work/editor-save-focused-integration-next/freeze-manifest.json', sha256: 'b45f1b6b4c5acfc918bc1fd13a4ca6c0886b7e0b1a04c87c986aa0d74646bc73' },
+  { path: 'work/editor-save-publication-plan/freeze-manifest.json', sha256: '3df49c5e2c5b28433876d8cbd759eed74375031d92db8aa43af761fbada32c91' },
+  { path: 'outputs/rea-research-lab/products/rea-studio/results/editor-save-followup/current-integration/preservation-manifest.json', sha256: '39df865e8db21146cde4a2317ff23c3e31600328265c04436efaa4e8271fea9b' },
+];
+for (const r of anchors) assert.equal((await identify(path.join(workspace, r.path))).sha256, r.sha256, r.path);
+const before = await identify(target);
+const startedAt = new Date().toISOString();
+const attempts = [];
+for (const [id, args] of [['syntax', ['--check', targetRelative]], ['default', [targetRelative]], ['require-current', [targetRelative, '--require-current']]]) {
+  const result = spawnSync(process.execPath, args, { cwd: repo, windowsHide: true, encoding: 'utf8', timeout: 30000, maxBuffer: 4 * 1024 * 1024 });
+  await fs.writeFile(path.join(here, id + '.stdout.txt'), result.stdout ?? '', { flag: 'wx' });
+  await fs.writeFile(path.join(here, id + '.stderr.txt'), result.stderr ?? '', { flag: 'wx' });
+  const row = { id, command: { runtime: process.execPath, args, cwd: repo }, exitCode: result.status, signal: result.signal, error: result.error?.message ?? null, stdout: { path: id + '.stdout.txt', ...await identify(path.join(here, id + '.stdout.txt')) }, stderr: { path: id + '.stderr.txt', ...await identify(path.join(here, id + '.stderr.txt')) } };
+  attempts.push(row);
+  await save(id + '.result.json', row);
+  assert.equal(result.status, 0, id + ': ' + (result.stderr ?? result.error?.message));
+  if (id !== 'syntax') {
+    const value = JSON.parse(result.stdout);
+    assert.equal(value.passed, true);
+    assert.equal(value.liveSourceMatch, true);
+    assert.equal(value.publicObjects, 174);
+    assert.equal(value.epochRecords, 516);
+    assert.equal(value.currentReceiptTests78, true);
+    assert.equal(value.behavioralTestsExecuted, 0);
+  }
+}
+assert.deepEqual(await identify(target), before);
+for (const r of anchors) assert.equal((await identify(path.join(workspace, r.path))).sha256, r.sha256, r.path);
+await save('validation.json', {
+  schema: 'rea-editor-save-public-verifier-installed-validation/v1',
+  startedAt, completedAt: new Date().toISOString(), passed: true,
+  sourceStable: true, verifier: { path: targetRelative, ...before }, anchors,
+  attempts, controller: { timeoutMillisecondsPerInvocation: 30000, maxCaptureBytesPerStream: 4194304 },
+  orderingDiagnostic: { reportedBy: '/root', kind: 'MODULE_NOT_FOUND before requested lab script installation', rawRootDiagnosticAvailableHere: false, classification: 'Tool installation/location diagnostic; no app execution.', frozenCurrent43Unchanged: true },
+  metadataCorrection: { frozenPlanProseFiles: 16, boundSelectionFiles: 15, tests: 78, historicalPlan21Unchanged: true },
+  appRuntimeTestsExecuted: 0, originalEditorEngineExecutions: 0, browserExecutions: 0, benchmarks: 0,
+  current78ReceiptHistoricalSourceIdentityRetained: true,
+});
+console.log(JSON.stringify({ passed: true, verifier: before, syntax: true, default: true, requireCurrent: true, live31Match: true, publicObjects: 174, epochRecords: 516, historical43Unchanged: true }));

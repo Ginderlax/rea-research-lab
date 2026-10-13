@@ -1,0 +1,53 @@
+✖ held result read must not publish after search text options invalidate its generation (38.416ms)
+✖ held result read must not publish after a newer complete search generation (15.5256ms)
+✔ control: later explicit file selection suppresses the held old read (11.2165ms)
+✔ control: later new draft suppresses held read and preserves disk bytes (12.4665ms)
+✔ control: disposal suppresses held read publication (9.6034ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 3
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 158.9498
+
+✖ failing tests:
+
+test at work\editor-search-independent-review\held-search.test.mjs:13:1
+✖ held result read must not publish after search text options invalidate its generation (38.416ms)
+  AssertionError [ERR_ASSERTION]: A stale result read replaced the earlier active file after options changed.
+  + actual - expected
+  
+  + '🧬target OLD\n'
+  - 'second target NEW\n'
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/editor-search-independent-review/held-search.test.mjs:13:318)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '🧬target OLD\n',
+    expected: 'second target NEW\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at work\editor-search-independent-review\held-search.test.mjs:14:1
+✖ held result read must not publish after a newer complete search generation (15.5256ms)
+  AssertionError [ERR_ASSERTION]: A stale result read replaced the active file after newer search results were published.
+  + actual - expected
+  
+  + '🧬target OLD\n'
+  - 'second target NEW\n'
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/editor-search-independent-review/held-search.test.mjs:14:403)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '🧬target OLD\n',
+    expected: 'second target NEW\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

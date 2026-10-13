@@ -1,0 +1,51 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+const here=path.dirname(fileURLToPath(import.meta.url)),oldPath=path.resolve(here,'../metrics-algorithm-measurement-review-next/recompute.mjs'),bytes=await fs.readFile(oldPath),sha=value=>createHash('sha256').update(value).digest('hex');
+await fs.writeFile(path.join(here,'prior-recompute.mjs.snapshot'),bytes,{flag:'wx'});
+let code=bytes.toString('utf8');
+function replace(from,to){assert.ok(code.includes(from),'Missing controlled adaptation: '+from.slice(0,100));code=code.replaceAll(from,to);}
+for(const [from,to]of [
+ ['../metrics-algorithm-measurement-next','../metrics-wrapper-measurement-next'],
+ ['b6a3faf96d8fcc48158742892e74f2923c8931b25aa84ce00615a3439aee1c2b','705c4540bb54ef37e6b396ed9082aaf7ffe4d944b362b03ac85bd0d76ec3c32c'],
+ ['Object.keys(readiness.inventory).length,117','Object.keys(readiness.inventory).length,2426'],
+ ['fa24a42a8a0c60ce7cf832390e23e0197d7301379203ff302f0a807c2c027b67','4ef9d10a58ef0d58600e389ce82b2774f347a61c7ccfd5c8ac4152001b404438'],
+ ['6f918727383492e06b3acf856d9f4e2cb938ad3e05fef082f2f3021a6801b2bc','6bb39d2051d18147987ff2028d349b219f279d48216159ff00f5d7f2bc7858c3'],
+ ['timing-attempt-1791846775405.json','timing-attempt-1791849618765.json'],
+ ['memory-observations-control-1791847131780.json','memory-observations-control-1791850160778.json'],
+ ['56eb088c5343fe6a06dd2f8b969924365caaf61e7afe1d707c0ad3ed9e744097','774d033a1682f71a19bd0a288108accf645573eadec815e5058a40b366d02679'],
+ ['2026-10-12T23:10:45Z','2026-10-12T23:58:13Z'],
+ ['2026-10-12T23:13:48Z','2026-10-13T00:05:01Z'],
+ ['2026-10-12T23:19:48Z','2026-10-13T00:09:53Z'],
+ ['rea-metrics-algorithm-measurement-independent-summary/v1','rea-metrics-wrapper-measurement-independent-summary/v1'],
+ ['readinessInventoryFiles:117','readinessInventoryFiles:2426'],
+ ['observedAllPercentilesMedianRegressionPercent','observedAllPercentilesMedianChangePercent'],
+ ['observedAllCalculationsMedianRegressionPercent','observedAllCalculationsMedianChangePercent'],
+ ['Frozen88 algorithm and independent root controls are correctness provenance, including new66 inputs with462 original rank expectations; not measured workload replacements or universal proof.','Frozen86 wrapper and nine new independent root corpora are correctness provenance; the66-input inherited selector fixture is retained as correctness provenance, not a measured workload replacement or universal proof.'],
+ ['priorFallbackHypothesisFailurePreserved:readiness.preservedFailures,preparationFailureOriginIsToolConsoleCopyNotOriginalAutomaticChildCapture:true','currentPreparationFailurePreserved:readiness.preservedCurrentPreparationFailures,preparationFailureAutomaticallyCaptured:true,historicalMetadataAndLookupErrorsRetainedInExactWrapper86:true'],
+ ["reason:'All-percentiles median regresses against baseline with overlapping observed ranges; all-calculations and small-standard medians also remain slower. Three isolated p95 workloads improve with disjoint ranges, but that does not establish whole-candidate nonregression or authorize integration.'","reason:'Single/constructed/adversarial p95 medians improve in this finite window, but small-standard has a positive median change and overlapping ranges. Untouched multi-selection controls also overlap baseline. This does not establish whole-candidate nonregression, universal superiority, source-layout causation or authorize integration.'"]
+])replace(from,to);
+replace("timing:{authorizedFrom:'2026-10-12T23:58:13Z',explicitlyClosedAt:'2026-10-13T00:05:01Z'","timing:{authorizedFrom:'2026-10-12T23:58:13Z',explicitlyClosedAt:'2026-10-13T00:05:01Z'");
+// Bind independently established wrapper proofs and published history without copying the old trees again.
+replace("await fs.writeFile(path.join(here,'recomputed-summary.json')",`const reviewPreservation=JSON.parse(await fs.readFile(path.join(here,'preservation.json')));
+output.preservation=reviewPreservation;
+output.windows.idleOwnedPreviewSessionIDs=[54824,54899,59765,54465];
+output.windows.userPort4311Uncontrolled=true;
+output.sourceAttribution={hypothesisOnly:true,causalWrapperOrCompilerClaimEstablished:false,sameWindowBaselineAndOriginalControls:true,olderMixedCandidateComparedAcrossWindowsOnly:true,earlierFourRoleProposalSupersededByAuthorizedThreeRoleProtocol:true};
+output.counts.negativeSignedMemoryChildValues=memoryRows.reduce((count,row)=>count+Object.values(row.metrics).filter(value=>value<0).length,0);
+output.counts.negativePairedMemoryMetricValues=memorySummary.reduce((count,row)=>count+Object.values(row.candidateComparedWith).reduce((sum,metrics)=>sum+Object.values(metrics).reduce((total,metric)=>total+metric.pairedDifferenceBytes.values.filter(value=>value<0).length,0),0),0);
+output.counts.unavailableMemoryPairedPercentages=memorySummary.reduce((count,row)=>count+Object.values(row.candidateComparedWith).reduce((sum,metrics)=>sum+Object.values(metrics).reduce((total,metric)=>total+metric.pairedPercentChange.missingOrUnavailable,0),0),0);
+for(const [name,record]of Object.entries(readiness.inventory))assert.deepEqual(await fp(resolve(name)),record);
+for(const record of reviewPreservation.copies){assert.deepEqual(await fp(record.sourcePath),{bytes:record.bytes,sha256:record.sha256});assert.deepEqual(await fp(path.join(here,record.path)),{bytes:record.bytes,sha256:record.sha256});}
+for(const row of provenance.archives)assert.deepEqual(await fp(row.source),{bytes:row.bytes,sha256:row.sha256});
+for(const [name,record]of Object.entries(originalSourceBindings))assert.deepEqual(await fp(name),record);
+assert.equal((await fp(manifest.runtime.execPath)).sha256,manifest.runtime.executableSHA256);
+assert.equal((await fp(preservation.productionPath)).sha256,readiness.candidate.baselineSHA256);
+output.sourceBeforeAfterAuthenticated=true;
+await fs.writeFile(path.join(here,'recomputed-summary.json')`);
+assert.ok(!code.includes('../metrics-algorithm-measurement-next'));assert.ok(!code.includes('Frozen88 algorithm'));
+await fs.writeFile(path.join(here,'recompute.mjs'),code,{flag:'wx'});
+await fs.writeFile(path.join(here,'recompute-source-attribution.json'),JSON.stringify({priorSourcePath:oldPath,priorSourceSHA256:sha(bytes),adaptedSourceSHA256:sha(code),changes:'Fixed wrapper readiness/attempt/source identities, independent proof/history references, current authorized intervals, honest nonintegration findings and end authentication. No reducers, measurement loops or process launches in recompute.',newMeasurementRun:false},null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({status:'source-only consolidation adapter prepared',sourceSHA256:sha(code)}));

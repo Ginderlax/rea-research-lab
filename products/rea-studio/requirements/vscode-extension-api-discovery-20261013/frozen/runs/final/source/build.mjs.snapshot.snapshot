@@ -1,0 +1,6 @@
+import fs from 'node:fs/promises';import path from 'node:path';import {createHash} from 'node:crypto';import {inventory} from './inventory.mjs';import {loadParser} from './parser-loader.mjs';
+const root=import.meta.dirname,sha=b=>createHash('sha256').update(b).digest('hex'),a=JSON.parse(await fs.readFile(path.join(root,'acquisition.json'))),input=await fs.readFile(path.join(root,'source/vscode.d.ts.snapshot')),p=a.records.find(r=>r.path==='source/vscode.d.ts.snapshot');if(input.length!==p.bytes||sha(input)!==p.sha256)throw new Error('API source changed');
+const result=inventory(await loadParser(),input,{fileName:'vscode.d.ts',sourceURL:p.url}),bytes=Buffer.from(JSON.stringify(result,null,2)+'\n');if(bytes.length>16*1024*1024)throw new Error('Inventory exceeds16MiB');
+await fs.mkdir(path.join(root,'results'),{recursive:true});await fs.writeFile(path.join(root,'results/api-inventory.json'),bytes);
+await fs.writeFile(path.join(root,'results/summary.json'),JSON.stringify({source:result.source,parser:result.parser,counts:result.counts,denominator:result.denominator,gaps:result.gaps,inventory:{path:'results/api-inventory.json',bytes:bytes.length,sha256:sha(bytes)}},null,2)+'\n');
+console.log(JSON.stringify({inventoryBytes:bytes.length,...result.counts}));

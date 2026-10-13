@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: actual encrypted session recycle/recover/purge persists across lock/reload and retains history
+ok 1 - actual encrypted session recycle/recover/purge persists across lock/reload and retains history
+  ---
+  duration_ms: 164.0356
+  type: 'test'
+  ...
+# Subtest: failed persistence publishes neither deletion nor history/bin mutation
+ok 2 - failed persistence publishes neither deletion nor history/bin mutation
+  ---
+  duration_ms: 50.4891
+  type: 'test'
+  ...
+# Subtest: queued caller input is captured and stale competing deletion rejects after durable commit
+ok 3 - queued caller input is captured and stale competing deletion rejects after durable commit
+  ---
+  duration_ms: 47.3338
+  type: 'test'
+  ...
+# Subtest: group deletion and whole-bin emptying explicitly reject with encrypted bytes unchanged
+ok 4 - group deletion and whole-bin emptying explicitly reject with encrypted bytes unchanged
+  ---
+  duration_ms: 47.4088
+  type: 'test'
+  ...
+# Subtest: normal deletion creates a real native bin, keeps content/history, and restores identity to previous UUID
+ok 5 - normal deletion creates a real native bin, keeps content/history, and restores identity to previous UUID
+  ---
+  duration_ms: 11.5666
+  type: 'test'
+  ...
+# Subtest: bin source defaults have trash icon, searching/Auto-Type disabled and no new history version
+ok 6 - bin source defaults have trash icon, searching/Auto-Type disabled and no new history version
+  ---
+  duration_ms: 1.6331
+  type: 'test'
+  ...
+# Subtest: permanent delete adds native UUID/time tombstone and cannot restore
+ok 7 - permanent delete adds native UUID/time tombstone and cannot restore
+  ---
+  duration_ms: 1.3457
+  type: 'test'
+  ...
+# Subtest: disabled bin setting permanently deletes; deleting an existing bin entry also adds tombstone
+ok 8 - disabled bin setting permanently deletes; deleting an existing bin entry also adds tombstone
+  ---
+  duration_ms: 2.8813
+  type: 'test'
+  ...
+# Subtest: MAC rejects stale dataset, cross-key, mutated entry and missing confirmation without input changes
+ok 9 - MAC rejects stale dataset, cross-key, mutated entry and missing confirmation without input changes
+  ---
+  duration_ms: 1.215
+  type: 'test'
+  ...
+# Subtest: permissive/malformed clocks reject without writing and uint64 touch wraps exactly
+ok 10 - permissive/malformed clocks reject without writing and uint64 touch wraps exactly
+  ---
+  duration_ms: 2.7472
+  type: 'test'
+  ...
+# Subtest: absent/zero previous group rejects recover and keeps encrypted-representation data unchanged
+ok 11 - absent/zero previous group rejects recover and keeps encrypted-representation data unchanged
+  ---
+  duration_ms: 2.997
+  type: 'test'
+  ...
+# Subtest: malformed root-bin UUID and invalid boolean settings reject before mutation
+ok 12 - malformed root-bin UUID and invalid boolean settings reject before mutation
+  ---
+  duration_ms: 1.5118
+  type: 'test'
+  ...
+# Subtest: explicit preview returns a copy and attachment values are included in selection binding
+ok 13 - explicit preview returns a copy and attachment values are included in selection binding
+  ---
+  duration_ms: 1.7311
+  type: 'test'
+  ...
+# Subtest: duplicate names do not redirect UUID recovery; existing bin is reused
+ok 14 - duplicate names do not redirect UUID recovery; existing bin is reused
+  ---
+  duration_ms: 5.7034
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 371.4533

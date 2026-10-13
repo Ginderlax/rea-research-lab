@@ -1,0 +1,281 @@
+{
+  "schema": "rea-lzma-sources/v1",
+  "source_assisted": true,
+  "clean_room": false,
+  "primitive_runtime_calls_original_application": false,
+  "primitive_runtime_package_dependencies": [],
+  "licensing": [
+    "Public-domain Igor Pavlov SDK26.04",
+    "MIT Juan Mellado decoder adaptation"
+  ],
+  "original_release": "26.04",
+  "original_edition_platform": "Complete Windows x64 console; no GUI/other-platform parity",
+  "packages": [
+    {
+      "name": "7z2604-src.7z",
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\full-archive-baseline-20261012\\7z2604-src.7z",
+      "bytes": 1547607,
+      "sha256": "6bcfd2679d178174df06d09d50147dd7b5980d7beac896136689dfc9d51e0fd9",
+      "publisher_digest_matches": true,
+      "source_url": "https://github.com/ip7z/7zip/releases/download/26.04/7z2604-src.7z"
+    },
+    {
+      "name": "7z2604-x64.exe",
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\full-archive-baseline-20261012\\7z2604-x64.exe",
+      "bytes": 1664082,
+      "sha256": "d54bf805f9f3704d1e8db2fa3498ae7ef2df0312b40b558e7c71c734430a665d",
+      "publisher_digest_matches": true,
+      "source_url": "https://github.com/ip7z/7zip/releases/download/26.04/7z2604-x64.exe"
+    },
+    {
+      "name": "lzma2604.7z",
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\full-archive-baseline-20261012\\lzma2604.7z",
+      "bytes": 1786965,
+      "sha256": "bd98058d0e12c5da970dd4e5e1d8fa24f2d704914d96e69c28f92ed45421a439",
+      "publisher_digest_matches": true,
+      "source_url": "https://github.com/ip7z/7zip/releases/download/26.04/lzma2604.7z"
+    }
+  ],
+  "oracle": [
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\full-archive-baseline-20261012\\full-product-x64\\7z.exe",
+      "sha256": "95fff19b73eff77c87c0d7bd32822e43fb90dd2932459f962eb532d8dfb6ba53",
+      "bytes": 577536,
+      "purpose": "Test/benchmark independent complete26.04 Windowsx64 oracle only; not runtime"
+    },
+    {
+      "path": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\full-archive-baseline-20261012\\full-product-x64\\7z.dll",
+      "sha256": "899cd73d7fc60e1c1c35c7de0f5bed3dc69bfe2cecbd48014d868a347970a0b1",
+      "bytes": 1907712,
+      "purpose": "Test/benchmark independent complete26.04 Windowsx64 oracle only; not runtime"
+    }
+  ],
+  "source_study": [
+    {
+      "local": "reference/LzmaDec.c",
+      "original": "sdk-source/C/LzmaDec.c",
+      "license": "Public domain",
+      "role": "Primary source-assisted range, literal/match/distance, probability, finish and property study",
+      "original_path": "C:/Users/evanh/Documents/Codex/2026-10-12/go/work/full-archive-baseline-20261012/sdk-source/C/LzmaDec.c",
+      "bytes": 39574,
+      "sha256": "8a9d33dd01259a71b3c3cfbf645d06944bef65a152d307671372c332e9e0e022",
+      "line_refs": [
+        {
+          "line": 1,
+          "text": "/* LzmaDec.c -- LZMA Decoder"
+        },
+        {
+          "line": 2,
+          "text": ": Igor Pavlov : Public domain */"
+        },
+        {
+          "line": 22,
+          "text": "#define NORMALIZE if (range < kTopValue) { range <<= 8; code = (code << 8) | (*buf++); }"
+        },
+        {
+          "line": 24,
+          "text": "#define IF_BIT_0(p) ttt = *(p); NORMALIZE; bound = (range >> kNumBitModelTotalBits) * (UInt32)ttt; if (code < bound)"
+        },
+        {
+          "line": 164,
+          "text": "#define LzmaProps_GetNumProbs(p) (NUM_BASE_PROBS + ((UInt32)LZMA_LIT_SIZE << ((p)->lc + (p)->lp)))"
+        },
+        {
+          "line": 1007,
+          "text": "    if (p->remainLen == kMatchSpecLenStart)"
+        },
+        {
+          "line": 1024,
+          "text": "        if (p->remainLen == 0 && p->code == 0)"
+        },
+        {
+          "line": 1262,
+          "text": "SRes LzmaProps_Decode(CLzmaProps *p, const Byte *data, unsigned size)"
+        },
+        {
+          "line": 1272,
+          "text": "  if (dicSize < LZMA_DIC_MIN)"
+        }
+      ],
+      "source_package_url": "https://github.com/ip7z/7zip/releases/download/26.04/lzma2604.7z"
+    },
+    {
+      "local": "reference/Lzma2Dec.c",
+      "original": "sdk-source/C/Lzma2Dec.c",
+      "license": "Public domain",
+      "role": "Primary source-assisted compressed/stored LZMA2 framing, reset/state/property and exact chunk finishing study",
+      "original_path": "C:/Users/evanh/Documents/Codex/2026-10-12/go/work/full-archive-baseline-20261012/sdk-source/C/Lzma2Dec.c",
+      "bytes": 13372,
+      "sha256": "18c2fff9594dc9ab523087963f0a740ab5ffaea457746385c86771f32c8ef4a2",
+      "line_refs": [
+        {
+          "line": 1,
+          "text": "/* Lzma2Dec.c -- LZMA2 Decoder"
+        },
+        {
+          "line": 2,
+          "text": "2024-03-01 : Igor Pavlov : Public domain */"
+        },
+        {
+          "line": 14,
+          "text": "#include \"Lzma2Dec.h\""
+        },
+        {
+          "line": 34,
+          "text": "#define LZMA2_LCLP_MAX 4"
+        },
+        {
+          "line": 57,
+          "text": "static SRes Lzma2Dec_GetOldProps(Byte prop, Byte *props)"
+        },
+        {
+          "line": 88,
+          "text": "  p->needInitLevel = 0xE0;"
+        },
+        {
+          "line": 111,
+          "text": "          p->needInitLevel = 0xC0;"
+        },
+        {
+          "line": 117,
+          "text": "        if (b < p->needInitLevel)"
+        },
+        {
+          "line": 154,
+          "text": "      if (lc + lp > LZMA2_LCLP_MAX)"
+        },
+        {
+          "line": 225,
+          "text": "        curFinishMode = LZMA_FINISH_END;"
+        },
+        {
+          "line": 260,
+          "text": "          BoolInt initDic = (p->control >= 0xE0);"
+        },
+        {
+          "line": 289,
+          "text": "          if (*status != LZMA_STATUS_MAYBE_FINISHED_WITHOUT_MARK"
+        }
+      ],
+      "source_package_url": "https://github.com/ip7z/7zip/releases/download/26.04/lzma2604.7z"
+    },
+    {
+      "local": "reference/lzma-sdk.txt",
+      "original": "sdk-source/DOC/lzma-sdk.txt",
+      "license": "Public domain",
+      "role": "SDK release and permission",
+      "original_path": "C:/Users/evanh/Documents/Codex/2026-10-12/go/work/full-archive-baseline-20261012/sdk-source/DOC/lzma-sdk.txt",
+      "bytes": 15835,
+      "sha256": "b6be2de40819b3ba00b329548abaeaba97589e1a6169442ec78b062b3337247b",
+      "line_refs": [
+        {
+          "line": 1,
+          "text": "LZMA SDK 26.04"
+        },
+        {
+          "line": 30,
+          "text": "LZMA SDK is written and placed in the public domain by Igor Pavlov."
+        },
+        {
+          "line": 37,
+          "text": "original LZMA SDK code, either in source code form or as a compiled binary, for "
+        }
+      ],
+      "source_package_url": "https://github.com/ip7z/7zip/releases/download/26.04/lzma2604.7z"
+    },
+    {
+      "local": "reference/lzma.txt",
+      "original": "sdk-source/DOC/lzma.txt",
+      "license": "Public domain SDK documentation",
+      "role": "LZMA raw/file properties reference; embedded document version24.07 within SDK26.04",
+      "original_path": "C:/Users/evanh/Documents/Codex/2026-10-12/go/work/full-archive-baseline-20261012/sdk-source/DOC/lzma.txt",
+      "bytes": 11194,
+      "sha256": "ab14139964693ac041f34319728bb96e0c924498e7dfcd1eabcde76c9caf15b8",
+      "line_refs": [
+        {
+          "line": 3,
+          "text": "Version: 24.07"
+        },
+        {
+          "line": 18,
+          "text": "LZMA compressed file format"
+        },
+        {
+          "line": 21,
+          "text": "  0     1   Special LZMA properties (lc,lp, pb in encoded form)"
+        }
+      ],
+      "source_package_url": "https://github.com/ip7z/7zip/releases/download/26.04/lzma2604.7z"
+    },
+    {
+      "local": "reference/cscott-lzma-purejs-lib-LZMA-Decoder.js",
+      "original": "../sevenzip-next/primitive-survey/cscott-lzma-purejs-lib-LZMA-Decoder.js",
+      "license": "MIT; Juan Mellado notice preserved verbatim in LICENSE.txt",
+      "role": "Source-assisted decoder structure and algorithm; original AMD module not imported or executed",
+      "url": "https://raw.githubusercontent.com/cscott/lzma-purejs/75ed915fecef42a87abd754efede2271be18c786/lib/LZMA/Decoder.js",
+      "original_path": "C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sevenzip-next/primitive-survey/cscott-lzma-purejs-lib-LZMA-Decoder.js",
+      "bytes": 10996,
+      "sha256": "0a755d554a01f111cc02bdd0f314119e20986a4772e226225437239f470275e7",
+      "line_refs": [
+        {
+          "line": 5,
+          "text": "Copyright (c) 2011 Juan Mellado"
+        },
+        {
+          "line": 7,
+          "text": "Permission is hereby granted, free of charge, to any person obtaining a copy"
+        },
+        {
+          "line": 27,
+          "text": "References:"
+        },
+        {
+          "line": 61,
+          "text": "LenDecoder.prototype.decode = function(rangeDecoder, posState){"
+        },
+        {
+          "line": 183,
+          "text": "Decoder.prototype.setLcLpPb = function(lc, lp, pb){"
+        },
+        {
+          "line": 224,
+          "text": "Decoder.prototype.code = function(inStream, outStream, outSize){"
+        },
+        {
+          "line": 311,
+          "text": "      if (rep0 >= nowPos64 || rep0 >= this._dictionarySizeCheck){"
+        },
+        {
+          "line": 328,
+          "text": "Decoder.prototype.setDecoderProperties = function(properties){"
+        }
+      ]
+    },
+    {
+      "local": "reference/cscott-lzma-purejs-README.md",
+      "original": "../sevenzip-next/primitive-survey/cscott-lzma-purejs-README.md",
+      "license": "MIT",
+      "role": "Dependency authorship and license provenance, not an adopted package",
+      "url": "https://raw.githubusercontent.com/cscott/lzma-purejs/75ed915fecef42a87abd754efede2271be18c786/README.md",
+      "original_path": "C:/Users/evanh/Documents/Codex/2026-10-12/go/work/sevenzip-next/primitive-survey/cscott-lzma-purejs-README.md",
+      "bytes": 5219,
+      "sha256": "c0824136198faf2df489ef3750c094557a55a9f50fb426eed952a502b54fb0f5",
+      "line_refs": [
+        {
+          "line": 5,
+          "text": "`lzmajs` is a fast pure-JavaScript implementation of LZMA"
+        },
+        {
+          "line": 8,
+          "text": "C. Scott Ananian started by cleaning up the source code and packaging"
+        },
+        {
+          "line": 113,
+          "text": "## License"
+        }
+      ]
+    }
+  ],
+  "pinned_mit_commit": "75ed915fecef42a87abd754efede2271be18c786",
+  "standalone_mit_license_url_status": "LICENSE at the pinned commit returned404 during preserved acquisition; full MIT notice is present in Decoder.js and README.md and retained here"
+}

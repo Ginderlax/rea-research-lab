@@ -1,0 +1,84 @@
+import {opendir, open} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
+
+export const SEARCH_LIMITS=Object.freeze({files:1000,entries:10000,depth:12,fileBytes:2*1024*1024,scanBytes:32*1024*1024,matches:1000,queryBytes:32*1024,outputBytes:2*1024*1024,deadlineMs:5000});
+const ignored=name=>name==='.git'||name==='node_modules'||name.startsWith('.rea-save-');
+const escape=value=>value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+
+/** Search saved UTF-8 text. Positions use one-based lines and UTF-16 columns. */
+export async function searchWorkspace(workspace,input={}) {
+  const query=input.query,matchCase=input.matchCase??true;
+  if(typeof query!=='string'||!query||/[\r\n\0]/.test(query)||Buffer.byteLength(query)>SEARCH_LIMITS.queryBytes)throw new Error('Enter nonempty single-line search text of at most32 KiB.');
+  if(typeof matchCase!=='boolean')throw new Error('Match case must be true or false.');
+  const pattern=new RegExp(escape(query),matchCase?'gu':'giu'),started=performance.now(),files=[],matches=[],skipped=[],reasons=new Set();
+  let visitedEntries=0,inspectedFiles=0,searchedFiles=0,readBytes=0,outputBytes=Buffer.byteLength(query)+65536;
+  const deadline=()=>{if(performance.now()-started>=SEARCH_LIMITS.deadlineMs){reasons.add('deadline');return true;}return false;};
+  async function walk(folder='',depth=0) {
+    if(deadline())return;
+    if(depth>SEARCH_LIMITS.depth){reasons.add('directory-depth');return;}
+    const directory=await opendir(await workspace.resolve(folder||'.'));
+    for await(const entry of directory) {
+      if(deadline())return;
+      if(++visitedEntries>SEARCH_LIMITS.entries){reasons.add('directory-entry-limit');return;}
+      if(entry.isSymbolicLink()||ignored(entry.name))continue;
+      const name=folder?`${folder}/${entry.name}`:entry.name;
+      if(entry.isDirectory())await walk(name,depth+1);
+      else if(entry.isFile()) {
+        if(files.length===SEARCH_LIMITS.files){reasons.add('file-limit');return;}
+        files.push(name);
+      }
+      if(reasons.has('file-limit')||reasons.has('directory-entry-limit')||reasons.has('deadline'))return;
+    }
+  }
+  await walk();files.sort();
+  if(!reasons.has('deadline'))for(const name of files) {
+    if(deadline())break;
+    inspectedFiles++;
+    const checked=await workspace.resolve(name);let file;
+    try {
+      file=await open(checked,'r');const info=await file.stat();
+      if(!info.isFile()){skipped.push({path:name,reason:'not-regular-file'});continue;}
+      if(info.size>SEARCH_LIMITS.fileBytes){skipped.push({path:name,reason:'file-size-limit'});continue;}
+      if(readBytes+info.size>SEARCH_LIMITS.scanBytes){reasons.add('scan-byte-limit');break;}
+      const buffer=Buffer.alloc(Math.min(SEARCH_LIMITS.fileBytes+1,SEARCH_LIMITS.scanBytes-readBytes+1));let length=0;
+      while(length<buffer.length) {
+        const read=await file.read(buffer,length,buffer.length-length,null);length+=read.bytesRead;
+        if(!read.bytesRead)break;
+        if(deadline())break;
+      }
+      readBytes+=length;
+      if(deadline())break;
+      if(length>SEARCH_LIMITS.fileBytes){skipped.push({path:name,reason:'file-grew-past-size-limit'});continue;}
+      if(readBytes>SEARCH_LIMITS.scanBytes){reasons.add('scan-byte-limit');break;}
+      const bytes=buffer.subarray(0,length);
+      if(bytes.includes(0)){skipped.push({path:name,reason:'binary'});continue;}
+      let content;
+      try {content=new TextDecoder('utf-8',{fatal:true}).decode(bytes);}catch{skipped.push({path:name,reason:'invalid-utf8'});continue;}
+      searchedFiles++;const revision=digest(bytes);let offset=0,line=1;
+      // A streaming line cursor avoids creating an unbounded array of short lines.
+      while(offset<content.length) {
+        if(deadline())break;
+        const newline=content.indexOf('\n',offset),next=newline<0?content.length:newline;
+        const lineEnd=next>offset&&content[next-1]==='\r'?next-1:next,lineText=content.slice(offset,lineEnd);
+        pattern.lastIndex=0;let hit;
+        while((hit=pattern.exec(lineText))) {
+          if(deadline())break;
+          if(matches.length===SEARCH_LIMITS.matches){reasons.add('match-limit');break;}
+          const previewStart=Math.max(0,hit.index-40),row={path:name,revision,line,column:hit.index+1,endColumn:hit.index+hit[0].length+1,start:offset+hit.index,end:offset+hit.index+hit[0].length,preview:lineText.slice(previewStart,previewStart+400),previewStartColumn:previewStart+1};
+          const size=Buffer.byteLength(JSON.stringify(row));
+          if(outputBytes+size>SEARCH_LIMITS.outputBytes){reasons.add('output-byte-limit');break;}
+          matches.push(row);outputBytes+=size;
+        }
+        if(reasons.has('match-limit')||reasons.has('output-byte-limit')||reasons.has('deadline'))break;
+        if(newline<0)break;offset=next+1;line++;
+      }
+    }catch(error){if(['ENOENT','ENOTDIR','EISDIR'].includes(error.code))skipped.push({path:name,reason:'changed-during-search'});else throw error;}
+    finally{if(file)await file.close();}
+    if(['match-limit','output-byte-limit','deadline','scan-byte-limit'].some(reason=>reasons.has(reason)))break;
+  }
+  const result={query,matchCase,matches,matchedFiles:new Set(matches.map(row=>row.path)).size,inspectedFiles,searchedFiles,readBytes,visitedEntries,skipped,truncated:reasons.size>0,limitReasons:[...reasons],source:'saved-files',positions:'one-based lines and UTF-16 columns; end is exclusive',limits:SEARCH_LIMITS};
+  // Refuse an unexpected metadata/output expansion rather than returning a hidden overflow.
+  if(Buffer.byteLength(JSON.stringify(result))>SEARCH_LIMITS.outputBytes)throw new Error('Search response exceeds the2 MiB output limit.');
+  return result;
+}

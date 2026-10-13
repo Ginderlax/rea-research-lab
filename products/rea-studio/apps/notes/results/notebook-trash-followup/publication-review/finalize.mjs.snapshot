@@ -1,0 +1,68 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+
+const root=import.meta.dirname;
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const read=async p=>JSON.parse(await fs.readFile(path.join(root,p),'utf8'));
+const write=async(p,value)=>fs.writeFile(path.join(root,p),JSON.stringify(value,null,2)+'\n');
+const fingerprint=async p=>{const b=await fs.readFile(path.join(root,p));return{path:p,bytes:b.length,sha256:sha(b)};};
+async function inventory(folder,prefix=''){
+  const result=[];
+  for(const e of await fs.readdir(path.join(folder,prefix),{withFileTypes:true})){
+    const p=(prefix?prefix+'/':'')+e.name;
+    if(e.isSymbolicLink())throw new Error('Unexpected symlink '+p);
+    if(e.isDirectory())result.push(...await inventory(folder,p));else result.push(p);
+  }
+  return result.sort();
+}
+const baseline=await read('baseline.json');
+const authentication=[];
+for(const r of baseline.references){
+  const folder=path.resolve(root,r.root),b=await fs.readFile(path.join(folder,r.manifest));
+  if(sha(b)!==r.sha256)throw new Error('Changed manifest '+r.root);
+  const m=JSON.parse(b),rows=m.records??m.files;
+  if(rows.length!==r.count)throw new Error('Count mismatch');
+  for(const row of rows){const b=await fs.readFile(path.join(folder,row.path));if(b.length!==row.bytes||sha(b)!==row.sha256)throw new Error('Changed '+r.root+'/'+row.path);}
+  const excludes=m.excluded??m.excludes??[];
+  const ignored=p=>excludes.some(x=>x.endsWith('/**')?p.startsWith(x.slice(0,-2)):x.endsWith('/')?p.startsWith(x):p===x);
+  const observed=(await inventory(folder)).filter(p=>!ignored(p));
+  const listed=rows.map(r=>r.path).sort();
+  if(JSON.stringify(observed)!==JSON.stringify(listed))throw new Error('Strict inventory mismatch '+r.root);
+  if(r.receipt){const rb=await fs.readFile(path.join(folder,r.receipt));if(sha(rb)!==r.receiptSha256)throw new Error('Receipt changed');}
+  authentication.push({...r,allFilesExact:true,strictInventoryExact:true});
+}
+const local=await read('runs/final-local/validation.json');
+if(local.code!==0||local.problem!==null||local.tests!==18||local.pass!==18||local.fail!==0||local.skipped!==0||local.cancelled!==0||!local.sourceStable)throw new Error('Unexpected local result');
+for(const row of local.sources){const b=await fs.readFile(path.join(row.folder,row.path));if(b.length!==row.bytes||sha(b)!==row.sha256)throw new Error('Changed tested source '+row.path);}
+const browserBefore=await read('browser-source-before.json'),browserAfter=await read('browser-source-after.json');
+if(JSON.stringify(browserBefore.sources)!==JSON.stringify(browserAfter.sources))throw new Error('Browser source mutation');
+for(const row of browserAfter.sources){const b=await fs.readFile(path.join(row.folder,row.path));if(b.length!==row.bytes||sha(b)!==row.sha256)throw new Error('Changed browser source');}
+const browser=await read('browser-server-observations.json');
+if(!browser.cleanup.temporaryRemoved||!browser.cleanup.upstreamClosed||!browser.cleanup.previewClosed||browser.observations.some(o=>o.action==='notebook-trash'))throw new Error('Unexpected cleanup or browser operation');
+await write('owned-host-exit.json',{kind:'tool-return-transcription',rawChildCapture:false,sessionId:91000,exitCode:0,output:'OWNED_NOTES_REVIEW_CLOSED',ownedNodeProcessEnded:true,actualSharedHostClosed:true,relayClosed:true,ownedTemporaryDirectoryRemoved:true,ownedChromeTabClosedVerified:false,noUser4311Access:true});
+const original=(await read('runs/final-local/observations/review.json')).find(o=>o.case==='held-out released restore');
+if(original.helperTopLevelExecutions!==1||original.matchedItemProjections!==11||original.matchedScalarFields!==55||original.bindings.length!==9)throw new Error('Original observation mismatch');
+await write('final-authentication.json',{at:new Date().toISOString(),references:authentication,totalArtifacts:866,localSources:local.sources,browserSources:browserAfter.sources,allExact:true});
+const receipt={
+  schema:'rea-notes-trash-publication-independent-review/v1',at:new Date().toISOString(),
+  acceptance:{finiteLocalSourceCases:true,actualBrowserWorkflow:false,confirmedApplicationFaultsRemaining:0,fullProductParity:false,securityParity:false,superiority:false},
+  references:authentication,totalPriorAndCandidateArtifactsAuthenticated:866,sourceStable:true,
+  local:{tests:18,pass:18,fail:0,skip:0,cancelled:0,groups:{originalReviewerImportOnlyBodies:7,authorByteIdenticalAdjacentBodies:7,newHeldOutBodies:4},receipt:await fingerprint('runs/final-local/validation.json'),stdout:await fingerprint('runs/final-local/stdout.txt'),stderr:await fingerprint('runs/final-local/stderr.txt'),all15SourcesStillExact:true,actualHostProcesses:0},
+  original:{release:'Joplin Desktop 3.6.14',commit:'7e2765a3857754d12dbadea442b60ceaf9d4b23d',license:'AGPL-3.0-or-later',newHelperContexts:1,newTopLevelRestoreCalls:1,exactReleasedSlices:9,matchedItemProjections:11,matchedScalarFields:55,completeApplicationExecutions:0,originalDatabaseExecutions:0,originalGUIExecutions:0,scope:original.scope,bindings:original.bindings,authorHistoricalCountsIncluded:false},
+  adapters:baseline.adapters,
+  browser:{status:'incomplete-tool-control',clientSourceExact:true,sourceFingerprints:13,sourceStable:true,ownedChromeTabsCreated:1,ownedNodeHostProcesses:1,actualSharedHostStarts:1,relayServers:1,processRestarts:0,sameProcessReopens:0,ownedNoteOpened:true,actualSaveCommitted:true,saveRevision:2,saveResponseHeld:true,nativeConfirmationObserved:true,nativeConfirmationAccepted:false,notebookTrashRequests:0,completedTrashRestoreWorkflow:false,toolFailures:await fingerprint('browser-tool-failures.json'),observations:await fingerprint('browser-server-observations.json'),manualTabClosureVerified:false,turnEndEphemeralCleanupVerified:false,remaining:'Parent must perform actual notebook trash/restore UI acceptance; native JavaScript confirmation control stalled in this browser bridge.'},
+  cleanup:{ownedNodeProcessExit:0,actualSharedHostClosed:true,relayClosed:true,temporaryRemoved:true,ownedChromeTabClosure:'unconfirmed',noUser4311Access:true},
+  priorFailures:'Original P1/P2 and corrected bounds-expectation history remain exact in the 37-artifact prior review; initial/partial correction runs remain exact in candidate504. Browser tool failures are explicitly labeled transcriptions, not raw child logs or application defects.',
+  findingsResolved:'All original seven local bodies and both refresh-await publication controls pass. Enabled-field/programmatic draft, new-note committed identity, newer-search publication and queued primitive capture controls pass.',
+  sourceScope:'Only corrected client/server differ from original candidate. Native algorithms/helper source unchanged. This finite review does not establish universal pre-await input ownership or lifecycle cancellation for pre-existing Notes actions.',
+  productionModified:false,requirementsModified:false,oldEvidenceRebound:false,performanceMeasurements:0,
+  paths:{readme:'REVIEW.md',finalAuthentication:'final-authentication.json',tests:['regression/review.test.mjs','regression/publication-boundaries.test.mjs','regression/fresh-boundaries.test.mjs'],helper:'regression/ui-fixture.mjs'}
+};
+await write('review-validation.json',receipt);
+const excluded=['review-manifest.json','freeze.json'];
+const files=(await inventory(root)).filter(p=>!excluded.includes(p));
+const records=await Promise.all(files.map(fingerprint));
+await write('review-manifest.json',{schema:'rea-strict-independent-review-preservation/v1',strict:true,excluded,records});
+await write('freeze.json',{at:new Date().toISOString(),manifest:await fingerprint('review-manifest.json'),receipt:await fingerprint('review-validation.json'),artifacts:records.length,sourceAcceptance:true,browserAcceptance:false});
+console.log(JSON.stringify({artifacts:records.length,manifest:await fingerprint('review-manifest.json'),receipt:await fingerprint('review-validation.json'),idle:true}));

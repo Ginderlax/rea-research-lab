@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+const old=path.join(import.meta.dirname,'editor-search-fix-next'),root=path.join(import.meta.dirname,'editor-search-path-fix-next'),sha=b=>createHash('sha256').update(b).digest('hex');
+const bytes=await fs.readFile(path.join(old,'freeze-manifest.json')),manifest=JSON.parse(bytes);
+assert.equal(sha(bytes),'b858a4cf15312f962bf0ac5ba2fd6b6c17466248ff1394c727a49ee0e665e9ef');
+await fs.mkdir(root,{recursive:true});let copied=0;
+for(const[name,row]of Object.entries(manifest.inventory)){
+ const b=await fs.readFile(path.join(old,name));assert.equal(b.length,row.bytes);assert.equal(sha(b),row.sha256);
+ if(name.startsWith('products/')||['baseline.json','SEARCH.md','collect-final.mjs','original-search-comparison.mjs','preserve-initial-search.mjs'].includes(name)){
+  const target=path.join(root,name);await fs.mkdir(path.dirname(target),{recursive:true});await fs.writeFile(target,b,{flag:'wx'});copied++;
+ }
+}
+await fs.writeFile(path.join(root,'prior-stage-manifest.json.snapshot'),bytes,{flag:'wx'});
+await fs.writeFile(path.join(root,'prior-stage-reference.json'),JSON.stringify({schema:'rea-editor-search-path-correction-reference/v1',priorStage:old,manifestSHA256:sha(bytes),all124PriorArtifactsAuthenticated:true,priorReceiptSHA256:manifest.receiptSHA256,priorFullTreeRecopied:false,priorFormalTests:39,priorCandidateAccepted:false,confirmedFinding:'Search returned a1096-character relative path that the read API rejects above1024 characters.',productionUnchanged:true},null,2)+'\n',{flag:'wx'});
+await fs.writeFile(path.join(root,'prepare.mjs.snapshot'),await fs.readFile(import.meta.filename),{flag:'wx'});
+console.log(JSON.stringify({status:'PASS',copied,root}));

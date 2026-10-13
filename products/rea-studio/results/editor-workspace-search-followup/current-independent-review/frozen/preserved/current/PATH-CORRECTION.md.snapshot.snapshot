@@ -1,0 +1,7 @@
+# Search result path contract correction
+
+The independent review of the preceding immutable candidate reproduced a1096-character saved-file result that could not be opened: the read API accepts at most1024 UTF-16 code units, while the workspace resolver accepts longer names.
+
+This separate candidate moves the unchanged read/save path validation into one shared module. Search validates each directory/file before descending or recording it, reports rejected paths as `editor-path-contract`, and marks coverage incomplete. The1024/1025 boundary and a1096-character directory use actual owned filesystem fixtures. Existing read/save limits remain1024. This fixes a finite navigation inconsistency; support for every original path or encoding remains unproven.
+
+Earlier frozen stages and their failed checks remain unchanged. The corrected generation tests are retained. The original twenty-input bundled-engine comparison is replayed with the new source and retains its direct-engine scope; it does not execute the original workbench GUI.

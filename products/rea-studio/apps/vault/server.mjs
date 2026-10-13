@@ -2,6 +2,7 @@ import { createCipheriv, createDecipheriv, createHmac, randomBytes, randomInt, r
 import { promisify } from 'node:util';
 import { importKdbx, exportKdbx, base64 } from './kdbx.mjs';
 import {applyEntrySave,listEntryHistory,readEntryHistory,restoreEntryHistory} from './history.mjs';
+import {normalizeRecycleData,recycleView,recycleRead,activeEntry,deleteRecycleEntry,restoreRecycleEntry} from './recycle.mjs';
 
 const scrypt = promisify(derive);
 const sessions = new Map();
@@ -15,7 +16,7 @@ function touch(id, state) {
   state.timer = setTimeout(() => lock(id), ttl); state.timer.unref?.();
 }
 function openSession(id, key, salt, data) {
-  lock(id); const state = { key, salt, data, touched: Date.now() };
+  lock(id); data=normalizeRecycleData(data);const state = { key, salt, data, touched: Date.now() };
   sessions.set(id, state); touch(id,state);
 }
 
@@ -121,7 +122,7 @@ async function run({ action, input = {}, store, workspace }) {
   if (action === 'create') {
     if (await store.get(KEY, null)) throw new Error('A vault already exists. Unlock it instead.');
     const salt = randomBytes(16), key = await keyFor(input.password, salt);
-    const data = { version: 1, entries: [] };
+    const data = normalizeRecycleData({ version: 1, entries: [] });
     try { await store.set(KEY, encode(data, key, salt)); }
     catch (error) { key.fill(0); throw error; }
     openSession(id,key,salt,data);
@@ -141,7 +142,7 @@ async function run({ action, input = {}, store, workspace }) {
     const doc = typeof input.document === 'string' ? JSON.parse(input.document) : input.document;
     const salt = envelope(doc).salt, key = await keyFor(input.password, salt);
     try {
-      const data = decode(doc, key);
+      const data = normalizeRecycleData(decode(doc, key));
       await store.set(KEY, encode(data, key, salt));
       openSession(id,key,salt,data);
     } catch (error) { key.fill(0); throw error; }
@@ -151,7 +152,7 @@ async function run({ action, input = {}, store, workspace }) {
     if (await store.get(KEY,null) && input.confirmReplace !== true) throw new Error('Replacing a vault requires explicit confirmation.');
     // Validate the local password before spending resources on a foreign KDF.
     password(input.localPassword);
-    const data = await importKdbx(base64(input.fileBase64),{ password: input.password,usePassword: input.usePassword,keyFileBase64: input.keyFileBase64 });
+    const data = normalizeRecycleData(await importKdbx(base64(input.fileBase64),{ password: input.password,usePassword: input.usePassword,keyFileBase64: input.keyFileBase64 }));
     for (const e of data.entries) if (e.totpSecret) fromBase32(e.totpSecret);
     const salt = randomBytes(16), key = await keyFor(input.localPassword,salt);
     try { await store.set(KEY,encode(data,key,salt)); openSession(id,key,salt,data); }
@@ -161,14 +162,15 @@ async function run({ action, input = {}, store, workspace }) {
   const state = unlocked(id);
   if (action === 'list') {
     const search = field(input.search, 256).toLowerCase();
-    return { entries: state.data.entries.filter(e => [e.title,e.username,e.url,e.group,e.notes].some(v => v.toLowerCase().includes(search))).map(({ password, totpSecret, notes, ...rest }) => rest).sort((a,b) => a.title.localeCompare(b.title)) };
+    return { entries: recycleView(state.data,state.key).entries.filter(e => [e.title,e.username,e.url,e.group,e.notes].some(v => v.toLowerCase().includes(search))).map(({ password, totpSecret, notes, ...rest }) => rest).sort((a,b) => a.title.localeCompare(b.title)) };
   }
   if (action === 'read') {
     const result = state.data.entries.find(e => e.id === input.id);
-    if (!result) throw new Error('Entry not found.');
-    return { entry: { ...result } };
+    if (!result||!activeEntry(state.data,input.id)) throw new Error('Entry not found.');
+    const row=recycleView(state.data,state.key).entries.find(e=>e.id===input.id);return { entry: { ...row } };
   }
   if (action === 'totp') {
+    if(!activeEntry(state.data,input.id))throw new Error('Restore a recycled entry before using its active-entry commands.');
     const result = state.data.entries.find(e => e.id === input.id);
     if (!result?.totpSecret) throw new Error('This entry has no TOTP secret.');
     return totp(result.totpSecret, { time: input.time, digits: input.digits, period: input.period, algorithm: input.algorithm });
@@ -176,12 +178,15 @@ async function run({ action, input = {}, store, workspace }) {
   if (action === 'save') {
     const old = state.data.entries.find(e => e.id === input.id);
     if (input.id && !old) throw new Error('Entry not found.');
+    if(old&&!activeEntry(state.data,old.id))throw new Error('Restore a recycled entry before editing it.');
     const result = entry(input, old);
     const data = applyEntrySave(state.data,old,result);
+    if(!activeEntry(data,result.id))throw new Error('Use the recycle-bin commands to move an entry into or out of the bin.');
     if (data.entries.length > 10000) throw new Error('The local vault entry limit is 10,000.');
     await store.set(KEY, encode(data, state.key, state.salt)); state.data = data;
     return { id: result.id, saved: true };
   }
+  if(['historyList','historyRead','historyRestore'].includes(action)&&!activeEntry(state.data,input.id))throw new Error('Restore a recycled entry before using its active-entry commands.');
   if(action==='historyList')return listEntryHistory(state.data,input.id,state.key);
   if(action==='historyRead')return readEntryHistory(state.data,input.id,input.index,input.revision,state.key);
   if(action==='historyRestore'){
@@ -192,10 +197,16 @@ async function run({ action, input = {}, store, workspace }) {
   if (action === 'delete') {
     if (input.confirm !== true) throw new Error('Deleting an entry requires confirmation.');
     if (!state.data.entries.some(e => e.id === input.id)) throw new Error('Entry not found.');
-    const data = { ...state.data, entries: state.data.entries.filter(e => e.id !== input.id) };
-    await store.set(KEY, encode(data, state.key, state.salt)); state.data = data;
-    return { deleted: true };
+    const {data,result}=deleteRecycleEntry(state.data,input.id,input.revision,state.key,{confirm:input.confirm,permanent:input.permanent??false,legacyIdOnly:true});
+    await store.set(KEY, encode(data, state.key, state.salt));if(sessions.get(id)===state)state.data=data;return result;
   }
+  if(action==='recycleList'){const value=recycleView(state.data,state.key,{bin:true});return {...value,entries:value.entries.map(({password,totpSecret,notes,...rest})=>rest)};}
+  if(action==='recycleRead')return recycleRead(state.data,input.id,input.revision,state.key);
+  if(action==='recycleDelete'||action==='recycleRestore'){
+    const staged=action==='recycleDelete'?deleteRecycleEntry(state.data,input.id,input.revision,state.key,{confirm:input.confirm,permanent:input.permanent??false}):restoreRecycleEntry(state.data,input.id,input.revision,state.key,{confirm:input.confirm});
+    await store.set(KEY,encode(staged.data,state.key,state.salt));if(sessions.get(id)===state)state.data=staged.data;return staged.result;
+  }
+  if(action==='deleteGroup'||action==='recycleGroup'||action==='emptyRecycleBin')throw new Error('Group deletion and emptying a bin containing groups are unsupported in this entry-only slice.');
   if (action === 'exportEncrypted') return { document: await store.get(KEY, null) };
   if (action === 'exportKdbx') {
     const buffer = await exportKdbx(state.data,{ password: input.password,usePassword: input.usePassword,keyFileBase64: input.keyFileBase64 },input.options);

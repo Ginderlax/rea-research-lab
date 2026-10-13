@@ -1,0 +1,8 @@
+file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-recycle-bin-fix-independent-review/prepare.mjs:3
+const manifestBytes=await fs.readFile(path.join(stage,'manifest.json')),receiptBytes=await fs.readFile(path.join(stage,'validation.json'));assert.equal(hash(manifestBytes),'17e9757a0bf58173c433465b12bf2a10a62570b1b5e85bd38bad29c96b88f775');assert.equal(hash(receiptBytes),'316a97f3565823f007bd9a8e66167f453d249747bc06ffa14132fe7cfd07d4e5');const manifest=JSON.parse(manifestBytes),receipt=JSON.parse(receiptBytes);assert.equal(manifest.files.length,208);for(const r of manifest.files){const b=await fs.readFile(path.join(stage,r.path));assert.equal(b.length,r.bytes);assert.equal(hash(b),r.sha256);}
+                                                                                                                                                                                                                                                                                                                                                                                                                                                          ^
+
+TypeError: Cannot read properties of undefined (reading 'length')
+    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/keepass-recycle-bin-fix-independent-review/prepare.mjs:3:443
+
+Node.js v24.16.0

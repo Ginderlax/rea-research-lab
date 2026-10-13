@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "recorded_at_utc": "2026-10-12T15:44:58.939Z",
+  "scope": "ZIP compatibility, ZIP implementation and its tests; TAR/GZIP implementation and test results are recorded separately.",
+  "implementation_fingerprints": [
+    {
+      "path": "products/rea-studio/apps/archive/zip.mjs",
+      "bytes": 19141,
+      "sha256": "16f7fca85cbe81698b1621968bc5281f8e80723b46e27a0ef89028dc14f65b6e"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/zip.test.mjs",
+      "bytes": 13831,
+      "sha256": "f7732808c8e734fdfd400a3af56108c0c3e1c0a6abbed3141dda3b86d56cdc66"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/README.md",
+      "bytes": 7947,
+      "sha256": "2614ec2ace8bd471a5d6b2623c6f30a81cc5f4000d4f349e1c385feb374980c6"
+    }
+  ],
+  "format_reference": {
+    "path": ".local/archive-review/APPNOTE-6.3.10.txt",
+    "bytes": 174585,
+    "sha256": "0b993022a7d320a0bf704e6980bea36fafd17a6066ab994db0a0c16278a50cd6",
+    "title": "PKWARE .ZIP File Format Specification APPNOTE 6.3.10",
+    "status": "FINAL",
+    "revised": "2022-11-01",
+    "source_url": "https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT",
+    "retrieved_on": "2026-10-12",
+    "reviewed_sections": [
+      "4.3.9",
+      "4.3.14-16",
+      "4.4.6",
+      "4.4.19-24",
+      "4.5.3",
+      "4.5.5",
+      "4.6.9"
+    ],
+    "snapshot_is_local_ignored_artifact": true
+  },
+  "original_oracle": {
+    "product": "7-Zip Extra",
+    "version": "26.04",
+    "acquisition_record": "projects/08-7zip/acquisition.json",
+    "artifacts": [
+      {
+        "path": "projects/08-7zip/artifacts/7z2604-extra.7z",
+        "bytes": 1764616,
+        "sha256": "dc4b11d3399db18b063630137145f5585d8f7ac847bf3639bd1185d7d1f7cee0"
+      },
+      {
+        "path": "projects/08-7zip/artifacts/7zr.exe",
+        "bytes": 602624,
+        "sha256": "256feca8e274e5da655e2a284fabafd9f554365eb164862089dacd4e8276d282"
+      },
+      {
+        "path": "projects/08-7zip/artifacts/extra/x64/7za.exe",
+        "bytes": 1335808,
+        "sha256": "15d4c788c148e3677e2fc1c4a01f191fb6669eba4f6acf8a465f0f1a6f1e1260"
+      }
+    ],
+    "package_source_url": "https://github.com/ip7z/7zip/releases/download/26.04/7z2604-extra.7z",
+    "extractor_source_url": "https://github.com/ip7z/7zip/releases/download/26.04/7zr.exe",
+    "verification": "Pinned package and 7zr hashes checked; x64/7za.exe extracted from the pinned package and its exact bytes/hash compared to the retained executable before running t and x -so.",
+    "identity_limit": "Package digest equality to the publisher digest; no independent signature or reproducible-build claim."
+  },
+  "regression_fixtures": [
+    {
+      "name": "zip64DiskSentinels",
+      "path": ".local/archive-review/disk-sentinels.zip",
+      "bytes": 249,
+      "sha256": "935b85ec0f099c3569a9fd3c245aded1a5bfe5b8c7db488bbcc0e68d526547c5",
+      "embedded_in": "products/rea-studio/apps/archive/zip.test.mjs"
+    },
+    {
+      "name": "centralZip64SignedDescriptor",
+      "path": ".local/archive-review/central-only-zip64-descriptor.zip",
+      "bytes": 248,
+      "sha256": "f266a2a1ed6fd8a5cc5a5f2765058fd62299b0c74321ad430fef32abcf8431b1",
+      "embedded_in": "products/rea-studio/apps/archive/zip.test.mjs"
+    },
+    {
+      "name": "centralZip64UnsignedDescriptor",
+      "path": ".local/archive-review/central-only-zip64-unsigned-descriptor.zip",
+      "bytes": 244,
+      "sha256": "e782ce11c8c5db2e0a69972c445f56b3b21084defeccee46c1f7fac917935a68",
+      "embedded_in": "products/rea-studio/apps/archive/zip.test.mjs"
+    },
+    {
+      "name": "independentDotNetDosDate",
+      "path": ".local/archive-review/dos-date-dotnet.zip",
+      "bytes": 121,
+      "sha256": "939caa6f960aa7a949902b9359cde735f879ffb5866576a696f2311eda9aaf06",
+      "embedded_in": "products/rea-studio/apps/archive/zip.test.mjs"
+    }
+  ],
+  "corrections": [
+    "Resolve classic EOCD 0xffff disk sentinels from the ZIP64 end record before applying single-disk checks.",
+    "Read signed/unsigned 64-bit data descriptors when central ZIP64 size fields are used despite zero streaming local sizes.",
+    "Read DOS dates as local wall time and write supplied dates with local DOS fields while preserving their exact instant in NTFS extras."
+  ],
+  "checks": {
+    "command": "node --test apps/archive/zip.test.mjs apps/archive/app.test.mjs apps/archive/app.integration.test.mjs",
+    "working_directory": "products/rea-studio",
+    "successful_result": {
+      "tests": 15,
+      "passed": 15,
+      "failed": 0,
+      "skipped": 0
+    },
+    "oracles": [
+      "Preserved original 7-Zip validates frozen ZIP64 disk-sentinel, signed/unsigned central-only ZIP64 descriptor and .NET DOS-date fixtures and extracted payloads.",
+      "Preserved original 7-Zip validates generated classic/ZIP64 and descriptor combinations, and its separately generated Store/Deflate ZIPs replay through the reader.",
+      "Windows .NET reads generated ZIPs and independently creates ZIPs read by this parser.",
+      "Windows .NET independently creates/extracts a DOS-date archive; application extraction preserves the same filesystem modification instant.",
+      "Portable DOS-date regression runs in a child process with America/New_York timezone."
+    ],
+    "initial_setup_failure": "First regression run passed14/15; the new .NET test omitted loading System.IO.Compression. Added the assembly load and reran this archive selection successfully.",
+    "diff_check": "git diff --check succeeded for zip.mjs, zip.test.mjs and README.md.",
+    "combined_product_suite_run": false
+  },
+  "runtime": {
+    "node": "v24.16.0",
+    "platform": "win32",
+    "architecture": "x64"
+  },
+  "bounds": {
+    "max_entries": 10000,
+    "max_file_bytes": 16777216,
+    "max_uncompressed_total_bytes": 67108864,
+    "max_zip_input_bytes": 71303168
+  },
+  "limits": [
+    "These ZIP64 layout checks remain within the stated local size limits and do not establish support for multi-gigabyte files.",
+    "DOS-only timestamps have no stored timezone; local interpretation cannot recover the original producer timezone.",
+    "Creation dates parsed from NTFS extras are reported but are not restored to the filesystem.",
+    "Independent Windows oracles are skipped on other platforms.",
+    "No exhaustive interoperability, adversarial review, compression-performance or complete 7-Zip parity claim."
+  ]
+}

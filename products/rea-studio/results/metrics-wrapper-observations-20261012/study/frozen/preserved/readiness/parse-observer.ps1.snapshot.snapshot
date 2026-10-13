@@ -1,0 +1,8 @@
+param([Parameter(Mandatory=$true)][string]$SourceFile)
+$ErrorActionPreference = 'Stop'
+$parseErrors = $null
+[System.Management.Automation.Language.Parser]::ParseFile($SourceFile, [ref]$null, [ref]$parseErrors) > $null
+if ($parseErrors.Count) {
+  $parseErrors | ForEach-Object { [Console]::Error.WriteLine($_.Message) }
+  exit 1
+}

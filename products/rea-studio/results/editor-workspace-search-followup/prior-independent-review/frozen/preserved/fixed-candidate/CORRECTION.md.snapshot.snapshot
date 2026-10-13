@@ -1,0 +1,7 @@
+# Search generation correction
+
+The immutable prior candidate is `../editor-search-next`, manifest44e8efd72f09c7cc5caa598f43dbe099dd73982477249ecfed2fddfb2a26a7a6,140 artifacts. Its formal37/37 focused pass and20-query/465-position engine comparison remain evidence for that prior source epoch; they are not rebound to this candidate. Its review acceptance is explicitly false.
+
+The prior result handler checked the originating search generation after `open()` returned, but `open()` had already published an awaited file response. This correction carries the originating search generation into `open()` and checks it before changing the active file, document map or editor. Regular file opens retain their separate opening-generation guard. New finite regression cases hold a result read across changed query options or a newer completed search while a different file/draft remains active.
+
+The query option check now defaults `matchCase` only when omitted; explicit nonboolean values, including null, are refused. The original query corpus is replayed for regression verification, not presented as a fresh held-out evaluation. All other runtime bytes are checked against the preceding frozen epoch. This is a work-only corrected candidate awaiting independent acceptance; full search/documented-feature parity and universal superiority remain false.

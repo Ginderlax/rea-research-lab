@@ -1,0 +1,11 @@
+{
+  "schema": "rea-owned-tool-diagnostic-transcription/v1",
+  "capture": "Explicit transcription of tool results; not child-process raw logs",
+  "applicationFailureClaim": false,
+  "diagnostics": [
+    {"operation": "Initial proof-path inventory", "reason": "A path was searched from the workspace root instead of the lab root", "observed": "rg: products/rea-studio/results: The system cannot find the path specified. (os error 3)", "correction": "Use the lab-root working directory for repository reads"},
+    {"operation": "Guessed source-file searches", "observed": "rg: scripts/verify-requirements.mjs: The system cannot find the file specified. (os error 2)\nrg: products/rea-studio/apps/notes/results/notebook-trash-followup/publication-plan/build.mjs.snapshot: The system cannot find the file specified. (os error 2)", "correction": "Read actual published manifests and directory census rather than assumed names"},
+    {"operation": "Read still-running final test receipt", "reason": "Receipt is written on child close; the child was still active", "observed": "ENOENT opening tests/2026-10-13T01-30-41.496Z/validation.json", "correction": "Wait for owned child completion; no test failure implied"},
+    {"operation": "First installed-source finalizer", "observed": "ERR_UNSUPPORTED_ESM_URL_SCHEME: Only URLs with a scheme in: file, data, and node are supported by the default ESM loader. On Windows, absolute paths must be valid file:// URLs. Received protocol 'c:'", "exactFailedSource": "finalize.windows-path-failed.mjs.snapshot", "correction": "Convert the absolute installed module path using pathToFileURL before dynamic import", "verifierExecuted": false}
+  ]
+}

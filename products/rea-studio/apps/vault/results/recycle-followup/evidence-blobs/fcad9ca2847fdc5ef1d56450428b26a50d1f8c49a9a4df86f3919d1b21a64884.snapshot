@@ -1,0 +1,55 @@
+param([Parameter(Mandatory=$true)][string]$Config)
+$ErrorActionPreference='Stop'
+[Console]::OutputEncoding=New-Object Text.UTF8Encoding -ArgumentList $false
+$cfg=Get-Content -LiteralPath $Config -Raw | ConvertFrom-Json
+$oracle=[IO.Path]::GetFullPath($cfg.oracle)
+$hash=(Get-FileHash -LiteralPath $oracle -Algorithm SHA256).Hash
+if($hash -ne '04D29636C393F0C1FC99FF739295494BE3ADEFDED93271E44591E8E300225A5A'){throw 'Exact KeePass2.61.1 release hash mismatch before assembly load.'}
+[void][Reflection.Assembly]::LoadFrom($oracle)
+function Id([string]$value){$hex=$value.Replace('-','');if($hex -notmatch '^[0-9a-f]{32}$'){throw 'Only canonical fixture UUIDs accepted.'};$bytes=New-Object byte[] 16;for($i=0;$i -lt 16;$i++){$bytes[$i]=[Convert]::ToByte($hex.Substring($i*2,2),16)};return New-Object KeePassLib.PwUuid -ArgumentList (,$bytes)}
+function IdText($value){$s=[BitConverter]::ToString($value.UuidBytes).Replace('-','').ToLowerInvariant();return $s.Substring(0,8)+'-'+$s.Substring(8,4)+'-'+$s.Substring(12,4)+'-'+$s.Substring(16,4)+'-'+$s.Substring(20)}
+function Utc([string]$value){return [DateTime]::Parse($value,[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()}
+function Iso($value){return $value.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ',[Globalization.CultureInfo]::InvariantCulture)}
+function Secret($e,[string]$name,[string]$value,[bool]$protected){$e.Strings.Set($name,(New-Object KeePassLib.Security.ProtectedString -ArgumentList $protected,$value))}
+$key=New-Object KeePassLib.Keys.CompositeKey;$key.AddUserKey((New-Object KeePassLib.Keys.KcpPassword -ArgumentList ([string]$cfg.password)))
+$db=New-Object KeePassLib.PwDatabase;$connection=[KeePassLib.Serialization.IOConnectionInfo]::FromPath([string]$cfg.database)
+$calls=[ordered]@{assemblyLoads=1;newDatabase=0;openDatabase=0;ensureBin=0;addEntry=0;removeEntry=0;touch=0;tombstoneConstructor=0;saveDatabase=0;sourceComposedDelete=0;sourceComposedRestore=0;clockAssignments=0;originalGUI=0}
+if($cfg.mode -eq 'create'){
+ $db.New($connection,$key);$calls.newDatabase++;$db.RootGroup.Name='Root';$db.RootGroup.Uuid=Id '00000000-0000-0000-0000-000000000001'
+ $parent=New-Object KeePassLib.PwGroup -ArgumentList $true,$true,'Parent',([KeePassLib.PwIcon]::Folder);$parent.Uuid=Id '00000000-0000-0000-0000-000000000002';$db.RootGroup.AddGroup($parent,$true)
+ $child=New-Object KeePassLib.PwGroup -ArgumentList $true,$true,'Child',([KeePassLib.PwIcon]::Folder);$child.Uuid=Id '00000000-0000-0000-0000-000000000003';$parent.AddGroup($child,$true)
+ $e=New-Object KeePassLib.PwEntry -ArgumentList $false,$false;$e.Uuid=Id '11111111-2222-3333-4444-555555555555';$child.AddEntry($e,$true);$calls.addEntry++
+ foreach($pair in @(@('Title','Synthetic recycle'),@('UserName','only-synthetic-user'),@('Password','only-synthetic-secret'),@('URL','https://example.invalid/recycle'),@('Notes','Synthetic notes'),@('Extra.Secret','only-synthetic-extra'))){Secret $e $pair[0] $pair[1] ($pair[0] -in @('Password','Extra.Secret'))}
+ $e.CreationTime=Utc '2024-01-01T00:00:00Z';$e.LastModificationTime=Utc '2024-01-02T00:00:00Z';$e.LastAccessTime=$e.CreationTime;$e.LocationChanged=$e.CreationTime;$e.UsageCount=5;$e.CreateBackup($null)
+ $e.CustomData.Set('original.custom','retained');$e.Binaries.Set('binary.bin',(New-Object KeePassLib.Security.ProtectedBinary -ArgumentList $true,([byte[]](0,1,128,255))));$e.Tags.Add('retained-tag')
+ $engine=New-Object KeePassLib.Cryptography.KeyDerivation.AesKdf;$db.KdfParameters=$engine.GetDefaultParameters();$db.KdfParameters.SetUInt64('R',[uint64]100)
+ if($null -ne $cfg.enabled){$db.RecycleBinEnabled=[bool]$cfg.enabled}
+}elseif($cfg.mode -eq 'read'){$db.Open($connection,$key,$null);$calls.openDatabase++}else{throw 'Unsupported synthetic mode.'}
+$default=[ordered]@{enabled=$db.RecycleBinEnabled;collapse=[KeePass.Program]::Config.Defaults.RecycleBinCollapse;trashIcon=[int][KeePassLib.PwIcon]::TrashBin;defaultTime=Iso ([KeePassLib.PwDefs]::DtDefaultNow)}
+$binInitial=$null
+foreach($op in @($cfg.operations)){
+ if($null -eq $op){continue};$entry=$db.RootGroup.FindEntry((Id ([string]$op.id)),$true);if($null -eq $entry){throw 'Fixture entry absent.'}
+ $bin=$db.RootGroup.FindGroup($db.RecycleBinUuid,$true)
+ if($op.action -eq 'delete'){
+  $calls.sourceComposedDelete++;$parent=$entry.ParentGroup;$purge=(!$db.RecycleBinEnabled -or [bool]$op.permanent -or ($null -ne $bin -and ($parent -eq $bin -or $parent.IsContainedIn($bin))))
+  if(!$parent.Entries.Remove($entry)){throw 'Original removal failed.'};$calls.removeEntry++
+  if($purge){$db.DeletedObjects.Add((New-Object KeePassLib.PwDeletedObject -ArgumentList $entry.Uuid,(Utc $op.now)));$calls.tombstoneConstructor++}
+  else{
+   if($null -eq $bin){$method=[KeePass.Forms.MainForm].GetMethod('EnsureRecycleBin',[Reflection.BindingFlags]'NonPublic,Static');$arguments=[object[]]@($null,$db,$false);[void]$method.Invoke($null,$arguments);$bin=$arguments[0];$calls.ensureBin++;$binInitial=[ordered]@{uuid=IdText $bin.Uuid;name=$bin.Name;icon=[int]$bin.IconId;auto=$bin.EnableAutoType;search=$bin.EnableSearching;expanded=$bin.IsExpanded;expires=$bin.Expires;expiry=Iso $bin.ExpiryTime}}
+   $bin.AddEntry($entry,$true,$true);$calls.addEntry++;$entry.PreviousParentGroup=$parent.Uuid;$entry.Touch($false);$calls.touch++
+   # Deterministic temporal assignments are source-composed fixture adapters;
+   # actual released AddEntry/Touch behavior and call counts remain recorded.
+   $stamp=Utc $op.now;$entry.LocationChanged=$stamp;$entry.LastAccessTime=$stamp;$calls.clockAssignments+=2
+   $group=$bin;while($null -ne $group){$group.LastAccessTime=$stamp;$calls.clockAssignments++;$group=$group.ParentGroup}
+   if($calls.ensureBin -gt 0){$bin.CreationTime=$stamp;$bin.LastModificationTime=$stamp;$bin.LocationChanged=$stamp;$bin.ExpiryTime=$stamp;$calls.clockAssignments+=4}
+  }
+ }elseif($op.action -eq 'restore'){
+  $calls.sourceComposedRestore++;$previous=$db.RootGroup.FindGroup($entry.PreviousParentGroup,$true);if($entry.PreviousParentGroup.IsZero -or $null -eq $previous -or $previous -eq $entry.ParentGroup){throw 'Original previous-parent guard rejects.'};$parent=$entry.ParentGroup;if(!$parent.Entries.Remove($entry)){throw 'Original removal failed.'};$calls.removeEntry++;$previous.AddEntry($entry,$true,$true);$calls.addEntry++;$entry.PreviousParentGroup=$parent.Uuid;$entry.LocationChanged=Utc $op.now;$calls.clockAssignments++
+ }else{throw 'Unsupported synthetic operation.'}
+}
+if($cfg.save -ne $false){$db.Save($null);$calls.saveDatabase++;$db.Close();$db=New-Object KeePassLib.PwDatabase;$db.Open($connection,$key,$null);$calls.openDatabase++}
+function GroupRows($g){$result=@([ordered]@{id=IdText $g.Uuid;parent=if($null -ne $g.ParentGroup){IdText $g.ParentGroup.Uuid}else{$null};name=$g.Name;auto=$g.EnableAutoType;search=$g.EnableSearching;icon=[int]$g.IconId;expanded=$g.IsExpanded;access=Iso $g.LastAccessTime;usage=[string]$g.UsageCount});foreach($child in $g.Groups){$result+=@(GroupRows $child)};return $result}
+function EntryRow($e){$fields=[ordered]@{};foreach($pair in $e.Strings){$fields[$pair.Key]=[ordered]@{value=$pair.Value.ReadString();protected=$pair.Value.IsProtected}};return [ordered]@{id=IdText $e.Uuid;parent=IdText $e.ParentGroup.Uuid;previous=IdText $e.PreviousParentGroup;modified=Iso $e.LastModificationTime;access=Iso $e.LastAccessTime;location=Iso $e.LocationChanged;usage=[string]$e.UsageCount;history=[int]$e.History.UCount;fields=$fields}}
+$entries=@();foreach($e in $db.RootGroup.GetEntries($true)){$entries+=@(EntryRow $e)}
+$deleted=@();foreach($d in $db.DeletedObjects){$deleted+=@([ordered]@{id=IdText $d.Uuid;time=Iso $d.DeletionTime})}
+$value=[ordered]@{release='2.61.1';defaults=$default;binInitial=$binInitial;enabled=$db.RecycleBinEnabled;binUuid=IdText $db.RecycleBinUuid;groups=@(GroupRows $db.RootGroup);entries=$entries;deleted=$deleted;calls=$calls;scope='Actual original assembly/library/private static bin helper plus source-composed delete/restore orchestration and deterministic clock assignments; original GUI0.'};$db.Close();$value|ConvertTo-Json -Depth 35 -Compress

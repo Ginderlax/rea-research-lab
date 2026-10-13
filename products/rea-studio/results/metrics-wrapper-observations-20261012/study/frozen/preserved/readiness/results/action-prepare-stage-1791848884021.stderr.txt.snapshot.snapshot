@@ -1,0 +1,9 @@
+file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-wrapper-measurement-next/prepare-stage.mjs:26
+const preservation={schemaVersion:1,createdAt:new Date().toISOString(),wrapperStage:wrapper,latestMixedStudy:mixed,copies,adaptations,candidateReceiptSHA256:sha(proofBytes),candidateManifestSHA256:wrapper.manifestSHA256,oldReadinessSHA256:sha(oldReadinessBytes),oldManifestSHA256:sha(oldManifestBytes),productionPath:proof.productionBaseline.path,productionSHA256:proof.productionBaseline.sha256,exactSevenWorkloadsAnd14Files:true,new66CorrectnessFixtureNotAWorkload:true,oldFrozenStagesSourceStable:true,timingMeasurementRun:false,memoryMeasurementRun:false,profileRun:false};await fs.writeFile(safe(here,'preservation.json'),JSON.stringify(preservation,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify({status:'prepared',frozenWrapperSnapshotFiles:87,mixedStudySnapshotFiles:2218,activeSourceAndFixtureCopies:copies.length-87-2218,manifestSHA256:sha(await fs.readFile(safe(here,'memory-preflight.control.json'))),measurementRun:false}));
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        ^
+
+RangeError: Invalid string length
+    at JSON.stringify (<anonymous>)
+    at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/metrics-wrapper-measurement-next/prepare-stage.mjs:26:633
+
+Node.js v24.16.0

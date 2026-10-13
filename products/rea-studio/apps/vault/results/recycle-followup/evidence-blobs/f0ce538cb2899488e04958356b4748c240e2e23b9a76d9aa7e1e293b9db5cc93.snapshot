@@ -1,0 +1,2 @@
+import fs from 'node:fs/promises';import path from 'node:path';import{original,password}from'./products/rea-studio/apps/vault/recycle-harness.mjs';
+const root=import.meta.dirname,dir=path.join(root,'.local/default-probe-'+new Date().toISOString().replaceAll(':','-'));await fs.mkdir(dir,{recursive:true});const value=await original(dir,{mode:'create',database:path.join(dir,'synthetic.kdbx')});await fs.writeFile(path.join(dir,'observation.json'),JSON.stringify(value,null,2)+'\n');console.log(JSON.stringify({dir,defaults:value.defaults,calls:value.calls}));

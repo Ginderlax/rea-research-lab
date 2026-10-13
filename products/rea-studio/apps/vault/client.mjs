@@ -81,6 +81,20 @@ export async function render(root, api) {
         button(row,'Open entry',async () => { const generation=++selectionGeneration,result=await api('read',{ id: item.id });if(!viewCurrent()||generation!==selectionGeneration)return; selected=result.entry; editor(); }); results.append(row);
       }
     }
+    const binPanel=node('section',undefined,'card');gate.append(binPanel);let binGeneration=0;
+    async function binList(){const request=++binGeneration,value=await api('recycleList',{});if(!viewCurrent()||request!==binGeneration)return;binPanel.replaceChildren(node('h3','Recycle bin'),node('p',value.enabled?'Deleted entries remain encrypted here until permanently deleted.':'Recycling is disabled in this imported database. Existing bin entries can still be restored.','muted'));
+      button(binPanel,'Close recycle bin',async()=>{binGeneration++;binPanel.replaceChildren();});
+      if(!value.entries.length)binPanel.append(node('p','The recycle bin is empty.'));
+      for(const item of value.entries){const row=node('section',undefined,'card');row.append(node('strong',item.title),node('p',item.canRestorePreviousGroup?'Previous group: '+item.previousGroup:'Previous group unavailable.'));binPanel.append(row);
+        const binCurrent=()=>viewCurrent()&&request===binGeneration&&row.parentElement===binPanel;
+        button(row,'Preview recycled entry',async()=>{if(!binCurrent())return;const result=await api('recycleRead',{id:item.id,revision:item.recycleRevision});if(!binCurrent())return;const preview=node('section',undefined,'card');row.append(preview);for(const[label,key]of[['Title','title'],['Username','username'],['URL','url'],['Notes','notes']]){const value=field(preview,label,key==='notes'?'textarea':'text',result.entry[key]);value.readOnly=true;}const secret=field(preview,'Recycled password','password',result.entry.password);secret.readOnly=true;button(preview,'Show / hide recycled password',async()=>{if(binCurrent())secret.type=secret.type==='password'?'text':'password';});});
+        const confirmRestore=field(row,'Confirm restoring this entry to its previous group','checkbox');
+        const restore=button(row,'Restore recycled entry',async()=>{if(!binCurrent())return;await api('recycleRestore',{id:item.id,revision:item.recycleRevision,confirm:confirmRestore.checked});if(!binCurrent())return;await list();if(binCurrent())await binList();});restore.disabled=!item.canRestorePreviousGroup;
+        const confirmDelete=field(row,'Confirm permanent deletion of this recycled entry','checkbox');
+        button(row,'Permanently delete recycled entry',async()=>{if(!binCurrent())return;await api('recycleDelete',{id:item.id,revision:item.recycleRevision,confirm:confirmDelete.checked,permanent:true});if(!binCurrent())return;await list();if(binCurrent())await binList();});
+      }
+    }
+    button(gate,'Show recycle bin',binList);
     button(gate,'Search',list); await list();if(!viewCurrent())return;
     const edit = node('section',undefined,'card'); content.append(edit);
     let editorVersion=0;
@@ -129,7 +143,7 @@ export async function render(root, api) {
         const code = node('p','', 'status'); edit.append(code);
         button(edit,'Generate one-time code',async () => {if(!current())return; const value = await api('totp',{ id: entryId });if(!current())return; code.textContent = `${value.code} · ${value.remainingSeconds} seconds remaining`; });
         const remove = field(edit,'Confirm entry deletion','checkbox');
-        button(edit,'Delete entry',async () => {if(!current())return;const captured=captureDraft(),request=++mutationGeneration;await api('delete',{id:entryId,confirm:remove.checked});if(!pendingCurrent(request))return;const retained=draftCurrent(captured)?undefined:draftValues();selectionGeneration++; selected = null;editor(retained); await list();if(retained)status.textContent='Entry deleted. Your newer draft is retained as a new entry.'; });
+        button(edit,'Delete entry',async () => {if(!current())return;const captured=captureDraft(),request=++mutationGeneration;const result=await api('delete',{id:entryId,confirm:remove.checked,revision:selected.recycleRevision});if(!pendingCurrent(request))return;const retained=draftCurrent(captured)?undefined:draftValues();selectionGeneration++; selected = null;editor(retained); await list();if(retained)status.textContent='Entry removed. Your newer draft is retained as a new entry.';else status.textContent=result?.recycled?'Entry moved to the recycle bin.':'Entry permanently deleted.'; });
       }
     }
     editor();

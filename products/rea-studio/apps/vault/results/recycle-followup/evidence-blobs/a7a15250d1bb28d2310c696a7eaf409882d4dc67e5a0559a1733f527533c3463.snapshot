@@ -1,0 +1,154 @@
+{
+  "schema": "rea-vault-recycle-bin-generation-fix-validation/v1",
+  "completedAt": "2026-10-13T00:33:53.714Z",
+  "status": "frozen-awaiting-independent-ui-review",
+  "productionModified": false,
+  "earlierFrozenEvidenceModified": false,
+  "change": {
+    "module": "products/rea-studio/apps/vault/client.mjs",
+    "from": "await list();if(viewCurrent())await binList();",
+    "to": "await list();if(binCurrent())await binList();",
+    "occurrences": 2,
+    "applicationChangesOutsideTheseGuards": false,
+    "newBinInteractionCounter": false
+  },
+  "runtime": [
+    {
+      "path": "products/rea-studio/apps/vault/client.mjs",
+      "bytes": 20650,
+      "sha256": "85661f40f4176feeb8edf16d0dba77ec674c5123c1baf60a8fce2233d566f129",
+      "priorSha256": "cd5005a4e7a027851998d79681842713a6f904988a9b4019b43d112c4dd00ae8",
+      "unchanged": false
+    },
+    {
+      "path": "products/rea-studio/apps/vault/server.mjs",
+      "bytes": 16483,
+      "sha256": "ac6db70cc12c5af760b6940af76b2f4dfdbc1d7921a6ee12edd73e7ed524ddbc",
+      "priorSha256": "ac6db70cc12c5af760b6940af76b2f4dfdbc1d7921a6ee12edd73e7ed524ddbc",
+      "unchanged": true
+    },
+    {
+      "path": "products/rea-studio/apps/vault/recycle.mjs",
+      "bytes": 9424,
+      "sha256": "edcab6bd77e21bbc50924f593b88f3073860ff25d19db84bb234a5a3088061cb",
+      "priorSha256": "edcab6bd77e21bbc50924f593b88f3073860ff25d19db84bb234a5a3088061cb",
+      "unchanged": true
+    },
+    {
+      "path": "products/rea-studio/apps/vault/kdbx.mjs",
+      "bytes": 34006,
+      "sha256": "fbf1f31af3abd79993b87b78fa6608b939a95c69a8be8c3fa286d3b68b165f5e",
+      "priorSha256": "fbf1f31af3abd79993b87b78fa6608b939a95c69a8be8c3fa286d3b68b165f5e",
+      "unchanged": true
+    },
+    {
+      "path": "products/rea-studio/apps/vault/history.mjs",
+      "bytes": 11850,
+      "sha256": "c902e684ab38cb9d9ef421826e9091422a7843b2b85ba689d2a12690e78b5f26",
+      "priorSha256": "c902e684ab38cb9d9ef421826e9091422a7843b2b85ba689d2a12690e78b5f26",
+      "unchanged": true
+    },
+    {
+      "path": "products/rea-studio/apps/vault/xml.mjs",
+      "bytes": 5965,
+      "sha256": "0adfa8ec93cc2cffe7a256a94b896fd9bd815530de79769dccba4762c3c1c0bd",
+      "priorSha256": "0adfa8ec93cc2cffe7a256a94b896fd9bd815530de79769dccba4762c3c1c0bd",
+      "unchanged": true
+    }
+  ],
+  "sourceBoundRun": {
+    "path": "runs/final-local-frontend",
+    "validation": {
+      "bytes": 15784,
+      "sha256": "a805abc72813d424d085e512bcc4d631ef56d84dbfa81164b41e2e0ab130b43f"
+    },
+    "tests": 38,
+    "pass": 38,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "sourceStable": true,
+    "sourceFingerprintCount": 43,
+    "scope": "Actual candidate client/server through owned DOM model and deterministic held transport; no original/HTTP/GUI execution.",
+    "originalAssemblyLoads": 0,
+    "actualHTTPHosts": 0,
+    "actualBrowserChecks": 0
+  },
+  "caseAccounting": {
+    "previousHistorySelectionDraftLifecycleGroups": 25,
+    "previousRecycleDOMGroups": 4,
+    "unchangedIndependentBinBoundaryBodies": 5,
+    "newFrontendControlGroups": 4,
+    "reviewerOriginalFailuresReplayedPassing": 3,
+    "reviewerExistingControlsReplayedPassing": 2
+  },
+  "baseline": {
+    "stageRoot": "work/keepass-recycle-next",
+    "strictArtifactCount": 546,
+    "manifestSha256": "769523b00c626762f18aec86ee8df8f1bb317ff4bbc8147a09a03af44161c100",
+    "receiptSha256": "8911d007286682869c3346319e17e58342a730ba5af995d7af32c1faa684b0e1",
+    "productionFiveUnchanged": true,
+    "oldStageAuthenticatedBeforeAfter": true,
+    "preservation": "Exact manifest reference and selected snapshots; not a recursive historical copy or rebasing",
+    "historicalOriginalAssemblyLoads": 38,
+    "historicalActualHostProcesses": 9,
+    "historicalTests": 68,
+    "historicalEvidenceNotCurrentClientBehavior": true
+  },
+  "independentReview": {
+    "root": "work/keepass-recycle-independent-review",
+    "manifestSha256": "f7e3a29b6ee8dc756b96de43473123f9b3d30f7926d1b536909ab2ea46b55815",
+    "receiptSha256": "6f142bc4a2c6e7df42b00bc23d586924684cbb768ff326f40434382a3d52d36c",
+    "artifactCount": 61,
+    "currentCandidateReviewPending": true,
+    "oldReviewOriginalAndBrowserCountsNotNew": false
+  },
+  "preservedFailures": [
+    {
+      "path": "prior-independent-failures",
+      "scope": "Exact independently failed three UI assertions plus two controls"
+    },
+    {
+      "path": "failures/preparation-v1",
+      "scope": "Directory-as-file copy setup failure; tool-console transcription"
+    },
+    {
+      "path": "failures/same-generation-setup-v1",
+      "scope": "Owned active-card row selector mistake; tool-console transcription"
+    },
+    {
+      "path": "runs/guard-only-same-generation",
+      "scope": "Invalid stale-token preview premise before safety assertion; exact raw/source0/1"
+    },
+    {
+      "path": "runs/old546-same-generation",
+      "scope": "Same invalid diagnostic against exact original-stage client; exact raw/source0/1"
+    }
+  ],
+  "interruption": {
+    "path": "INTERRUPTED-ATTEMPT.json",
+    "incompleteAttempt": true,
+    "implementationFailureInvented": false,
+    "actualPlatformErrorTimeUnknown": true
+  },
+  "licensing": {
+    "sourceAssistedOriginal": "KeePass 2.61.1",
+    "license": "GPL-2.0-or-later",
+    "bindings": "prior-stage-binding/NOTICE.md.snapshot and immutable original-stage source/license manifest",
+    "nativeOriginalCarriersCopied": 0,
+    "firstBytesMZorPKFiles": 0
+  },
+  "limits": {
+    "fullProductParity": false,
+    "securityParity": false,
+    "superiority": false,
+    "originalGUIExecutions": 0,
+    "newTimingOrMemoryMeasurements": false,
+    "defaultKdbx40PreviousParentLossAndConditional41RetentionUnchanged": true,
+    "entryOnlyScopeUnchanged": true
+  },
+  "cleanup": {
+    "ownedChildrenHostsBrowserRunning": 0,
+    "stageLocalSyntheticObservationsExcludedFromFrozenPublicInventory": true
+  }
+}

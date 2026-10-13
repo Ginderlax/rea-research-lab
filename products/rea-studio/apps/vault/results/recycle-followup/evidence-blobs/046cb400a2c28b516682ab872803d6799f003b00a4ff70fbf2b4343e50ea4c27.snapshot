@@ -1,0 +1,423 @@
+TAP version 13
+# Subtest: cleanup invalidates a held history preview and prevents private fields or an owned idle timer from republishing
+ok 1 - cleanup invalidates a held history preview and prevents private fields or an owned idle timer from republishing
+  ---
+  duration_ms: 140.7827
+  type: 'test'
+  ...
+# Subtest: cleanup during held post-Restore read cannot resurrect selection, secret fields or an old timer over a reopened view
+ok 2 - cleanup during held post-Restore read cannot resurrect selection, secret fields or an old timer over a reopened view
+  ---
+  duration_ms: 181.0779
+  type: 'test'
+  ...
+# Subtest: the active view idle callback still locks and clears its own editor after a disposal-safe reopen
+ok 3 - the active view idle callback still locks and clears its own editor after a disposal-safe reopen
+  ---
+  duration_ms: 139.9692
+  type: 'test'
+  ...
+# Subtest: each supported editable value changed before Restore refuses the effect without relying on input events
+ok 4 - each supported editable value changed before Restore refuses the effect without relying on input events
+  ---
+  duration_ms: 807.7811
+  type: 'test'
+  ...
+# Subtest: a draft typed while the post-Restore read is held retains editor fields and saves to the same entry
+ok 5 - a draft typed while the post-Restore read is held retains editor fields and saves to the same entry
+  ---
+  duration_ms: 84.6334
+  type: 'test'
+  ...
+# Subtest: new-entry Save response retains the subsequent draft and its committed identity for the next Save
+ok 6 - new-entry Save response retains the subsequent draft and its committed identity for the next Save
+  ---
+  duration_ms: 78.6954
+  type: 'test'
+  ...
+# Subtest: typing and reverting values while Restore is held still preserves the active editor through the input revision
+ok 7 - typing and reverting values while Restore is held still preserves the active editor through the input revision
+  ---
+  duration_ms: 74.4136
+  type: 'test'
+  ...
+# Subtest: a delayed Delete response retains newly typed values as a new draft with no deleted identity
+ok 8 - a delayed Delete response retains newly typed values as a new draft with no deleted identity
+  ---
+  duration_ms: 73.2828
+  type: 'test'
+  ...
+# Subtest: a delayed generated-password response cannot overwrite a newer explicitly typed password
+ok 9 - a delayed generated-password response cannot overwrite a newer explicitly typed password
+  ---
+  duration_ms: 59.9233
+  type: 'test'
+  ...
+# Subtest: automatic changed edit preserves prior version; no-op touches access and usage without history or mtime
+ok 10 - automatic changed edit preserves prior version; no-op touches access and usage without history or mtime
+  ---
+  duration_ms: 12.7171
+  type: 'test'
+  ...
+# Subtest: count, size, unlimited limits and oldest modification time preserve ordered survivors
+ok 11 - count, size, unlimited limits and oldest modification time preserve ordered survivors
+  ---
+  duration_ms: 13.9235
+  type: 'test'
+  ...
+# Subtest: restore keeps current location, history and UUID while restoring metadata and selected content
+ok 12 - restore keeps current location, history and UUID while restoring metadata and selected content
+  ---
+  duration_ms: 11.3776
+  type: 'test'
+  ...
+# Subtest: confirmation, stale selections, bad indices and cross-key tokens reject without mutation; explicit read is a copy
+ok 13 - confirmation, stale selections, bad indices and cross-key tokens reject without mutation; explicit read is a copy
+  ---
+  duration_ms: 4.8425
+  type: 'test'
+  ...
+# Subtest: malformed history, nested revisions, duplicate fields, bad attachment refs and combined bound reject before persistence
+ok 14 - malformed history, nested revisions, duplicate fields, bad attachment refs and combined bound reject before persistence
+  ---
+  duration_ms: 285.1653
+  type: 'test'
+  ...
+# Subtest: 1000 final revisions may prune one pending copy; unlimited overflow and late-year sentinel prune reject
+ok 15 - 1000 final revisions may prune one pending copy; unlimited overflow and late-year sentinel prune reject
+  ---
+  duration_ms: 587.2069
+  type: 'test'
+  ...
+# Subtest: original release direct backup and maintenance replay match native edits, metadata, no-op and oldest pruning
+ok 16 - original release direct backup and maintenance replay match native edits, metadata, no-op and oldest pruning
+  ---
+  duration_ms: 1697.436
+  type: 'test'
+  ...
+# Subtest: original RestoreFromBackup copies old content and metadata while retaining live history/location
+ok 17 - original RestoreFromBackup copies old content and metadata while retaining live history/location
+  ---
+  duration_ms: 1523.1609
+  type: 'test'
+  ...
+# Subtest: original GetSize byte-accounting covers Unicode, protected and empty binaries, Auto-Type and unusual tag trimming
+ok 18 - original GetSize byte-accounting covers Unicode, protected and empty binaries, Auto-Type and unusual tag trimming
+  ---
+  duration_ms: 1982.0753
+  type: 'test'
+  ...
+# Subtest: original history settings boundary count0 and exact byte cutoff agree with candidate
+ok 19 - original history settings boundary count0 and exact byte cutoff agree with candidate
+  ---
+  duration_ms: 1835.0978
+  type: 'test'
+  ...
+# Subtest: public entry captures input before queue awaits and rejects failed storage without altering current/history
+ok 20 - public entry captures input before queue awaits and rejects failed storage without altering current/history
+  ---
+  duration_ms: 49.4986
+  type: 'test'
+  ...
+# Subtest: queued input is captured while persistence is held; lock waits for restored-state publication
+ok 21 - queued input is captured while persistence is held; lock waits for restored-state publication
+  ---
+  duration_ms: 91.1997
+  type: 'test'
+  ...
+# Subtest: unsafe own keys remain data, inherited/accessor inputs reject, and byte/structure bounds fail before store changes
+ok 22 - unsafe own keys remain data, inherited/accessor inputs reject, and byte/structure bounds fail before store changes
+  ---
+  duration_ms: 49.6078
+  type: 'test'
+  ...
+# REA_KEEPASS_HISTORY_ORIGINAL {"originalProcessExecutions":14,"guiExecutions":0,"detail":"C:\\\\Users\\\\evanh\\\\Documents\\\\Codex\\\\2026-10-12\\\\go\\\\work\\\\keepass-recycle-next\\\\.local\\\\vault-history-fixtures\\\\55128\\\\observations\\\\history-original.json"}
+# Subtest: disk HTTP edit/history/confirmed restore survive genuine process restart and release opens native export
+ok 23 - disk HTTP edit/history/confirmed restore survive genuine process restart and release opens native export
+  ---
+  duration_ms: 1662.7579
+  type: 'test'
+  ...
+# Subtest: master-key rotation preserves history through restart, invalidates old private selection token and rejects old password
+ok 24 - master-key rotation preserves history through restart, invalidates old private selection token and rejects old password
+  ---
+  duration_ms: 604.4321
+  type: 'test'
+  ...
+# REA_KEEPASS_HISTORY_HTTP {"hostProcesses":5,"originalProcessExecutions":1,"detail":"C:\\\\Users\\\\evanh\\\\Documents\\\\Codex\\\\2026-10-12\\\\go\\\\work\\\\keepass-recycle-next\\\\.local\\\\vault-history-fixtures\\\\48740\\\\observations\\\\history-http.json"}
+# Subtest: a timer from an older detached Vault view must not lock an actively reopened session
+ok 25 - a timer from an older detached Vault view must not lock an actively reopened session
+  ---
+  duration_ms: 115.8794
+  type: 'test'
+  ...
+# Subtest: restore refuses an already modified main editor and preserves the unsaved draft
+ok 26 - restore refuses an already modified main editor and preserves the unsaved draft
+  ---
+  duration_ms: 166.1966
+  type: 'test'
+  ...
+# Subtest: actual shared HTTP host persists native bin/history/recovery/tombstones through three genuine process starts
+ok 27 - actual shared HTTP host persists native bin/history/recovery/tombstones through three genuine process starts
+  ---
+  duration_ms: 1114.1463
+  type: 'test'
+  ...
+# Subtest: actual host retains token guard, entry-only rejection and private runtime/oracle/source routes
+ok 28 - actual host retains token guard, entry-only rejection and private runtime/oracle/source routes
+  ---
+  duration_ms: 191.3021
+  type: 'test'
+  ...
+# REA_RECYCLE_HTTP {"detail":"C:\\\\Users\\\\evanh\\\\Documents\\\\Codex\\\\2026-10-12\\\\go\\\\work\\\\keepass-recycle-next\\\\.local\\\\recycle-http-observations.json","hostProcesses":4,"originalExecutions":0}
+# Subtest: actual release helper/library lifecycle matches native delete/previous-parent recovery/purge and original reader opens candidate output
+ok 29 - actual release helper/library lifecycle matches native delete/previous-parent recovery/purge and original reader opens candidate output
+  ---
+  duration_ms: 3393.6641
+  type: 'test'
+  ...
+# Subtest: released tombstones match native explicit permanent override
+ok 30 - released tombstones match native explicit permanent override
+  ---
+  duration_ms: 1447.3231
+  type: 'test'
+  ...
+# Subtest: released tombstones match native disabled original recycle setting
+ok 31 - released tombstones match native disabled original recycle setting
+  ---
+  duration_ms: 1388.6474
+  type: 'test'
+  ...
+# Subtest: default released KDBX4.0 save loses previous parent; candidate4.1 export retains its explicitly newer recovery metadata
+ok 32 - default released KDBX4.0 save loses previous parent; candidate4.1 export retains its explicitly newer recovery metadata
+  ---
+  duration_ms: 1427.8084
+  type: 'test'
+  ...
+# REA_RECYCLE_ORIGINAL {"assemblyLoads":14,"detail":"C:\\\\Users\\\\evanh\\\\Documents\\\\Codex\\\\2026-10-12\\\\go\\\\work\\\\keepass-recycle-next\\\\.local\\\\original-comparisons.json"}
+# Subtest: actual encrypted session recycle/recover/purge persists across lock/reload and retains history
+ok 33 - actual encrypted session recycle/recover/purge persists across lock/reload and retains history
+  ---
+  duration_ms: 330.4585
+  type: 'test'
+  ...
+# Subtest: failed persistence publishes neither deletion nor history/bin mutation
+ok 34 - failed persistence publishes neither deletion nor history/bin mutation
+  ---
+  duration_ms: 88.0564
+  type: 'test'
+  ...
+# Subtest: queued caller input is captured and stale competing deletion rejects after durable commit
+ok 35 - queued caller input is captured and stale competing deletion rejects after durable commit
+  ---
+  duration_ms: 84.2519
+  type: 'test'
+  ...
+# Subtest: group deletion and whole-bin emptying explicitly reject with encrypted bytes unchanged
+ok 36 - group deletion and whole-bin emptying explicitly reject with encrypted bytes unchanged
+  ---
+  duration_ms: 96.9994
+  type: 'test'
+  ...
+# Subtest: recycled entries cannot be edited or restored through active history/TOTP commands
+ok 37 - recycled entries cannot be edited or restored through active history/TOTP commands
+  ---
+  duration_ms: 86.6168
+  type: 'test'
+  ...
+# Subtest: actual client deletion/readonly masked preview/confirmed previous-group recovery and permanent purge use separate bin controls
+ok 38 - actual client deletion/readonly masked preview/confirmed previous-group recovery and permanent purge use separate bin controls
+  ---
+  duration_ms: 184.4527
+  type: 'test'
+  ...
+# Subtest: late bin preview cannot expose secrets after Close bin or disposed view
+ok 39 - late bin preview cannot expose secrets after Close bin or disposed view
+  ---
+  duration_ms: 144.7086
+  type: 'test'
+  ...
+# Subtest: held recovery response preserves another enabled editor draft and never changes its save identity
+ok 40 - held recovery response preserves another enabled editor draft and never changes its save identity
+  ---
+  duration_ms: 102.3954
+  type: 'test'
+  ...
+# Subtest: held post-recovery bin list cannot replace a newer enabled Show-bin generation
+ok 41 - held post-recovery bin list cannot replace a newer enabled Show-bin generation
+  ---
+  duration_ms: 86.4053
+  type: 'test'
+  ...
+# Subtest: normal deletion creates a real native bin, keeps content/history, and restores identity to previous UUID
+ok 42 - normal deletion creates a real native bin, keeps content/history, and restores identity to previous UUID
+  ---
+  duration_ms: 14.3299
+  type: 'test'
+  ...
+# Subtest: bin source defaults have trash icon, searching/Auto-Type disabled and no new history version
+ok 43 - bin source defaults have trash icon, searching/Auto-Type disabled and no new history version
+  ---
+  duration_ms: 2.3177
+  type: 'test'
+  ...
+# Subtest: permanent delete adds native UUID/time tombstone and cannot restore
+ok 44 - permanent delete adds native UUID/time tombstone and cannot restore
+  ---
+  duration_ms: 2.955
+  type: 'test'
+  ...
+# Subtest: disabled bin setting permanently deletes; deleting an existing bin entry also adds tombstone
+ok 45 - disabled bin setting permanently deletes; deleting an existing bin entry also adds tombstone
+  ---
+  duration_ms: 14.9216
+  type: 'test'
+  ...
+# Subtest: MAC rejects stale dataset, cross-key, mutated entry and missing confirmation without input changes
+ok 46 - MAC rejects stale dataset, cross-key, mutated entry and missing confirmation without input changes
+  ---
+  duration_ms: 2.0638
+  type: 'test'
+  ...
+# Subtest: permissive/malformed clocks reject without writing and uint64 touch wraps exactly
+ok 47 - permissive/malformed clocks reject without writing and uint64 touch wraps exactly
+  ---
+  duration_ms: 4.9208
+  type: 'test'
+  ...
+# Subtest: absent/zero previous group rejects recover and keeps encrypted-representation data unchanged
+ok 48 - absent/zero previous group rejects recover and keeps encrypted-representation data unchanged
+  ---
+  duration_ms: 3.7551
+  type: 'test'
+  ...
+# Subtest: malformed root-bin UUID and invalid boolean settings reject before mutation
+ok 49 - malformed root-bin UUID and invalid boolean settings reject before mutation
+  ---
+  duration_ms: 2.7568
+  type: 'test'
+  ...
+# Subtest: explicit preview returns a copy and attachment values are included in selection binding
+ok 50 - explicit preview returns a copy and attachment values are included in selection binding
+  ---
+  duration_ms: 2.9348
+  type: 'test'
+  ...
+# Subtest: duplicate names do not redirect UUID recovery; existing bin is reused
+ok 51 - duplicate names do not redirect UUID recovery; existing bin is reused
+  ---
+  duration_ms: 10.1374
+  type: 'test'
+  ...
+# Subtest: bin creation cannot exceed the10,000-group bound and input stays unchanged
+ok 52 - bin creation cannot exceed the10,000-group bound and input stays unchanged
+  ---
+  duration_ms: 546.3165
+  type: 'test'
+  ...
+# Subtest: previous-parent within a bin is not offered as recoverable; descendant bin entries purge by ancestry
+ok 53 - previous-parent within a bin is not offered as recoverable; descendant bin entries purge by ancestry
+  ---
+  duration_ms: 6.4146
+  type: 'test'
+  ...
+# Subtest: same-editor draft typed after a restore request remains visible when the delayed response completes
+ok 54 - same-editor draft typed after a restore request remains visible when the delayed response completes
+  ---
+  duration_ms: 235.0448
+  type: 'test'
+  ...
+# Subtest: same-editor draft typed after a save request remains visible when the delayed response completes
+ok 55 - same-editor draft typed after a save request remains visible when the delayed response completes
+  ---
+  duration_ms: 106.406
+  type: 'test'
+  ...
+# Subtest: a held Open A read cannot replace a later Open B editor or redirect its save
+ok 56 - a held Open A read cannot replace a later Open B editor or redirect its save
+  ---
+  duration_ms: 294.5123
+  type: 'test'
+  ...
+# Subtest: closing history while its preview is held prevents late secret publication
+ok 57 - closing history while its preview is held prevents late secret publication
+  ---
+  duration_ms: 83.5416
+  type: 'test'
+  ...
+# Subtest: an older search response cannot replace newer search results or a new editor draft
+ok 58 - an older search response cannot replace newer search results or a new editor draft
+  ---
+  duration_ms: 95.8372
+  type: 'test'
+  ...
+# Subtest: New entry remains a new identity after a late post-restore read
+ok 59 - New entry remains a new identity after a late post-restore read
+  ---
+  duration_ms: 200.4797
+  type: 'test'
+  ...
+# Subtest: locking during a held restore read cannot resurrect its old selected entry after unlock
+ok 60 - locking during a held restore read cannot resurrect its old selected entry after unlock
+  ---
+  duration_ms: 175.6482
+  type: 'test'
+  ...
+# Subtest: late explicit history preview cannot populate a newly opened empty editor
+ok 61 - late explicit history preview cannot populate a newly opened empty editor
+  ---
+  duration_ms: 123.2334
+  type: 'test'
+  ...
+# Subtest: a delayed post-restore list does not change the next editor selected by the user
+ok 62 - a delayed post-restore list does not change the next editor selected by the user
+  ---
+  duration_ms: 89.9164
+  type: 'test'
+  ...
+# Subtest: a failed history restore persistence keeps ciphertext and active entry/history unchanged
+ok 63 - a failed history restore persistence keeps ciphertext and active entry/history unchanged
+  ---
+  duration_ms: 76.2474
+  type: 'test'
+  ...
+# Subtest: ordinary save completion preserves a different editor opened while that response was held
+ok 64 - ordinary save completion preserves a different editor opened while that response was held
+  ---
+  duration_ms: 77.8094
+  type: 'test'
+  ...
+# Subtest: late post-restore read must not redirect the newly selected editor save to a different entry
+ok 65 - late post-restore read must not redirect the newly selected editor save to a different entry
+  ---
+  duration_ms: 210.0717
+  type: 'test'
+  ...
+# Subtest: staged DOM interaction lists redacted history, explicitly views masked secret and confirms restoration
+ok 66 - staged DOM interaction lists redacted history, explicitly views masked secret and confirms restoration
+  ---
+  duration_ms: 123.361
+  type: 'test'
+  ...
+# Subtest: history result arriving after selecting New entry cannot populate a stale editor
+ok 67 - history result arriving after selecting New entry cannot populate a stale editor
+  ---
+  duration_ms: 87.4588
+  type: 'test'
+  ...
+# Subtest: released unknown-time family is oldest rather than a future UTC date; boundary and two-unknown ties match
+ok 68 - released unknown-time family is oldest rather than a future UTC date; boundary and two-unknown ties match
+  ---
+  duration_ms: 4771.2061
+  type: 'test'
+  ...
+# REA_KEEPASS_HISTORY_UNKNOWN {"originalProcessExecutions":9,"detail":"C:\\\\Users\\\\evanh\\\\Documents\\\\Codex\\\\2026-10-12\\\\go\\\\work\\\\keepass-recycle-next\\\\.local\\\\vault-history-fixtures\\\\24032\\\\observations\\\\history-unknown-time.json"}
+1..68
+# tests 68
+# suites 0
+# pass 68
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8287.8503

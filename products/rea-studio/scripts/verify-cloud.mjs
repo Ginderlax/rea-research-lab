@@ -18,8 +18,8 @@ const inside = (parent, target) => {
   const relative = path.relative(parent, target);
   return relative === '' || (!relative.startsWith('..' + path.sep) && relative !== '..' && !path.isAbsolute(relative));
 };
-const options = { scope: null, output: null, timeoutMs: 35 * 60_000, bootstrapManifest: null, snapshotScope: 'active', sourceOnly: false };
-const names = new Map([['--scope', 'scope'], ['--output', 'output'], ['--timeout-ms', 'timeoutMs'], ['--bootstrap-manifest', 'bootstrapManifest'], ['--snapshot-scope', 'snapshotScope']]);
+const options = { scope: null, output: null, timeoutMs: 35 * 60_000, bootstrapManifest: null, overlayManifest: null, snapshotScope: 'active', sourceOnly: false };
+const names = new Map([['--scope', 'scope'], ['--output', 'output'], ['--timeout-ms', 'timeoutMs'], ['--bootstrap-manifest', 'bootstrapManifest'], ['--overlay-manifest', 'overlayManifest'], ['--snapshot-scope', 'snapshotScope']]);
 const seenOptions = new Set();
 for (let i = 2; i < process.argv.length; i++) {
   const argument = process.argv[i];
@@ -30,12 +30,14 @@ for (let i = 2; i < process.argv.length; i++) {
   assert(i + 1 < process.argv.length && !process.argv[i + 1].startsWith('--'), 'Missing value: ' + argument);
   options[names.get(argument)] = process.argv[++i];
 }
-assert(['flow-vault', 'full'].includes(options.scope), 'Use --scope flow-vault or --scope full');
+assert(['flow-vault', 'full', 'archive-aes-experiment'].includes(options.scope), 'Use --scope flow-vault, full or archive-aes-experiment');
 assert(['all', 'active'].includes(options.snapshotScope), 'Use --snapshot-scope all or active');
 assert(typeof options.output === 'string' && path.isAbsolute(options.output), '--output must be absolute');
 options.timeoutMs = Number(options.timeoutMs);
 assert(Number.isSafeInteger(options.timeoutMs) && options.timeoutMs >= 1_000 && options.timeoutMs <= 2 * 60 * 60_000, 'Invalid bounded timeout');
 if (options.bootstrapManifest) assert(path.isAbsolute(options.bootstrapManifest), '--bootstrap-manifest must be absolute');
+if (options.overlayManifest) assert(path.isAbsolute(options.overlayManifest), '--overlay-manifest must be absolute');
+assert(options.scope === 'archive-aes-experiment' || !options.overlayManifest, 'Overlay provenance is exclusive to the explicit experimental scope');
 
 // Resolve existing ancestors before creating anything, so an evidence-directory
 // symlink cannot put logs inside the source census.
@@ -56,7 +58,7 @@ assert(!inside(output, realStudio), 'Output cannot be Studio or one of its ances
 for (const directory of censusDirectories) assert(!inside(path.join(realStudio, directory), output), 'Output overlaps source census: ' + directory);
 fs.mkdirSync(output, { recursive: true });
 assert(fs.statSync(output).isDirectory(), 'Output must be a directory');
-const reserved = ['attempt-validation.json', 'attempt-validation.json.tmp', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'source-snapshot-manifest.json', 'source', 'runner.mjs.snapshot', 'development-validation.json', 'bootstrap-prerequisites.json.snapshot'];
+const reserved = ['attempt-validation.json', 'attempt-validation.json.tmp', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'source-snapshot-manifest.json', 'source', 'runner.mjs.snapshot', 'development-validation.json', 'bootstrap-prerequisites.json.snapshot', 'overlay-composition.json.snapshot', 'experimental-test-selection.json.snapshot'];
 for (const name of reserved) assert(!fs.existsSync(path.join(output, name)), 'Evidence already exists; use a new run directory: ' + name);
 
 const open = name => fs.openSync(path.join(output, name), 'wx');
@@ -74,7 +76,7 @@ const record = {
   sourceSnapshotsInert: true, sourceSnapshotFiles: 0, limits,
   fullFeatureParityEstablished: false, universalSuperiorityEstablished: false,
   historicalReceiptsRebound: false, historicalDevelopmentReceiptOverwritten: false,
-  acceptanceScope: options.scope === 'flow-vault' ? 'Finite Flow and Vault implemented contracts; other applications are not executed.' : 'Current implemented development contracts; every documented original feature and comparative acceptance remain open.',
+  acceptanceScope: options.scope === 'archive-aes-experiment' ? 'Finite experimental Archive AES and Windows source metadata contracts on an explicitly composed hosted working tree. The Git revision alone describes the baseline and committed overlay payloads; composition provenance identifies the active experimental bytes. Production integration, full Archive acceptance, browser acceptance, full parity and superiority remain open.' : options.scope === 'flow-vault' ? 'Finite Flow and Vault implemented contracts; other applications are not executed.' : 'Current implemented development contracts; every documented original feature and comparative acceptance remain open.',
   evidenceDirectory: output, failures: [],
 };
 function flush() {
@@ -144,6 +146,17 @@ function census() {
 }
 function selectTests(rows) {
   const tests = rows.map(row => row.path).filter(name => name.endsWith('.test.mjs') && !name.split('/').includes('results'));
+  if (options.scope === 'archive-aes-experiment') {
+    const selectionBytes = fs.readFileSync(path.join(studio, 'experiments/archive-aes/test-selection.json'));
+    const selection = JSON.parse(selectionBytes);
+    assert.equal(selection.schema, 'rea-archive-aes-cloud-experimental-selection/v1');
+    const expected = ['app.test.mjs', 'app.integration.test.mjs', 'sevenzip.test.mjs', 'lzma.test.mjs', 'encoder.test.mjs', 'lzma.integration.test.mjs', 'sevenzip-aes.test.mjs', 'sevenzip-aes-container.test.mjs', 'sevenzip-aes-original.test.mjs', 'sevenzip-aes-bounds.test.mjs', 'sevenzip-aes-http.test.mjs', 'sevenzip-aes-ui.test.mjs', 'source-metadata.test.mjs'].map(name => 'apps/archive/' + name);
+    assert.deepEqual(selection.tests, expected.map(name => 'products/rea-studio/' + name), 'Experimental selection differs from its fixed thirteen-file scope');
+    for (const name of expected) assert(tests.includes(name), 'Experimental test is missing: ' + name);
+    fs.writeFileSync(path.join(output, 'experimental-test-selection.json.snapshot'), selectionBytes, { flag: 'wx' });
+    record.experimentalSelection = { ...identity(selectionBytes), expectedGroupsOnWindows: selection.expectedGroupsOnWindows, fullArchiveSuite: false };
+    return expected;
+  }
   const selected = options.scope === 'full' ? tests : tests.filter(name => /^apps\/(flow|vault)\//.test(name));
   assert(selected.length > 0, 'No current tests selected');
   if (options.scope === 'flow-vault') {
@@ -181,10 +194,47 @@ try {
     const bytes = fs.readFileSync(options.bootstrapManifest);
     assert(bytes.length <= 1024 * 1024, 'Bootstrap manifest exceeds limit');
     const manifest = JSON.parse(bytes);
-    record.originalPrerequisites = { path: options.bootstrapManifest, ...identity(bytes), schema: manifest.schema, status: manifest.status, scope: 'Flow Node-RED and Vault KeePass acquisition; broader application prerequisites are not established by this manifest.', producerClaimsIndependentlyReexecuted: false };
+    record.originalPrerequisites = { path: options.bootstrapManifest, ...identity(bytes), schema: manifest.schema, status: manifest.status, scope: options.scope === 'archive-aes-experiment' ? 'Pinned 7-Zip original acquisition for this experimental Archive selection; acquisition is separate from comparison execution.' : 'Flow Node-RED and Vault KeePass acquisition; broader application prerequisites are not established by this manifest.', producerClaimsIndependentlyReexecuted: false };
     fs.writeFileSync(path.join(output, 'bootstrap-prerequisites.json.snapshot'), bytes, { flag: 'wx' });
-    assert.equal(manifest.schema, 'rea-cloud-flow-vault-prerequisites/v1', 'Unexpected bootstrap manifest schema');
+    assert.equal(manifest.schema, options.scope === 'archive-aes-experiment' ? 'rea-archive-aes-hosted-original-prerequisites/v1' : 'rea-cloud-flow-vault-prerequisites/v1', 'Unexpected bootstrap manifest schema');
     assert.equal(manifest.status, 'acquired', 'Original prerequisites have not been acquired');
+    if (options.scope === 'archive-aes-experiment') {
+      assert.equal(manifest.sourceCommit, record.repositoryCommit);
+      for (const name of ['GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_SHA', 'GITHUB_REPOSITORY']) assert.equal(manifest.execution[name], process.env[name], 'Acquisition belongs to another workflow attempt');
+      assert.equal(manifest.assets.length, 2);
+    }
+  }
+  if (options.scope === 'archive-aes-experiment') {
+    assert(options.overlayManifest, 'Experimental Archive scope requires --overlay-manifest');
+    const bytes = fs.readFileSync(options.overlayManifest);
+    assert(bytes.length <= 2 * 1024 * 1024, 'Overlay receipt exceeds limit');
+    const composition = JSON.parse(bytes);
+    assert.equal(composition.schema, 'rea-archive-aes-hosted-composition/v1');
+    assert.equal(composition.status, 'composed-unexecuted-experimental-overlay');
+    assert.equal(composition.baselineGitCommit, record.repositoryCommit);
+    assert.equal(composition.experimentalSourceGitCommit, record.repositoryCommit);
+    for (const name of ['GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_SHA', 'GITHUB_REPOSITORY']) assert.equal(composition.execution[name], process.env[name], 'Composition belongs to another workflow attempt');
+    assert.equal(path.resolve(composition.sourceRoot).toLowerCase(), path.resolve(studio, '../..').toLowerCase());
+    assert.equal(composition.modifiedGitWorktreeAfterOverlay, true);
+    assert.equal(composition.productionInstalled, false);
+    const bundleBytes = fs.readFileSync(path.join(studio, 'experiments/archive-aes/bundle.json'));
+    assert.deepEqual({ bytes: composition.sourceBundle.bytes, sha256: composition.sourceBundle.sha256 }, identity(bundleBytes));
+    const bundle = JSON.parse(bundleBytes);
+    assert.equal(bundle.schema, 'rea-archive-aes-hosted-experimental-source-bundle/v1');
+    assert.equal(bundle.finalTargets.length, 21);
+    assert.equal(composition.transitions.length, 22);
+    assert.equal(composition.afterSourceCensus.length, 56);
+    const repository = path.resolve(studio, '../..');
+    for (const row of bundle.finalTargets) {
+      assert(/^products\/rea-studio\/apps\/archive\/[A-Za-z0-9.-]+$/.test(row.target), 'Experimental target must be an immediate allowlisted Archive file');
+      const current = identity(fs.readFileSync(path.join(repository, row.target)));
+      assert.deepEqual(current, row.after, 'Experimental overlay target identity differs: ' + row.target);
+      const captured = composition.afterSourceCensus.find(item => item.path === row.target);
+      assert(captured, 'Overlay target is missing from composition census');
+      assert.deepEqual(current, { bytes: captured.bytes, sha256: captured.sha256 });
+    }
+    fs.writeFileSync(path.join(output, 'overlay-composition.json.snapshot'), bytes, { flag: 'wx' });
+    record.experimentalOverlay = { ...identity(bytes), baselineGitCommit: record.repositoryCommit, composedActiveAppMatchesGitBaseline: false, productionInstalled: false, finalTargets: 21, transitions: 22, currentArchiveFiles: 56 };
   }
   before = census();
   saveJson('source-before.json', before);
@@ -211,9 +261,9 @@ try {
   flush();
   if (!options.sourceOnly) {
     assert.equal(record.executionEnvironment, 'github-hosted', 'Execution requires a verified GitHub-hosted runner');
-    if (options.scope === 'flow-vault') {
-      assert.equal(process.platform, 'win32', 'Flow/Vault original comparisons require Windows');
-      assert(record.originalPrerequisites, 'Flow/Vault execution requires --bootstrap-manifest');
+    if (['flow-vault', 'archive-aes-experiment'].includes(options.scope)) {
+      assert.equal(process.platform, 'win32', 'Selected original comparisons require Windows');
+      assert(record.originalPrerequisites, 'This scope requires --bootstrap-manifest');
     }
     if (process.env.GITHUB_SHA) assert.equal(record.repositoryCommit, process.env.GITHUB_SHA, 'Checked-out Git commit differs from workflow identity');
     assert(!stopReason, stopReason);
@@ -277,6 +327,7 @@ try {
       const summary = record.summary;
       assert(summary.tests > 0 && summary.tests === summary.pass, 'Every selected check must pass');
       assert.equal(summary.fail + summary.cancelled + summary.skipped + summary.todo, 0, 'Failures, cancellations, skips and unfinished checks cannot certify this scope');
+      if (options.scope === 'archive-aes-experiment') assert.equal(summary.tests, 160, 'Experimental Archive selection must execute all 160 planned groups');
     } catch (error) { failure(error.message); }
   }
 } catch (error) {

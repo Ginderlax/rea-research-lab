@@ -45,10 +45,19 @@ jobs:
           'REA_CI_EVIDENCE=' + $evidence | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Acquire authenticated test-only original prerequisites
+        id: prerequisites
         shell: pwsh
         run: node products/rea-studio/scripts/bootstrap-cloud-flow-vault.mjs --evidence "$env:REA_CI_EVIDENCE"
 
+      - name: Verify collector failure closure with isolated synthetic controls
+        id: collector_controls
+        shell: pwsh
+        run: |
+          $controls = Join-Path $env:REA_CI_EVIDENCE 'collector-controls'
+          node products/rea-studio/scripts/verify-cloud-controls.mjs --output "$controls"
+
       - name: Run the finite current Flow and Vault suite
+        id: finite_verification
         shell: pwsh
         run: |
           $manifest = Join-Path $env:REA_CI_EVIDENCE 'prerequisite-acquisition.json'
@@ -61,7 +70,7 @@ jobs:
         run: |
           $evidence = Join-Path $env:RUNNER_TEMP ('rea-flow-vault-ci-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
-          @{ schema = 'rea-cloud-workflow-attempt/v1'; sourceCommit = $env:GITHUB_SHA; runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; runnerEnvironment = $env:RUNNER_ENVIRONMENT; checkoutOutcome = '${{ steps.checkout.outcome }}'; statusBeforePackaging = '${{ job.status }}'; productTestsClaimed = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          @{ schema = 'rea-cloud-workflow-attempt/v1'; sourceCommit = $env:GITHUB_SHA; runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; runnerEnvironment = $env:RUNNER_ENVIRONMENT; checkoutOutcome = '${{ steps.checkout.outcome }}'; prerequisiteOutcome = '${{ steps.prerequisites.outcome }}'; collectorControlsOutcome = '${{ steps.collector_controls.outcome }}'; finiteVerificationOutcome = '${{ steps.finite_verification.outcome }}'; statusBeforePackaging = '${{ job.status }}'; productTestsClaimed = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
           $archive = Join-Path $env:RUNNER_TEMP ('rea-flow-vault-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           [System.IO.Compression.ZipFile]::CreateFromDirectory($evidence, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false)
@@ -73,7 +82,7 @@ jobs:
             $retained = @()
             $omitted = @()
             $tailed = @()
-            foreach ($name in @('attempt-validation.json', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'prerequisite-acquisition.json', 'windows-tar-readiness.json')) {
+            foreach ($name in @('attempt-validation.json', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'prerequisite-acquisition.json', 'windows-tar-readiness.json', 'workflow-attempt.json')) {
               $candidate = Join-Path $evidence $name
               if (Test-Path -LiteralPath $candidate -PathType Leaf) {
                 $bytes = (Get-Item -LiteralPath $candidate).Length
@@ -89,6 +98,14 @@ jobs:
                 }
                 else { $omitted += @{ name = $name; bytes = $bytes } }
               }
+            }
+            $controlsSummary = Join-Path $evidence 'collector-controls/controls-validation.json'
+            if (Test-Path -LiteralPath $controlsSummary -PathType Leaf) {
+              $controlsBytes = (Get-Item -LiteralPath $controlsSummary).Length
+              if ($controlsBytes -le 1024 * 1024) {
+                Copy-Item -LiteralPath $controlsSummary -Destination (Join-Path $fallback 'collector-controls-validation.json')
+                $retained += 'collector-controls-validation.json'
+              } else { $omitted += @{ name = 'collector-controls/controls-validation.json'; bytes = $controlsBytes } }
             }
             @{ schema = 'rea-cloud-evidence-storage-failure/v1'; status = 'failed'; fullArchiveBytes = $archiveBytes; limitBytes = $limit; fullEvidenceUploaded = $false; sourceSnapshotsUploaded = $false; retainedFiles = $retained; truncatedLogs = $tailed; omittedLargeTopLevelFiles = $omitted; reason = 'Full portable evidence exceeded the explicitly bounded artifact budget. The fallback is incomplete; do not claim complete evidence backup. Complete streaming test logs may remain available in the Actions console.' } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
             $archive = Join-Path $env:RUNNER_TEMP ('rea-flow-vault-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')

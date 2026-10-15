@@ -1,0 +1,145 @@
+// SPDX-License-Identifier: MIT
+// Independent filesystem metadata adapter; see NOTICE-SOURCE-METADATA.txt.
+import path from 'node:path';
+import { execFile } from 'node:child_process';
+
+const MAX_SOURCES = 10_000, MAX_REQUEST = 32 * 1024 * 1024, MAX_RESPONSE = 64 * 1024 * 1024;
+const FAILURE = 'Native Windows source metadata is unavailable or invalid; archive creation was refused.';
+
+// This program is constant. User paths travel only in stdin JSON, never in code
+// or command arguments. Keep diagnostic output independent of input values.
+export const WINDOWS_METADATA_SCRIPT = String.raw`
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+[Console]::InputEncoding = New-Object System.Text.UTF8Encoding($false)
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+$culture = [Globalization.CultureInfo]::InvariantCulture
+function Stamp($date) {
+  $utc = $date.ToUniversalTime()
+  $milliseconds = ([decimal]$utc.Ticks - [decimal]621355968000000000) / [decimal]10000
+  return @{ utc = $utc.ToString("yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'", $culture); ms = $milliseconds.ToString('0.0000', $culture) }
+}
+try {
+  $request = [Console]::In.ReadToEnd() | ConvertFrom-Json -ErrorAction Stop
+  if ($request.version -ne 1 -or $null -eq $request.sources -or @($request.sources).Count -gt 10000) { throw 'request' }
+  $root = [IO.Path]::GetFullPath([string]$request.root)
+  $volume = [IO.Path]::GetPathRoot($root)
+  while ($root.Length -gt $volume.Length -and $root.EndsWith([IO.Path]::DirectorySeparatorChar)) { $root = $root.Substring(0, $root.Length - 1) }
+  if (([IO.File]::GetAttributes($root) -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'link' }
+  $prefix = $root
+  if (-not $prefix.EndsWith([IO.Path]::DirectorySeparatorChar)) { $prefix += [IO.Path]::DirectorySeparatorChar }
+  $rows = New-Object 'System.Collections.Generic.List[object]'
+  $index = 0
+  foreach ($source in @($request.sources)) {
+    $full = [IO.Path]::GetFullPath([string]$source.path)
+    if (-not $full.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'outside' }
+    # Check each current ancestor as well as the target. This supplements, rather
+    # than replaces, the application's original root-confined no-link walk.
+    $checked = $full
+    while ($true) {
+      if (([IO.File]::GetAttributes($checked) -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'link' }
+      if ([string]::Equals($checked, $root, [StringComparison]::OrdinalIgnoreCase)) { break }
+      $checked = [IO.Path]::GetDirectoryName($checked)
+      if ([string]::IsNullOrEmpty($checked)) { throw 'outside' }
+    }
+    $item = Get-Item -LiteralPath $full -Force -ErrorAction Stop
+    $item.Refresh()
+    if (-not $item.Exists -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'missing' }
+    $directory = $item -is [IO.DirectoryInfo]
+    if (-not $directory -and -not ($item -is [IO.FileInfo])) { throw 'type' }
+    if ($directory -ne [bool]$source.directory) { throw 'type' }
+    $modified = Stamp $item.LastWriteTimeUtc
+    $accessed = Stamp $item.LastAccessTimeUtc
+    $created = Stamp $item.CreationTimeUtc
+    $rows.Add(@{ index = $index; path = $item.FullName; directory = $directory;
+      modifiedAtUtc = $modified.utc; modifiedAtMs = $modified.ms;
+      accessedAtUtc = $accessed.utc; accessedAtMs = $accessed.ms;
+      createdAtUtc = $created.utc; createdAtMs = $created.ms })
+    $index += 1
+  }
+  $response = @{ version = 1; items = @($rows.ToArray()) } | ConvertTo-Json -Compress -Depth 5
+  [Console]::Out.Write($response)
+} catch {
+  [Console]::Error.WriteLine('Native Windows source metadata failed.')
+  exit 1
+}
+`;
+const ENCODED_SCRIPT = Buffer.from(WINDOWS_METADATA_SCRIPT, 'utf16le').toString('base64');
+
+function unavailable() { return new Error(FAILURE); }
+
+function windowsRequest(sources, root) {
+  if (typeof root !== 'string' || root.includes('\0') || !path.win32.isAbsolute(root)) throw unavailable();
+  const normalizedRoot = path.win32.resolve(root), seen = new Set();
+  const records = sources.map((source, index) => {
+    if (!source || typeof source.path !== 'string' || source.path.includes('\0') || source.path.length > 32767
+      || !path.win32.isAbsolute(source.path) || typeof source.directory !== 'boolean') throw unavailable();
+    const full = path.win32.resolve(source.path), relative = path.win32.relative(normalizedRoot, full), key = full.toLowerCase();
+    if (!relative || relative === '..' || relative.startsWith('..\\') || path.win32.isAbsolute(relative) || seen.has(key)) throw unavailable();
+    seen.add(key);
+    return { index, path: full, directory: source.directory };
+  });
+  return { version: 1, root: normalizedRoot, sources: records };
+}
+
+// Compare the decimal milliseconds with the exact UTC timestamp at 100 ns
+// resolution before reducing it to the existing archive contract's whole ms.
+function checkedDate(utc, milliseconds) {
+  if (typeof utc !== 'string' || !/^(?!0000)\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{7}Z$/.test(utc)
+    || typeof milliseconds !== 'string' || !/^-?\d{1,15}\.\d{4}$/.test(milliseconds)) throw unavailable();
+  const value = Date.parse(utc), normalized = new Date(value);
+  if (!Number.isSafeInteger(value) || normalized.toISOString() !== utc.slice(0, 23) + 'Z') throw unavailable();
+  const negative = milliseconds.startsWith('-'), [whole, fraction] = milliseconds.replace(/^-/, '').split('.');
+  const decimalTicks = (BigInt(whole) * 10000n + BigInt(fraction)) * (negative ? -1n : 1n);
+  const utcTicks = BigInt(value) * 10000n + BigInt(utc.slice(23, 27));
+  if (decimalTicks !== utcTicks) throw unavailable();
+  return normalized.toISOString();
+}
+
+function parseResponse(request, response) {
+  if (typeof response !== 'string' || Buffer.byteLength(response) > MAX_RESPONSE) throw unavailable();
+  let parsed;
+  try { parsed = JSON.parse(response); } catch { throw unavailable(); }
+  if (!parsed || parsed.version !== 1 || !Array.isArray(parsed.items) || parsed.items.length !== request.sources.length) throw unavailable();
+  return parsed.items.map((row, index) => {
+    const expected = request.sources[index];
+    if (!row || row.index !== index || typeof row.path !== 'string' || row.path.includes('\0')
+      || !path.win32.isAbsolute(row.path) || path.win32.normalize(row.path).toLowerCase() !== expected.path.toLowerCase()
+      || row.directory !== expected.directory) throw unavailable();
+    return { modifiedAt: checkedDate(row.modifiedAtUtc, row.modifiedAtMs),
+      accessedAt: checkedDate(row.accessedAtUtc, row.accessedAtMs), createdAt: checkedDate(row.createdAtUtc, row.createdAtMs) };
+  });
+}
+
+export function runWindowsMetadataBatch(input) {
+  if (typeof input !== 'string' || Buffer.byteLength(input) > MAX_REQUEST) return Promise.reject(unavailable());
+  const systemRoot = process.env.SystemRoot ?? 'C:\\Windows';
+  if (!path.win32.isAbsolute(systemRoot) || systemRoot.includes('\0')) return Promise.reject(unavailable());
+  const executable = path.win32.join(systemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+  return new Promise((resolve, reject) => {
+    const child = execFile(executable, ['-NoLogo', '-NoProfile', '-NonInteractive', '-EncodedCommand', ENCODED_SCRIPT],
+      { encoding: 'utf8', timeout: 15000, maxBuffer: MAX_RESPONSE, windowsHide: true, shell: false },
+      (error, stdout) => error ? reject(unavailable()) : resolve(stdout));
+    child.stdin.on('error', () => {}); // The completion callback reports failed transport without exposing input.
+    child.stdin.end(input, 'utf8');
+  });
+}
+
+// The factory permits deterministic transport/failure tests. The application
+// uses only its default reader; API input cannot replace the native transport.
+export function createSourceMetadataReader({ platform = process.platform, nativeRead = runWindowsMetadataBatch } = {}) {
+  if (typeof nativeRead !== 'function') throw new TypeError('A source metadata transport is required.');
+  return async function readSourceMetadata(sources, root) {
+    if (!Array.isArray(sources) || sources.length > MAX_SOURCES) throw unavailable();
+    if (platform !== 'win32') return sources.map(source => {
+      try { return { modifiedAt: source.stat.mtime.toISOString(), accessedAt: source.stat.atime.toISOString(), createdAt: source.stat.birthtime.toISOString() }; }
+      catch { throw new Error('Source timestamps are unavailable; archive creation was refused.'); }
+    });
+    const request = windowsRequest(sources, root), input = JSON.stringify(request);
+    if (Buffer.byteLength(input) > MAX_REQUEST) throw unavailable();
+    try { return parseResponse(request, await nativeRead(input)); }
+    catch { throw unavailable(); }
+  };
+}
+
+export const readSourceMetadata = createSourceMetadataReader();

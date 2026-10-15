@@ -1,0 +1,135 @@
+// Hosted publication metadata producer. No commit, push, finalizer or product suite.
+import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { spawn, spawnSync } from 'node:child_process';
+import { runPublicationControls } from './publication-integrity-controls.mjs';
+
+const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
+assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
+assert.equal(process.env.CI, 'true'); assert.equal(process.env.GITHUB_ACTIONS, 'true'); assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
+for (const name of ['RUNNER_TEMP', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY']) assert.ok(process.env[name]);
+assert.match(process.env.GITHUB_SHA, /^[0-9a-f]{40}$/); assert.match(process.env.GITHUB_RUN_ID, /^\d+$/); assert.match(process.env.GITHUB_RUN_ATTEMPT, /^\d+$/);
+assert.equal(process.env.GITHUB_REPOSITORY, 'Ginderlax/rea-research-lab');
+assert.equal(process.argv.length, 4); assert.equal(process.argv[2], '--evidence'); assert.ok(path.isAbsolute(process.argv[3]));
+const temporary = fs.realpathSync(process.env.RUNNER_TEMP), evidence = path.resolve(process.argv[3]);
+const evidenceRelative = path.relative(temporary, evidence);
+assert.ok(evidenceRelative && evidenceRelative !== '..' && !evidenceRelative.startsWith('..' + path.sep) && !path.isAbsolute(evidenceRelative));
+assert.equal(fs.existsSync(evidence), false); fs.mkdirSync(evidence); assert.equal(fs.realpathSync(evidence).toLowerCase(), evidence.toLowerCase());
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
+const DERIVED = ['PUBLICATION-MANIFEST.json', 'VALIDATION.json'];
+const REVIEWED = {
+  'scripts/verify-records.mjs': [147529, '82fc7f36c0805ee163a93aa1720ed708629ac455d90a9bdd343b30f554335304'],
+  'scripts/editor-vault-proof-migration.mjs': [49253, '4175770874c4e00e0c22f13741e4224f28bc933e4447cd78adb889bac01dc81f'],
+  'scripts/verify-cloud-recovery-records.mjs': [15778, '405c90ac8c68acdc2b281e9563637cc391e1e0574705c1cbcdf7be8e1f794482'],
+  'products/rea-studio/results/cloud-publication-source-transition-20261015/preservation-manifest.json': [3069, '8daf5506d935254110dadf2c32e394d6b02f773692867b3a30120a14055ee576'],
+  'products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/verify-records.mjs.snapshot': [142684, '42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6'],
+  'products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/editor-vault-proof-migration.mjs.snapshot': [47841, '3d0a4ee0b5e9eef36c357c9a3c6170008a2bb0882cc8a755756358aabdf6ced1'],
+};
+const receipt = { schema: 'rea-hosted-publication-validation-attempt/v1', status: 'running', startedAtUtc: new Date().toISOString(),
+  scope: 'Publication integrity, syntax, links, credential patterns, immutable historical sources and finite cloud records; no behavioral-suite rerun.',
+  execution: Object.fromEntries(['CI', 'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_REPOSITORY', 'GITHUB_REF', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT'].map(name => [name, process.env[name] ?? null])),
+  runtime: process.version, sourceRoot: root, sourceCommit: process.env.GITHUB_SHA, candidateOverlay: false, phases: [],
+  historicalReceiptsRewritten: false, fullDevelopmentSuiteAcceptance: false, fullParity: false, superiority: false, applicationTestsExecuted: 0, originalExecutions: 0 };
+const events = fs.openSync(path.join(evidence, 'events.jsonl'), 'wx'); let sequence = 0, interrupted = null, activeStop = null;
+function event(type, details = {}) { fs.writeFileSync(events, JSON.stringify({ sequence: ++sequence, at: new Date().toISOString(), type, ...details }) + '\n'); fs.fsyncSync(events); }
+function save() { const target = path.join(evidence, 'attempt-validation.json'), temporary = target + '.tmp', fd = fs.openSync(temporary, 'wx'); try { fs.writeFileSync(fd, JSON.stringify(receipt, null, 2) + '\n'); fs.fsyncSync(fd); } finally { fs.closeSync(fd); } fs.renameSync(temporary, target); }
+function write(name, bytes) { const target = path.join(evidence, name); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.writeFileSync(target, bytes, { flag: 'wx' }); }
+function live() { assert.equal(interrupted, null, 'Interrupted: ' + interrupted); }
+function git(argv, allowDetached = false) {
+  const result = spawnSync('git', argv, { cwd: root, shell: false, windowsHide: true, encoding: 'utf8', timeout: 120000, maxBuffer: 16 * 1024 * 1024,
+    env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GCM_INTERACTIVE: 'Never' } });
+  if (allowDetached && result.status === 1) return null; assert.equal(result.status, 0, result.stderr || result.error?.message); return result.stdout;
+}
+function safe(name) { assert.ok(typeof name === 'string' && name && name.length <= 4096 && !/[\\:\x00-\x1f\x7f]/.test(name) && !name.startsWith('/') && name.split('/').every(part => part && part !== '.' && part !== '..')); return name; }
+function publicFile(name) { safe(name); let target = root; for (const part of name.split('/')) { target = path.join(target, part); assert.equal(fs.lstatSync(target).isSymbolicLink(), false); } const stat = fs.lstatSync(target); assert.ok(stat.isFile() && stat.size <= 32 * 1024 * 1024); return target; }
+const handlers = new Map(['SIGINT', 'SIGTERM', 'SIGBREAK'].map(signal => [signal, () => { interrupted = signal; activeStop?.('received ' + signal); }]));
+for (const [signal, handler] of handlers) process.on(signal, handler);
+for (const stream of [process.stdout, process.stderr]) stream.on('error', () => {});
+save(); event('running');
+
+async function child(name, argv) {
+  live(); const row = { name, status: 'running', command: [process.execPath, ...argv], startedAtUtc: new Date().toISOString(), timeoutMs: 20 * 60000,
+    stdoutBytes: 0, stderrBytes: 0, droppedBytes: 0, stdoutLimit: 2 * 1024 * 1024, stderrLimit: 1024 * 1024 };
+  receipt.phases.push(row); save(); event('child-starting', { name });
+  const stdout = fs.openSync(path.join(evidence, name + '.stdout.txt'), 'wx'), stderr = fs.openSync(path.join(evidence, name + '.stderr.txt'), 'wx');
+  try {
+    const outcome = await new Promise(resolve => {
+      const env = { ...process.env }; delete env.NODE_TEST_CONTEXT;
+      const processChild = spawn(process.execPath, argv, { cwd: root, env, shell: false, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+      let done = false, failure = null, cleanup = null, stopping = false;
+      function finish(exitCode, signal, closeObserved = true) { if (done) return; done = true; clearTimeout(deadline); clearInterval(heartbeat); clearTimeout(cleanup); activeStop = null; resolve({ exitCode, signal, closeObserved, failure }); }
+      function stop(reason) {
+        if (stopping) return; stopping = true; failure ??= reason;
+        try { event('child-stop', { name, reason, pid: processChild.pid ?? null }); } catch {}
+        if (processChild.pid) { const stopped = spawnSync('taskkill.exe', ['/PID', String(processChild.pid), '/T', '/F'], { windowsHide: true, shell: false, stdio: 'ignore', timeout: 10000 }); if (stopped.status !== 0) processChild.kill('SIGKILL'); }
+        cleanup = setTimeout(() => { processChild.stdout.destroy(); processChild.stderr.destroy(); finish(null, null, false); }, 5000);
+      }
+      activeStop = stop;
+      const deadline = setTimeout(() => stop('publication child deadline exceeded'), row.timeoutMs);
+      const heartbeat = setInterval(() => { try { event('child-progress', { name, stdoutBytes: row.stdoutBytes, stderrBytes: row.stderrBytes }); } catch { stop('progress event storage failed'); } }, 10000);
+      for (const [kind, fd] of [['stdout', stdout], ['stderr', stderr]]) {
+        processChild[kind].on('data', bytes => { if (done) return; try { const key = kind + 'Bytes', retain = Math.min(bytes.length, Math.max(0, row[kind + 'Limit'] - row[key])); if (retain) { fs.writeFileSync(fd, bytes.subarray(0, retain)); fs.fsyncSync(fd); row[key] += retain; } row.droppedBytes += bytes.length - retain; if (retain !== bytes.length) stop(kind + ' evidence cap exceeded'); } catch { stop(kind + ' evidence storage failed'); } });
+        processChild[kind].on('error', error => { if (!done) stop(kind + ' stream failed: ' + error.message); });
+      }
+      processChild.on('error', error => { failure = 'spawn failed: ' + error.message; }); processChild.on('close', (code, signal) => finish(code, signal));
+      row.pid = processChild.pid ?? null; try { event('child-started', { name, pid: row.pid }); } catch { stop('start event storage failed'); }
+    });
+    Object.assign(row, outcome); assert.equal(outcome.failure, null); assert.equal(outcome.closeObserved, true); assert.equal(outcome.exitCode, 0); assert.equal(outcome.signal, null); assert.equal(row.droppedBytes, 0); live(); row.status = 'passed';
+    return JSON.parse(fs.readFileSync(path.join(evidence, name + '.stdout.txt'), 'utf8').trim().split(/\r?\n/).at(-1));
+  } catch (error) { row.status = 'failed'; row.failure = { name: error.name, message: error.message }; throw error; }
+  finally { row.completedAtUtc = new Date().toISOString(); activeStop = null; for (const fd of [stdout, stderr]) { fs.fsyncSync(fd); fs.closeSync(fd); } save(); event('child-terminal', { name, status: row.status }); }
+}
+
+try {
+  assert.equal(git(['rev-parse', 'HEAD']).trim(), process.env.GITHUB_SHA); assert.equal(git(['status', '--porcelain=v1', '--untracked-files=all', '-z']), '');
+  receipt.branch = git(['symbolic-ref', '-q', '--short', 'HEAD'], true)?.trim() ?? null; receipt.gitTree = git(['rev-parse', 'HEAD^{tree}']).trim();
+  const objectFormat = git(['rev-parse', '--show-object-format']).trim(); assert.ok(['sha1', 'sha256'].includes(objectFormat));
+  const tree = git(['ls-tree', '-r', '-z', '--full-tree', 'HEAD']).split('\0').filter(Boolean).map(row => { const index = row.indexOf('\t'), [mode, type, oid] = row.slice(0, index).split(' '), name = row.slice(index + 1); safe(name); assert.ok(['100644', '100755'].includes(mode) && type === 'blob'); assert.match(oid, objectFormat === 'sha1' ? /^[0-9a-f]{40}$/ : /^[0-9a-f]{64}$/); return { path: name, gitSHA: oid }; });
+  assert.ok(tree.length > 24000 && tree.length <= 30000); assert.equal(new Set(tree.map(row => row.path)).size, tree.length);
+  const tracked = new Set(tree.map(row => row.path));
+  for (const [name, [bytes, sha256]] of Object.entries(REVIEWED)) { assert.ok(tracked.has(name), 'Reviewed source must already be committed: ' + name); const content = fs.readFileSync(publicFile(name)); assert.deepEqual(identity(content), { bytes, sha256 }); write('reviewed-sources/' + name + '.snapshot', content); }
+  for (const name of ['scripts/verify-cloud-publication.mjs', 'scripts/publication-integrity-controls.mjs', '.github/workflows/publication-integrity-cloud.yml']) { assert.ok(tracked.has(name)); write('collector-sources/' + name + '.snapshot', fs.readFileSync(publicFile(name))); }
+  const oldManifestBytes = fs.readFileSync(publicFile(DERIVED[0])), oldValidationBytes = fs.readFileSync(publicFile(DERIVED[1]));
+  write('metadata-before/' + DERIVED[0] + '.snapshot', oldManifestBytes); write('metadata-before/' + DERIVED[1] + '.snapshot', oldValidationBytes);
+  const old = JSON.parse(oldManifestBytes); assert.equal(old.schema, 'rea-publication-manifest/v1'); assert.equal(old.algorithm, 'sha256'); assert.deepEqual(old.derived_records_excluded, DERIVED);
+  const forbidden = /(^|\/)(artifacts|node_modules|tooling|__pycache__|work|\.local)(\/|$)|\.(exe|dll|zip|tgz|bundle|tar|7z|pyc)$/i;
+  const credentials = /\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/;
+  function payload(label) {
+    live(); const rows = []; let bytes = 0;
+    for (const entry of tree) {
+      if (DERIVED.includes(entry.path)) continue;
+      const content = fs.readFileSync(publicFile(entry.path)), sha256 = sha(content); bytes += content.length; assert.ok(bytes <= 2 * 1024 * 1024 * 1024);
+      assert.equal(createHash(objectFormat).update('blob ' + content.length + '\0').update(content).digest('hex'), entry.gitSHA, 'Working bytes differ from committed Git: ' + entry.path);
+      assert.ok(!forbidden.test(entry.path) || entry.path === 'products/rea-studio/apps/archive/fixtures/zstd/native-zip93.zip' && sha256 === 'e9282f76dbd3c080d0e12ef95489458523ebbc65c2951f4b8f3cb880a16c5d8b');
+      assert.equal(credentials.test(content.toString('utf8')), false, 'Credential-shaped content requires review: ' + entry.path);
+      rows.push({ path: entry.path, bytes: content.length, sha256 });
+      if (rows.length % 1000 === 0) event('payload-progress', { label, files: rows.length, bytes });
+    }
+    rows.sort((a, b) => a.path.localeCompare(b.path)); event('payload-complete', { label, files: rows.length, bytes }); return { rows, bytes };
+  }
+  const before = payload('before'); receipt.payloadBefore = { files: before.rows.length, bytes: before.bytes, rowsIdentity: identity(Buffer.from(JSON.stringify(before.rows))) }; save();
+  const controls = await runPublicationControls(root, path.join(temporary, 'rea-publication-controls-' + process.env.GITHUB_RUN_ID + '-' + process.env.GITHUB_RUN_ATTEMPT), event);
+  write('controls.json', JSON.stringify(controls, null, 2) + '\n'); receipt.controls = { status: controls.status, checks: controls.checks }; save();
+  const nextManifest = Buffer.from(JSON.stringify({ ...old, files: before.rows }, null, 2)); fs.writeFileSync(path.join(root, DERIVED[0]), nextManifest); receipt.generatedManifest = identity(nextManifest); save(); event('publication-manifest-generated', receipt.generatedManifest);
+  const first = await child('publication-write', ['scripts/verify-records.mjs', '--write']); assert.equal(first.status, 'passed');
+  const validationBytes = fs.readFileSync(path.join(root, DERIVED[1])), validation = JSON.parse(validationBytes); assert.deepEqual(first, validation);
+  const second = await child('publication-recheck', ['scripts/verify-records.mjs']); assert.equal(second.status, 'passed');
+  const firstStable = { ...first }, secondStable = { ...second }; delete firstStable.checked_at_utc; delete secondStable.checked_at_utc; assert.deepEqual(secondStable, firstStable);
+  const after = payload('after'); assert.deepEqual(after.rows, before.rows); receipt.payloadAfter = { files: after.rows.length, bytes: after.bytes, rowsIdentity: identity(Buffer.from(JSON.stringify(after.rows))) }; receipt.payloadStable = true;
+  assert.equal(git(['rev-parse', 'HEAD']).trim(), process.env.GITHUB_SHA);
+  const status = git(['status', '--porcelain=v1', '--untracked-files=all', '-z']).split('\0').filter(Boolean); assert.ok(status.every(row => row.slice(0, 2) === ' M' && DERIVED.includes(row.slice(3)))); receipt.derivedWorktreePaths = status.map(row => row.slice(3)).sort();
+  assert.deepEqual(fs.readFileSync(path.join(root, DERIVED[0])), nextManifest); assert.deepEqual(fs.readFileSync(path.join(root, DERIVED[1])), validationBytes);
+  for (const name of DERIVED) { const bytes = fs.readFileSync(path.join(root, name)); write('derived/' + name, bytes); }
+  receipt.derived = DERIVED.map(name => ({ path: name, ...identity(fs.readFileSync(path.join(root, name))) }));
+  receipt.publicationResult = { status: validation.status, payloadFiles: validation.payload_files, syntaxChecks: validation.javascript_syntax_checks,
+    credentialPatternScan: validation.credential_pattern_scan_passed, rootLinksResolve: validation.root_document_links_resolve,
+    historical937Tests: validation.product_development.historical_937_recorded_tests_passed, finiteHosted282Tests: validation.finite_cloud_flow_vault.recordedPass };
+  assert.equal(receipt.publicationResult.historical937Tests, 937); assert.equal(receipt.publicationResult.finiteHosted282Tests, 282);
+  receipt.status = 'passed'; receipt.completedAtUtc = new Date().toISOString(); save(); event('terminal', { status: 'passed' }); console.log(JSON.stringify({ status: receipt.status, payload: receipt.payloadAfter, controls: receipt.controls, publication: receipt.publicationResult }));
+} catch (error) {
+  receipt.status = interrupted ? 'interrupted' : 'failed'; receipt.completedAtUtc = new Date().toISOString(); receipt.failure = { name: error.name, code: error.code ?? null, message: error.message }; save(); event('terminal', { status: receipt.status, failure: receipt.failure }); console.error(error.stack ?? error.message); process.exitCode = 1;
+} finally { for (const [signal, handler] of handlers) process.off(signal, handler); fs.fsyncSync(events); fs.closeSync(events); }

@@ -6,7 +6,7 @@ import path from 'node:path';
 import os from 'node:os';
 import { execFile } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
-import { createSourceMetadataReader, readSourceMetadata, runWindowsMetadataBatch } from './source-metadata.mjs';
+import { createSourceMetadataReader, readSourceMetadata, runWindowsMetadataBatch, WINDOWS_METADATA_SCRIPT } from './source-metadata.mjs';
 import { createArchiveHandler } from './server.mjs';
 import { createWorkspace } from '../../lib/storage.mjs';
 
@@ -199,6 +199,38 @@ async function nativeFixture(mode, rows, ownedRoot) {
 }
 function milliseconds(iso) { return new Date(Date.parse(iso)).toISOString(); }
 
+// Test-only second attempt on an owned synthetic request if the production
+// transport refuses. The production program and its generic errors stay intact.
+async function diagnoseNativeFailure(t, label, input) {
+  const marker = "  [Console]::Error.WriteLine('Native Windows source metadata failed.')";
+  const diagnostic = `  [Console]::Out.Write((@{ diagnosticFailure = @{ exceptionType = $_.Exception.GetType().FullName; errorId = $_.FullyQualifiedErrorId; lineNumber = $_.InvocationInfo.ScriptLineNumber; category = [string]$_.CategoryInfo.Category } } | ConvertTo-Json -Compress -Depth 4))`;
+  assert.equal(WINDOWS_METADATA_SCRIPT.split(marker).length, 2);
+  const encoded = Buffer.from(WINDOWS_METADATA_SCRIPT.replace(marker, diagnostic + '\n' + marker), 'utf16le').toString('base64');
+  const executable = path.win32.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
+  const output = await new Promise(resolve => {
+    const child = execFile(executable, ['-NoLogo', '-NoProfile', '-NonInteractive', '-EncodedCommand', encoded],
+      { encoding: 'utf8', windowsHide: true, shell: false, timeout: 15000, maxBuffer: 16 * 1024 },
+      (error, stdout) => resolve({ failed: Boolean(error), stdout }));
+    child.stdin.on('error', () => {}); child.stdin.end(input, 'utf8');
+  });
+  let failure;
+  try { failure = JSON.parse(output.stdout).diagnosticFailure; } catch {}
+  t.diagnostic(JSON.stringify({ kind: 'windows-source-metadata-native-failure', label, failed: output.failed,
+    diagnosticFailure: failure ?? null, diagnosticResponseBytes: Buffer.byteLength(output.stdout) }));
+}
+
+function diagnoseNativeResponse(t, label, response) {
+  const bytes = Buffer.byteLength(response);
+  if (bytes > 16 * 1024) { t.diagnostic(JSON.stringify({ kind: 'windows-source-metadata-response', label, bytes, omitted: true })); return; }
+  try {
+    const parsed = JSON.parse(response);
+    const items = parsed.items?.map(({ index, path: literalPath, normalizedPath, directory, modifiedAtUtc, modifiedAtMs,
+      accessedAtUtc, accessedAtMs, createdAtUtc, createdAtMs }) => ({ index, path: literalPath, normalizedPath, directory,
+      modifiedAtUtc, modifiedAtMs, accessedAtUtc, accessedAtMs, createdAtUtc, createdAtMs }));
+    t.diagnostic(JSON.stringify({ kind: 'windows-source-metadata-response', label, bytes, version: parsed.version, items }));
+  } catch { t.diagnostic(JSON.stringify({ kind: 'windows-source-metadata-response', label, bytes, invalidJson: true })); }
+}
+
 test('Windows native source → plain ZIP/plain+encrypted 7Z → native restored dates cover 1969/2106 boundary/2107 and Unicode names', WINDOWS_ONLY, async t => {
   const { root, workspace } = await fixture(t), source = path.join(root, 'source-年😀');
   await fs.mkdir(source);
@@ -223,7 +255,11 @@ test('Windows native source → plain ZIP/plain+encrypted 7Z → native restored
       const canonicalRoot = await fs.realpath(request.root);
       t.diagnostic(JSON.stringify({ kind: 'windows-source-path-spelling', label, literalRoot: request.root, canonicalRoot,
         differentSpelling: path.win32.normalize(request.root).toLowerCase() !== path.win32.normalize(canonicalRoot).toLowerCase() }));
-      return runWindowsMetadataBatch(input);
+      let response;
+      try { response = await runWindowsMetadataBatch(input); }
+      catch (error) { await diagnoseNativeFailure(t, label, input); throw error; }
+      diagnoseNativeResponse(t, label, response);
+      return response;
     } });
     const handler = createArchiveHandler({ sourceMetadata: async (sources, sourceRoot) => {
       const result = await reader(sources, sourceRoot);

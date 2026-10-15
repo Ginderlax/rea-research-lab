@@ -5,7 +5,7 @@ unchanged by this commit. No file here supplies test, integration, browser,
 complete-product, security, performance or superiority acceptance.
 
 `bundle.json` identifies17 unexecuted current-layout AES proposal sources,
-the five-file Windows metadata derivative with a subsequent two-file DOS-alias correction,
+the five-file Windows metadata derivative with subsequent two-file DOS-alias corrections,
 their21 distinct final app targets (six replacements and15 additions),47
 strict current-app baseline identities and four historical shared-context
 identities. Source snapshots retain their exact selected bytes. The original
@@ -23,12 +23,18 @@ included in the census. No app/test source or exclusion rule changed.
 
 Hosted run38806502120 then executed160 checks:154 passed and six failed. Five
 backend creation failures and the native-date observer exposed DOS short-path
-expansion (`RUNNER~1` versus `runneradmin`). The new two-file alias correction
-preserves the checked literal path in native metadata responses and canonicalizes
-only owned fixture-observer paths. Strict response correlation remains in place.
-One new transport regression group makes the next planned total161. The old
-five-file source review predates these two corrected files; new source review and
-hosted replay remain required. Failed160 evidence is preserved separately.
+expansion (`RUNNER~1` versus `runneradmin`). Its first two-file correction retained
+`GetFullPath` output for correlation and canonicalized owned fixture-observer paths.
+Hosted run38808025295 then executed161 checks:155 passed and six failed, with an
+actual short-alias spelling difference retained in the native-date diagnostic.
+The next source epoch echoes the submitted path only after the same native
+containment, ancestor, literal lookup and type checks; `normalizedPath` records
+the .NET path separately. Bounded test diagnostics retain actual native response
+paths/dates, or fixed catch details from a test-only retry if native collection
+throws. Strict response correlation and date expectations remain unchanged.
+The planned total remains161. The old five-file source review predates these
+corrections; source review and hosted replay remain required. Both failed runs
+and the previous local stages remain preserved.
 
 The selected22 released source/manual/license files are retained as inert
 `.snapshot` files with exact origin/size/SHA/source mappings. They accompany

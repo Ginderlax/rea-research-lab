@@ -51,9 +51,9 @@ try {
     $modified = Stamp $item.LastWriteTimeUtc
     $accessed = Stamp $item.LastAccessTimeUtc
     $created = Stamp $item.CreationTimeUtc
-    # FullName may expand a valid DOS short-path alias (RUNNER~1). Correlate
-    # the exact confined path passed to this same literal Get-Item operation.
-    $rows.Add(@{ index = $index; path = $full; directory = $directory;
+    # Both GetFullPath and FullName can expand a valid DOS short-path alias.
+    # Echo the submitted transport identity only after all native path checks.
+    $rows.Add(@{ index = $index; path = [string]$source.path; normalizedPath = $full; directory = $directory;
       modifiedAtUtc = $modified.utc; modifiedAtMs = $modified.ms;
       accessedAtUtc = $accessed.utc; accessedAtMs = $accessed.ms;
       createdAtUtc = $created.utc; createdAtMs = $created.ms })

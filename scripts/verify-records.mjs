@@ -379,7 +379,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   const historical937Inventory = JSON.parse(historical937Read(historical937Prefix + historical937BeforeRow.path, { bytes: historical937BeforeRow.bytes, sha256: historical937BeforeRow.sha256 }));
   const historical937Sources = new Map(historical937Inventory.map(row => [row.path, row]));
   assert.equal(historical937Inventory.length, 737); assert.equal(historical937Sources.size, 737); assert.equal(validation.source_files.length, 737);
-  const historical937AllowedRoutes = new Set(['apps/flow/client.mjs', 'apps/flow/native.mjs', 'apps/flow/server.mjs', 'apps/vault/client.mjs', 'apps/vault/recycle.mjs', 'apps/vault/server.mjs']);
+  const historical937AllowedRoutes = new Set(['apps/editor/git.test.mjs', 'apps/flow/client.mjs', 'apps/flow/native.mjs', 'apps/flow/server.mjs', 'apps/sync/dav-transfer.mjs', 'apps/vault/client.mjs', 'apps/vault/recycle.mjs', 'apps/vault/server.mjs']);
   const historical937Checked = new Set(); let historical937Routed = 0, historical937Unchanged = 0;
   const browser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-verification.json'), 'utf8'));
   const comparison = JSON.parse(readFileSync(join(developmentRoot, 'results/editor-comparison.json'), 'utf8'));
@@ -403,7 +403,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     if (historicalPath) { assert.ok(historical937AllowedRoutes.has(entry.path), 'Unlisted937 source transition'); historical937Read(historicalPath, expected); historical937Routed++; }
     else { historical937Read(name, expected); historical937Unchanged++; }
   }
-  assert.equal(historical937Checked.size, 737); assert.equal(historical937Routed, 6); assert.equal(historical937Unchanged, 731);
+  assert.equal(historical937Checked.size, 737); assert.equal(historical937Routed, 8); assert.equal(historical937Unchanged, 729);
   assert.equal(validation.source_bytes_stable_across_run, true);
   assert.equal(new Set(browser.checks.map(check => check.app)).size, 10);
   assert.ok(browser.checks.every(check => check.passed));
@@ -529,7 +529,17 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   for (const gate of ['comparisonOfSpeedOrResourcesToOriginal','runtimeRunsOriginalOrVendorCode','allDocumentedFeaturesEnumerated','fullProductComplete','universalSuperiorityEstablished']) assert.equal(webdav[gate], false);
   assert.equal(webdav.oracle.authenticatedOriginalExecutions, 274); assert.equal(webdav.oracle.comparisonProfiles, 128); assert.equal(webdav.oracle.comparisonDecisions, 1408); assert.equal(webdav.oracle.heldOutFilteredTransferFolders, 8);
   assert.equal(webdav.officialSourceFiles, 16); assert.equal(webdav.sourceContracts, 29);
-  for (const [path, sha256] of Object.entries(webdav.sourceFiles)) currentFingerprint({path:webdavRoot + path,sha256}, 'WebDAV');
+  // The immutable72-case receipt continues to authenticate its exact tested
+  // transfer before-image. Every other WebDAV source remains a live exact pin.
+  for (const [path, sha256] of Object.entries(webdav.sourceFiles)) {
+    if (path === 'dav-transfer.mjs') {
+      assert.equal(sha256, '591146243ed9b378aed70ce4beedceeec1b12319d7747b1e21fad2282286c9bb');
+      const expected = { bytes: 14717, sha256 }, name = webdavRoot + path;
+      const historicalPath = sourceProofMigration.resolve(name, expected);
+      assert.equal(historicalPath, 'products/rea-studio/results/windows-path-source-transition-20261015/before/products/rea-studio/apps/sync/dav-transfer.mjs.snapshot');
+      currentFingerprint({ ...expected, path: historicalPath }, 'Historical WebDAV transfer source');
+    } else currentFingerprint({ path: webdavRoot + path, sha256 }, 'WebDAV unchanged source');
+  }
   for (const [path, sha256] of Object.entries(webdav.hostDependenciesAtTest)) { const target = resolve(root, webdavRoot, path); namedHistoricalHostFingerprint({path:relative(root,target).replaceAll('\\','/'),sha256}, 'WebDAV nonhost current source'); }
   for (const [path, entry] of Object.entries(webdav.receipts)) currentFingerprint({...entry,path:webdavRoot + 'results/' + path}, 'WebDAV evidence');
   const webdavProvenance = JSON.parse(readFileSync(join(root, webdavRoot, 'results/webdav-provenance.json'), 'utf8'));
@@ -866,10 +876,10 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     historical_rabin_routing_geometry_combined_tests_passed: rabinRoutingGeometryHistory.combined_tests,
     historical_rabin_routing_geometry_source_hashes_checked: rabinRoutingGeometrySources.size,
     preserved_backup_rabin_study_artifacts: rabinPreservation.snapshots.length,
-    current_sync_test_collection: webdav.testRun.pass,
-    current_webdav_test_collection: webdav.testRun.newWebDAVTests,
-    current_webdav_original_executions: webdav.oracle.authenticatedOriginalExecutions,
-    current_webdav_original_comparison_decisions: webdav.oracle.comparisonDecisions,
+    historical_sync_test_collection: webdav.testRun.pass,
+    historical_webdav_test_collection: webdav.testRun.newWebDAVTests,
+    historical_webdav_original_executions: webdav.oracle.authenticatedOriginalExecutions,
+    historical_webdav_original_comparison_decisions: webdav.oracle.comparisonDecisions,
     current_archive_test_collection: archiveLzma.test_run.passed,
     current_archive_source_and_proof_hashes_checked: lzmaIntegrityResult.fingerprints,
     historical_compression_remote_browser_workflow_records: compressionBrowser.checks.length,

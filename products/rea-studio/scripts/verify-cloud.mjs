@@ -18,8 +18,8 @@ const inside = (parent, target) => {
   const relative = path.relative(parent, target);
   return relative === '' || (!relative.startsWith('..' + path.sep) && relative !== '..' && !path.isAbsolute(relative));
 };
-const options = { scope: null, output: null, timeoutMs: 35 * 60_000, bootstrapManifest: null, overlayManifest: null, snapshotScope: 'active', sourceOnly: false };
-const names = new Map([['--scope', 'scope'], ['--output', 'output'], ['--timeout-ms', 'timeoutMs'], ['--bootstrap-manifest', 'bootstrapManifest'], ['--overlay-manifest', 'overlayManifest'], ['--snapshot-scope', 'snapshotScope']]);
+const options = { scope: null, output: null, timeoutMs: 35 * 60_000, bootstrapManifest: null, overlayManifest: null, installedManifest: null, snapshotScope: 'active', sourceOnly: false };
+const names = new Map([['--scope', 'scope'], ['--output', 'output'], ['--timeout-ms', 'timeoutMs'], ['--bootstrap-manifest', 'bootstrapManifest'], ['--overlay-manifest', 'overlayManifest'], ['--installed-manifest', 'installedManifest'], ['--snapshot-scope', 'snapshotScope']]);
 const seenOptions = new Set();
 for (let i = 2; i < process.argv.length; i++) {
   const argument = process.argv[i];
@@ -30,15 +30,18 @@ for (let i = 2; i < process.argv.length; i++) {
   assert(i + 1 < process.argv.length && !process.argv[i + 1].startsWith('--'), 'Missing value: ' + argument);
   options[names.get(argument)] = process.argv[++i];
 }
-assert(['flow-vault', 'full', 'archive-aes-experiment', 'full-oracle-experiment', 'windows-path-experiment'].includes(options.scope), 'Use a supported explicit cloud verification scope');
+assert(['flow-vault', 'full', 'archive-aes-experiment', 'full-oracle-experiment', 'windows-path-experiment', 'windows-path-installed'].includes(options.scope), 'Use a supported explicit cloud verification scope');
+const windowsPathScope = ['windows-path-experiment', 'windows-path-installed'].includes(options.scope);
 assert(['all', 'active'].includes(options.snapshotScope), 'Use --snapshot-scope all or active');
 assert(typeof options.output === 'string' && path.isAbsolute(options.output), '--output must be absolute');
 options.timeoutMs = Number(options.timeoutMs);
 assert(Number.isSafeInteger(options.timeoutMs) && options.timeoutMs >= 1_000 && options.timeoutMs <= 2 * 60 * 60_000, 'Invalid bounded timeout');
 if (options.bootstrapManifest) assert(path.isAbsolute(options.bootstrapManifest), '--bootstrap-manifest must be absolute');
 if (options.overlayManifest) assert(path.isAbsolute(options.overlayManifest), '--overlay-manifest must be absolute');
+if (options.installedManifest) assert(path.isAbsolute(options.installedManifest), '--installed-manifest must be absolute');
 assert(['archive-aes-experiment', 'full-oracle-experiment', 'windows-path-experiment'].includes(options.scope) || !options.overlayManifest, 'Overlay provenance is exclusive to an explicit experimental scope');
-if (options.scope === 'windows-path-experiment') assert(!options.bootstrapManifest, 'The finite Windows path experiment has no vendor prerequisite manifest');
+assert(options.scope === 'windows-path-installed' || !options.installedManifest, 'Installed-source provenance requires the explicit installed scope');
+if (windowsPathScope) assert(!options.bootstrapManifest, 'The finite Windows path scopes have no vendor prerequisite manifest');
 
 // Resolve existing ancestors before creating anything, so an evidence-directory
 // symlink cannot put logs inside the source census.
@@ -59,7 +62,7 @@ assert(!inside(output, realStudio), 'Output cannot be Studio or one of its ances
 for (const directory of censusDirectories) assert(!inside(path.join(realStudio, directory), output), 'Output overlaps source census: ' + directory);
 fs.mkdirSync(output, { recursive: true });
 assert(fs.statSync(output).isDirectory(), 'Output must be a directory');
-const reserved = ['attempt-validation.json', 'attempt-validation.json.tmp', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'source-snapshot-manifest.json', 'source', 'runner.mjs.snapshot', 'development-validation.json', 'bootstrap-prerequisites.json.snapshot', 'overlay-composition.json.snapshot', 'experimental-test-selection.json.snapshot', 'oracle-test-composition.json.snapshot', 'oracle-test-bundle.json.snapshot', 'windows-path-composition.json.snapshot', 'windows-path-bundle.json.snapshot', 'git-baseline-active-source.json', 'prerequisite-receipts'];
+const reserved = ['attempt-validation.json', 'attempt-validation.json.tmp', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'source-snapshot-manifest.json', 'source', 'runner.mjs.snapshot', 'development-validation.json', 'bootstrap-prerequisites.json.snapshot', 'overlay-composition.json.snapshot', 'experimental-test-selection.json.snapshot', 'oracle-test-composition.json.snapshot', 'oracle-test-bundle.json.snapshot', 'windows-path-composition.json.snapshot', 'windows-path-installed-source-check.json.snapshot', 'windows-path-bundle.json.snapshot', 'git-baseline-active-source.json', 'prerequisite-receipts'];
 for (const name of reserved) assert(!fs.existsSync(path.join(output, name)), 'Evidence already exists; use a new run directory: ' + name);
 
 const open = name => fs.openSync(path.join(output, name), 'wx');
@@ -77,7 +80,7 @@ const record = {
   sourceSnapshotsInert: true, sourceSnapshotFiles: 0, limits,
   fullFeatureParityEstablished: false, universalSuperiorityEstablished: false,
   historicalReceiptsRebound: false, historicalDevelopmentReceiptOverwritten: false,
-  acceptanceScope: options.scope === 'windows-path-experiment' ? 'Five finite Editor Git and Sync WebDAV test files with a hosted-only three-target source composition: one explicit Sync runtime correction, one Editor physical-path observer correction and one new Windows regression file. Git identifies the committed baseline and inert payloads; composition identifies the active derivative. A separate same-attempt source postcheck is required. Active production integration, full suite, browser acceptance, security, parity and superiority remain open.' : options.scope === 'full-oracle-experiment' ? 'Every current implemented development test with an explicitly composed three-file bsdtar oracle-test overlay. Application runtime sources retain their Git baseline bytes; two oracle loaders and a new helper belong to a new test-dependency epoch. A separate same-attempt composer postcheck remains required. No unchanged-test, historical-DLL, browser, product-parity or superiority acceptance.' : options.scope === 'archive-aes-experiment' ? 'Finite experimental Archive AES and Windows source metadata contracts on an explicitly composed hosted working tree. The Git revision alone describes the baseline and committed overlay payloads; composition provenance identifies the active experimental bytes. Production integration, full Archive acceptance, browser acceptance, full parity and superiority remain open.' : options.scope === 'flow-vault' ? 'Finite Flow and Vault implemented contracts; other applications are not executed.' : 'Current implemented development contracts; every documented original feature and comparative acceptance remain open.',
+  acceptanceScope: options.scope === 'windows-path-installed' ? 'Five finite Editor Git and Sync WebDAV test files on a clean committed checkout whose three current source images exactly match the reviewed after-image pins. Every eligible active source is Git-blob authenticated; same-attempt source census and a separate committed-source postcheck are required. This collector performs no source installation or composition and does not authenticate a production installer receipt. Full suite, browser, security, parity and superiority remain separate.' : options.scope === 'windows-path-experiment' ? 'Five finite Editor Git and Sync WebDAV test files with a hosted-only three-target source composition: one explicit Sync runtime correction, one Editor physical-path observer correction and one new Windows regression file. Git identifies the committed baseline and inert payloads; composition identifies the active derivative. A separate same-attempt source postcheck is required. Active production integration, full suite, browser acceptance, security, parity and superiority remain open.' : options.scope === 'full-oracle-experiment' ? 'Every current implemented development test with an explicitly composed three-file bsdtar oracle-test overlay. Application runtime sources retain their Git baseline bytes; two oracle loaders and a new helper belong to a new test-dependency epoch. A separate same-attempt composer postcheck remains required. No unchanged-test, historical-DLL, browser, product-parity or superiority acceptance.' : options.scope === 'archive-aes-experiment' ? 'Finite experimental Archive AES and Windows source metadata contracts on an explicitly composed hosted working tree. The Git revision alone describes the baseline and committed overlay payloads; composition provenance identifies the active experimental bytes. Production integration, full Archive acceptance, browser acceptance, full parity and superiority remain open.' : options.scope === 'flow-vault' ? 'Finite Flow and Vault implemented contracts; other applications are not executed.' : 'Current implemented development contracts; every documented original feature and comparative acceptance remain open.',
   evidenceDirectory: output, failures: [],
 };
 function flush() {
@@ -147,7 +150,7 @@ function census() {
 }
 function selectTests(rows) {
   const tests = rows.map(row => row.path).filter(name => name.endsWith('.test.mjs') && !name.split('/').includes('results'));
-  if (options.scope === 'windows-path-experiment') {
+  if (windowsPathScope) {
     const expected = ['apps/editor/git.test.mjs', 'apps/sync/webdav.test.mjs', 'apps/sync/webdav.actions.test.mjs', 'apps/sync/webdav.integration.test.mjs', 'apps/sync/webdav.windows-path.test.mjs'];
     const bundle = JSON.parse(fs.readFileSync(path.join(studio, 'experiments/windows-path/bundle.json')));
     assert.deepEqual(bundle.tests, expected.map(name => 'products/rea-studio/' + name), 'Windows path experiment must retain its fixed five-file selection');
@@ -315,6 +318,50 @@ function verifyWindowsPathComposition() {
     modifiedRuntimeTargets: 1, modifiedObserverTargets: 1, newRegressionTargets: 1, separatePostcheckRequired: true, postcheckReceipt: 'windows-path-postrun-source-check.json', fullDevelopmentReceiptEmitted: false };
   return { targets: new Set(targets), status };
 }
+function verifyWindowsPathInstalled() {
+  assert(options.installedManifest, 'Installed Windows path scope requires --installed-manifest');
+  assert.equal(path.resolve(options.installedManifest), path.join(output, 'windows-path-installed-source-check.json'), 'Installed source check must belong to this evidence directory');
+  assert.equal(record.executionEnvironment, 'github-hosted'); assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
+  assert.equal(process.env.CI, 'true'); assert.equal(record.repositoryCommit, process.env.GITHUB_SHA);
+  assert.deepEqual(visibleGitStatus(), [], 'Installed Windows path scope requires a clean committed checkout');
+  const bytes = fs.readFileSync(options.installedManifest); assert(bytes.length <= 2 * 1024 * 1024);
+  const value = JSON.parse(bytes), repository = path.resolve(studio, '../..');
+  assert.equal(value.schema, 'rea-windows-path-hosted-installed-source-check/v1'); assert.equal(value.status, 'verified-unexecuted-committed-afterimages');
+  sameAttempt(value.execution); assert.equal(value.sourceCommit, record.repositoryCommit); assert.equal(value.baselineGitCommit, record.repositoryCommit);
+  assert.equal(path.resolve(value.sourceRoot).toLowerCase(), fs.realpathSync(repository).toLowerCase());
+  assert.equal(value.mode, 'windows-path-installed'); assert.equal(value.sourceOnly, true); assert.equal(value.sourceMutationPerformed, false);
+  assert.equal(value.installationPerformedByThisCommand, false); assert.equal(value.productionInstallationReceiptVerified, false); assert.equal(value.committedImagesMatchReviewedAfter, true);
+  assert.equal(value.historicalReceiptsRebound, false); assert.equal(value.testExecutionsByComposer + value.originalExecutionsByComposer, 0);
+  assert.deepEqual(value.gitStatusBefore, []); assert.deepEqual(value.gitStatus, []);
+  const bundlePath = 'products/rea-studio/experiments/windows-path/bundle.json', bundleBytes = fs.readFileSync(path.join(repository, bundlePath));
+  assert.deepEqual(identity(bundleBytes), { bytes: 4266, sha256: '011ea962ecb061fd85a1edb9f4ce14f70836670bc0f7effb26d6260baaef16aa' });
+  assert.deepEqual(bundleBytes, readGit(['show', 'HEAD:' + bundlePath])); assert.deepEqual(value.sourceBundle, { path: bundlePath, ...identity(bundleBytes) });
+  const bundle = JSON.parse(bundleBytes); assert.equal(bundle.schema, 'rea-windows-path-hosted-source-bundle/v1');
+  assert.equal(bundle.sourceAuthoringOnly, true); assert.equal(bundle.productionInstalled, false); assert.equal(bundle.historicalReceiptsRebound, false);
+  const targets = ['products/rea-studio/apps/sync/dav-transfer.mjs', 'products/rea-studio/apps/editor/git.test.mjs', 'products/rea-studio/apps/sync/webdav.windows-path.test.mjs'];
+  assert.deepEqual(bundle.transitions.map(row => row.target), targets); assert.deepEqual(value.tests, bundle.tests);
+  const currentTargets = [], committedTargets = [];
+  for (const row of bundle.transitions) {
+    assert.equal(row.after.sourcePath, 'after/' + row.target + '.snapshot');
+    const current = fs.readFileSync(path.join(repository, row.target)), expected = { bytes: row.after.bytes, sha256: row.after.sha256 };
+    assert.deepEqual(identity(current), expected); assert.deepEqual(current, readGit(['show', 'HEAD:' + row.target]), 'Installed target differs from its Git blob');
+    const entry = readGit(['ls-tree', 'HEAD', '--', row.target]).toString('utf8').trim(), match = /^(100644|100755) blob ([0-9a-f]{40,64})\t(.+)$/.exec(entry);
+    assert(match && match[3] === row.target, 'Installed target must be a committed ordinary file');
+    const payload = fs.readFileSync(path.join(repository, 'products/rea-studio/experiments/windows-path', row.after.sourcePath));
+    assert.deepEqual(identity(payload), expected); assert.deepEqual(payload, readGit(['show', 'HEAD:products/rea-studio/experiments/windows-path/' + row.after.sourcePath]));
+    assert.deepEqual(fs.readFileSync(path.join(path.dirname(options.installedManifest), 'installed-source', row.target + '.snapshot')), current);
+    currentTargets.push({ path: row.target, ...expected }); committedTargets.push({ path: row.target, ...expected, gitBlob: match[2] });
+  }
+  currentTargets.sort((a, b) => a.path.localeCompare(b.path));
+  assert.deepEqual(value.currentTargets, currentTargets); assert.deepEqual(value.committedTargets, committedTargets);
+  assert.deepEqual(value.currentTargetSHA256, Object.fromEntries(currentTargets.map(row => [row.path, row.sha256])));
+  fs.writeFileSync(path.join(output, 'windows-path-installed-source-check.json.snapshot'), bytes, { flag: 'wx' });
+  fs.writeFileSync(path.join(output, 'windows-path-bundle.json.snapshot'), bundleBytes, { flag: 'wx' });
+  record.windowsPathInstalled = { ...identity(bytes), sourceCommit: record.repositoryCommit, committedImagesMatchReviewedAfter: true,
+    sourceMutationPerformed: false, installationPerformedByCollector: false, productionInstallationReceiptVerified: false,
+    exactAfterTargets: committedTargets, separatePostcheckRequired: true, postcheckReceipt: 'windows-path-installed-postrun-source-check.json', fullDevelopmentReceiptEmitted: false };
+  return { targets: new Set(), status: [], mode: 'windows-path-installed' };
+}
 function verifyGitBaselineActiveSources(rows, contract) {
   const blobs = new Map();
   for (const entry of readGit(['ls-tree', '-rz', '--full-tree', 'HEAD', '--', 'products/rea-studio'], 32 * 1024 * 1024).toString('utf8').split('\0').filter(Boolean)) {
@@ -332,8 +379,8 @@ function verifyGitBaselineActiveSources(rows, contract) {
     checked.push({ path: row.path, ...identity(bytes), gitBlob: object });
   }
   saveJson('git-baseline-active-source.json', { schema: 'rea-cloud-git-baseline-active-source/v1', repositoryCommit: record.repositoryCommit,
-    ...(record.oracleTestOverlay ? { excludedComposedOracleTargets: [...contract.targets], selection: 'All eligible active Studio census files outside historical results, excluding only the three explicit oracle-test targets.' } : { excludedComposedWindowsPathTargets: [...contract.targets], selection: 'All eligible active Studio census files outside historical results, excluding only the three explicit Windows path targets.' }), files: checked });
-  const provenance = record.oracleTestOverlay ?? record.windowsPathOverlay;
+    ...(record.windowsPathInstalled ? { excludedTargets: [], selection: 'Every eligible active Studio census file outside historical results; no target is excluded from Git-blob authentication.' } : record.oracleTestOverlay ? { excludedComposedOracleTargets: [...contract.targets], selection: 'All eligible active Studio census files outside historical results, excluding only the three explicit oracle-test targets.' } : { excludedComposedWindowsPathTargets: [...contract.targets], selection: 'All eligible active Studio census files outside historical results, excluding only the three explicit Windows path targets.' }), files: checked });
+  const provenance = record.oracleTestOverlay ?? record.windowsPathOverlay ?? record.windowsPathInstalled;
   provenance.gitBaselineEligibleActiveFiles = checked.length;
   provenance.gitBaselineEligibleActiveBytesAuthenticated = true;
 }
@@ -404,6 +451,7 @@ try {
     fullOracle = verifyOracleTestComposition();
   }
   if (options.scope === 'windows-path-experiment') windowsPath = verifyWindowsPathComposition();
+  if (options.scope === 'windows-path-installed') windowsPath = verifyWindowsPathInstalled();
   before = census();
   if (fullOracle) verifyGitBaselineActiveSources(before, fullOracle);
   if (windowsPath) verifyGitBaselineActiveSources(before, windowsPath);
@@ -436,7 +484,7 @@ try {
       assert(record.originalPrerequisites, 'This scope requires --bootstrap-manifest');
     }
     if (options.scope === 'full-oracle-experiment') assert.equal(process.version, 'v24.16.0', 'The full oracle-test epoch requires the pinned runtime');
-    if (options.scope === 'windows-path-experiment') { assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0'); }
+    if (windowsPathScope) { assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0'); }
     if (process.env.GITHUB_SHA) assert.equal(record.repositoryCommit, process.env.GITHUB_SHA, 'Checked-out Git commit differs from workflow identity');
     assert(!stopReason, stopReason);
     const env = { ...process.env };
@@ -500,7 +548,8 @@ try {
       assert(summary.tests > 0 && summary.tests === summary.pass, 'Every selected check must pass');
       assert.equal(summary.fail + summary.cancelled + summary.skipped + summary.todo, 0, 'Failures, cancellations, skips and unfinished checks cannot certify this scope');
       if (options.scope === 'archive-aes-experiment') assert.equal(summary.tests, 161, 'Experimental Archive selection must execute all 161 planned groups');
-      if (options.scope === 'windows-path-experiment') {
+      if (options.scope === 'windows-path-installed') assert.equal(summary.tests, 47, 'Installed Windows path selection must execute exactly the reviewed 47 groups');
+      if (windowsPathScope) {
         const raw = fs.readFileSync(path.join(output, 'stdout.txt'), 'utf8');
         const aliases = [...raw.matchAll(/^# (\{"kind":"native-workspace-root-spelling"[^\r\n]+\})\r?$/gm)].map(match => JSON.parse(match[1]));
         assert.equal(aliases.length, 1, 'Require the actual Windows short-name diagnostic once');
@@ -532,7 +581,11 @@ try {
     } catch (error) { failure('oracle-test Git postcheck: ' + error.message); }
   }
   if (windowsPath) {
-    try { assert.deepEqual(visibleGitStatus(), windowsPath.status, 'Visible Git changes differ from the three Windows path targets'); record.windowsPathOverlay.gitWorkingTreeMatchesOverlayAfter = true; }
+    try {
+      assert.deepEqual(visibleGitStatus(), windowsPath.status, 'Visible Git changes differ from the selected Windows path source epoch');
+      if (record.windowsPathInstalled) { assert.equal(readGit(['rev-parse', 'HEAD']).toString('utf8').trim(), record.repositoryCommit); assert.equal(record.repositoryCommit, process.env.GITHUB_SHA); record.windowsPathInstalled.gitWorkingTreeCleanAfter = true; }
+      else record.windowsPathOverlay.gitWorkingTreeMatchesOverlayAfter = true;
+    }
     catch (error) { failure('Windows path Git postcheck: ' + error.message); }
   }
   record.status = receivedSignal ? 'interrupted' : record.failures.length ? 'failed' : options.sourceOnly ? 'source-only' : 'passed';

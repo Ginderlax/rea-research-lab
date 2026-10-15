@@ -1,4 +1,4 @@
-name: Cloud Windows path experiment
+name: Cloud Windows path focused verification
 
 on:
   workflow_dispatch:
@@ -57,21 +57,46 @@ jobs:
         run: |
           $evidence=Join-Path $env:RUNNER_TEMP ('rea-windows-path-evidence-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
           'REA_WINDOWS_PATH_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-      - name: Compose exactly the three reviewed experimental source targets
+      - name: Select one exact clean committed source epoch
+        id: epoch
+        shell: pwsh
+        run: |
+          node products/rea-studio/scripts/compose-windows-path-cloud.mjs --phase select --evidence "$env:REA_WINDOWS_PATH_EVIDENCE"
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+          $selection=Get-Content -LiteralPath (Join-Path $env:REA_WINDOWS_PATH_EVIDENCE 'windows-path-mode-selection.json') -Raw|ConvertFrom-Json
+          if($selection.schema -ne 'rea-windows-path-hosted-source-epoch-selection/v1' -or $selection.status -ne 'selected-committed-source-epoch' -or $selection.mode -notin @('windows-path-experiment','windows-path-installed')){throw 'Source epoch selection is incomplete or unknown.'}
+          'scope='+$selection.mode|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Compose exactly three targets from the original committed before-images
         id: compose
+        if: steps.epoch.outputs.scope == 'windows-path-experiment'
         shell: pwsh
         run: node products/rea-studio/scripts/compose-windows-path-cloud.mjs --phase compose --evidence "$env:REA_WINDOWS_PATH_EVIDENCE"
+      - name: Verify the current committed images match the three reviewed after-images
+        id: installed
+        if: steps.epoch.outputs.scope == 'windows-path-installed'
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-windows-path-cloud.mjs --phase verify-installed --evidence "$env:REA_WINDOWS_PATH_EVIDENCE"
       - name: Execute the fixed five-file Editor and Sync regression scope
         id: tests
         shell: pwsh
         run: |
-          $composition=Join-Path $env:REA_WINDOWS_PATH_EVIDENCE 'windows-path-composition.json'
-          node products/rea-studio/scripts/verify-cloud.mjs --scope windows-path-experiment --output "$env:REA_WINDOWS_PATH_EVIDENCE" --overlay-manifest "$composition" --timeout-ms 600000
-      - name: Independently recheck the three composed sources after every observable attempt
+          if('${{ steps.epoch.outputs.scope }}' -eq 'windows-path-installed'){
+            $sourceCheck=Join-Path $env:REA_WINDOWS_PATH_EVIDENCE 'windows-path-installed-source-check.json'
+            node products/rea-studio/scripts/verify-cloud.mjs --scope windows-path-installed --output "$env:REA_WINDOWS_PATH_EVIDENCE" --installed-manifest "$sourceCheck" --timeout-ms 600000
+          }elseif('${{ steps.epoch.outputs.scope }}' -eq 'windows-path-experiment'){
+            $composition=Join-Path $env:REA_WINDOWS_PATH_EVIDENCE 'windows-path-composition.json'
+            node products/rea-studio/scripts/verify-cloud.mjs --scope windows-path-experiment --output "$env:REA_WINDOWS_PATH_EVIDENCE" --overlay-manifest "$composition" --timeout-ms 600000
+          }else{throw 'Refuse an unselected source epoch.'}
+      - name: Independently recheck the selected source epoch after every observable attempt
         id: postcheck
-        if: always() && steps.compose.outcome != '' && steps.compose.outcome != 'skipped'
+        if: always() && steps.epoch.outcome != '' && steps.epoch.outcome != 'skipped'
         shell: pwsh
-        run: node products/rea-studio/scripts/compose-windows-path-cloud.mjs --phase verify-after --evidence "$env:REA_WINDOWS_PATH_EVIDENCE"
+        run: |
+          if('${{ steps.epoch.outputs.scope }}' -eq 'windows-path-installed'){
+            node products/rea-studio/scripts/compose-windows-path-cloud.mjs --phase verify-installed-after --evidence "$env:REA_WINDOWS_PATH_EVIDENCE"
+          }else{
+            node products/rea-studio/scripts/compose-windows-path-cloud.mjs --phase verify-after --evidence "$env:REA_WINDOWS_PATH_EVIDENCE"
+          }
       - name: Package bounded portable evidence after failures too
         id: evidence
         if: always()
@@ -79,7 +104,7 @@ jobs:
         run: |
           $evidence=Join-Path $env:RUNNER_TEMP ('rea-windows-path-evidence-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
           New-Item -ItemType Directory -Path $evidence -Force|Out-Null
-          @{schema='rea-cloud-windows-path-workflow-attempt/v1';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';compositionOutcome='${{ steps.compose.outcome }}';testOutcome='${{ steps.tests.outcome }}';postcheckOutcome='${{ steps.postcheck.outcome }}';statusBeforePackaging='${{ job.status }}';productionInstalled=$false;historicalReceiptsRebound=$false;acceptancePreclaimed=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'windows-path-workflow-attempt.json') -Encoding utf8
+          @{schema='rea-cloud-windows-path-workflow-attempt/v1';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';selectedScope='${{ steps.epoch.outputs.scope }}';epochSelectionOutcome='${{ steps.epoch.outcome }}';compositionOutcome='${{ steps.compose.outcome }}';installedSourceCheckOutcome='${{ steps.installed.outcome }}';testOutcome='${{ steps.tests.outcome }}';postcheckOutcome='${{ steps.postcheck.outcome }}';statusBeforePackaging='${{ job.status }}';installationPerformedByWorkflow=$false;productionInstallationReceiptVerified=$false;historicalReceiptsRebound=$false;acceptancePreclaimed=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'windows-path-workflow-attempt.json') -Encoding utf8
           $archive=Join-Path $env:RUNNER_TEMP ('rea-windows-path-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           [IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
@@ -104,7 +129,7 @@ jobs:
         if: always() && steps.evidence.outputs.artifact_path != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: windows-path-experiment-${{ github.run_id }}-${{ github.run_attempt }}
+          name: windows-path-focused-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.evidence.outputs.artifact_path }}
           if-no-files-found: error
           compression-level: 0

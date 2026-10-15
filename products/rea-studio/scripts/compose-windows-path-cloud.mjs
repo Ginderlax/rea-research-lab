@@ -1,4 +1,5 @@
-// Hosted-only composition of three source targets. No test/vendor execution.
+// Hosted source epoch selection, three-target composition or committed-source
+// verification. No test/vendor execution or installation-receipt acceptance.
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -9,7 +10,7 @@ assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0
 assert.equal(process.env.CI, 'true'); assert.equal(process.env.GITHUB_ACTIONS, 'true');
 assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted'); assert.equal(process.env.GITHUB_REPOSITORY, 'Ginderlax/rea-research-lab');
 for (const name of ['GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'RUNNER_TEMP']) assert(process.env[name]);
-const args = process.argv.slice(2); assert.equal(args.length, 4); assert.equal(args[0], '--phase'); assert(['compose', 'verify-after'].includes(args[1])); assert.equal(args[2], '--evidence'); assert(path.isAbsolute(args[3]));
+const args = process.argv.slice(2); assert.equal(args.length, 4); assert.equal(args[0], '--phase'); assert(['select', 'compose', 'verify-installed', 'verify-after', 'verify-installed-after'].includes(args[1])); assert.equal(args[2], '--evidence'); assert(path.isAbsolute(args[3]));
 const phase = args[1], repository = fileURLToPath(new URL('../../../', import.meta.url)), prefix = 'products/rea-studio/experiments/windows-path';
 const bundlePin = { bytes: 4266, sha256: '011ea962ecb061fd85a1edb9f4ce14f70836670bc0f7effb26d6260baaef16aa' };
 const targets = ['products/rea-studio/apps/sync/dav-transfer.mjs', 'products/rea-studio/apps/editor/git.test.mjs', 'products/rea-studio/apps/sync/webdav.windows-path.test.mjs'];
@@ -28,14 +29,19 @@ async function resolveDestination(destination) { let ancestor = path.resolve(des
 const temporary = await fs.realpath(process.env.RUNNER_TEMP), evidence = await resolveDestination(args[3]);
 const relativeEvidence = path.relative(temporary, evidence); assert(relativeEvidence && !path.isAbsolute(relativeEvidence) && relativeEvidence !== '..' && !relativeEvidence.startsWith('..' + path.sep));
 await fs.mkdir(evidence, { recursive: true });
-const sourceRoot = await fs.realpath(repository), receiptName = phase === 'compose' ? 'windows-path-composition.json' : 'windows-path-postrun-source-check.json';
-const record = { schema: phase === 'compose' ? 'rea-windows-path-hosted-composition/v1' : 'rea-windows-path-hosted-postrun-source-check/v1', status: 'running', phase, startedAtUtc: new Date().toISOString(), execution, sourceRoot,
-  sourceOnly: true, applicationRuntimeChangedInExperiment: true, productionInstalled: false, historicalReceiptsRebound: false, testExecutionsByComposer: 0, originalExecutionsByComposer: 0, transitions: [],
-  scope: 'Three explicit hosted-only Editor/Sync source targets. Source composition/stability only; five selected test files, aliases, broader suite, browser and production installation require separate actual evidence.' };
+const sourceRoot = await fs.realpath(repository), installedPhase = ['verify-installed', 'verify-installed-after'].includes(phase);
+const receiptNames = { select: 'windows-path-mode-selection.json', compose: 'windows-path-composition.json', 'verify-after': 'windows-path-postrun-source-check.json', 'verify-installed': 'windows-path-installed-source-check.json', 'verify-installed-after': 'windows-path-installed-postrun-source-check.json' };
+const schemas = { select: 'rea-windows-path-hosted-source-epoch-selection/v1', compose: 'rea-windows-path-hosted-composition/v1', 'verify-after': 'rea-windows-path-hosted-postrun-source-check/v1', 'verify-installed': 'rea-windows-path-hosted-installed-source-check/v1', 'verify-installed-after': 'rea-windows-path-hosted-installed-postrun-source-check/v1' };
+const receiptName = receiptNames[phase];
+const record = { schema: schemas[phase], status: 'running', phase, startedAtUtc: new Date().toISOString(), execution, sourceRoot,
+  sourceOnly: true, historicalReceiptsRebound: false, testExecutionsByComposer: 0, originalExecutionsByComposer: 0,
+  ...(phase === 'select' || installedPhase ? { sourceMutationPerformed: false, installationPerformedByThisCommand: false, productionInstallationReceiptVerified: false } : { applicationRuntimeChangedInExperiment: true, productionInstalled: false, transitions: [] }),
+  scope: phase === 'select' || installedPhase ? 'Source-only selection or verification of three fixed committed Editor/Sync images. Matching after-images does not authenticate an installer receipt. Five selected tests, aliases and source stability require separate actual evidence; full suite, browser, security, parity and superiority remain separate.' : 'Three explicit hosted-only Editor/Sync source targets. Source composition/stability only; five selected test files, aliases, broader suite, browser and production installation require separate actual evidence.' };
 async function save(initial = false) { const final = path.join(evidence, receiptName), next = initial ? final : final + '.tmp'; const handle = await fs.open(next, 'wx'); try { await handle.writeFile(JSON.stringify(record, null, 2) + '\n'); await handle.sync(); } finally { await handle.close(); } if (!initial) await fs.rename(next, final); }
 async function copy(relative, bytes) { canonical(relative); const filename = path.join(evidence, relative); await fs.mkdir(path.dirname(filename), { recursive: true }); await fs.writeFile(filename, bytes, { flag: 'wx' }); }
 function git(arguments_) { const result = spawnSync('git', arguments_, { cwd: repository, shell: false, windowsHide: true, timeout: 30000, maxBuffer: 4 * 1024 * 1024 }); assert.equal(result.error, undefined); assert.equal(result.status, 0, 'Read-only Git authentication failed'); return result.stdout; }
 async function committed(relative, expected) { const bytes = await read(repository, relative); assert.deepEqual(bytes, git(['show', 'HEAD:' + canonical(relative)])); if (expected) assert.deepEqual(identity(bytes), pin(expected)); return bytes; }
+async function committedTarget(relative, expected) { const bytes = await committed(relative, expected), entry = git(['ls-tree', 'HEAD', '--', canonical(relative)]).toString('utf8').trim(), match = /^(100644|100755) blob ([0-9a-f]{40,64})\t(.+)$/.exec(entry); assert(match && match[3] === relative, 'Target must be a committed ordinary file'); return { path: relative, ...identity(bytes), gitBlob: match[2] }; }
 function status() { return sort(git(['status', '--porcelain=v1', '-z', '--untracked-files=all']).toString('utf8').split('\0').filter(Boolean).map(value => { const state = value.slice(0, 2), relative = canonical(value.slice(3)); assert([' M', '??'].includes(state), 'Unexpected staged/deleted/renamed state'); return { path: relative, status: state }; })); }
 await save(true);
 try {
@@ -58,7 +64,43 @@ try {
     return sort(rows);
   };
   record.sourceBundle = { path: prefix + '/bundle.json', ...identity(bundleBytes) }; record.tests = tests;
-  if (phase === 'compose') {
+  if (phase === 'select') {
+    assert.deepEqual(status(), [], 'Select only a clean committed checkout'); record.gitStatusBefore = [];
+    const states = [];
+    for (const row of bundle.transitions) {
+      const entry = git(['ls-tree', 'HEAD', '--', row.target]);
+      if (!entry.length) { assert.equal(row.before, null); assert.equal(await fs.lstat(path.join(repository, row.target)).then(() => true, error => { if (error.code === 'ENOENT') return false; throw error; }), false); states.push({ path: row.target, state: 'absent', gitBlob: null }); continue; }
+      const value = await committedTarget(row.target), matches = expected => value.bytes === expected.bytes && value.sha256 === expected.sha256;
+      const state = matches(row.after) ? 'after' : row.before && matches(row.before) ? 'before' : 'unknown';
+      assert.notEqual(state, 'unknown', 'Unknown committed Windows path target identity: ' + row.target); states.push({ ...value, state });
+    }
+    const original = states.every((row, index) => row.state === (bundle.transitions[index].before ? 'before' : 'absent')), installed = states.every(row => row.state === 'after');
+    assert(original !== installed, 'Mixed or ambiguous Windows path source epochs are refused');
+    record.mode = installed ? 'windows-path-installed' : 'windows-path-experiment'; record.committedTargetStates = states;
+    record.gitStatus = status(); assert.deepEqual(record.gitStatus, []); record.status = 'selected-committed-source-epoch';
+  } else if (installedPhase) {
+    assert.deepEqual(status(), [], 'Installed-image verification requires a clean committed checkout'); record.gitStatusBefore = [];
+    record.mode = 'windows-path-installed'; record.currentTargets = await current(); assert.deepEqual(record.currentTargets, expectedTargets);
+    record.committedTargets = await Promise.all(bundle.transitions.map(row => committedTarget(row.target, row.after)));
+    record.currentTargetSHA256 = Object.fromEntries(record.currentTargets.map(row => [row.path, row.sha256]));
+    if (phase === 'verify-installed') {
+      await copy('installed-bundle.json.snapshot', bundleBytes);
+      for (const [relative, bytes] of payloads) await copy('installed-bundle/' + relative + (relative.endsWith('.snapshot') ? '' : '.snapshot'), bytes);
+      await copy('windows-path-installed-verifier.mjs.snapshot', await committed('products/rea-studio/scripts/compose-windows-path-cloud.mjs'));
+      for (const row of bundle.transitions) await copy('installed-source/' + row.target + '.snapshot', await committed(row.target, row.after));
+      record.status = 'verified-unexecuted-committed-afterimages';
+    } else {
+      const initialBytes = await read(evidence, 'windows-path-installed-source-check.json'), initial = JSON.parse(initialBytes);
+      assert.equal(initial.schema, schemas['verify-installed']); assert.equal(initial.status, 'verified-unexecuted-committed-afterimages'); assert.deepEqual(initial.execution, execution);
+      assert.equal(initial.sourceRoot.toLowerCase(), sourceRoot.toLowerCase()); assert.equal(initial.sourceCommit, head); assert.equal(initial.baselineGitCommit, head);
+      assert.equal(initial.mode, 'windows-path-installed'); assert.equal(initial.sourceMutationPerformed, false); assert.equal(initial.installationPerformedByThisCommand, false); assert.equal(initial.productionInstallationReceiptVerified, false);
+      assert.deepEqual(initial.sourceBundle, record.sourceBundle); assert.deepEqual(initial.tests, tests); assert.deepEqual(initial.currentTargets, expectedTargets); assert.deepEqual(initial.committedTargets, record.committedTargets);
+      assert.deepEqual(initial.gitStatusBefore, []); assert.deepEqual(initial.gitStatus, []);
+      for (const row of bundle.transitions) assert.deepEqual(identity(await read(evidence, 'installed-source/' + row.target + '.snapshot')), pin(row.after));
+      record.initialSourceCheckSHA256 = identity(initialBytes).sha256; record.sourceStable = true; record.checkedTargets = 3; record.status = 'passed';
+    }
+    record.committedImagesMatchReviewedAfter = true; record.gitStatus = status(); assert.deepEqual(record.gitStatus, []);
+  } else if (phase === 'compose') {
     assert.deepEqual(status(), [], 'Compose only a clean committed checkout'); record.gitStatusBefore = [];
     for (const row of bundle.transitions) {
       if (row.before) await copy('before/' + row.target + '.snapshot', await committed(row.target, row.before));

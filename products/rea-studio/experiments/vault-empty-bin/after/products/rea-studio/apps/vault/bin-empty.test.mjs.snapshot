@@ -1,0 +1,71 @@
+// Authored finite contracts. Not executed at authoring time.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
+import { emptyRecycleBinPreview, emptyNativeRecycleBin, deleteRecycleGroup, deleteRecycleEntry, recycleView, recycleGroupView } from './recycle.mjs';
+import { materializeKdbxDocument, encodeKdbxDate } from './kdbx.mjs';
+import { element, nodes, one, text, put, serializeXml } from './xml.mjs';
+import { fixture, attachmentFixture, edit, ids, now, restoreNow, selection, uuid64, findGroup } from './group-fixture.mjs';
+const key = () => randomBytes(32);
+function trashed(data = attachmentFixture()) {
+  const secret = key(), selected = selection(data, secret);
+  return { secret, data: deleteRecycleGroup(data, selected.id, selected.recycleRevision, secret, { confirm: true, now, binId: ids.bin }).data };
+}
+const perform = (data, secret, options = {}) => { const preview = emptyRecycleBinPreview(data, secret); return emptyNativeRecycleBin(data, preview.id, preview.revision, secret, { confirm: true, now: restoreNow, ...options }); };
+const deletionRows = data => nodes(one(one(materializeKdbxDocument(data), 'Root'), 'DeletedObjects'), 'DeletedObject').map(row => text(one(row, 'UUID')));
+const binMetadata = data => { const node = findGroup(materializeKdbxDocument(data), ids.bin); node.children = node.children.filter(child => typeof child === 'string' || !['Entry', 'Group'].includes(child.name)); return serializeXml(node); };
+
+test('empty-bin preview identifies all descendants and contains no entry secrets or history', () => {
+  const f = trashed(), before = JSON.stringify(f.data), preview = emptyRecycleBinPreview(f.data, f.secret);
+  assert.equal(preview.id, ids.bin); assert.equal(preview.groupCount, 2); assert.equal(preview.entryCount, 2);
+  assert.deepEqual(preview.groups.map(row => row.id), [ids.target, ids.deep]); assert.deepEqual(preview.entries.map(row => row.id), [ids.a, ids.b]);
+  assert.equal(preview.preservesBin, true); assert.equal(preview.permanent, true); assert.match(preview.revision, /^[a-f0-9]{64}$/);
+  for (const value of ['only synthetic secret', 'Synthetic notes', 'history', 'totpSecret', 'dataBase64']) assert(!JSON.stringify(preview).includes(value));
+  assert.equal(JSON.stringify(f.data), before);
+});
+test('empty keeps exact bin metadata, outside subtree, attachment table and caller bytes', () => {
+  const f = trashed(), before = JSON.stringify(f.data), xml = materializeKdbxDocument(f.data), outside = serializeXml(findGroup(xml, ids.other)), retained = binMetadata(f.data);
+  const result = perform(f.data, f.secret); assert.equal(result.result.binPreserved, true); assert.equal(result.result.changed, true);
+  assert.equal(binMetadata(result.data), retained); assert.equal(serializeXml(findGroup(materializeKdbxDocument(result.data), ids.other)), outside);
+  assert.deepEqual(result.data.kdbx.binaries, f.data.kdbx.binaries); assert.deepEqual(result.data.entries.map(row => row.id), [ids.c]);
+  assert.equal(text(one(one(materializeKdbxDocument(result.data), 'Meta'), 'RecycleBinUUID')), uuid64(ids.bin));
+  assert.equal(JSON.stringify(f.data), before); assert.deepEqual(deletionRows(result.data), [ids.a, ids.b, ids.deep, ids.target].map(uuid64));
+});
+test('direct bin entries precede recursive groups and no bin/history UUID tombstone is appended', () => {
+  const f = trashed(), entry = recycleView(f.data, f.secret).entries.find(row => row.id === ids.c);
+  const mixed = deleteRecycleEntry(f.data, entry.id, entry.recycleRevision, f.secret, { confirm: true, now, binId: ids.bin }).data;
+  assert.deepEqual(deletionRows(perform(mixed, f.secret).data), [ids.c, ids.a, ids.b, ids.deep, ids.target].map(uuid64));
+});
+test('prior tombstones remain ordered and new descendants receive the one explicit operation clock', () => {
+  const f = trashed(), prior = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee', data = edit(f.data, xml => one(one(xml, 'Root'), 'DeletedObjects').children.push(element('DeletedObject', [element('UUID', uuid64(prior)), element('DeletionTime', encodeKdbxDate(now))])));
+  const result = perform(data, f.secret), rows = nodes(one(one(materializeKdbxDocument(result.data), 'Root'), 'DeletedObjects'), 'DeletedObject');
+  assert.deepEqual(rows.map(row => text(one(row, 'UUID'))), [prior, ids.a, ids.b, ids.deep, ids.target].map(uuid64));
+  assert.equal(text(one(rows[0], 'DeletionTime')), encodeKdbxDate(now)); for (const row of rows.slice(1)) assert.equal(text(one(row, 'DeletionTime')), encodeKdbxDate(restoreNow));
+});
+test('confirmation is literal true and stale graph/key/group tokens cannot authorize emptying', () => {
+  const f = trashed(), preview = emptyRecycleBinPreview(f.data, f.secret), before = JSON.stringify(f.data);
+  for (const confirm of [undefined, false, 'true', 1]) assert.throws(() => emptyNativeRecycleBin(f.data, preview.id, preview.revision, f.secret, { confirm }), /confirmation/);
+  const stale = edit(f.data, xml => put(findGroup(xml, ids.other), 'Notes', 'Changed elsewhere'));
+  assert.throws(() => emptyNativeRecycleBin(stale, preview.id, preview.revision, f.secret, { confirm: true }), /contents changed/);
+  assert.throws(() => emptyNativeRecycleBin(f.data, preview.id, preview.revision, key(), { confirm: true }), /contents changed/);
+  const group = recycleGroupView(f.data, f.secret, { bin: true }).groups.find(row => row.isRecycleBin);
+  assert.throws(() => emptyNativeRecycleBin(f.data, preview.id, group.recycleRevision, f.secret, { confirm: true }), /contents changed/); assert.equal(JSON.stringify(f.data), before);
+});
+test('disabled recycling does not prevent explicitly emptying an existing UUID bin', () => {
+  const f = trashed(), data = edit(f.data, xml => put(one(xml, 'Meta'), 'RecycleBinEnabled', 'False'));
+  assert.equal(emptyRecycleBinPreview(data, f.secret).enabled, false); assert.equal(perform(data, f.secret).result.entryCount, 2);
+});
+test('missing or dangling bin cannot select another group, and a root-bin identity still refuses', () => {
+  const secret = key(), data = fixture(); assert.equal(emptyRecycleBinPreview(data, secret).hasBin, false);
+  assert.throws(() => emptyNativeRecycleBin(data, ids.other, '0'.repeat(64), secret, { confirm: true }), /bin.*unavailable/);
+  const dangling = edit(data, xml => put(one(xml, 'Meta'), 'RecycleBinUUID', uuid64(ids.bin))); assert.equal(emptyRecycleBinPreview(dangling, secret).hasBin, false);
+  const root = edit(data, xml => put(one(xml, 'Meta'), 'RecycleBinUUID', uuid64(ids.root))); assert.throws(() => emptyRecycleBinPreview(root, secret), /root group/);
+});
+test('tombstone expansion refuses before changing any caller document', () => {
+  const f = trashed(), data = edit(f.data, xml => { const deleted = one(one(xml, 'Root'), 'DeletedObjects'); for (let i = 0; i < 9998; i++) deleted.children.push(element('DeletedObject', [element('UUID', uuid64(ids.c)), element('DeletionTime', encodeKdbxDate(now))])); }), before = JSON.stringify(data);
+  assert.throws(() => perform(data, f.secret), /tombstone limit/); assert.equal(JSON.stringify(data), before);
+});
+test('invalid clocks refuse and a second fresh empty preview yields a byte-identical no-op', () => {
+  const f = trashed(); for (const bad of ['2025-02-30T00:00:00Z', '0000-01-01T00:00:00Z', 0]) assert.throws(() => perform(f.data, f.secret, { now: bad }), /clock/);
+  const once = perform(f.data, f.secret), twice = perform(once.data, f.secret); assert.equal(twice.result.changed, false); assert.equal(twice.result.groupCount, 0); assert.equal(twice.result.entryCount, 0); assert.deepEqual(twice.data, once.data);
+});

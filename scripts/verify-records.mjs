@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process';
 import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';
 import { verifyFollowupRecords } from './verify-followup-records.mjs';
 import { verifyCloudRecoveryRecords } from './verify-cloud-recovery-records.mjs';
+import { createHistoricalCarrierPolicyFromRoot } from './historical-carrier-policy.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(readFileSync(join(root, 'PUBLICATION-MANIFEST.json'), 'utf8'));
@@ -300,13 +301,14 @@ if (process.argv.includes('--historical-only')) {
   assert.ok(!process.argv.includes('--write'), 'Historical-only checks do not write current validation metadata.');
   console.log(JSON.stringify({ status: 'passed', scope: 'Historical receipt/source integrity only; no current behavioral or publication validation claim.', source_revision: historicalExecution.source_revision, receipt_hashes_checked: historicalExecution.receipts.size, source_hashes_checked: historicalExecution.sources.size })); process.exit(0);
 }
+const historicalCarrierPolicy = createHistoricalCarrierPolicyFromRoot(root);
 let checkedBytes = 0, parsedJson = 0, checkedScripts = 0;
 const forbidden = /(^|\/)(artifacts|node_modules|tooling|__pycache__|work|\.local)(\/|$)|\.(exe|dll|zip|tgz|bundle|tar|7z|pyc)$/i;
 const syntheticZip = { path: 'products/rea-studio/apps/archive/fixtures/zstd/native-zip93.zip', sha256: 'e9282f76dbd3c080d0e12ef95489458523ebbc65c2951f4b8f3cb880a16c5d8b' };
 const credentialPattern = /\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/;
 for (const entry of manifest.files) {
   assert.ok(!entry.path.startsWith('/') && !entry.path.split('/').includes('..') && !entry.path.includes('\\'));
-  assert.ok(!forbidden.test(entry.path) || entry.path === syntheticZip.path && entry.sha256 === syntheticZip.sha256, `Excluded vendor/runtime material found in publication: ${entry.path}`);
+  assert.ok(!forbidden.test(entry.path) || entry.path === syntheticZip.path && entry.sha256 === syntheticZip.sha256 || historicalCarrierPolicy.allows(entry), `Excluded vendor/runtime material found in publication: ${entry.path}`);
   const target = join(root, entry.path), bytes = readFileSync(target);
   assert.equal(bytes.length, entry.bytes, `Size mismatch: ${entry.path}`);
   assert.equal(sha(bytes), entry.sha256, `Digest mismatch: ${entry.path}`);

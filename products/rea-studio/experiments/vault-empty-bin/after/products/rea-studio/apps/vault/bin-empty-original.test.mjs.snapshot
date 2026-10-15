@@ -1,0 +1,103 @@
+// Test-only actual released-library differential; authored, not locally run.
+// Named projection contracts follow the already preserved GPL source study.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import rawFs from 'node:fs';
+import path from 'node:path';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
+import { spawn, spawnSync } from 'node:child_process';
+import { exportKdbx, materializeKdbxDocument, decodeKdbxDate, encodeKdbxDate } from './kdbx.mjs';
+import { emptyRecycleBinPreview, emptyNativeRecycleBin, deleteRecycleGroup } from './recycle.mjs';
+import { element, nodes, one, text, put } from './xml.mjs';
+import { attachmentFixture, edit, ids, now, restoreNow, selection, uuid64, findGroup } from './group-fixture.mjs';
+const executablePin = { bytes: 3265880, sha256: '04d29636c393f0c1fc99ff739295494be3adefded93271e44591e8e300225a5a' };
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
+const password = 'Owned empty-bin original-library fixture master';
+const directId = '10000000-0000-0000-0000-000000000004', priorId = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
+const observations = [];
+async function durableJSON(filename, value, initial = false) {
+  const next = initial ? filename : filename + '.tmp', handle = await fs.open(next, 'wx');
+  try { await handle.writeFile(JSON.stringify(value, null, 2) + '\n'); await handle.sync(); } finally { await handle.close(); }
+  if (!initial) await fs.rename(next, filename);
+}
+function id(value) { const hex = Buffer.from(value || Buffer.alloc(16).toString('base64'), 'base64').toString('hex'); return hex.slice(0, 8) + '-' + hex.slice(8, 12) + '-' + hex.slice(12, 16) + '-' + hex.slice(16, 20) + '-' + hex.slice(20); }
+function projection(data) {
+  const xml = materializeKdbxDocument(data), groups = [], entries = [];
+  function visit(group, parentId) {
+    const groupId = id(text(one(group, 'UUID'))), times = one(group, 'Times'), inherit = name => { const value = text(one(group, name)); return !value || value === 'null' ? null : value === 'True'; };
+    groups.push({ id: groupId, parentId, name: text(one(group, 'Name')), notes: text(one(group, 'Notes')), iconId: Number(text(one(group, 'IconID')) || '48'), customIcon: id(text(one(group, 'CustomIconUUID'))), expanded: text(one(group, 'IsExpanded')) === 'True', enableAutoType: inherit('EnableAutoType'), enableSearching: inherit('EnableSearching'), defaultSequence: text(one(group, 'DefaultAutoTypeSequence')), lastTopVisible: id(text(one(group, 'LastTopVisibleEntry'))), previous: id(text(one(group, 'PreviousParentGroup'))), created: decodeKdbxDate(text(one(times, 'CreationTime'))), access: decodeKdbxDate(text(one(times, 'LastAccessTime'))), modified: decodeKdbxDate(text(one(times, 'LastModificationTime'))), location: decodeKdbxDate(text(one(times, 'LocationChanged'))), expiry: decodeKdbxDate(text(one(times, 'ExpiryTime'))), expires: text(one(times, 'Expires')) === 'True', usage: text(one(times, 'UsageCount')) || '0' });
+    for (const entry of nodes(group, 'Entry')) {
+      const entryId = id(text(one(entry, 'UUID'))), row = data.entries.find(value => value.id === entryId), times = one(entry, 'Times');
+      entries.push({ id: entryId, parentId: groupId, title: row.title, password: row.password, created: decodeKdbxDate(text(one(times, 'CreationTime'))), modified: decodeKdbxDate(text(one(times, 'LastModificationTime'))), history: nodes(one(entry, 'History'), 'Entry').map(old => { const fields = new Map(nodes(old, 'String').map(field => [text(one(field, 'Key')), text(one(field, 'Value'))])); return { title: fields.get('Title'), password: fields.get('Password'), modified: decodeKdbxDate(text(one(one(old, 'Times'), 'LastModificationTime'))) }; }), binaries: nodes(entry, 'Binary').map(binary => { const value = data.kdbx.binaries[Number(one(binary, 'Value').attrs.Ref)]; return { name: text(one(binary, 'Key')), base64: value.dataBase64, protected: value.protected }; }) });
+    }
+    for (const child of nodes(group, 'Group')) visit(child, groupId);
+  }
+  visit(one(one(xml, 'Root'), 'Group'), null);
+  return { binUuid: id(text(one(one(xml, 'Meta'), 'RecycleBinUUID'))), enabled: text(one(one(xml, 'Meta'), 'RecycleBinEnabled')) !== 'False', groups, entries, deleted: nodes(one(one(xml, 'Root'), 'DeletedObjects'), 'DeletedObject').map(row => ({ id: id(text(one(row, 'UUID'))), time: decodeKdbxDate(text(one(row, 'DeletionTime'))) })) };
+}
+function fixture(disabled = false, empty = false) {
+  const key = randomBytes(32), initial = attachmentFixture(), selected = selection(initial, key);
+  let data = deleteRecycleGroup(initial, selected.id, selected.recycleRevision, key, { confirm: true, now, binId: ids.bin }).data;
+  data = edit(data, xml => { const source = structuredClone(nodes(findGroup(xml, ids.other), 'Entry')[0]); put(source, 'UUID', uuid64(directId)); put(nodes(source, 'String').find(row => text(one(row, 'Key')) === 'Title'), 'Value', 'Direct bin D'); findGroup(xml, ids.bin).children.push(source); one(one(xml, 'Root'), 'DeletedObjects').children.push(element('DeletedObject', [element('UUID', uuid64(priorId)), element('DeletionTime', encodeKdbxDate(now))])); if (disabled) put(one(xml, 'Meta'), 'RecycleBinEnabled', 'False'); });
+  if (empty) { const preview = emptyRecycleBinPreview(data, key); data = emptyNativeRecycleBin(data, preview.id, preview.revision, key, { confirm: true, now: restoreNow }).data; }
+  const preview = emptyRecycleBinPreview(data, key), candidate = emptyNativeRecycleBin(data, preview.id, preview.revision, key, { confirm: true, now: restoreNow });
+  return { data, candidate, expectedNewIDs: empty ? [] : [directId, ids.a, ids.b, ids.deep, ids.target] };
+}
+async function original(t, name, input, { save = false } = {}) {
+  assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0'); assert.equal(process.env.CI, 'true'); assert.equal(process.env.GITHUB_ACTIONS, 'true'); assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
+  assert(process.env.REA_KEEPASS_EXE && process.env.RUNNER_TEMP && process.env.REA_EMPTY_BIN_OBSERVATIONS, 'Explicit hosted original/evidence paths required');
+  const temporary = await fs.realpath(process.env.RUNNER_TEMP), directory = await fs.mkdtemp(path.join(temporary, 'rea-empty-bin-original-'));
+  t.after(async () => { assert.equal(path.dirname(directory), temporary); assert(path.basename(directory).startsWith('rea-empty-bin-original-')); assert.equal(await fs.realpath(directory), directory); await fs.rm(directory, { recursive: true, force: true }); });
+  const observationRoot = path.resolve(process.env.REA_EMPTY_BIN_OBSERVATIONS), label = String(observations.length + 1).padStart(2, '0') + '-' + randomUUID();
+  assert.notEqual(path.relative(temporary, observationRoot), ''); assert(!path.isAbsolute(path.relative(temporary, observationRoot)) && !path.relative(temporary, observationRoot).startsWith('..'));
+  await fs.mkdir(observationRoot, { recursive: true });
+  const output = suffix => path.join(observationRoot, label + suffix), record = { schema: 'rea-empty-bin-original-child/v1', name, status: 'running', startedAtUtc: new Date().toISOString(), execution: Object.fromEntries(['GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY'].map(key => [key, process.env[key]])), executable: executablePin, childStarted: false, childCloseObserved: false, originalGUI: 0, originalProgram: 0, originalClockAssignments: 0, comparisonPassed: false, namedProjectionOnly: true, arbitraryOriginalXMLPreservationClaimed: false };
+  const writeRecord = (initial = false) => durableJSON(output('.json'), record, initial);
+  await writeRecord(true);
+  try {
+    const file = await exportKdbx(input.data, { password }, { kdf: 'aes', rounds: 100, compression: false });
+    const database = path.join(directory, 'synthetic.kdbx'), config = path.join(directory, 'config.json'), oracle = await fs.realpath(process.env.REA_KEEPASS_EXE), helper = path.join(import.meta.dirname, 'bin-empty-oracle.ps1');
+    await fs.writeFile(database, file, { flag: 'wx' }); await fs.writeFile(config, JSON.stringify({ oracle, database, password, save }), { flag: 'wx' });
+    record.syntheticInput = { ...identity(file), headerVersion: file.readUInt32LE(8) }; record.helper = identity(await fs.readFile(helper)); assert.deepEqual(identity(await fs.readFile(oracle)), executablePin, 'Authenticate exact executable immediately before each child');
+    const stdout = rawFs.openSync(output('.stdout.txt'), 'wx'), stderr = rawFs.openSync(output('.stderr.txt'), 'wx'), sizes = { stdout: 0, stderr: 0 }, chunks = { stdout: [], stderr: [] };
+    let child, timer, forced, finishOutcome = null, failure = null, closed = false;
+    const env = { ...process.env }; delete env.NODE_TEST_CONTEXT;
+    function stop(reason) { if (failure) return; failure = reason; if (child?.pid) { const killed = spawnSync('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { shell: false, windowsHide: true, timeout: 10000, stdio: 'ignore' }); if (killed.status !== 0) child.kill('SIGKILL'); } forced = setTimeout(() => { child?.stdout.destroy(); child?.stderr.destroy(); finishOutcome?.({ code: null, signal: null, closeObserved: false }); }, 5000); }
+    try {
+      child = spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', helper, '-Config', config], { shell: false, windowsHide: true, env, stdio: ['ignore', 'pipe', 'pipe'] }); record.childStarted = true; record.pid = child.pid ?? null;
+      timer = setTimeout(() => stop('Owned original child30s deadline'), 30000);
+      for (const [kind, fd] of [['stdout', stdout], ['stderr', stderr]]) {
+        child[kind].on('data', bytes => { sizes[kind] += bytes.length; if (sizes[kind] > 1024 * 1024) stop('Owned original1MiB stream bound'); else { chunks[kind].push(bytes); try { rawFs.writeFileSync(fd, bytes); rawFs.fsyncSync(fd); } catch (error) { stop('Evidence write failed: ' + error.message); } } });
+        child[kind].on('error', error => stop('Original output stream failed: ' + error.message));
+      }
+      child.once('error', error => { failure ??= error.message; });
+      const outcome = await new Promise(resolve => { finishOutcome = resolve; child.once('close', (code, signal) => { closed = true; resolve({ code, signal, closeObserved: true }); }); });
+      record.exit = outcome; record.childCloseObserved = closed && outcome.closeObserved; assert.equal(failure, null); assert.equal(outcome.closeObserved, true); assert.equal(outcome.code, 0); assert.equal(outcome.signal, null);
+    } finally { clearTimeout(timer); clearTimeout(forced); for (const fd of [stdout, stderr]) { rawFs.fsyncSync(fd); rawFs.closeSync(fd); } }
+    const raw = Object.fromEntries(['stdout', 'stderr'].map(kind => [kind, Buffer.concat(chunks[kind]).toString('utf8')])), actual = JSON.parse(raw.stdout.trim()); record.actual = actual; record.rawBytes = sizes;
+    assert.equal((raw.stderr.match(/REA_EMPTY_BIN_ASSEMBLY_LOADED_2_61_1/g) || []).length, 1); assert.equal(actual.schema, 'rea-keepass-empty-bin-actual-library/v1'); assert.equal(actual.executableSHA256, executablePin.sha256); assert.equal(actual.executableBytes, executablePin.bytes);
+    assert.equal(actual.calls.deleteAllObjects, 1); assert.equal(actual.calls.assemblyLoads, 1); assert.equal(actual.calls.originalClockAssignments + actual.calls.originalUuidAssignments + actual.calls.originalGUI + actual.calls.originalProgram, 0);
+    const before = projection(input.data), after = projection(input.candidate.data), count = before.deleted.length;
+    assert.deepEqual(actual.before, before, 'Named original import projection matches the exact synthetic input');
+    assert.deepEqual(actual.after.groups, after.groups); assert.deepEqual(actual.after.entries, after.entries); assert.equal(actual.after.binUuid, before.binUuid); assert.equal(actual.after.enabled, before.enabled);
+    assert.deepEqual(actual.after.deleted.slice(0, count), before.deleted); assert.deepEqual(actual.after.deleted.slice(count).map(row => row.id), input.expectedNewIDs); assert.deepEqual(after.deleted.slice(count).map(row => row.id), input.expectedNewIDs);
+    const start = Date.parse(actual.operationStartedUtc), end = Date.parse(actual.operationCompletedUtc); assert(Number.isFinite(start) && Number.isFinite(end) && end >= start);
+    for (const row of actual.after.deleted.slice(count)) assert(Date.parse(row.time) >= start && Date.parse(row.time) <= end, 'Actual original UTC stays inside the observed operation');
+    for (const row of after.deleted.slice(count)) assert.equal(row.time, restoreNow.replace('Z', '.000Z'));
+    assert.equal(actual.after.groups.some(row => row.id === ids.bin), true); assert.equal(actual.after.deleted.some(row => row.id === ids.bin), false);
+    assert.equal(actual.inputHeaderVersion, record.syntheticInput.headerVersion); assert.equal(actual.savePerformed, save);
+    if (save) { assert.deepEqual(actual.reopened, actual.after); assert([0x00040000, 0x00040001].includes(actual.outputHeaderVersion)); } else { assert.equal(actual.reopened, null); assert.equal(actual.outputHeaderVersion, actual.inputHeaderVersion); }
+    record.headerVersionObservation = { input: actual.inputHeaderVersion, output: actual.outputHeaderVersion, savePerformed: save, downgradeObserved: actual.outputHeaderVersion < actual.inputHeaderVersion, sameFormatVersionClaimed: false, note: 'The deleted A entry carried QualityCheck=false; released save may choose4.0 after deletion. Actual header identity is retained; comparison covers named projections, not unchanged version or arbitrary XML.' };
+    record.timestampComparison = { originalDatesRewritten: false, candidateUsesSingleCapturedClock: true, originalUsesPerRecursiveCallUTC: true, originalDatesWithinObservedBounds: true, exactTimestampEqualityClaimed: false };
+    record.status = 'passed'; record.comparisonPassed = true;
+  } catch (error) { record.status = 'failed'; record.failure = { name: error.name, message: error.message }; throw error; }
+  finally {
+    record.completedAtUtc = new Date().toISOString(); await writeRecord(); observations.push({ path: path.basename(output('.json')), ...record });
+    const summary = { schema: 'rea-empty-bin-original-comparison-summary/v1', execution: record.execution, childAttempts: observations.length, comparisonsPassed: observations.filter(row => row.comparisonPassed).length, actualLibraryCalls: observations.reduce((sum, row) => sum + (row.actual?.calls.deleteAllObjects ?? 0), 0), actualAssemblyLoads: observations.reduce((sum, row) => sum + (row.actual?.calls.assemblyLoads ?? 0), 0), originalGUI: 0, originalProgram: 0, originalClockAssignments: 0, exactTimestampEqualityClaimed: false, namedProjectionOnly: true, observations: observations.map(row => ({ path: row.path, status: row.status, comparisonPassed: row.comparisonPassed, childCloseObserved: row.childCloseObserved })) };
+    await durableJSON(path.join(observationRoot, 'summary.json'), summary);
+  }
+}
+test('actual released empty-bin nested/direct and disabled-bin library contracts agree', async t => { for (const disabled of [false, true]) await original(t, disabled ? 'disabled-existing-bin' : 'nested-direct-bin', fixture(disabled)); });
+test('actual released empty-bin save/reopen and fresh empty-bin no-op remain exact', async t => { await original(t, 'native-save-reopen', fixture(), { save: true }); await original(t, 'already-empty-bin', fixture(false, true)); });

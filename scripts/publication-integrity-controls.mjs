@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
-const ROOT_ID = { bytes: 148351, sha256: 'a81c2f4b53fd346a6b86e4dcb63c9b39fb07a4f1e551bcfdbc3c755fce394046' };
+const ROOT_ID = { bytes: 148558, sha256: 'a78a9467ecd76ae44c3d2413b6d341c735bb1f98a657646d3b00a13dccf066f8' };
 const CLOUD = 'products/rea-studio/results/cloud-flow-vault-20261015/';
 const TRANSITION = 'products/rea-studio/results/cloud-publication-source-transition-20261015/';
 const GIT_CLOSURE = 'products/rea-studio/results/publication-git-directory-closure-20261015/';
@@ -50,8 +50,9 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
     ['missing-exact-editor-git-mismatch-route', rows => { rows.find(row => row.path.endsWith('/editor/git.test.mjs')).path += '.unlisted'; }],
     ['duplicate-editor31-source-row', rows => { rows[1] = { ...rows[0] }; }],
   ]) negative(name, () => { const rows = structuredClone(editor31); change(rows); migration.editorMismatchesIncludingHistoricalHost(rows); }, 'fixed six-row historical Editor mismatch declaration');
-  positive('four-fixed-root-epochs', () => {
+  positive('five-fixed-root-epochs', () => {
     assert.equal(migration.resolve('scripts/verify-records.mjs', ROOT_ID), null);
+    assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 148351, sha256: 'a81c2f4b53fd346a6b86e4dcb63c9b39fb07a4f1e551bcfdbc3c755fce394046' }), 'products/rea-studio/results/historical-carrier-delivery-20261015/verifier-before/verify-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 147529, sha256: '82fc7f36c0805ee163a93aa1720ed708629ac455d90a9bdd343b30f554335304' }), WINDOWS_PATH + 'verifier-before/verify-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 142684, sha256: '42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6' }), TRANSITION + 'verifier-middle/verify-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 142428, sha256: '8283f709444328e1dee3483c46322a07652c2be1d2ac71ff94269c2e645e6702' }), 'products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-records.mjs.snapshot');
@@ -215,7 +216,17 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const extra = path.join(fixture, CLOUD, 'unlisted-control.snapshot');
   try { fs.writeFileSync(extra, 'Owned negative inventory control.', { flag: 'wx' }); negative('finite282-extra-prefix-file', () => verifyCloudRecoveryRecords(fixture), 'exact finite capsule inventory'); }
   finally { assert.ok(path.relative(fixture, extra).startsWith('products' + path.sep)); fs.unlinkSync(extra); }
-  assert.equal(rows.length, 70); assert.ok(rows.every(row => row.passed));
+  const { createHistoricalCarrierPolicy } = await import(pathToFileURL(path.join(root, 'scripts/historical-carrier-policy.mjs')).href);
+  let historicalCarrierPolicy;
+  positive('eleven-fixed-historical-carrier-exceptions', () => { historicalCarrierPolicy = createHistoricalCarrierPolicy(read); const summary = historicalCarrierPolicy.summary(); assert.equal(summary.exactHistoricalCarrierExceptions, 11); assert.equal(summary.genericDirectoryException, false); assert.equal(summary.auditCoverageComplete, false); });
+  const carrierDeclaration = JSON.parse(read('products/rea-studio/results/historical-carrier-delivery-20261015/preservation-manifest.json'));
+  const carrier = carrierDeclaration.exceptions[0];
+  positive('unlisted-historical-carrier-path-refused', () => { assert.equal(historicalCarrierPolicy.allows({ ...carrier, path: carrier.path + '.unlisted' }), false); });
+  negative('historical-carrier-wrong-declared-identity', () => historicalCarrierPolicy.allows({ ...carrier, sha256: '0'.repeat(64) }), 'exact eleven-row declared byte/SHA table');
+  negative('historical-carrier-mandatory-payload-corruption', () => createHistoricalCarrierPolicy(p => p === carrier.path ? flip(read(p)) : read(p)), 'mandatory fixed carrier byte/SHA identity');
+  negative('historical-carrier-original-manifest-corruption', () => createHistoricalCarrierPolicy(p => p === carrier.declaringManifest ? flip(read(p)) : read(p)), 'original declaring manifest byte/SHA identity; deeper semantic branches not claimed exercised');
+  negative('historical-carrier-closure-authority-corruption', () => createHistoricalCarrierPolicy(p => p === 'products/rea-studio/results/historical-carrier-delivery-20261015/preservation-manifest.json' ? flip(read(p)) : read(p)), 'fixed closure authority identity; no generic fallback');
+  assert.equal(rows.length, 76); assert.ok(rows.every(row => row.passed));
   return { schema: 'rea-cloud-publication-controls/v1', status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,

@@ -1,0 +1,128 @@
+TAP version 13
+# Subtest: released Switch rules match first/all/fallback ports and expression boundaries
+ok 1 - released Switch rules match first/all/fallback ports and expression boundaries
+  ---
+  duration_ms: 69.0634
+  type: 'test'
+  ...
+# Subtest: released Switch filter extraction matches supported scalar/array/object options
+ok 2 - released Switch filter extraction matches supported scalar/array/object options
+  ---
+  duration_ms: 108.0531
+  type: 'test'
+  ...
+# Subtest: released Merge append/chooseBranch match2–10 inputs and exact immediate item links
+ok 3 - released Merge append/chooseBranch match2–10 inputs and exact immediate item links
+  ---
+  duration_ms: 3.6274
+  type: 'test'
+  ...
+# Subtest: released Merge position reproduces preferences, suffix keys, deep/shallow and unpaired behavior
+ok 4 - released Merge position reproduces preferences, suffix keys, deep/shallow and unpaired behavior
+  ---
+  duration_ms: 11.1342
+  type: 'test'
+  ...
+# Subtest: released Merge cartesian reproduces preference-induced item ordering
+ok 5 - released Merge cartesian reproduces preference-induced item ordering
+  ---
+  duration_ms: 4.7974
+  type: 'test'
+  ...
+# Subtest: released Merge field joins match all output sources, multiple matches and clash policies
+ok 6 - released Merge field joins match all output sources, multiple matches and clash policies
+  ---
+  duration_ms: 18.8905
+  type: 'test'
+  ...
+# Subtest: released Merge strict/fuzzy field comparison matches held-out primitives, objects and nested/literal paths
+ok 7 - released Merge strict/fuzzy field comparison matches held-out primitives, objects and nested/literal paths
+  ---
+  duration_ms: 3.0622
+  type: 'test'
+  ...
+# Subtest: held-out released Merge nested type transitions and absent links retain exact outputs
+not ok 8 - held-out released Merge nested type transitions and absent links retain exact outputs
+  ---
+  duration_ms: 3.5033
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\automation-routing-next\\routing-original.test.mjs:68:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    held-out type combineByPosition/undefined/false/5/7 exact output
+    + actual - expected
+    
+      [
+        [
+          {
+            binary: {},
+            json: {
+              absent: undefined,
+              id: 1,
+    +         value: {
+    +           '0': 'zero',
+    -         value: [
+    -           'zero',
+                extra: 2
+    +         }
+    -         ]
+            },
+            pairedItem: [
+              7,
+              7
+            ]
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      0:
+        json:
+          id: 1
+          value:
+            0: 'zero'
+            extra: 2
+        binary:
+        pairedItem:
+          0: 7
+          1: 7
+  actual:
+    0:
+      0:
+        json:
+          id: 1
+          value:
+            0: 'zero'
+            extra: 2
+        binary:
+        pairedItem:
+          0: 7
+          1: 7
+  operator: 'deepStrictEqual'
+  stack: |-
+    compare (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/automation-routing-next/routing-original.test.mjs:16:25)
+    async TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/automation-routing-next/routing-original.test.mjs:72:3)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: dangerous Merge own keys are deliberate bounded rejections, separately counted from equality
+ok 9 - dangerous Merge own keys are deliberate bounded rejections, separately counted from equality
+  ---
+  duration_ms: 0.3789
+  type: 'test'
+  ...
+# Subtest: exact released core enqueue helpers retain distinct input ports until both batches arrive
+ok 10 - exact released core enqueue helpers retain distinct input ports until both batches arrive
+  ---
+  duration_ms: 0.697
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 9
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1520.8841

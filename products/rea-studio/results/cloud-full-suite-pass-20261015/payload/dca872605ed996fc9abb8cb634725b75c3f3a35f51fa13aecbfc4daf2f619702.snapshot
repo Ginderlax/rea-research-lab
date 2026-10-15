@@ -1,0 +1,132 @@
+// Lightweight filing of an already verified cloud backup. No product execution.
+// Writes a new work-only staged capsule; never active repository files.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+const work = import.meta.dirname, lab = path.resolve(work, '../outputs/rea-research-lab');
+const stage = path.join(work, 'cloud-full-suite-pass-preservation-next');
+const run = '38816488464', job = '116705342025', artifact = '12011708044';
+const runRoot = path.join(work, 'cloud-verification-backups/run-' + run);
+const backup = path.join(runRoot, 'artifact-' + artifact), source = path.join(backup, 'readable-evidence');
+const prefix = 'products/rea-studio/results/cloud-full-suite-pass-20261015', target = path.join(stage, 'candidate', prefix);
+const digest = '23994c7654a841f62b554051da4963c9065cb8eca3bc1f07d1a9183db05ff210';
+const sourceCommit = '4a69ae1f8e0156fa9608faf357d415f536ba95f7', head = '464be289452a4df50fc1af14a27685e0dbfb2eec';
+const sha = bytes => createHash('sha256').update(bytes).digest('hex'), identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
+function safe(name) { assert(typeof name === 'string' && name && !/[\\:\x00-\x1f\x7f]/.test(name) && !name.startsWith('/') && name.split('/').every(part => part && part !== '.' && part !== '..')); return name; }
+function read(base, name) {
+  safe(name); let at = base;
+  for (const part of name.split('/')) { at = path.join(at, part); assert(!fs.lstatSync(at).isSymbolicLink()); }
+  const item = fs.lstatSync(at); assert(item.isFile() && item.size <= 4 * 1024 * 1024);
+  const bytes = fs.readFileSync(at); assert.equal(bytes.length, item.size); return bytes;
+}
+const verifiedBytes = read(backup, 'local-backup-verification.json'), verified = JSON.parse(verifiedBytes);
+assert.equal(verified.schema, 'rea-local-cloud-attempt-backup/v1'); assert.equal(verified.artifactSHA256, digest); assert.equal(verified.allCRCAndBytesReadable, true);
+const zip = fs.readFileSync(backup + '.zip'); assert.equal(sha(zip), digest); assert.equal(zip.length, verified.archiveBytes); assert.equal(zip.length, 1616252);
+const rows = new Map();
+for (const row of verified.files) {
+  safe(row.path); assert(!rows.has(row.path)); rows.set(row.path, row);
+  const item = fs.lstatSync(path.join(source, row.path)); assert(item.isFile() && !item.isSymbolicLink()); assert.equal(item.size, row.bytes);
+}
+function evidence(name) { const bytes = read(source, name), row = rows.get(name); assert(row); assert.deepEqual(identity(bytes), { bytes: row.bytes, sha256: row.sha256 }); return bytes; }
+const attempt = JSON.parse(evidence('attempt-validation.json'));
+assert.equal(attempt.schema, 'rea-cloud-development-attempt/v1'); assert.equal(attempt.repositoryCommit, sourceCommit); assert.equal(attempt.scope, 'full-oracle-experiment'); assert.equal(attempt.status, 'passed'); assert.equal(attempt.phase, 'terminal');
+assert.deepEqual(attempt.summary, { tests: 1048, pass: 1048, fail: 0, cancelled: 0, skipped: 0, todo: 0, duration_ms: 824225.6232 });
+assert.deepEqual(attempt.failures, []); assert.equal(attempt.failure, null); assert.equal(attempt.childCloseObserved, true); assert.equal(attempt.exitCode, 0); assert.equal(attempt.signal, null);
+assert.equal(attempt.sourceFiles, 773); assert.equal(attempt.sourceSnapshotFiles, 351); assert.equal(attempt.sourceStable, true); assert.equal(attempt.sourceCapturedBeforeExecution, true);
+assert.equal(attempt.executionEnvironment, 'github-hosted'); assert.equal(attempt.runtime.version, 'v24.16.0'); assert.equal(attempt.runtime.platform, 'win32');
+assert.equal(attempt.environment.GITHUB_RUN_ID, run); assert.equal(attempt.environment.GITHUB_RUN_ATTEMPT, '1'); assert.equal(attempt.environment.GITHUB_REF, 'refs/pull/1/merge'); assert.equal(attempt.environment.GITHUB_SHA, sourceCommit);
+assert.equal(attempt.historicalDevelopmentReceiptOverwritten, false); assert.equal(attempt.fullFeatureParityEstablished, false); assert.equal(attempt.universalSuperiorityEstablished, false);
+assert.equal(attempt.output.droppedOutputBytes, 0); assert.equal(attempt.output.retainedOutputTruncated, false);
+const beforeBytes = evidence('source-before.json'); assert.deepEqual(beforeBytes, evidence('source-after.json'));
+const before = JSON.parse(beforeBytes); assert.equal(before.length, 773);
+const selected = before.filter(row => row.path.endsWith('.test.mjs') && !row.path.split('/').includes('results')).map(row => row.path);
+assert.deepEqual(attempt.selectedTestFiles, selected); assert.deepEqual(attempt.command.slice(4), attempt.selectedTestFiles);
+const raw = evidence('stdout.txt').toString('utf8');
+for (const [key, value] of Object.entries(attempt.summary)) { const matches = [...raw.matchAll(new RegExp('^# ' + key + ' (\\d+(?:\\.\\d+)?)\\r?$', 'gm'))]; assert.equal(matches.length, 1); assert.equal(Number(matches[0][1]), value); }
+assert.equal(raw.split(/\r?\n/).filter(line => /^not ok \d+ - /.test(line)).length, 0);
+const workflow = JSON.parse(evidence('workflow-attempt.json'));
+assert.equal(workflow.schema, 'rea-cloud-full-oracle-workflow-attempt/v1'); assert.equal(workflow.runId, run); assert.equal(workflow.runAttempt, '1'); assert.equal(workflow.sourceCommit, sourceCommit); assert.equal(workflow.runnerEnvironment, 'github-hosted');
+for (const name of ['checkoutOutcome', 'compositionOutcome', 'flowVaultOutcome', 'archiveOutcome', 'bsdtarOutcome', 'bsdtarSmokeOutcome', 'additionalOutcome', 'testOutcome', 'oraclePostcheckOutcome', 'statusBeforePackaging']) assert.equal(workflow[name], 'success');
+const compositionBytes = evidence('bsdtar-composition.json'), composition = JSON.parse(compositionBytes), post = JSON.parse(evidence('bsdtar-postrun-source-check.json'));
+const targets = ['products/rea-studio/apps/archive/formats.test.mjs', 'products/rea-studio/apps/archive/zstd.test.mjs', 'products/rea-studio/apps/archive/bsdtar-original-test-helper.mjs'];
+assert.equal(composition.schema, 'rea-bsdtar-oracle-hosted-composition/v1'); assert.equal(composition.status, 'composed-unexecuted-oracle-test-overlay'); assert.equal(composition.sourceCommit, sourceCommit); assert.equal(composition.baselineGitCommit, sourceCommit);
+assert.equal(composition.applicationRuntimeChanged, false); assert.equal(composition.productionInstalled, false); assert.deepEqual(composition.transitions.map(row => row.path), targets);
+assert.equal(post.schema, 'rea-bsdtar-oracle-hosted-postrun-source-check/v1'); assert.equal(post.sourceStable, true); assert.equal(post.checkedTargets, 3); assert.equal(post.baselineGitCommit, sourceCommit); assert.equal(post.compositionSHA256, sha(compositionBytes)); assert.deepEqual(post.currentTargets, composition.currentTargets);
+for (const receipt of [composition, post]) { assert.equal(receipt.execution.GITHUB_RUN_ID, run); assert.equal(receipt.execution.GITHUB_RUN_ATTEMPT, '1'); assert.equal(receipt.execution.GITHUB_SHA, sourceCommit); }
+assert.equal(attempt.oracleTestOverlay.applicationRuntimeChanged, false); assert.equal(attempt.oracleTestOverlay.testsByteIdenticalToGit, false); assert.equal(attempt.oracleTestOverlay.gitBaselineEligibleActiveBytesAuthenticated, true); assert.equal(attempt.oracleTestOverlay.gitBaselineEligibleActiveFiles, 348); assert.equal(attempt.oracleTestOverlay.gitWorkingTreeMatchesOracleOverlayAfter, true);
+const baseline = JSON.parse(evidence('git-baseline-active-source.json')); assert.equal(baseline.files.length, 348); assert.equal(baseline.repositoryCommit, sourceCommit);
+const snapshotManifest = JSON.parse(evidence('source-snapshot-manifest.json')); assert.equal(snapshotManifest.censusFiles, 773); assert.equal(snapshotManifest.files.length, 351);
+const omitted = [...rows.values()].filter(row => row.path.startsWith('source/')).map(row => ({ sourcePath: row.path, bytes: row.bytes, sha256: row.sha256 })); assert.equal(omitted.length, 351);
+for (const row of snapshotManifest.files) { const actual = rows.get(row.path); assert(actual); assert.equal(actual.bytes, row.bytes); assert.equal(actual.sha256, row.sha256); const census = before.find(item => item.path === row.sourcePath); assert(census); assert.equal(census.bytes, row.bytes); assert.equal(census.sha256, row.sha256); }
+const retained = [...rows.keys()].filter(name => !name.startsWith('source/')); assert(retained.length <= 100);
+const collectionBytes = read(runRoot, 'collection-summary.json'), collection = JSON.parse(collectionBytes);
+assert.equal(collection.run, run); assert.equal(collection.job, job); assert.equal(collection.artifact, artifact); assert.equal(collection.head, head); assert.equal(collection.actualMerge, sourceCommit); assert.equal(collection.artifactSHA256, digest); assert.equal(collection.completeArtifactFilesReadable, true);
+const runMetadata = JSON.parse(read(runRoot, 'control-plane-evidence/run.json')), jobMetadata = JSON.parse(read(runRoot, 'control-plane-evidence/jobs.json')), artifactMetadata = JSON.parse(read(runRoot, 'control-plane-evidence/artifacts.json'));
+assert.equal(String(runMetadata.id), run); assert.equal(runMetadata.conclusion, 'success'); assert.equal(runMetadata.status, 'completed'); assert.equal(runMetadata.head_sha, head); assert.equal(runMetadata.event, 'pull_request'); assert.equal(runMetadata.run_attempt, 1);
+assert.equal(jobMetadata.jobs.length, 1); assert.equal(String(jobMetadata.jobs[0].id), job); assert.equal(jobMetadata.jobs[0].conclusion, 'success'); assert.equal(jobMetadata.jobs[0].runner_group_name, 'GitHub Actions'); assert(jobMetadata.jobs[0].labels.includes('windows-2022'));
+assert.equal(artifactMetadata.artifacts.length, 1); assert.equal(String(artifactMetadata.artifacts[0].id), artifact); assert.equal(artifactMetadata.artifacts[0].digest, 'sha256:' + digest); assert.equal(artifactMetadata.artifacts[0].size_in_bytes, zip.length);
+const oldFailure = 'products/rea-studio/results/cloud-full-suite-failed-20261015/preservation-manifest.json', oldFailureIdentity = identity(read(lab, oldFailure));
+assert(!fs.existsSync(path.join(lab, prefix)), 'Public target must remain new and absent'); assert(!fs.existsSync(stage), 'Preserve staged epochs; do not overwrite');
+fs.mkdirSync(path.join(target, 'payload'), { recursive: true });
+const records = [], objects = new Set(); let copiedBytes = 0;
+const credentials = /\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/;
+function save(sourcePath, bytes, origin) {
+  safe(sourcePath); assert(!records.some(row => row.sourcePath === sourcePath)); assert(!credentials.test(bytes.toString('utf8')));
+  copiedBytes += bytes.length; assert(copiedBytes <= 16 * 1024 * 1024);
+  const pin = identity(bytes), name = 'payload/' + pin.sha256 + '.snapshot';
+  if (!objects.has(name)) { fs.writeFileSync(path.join(target, name), bytes, { flag: 'wx' }); objects.add(name); }
+  assert.deepEqual(read(target, name), bytes); records.push({ sourcePath, path: name, ...pin, origin });
+}
+for (const name of retained) save(name, evidence(name), 'Exact non-source-subtree file from verified readable hosted artifact');
+save('local-backup-verification.json', verifiedBytes, 'Existing complete ZIP/CRC/readability/identity reader receipt');
+save('job-log-' + job + '.txt', read(path.join(work, 'cloud-verification-backups/job-' + job), 'logs.txt'), 'Actual hosted wrapper log');
+save('collection-summary.json', collectionBytes, 'Local read-only API/backup collection binding');
+for (const kind of ['run', 'jobs', 'artifacts']) save('control-plane-evidence/' + kind + '.json', read(runRoot, 'control-plane-evidence/' + kind + '.json'), 'Raw authenticated GitHub REST response');
+save('control-plane-collector.mjs', fs.readFileSync(path.join(work, 'collect-full-pass-control-plane-20261015.mjs')), 'Read-only metadata filing implementation');
+save('preservation-collector.mjs', fs.readFileSync(import.meta.filename), 'This exact work-only preservation implementation');
+const manifest = {
+  schema: 'rea-cloud-full-suite-pass-preservation/v1', atUtc: new Date().toISOString(), status: 'passed',
+  sourceCommit, pullRequestHead: head, testedReference: attempt.environment.GITHUB_REF, runId: Number(run), runAttempt: 1, jobId: Number(job),
+  runURL: runMetadata.html_url, artifactId: Number(artifact), artifactSHA256: digest, artifactArchiveBytes: zip.length,
+  summary: attempt.summary, selectedTestFiles: attempt.selectedTestFiles.length, allCurrentImplementedTestsSelected: true, sourceFiles: 773, sourceStable: true,
+  activeSourceSnapshotsInVerifiedLocalBackup: 351, activeGitBaselineFilesAuthenticated: 348,
+  oracleTestOverlayTargets: 3, oracleOverlay: composition.transitions, pairedOriginalAssets: composition.pairedOriginalAssets,
+  applicationRuntimeOverlayTargets: 0, testsByteIdenticalToGit: false, compositionSHA256: sha(compositionBytes), postrunOracleSourceCheck: 'passed',
+  baselineApplicationRuntimeMatchesTestedGit: true, sourceIdentityRequiresBaselineAndComposition: true,
+  completeLocalBackupVerified: true, localBackupFiles: rows.size, retainedArtifactFiles: retained.length, publicSourceCensusSnapshotPayloads: 0,
+  omittedSourceSnapshotPayloads: omitted,
+  omissionScope: 'Only the source/ active census snapshot subtree is omitted publicly. All351 payloads remain in the verified readable complete local backup, with exact identities retained here and in source-snapshot-manifest.json. Every other artifact file, including bounded oracle before/after source payloads, runner/composer snapshots, receipts, raw output and wrapper/control-plane evidence is retained.',
+  records, uniqueInertObjects: objects.size, allCopiesExact: true, allPayloadsInert: true, completedTestReceipt: true,
+  currentImplementedFullSuiteOnExplicitOracleEpochPassed: true, unchangedTestsClaimed: false, historicalSystemDLLDependencyEstablished: false,
+  wholeProductAcceptance: false, actualBrowserAcceptance: false, experimentalArchiveAESIncluded: false, vaultEmptyBinIncluded: false,
+  historicalReceiptsRebound: false, fullParity: false, superiority: false, countsAggregatedAcrossRuns: false,
+  historicalFailurePreserved: { path: oldFailure, ...oldFailureIdentity, modified: false },
+  localProductExecutions: 0, localTests: 0, localBuilds: 0,
+  backupVerificationBasis: 'Existing complete local reader receipt and exact downloaded ZIP identity reused; all retained artifact bytes are re-read/hash-bound and every public payload is copied/read back exactly. Omitted active payloads use the prior reader identity receipt and current path/type/size inspection, not a repeat bulk source hash.',
+  acceptanceScope: 'Actual1048 passed current implemented development checks on tested merge4a69ae1f8e0156fa9608faf357d415f536ba95f7 with an explicit three-file bsdtar test-loader/helper overlay; all other eligible active sources match that Git epoch. Same-attempt source stability, original prerequisite receipts and separate oracle postcheck passed. This does not rerun later source changes, experimental ArchiveAES, EmptyBin, browser acceptance or every documented original feature, and establishes no whole-product parity/security/performance superiority.'
+};
+const manifestBytes = Buffer.from(JSON.stringify(manifest, null, 2) + '\n'); fs.writeFileSync(path.join(target, 'preservation-manifest.json'), manifestBytes, { flag: 'wx' });
+const manifestIdentity = identity(manifestBytes);
+const uniqueRows = [...objects].sort().map(name => ({ path: prefix + '/' + name, ...identity(read(target, name)) }));
+const fileRows = [{ path: prefix + '/preservation-manifest.json', ...manifestIdentity }, ...uniqueRows];
+assert.equal(fs.readdirSync(path.join(target, 'payload')).length, objects.size);
+for (const record of records) assert.deepEqual(identity(read(target, record.path)), { bytes: record.bytes, sha256: record.sha256 });
+assert.equal(records.filter(row => retained.includes(row.sourcePath)).length, retained.length);
+assert.deepEqual(identity(read(lab, oldFailure)), oldFailureIdentity); assert(!fs.existsSync(path.join(lab, prefix)));
+const authority = { schema: 'rea-work-only-cloud-evidence-copy-authority/v1', atUtc: new Date().toISOString(), status: 'staged-exact-public-capsule-ready-for-parent-review-copy',
+  stage: 'work/cloud-full-suite-pass-preservation-next', targetPrefix: prefix, mode: 'new-directory-only', activeApplicationEdits: 0, activeTestEdits: 0, gitChangesByCollector: 0,
+  sourceRun: run, sourceJob: job, sourceArtifact: artifact, testedMerge: sourceCommit, pullRequestHead: head, manifest: manifestIdentity,
+  publicFiles: fileRows.length, publicBytes: fileRows.reduce((sum, row) => sum + row.bytes, 0), files: fileRows, logicalEvidenceRoles: records.length,
+  retainedArtifactFiles: retained.length, omittedActiveCensusSnapshots: 351, sourceCensusFiles: 773, summary: attempt.summary,
+  portableCompleteness: 'Every non-source-subtree artifact file retained exactly, with raw control-plane responses, wrapper log, local ZIP verification and collectors; public object identities/readback checked, original complete archive stays in verified local backup.',
+  oldFailure: { path: oldFailure, ...oldFailureIdentity, unchangedAfterFiling: true }, localProductExecutions: 0, localTests: 0, localBuilds: 0,
+  nextAction: 'Parent source/evidence review then exact new-directory copy. No overwrite, merge or publication is performed by this helper.' };
+fs.writeFileSync(path.join(stage, 'change-authority.json'), JSON.stringify(authority, null, 2) + '\n', { flag: 'wx' });
+const portable = { schema: 'rea-staged-cloud-capsule-portable-readback/v1', status: 'passed', atUtc: new Date().toISOString(), manifest: manifestIdentity,
+  logicalRoles: records.length, uniqueObjects: objects.size, publicFiles: fileRows.length, publicBytes: authority.publicBytes,
+  allRetainedArtifactFilesPresent: retained.length, allRetainedArtifactIdentitiesMatchReader: true, allPublicObjectsReadBackExact: true,
+  verifiedCompleteOriginalBackupFiles: rows.size, originalBackupCRCAndReadability: true, omittedCensusPayloadsRetainedLocally: 351,
+  activeRepositoryTargetStillAbsent: true, historicalFailureManifestUnchanged: true, localProductExecutions: 0, localTests: 0, localBuilds: 0 };
+fs.writeFileSync(path.join(stage, 'portable-verification.json'), JSON.stringify(portable, null, 2) + '\n', { flag: 'wx' });
+console.log(JSON.stringify({ stage, prefix, ...portable, authoritySHA256: sha(fs.readFileSync(path.join(stage, 'change-authority.json'))) }));

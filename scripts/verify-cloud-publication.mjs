@@ -6,6 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawn, spawnSync } from 'node:child_process';
 import { runPublicationControls } from './publication-integrity-controls.mjs';
+import { createHistoricalCarrierPolicyFromRoot } from './historical-carrier-policy.mjs';
 
 const root = path.resolve(fileURLToPath(new URL('../', import.meta.url)));
 assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
@@ -22,6 +23,7 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
 const DERIVED = ['PUBLICATION-MANIFEST.json', 'VALIDATION.json'];
 const REVIEWED = {
+  'scripts/historical-carrier-policy.mjs': [4327, '671de635f8f3289b51e9ad5296706e4d884202e2ebdd4ba3fbe7038803fe51fd'],
   'scripts/verify-editor-save-followup.mjs': [8581, '2e32b4443efc07aa4a7d14a32629e2009ab94671cace973324ca5cd126c1dce8'],
   'products/rea-studio/results/publication-editor-save-git-closure-20261015/failed-publication-attempt.json.snapshot': [2488, 'e8b877d8a0e28048a6cab3a9e41ebb00492a1776357fd3c0b1729a4acd9eab73'],
   'products/rea-studio/results/publication-editor-save-git-closure-20261015/failed-publication-write.stderr.txt.snapshot': [1849, '5db76577828ac6fd87f12860dcbff9707c77af3d6bc20071bd29fd8c3c74f00a'],
@@ -29,8 +31,8 @@ const REVIEWED = {
   'products/rea-studio/results/publication-editor-save-git-closure-20261015/preservation-manifest.json': [3291, '543db5761be73b19447bb6d0d9113efd77d80c105a3c894a38baa524a27d76c9'],
   'products/rea-studio/results/publication-editor-save-git-closure-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot': [50750, '8e72b3b70a9b44d1ef5ab33c11a7c28a0cda90d79f22375771a2a4dceee22f48'],
   'products/rea-studio/results/publication-editor-save-git-closure-20261015/verifier-before/verify-editor-save-followup.mjs.snapshot': [7424, 'fb3f465eaaefab1197c170410355f30764308e3f5b4e58e30d0c8059fe3e96c3'],
-  'scripts/verify-records.mjs': [148351, 'a81c2f4b53fd346a6b86e4dcb63c9b39fb07a4f1e551bcfdbc3c755fce394046'],
-  'scripts/editor-vault-proof-migration.mjs': [69184, 'c9fe15f147349c9be6565cfaa3d6316a808a2a8d21d76e753601886f8d80e5c2'],
+  'scripts/verify-records.mjs': [148558, 'a78a9467ecd76ae44c3d2413b6d341c735bb1f98a657646d3b00a13dccf066f8'],
+  'scripts/editor-vault-proof-migration.mjs': [71277, '32c55edd351ea5145bc0b7c973fac32d8480386f7c172248aa90a340ac50903b'],
   'scripts/verify-cloud-recovery-records.mjs': [15778, '405c90ac8c68acdc2b281e9563637cc391e1e0574705c1cbcdf7be8e1f794482'],
   'products/rea-studio/results/cloud-publication-source-transition-20261015/preservation-manifest.json': [3069, '8daf5506d935254110dadf2c32e394d6b02f773692867b3a30120a14055ee576'],
   'products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/verify-records.mjs.snapshot': [142684, '42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6'],
@@ -138,6 +140,7 @@ try {
   const oldManifestBytes = fs.readFileSync(publicFile(DERIVED[0])), oldValidationBytes = fs.readFileSync(publicFile(DERIVED[1]));
   write('metadata-before/' + DERIVED[0] + '.snapshot', oldManifestBytes); write('metadata-before/' + DERIVED[1] + '.snapshot', oldValidationBytes);
   const old = JSON.parse(oldManifestBytes); assert.equal(old.schema, 'rea-publication-manifest/v1'); assert.equal(old.algorithm, 'sha256'); assert.deepEqual(old.derived_records_excluded, DERIVED);
+  const historicalCarrierPolicy = createHistoricalCarrierPolicyFromRoot(root);
   const forbidden = /(^|\/)(artifacts|node_modules|tooling|__pycache__|work|\.local)(\/|$)|\.(exe|dll|zip|tgz|bundle|tar|7z|pyc)$/i;
   const credentials = /\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/;
   function payload(label) {
@@ -146,7 +149,7 @@ try {
       if (DERIVED.includes(entry.path)) continue;
       const content = fs.readFileSync(publicFile(entry.path)), sha256 = sha(content); bytes += content.length; assert.ok(bytes <= 2 * 1024 * 1024 * 1024);
       assert.equal(createHash(objectFormat).update('blob ' + content.length + '\0').update(content).digest('hex'), entry.gitSHA, 'Working bytes differ from committed Git: ' + entry.path);
-      assert.ok(!forbidden.test(entry.path) || entry.path === 'products/rea-studio/apps/archive/fixtures/zstd/native-zip93.zip' && sha256 === 'e9282f76dbd3c080d0e12ef95489458523ebbc65c2951f4b8f3cb880a16c5d8b');
+      assert.ok(!forbidden.test(entry.path) || entry.path === 'products/rea-studio/apps/archive/fixtures/zstd/native-zip93.zip' && sha256 === 'e9282f76dbd3c080d0e12ef95489458523ebbc65c2951f4b8f3cb880a16c5d8b' || historicalCarrierPolicy.allows({ path: entry.path, bytes: content.length, sha256 }));
       assert.equal(credentials.test(content.toString('utf8')), false, 'Credential-shaped content requires review: ' + entry.path);
       rows.push({ path: entry.path, bytes: content.length, sha256 });
       if (rows.length % 1000 === 0) event('payload-progress', { label, files: rows.length, bytes });

@@ -1,0 +1,454 @@
+TAP version 13
+# Subtest: released Switch rules match first/all/fallback ports and expression boundaries
+ok 1 - released Switch rules match first/all/fallback ports and expression boundaries
+  ---
+  duration_ms: 47.4667
+  type: 'test'
+  ...
+# Subtest: released Switch filter extraction matches supported scalar/array/object options
+ok 2 - released Switch filter extraction matches supported scalar/array/object options
+  ---
+  duration_ms: 84.8926
+  type: 'test'
+  ...
+# Subtest: released Merge append/chooseBranch match2–10 inputs and exact immediate item links
+ok 3 - released Merge append/chooseBranch match2–10 inputs and exact immediate item links
+  ---
+  duration_ms: 3.1988
+  type: 'test'
+  ...
+# Subtest: released Merge position reproduces preferences, suffix keys, deep/shallow and unpaired behavior
+not ok 4 - released Merge position reproduces preferences, suffix keys, deep/shallow and unpaired behavior
+  ---
+  duration_ms: 3.0234
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\automation-routing-next\\routing-original.test.mjs:43:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    position undefined/deepMerge/empty=true/unpaired=false exact output
+    + actual - expected
+    ... Skipped lines
+    
+      [
+        [
+          {
+            binary: {},
+            json: {
+    ...
+              b: 4,
+    +         empty: undefined,
+    -         empty: '',
+              id: 3,
+              nested: {
+                one: 2
+              }
+            },
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      0:
+        json:
+          id: 1
+          a: 1
+          empty: 'nonempty'
+          nested:
+            one: 1
+            clash: 'right'
+            two: 2
+          arr:
+            0: 3
+            1: 2
+          b: 3
+        binary:
+        pairedItem:
+          0:
+            item: 0
+          1:
+            item: 0
+            input: 1
+          2: <Circular>
+      1:
+        json:
+          id: 3
+          a: 2
+          empty: ''
+          nested:
+            one: 2
+          b: 4
+        binary:
+        pairedItem:
+          0:
+            item: 1
+          1:
+            item: 1
+            input: 1
+          2: <Circular>
+  actual:
+    0:
+      0:
+        json:
+          id: 1
+          a: 1
+          empty: 'nonempty'
+          nested:
+            one: 1
+            clash: 'right'
+            two: 2
+          arr:
+            0: 3
+            1: 2
+          b: 3
+        binary:
+        pairedItem:
+          0:
+            item: 0
+          1:
+            item: 0
+            input: 1
+          2: <Circular>
+      1:
+        json:
+          id: 3
+          a: 2
+          nested:
+            one: 2
+          b: 4
+        binary:
+        pairedItem:
+          0:
+            item: 1
+          1:
+            item: 1
+            input: 1
+          2: <Circular>
+  operator: 'deepStrictEqual'
+  stack: |-
+    compare (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/automation-routing-next/routing-original.test.mjs:16:25)
+    async TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/automation-routing-next/routing-original.test.mjs:45:97)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: released Merge cartesian reproduces preference-induced item ordering
+not ok 5 - released Merge cartesian reproduces preference-induced item ordering
+  ---
+  duration_ms: 1.6387
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\automation-routing-next\\routing-original.test.mjs:49:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    cartesian undefined/deepMerge/true exact output
+    + actual - expected
+    ... Skipped lines
+    
+      [
+        [
+          {
+            binary: {},
+            json: {
+    ...
+              arr: [
+    +           1,
+    -           3,
+                2
+              ],
+              b: 4,
+    +         empty: undefined,
+    -         empty: null,
+              id: 3,
+              nested: {
+    +           clash: 'left',
+    -           clash: 'right',
+                one: 1,
+    -           two: 2
+              }
+            },
+            pairedItem: [
+              {
+                item: 0
+    ...
+              arr: [
+    +           1,
+    -           3,
+                2
+              ],
+              b: 5,
+    +         empty: undefined,
+    -         empty: null,
+              id: 4,
+              nested: {
+    +           clash: 'left',
+    -           clash: 'right',
+                one: 1,
+    -           two: 2
+              }
+            },
+            pairedItem: [
+              {
+                item: 0
+    ...
+              b: 4,
+    +         empty: undefined,
+    -         empty: '',
+              id: 3,
+              nested: {
+    -           clash: 'right',
+                one: 2,
+    -           two: 2
+              }
+            },
+            pairedItem: [
+              {
+                item: 1
+    ...
+              b: 5,
+    +         empty: undefined,
+    -         empty: '',
+              id: 4,
+              nested: {
+    -           clash: 'right',
+                one: 2,
+    -           two: 2
+              }
+            },
+            pairedItem: [
+              {
+                item: 1
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      0:
+        json:
+          id: 1
+          a: 1
+          empty: 'nonempty'
+          nested:
+            one: 1
+            clash: 'right'
+            two: 2
+          arr:
+            0: 3
+            1: 2
+          b: 3
+        binary:
+        pairedItem:
+          0:
+            item: 0
+          1:
+            item: 0
+            input: 1
+      1:
+        json:
+          id: 3
+          a: 1
+          empty: ~
+          nested: <Circular>
+          arr: <Circular>
+          b: 4
+        binary:
+        pairedItem:
+          0: <Circular>
+          1:
+            item: 1
+            input: 1
+      2:
+        json:
+          id: 4
+          a: 1
+          empty: ~
+          nested: <Circular>
+          arr: <Circular>
+          b: 5
+        binary:
+        pairedItem:
+          0: <Circular>
+          1:
+            item: 2
+            input: 1
+      3:
+        json:
+          id: 1
+          a: 2
+          empty: 'nonempty'
+          nested:
+            one: 2
+            two: 2
+            clash: 'right'
+          b: 3
+          arr:
+            0: 3
+        binary:
+        pairedItem:
+          0:
+            item: 1
+          1: <Circular>
+      4:
+        json:
+          id: 3
+          a: 2
+          empty: ''
+          nested: <Circular>
+          b: 4
+        binary:
+        pairedItem:
+          0: <Circular>
+          1: <Circular>
+      5:
+        json:
+          id: 4
+          a: 2
+          empty: ''
+          nested: <Circular>
+          b: 5
+        binary:
+        pairedItem:
+          0: <Circular>
+          1: <Circular>
+  actual:
+    0:
+      0:
+        json:
+          id: 1
+          a: 1
+          empty: 'nonempty'
+          nested:
+            one: 1
+            clash: 'right'
+            two: 2
+          arr:
+            0: 3
+            1: 2
+          b: 3
+        binary:
+        pairedItem:
+          0:
+            item: 0
+          1:
+            item: 0
+            input: 1
+      1:
+        json:
+          id: 3
+          a: 1
+          nested:
+            one: 1
+            clash: 'left'
+          arr:
+            0: 1
+            1: 2
+          b: 4
+        binary:
+        pairedItem:
+          0:
+            item: 0
+          1:
+            item: 1
+            input: 1
+      2:
+        json:
+          id: 4
+          a: 1
+          nested:
+            one: 1
+            clash: 'left'
+          arr:
+            0: 1
+            1: 2
+          b: 5
+        binary:
+        pairedItem:
+          0:
+            item: 0
+          1:
+            item: 2
+            input: 1
+      3:
+        json:
+          id: 1
+          a: 2
+          empty: 'nonempty'
+          nested:
+            one: 2
+            two: 2
+            clash: 'right'
+          b: 3
+          arr:
+            0: 3
+        binary:
+        pairedItem:
+          0:
+            item: 1
+          1:
+            item: 0
+            input: 1
+      4:
+        json:
+          id: 3
+          a: 2
+          nested:
+            one: 2
+          b: 4
+        binary:
+        pairedItem:
+          0:
+            item: 1
+          1:
+            item: 1
+            input: 1
+      5:
+        json:
+          id: 4
+          a: 2
+          nested:
+            one: 2
+          b: 5
+        binary:
+        pairedItem:
+          0:
+            item: 1
+          1:
+            item: 2
+            input: 1
+  operator: 'deepStrictEqual'
+  stack: |-
+    compare (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/automation-routing-next/routing-original.test.mjs:16:25)
+    async TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/automation-routing-next/routing-original.test.mjs:50:182)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: released Merge field joins match all output sources, multiple matches and clash policies
+ok 6 - released Merge field joins match all output sources, multiple matches and clash policies
+  ---
+  duration_ms: 15.4271
+  type: 'test'
+  ...
+# Subtest: released Merge strict/fuzzy field comparison matches held-out primitives, objects and nested/literal paths
+ok 7 - released Merge strict/fuzzy field comparison matches held-out primitives, objects and nested/literal paths
+  ---
+  duration_ms: 3.8303
+  type: 'test'
+  ...
+# Subtest: dangerous Merge own keys are deliberate bounded rejections, separately counted from equality
+ok 8 - dangerous Merge own keys are deliberate bounded rejections, separately counted from equality
+  ---
+  duration_ms: 0.4894
+  type: 'test'
+  ...
+# Subtest: exact released core enqueue helpers retain distinct input ports until both batches arrive
+ok 9 - exact released core enqueue helpers retain distinct input ports until both batches arrive
+  ---
+  duration_ms: 0.7335
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 7
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1408.8142

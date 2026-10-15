@@ -531,8 +531,8 @@ const fixed={
         "sha256": "8283f709444328e1dee3483c46322a07652c2be1d2ac71ff94269c2e645e6702"
       },
       "after": {
-        "bytes": 148351,
-        "sha256": "a81c2f4b53fd346a6b86e4dcb63c9b39fb07a4f1e551bcfdbc3c755fce394046"
+        "bytes": 148558,
+        "sha256": "a78a9467ecd76ae44c3d2413b6d341c735bb1f98a657646d3b00a13dccf066f8"
       },
       "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-records.mjs.snapshot"
     }
@@ -1257,6 +1257,28 @@ function expected(r){assert(r&&Number.isSafeInteger(r.bytes)&&r.bytes>=0&&r.byte
  * The before bytes remain historical; every named installed after is required.
  * This is bounded I/O authentication, not an atomic filesystem snapshot.
  */
+const historicalCarrierTransition={
+  "manifest": {
+    "path": "products/rea-studio/results/historical-carrier-delivery-20261015/preservation-manifest.json",
+    "bytes": 47735,
+    "sha256": "0b31135d5091b8cbf64ce4d21475f3e1c32605cccccfb3eb3d4b05c858105f1e"
+  },
+  "rootBefore": {
+    "path": "products/rea-studio/results/historical-carrier-delivery-20261015/verifier-before/verify-records.mjs.snapshot",
+    "bytes": 148351,
+    "sha256": "a81c2f4b53fd346a6b86e4dcb63c9b39fb07a4f1e551bcfdbc3c755fce394046"
+  },
+  "migrationBefore": {
+    "path": "products/rea-studio/results/historical-carrier-delivery-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot",
+    "bytes": 69184,
+    "sha256": "c9fe15f147349c9be6565cfaa3d6316a808a2a8d21d76e753601886f8d80e5c2"
+  },
+  "helper": {
+    "path": "scripts/historical-carrier-policy.mjs",
+    "bytes": 4327,
+    "sha256": "671de635f8f3289b51e9ad5296706e4d884202e2ebdd4ba3fbe7038803fe51fd"
+  }
+};
 export function createEditorVaultProofMigration(rawRead){assert.equal(typeof rawRead,'function');const seen=new Map();let total=0;
  function read(p,r){safe(p);const b=rawRead(p);assert(Buffer.isBuffer(b)&&b.length<=32*1024*1024);const id=identity(b);if(r)same(id,expected(r),p);if(seen.has(p))same(id,seen.get(p),'Changed proof '+p);else{seen.set(p,id);total+=b.length;assert(seen.size<=160&&total<=16*1024*1024,'Transition aggregate bound');}return b;}
  const manifest=JSON.parse(read(fixed.installation.manifest.path,fixed.installation.manifest));assert.equal(manifest.schema,'rea-editor-vault-root-installation-preservation/v1');assert.equal(manifest.records.length,1098);
@@ -1289,6 +1311,7 @@ export function createEditorVaultProofMigration(rawRead){assert.equal(typeof raw
  for(const r of [gitDirectoryVerifierTransition.manifest,gitDirectoryVerifierTransition.payload,gitDirectoryVerifierTransition.middle,gitDirectoryVerifierTransition.migrationBefore])read(r.path,r);
  const editorSaveClosure=JSON.parse(read(editorSaveGitDirectoryTransition.manifest.path,editorSaveGitDirectoryTransition.manifest));assert.equal(editorSaveClosure.schema,'rea-publication-editor-save-git-closure/v1');assert.equal(editorSaveClosure.reader,editorSaveGitDirectoryTransition.path);same(editorSaveClosure.readerBefore,editorSaveGitDirectoryTransition.middle,'Exact Editor save middle epoch');same(editorSaveClosure.readerAfter,verifierRoutes.get(editorSaveGitDirectoryTransition.path).after,'Exact Editor save current epoch');assert.equal(editorSaveClosure.files.length,5);for(const r of editorSaveClosure.files)read(editorSaveGitDirectoryTransition.prefix+r.path,r);read(editorSaveGitDirectoryTransition.middle.path,editorSaveGitDirectoryTransition.middle);
  const mismatchCorrection=JSON.parse(read(editorGitMismatchTransition.manifest.path,editorGitMismatchTransition.manifest));assert.equal(mismatchCorrection.schema,'rea-publication-editor-git-observer-transition/v1');assert.equal(mismatchCorrection.sourceOnly,true);assert.equal(mismatchCorrection.records.length,9);assert.equal(mismatchCorrection.failedRun.sourceControlsPassed,65);assert.equal(mismatchCorrection.failedRun.publicationAccepted,false);assert.equal(mismatchCorrection.failedRun.fullProducerEvidenceUploaded,false);for(const r of mismatchCorrection.records)read(editorGitMismatchTransition.prefix+r.path,r);same(mismatchCorrection.newExactMismatch.before,windowsRoutes.get('products/rea-studio/apps/editor/git.test.mjs').before,'Exact Editor Git mismatch before');same(mismatchCorrection.newExactMismatch.after,windowsRoutes.get('products/rea-studio/apps/editor/git.test.mjs').after,'Exact Editor Git mismatch after');
+ const carrierDeclaration=JSON.parse(read(historicalCarrierTransition.manifest.path,historicalCarrierTransition.manifest));assert.equal(carrierDeclaration.schema,'rea-historical-carrier-delivery-transition/v1');assert.equal(carrierDeclaration.sourceOnly,true);assert.equal(carrierDeclaration.auditCoverageComplete,false);assert.equal(carrierDeclaration.genericDirectoryException,false);assert.equal(carrierDeclaration.restoredCarriers.length,80);assert.equal(carrierDeclaration.exceptions.length,11);assert.deepEqual(carrierDeclaration.records,[historicalCarrierTransition.rootBefore,historicalCarrierTransition.migrationBefore]);for(const r of [historicalCarrierTransition.rootBefore,historicalCarrierTransition.migrationBefore,historicalCarrierTransition.helper])read(r.path,r);
  for(const r of fixed.routes){read(r.historicalPath,r.before);const installationRow=installed.installed.find(s=>s.destination===r.path);assert(installationRow);same(installationRow.before,r.before,r.path);same(installationRow.after,r.after,r.path);}
  for(const r of Object.values(fixed.metadata))read(r.historicalPath,r);
  function resolveHistorical(p,r){
@@ -1296,6 +1319,7 @@ export function createEditorVaultProofMigration(rawRead){assert.equal(typeof raw
   if(!windows&&!newer&&!row&&!v)return null;
   assert(r,'Named transition requires an explicit expected identity: '+p);const id=expected(r);
   if(windows){if(id.bytes===windows.after.bytes&&id.sha256===windows.after.sha256)return null;if(windows.before&&id.bytes===windows.before.bytes&&id.sha256===windows.before.sha256)return windows.beforeImage;throw new Error('No unlisted Windows path historical identity allowed: '+p);}
+  if(p==='scripts/verify-records.mjs'&&id.bytes===historicalCarrierTransition.rootBefore.bytes&&id.sha256===historicalCarrierTransition.rootBefore.sha256)return historicalCarrierTransition.rootBefore.path;
   if(p==='scripts/verify-records.mjs'&&id.bytes===windowsPathTransition.rootBefore.bytes&&id.sha256===windowsPathTransition.rootBefore.sha256)return windowsPathTransition.rootBefore.path;
   if(p===publicationRootTransition.path&&id.bytes===publicationRootTransition.middle.bytes&&id.sha256===publicationRootTransition.middle.sha256)return publicationRootTransition.middle.path;
   if(p===gitDirectoryVerifierTransition.path&&id.bytes===gitDirectoryVerifierTransition.middle.bytes&&id.sha256===gitDirectoryVerifierTransition.middle.sha256)return gitDirectoryVerifierTransition.middle.path;
@@ -1303,7 +1327,7 @@ export function createEditorVaultProofMigration(rawRead){assert.equal(typeof raw
   if(newer){if(id.bytes===newer.after.bytes&&id.sha256===newer.after.sha256)return null;if(id.bytes===newer.before.bytes&&id.sha256===newer.before.sha256)return newer.historicalPath;if(!row&&!v)throw new Error('No unlisted historical identity allowed: '+p);}
   const older=row??v;if(!newer&&id.bytes===older.after.bytes&&id.sha256===older.after.sha256)return null;same(id,older.before,'No unlisted historical identity allowed: '+p);return older.historicalPath;
  }
- function summary(){for(const [p,r]of seen)read(p,r);return{sourceOnly:true,namedSourceRoutes:15,old720ChangedCodeRoutes:11,docsOutside720:4,currentInstalledSourcesMandatory:64,windowsPathCurrentSourcesMandatory:3,windowsPathHistoricalSourceRoutes:2,windowsPathSourceDeclarationOnly:true,historicalFiniteWindowsPathGroups:47,windowsPathFocusedEvidenceAuthenticated:true,windowsPathFocusedEvidenceSelectedMetadataOnly:true,windowsPathFocusedEvidenceFullSuiteAccepted:false,windowsPathFocusedEvidenceProductionInstalled:false,windowsPathBehavioralAcceptanceEstablished:false,windowsPathInstallationReceiptAuthenticated:false,latestInstalledSourcesMandatory:35,unchangedEarlierInstalledSourcesMandatory:26,historicalEarlierInstalledAfterSourcesAuthenticated:4,latestBeforeImagesMandatory:9,historical937NotCurrentAcceptance:true,historical937SelectedSnapshots:4,currentSharedHostMandatory:1,currentVerifierAfterMandatory:7,currentFiniteCloudVerifierMandatory:1,rootVerifierHistoricalBeforeImages:3,followupVerifierHistoricalBeforeImages:2,editorSaveVerifierHistoricalBeforeImages:2,gitDirectoryClosurePayloadMandatory:1,priorMigrationSourceMandatory:5,editorHistoricalMismatchProjectionRows:6,historical847NotCurrentAcceptance:true,historical78NotCurrentAcceptance:true,unknownPathsNotMapped:true,authenticatedFiles:seen.size,authenticatedBytes:total,applicationExecutions:0,originalExecutions:0,browserExecutions:0,benchmarks:0,fullParity:false};}
+ function summary(){for(const [p,r]of seen)read(p,r);return{sourceOnly:true,namedSourceRoutes:15,old720ChangedCodeRoutes:11,docsOutside720:4,currentInstalledSourcesMandatory:64,windowsPathCurrentSourcesMandatory:3,windowsPathHistoricalSourceRoutes:2,windowsPathSourceDeclarationOnly:true,historicalFiniteWindowsPathGroups:47,windowsPathFocusedEvidenceAuthenticated:true,windowsPathFocusedEvidenceSelectedMetadataOnly:true,windowsPathFocusedEvidenceFullSuiteAccepted:false,windowsPathFocusedEvidenceProductionInstalled:false,windowsPathBehavioralAcceptanceEstablished:false,windowsPathInstallationReceiptAuthenticated:false,latestInstalledSourcesMandatory:35,unchangedEarlierInstalledSourcesMandatory:26,historicalEarlierInstalledAfterSourcesAuthenticated:4,latestBeforeImagesMandatory:9,historical937NotCurrentAcceptance:true,historical937SelectedSnapshots:4,currentSharedHostMandatory:1,currentVerifierAfterMandatory:7,currentFiniteCloudVerifierMandatory:1,rootVerifierHistoricalBeforeImages:4,historicalCarrierPolicySourceMandatory:1,historicalCarrierExceptions:11,historicalCarrierKnownRestored:80,historicalCarrierAuditCoverageComplete:false,followupVerifierHistoricalBeforeImages:2,editorSaveVerifierHistoricalBeforeImages:2,gitDirectoryClosurePayloadMandatory:1,priorMigrationSourceMandatory:6,editorHistoricalMismatchProjectionRows:6,historical847NotCurrentAcceptance:true,historical78NotCurrentAcceptance:true,unknownPathsNotMapped:true,authenticatedFiles:seen.size,authenticatedBytes:total,applicationExecutions:0,originalExecutions:0,browserExecutions:0,benchmarks:0,fullParity:false};}
  return{resolve:resolveHistorical,historicalMetadata(name){assert(Object.hasOwn(fixed.metadata,name),'Only development/status beforemetadata');const r=fixed.metadata[name];return read(r.historicalPath,r);},historicalVerifier(p){assert(verifierRoutes.has(p),'Only named verifier beforeimages');const r=verifierRoutes.get(p);return read(r.historicalPath,r.before);},editorMismatchesIncludingHistoricalHost(rows){assert(Array.isArray(rows)&&rows.length===31);assert.equal(new Set(rows.map(r=>r.path)).size,31,'Distinct historical Editor source rows');const result=[];for(const r of rows){const route=sourceRoutes.get(r.path)??(r.path==='products/rea-studio/apps/editor/git.test.mjs'?windowsRoutes.get(r.path):null);if(route){same(r,route.before,'Fixed old Editor source');result.push({path:r.path,testedSha256:r.sha256,liveSha256:route.after.sha256});}else if(r.path===fixed.sharedHost.path){assert.equal(r.bytes,7741);assert.equal(r.sha256,'807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f');result.push({path:r.path,testedSha256:r.sha256,liveSha256:fixed.sharedHost.sha256});}}assert.equal(result.length,6);return result;},summary};
 }
 export function createEditorVaultProofMigrationFromRoot(root){const base=realpathSync(resolve(root));return createEditorVaultProofMigration(p=>{safe(p);let at=base;for(const s of p.split('/')){at=resolve(at,s);assert(!lstatSync(at).isSymbolicLink(),'Reparse proof path');}const real=realpathSync(at),rel=relative(base,real);assert(rel&&rel!=='..'&&!rel.startsWith('..'+sep)&&!rel.startsWith(sep));const stat=lstatSync(at);assert(stat.isFile()&&stat.size<=32*1024*1024);const b=readFileSync(at);assert.equal(b.length,stat.size);return b;});}

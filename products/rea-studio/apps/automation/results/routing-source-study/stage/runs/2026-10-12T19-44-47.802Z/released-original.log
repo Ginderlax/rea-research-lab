@@ -1,0 +1,141 @@
+TAP version 13
+# Subtest: released Switch rules match first/all/fallback ports and expression boundaries
+ok 1 - released Switch rules match first/all/fallback ports and expression boundaries
+  ---
+  duration_ms: 58.7541
+  type: 'test'
+  ...
+# Subtest: released Switch filter extraction matches supported scalar/array/object options
+ok 2 - released Switch filter extraction matches supported scalar/array/object options
+  ---
+  duration_ms: 146.3917
+  type: 'test'
+  ...
+# Subtest: released Merge append/chooseBranch match2–10 inputs and exact immediate item links
+ok 3 - released Merge append/chooseBranch match2–10 inputs and exact immediate item links
+  ---
+  duration_ms: 5.685
+  type: 'test'
+  ...
+# Subtest: released Merge position reproduces preferences, suffix keys, deep/shallow and unpaired behavior
+ok 4 - released Merge position reproduces preferences, suffix keys, deep/shallow and unpaired behavior
+  ---
+  duration_ms: 16.4619
+  type: 'test'
+  ...
+# Subtest: released Merge cartesian reproduces preference-induced item ordering
+ok 5 - released Merge cartesian reproduces preference-induced item ordering
+  ---
+  duration_ms: 6.3749
+  type: 'test'
+  ...
+# Subtest: released Merge field joins match all output sources, multiple matches and clash policies
+ok 6 - released Merge field joins match all output sources, multiple matches and clash policies
+  ---
+  duration_ms: 21.2929
+  type: 'test'
+  ...
+# Subtest: released Merge strict/fuzzy field comparison matches held-out primitives, objects and nested/literal paths
+ok 7 - released Merge strict/fuzzy field comparison matches held-out primitives, objects and nested/literal paths
+  ---
+  duration_ms: 3.9648
+  type: 'test'
+  ...
+# Subtest: held-out released Merge nested type transitions and absent links retain exact outputs
+ok 8 - held-out released Merge nested type transitions and absent links retain exact outputs
+  ---
+  duration_ms: 109.5981
+  type: 'test'
+  ...
+# Subtest: held-out released Merge duplicate lookup destinations and signed-zero equality match
+not ok 9 - held-out released Merge duplicate lookup destinations and signed-zero equality match
+  ---
+  duration_ms: 2.0986
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\automation-routing-next\\routing-original.test.mjs:77:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    signed zero nested fuzzy=false exact output
+    + actual - expected
+    
+      [
+        [
+          {
+            binary: {},
+            json: {
+              key: {
+                numbers: [
+    +             0,
+    -             -0,
+                  1
+                ]
+              }
+            },
+            pairedItem: [
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    0:
+      0:
+        json:
+          key:
+            numbers:
+              0: -0
+              1: 1
+        binary:
+        pairedItem:
+          0:
+            item: 0
+          1:
+            item: 0
+            input: 1
+  actual:
+    0:
+      0:
+        json:
+          key:
+            numbers:
+              0: 0
+              1: 1
+        binary:
+        pairedItem:
+          0:
+            item: 0
+          1:
+            item: 0
+            input: 1
+  operator: 'deepStrictEqual'
+  stack: |-
+    compare (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/automation-routing-next/routing-original.test.mjs:17:25)
+    async TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/automation-routing-next/routing-original.test.mjs:79:41)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: dangerous Merge own keys are deliberate bounded rejections, separately counted from equality
+ok 10 - dangerous Merge own keys are deliberate bounded rejections, separately counted from equality
+  ---
+  duration_ms: 0.7268
+  type: 'test'
+  ...
+# Subtest: exact released core enqueue helpers retain distinct input ports until both batches arrive
+ok 11 - exact released core enqueue helpers retain distinct input ports until both batches arrive
+  ---
+  duration_ms: 1.0703
+  type: 'test'
+  ...
+# Subtest: exact released partial-drain block matches active append and blocked choose-branch input requirements
+ok 12 - exact released partial-drain block matches active append and blocked choose-branch input requirements
+  ---
+  duration_ms: 9.453
+  type: 'test'
+  ...
+1..12
+# tests 12
+# suites 0
+# pass 11
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1678.8615

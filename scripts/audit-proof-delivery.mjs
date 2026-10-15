@@ -77,12 +77,13 @@ schemas('rea-published-3baecf4e-checkpoint-preservation/v1',[spec('sourceSnapsho
 schemas('rea-rabin-routing-geometry-browser-checkpoint/v1',[spec('sourceSnapshots'),spec('receipts'),spec('artifacts')]);
 schemas('rea-rabin-recorder-review-preservation/v1',[spec('snapshots','path','root'),spec('historicalCollector','snapshotPath','root',{single:true})]);
 schemas('rea-rabin-recorder-integration-review-preservation/v1 rea-restic-rabin-source-preservation/v1 rea-restic-compression-source-preservation/v1',[spec('snapshots','path','root')]);
-schemas('rea-independent-review-preservation/v1',[spec('snapshots','path','root'),spec('reviewedSources','snapshot_path','root',{optionalPointer:true})]);
+schemas('rea-independent-review-preservation/v1',[spec('snapshots','path','root'),spec('reviewedSources','snapshot_path','root',{optionalPointer:true,optionalBytes:true})]);
 schemas('rea-automation-routing-preservation/v1',[spec('entries','snapshot','studio')]);
 schemas('rea-publication-git-directory-closure/v1',[spec('files')]);
 schemas('rea-publication-editor-git-observer-transition/v1',[spec('records')]);
 schemas('rea-publication-editor-save-git-closure/v1',[spec('files')]);
-schemas('rea-windows-path-source-proof-transition/v1 rea-editor-vault-root-installation-preservation/v1',[spec('records','path','root')]);
+schemas('rea-windows-path-source-proof-transition/v1',[spec('records','path','root')]);
+schemas('rea-editor-vault-root-installation-preservation/v1',[spec('records','publicPath','root')]);
 schemas('rea-sketch-layout-static-route-freeze/v1',[spec('records','path','prefix',{suffix:'.snapshot',inertManifest:'products/rea-studio/results/sketch-layout-reviewed-installation-20261013/shared-route/frozen/freeze-manifest.json.snapshot'})]);
 schemas('rea-sketch-layout-independent-source-plan-review-freeze/v1',[spec('inventory','path','prefix',{suffix:'.snapshot',inertManifest:'products/rea-studio/results/sketch-layout-reviewed-installation-20261013/source-plan-independent-review/frozen/freeze-manifest.json.snapshot'})]);
 schemas('rea-notes-inline-browser-publication-addendum-freeze/v1',[spec('records','path','prefix',{suffix:'.snapshot',inventoryAlternative:true,inertManifest:'products/rea-studio/apps/notes/results/inline-confirmation-followup/browser-publication-plan/frozen/freeze-manifest.json.snapshot'})]);
@@ -111,21 +112,21 @@ function pinHints(m) {
   }visit(m,0);return{exactPinObjects:count,pointerKeys:[...keys].sort()};
 }
 function declare(ctx, field, i, row, rule) {
-  assert(++report.counts.declarations<=LIMIT.declarations,'Declaration bound exceeded');const id=identity(row),p=safe(row[rule.pointer]);
+  assert(++report.counts.declarations<=LIMIT.declarations,'Declaration bound exceeded');const id=rule.optionalBytes&&row.bytes===undefined?{bytes:null,sha256:row.sha256}:identity(row),p=safe(row[rule.pointer]);assert(HASH.test(id.sha256),'Invalid SHA declaration');
   if(rule.inertOnly&&!p.endsWith('.snapshot')){report.counts.excludedLogicalRows++;return;}
   const prefix=dirname(ctx.name).replaceAll('\\','/'),target=safe((rule.base==='root'?p:rule.base==='studio'?'products/rea-studio/'+p:prefix+'/'+p)+(rule.suffix??'')),prior=seenTargets.get(target);
   // Different historical declarations can refer to a mutable current source.
   // Only inert destinations are treated as immutable shared delivery objects.
-  if(prior && target.endsWith('.snapshot') && (prior.bytes!==id.bytes||prior.sha256!==id.sha256))unresolved(ctx.name,ctx.data.schema,'Conflicting identities for one inert public target',{field,index:i,target,previous:prior,current:id});
-  if(!prior)seenTargets.set(target,id);
-  const origin={manifest:ctx.name,manifestSHA256:ctx.sha256,schema:ctx.data.schema,field,index:i,target,...id};
+  if(prior && target.endsWith('.snapshot') && ((prior.bytes!==null&&id.bytes!==null&&prior.bytes!==id.bytes)||prior.sha256!==id.sha256))unresolved(ctx.name,ctx.data.schema,'Conflicting identities for one inert public target',{field,index:i,target,previous:prior,current:id});
+  if(!prior||prior.bytes===null&&id.bytes!==null)seenTargets.set(target,id);
+  const origin={manifest:ctx.name,manifestSHA256:ctx.sha256,schema:ctx.data.schema,field,index:i,target,...id,declaredBytesAvailable:id.bytes!==null};
   const alias=aliases.get(target);if(alias){assert.equal(alias.manifest,ctx.name);assert.deepEqual(identity(alias),id);report.counts.existingClosedAliases++;detail('closed-aliases.jsonl',{...origin,status:'existing-exact-closed-alias',gitDeliveredPayload:alias.delivered,logicalPathGitDelivered:false});return;}
   const blob=trees.get(target);if(!blob){report.counts.missingGit++;report.missingByPrefix[prefix]=(report.missingByPrefix[prefix]??0)+1;
     const candidates=contentCandidates.get(id.sha256+':'+id.bytes)??[];
     const segments=target.toLowerCase().split('/'),pathClass=segments.includes('.git')?'git-reserved-directory':segments.includes('.local')?'ignored-directory-and-current-publication-policy-forbidden':'ordinary-missing-git';
     detail('missing-git.jsonl',{...origin,status:'missing-from-committed-tree',pathClass,currentPublicationLocalDirectoryPolicyConflict:segments.includes('.local'),repairAuthorizedOrAccepted:false,existingContentAddressedCandidates:candidates});return;}
   if(!['100644','100755'].includes(blob.mode)){report.counts.wrongGitMode++;detail('missing-git.jsonl',{...origin,status:'not-regular-git-blob',mode:blob.mode});return;}
-  report.counts.gitPresent++;if(blob.bytes!==id.bytes){report.counts.declaredSizeMismatch++;detail('size-mismatches.jsonl',{...origin,status:'declared-size-differs-from-git',gitBytes:blob.bytes,gitBlob:blob.oid});}
+  report.counts.gitPresent++;if(id.bytes!==null&&blob.bytes!==id.bytes){report.counts.declaredSizeMismatch++;detail('size-mismatches.jsonl',{...origin,status:'declared-size-differs-from-git',gitBytes:blob.bytes,gitBlob:blob.oid});}
 }
 function registerEmbedded(ctx) {
   if(ctx.name.endsWith('.snapshot')||ctx.data.schema!=='rea-frozen-followup-public-subset/v1')return;

@@ -11,8 +11,10 @@ assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
 assert.equal(process.env.GITHUB_REPOSITORY, 'Ginderlax/rea-research-lab');
 for (const name of ['GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'RUNNER_TEMP', 'PLAYWRIGHT_BROWSERS_PATH']) assert(process.env[name]);
 const args = process.argv.slice(2);
-assert.equal(args.length, 4); assert.equal(args[0], '--phase'); assert(['acquire', 'verify'].includes(args[1]));
+const archiveScope = args.length === 8;
+assert([4, 8].includes(args.length)); assert.equal(args[0], '--phase'); assert((archiveScope ? ['verify', 'postcheck'] : ['acquire', 'verify']).includes(args[1]));
 assert.equal(args[2], '--evidence'); assert(path.isAbsolute(args[3]));
+if (archiveScope) { assert.equal(args[4], '--scope'); assert.equal(args[5], 'archive-aes-experiment'); assert.equal(args[6], '--overlay-manifest'); assert(path.isAbsolute(args[7])); }
 const phase = args[1], studio = fileURLToPath(new URL('../', import.meta.url)), repository = path.resolve(studio, '../..');
 const tools = path.join(studio, 'browser-tests'), temporary = fs.realpathSync(process.env.RUNNER_TEMP);
 const sourceLimits = { files: 2000, fileBytes: 8 * 1024 * 1024, totalBytes: 64 * 1024 * 1024, depth: 128 };
@@ -27,9 +29,9 @@ const digest = bytes => createHash('sha256').update(bytes).digest('hex');
 const identity = bytes => ({ bytes: bytes.length, sha256: digest(bytes) });
 const readJson = filename => { const item = fs.lstatSync(filename); assert(item.isFile() && !item.isSymbolicLink() && item.size <= 8 * 1024 * 1024, 'Invalid bounded JSON evidence'); return JSON.parse(fs.readFileSync(filename)); };
 const saveNew = (filename, value) => fs.writeFileSync(path.join(evidence, filename), JSON.stringify(value, null, 2) + '\n', { flag: 'wx' });
-const recordName = phase === 'acquire' ? 'browser-tooling-acquisition.json' : 'browser-attempt.json';
-const record = { schema: phase === 'acquire' ? 'rea-cloud-browser-tooling-acquisition/v1' : 'rea-cloud-browser-attempt/v1', status: 'running', phase, startedAtUtc: new Date().toISOString(), execution,
-  scope: 'Twelve explicit current Flow/Vault real Chromium normalization, download, draft, static-link and disposal scenarios. Real loopback host, synthetic data and separately disclosed network timing holds. No Archive overlay, original product, browser matrix, full-suite, parity, security or superiority acceptance.',
+const recordName = phase === 'acquire' ? 'browser-tooling-acquisition.json' : phase === 'postcheck' ? 'browser-postrun-source-check.json' : 'browser-attempt.json';
+const record = { schema: phase === 'acquire' ? 'rea-cloud-browser-tooling-acquisition/v1' : phase === 'postcheck' ? 'rea-cloud-browser-archive-postrun-source-check/v1' : 'rea-cloud-browser-attempt/v1', status: 'running', phase, startedAtUtc: new Date().toISOString(), execution,
+  scope: archiveScope ? 'Six explicit experimental Archive real Chromium UI scenarios: plain ZIP and AES7Z create/list/extract, ZIP encryption refusal, wrong password, actual response timing holds and disposal. Exact21 ephemeral source overlay; real workspace artifacts, no product download UI, actualDownloads0, original executions0. No full-suite, matrix, parity, security or superiority acceptance.' : 'Twelve explicit current Flow/Vault real Chromium normalization, download, draft, static-link and disposal scenarios. Real loopback host, synthetic data and separately disclosed network timing holds. No Archive overlay, original product, browser matrix, full-suite, parity, security or superiority acceptance.',
   retries: 0, workers: 1, sourceCaptureLimits: sourceLimits, originalProductExecutions: 0, applicationSourcesChanged: null, historicalReceiptsRebound: false, testsByteOverlay: false, children: [], failure: null };
 function save(initial = false) {
   const target = path.join(evidence, recordName), next = initial ? target : target + '.tmp';
@@ -80,7 +82,78 @@ function collect(directory, budget, depth = 0) {
 }
 function census() {
   const budget = { files: 0, bytes: 0 };
-  return [...['apps', 'lib', 'public', 'browser-tests'].flatMap(name => collect(path.join(studio, name), budget)), ...['server.mjs', 'catalog.mjs', 'scripts/verify-cloud-browser.mjs'].map(name => sourceRow(path.join(studio, name), budget))].sort((a, b) => a.path.localeCompare(b.path));
+  const extra = archiveScope ? ['scripts/compose-archive-aes-cloud.mjs', 'package.json'] : [];
+  return [...['apps', 'lib', 'public', 'browser-tests'].flatMap(name => collect(path.join(studio, name), budget)), ...['server.mjs', 'catalog.mjs', 'scripts/verify-cloud-browser.mjs', ...extra].map(name => sourceRow(path.join(studio, name), budget))].sort((a, b) => a.path.localeCompare(b.path));
+}
+const archiveBundlePath = 'products/rea-studio/experiments/archive-aes/bundle.json';
+const archiveBundlePin = { bytes: 80331, sha256: 'ed6d16f52f9209ac144f1f08d395c3e86e4c124c73a3a18a488654506ff155bb' };
+let archiveProof = null;
+function gitBytes(arguments_) {
+  const r = spawnSync('git', arguments_, { cwd: repository, shell: false, windowsHide: true, timeout: 30000, maxBuffer: 32 * 1024 * 1024 });
+  assert.equal(r.error, undefined); assert.equal(r.status, 0); return r.stdout;
+}
+function repositoryFile(relative) {
+  assert(typeof relative === 'string' && relative.length && !relative.includes('\\') && !relative.includes(':') && !relative.includes('\0') && !relative.startsWith('/') && relative.split('/').every(part => part && part !== '.' && part !== '..'));
+  let at = repository; for (const part of relative.split('/')) { at = path.join(at, part); assert(!fs.lstatSync(at).isSymbolicLink()); }
+  assert(fs.lstatSync(at).isFile()); return at;
+}
+function committedSource(relative, expected) {
+  const bytes = sourceBytes(repositoryFile(relative));
+  assert.deepEqual(identity(bytes), identity(gitBytes(['show', 'HEAD:' + relative])), 'Mandatory source differs from its Git blob: ' + relative);
+  if (expected) assert.deepEqual(identity(bytes), expected); return bytes;
+}
+function archiveStatus() {
+  return gitBytes(['status', '--porcelain=v1', '-z', '--untracked-files=all']).toString('utf8').split('\0').filter(Boolean).map(row => {
+    assert([' M', '??'].includes(row.slice(0, 2)), 'Only the exact unstaged Archive overlay may differ');
+    return { path: row.slice(3), status: row.slice(0, 2) };
+  }).sort((a, b) => a.path.localeCompare(b.path));
+}
+function verifyArchiveComposition() {
+  assert.equal(path.resolve(args[7]).toLowerCase(), path.join(evidence, 'composition.json').toLowerCase());
+  const bytes = fs.readFileSync(args[7]), value = readJson(args[7]);
+  assert.equal(value.schema, 'rea-archive-aes-hosted-composition/v1'); assert.equal(value.status, 'composed-unexecuted-experimental-overlay');
+  assert.equal(value.sourceOnlyExperimentalComposition, true); assert.equal(value.productionInstalled, false);
+  assert.equal(value.sourceCommit, process.env.GITHUB_SHA); assert.equal(value.baselineGitCommit, process.env.GITHUB_SHA); assert.equal(value.experimentalSourceGitCommit, process.env.GITHUB_SHA);
+  assert.equal(path.resolve(value.sourceRoot).toLowerCase(), repository.toLowerCase());
+  assert.deepEqual(value.execution, execution); assert.deepEqual(value.sourceBundle, { path: archiveBundlePath, ...archiveBundlePin });
+  const bundle = JSON.parse(committedSource(archiveBundlePath, archiveBundlePin));
+  assert.equal(bundle.productionInstalled, false); assert.equal(bundle.finalTargets.length, 21); assert.equal(bundle.archiveBaseline.length, 47);
+  const targets = new Map(bundle.finalTargets.map(row => [row.target, row])); assert.equal(targets.size, 21);
+  const ordered = rows => [...rows].sort((a, b) => a.path.localeCompare(b.path));
+  const baseline = ordered(bundle.archiveBaseline.map(row => ({ path: row.path, bytes: row.bytes, sha256: row.sha256 })));
+  assert.deepEqual(value.beforeSourceCensus, baseline);
+  const after = new Map(baseline.map(row => [row.path, row]));
+  for (const row of targets.values()) { assert(row.target.startsWith('products/rea-studio/apps/archive/')); after.set(row.target, { path: row.target, ...row.after }); assert.deepEqual(identity(sourceBytes(repositoryFile(row.target))), row.after); }
+  assert.equal(after.size, 62); assert.deepEqual(value.afterSourceCensus, ordered(after.values()));
+  assert.equal(value.transitions.length, 22);
+  const expectedTransitions = [...bundle.proposal.map(row => ({ ...row, phase: 'proposal17' })), ...bundle.timestamp.map(row => ({ ...row, phase: 'timestamp5' }))];
+  assert.deepEqual(value.transitions, expectedTransitions.map(row => ({ phase: row.phase, target: row.target, before: row.before, after: row.after, source: row.source, sourceGitCommit: process.env.GITHUB_SHA, originEpoch: row.originEpoch })));
+  const currentStatus = archiveStatus(); assert.deepEqual(currentStatus, value.gitStatusAfter); assert.deepEqual(currentStatus.map(row => row.path), [...targets.keys()].sort((a, b) => a.localeCompare(b)));
+  // Composer authenticates every payload before overlay. The collector repeats
+  // that fixed source authentication rather than trusting a receipt alone.
+  assert.equal(bundle.sourcePayloads.length, 46);
+  for (const row of bundle.sourcePayloads) committedSource(row.bundlePath, { bytes: row.bytes, sha256: row.sha256 });
+  for (const row of baseline) if (!targets.has(row.path)) committedSource(row.path, { bytes: row.bytes, sha256: row.sha256 });
+  return { bundle, targets, status: currentStatus, receipt: identity(bytes) };
+}
+function authenticateArchiveCensus(rows) {
+  const tree = new Map();
+  for (const item of gitBytes(['ls-tree', '-r', '-z', '--full-tree', 'HEAD']).toString('utf8').split('\0').filter(Boolean)) {
+    const match = /^(100644|100755) blob ([0-9a-f]{40})\t(.+)$/.exec(item); if (match) tree.set(match[3], match[2]);
+  }
+  let overlaid = 0, committed = 0;
+  for (const row of rows) {
+    const relative = 'products/rea-studio/' + row.path, bytes = sourceBytes(repositoryFile(relative));
+    assert.deepEqual(identity(bytes), { bytes: row.bytes, sha256: row.sha256 });
+    const target = archiveProof.targets.get(relative);
+    if (target) { assert.deepEqual(identity(bytes), target.after); overlaid++; }
+    else { assert(tree.has(relative), 'Active eligible source absent from committed Git tree: ' + relative); const oid = createHash('sha1').update(Buffer.from('blob ' + bytes.length + '\0')).update(bytes).digest('hex'); assert.equal(oid, tree.get(relative), 'Other active eligible source differs from Git: ' + relative); committed++; }
+  }
+  // Fourteen executable/test helpers from the21 are eligible; seven doc/notice
+  // afterimages are checked separately through the full62 Archive composition.
+  assert.equal(overlaid, 14); assert.equal(rows.length, overlaid + committed);
+  assert.equal(git(['rev-parse', 'HEAD']).trim(), process.env.GITHUB_SHA); assert.deepEqual(archiveStatus(), archiveProof.status);
+  return { eligibleSources: rows.length, exactAfterimagesInEligibleCensus: overlaid, allOtherEligibleGitBlobs: committed, archiveAllFileCensus: 62, exactAppTargets: 21 };
 }
 async function run(arguments_, timeoutMs, label) {
   assert(!interrupted, 'Interrupted before ' + label);
@@ -137,9 +210,24 @@ let before = null;
 save(true);
 try {
   record.sourceCommit = git(['rev-parse', 'HEAD']).trim(); assert.equal(record.sourceCommit, process.env.GITHUB_SHA);
-  assert.equal(git(['status', '--porcelain=v1', '--untracked-files=all']), '', 'Browser workflow requires a clean source checkout');
+  if (archiveScope) {
+    archiveProof = verifyArchiveComposition(); record.overlay = { ...archiveProof.receipt, productionInstalled: false, exactAppTargets: 21, baselineGitCommit: record.sourceCommit, modifiedEphemeralWorktree: true };
+    record.testsByteOverlay = true; record.productDownloadUIAbsent = true; record.actualDownloads = 0;
+    const workflowPath = '.github/workflows/browser-archive-aes-cloud.yml';
+    const workflowBytes = committedSource(workflowPath); record.workflowSource = { path: workflowPath, ...identity(workflowBytes) };
+    if (phase === 'verify') fs.writeFileSync(path.join(evidence, 'archive-browser-workflow.yml.snapshot'), workflowBytes, { flag: 'wx' });
+  } else assert.equal(git(['status', '--porcelain=v1', '--untracked-files=all']), '', 'Browser workflow requires a clean source checkout');
   const source = verifyToolSource(); record.toolingSource = source; save();
-  if (phase === 'acquire') {
+  if (phase === 'postcheck') {
+    const attemptBytes = fs.readFileSync(path.join(evidence, 'browser-attempt.json')), attempt = readJson(path.join(evidence, 'browser-attempt.json'));
+    sameAttempt(attempt); assert.equal(attempt.sourceCommit, record.sourceCommit); assert.equal(attempt.testsByteOverlay, true); assert.deepEqual(attempt.overlay, record.overlay); assert.deepEqual(attempt.workflowSource, record.workflowSource);
+    before = readJson(path.join(evidence, 'browser-source-before.json'));
+    const after = census(); assert.deepEqual(after, before, 'Separate source postcheck differs from pre-browser census');
+    record.sourceAuthentication = authenticateArchiveCensus(after); record.browserAttempt = identity(attemptBytes);
+    const compositionPost = readJson(path.join(evidence, 'postrun-source-check.json'));
+    assert.equal(compositionPost.schema, 'rea-archive-aes-hosted-postrun-source-check/v1'); assert.equal(compositionPost.baselineGitCommit, record.sourceCommit); assert.deepEqual(compositionPost.execution, execution); assert.equal(compositionPost.sourceStable, true); assert.equal(compositionPost.sharedStable, true); assert.equal(compositionPost.currentArchiveSourceFiles, 62);
+    record.priorBrowserStatus = attempt.status; record.productTests = 0; record.sourceStable = true; record.applicationSourcesChanged = false; record.status = 'source-verified';
+  } else if (phase === 'acquire') {
     const npmCli = process.env.PATH.split(path.delimiter).map(folder => path.join(folder, 'node_modules/npm/bin/npm-cli.js')).find(filename => fs.existsSync(filename)); assert(npmCli, 'setup-node npm CLI is unavailable');
     await run([npmCli, 'ci', '--include=dev', '--ignore-scripts', '--no-audit', '--no-fund'], 180000, 'locked-tooling-install');
     assert.deepEqual(verifyToolSource(), source, 'Installation changed locked source bytes');
@@ -156,34 +244,54 @@ try {
     record.browserImage = await installedBrowser(); assert.deepEqual(record.browserImage, acquisition.browserImage);
     const data = fs.mkdtempSync(path.join(temporary, 'rea-browser-synthetic-data-')); process.env.REA_BROWSER_DATA_ROOT = data; record.ownedDataRoot = data;
     before = census(); saveNew('browser-source-before.json', before);
+    if (archiveScope) record.sourceAuthentication = authenticateArchiveCensus(before);
     for (const row of before) { const target = path.join(evidence, 'source', row.path + '.snapshot'); fs.mkdirSync(path.dirname(target), { recursive: true }); const bytes = sourceBytes(path.join(studio, row.path)); assert.deepEqual(identity(bytes), { bytes: row.bytes, sha256: row.sha256 }); fs.writeFileSync(target, bytes, { flag: 'wx' }); }
     record.sourceFiles = before.length; record.sourceCapturedBeforeExecution = true;
-    const roster = readJson(path.join(tools, 'scenario-roster.json')); assert.equal(roster.length, 12); assert.equal(new Set(roster).size, 12); record.scenarios = roster; save();
-    await run([path.join(tools, 'node_modules/playwright/cli.js'), 'test', '--config', path.join(tools, 'playwright.config.mjs')], 9 * 60000, 'finite-real-browser-scenarios');
+    const count = archiveScope ? 6 : 12, roster = readJson(path.join(tools, archiveScope ? 'archive-aes-roster.json' : 'scenario-roster.json')); assert.equal(roster.length, count); assert.equal(new Set(roster).size, count); record.scenarios = roster; save();
+    await run([path.join(tools, 'node_modules/playwright/cli.js'), 'test', '--config', path.join(tools, archiveScope ? 'playwright.archive-aes.config.mjs' : 'playwright.config.mjs')], 9 * 60000, 'finite-real-browser-scenarios');
     const report = readJson(path.join(evidence, 'playwright-results.json')), specs = []; assert.deepEqual(report.errors, []);
     const visit = suite => { specs.push(...(suite.specs ?? [])); for (const nested of suite.suites ?? []) visit(nested); }; for (const suite of report.suites) visit(suite);
-    assert.deepEqual(specs.map(spec => spec.title).sort(), [...roster].sort()); assert.equal(specs.length, 12);
+    assert.deepEqual(specs.map(spec => spec.title).sort(), [...roster].sort()); assert.equal(specs.length, count);
     for (const spec of specs) { assert.equal(spec.ok, true); assert.equal(spec.tests.length, 1); const test = spec.tests[0]; assert.equal(test.status, 'expected'); assert.equal(test.results.length, 1); assert.equal(test.results[0].status, 'passed'); assert.equal(test.results[0].retry, 0); }
-    assert.deepEqual([report.stats.expected, report.stats.unexpected, report.stats.skipped, report.stats.flaky], [12, 0, 0, 0]);
+    assert.deepEqual([report.stats.expected, report.stats.unexpected, report.stats.skipped, report.stats.flaky], [count, 0, 0, 0]);
     const browser = readJson(path.join(evidence, 'browser-observation.json')); assert.equal(browser.realBrowserFixtureCreated, true); assert.equal(browser.version, '156.0.8078.4'); assert.equal(browser.browser, 'chromium'); assert.equal(browser.channel, 'chromium'); assert.equal(browser.retries, 0);
-    const cases = fs.readdirSync(evidence).filter(name => /^case-.*\.json$/.test(name)); assert.equal(cases.length, 12);
-    const observed = [], screenshots = []; let downloads = 0;
+    const cases = fs.readdirSync(evidence).filter(name => /^case-.*\.json$/.test(name)); assert.equal(cases.length, count);
+    const observed = [], screenshots = [], workspaceArtifacts = []; let downloads = 0, createdArchives = 0, restoredFiles = 0;
     for (const filename of cases) {
       const value = readJson(path.join(evidence, filename)); assert.equal(value.realBrowser, true); assert.equal(value.actualHTTP, true); assert.equal(value.serverCloseObserved, true); assert.equal(value.retry, 0); assert.deepEqual(value.errors, []); observed.push(value.title);
+      if (archiveScope) { assert.equal(value.schema, 'rea-cloud-browser-archive-case-observation/v1'); assert.equal(value.productDownloadUIAbsent, true); assert.equal(value.actualDownloads, 0); assert.equal(value.originalProductExecutions, 0); assert.equal(value.statusAtFixtureClose, 'passed'); }
       assert(/^[A-Za-z0-9-]+$/.test(value.testId)); assert.equal(filename, 'case-' + value.testId + '.json');
       const screenshotPath = 'screenshots/' + value.testId + '.png', image = fs.readFileSync(path.join(evidence, screenshotPath));
       assert(image.length >= 24 && image.length <= 2 * 1024 * 1024); assert.equal(image.subarray(0, 8).toString('hex'), '89504e470d0a1a0a'); assert.equal(image.subarray(12, 16).toString('ascii'), 'IHDR'); assert.equal(image.readUInt32BE(16), 1440); assert.equal(image.readUInt32BE(20), 1100);
       screenshots.push({ path: screenshotPath, ...identity(image), width: 1440, height: 1100 });
       for (const item of value.observations.filter(row => row.kind === 'real-browser-file-download')) { assert(/^downloads\/flow-(CRLF|bareCR|LF)\.json$/.test(item.path)); assert.deepEqual(await fileIdentity(path.join(evidence, item.path)), item.observed); assert.deepEqual(item.expected, item.observed); downloads++; }
+      if (archiveScope) for (const item of value.observations.filter(row => ['real-ui-created-workspace-archive', 'real-ui-extraction-content'].includes(row.kind))) {
+        const artifact = item.kind === 'real-ui-created-workspace-archive' ? item.path : item.artifact;
+        assert(/^workspace-artifacts\/[a-z0-9-]+\.(zip|7z|txt)$/.test(artifact));
+        assert.deepEqual(await fileIdentity(path.join(evidence, artifact)), item.observed); assert.deepEqual(item.expected, item.observed);
+        assert(!workspaceArtifacts.some(row => row.path === artifact)); workspaceArtifacts.push({ path: artifact, ...item.observed });
+        if (item.kind === 'real-ui-created-workspace-archive') createdArchives++; else restoredFiles++;
+      }
     }
-    assert.deepEqual(observed.sort(), [...roster].sort()); assert.equal(downloads, 3);
-    assert.equal(fs.readdirSync(path.join(evidence, 'screenshots')).filter(name => name.endsWith('.png')).length, 12);
+    assert.deepEqual(observed.sort(), [...roster].sort()); assert.equal(downloads, archiveScope ? 0 : 3);
+    assert.equal(fs.readdirSync(path.join(evidence, 'screenshots')).filter(name => name.endsWith('.png')).length, count);
     record.screenshots = screenshots;
-    record.summary = { tests: 12, passed: 12, failed: 0, skipped: 0, flaky: 0, retries: 0, exactRealDownloads: 3 }; record.status = 'passed';
+    if (archiveScope) {
+      assert.equal(createdArchives, 3); assert.equal(restoredFiles, 5);
+      assert.deepEqual(workspaceArtifacts.filter(row => /\.(zip|7z)$/.test(row.path)).map(row => row.path).sort(), ['workspace-artifacts/archive-aes-content.7z', 'workspace-artifacts/archive-aes-header.7z', 'workspace-artifacts/archive-plain.zip']);
+      assert.equal(fs.readdirSync(path.join(evidence, 'workspace-artifacts')).length, workspaceArtifacts.length); record.workspaceArtifacts = workspaceArtifacts;
+      // Each retained guard must have been reached in the actual run.
+      const values = cases.map(name => readJson(path.join(evidence, name)));
+      assert.equal(values.flatMap(value => value.observations).filter(item => item.kind === 'wrong-password-refusal').length, 2);
+      assert.equal(values.flatMap(value => value.observations).filter(item => item.kind === 'encrypted-zip-refusal').length, 1);
+      assert.equal(values.flatMap(value => value.observations).filter(item => item.kind === 'disposal-after-real-extraction-commit').length, 1);
+      assert.deepEqual(values.flatMap(value => value.faults).map(item => item.action).sort(), ['create', 'extract']);
+    }
+    record.summary = { tests: count, passed: count, failed: 0, skipped: 0, flaky: 0, retries: 0, exactRealDownloads: downloads, ...(archiveScope ? { exactCreatedArchiveArtifacts: createdArchives, exactRestoredFileArtifacts: restoredFiles, productDownloadUIAbsent: true, originalProcesses: 0 } : {}) }; record.status = 'passed';
   }
 } catch (error) { record.status = interrupted ? 'interrupted' : 'failed'; record.failure = { name: error.name, message: error.message }; killOwnedChild(); process.exitCode = 1; }
 finally {
-  if (before) { try { const after = census(); saveNew('browser-source-after.json', after); record.sourceStable = JSON.stringify(before) === JSON.stringify(after); record.applicationSourcesChanged = record.sourceStable ? null : true; assert(record.sourceStable, 'Browser-attempt source changed'); assert.equal(git(['status', '--porcelain=v1', '--untracked-files=all']), ''); record.applicationSourcesChanged = false; } catch (error) { record.status = 'failed'; record.failure = { name: error.name, message: error.message }; process.exitCode = 1; } }
+  if (before) { try { const after = census(); saveNew(phase === 'postcheck' ? 'browser-postrun-source-after.json' : 'browser-source-after.json', after); record.sourceStable = JSON.stringify(before) === JSON.stringify(after); record.applicationSourcesChanged = record.sourceStable ? null : true; assert(record.sourceStable, 'Browser-attempt source changed'); if (archiveScope) { assert.deepEqual(verifyArchiveComposition().receipt, archiveProof.receipt); record.sourceAuthentication = authenticateArchiveCensus(after); } else assert.equal(git(['status', '--porcelain=v1', '--untracked-files=all']), ''); record.applicationSourcesChanged = false; } catch (error) { record.status = 'failed'; record.failure = { name: error.name, message: error.message }; process.exitCode = 1; } }
   if (interrupted) { record.status = 'interrupted'; process.exitCode = 143; }
   record.completedAtUtc = new Date().toISOString(); record.retainedOutputBytes = retained; save(); event('terminal', { status: record.status, failure: record.failure, summary: record.summary ?? null });
   for (const fd of [outFd, errFd, eventsFd]) fs.closeSync(fd);

@@ -1,0 +1,82 @@
+{
+  "schema": "rea-cloud-archive-original-prerequisites/v1",
+  "status": "acquired",
+  "startedAtUtc": "2026-10-15T22:29:34.804Z",
+  "execution": {
+    "GITHUB_SHA": "4a69ae1f8e0156fa9608faf357d415f536ba95f7",
+    "GITHUB_RUN_ID": "38816488464",
+    "GITHUB_RUN_ATTEMPT": "1",
+    "GITHUB_REPOSITORY": "Ginderlax/rea-research-lab"
+  },
+  "scope": "Authenticated full and Extra 7-Zip inputs, with one original 7zr bootstrap extraction of the pinned standalone oracle. Later comparison calls belong to the tests.",
+  "assets": [
+    {
+      "path": ".local/archive-original/7z2604-x64.exe",
+      "bytes": 1664082,
+      "sha256": "d54bf805f9f3704d1e8db2fa3498ae7ef2df0312b40b558e7c71c734430a665d",
+      "source_url": "https://github.com/ip7z/7zip/releases/download/26.04/7z2604-x64.exe",
+      "acquisition_source": "official publisher URL",
+      "authenticated": true
+    },
+    {
+      "path": ".local/archive-original/7zr.exe",
+      "bytes": 602624,
+      "sha256": "256feca8e274e5da655e2a284fabafd9f554365eb164862089dacd4e8276d282",
+      "source_url": "https://github.com/ip7z/7zip/releases/download/26.04/7zr.exe",
+      "acquisition_source": "official publisher URL",
+      "authenticated": true
+    },
+    {
+      "path": "projects/08-7zip/artifacts/7z2604-extra.7z",
+      "bytes": 1764616,
+      "sha256": "dc4b11d3399db18b063630137145f5585d8f7ac847bf3639bd1185d7d1f7cee0",
+      "source_url": "https://github.com/ip7z/7zip/releases/download/26.04/7z2604-extra.7z",
+      "authenticated": true
+    },
+    {
+      "path": "projects/08-7zip/artifacts/7zr.exe",
+      "bytes": 602624,
+      "sha256": "256feca8e274e5da655e2a284fabafd9f554365eb164862089dacd4e8276d282",
+      "authenticated": true,
+      "source": "authenticated full-oracle bootstrap copy"
+    },
+    {
+      "path": "projects/08-7zip/artifacts/extra/x64/7za.exe",
+      "bytes": 1335808,
+      "sha256": "15d4c788c148e3677e2fc1c4a01f191fb6669eba4f6acf8a465f0f1a6f1e1260",
+      "authenticated": true,
+      "source": "single bounded 7zr extraction from the authenticated Extra archive"
+    }
+  ],
+  "bootstrapExtractionProcessAttempts": 1,
+  "bootstrapExtractionProcesses": 1,
+  "originalProcesses": 1,
+  "comparisonProcesses": 0,
+  "vendorBinariesPublished": false,
+  "extraSourceManifest": {
+    "path": "projects/08-7zip/acquisition.json",
+    "bytes": 1303,
+    "sha256": "f472061b47d64404aa8aaf35159d2b39323fe23bd9c683a22584016e8ede7782"
+  },
+  "bootstrapExtraction": {
+    "arguments": [
+      "e",
+      "-so",
+      "projects/08-7zip/artifacts/7z2604-extra.7z",
+      "x64/7za.exe"
+    ],
+    "exitCode": 0,
+    "signal": null,
+    "errorCode": null,
+    "stdout": {
+      "bytes": 1335808,
+      "sha256": "15d4c788c148e3677e2fc1c4a01f191fb6669eba4f6acf8a465f0f1a6f1e1260"
+    },
+    "stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "binaryOutputRetainedInEvidence": false
+  },
+  "completedAtUtc": "2026-10-15T22:29:35.322Z"
+}

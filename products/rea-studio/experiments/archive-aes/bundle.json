@@ -587,11 +587,11 @@
       "mode": "add",
       "before": null,
       "after": {
-        "bytes": 8782,
-        "sha256": "77db1879d2954295f2f51c0acfe9d94861deac986e90d79bc0db2fe9de9870d9"
+        "bytes": 8928,
+        "sha256": "cf9ec9f2d4d6b0a6a585c07c842558e9990ac9f569cb6090226028b0d0d5ad50"
       },
       "source": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/source-metadata.mjs.snapshot",
-      "originEpoch": "source-reviewed-timestamp-derivative",
+      "originEpoch": "source-authored-timestamp-dos-alias-correction",
       "productionInstalled": false
     },
     {
@@ -599,11 +599,11 @@
       "mode": "add",
       "before": null,
       "after": {
-        "bytes": 16667,
-        "sha256": "241d77aab27919b8759d2648ff33645b37640709b73bd2de586fc9c66a57bc85"
+        "bytes": 18679,
+        "sha256": "1117cb9018c1589caa26e399a3d534d4df2869bb53493f5ef10110e9e677d1fd"
       },
       "source": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/source-metadata.test.mjs.snapshot",
-      "originEpoch": "source-reviewed-timestamp-derivative",
+      "originEpoch": "source-authored-timestamp-dos-alias-correction",
       "productionInstalled": false
     },
     {
@@ -853,22 +853,22 @@
       "mode": "add",
       "before": null,
       "after": {
-        "bytes": 8782,
-        "sha256": "77db1879d2954295f2f51c0acfe9d94861deac986e90d79bc0db2fe9de9870d9"
+        "bytes": 8928,
+        "sha256": "cf9ec9f2d4d6b0a6a585c07c842558e9990ac9f569cb6090226028b0d0d5ad50"
       },
       "source": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/source-metadata.mjs.snapshot",
-      "originEpoch": "source-reviewed-timestamp-derivative"
+      "originEpoch": "source-authored-timestamp-dos-alias-correction"
     },
     {
       "target": "products/rea-studio/apps/archive/source-metadata.test.mjs",
       "mode": "add",
       "before": null,
       "after": {
-        "bytes": 16667,
-        "sha256": "241d77aab27919b8759d2648ff33645b37640709b73bd2de586fc9c66a57bc85"
+        "bytes": 18679,
+        "sha256": "1117cb9018c1589caa26e399a3d534d4df2869bb53493f5ef10110e9e677d1fd"
       },
       "source": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/source-metadata.test.mjs.snapshot",
-      "originEpoch": "source-reviewed-timestamp-derivative"
+      "originEpoch": "source-authored-timestamp-dos-alias-correction"
     },
     {
       "target": "products/rea-studio/apps/archive/WINDOWS-SOURCE-METADATA.md",
@@ -1225,16 +1225,16 @@
     },
     {
       "bundlePath": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/source-metadata.mjs.snapshot",
-      "originLocalReference": "work/archive-sevenzip-aes-timestamp-fix-next/candidate/products/rea-studio/apps/archive/source-metadata.mjs",
-      "bytes": 8782,
-      "sha256": "77db1879d2954295f2f51c0acfe9d94861deac986e90d79bc0db2fe9de9870d9",
+      "originLocalReference": "work/archive-sevenzip-aes-timestamp-alias-fix-next/candidate/products/rea-studio/apps/archive/source-metadata.mjs",
+      "bytes": 8928,
+      "sha256": "cf9ec9f2d4d6b0a6a585c07c842558e9990ac9f569cb6090226028b0d0d5ad50",
       "copiedExact": true
     },
     {
       "bundlePath": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/source-metadata.test.mjs.snapshot",
-      "originLocalReference": "work/archive-sevenzip-aes-timestamp-fix-next/candidate/products/rea-studio/apps/archive/source-metadata.test.mjs",
-      "bytes": 16667,
-      "sha256": "241d77aab27919b8759d2648ff33645b37640709b73bd2de586fc9c66a57bc85",
+      "originLocalReference": "work/archive-sevenzip-aes-timestamp-alias-fix-next/candidate/products/rea-studio/apps/archive/source-metadata.test.mjs",
+      "bytes": 18679,
+      "sha256": "1117cb9018c1589caa26e399a3d534d4df2869bb53493f5ef10110e9e677d1fd",
       "copiedExact": true
     },
     {
@@ -1508,5 +1508,61 @@
     "testBytesChanged": false,
     "localTests": 0,
     "localBuilds": 0
+  },
+  "timestampAliasCorrection": {
+    "schema": "rea-archive-timestamp-dos-alias-source-correction/v1",
+    "sourceOnly": true,
+    "failedHostedRun": 38806502120,
+    "failedSourceCommit": "99709926a66a04f23924210aeeb41d1f7254bd46",
+    "actualFailedSummary": {
+      "tests": 160,
+      "pass": 154,
+      "fail": 6,
+      "skipped": 0
+    },
+    "reason": "Literal checked DOS8.3 request paths can be expanded by .NET FullName; preserve the checked literal identity. Native fixture path canonicalization is confined to owned fixture paths.",
+    "changes": [
+      {
+        "target": "products/rea-studio/apps/archive/source-metadata.mjs",
+        "publicSnapshot": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/source-metadata.mjs.snapshot",
+        "before": {
+          "bytes": 8782,
+          "sha256": "77db1879d2954295f2f51c0acfe9d94861deac986e90d79bc0db2fe9de9870d9"
+        },
+        "after": {
+          "bytes": 8928,
+          "sha256": "cf9ec9f2d4d6b0a6a585c07c842558e9990ac9f569cb6090226028b0d0d5ad50"
+        },
+        "newOriginEpoch": "source-authored-timestamp-dos-alias-correction",
+        "sourceLocalReference": "work/archive-sevenzip-aes-timestamp-alias-fix-next/candidate/products/rea-studio/apps/archive/source-metadata.mjs"
+      },
+      {
+        "target": "products/rea-studio/apps/archive/source-metadata.test.mjs",
+        "publicSnapshot": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/source-metadata.test.mjs.snapshot",
+        "before": {
+          "bytes": 16667,
+          "sha256": "241d77aab27919b8759d2648ff33645b37640709b73bd2de586fc9c66a57bc85"
+        },
+        "after": {
+          "bytes": 18679,
+          "sha256": "1117cb9018c1589caa26e399a3d534d4df2869bb53493f5ef10110e9e677d1fd"
+        },
+        "newOriginEpoch": "source-authored-timestamp-dos-alias-correction",
+        "sourceLocalReference": "work/archive-sevenzip-aes-timestamp-alias-fix-next/candidate/products/rea-studio/apps/archive/source-metadata.test.mjs"
+      }
+    ],
+    "priorFiveFileStagePreserved": true,
+    "frozen793Preserved": true,
+    "originalAesTestBodiesChanged": false,
+    "parserPathCorrelationRelaxed": false,
+    "addedTransportGroups": 1,
+    "newTimestampGroups": 10,
+    "plannedTotalGroups": 161,
+    "newHostedAcceptance": false,
+    "newSourceReviewPending": true,
+    "oldReviewScope": "The copied prior five-file source review predates these two corrected files.",
+    "localTests": 0,
+    "localBuilds": 0,
+    "localBootstrap": 0
   }
 }

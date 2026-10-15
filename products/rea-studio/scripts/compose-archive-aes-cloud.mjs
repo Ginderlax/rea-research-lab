@@ -72,7 +72,7 @@ assert.equal(bundle.sourceOnly, true); assert.equal(bundle.productionInstalled, 
 assert.equal(bundle.archiveBaseline.length, 47); assert.equal(bundle.proposal.length, 17); assert.equal(bundle.timestamp.length, 5);
 assert.equal(bundle.finalTargets.length, 21); assert.equal(bundle.selectedOriginalSources.length, 22);
 assert.deepEqual([...new Set(bundle.finalTargets.map(row => row.target))].sort(), [...allowedTargets].sort());
-assert.deepEqual(selection.tests, expectedTests); assert.equal(selection.expectedGroupsOnWindows, 160); assert.equal(selection.fullArchiveSuite, false);
+assert.deepEqual(selection.tests, expectedTests); assert.equal(selection.expectedGroupsOnWindows, 161); assert.equal(selection.fullArchiveSuite, false);
 const exclusions = ['results', '.local', 'fixtures/oracles'];
 async function census() {
   const rows = [];
@@ -157,7 +157,7 @@ if (phase === 'compose') {
     receipt.status = 'composed-unexecuted-experimental-overlay'; receipt.completed_at_utc = new Date().toISOString();
     await fs.writeFile(path.join(evidence, 'test-selection.json'), selectionBytes, { flag: 'wx' });
     await save();
-    console.log(JSON.stringify({ status: receipt.status, sourceRoot: repository, gitBaseline: head, modifiedWorktree: true, currentArchiveSourceFiles: finalCensus.length, proposedTests: 160, productionInstalled: false }));
+    console.log(JSON.stringify({ status: receipt.status, sourceRoot: repository, gitBaseline: head, modifiedWorktree: true, currentArchiveSourceFiles: finalCensus.length, proposedTests: 161, productionInstalled: false }));
   } catch (error) {
     receipt.status = 'failed'; receipt.failure = { name: error.name, message: error.message }; receipt.failed_at_utc = new Date().toISOString();
     await save(); throw error;

@@ -327,7 +327,7 @@ try {
       const summary = record.summary;
       assert(summary.tests > 0 && summary.tests === summary.pass, 'Every selected check must pass');
       assert.equal(summary.fail + summary.cancelled + summary.skipped + summary.todo, 0, 'Failures, cancellations, skips and unfinished checks cannot certify this scope');
-      if (options.scope === 'archive-aes-experiment') assert.equal(summary.tests, 160, 'Experimental Archive selection must execute all 160 planned groups');
+      if (options.scope === 'archive-aes-experiment') assert.equal(summary.tests, 161, 'Experimental Archive selection must execute all 161 planned groups');
     } catch (error) { failure(error.message); }
   }
 } catch (error) {

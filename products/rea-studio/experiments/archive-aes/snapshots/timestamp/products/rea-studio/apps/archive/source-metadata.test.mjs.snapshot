@@ -48,6 +48,25 @@ test('Windows batch reader correlates every Unicode path/type and preserves date
   }
 });
 
+test('Windows metadata transport correlates literal DOS-short aliases and refuses substituted expanded paths', async () => {
+  const shortRoot = 'C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\owned-alias-fixture';
+  const sources = [{ path: shortRoot + '\\年😀.txt', directory: false }];
+  let request;
+  const reader = createSourceMetadataReader({ platform: 'win32', nativeRead: async input => {
+    request = JSON.parse(input);
+    assert.equal(request.root, shortRoot);
+    assert.equal(request.sources[0].path, sources[0].path);
+    return responseFor(request);
+  } });
+  assert.deepEqual(await reader(sources, shortRoot), [{ modifiedAt: fixedDate, accessedAt: fixedDate, createdAt: fixedDate }]);
+  const substituted = createSourceMetadataReader({ platform: 'win32', nativeRead: async input => {
+    const response = JSON.parse(responseFor(JSON.parse(input)));
+    response.items[0].path = sources[0].path.replace('RUNNER~1', 'runneradmin');
+    return JSON.stringify(response);
+  } });
+  await assert.rejects(substituted(sources, shortRoot), /archive creation was refused/);
+});
+
 test('exact native UTC and decimal milliseconds agree before whole-millisecond reduction, including negative fractional milliseconds', async () => {
   for (const [utc, decimal, expected] of [
     ['2107-01-01T00:00:00.1230016Z', String(Date.parse(fixedDate)) + '.0016', fixedDate],
@@ -156,9 +175,17 @@ try {
   [Console]::Out.Write((@{ rows = @($rows.ToArray()) } | ConvertTo-Json -Depth 4 -Compress))
 } catch { [Console]::Error.WriteLine('Owned native fixture failed.'); exit 1 }
 `;
-async function nativeFixture(mode, rows) {
+async function nativeFixture(mode, rows, ownedRoot) {
+  // Only fixture paths are canonicalized. The real handler below deliberately
+  // retains os.tmpdir()'s original spelling to exercise hosted DOS short aliases.
+  const realRoot = await fs.realpath(ownedRoot);
+  const canonicalRows = await Promise.all(rows.map(async row => {
+    const canonical = await fs.realpath(row.path), relative = path.relative(realRoot, canonical);
+    assert(relative && relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative));
+    return { ...row, path: canonical };
+  }));
   const executable = path.win32.join(process.env.SystemRoot ?? 'C:\\Windows', 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
-  const input = JSON.stringify({ mode, rows });
+  const input = JSON.stringify({ mode, rows: canonicalRows });
   const stdout = await new Promise((resolve, reject) => {
     const child = execFile(executable, ['-NoLogo', '-NoProfile', '-NonInteractive', '-EncodedCommand', Buffer.from(NATIVE_FIXTURE_SCRIPT, 'utf16le').toString('base64')],
       { encoding: 'utf8', windowsHide: true, shell: false, timeout: 15000, maxBuffer: 1024 * 1024 },
@@ -166,8 +193,8 @@ async function nativeFixture(mode, rows) {
     child.stdin.on('error', () => {}); child.stdin.end(input, 'utf8');
   });
   const result = JSON.parse(stdout);
-  assert.equal(result.rows.length, rows.length);
-  for (let index = 0; index < rows.length; index++) assert.equal(path.win32.normalize(result.rows[index].path).toLowerCase(), path.win32.normalize(rows[index].path).toLowerCase());
+  assert.equal(result.rows.length, canonicalRows.length);
+  for (let index = 0; index < canonicalRows.length; index++) assert.equal(path.win32.normalize(result.rows[index].path).toLowerCase(), path.win32.normalize(canonicalRows[index].path).toLowerCase());
   return result.rows;
 }
 function milliseconds(iso) { return new Date(Date.parse(iso)).toISOString(); }
@@ -183,7 +210,7 @@ test('Windows native source → plain ZIP/plain+encrypted 7Z → native restored
   sourceRows.push({ path: empty, modifiedAt: wireDate(fixedDate).utc, accessedAt: wireDate(fixedDate).utc });
   const password = randomBytes(18).toString('base64url');
   for (const [label, format, encrypted] of [['zip', 'zip', false], ['plain', 'sevenzip', false], ['encrypted', 'sevenzip', true]]) {
-    const before = await nativeFixture('set', sourceRows);
+    const before = await nativeFixture('set', sourceRows, root);
     for (let index = 0; index < before.length; index++) {
       assert.equal(milliseconds(before[index].modifiedAt), milliseconds(sourceRows[index].modifiedAt));
       assert.equal(milliseconds(before[index].accessedAt), milliseconds(sourceRows[index].accessedAt));
@@ -193,6 +220,9 @@ test('Windows native source → plain ZIP/plain+encrypted 7Z → native restored
       batches += 1; const request = JSON.parse(input);
       assert.equal(request.sources.length, names.length + 1);
       assert.equal(Object.hasOwn(request, 'password'), false);
+      const canonicalRoot = await fs.realpath(request.root);
+      t.diagnostic(JSON.stringify({ kind: 'windows-source-path-spelling', label, literalRoot: request.root, canonicalRoot,
+        differentSpelling: path.win32.normalize(request.root).toLowerCase() !== path.win32.normalize(canonicalRoot).toLowerCase() }));
       return runWindowsMetadataBatch(input);
     } });
     const handler = createArchiveHandler({ sourceMetadata: async (sources, sourceRoot) => {
@@ -211,13 +241,13 @@ test('Windows native source → plain ZIP/plain+encrypted 7Z → native restored
       if (format === 'zip') assert.equal(entry.accessedAt, captured.get(names[index]).accessedAt);
       else assert.equal(entry.accessedAt, undefined); // Existing 7Z contract stores mtime only.
     }
-    const sourceAfter = await nativeFixture('read', sourceRows);
+    const sourceAfter = await nativeFixture('read', sourceRows, root);
     for (const row of sourceAfter) {
       assert.equal(milliseconds(row.modifiedAt), captured.get(path.basename(row.path)).modifiedAt);
       assert.equal(milliseconds(row.accessedAt), captured.get(path.basename(row.path)).accessedAt);
     }
     await call('extract', { path: archive, destination, confirm: true, ...(encrypted ? { password } : {}) });
-    const restored = await nativeFixture('read', sourceRows.map(row => ({ path: path.join(root, destination, path.basename(row.path)) })));
+    const restored = await nativeFixture('read', sourceRows.map(row => ({ path: path.join(root, destination, path.basename(row.path)) })), root);
     for (const row of restored) {
       const metadata = captured.get(path.basename(row.path));
       assert.equal(milliseconds(row.modifiedAt), metadata.modifiedAt);

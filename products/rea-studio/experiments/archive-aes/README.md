@@ -5,12 +5,12 @@ unchanged by this commit. No file here supplies test, integration, browser,
 complete-product, security, performance or superiority acceptance.
 
 `bundle.json` identifies17 unexecuted current-layout AES proposal sources,
-the five-file independently source-reviewed Windows metadata derivative,
+the five-file Windows metadata derivative with a subsequent two-file DOS-alias correction,
 their21 distinct final app targets (six replacements and15 additions),47
 strict current-app baseline identities and four historical shared-context
 identities. Source snapshots retain their exact selected bytes. The original
-AES helper/test bodies and metadata helper/test bodies were not edited for
-packaging. The current-layout AES helper is the explicit prospective adapter
+AES helper/test bodies were not edited for packaging. Metadata helper/test
+changes have their own explicit source epoch and identities. The current-layout AES helper is the explicit prospective adapter
 to the existing `original-lzma-test-helper.mjs`, not the old local-stage helper.
 
 Hosted run38805892328 correctly refused the first composition before tests:
@@ -20,6 +20,15 @@ reference and four synthetic Zstandard fixture files). The corrected strict
 47-file baseline pins those six exact bytes against both the failed hosted
 census and Git revision `a2e0aa78c408b8058cf0661343029046952fd675`. They remain
 included in the census. No app/test source or exclusion rule changed.
+
+Hosted run38806502120 then executed160 checks:154 passed and six failed. Five
+backend creation failures and the native-date observer exposed DOS short-path
+expansion (`RUNNER~1` versus `runneradmin`). The new two-file alias correction
+preserves the checked literal path in native metadata responses and canonicalizes
+only owned fixture-observer paths. Strict response correlation remains in place.
+One new transport regression group makes the next planned total161. The old
+five-file source review predates these two corrected files; new source review and
+hosted replay remain required. Failed160 evidence is preserved separately.
 
 The selected22 released source/manual/license files are retained as inert
 `.snapshot` files with exact origin/size/SHA/source mappings. They accompany
@@ -34,7 +43,8 @@ The accepted author793 manifest/151-group receipt, unfinished independent AES
 review and provisional17-target publication plan remain historical authorities
 with their own source epochs. Their old passing results do not cover this
 composed experiment. The independently retained source review approves only
-the authored five-file metadata overlay; it does not establish execution.
+the earlier authored five-file metadata overlay; it does not establish execution
+or review acceptance of the later DOS-alias correction.
 The prospective compatibility documentation includes a future installed
 publication-index link that remains unresolved in this experimental checkout.
 
@@ -53,8 +63,8 @@ of `RUNNER_TEMP`; never execute the composer on the local machine.
 3. Set `ARCHIVE_AES_OBSERVATIONS` to `<absolute-evidence-child>/observations`.
 4. Invoke `node --test --test-concurrency=1` with the13 explicit repository
    filenames in `test-selection.json`; retain raw TAP/stdout/stderr, exit,
-   selection and actual counts. The planned Windows total is160 groups:
-   the former151 selection plus nine new timestamp groups. Do not manufacture
+   selection and actual counts. The planned Windows total is161 groups:
+   the former151 selection plus ten timestamp groups. Do not manufacture
    successful counts if initialization, skips or failures change that total.
 5. Always run
    `node products/rea-studio/scripts/compose-archive-aes-cloud.mjs --phase verify-after --evidence <same-absolute-evidence-child>`

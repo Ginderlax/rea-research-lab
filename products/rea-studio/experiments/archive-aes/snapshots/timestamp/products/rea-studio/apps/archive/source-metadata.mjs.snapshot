@@ -51,7 +51,9 @@ try {
     $modified = Stamp $item.LastWriteTimeUtc
     $accessed = Stamp $item.LastAccessTimeUtc
     $created = Stamp $item.CreationTimeUtc
-    $rows.Add(@{ index = $index; path = $item.FullName; directory = $directory;
+    # FullName may expand a valid DOS short-path alias (RUNNER~1). Correlate
+    # the exact confined path passed to this same literal Get-Item operation.
+    $rows.Add(@{ index = $index; path = $full; directory = $directory;
       modifiedAtUtc = $modified.utc; modifiedAtMs = $modified.ms;
       accessedAtUtc = $accessed.utc; accessedAtMs = $accessed.ms;
       createdAtUtc = $created.utc; createdAtMs = $created.ms })

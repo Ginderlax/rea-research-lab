@@ -36,6 +36,20 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const read = name => fs.readFileSync(path.join(root, name));
   let migration;
   positive('named-migration-positive', () => { migration = createEditorVaultProofMigration(read); assert.equal(migration.summary().latestInstalledSourcesMandatory, 35); });
+  const editor31Bytes = read('products/rea-studio/results/editor-save-followup/current-integration/frozen/validation.json.snapshot');
+  same(editor31Bytes, { bytes: 11180, sha256: 'f4edee0afc7d40a169576ae9b87fe9d4c9227a1ea355ef19c80fa273b26eee25' }); const editor31 = JSON.parse(editor31Bytes).currentSources;
+  positive('historical-editor31-exact-six-live-mismatch-projection', () => {
+    const declared = migration.editorMismatchesIncludingHistoricalHost(editor31), observed = [];
+    for (const row of editor31) { const live = identity(read(row.path)); if (live.bytes !== row.bytes || live.sha256 !== row.sha256) observed.push({ path: row.path, testedSha256: row.sha256, liveSha256: live.sha256 }); }
+    assert.deepEqual(declared, observed); assert.equal(declared.length, 6);
+    assert.deepEqual(declared.find(row => row.path === 'products/rea-studio/apps/editor/git.test.mjs'), { path: 'products/rea-studio/apps/editor/git.test.mjs', testedSha256: 'ab8213c182d1568254ea73db57133affbd48304b98f0d275d27c1fcf8b33f0cc', liveSha256: 'c40c070ab2dc74e6d1de1d8b80a02744740864b566d2e5de695baf3ca00da3a2' });
+  });
+  for (const [name, change] of [
+    ['unknown-editor-git-mismatch-SHA', rows => { rows.find(row => row.path.endsWith('/editor/git.test.mjs')).sha256 = '0'.repeat(64); }],
+    ['unknown-editor-git-mismatch-size', rows => { rows.find(row => row.path.endsWith('/editor/git.test.mjs')).bytes++; }],
+    ['missing-exact-editor-git-mismatch-route', rows => { rows.find(row => row.path.endsWith('/editor/git.test.mjs')).path += '.unlisted'; }],
+    ['duplicate-editor31-source-row', rows => { rows[1] = { ...rows[0] }; }],
+  ]) negative(name, () => { const rows = structuredClone(editor31); change(rows); migration.editorMismatchesIncludingHistoricalHost(rows); }, 'fixed six-row historical Editor mismatch declaration');
   positive('four-fixed-root-epochs', () => {
     assert.equal(migration.resolve('scripts/verify-records.mjs', ROOT_ID), null);
     assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 147529, sha256: '82fc7f36c0805ee163a93aa1720ed708629ac455d90a9bdd343b30f554335304' }), WINDOWS_PATH + 'verifier-before/verify-records.mjs.snapshot');
@@ -201,7 +215,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const extra = path.join(fixture, CLOUD, 'unlisted-control.snapshot');
   try { fs.writeFileSync(extra, 'Owned negative inventory control.', { flag: 'wx' }); negative('finite282-extra-prefix-file', () => verifyCloudRecoveryRecords(fixture), 'exact finite capsule inventory'); }
   finally { assert.ok(path.relative(fixture, extra).startsWith('products' + path.sep)); fs.unlinkSync(extra); }
-  assert.equal(rows.length, 65); assert.ok(rows.every(row => row.passed));
+  assert.equal(rows.length, 70); assert.ok(rows.every(row => row.passed));
   return { schema: 'rea-cloud-publication-controls/v1', status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,

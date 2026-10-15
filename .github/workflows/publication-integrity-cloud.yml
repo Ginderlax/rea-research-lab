@@ -62,7 +62,7 @@ jobs:
           @{ schema = 'rea-hosted-publication-workflow-attempt/v1'; sourceCommit = $env:GITHUB_SHA; runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; runnerEnvironment = $env:RUNNER_ENVIRONMENT; checkoutOutcome = '${{ steps.checkout.outcome }}'; verificationOutcome = '${{ steps.verification.outcome }}'; published = $false; historicalReceiptsRewritten = $false; fullDevelopmentSuiteAcceptance = $false; fullParity = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
           $files = @(Get-ChildItem -LiteralPath $evidence -File -Recurse)
           $rawBytes = ($files | Measure-Object Length -Sum).Sum
-          $bounded = $files.Count -le 40 -and $rawBytes -le 35 * 1024 * 1024 -and @($files | Where-Object { $_.Length -gt 12 * 1024 * 1024 }).Count -eq 0
+          $bounded = $files.Count -le 64 -and $rawBytes -le 35 * 1024 * 1024 -and @($files | Where-Object { $_.Length -gt 12 * 1024 * 1024 }).Count -eq 0
           $archive = Join-Path $env:RUNNER_TEMP ('rea-publication-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           if ($bounded) { [System.IO.Compression.ZipFile]::CreateFromDirectory($evidence, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false) }

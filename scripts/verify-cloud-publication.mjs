@@ -23,11 +23,19 @@ const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
 const DERIVED = ['PUBLICATION-MANIFEST.json', 'VALIDATION.json'];
 const REVIEWED = {
   'scripts/verify-records.mjs': [147529, '82fc7f36c0805ee163a93aa1720ed708629ac455d90a9bdd343b30f554335304'],
-  'scripts/editor-vault-proof-migration.mjs': [49253, '4175770874c4e00e0c22f13741e4224f28bc933e4447cd78adb889bac01dc81f'],
+  'scripts/editor-vault-proof-migration.mjs': [50750, '8e72b3b70a9b44d1ef5ab33c11a7c28a0cda90d79f22375771a2a4dceee22f48'],
   'scripts/verify-cloud-recovery-records.mjs': [15778, '405c90ac8c68acdc2b281e9563637cc391e1e0574705c1cbcdf7be8e1f794482'],
   'products/rea-studio/results/cloud-publication-source-transition-20261015/preservation-manifest.json': [3069, '8daf5506d935254110dadf2c32e394d6b02f773692867b3a30120a14055ee576'],
   'products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/verify-records.mjs.snapshot': [142684, '42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6'],
   'products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/editor-vault-proof-migration.mjs.snapshot': [47841, '3d0a4ee0b5e9eef36c357c9a3c6170008a2bb0882cc8a755756358aabdf6ced1'],
+  'scripts/verify-followup-records.mjs': [45876, '856eeba61b820260f7e1bdc8d9bb9e8924e3ae3183a0c3c0495471e6152a8b5f'],
+  'products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json': [7382, '37b34ad5324719094e9842343d7649af4ffbd5606f47488137e04a6ee380e49b'],
+  'products/rea-studio/results/publication-git-directory-closure-20261015/payload/d29210777777dac0b3d12f6a656a073c9ba717cf6932dbc01b0cc6dc1e7779b8.snapshot': [7, 'd29210777777dac0b3d12f6a656a073c9ba717cf6932dbc01b0cc6dc1e7779b8'],
+  'products/rea-studio/results/publication-git-directory-closure-20261015/verifier-before/verify-followup-records.mjs.snapshot': [37879, '92a23a59963713966f8e6c630ea6f89e2dfe8248d8dadfacd662bf349bcd6f7e'],
+  'products/rea-studio/results/publication-git-directory-closure-20261015/failed-publication-attempt.json.snapshot': [2450, '52c79743bf97f55243d8f556801a4d70e9b95a95c2696da378a8141d8e516e3e'],
+  'products/rea-studio/results/publication-git-directory-closure-20261015/passed21-controls.json.snapshot': [8748, '5e5a2b99bad3c5969bd6c15ecedceb8e12a39e9ad631b62e2c3af5e951de8e66'],
+  'products/rea-studio/results/publication-git-directory-closure-20261015/failed-publication-write.stderr.txt.snapshot': [18720, '70f73fbb752aff2329e2ea3b21a7f0cd2ae5df218020a788b2d14dc771d9f599'],
+  'products/rea-studio/results/publication-git-directory-closure-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot': [49253, '4175770874c4e00e0c22f13741e4224f28bc933e4447cd78adb889bac01dc81f'],
 };
 const receipt = { schema: 'rea-hosted-publication-validation-attempt/v1', status: 'running', startedAtUtc: new Date().toISOString(),
   scope: 'Publication integrity, syntax, links, credential patterns, immutable historical sources and finite cloud records; no behavioral-suite rerun.',
@@ -114,16 +122,17 @@ try {
   const before = payload('before'); receipt.payloadBefore = { files: before.rows.length, bytes: before.bytes, rowsIdentity: identity(Buffer.from(JSON.stringify(before.rows))) }; save();
   const controls = await runPublicationControls(root, path.join(temporary, 'rea-publication-controls-' + process.env.GITHUB_RUN_ID + '-' + process.env.GITHUB_RUN_ATTEMPT), event);
   write('controls.json', JSON.stringify(controls, null, 2) + '\n'); receipt.controls = { status: controls.status, checks: controls.checks }; save();
-  const nextManifest = Buffer.from(JSON.stringify({ ...old, files: before.rows }, null, 2)); fs.writeFileSync(path.join(root, DERIVED[0]), nextManifest); receipt.generatedManifest = identity(nextManifest); save(); event('publication-manifest-generated', receipt.generatedManifest);
+  const nextManifest = Buffer.from(JSON.stringify({ ...old, files: before.rows }, null, 2)); fs.writeFileSync(path.join(root, DERIVED[0]), nextManifest); write('derived/' + DERIVED[0], nextManifest); receipt.generatedManifest = identity(nextManifest); receipt.generatedManifestValidated = false; save(); event('publication-manifest-generated', receipt.generatedManifest);
   const first = await child('publication-write', ['scripts/verify-records.mjs', '--write']); assert.equal(first.status, 'passed');
-  const validationBytes = fs.readFileSync(path.join(root, DERIVED[1])), validation = JSON.parse(validationBytes); assert.deepEqual(first, validation);
+  const validationBytes = fs.readFileSync(path.join(root, DERIVED[1])), validation = JSON.parse(validationBytes); assert.deepEqual(first, validation); write('derived/' + DERIVED[1], validationBytes); receipt.firstRootWritePassed = true; save();
   const second = await child('publication-recheck', ['scripts/verify-records.mjs']); assert.equal(second.status, 'passed');
   const firstStable = { ...first }, secondStable = { ...second }; delete firstStable.checked_at_utc; delete secondStable.checked_at_utc; assert.deepEqual(secondStable, firstStable);
   const after = payload('after'); assert.deepEqual(after.rows, before.rows); receipt.payloadAfter = { files: after.rows.length, bytes: after.bytes, rowsIdentity: identity(Buffer.from(JSON.stringify(after.rows))) }; receipt.payloadStable = true;
   assert.equal(git(['rev-parse', 'HEAD']).trim(), process.env.GITHUB_SHA);
   const status = git(['status', '--porcelain=v1', '--untracked-files=all', '-z']).split('\0').filter(Boolean); assert.ok(status.every(row => row.slice(0, 2) === ' M' && DERIVED.includes(row.slice(3)))); receipt.derivedWorktreePaths = status.map(row => row.slice(3)).sort();
   assert.deepEqual(fs.readFileSync(path.join(root, DERIVED[0])), nextManifest); assert.deepEqual(fs.readFileSync(path.join(root, DERIVED[1])), validationBytes);
-  for (const name of DERIVED) { const bytes = fs.readFileSync(path.join(root, name)); write('derived/' + name, bytes); }
+  for (const name of DERIVED) assert.deepEqual(fs.readFileSync(path.join(evidence, 'derived', name)), fs.readFileSync(path.join(root, name)));
+  receipt.generatedManifestValidated = true;
   receipt.derived = DERIVED.map(name => ({ path: name, ...identity(fs.readFileSync(path.join(root, name))) }));
   receipt.publicationResult = { status: validation.status, payloadFiles: validation.payload_files, syntaxChecks: validation.javascript_syntax_checks,
     credentialPatternScan: validation.credential_pattern_scan_passed, rootLinksResolve: validation.root_document_links_resolve,

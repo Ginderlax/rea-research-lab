@@ -1,0 +1,49 @@
+// Lightweight filing of an already verified cloud backup; no product execution.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+const work=import.meta.dirname, lab=path.resolve(work,'../outputs/rea-research-lab');
+const backup=path.join(work,'cloud-verification-backups/run-38810678336/artifact-12008743017');
+const source=path.join(backup,'readable-evidence');
+const prefix='products/rea-studio/results/cloud-full-suite-failed-20261015', target=path.join(lab,prefix);
+const digest='9fdea4b4eaebc2195f0728879361c82f221b379b41282c799e4770c23afa03aa';
+const sha=b=>createHash('sha256').update(b).digest('hex'), identity=b=>({bytes:b.length,sha256:sha(b)});
+function safe(name){assert(typeof name==='string'&&name&&!/[\\:\x00-\x1f\x7f]/.test(name)&&!name.startsWith('/')&&name.split('/').every(p=>p&&p!=='.'&&p!=='..'));return name;}
+function read(base,name){safe(name);let at=base;for(const part of name.split('/')){at=path.join(at,part);assert(!fs.lstatSync(at).isSymbolicLink());}const stat=fs.lstatSync(at);assert(stat.isFile()&&stat.size<=4*1024*1024);const bytes=fs.readFileSync(at);assert.equal(bytes.length,stat.size);return bytes;}
+const verifiedBytes=read(backup,'local-backup-verification.json'), verified=JSON.parse(verifiedBytes);
+assert.equal(verified.schema,'rea-local-cloud-attempt-backup/v1');assert.equal(verified.artifactSHA256,digest);assert.equal(verified.allCRCAndBytesReadable,true);
+const zip=fs.readFileSync(backup+'.zip');assert.equal(sha(zip),digest);assert.equal(zip.length,verified.archiveBytes);
+const rows=new Map();for(const row of verified.files){safe(row.path);assert(!rows.has(row.path));rows.set(row.path,row);}
+function evidence(name){const bytes=read(source,name), row=rows.get(name);assert(row);assert.deepEqual(identity(bytes),{bytes:row.bytes,sha256:row.sha256});return bytes;}
+const attempt=JSON.parse(evidence('attempt-validation.json'));
+assert.equal(attempt.repositoryCommit,'abcac0b2f7905838198bdaa2e11461ac52cdb75e');assert.equal(attempt.scope,'full-oracle-experiment');assert.equal(attempt.status,'failed');assert.equal(attempt.phase,'terminal');
+assert.deepEqual(attempt.summary,{tests:1042,pass:1024,fail:18,cancelled:0,skipped:0,todo:0,duration_ms:773252.3641});
+assert.equal(attempt.sourceFiles,770);assert.equal(attempt.sourceSnapshotFiles,348);assert.equal(attempt.sourceStable,true);
+assert.deepEqual(evidence('source-before.json'),evidence('source-after.json'));
+const raw=evidence('stdout.txt').toString('utf8');
+for(const [key,value]of Object.entries(attempt.summary)){const matches=[...raw.matchAll(new RegExp('^# '+key+' (\\d+(?:\\.\\d+)?)\\r?$','gm'))];assert.equal(matches.length,1);assert.equal(Number(matches[0][1]),value);}
+const failures=raw.split(/\r?\n/).filter(line=>/^not ok \d+ - /.test(line));assert.equal(failures.length,18);
+const workflow=JSON.parse(evidence('workflow-attempt.json'));
+assert.equal(workflow.runId,'38810678336');assert.equal(workflow.sourceCommit,attempt.repositoryCommit);assert.equal(workflow.testOutcome,'failure');assert.equal(workflow.oraclePostcheckOutcome,'success');
+for(const name of ['flowVaultOutcome','archiveOutcome','bsdtarOutcome','bsdtarSmokeOutcome','additionalOutcome'])assert.equal(workflow[name],'success');
+const omitted=[...rows.values()].filter(row=>row.path.startsWith('source/')).map(row=>({sourcePath:row.path,bytes:row.bytes,sha256:row.sha256}));assert.equal(omitted.length,348);
+const retained=[...rows.keys()].filter(name=>!name.startsWith('source/'));assert(retained.length<=100);
+assert(!fs.existsSync(target));fs.mkdirSync(target);fs.mkdirSync(path.join(target,'payload'));
+const records=[],objects=new Set();let copiedBytes=0;
+const credentials=/\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/;
+function save(sourcePath,bytes){safe(sourcePath);assert(!records.some(row=>row.sourcePath===sourcePath));assert(!credentials.test(bytes.toString('utf8')));copiedBytes+=bytes.length;assert(copiedBytes<=16*1024*1024);const id=identity(bytes),name='payload/'+id.sha256+'.snapshot';if(!objects.has(name)){fs.writeFileSync(path.join(target,name),bytes,{flag:'wx'});objects.add(name);}assert.deepEqual(read(target,name),bytes);records.push({sourcePath,path:name,...id});}
+for(const name of retained)save(name,evidence(name));
+save('local-backup-verification.json',verifiedBytes);
+save('job-log-116682815389.txt',read(path.join(work,'cloud-verification-backups/job-116682815389'),'logs.txt'));
+save('preservation-collector.mjs',fs.readFileSync(import.meta.filename));
+const manifest={schema:'rea-cloud-full-suite-failure-preservation/v1',at:new Date().toISOString(),status:'failed',sourceCommit:attempt.repositoryCommit,pullRequestHead:'6f89a09e8058080b479ea8f0f03916df0b1c7c63',testedReference:'refs/pull/1/merge',runId:38810678336,runAttempt:1,runURL:'https://github.com/Ginderlax/rea-research-lab/actions/runs/38810678336',artifactId:12008743017,artifactSHA256:digest,
+ summary:attempt.summary,sourceFiles:770,sourceStable:true,activeSourceSnapshotsInVerifiedLocalBackup:348,allCurrentTestsSelected:true,oracleTestOverlayTargets:3,applicationRuntimeOverlayTargets:0,postrunOracleSourceCheck:'passed',failures,
+ diagnosis:{editorObserverFailures:1,syncWebDAVFailures:17,observedRootSpellings:['RUNNER~1','runneradmin'],status:'Source diagnosis in progress; no passing replacement receipt is inferred.'},
+ completeLocalBackupVerified:true,localBackupFiles:rows.size,retainedArtifactFiles:retained.length,publicSourceSnapshotPayloads:0,omittedSourceSnapshotPayloads:omitted,
+ omissionScope:'Only source/ active snapshot payloads are omitted publicly. All348 remain in the verified readable local backup. Every other artifact file, raw output, source identities and wrapper log is retained publicly.',
+ records,uniqueInertObjects:objects.size,allCopiesExact:true,allPayloadsInert:true,completedTestReceipt:true,fullDevelopmentSuiteAcceptance:false,productionWindowsPathCorrectionInstalled:false,historicalReceiptsRebound:false,fullParity:false,superiority:false,
+ localProductExecutions:0,localTests:0,localBuilds:0,acceptanceScope:'Recorded failed full current test attempt with an explicit three-source oracle-loader overlay. Backup readability and evidence consistency are separate from behavior; all18 failures remain failures.'};
+const bytes=Buffer.from(JSON.stringify(manifest,null,2)+'\n');fs.writeFileSync(path.join(target,'preservation-manifest.json'),bytes,{flag:'wx'});
+const result={prefix,records:records.length,objects:objects.size,omittedSnapshots:348,manifestSHA256:sha(bytes),summary:attempt.summary,localProductExecutions:0};
+fs.writeFileSync(path.join(work,'cloud-recovery-20261015/full-suite-failure-preservation.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(result));

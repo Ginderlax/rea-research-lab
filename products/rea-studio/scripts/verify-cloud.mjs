@@ -30,14 +30,15 @@ for (let i = 2; i < process.argv.length; i++) {
   assert(i + 1 < process.argv.length && !process.argv[i + 1].startsWith('--'), 'Missing value: ' + argument);
   options[names.get(argument)] = process.argv[++i];
 }
-assert(['flow-vault', 'full', 'archive-aes-experiment', 'full-oracle-experiment'].includes(options.scope), 'Use --scope flow-vault, full, archive-aes-experiment or full-oracle-experiment');
+assert(['flow-vault', 'full', 'archive-aes-experiment', 'full-oracle-experiment', 'windows-path-experiment'].includes(options.scope), 'Use a supported explicit cloud verification scope');
 assert(['all', 'active'].includes(options.snapshotScope), 'Use --snapshot-scope all or active');
 assert(typeof options.output === 'string' && path.isAbsolute(options.output), '--output must be absolute');
 options.timeoutMs = Number(options.timeoutMs);
 assert(Number.isSafeInteger(options.timeoutMs) && options.timeoutMs >= 1_000 && options.timeoutMs <= 2 * 60 * 60_000, 'Invalid bounded timeout');
 if (options.bootstrapManifest) assert(path.isAbsolute(options.bootstrapManifest), '--bootstrap-manifest must be absolute');
 if (options.overlayManifest) assert(path.isAbsolute(options.overlayManifest), '--overlay-manifest must be absolute');
-assert(['archive-aes-experiment', 'full-oracle-experiment'].includes(options.scope) || !options.overlayManifest, 'Overlay provenance is exclusive to an explicit experimental scope');
+assert(['archive-aes-experiment', 'full-oracle-experiment', 'windows-path-experiment'].includes(options.scope) || !options.overlayManifest, 'Overlay provenance is exclusive to an explicit experimental scope');
+if (options.scope === 'windows-path-experiment') assert(!options.bootstrapManifest, 'The finite Windows path experiment has no vendor prerequisite manifest');
 
 // Resolve existing ancestors before creating anything, so an evidence-directory
 // symlink cannot put logs inside the source census.
@@ -58,7 +59,7 @@ assert(!inside(output, realStudio), 'Output cannot be Studio or one of its ances
 for (const directory of censusDirectories) assert(!inside(path.join(realStudio, directory), output), 'Output overlaps source census: ' + directory);
 fs.mkdirSync(output, { recursive: true });
 assert(fs.statSync(output).isDirectory(), 'Output must be a directory');
-const reserved = ['attempt-validation.json', 'attempt-validation.json.tmp', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'source-snapshot-manifest.json', 'source', 'runner.mjs.snapshot', 'development-validation.json', 'bootstrap-prerequisites.json.snapshot', 'overlay-composition.json.snapshot', 'experimental-test-selection.json.snapshot', 'oracle-test-composition.json.snapshot', 'oracle-test-bundle.json.snapshot', 'git-baseline-active-source.json', 'prerequisite-receipts'];
+const reserved = ['attempt-validation.json', 'attempt-validation.json.tmp', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'source-snapshot-manifest.json', 'source', 'runner.mjs.snapshot', 'development-validation.json', 'bootstrap-prerequisites.json.snapshot', 'overlay-composition.json.snapshot', 'experimental-test-selection.json.snapshot', 'oracle-test-composition.json.snapshot', 'oracle-test-bundle.json.snapshot', 'windows-path-composition.json.snapshot', 'windows-path-bundle.json.snapshot', 'git-baseline-active-source.json', 'prerequisite-receipts'];
 for (const name of reserved) assert(!fs.existsSync(path.join(output, name)), 'Evidence already exists; use a new run directory: ' + name);
 
 const open = name => fs.openSync(path.join(output, name), 'wx');
@@ -76,7 +77,7 @@ const record = {
   sourceSnapshotsInert: true, sourceSnapshotFiles: 0, limits,
   fullFeatureParityEstablished: false, universalSuperiorityEstablished: false,
   historicalReceiptsRebound: false, historicalDevelopmentReceiptOverwritten: false,
-  acceptanceScope: options.scope === 'full-oracle-experiment' ? 'Every current implemented development test with an explicitly composed three-file bsdtar oracle-test overlay. Application runtime sources retain their Git baseline bytes; two oracle loaders and a new helper belong to a new test-dependency epoch. A separate same-attempt composer postcheck remains required. No unchanged-test, historical-DLL, browser, product-parity or superiority acceptance.' : options.scope === 'archive-aes-experiment' ? 'Finite experimental Archive AES and Windows source metadata contracts on an explicitly composed hosted working tree. The Git revision alone describes the baseline and committed overlay payloads; composition provenance identifies the active experimental bytes. Production integration, full Archive acceptance, browser acceptance, full parity and superiority remain open.' : options.scope === 'flow-vault' ? 'Finite Flow and Vault implemented contracts; other applications are not executed.' : 'Current implemented development contracts; every documented original feature and comparative acceptance remain open.',
+  acceptanceScope: options.scope === 'windows-path-experiment' ? 'Five finite Editor Git and Sync WebDAV test files with a hosted-only three-target source composition: one explicit Sync runtime correction, one Editor physical-path observer correction and one new Windows regression file. Git identifies the committed baseline and inert payloads; composition identifies the active derivative. A separate same-attempt source postcheck is required. Active production integration, full suite, browser acceptance, security, parity and superiority remain open.' : options.scope === 'full-oracle-experiment' ? 'Every current implemented development test with an explicitly composed three-file bsdtar oracle-test overlay. Application runtime sources retain their Git baseline bytes; two oracle loaders and a new helper belong to a new test-dependency epoch. A separate same-attempt composer postcheck remains required. No unchanged-test, historical-DLL, browser, product-parity or superiority acceptance.' : options.scope === 'archive-aes-experiment' ? 'Finite experimental Archive AES and Windows source metadata contracts on an explicitly composed hosted working tree. The Git revision alone describes the baseline and committed overlay payloads; composition provenance identifies the active experimental bytes. Production integration, full Archive acceptance, browser acceptance, full parity and superiority remain open.' : options.scope === 'flow-vault' ? 'Finite Flow and Vault implemented contracts; other applications are not executed.' : 'Current implemented development contracts; every documented original feature and comparative acceptance remain open.',
   evidenceDirectory: output, failures: [],
 };
 function flush() {
@@ -146,6 +147,13 @@ function census() {
 }
 function selectTests(rows) {
   const tests = rows.map(row => row.path).filter(name => name.endsWith('.test.mjs') && !name.split('/').includes('results'));
+  if (options.scope === 'windows-path-experiment') {
+    const expected = ['apps/editor/git.test.mjs', 'apps/sync/webdav.test.mjs', 'apps/sync/webdav.actions.test.mjs', 'apps/sync/webdav.integration.test.mjs', 'apps/sync/webdav.windows-path.test.mjs'];
+    const bundle = JSON.parse(fs.readFileSync(path.join(studio, 'experiments/windows-path/bundle.json')));
+    assert.deepEqual(bundle.tests, expected.map(name => 'products/rea-studio/' + name), 'Windows path experiment must retain its fixed five-file selection');
+    for (const name of expected) assert(tests.includes(name), 'Required Windows path test is missing: ' + name);
+    return expected;
+  }
   if (options.scope === 'archive-aes-experiment') {
     const selectionBytes = fs.readFileSync(path.join(studio, 'experiments/archive-aes/test-selection.json'));
     const selection = JSON.parse(selectionBytes);
@@ -271,6 +279,42 @@ function verifyOracleTestComposition() {
     testsByteIdenticalToGit: false, separatePostcheckRequired: true, postcheckReceipt: 'bsdtar-postrun-source-check.json', fullDevelopmentReceiptEmitted: false };
   return { targets: new Set(targets), status };
 }
+function verifyWindowsPathComposition() {
+  assert(options.overlayManifest, 'Windows path experiment requires --overlay-manifest');
+  const compositionBytes = fs.readFileSync(options.overlayManifest); assert(compositionBytes.length <= 2 * 1024 * 1024);
+  const value = JSON.parse(compositionBytes), repository = path.resolve(studio, '../..');
+  assert.equal(value.schema, 'rea-windows-path-hosted-composition/v1'); assert.equal(value.status, 'composed-unexecuted-windows-path-overlay');
+  sameAttempt(value.execution); assert.equal(value.baselineGitCommit, record.repositoryCommit); assert.equal(value.sourceCommit, record.repositoryCommit);
+  assert.equal(path.resolve(value.sourceRoot).toLowerCase(), fs.realpathSync(repository).toLowerCase());
+  assert.equal(value.productionInstalled, false); assert.equal(value.applicationRuntimeChangedInExperiment, true); assert.equal(value.historicalReceiptsRebound, false);
+  const bundlePath = 'products/rea-studio/experiments/windows-path/bundle.json', bundleBytes = fs.readFileSync(path.join(repository, bundlePath));
+  assert.deepEqual(identity(bundleBytes), { bytes: 4266, sha256: '011ea962ecb061fd85a1edb9f4ce14f70836670bc0f7effb26d6260baaef16aa' });
+  assert.deepEqual(bundleBytes, readGit(['show', 'HEAD:' + bundlePath]), 'Windows path bundle differs from its committed source');
+  assert.deepEqual(identity(bundleBytes), { bytes: value.sourceBundle.bytes, sha256: value.sourceBundle.sha256 });
+  const bundle = JSON.parse(bundleBytes); assert.equal(bundle.schema, 'rea-windows-path-hosted-source-bundle/v1');
+  assert.equal(bundle.independentSourceReviewPending, false); assert.equal(bundle.productionInstalled, false); assert.equal(bundle.applicationRuntimeChangedInExperiment, true);
+  const targets = ['products/rea-studio/apps/sync/dav-transfer.mjs', 'products/rea-studio/apps/editor/git.test.mjs', 'products/rea-studio/apps/sync/webdav.windows-path.test.mjs'];
+  assert.deepEqual(bundle.transitions.map(row => row.target), targets); assert.equal(bundle.transitions[2].before, null);
+  assert.deepEqual(value.transitions, bundle.transitions.map(row => ({ path: row.target, before: row.before === null ? null : { bytes: row.before.bytes, sha256: row.before.sha256 }, after: { bytes: row.after.bytes, sha256: row.after.sha256 }, sourcePayload: row.after.sourcePath })));
+  const expectedTargets = bundle.transitions.map(row => ({ path: row.target, bytes: row.after.bytes, sha256: row.after.sha256 })).sort((a, b) => a.path.localeCompare(b.path));
+  assert.deepEqual(value.currentTargets, expectedTargets); assert.deepEqual(value.currentTargetSHA256, Object.fromEntries(expectedTargets.map(row => [row.path, row.sha256])));
+  for (const row of bundle.transitions) {
+    const current = fs.readFileSync(path.join(repository, row.target)); assert.deepEqual(identity(current), { bytes: row.after.bytes, sha256: row.after.sha256 });
+    assert.deepEqual(fs.readFileSync(path.join(path.dirname(options.overlayManifest), 'after', row.target + '.snapshot')), current);
+    if (row.before) {
+      const expectedBefore = { bytes: row.before.bytes, sha256: row.before.sha256 };
+      assert.deepEqual(identity(readGit(['show', 'HEAD:' + row.target])), expectedBefore, 'Windows path before-image differs from Git baseline');
+      assert.deepEqual(identity(fs.readFileSync(path.join(path.dirname(options.overlayManifest), 'before', row.target + '.snapshot'))), expectedBefore);
+    } else assert.equal(readGit(['ls-tree', 'HEAD', '--', row.target]).length, 0, 'The regression file must be new in this derivative');
+  }
+  const status = bundle.transitions.map(row => ({ path: row.target, status: row.before === null ? '??' : ' M' })).sort((a, b) => a.path.localeCompare(b.path));
+  assert.deepEqual(value.gitStatusBefore, []); assert.deepEqual(value.gitStatus, status); assert.deepEqual(visibleGitStatus(), status);
+  fs.writeFileSync(path.join(output, 'windows-path-composition.json.snapshot'), compositionBytes, { flag: 'wx' });
+  fs.writeFileSync(path.join(output, 'windows-path-bundle.json.snapshot'), bundleBytes, { flag: 'wx' });
+  record.windowsPathOverlay = { ...identity(compositionBytes), baselineGitCommit: record.repositoryCommit, applicationRuntimeChangedInExperiment: true, productionInstalled: false,
+    modifiedRuntimeTargets: 1, modifiedObserverTargets: 1, newRegressionTargets: 1, separatePostcheckRequired: true, postcheckReceipt: 'windows-path-postrun-source-check.json', fullDevelopmentReceiptEmitted: false };
+  return { targets: new Set(targets), status };
+}
 function verifyGitBaselineActiveSources(rows, contract) {
   const blobs = new Map();
   for (const entry of readGit(['ls-tree', '-rz', '--full-tree', 'HEAD', '--', 'products/rea-studio'], 32 * 1024 * 1024).toString('utf8').split('\0').filter(Boolean)) {
@@ -288,12 +332,13 @@ function verifyGitBaselineActiveSources(rows, contract) {
     checked.push({ path: row.path, ...identity(bytes), gitBlob: object });
   }
   saveJson('git-baseline-active-source.json', { schema: 'rea-cloud-git-baseline-active-source/v1', repositoryCommit: record.repositoryCommit,
-    excludedComposedOracleTargets: [...contract.targets], selection: 'All eligible active Studio census files outside historical results, excluding only the three explicit oracle-test targets.', files: checked });
-  record.oracleTestOverlay.gitBaselineEligibleActiveFiles = checked.length;
-  record.oracleTestOverlay.gitBaselineEligibleActiveBytesAuthenticated = true;
+    ...(record.oracleTestOverlay ? { excludedComposedOracleTargets: [...contract.targets], selection: 'All eligible active Studio census files outside historical results, excluding only the three explicit oracle-test targets.' } : { excludedComposedWindowsPathTargets: [...contract.targets], selection: 'All eligible active Studio census files outside historical results, excluding only the three explicit Windows path targets.' }), files: checked });
+  const provenance = record.oracleTestOverlay ?? record.windowsPathOverlay;
+  provenance.gitBaselineEligibleActiveFiles = checked.length;
+  provenance.gitBaselineEligibleActiveBytesAuthenticated = true;
 }
 
-let before = null, fullOracle = null;
+let before = null, fullOracle = null, windowsPath = null;
 try {
   saveAttempt();
   event('running', { scope: options.scope, sourceOnly: options.sourceOnly });
@@ -358,8 +403,10 @@ try {
     assert(record.originalPrerequisites, 'The full oracle-test experiment requires --bootstrap-manifest');
     fullOracle = verifyOracleTestComposition();
   }
+  if (options.scope === 'windows-path-experiment') windowsPath = verifyWindowsPathComposition();
   before = census();
   if (fullOracle) verifyGitBaselineActiveSources(before, fullOracle);
+  if (windowsPath) verifyGitBaselineActiveSources(before, windowsPath);
   saveJson('source-before.json', before);
   record.sourceFiles = before.length;
   record.selectedTestFiles = selectTests(before);
@@ -389,6 +436,7 @@ try {
       assert(record.originalPrerequisites, 'This scope requires --bootstrap-manifest');
     }
     if (options.scope === 'full-oracle-experiment') assert.equal(process.version, 'v24.16.0', 'The full oracle-test epoch requires the pinned runtime');
+    if (options.scope === 'windows-path-experiment') { assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0'); }
     if (process.env.GITHUB_SHA) assert.equal(record.repositoryCommit, process.env.GITHUB_SHA, 'Checked-out Git commit differs from workflow identity');
     assert(!stopReason, stopReason);
     const env = { ...process.env };
@@ -452,6 +500,13 @@ try {
       assert(summary.tests > 0 && summary.tests === summary.pass, 'Every selected check must pass');
       assert.equal(summary.fail + summary.cancelled + summary.skipped + summary.todo, 0, 'Failures, cancellations, skips and unfinished checks cannot certify this scope');
       if (options.scope === 'archive-aes-experiment') assert.equal(summary.tests, 161, 'Experimental Archive selection must execute all 161 planned groups');
+      if (options.scope === 'windows-path-experiment') {
+        const raw = fs.readFileSync(path.join(output, 'stdout.txt'), 'utf8');
+        const aliases = [...raw.matchAll(/^# (\{"kind":"native-workspace-root-spelling"[^\r\n]+\})\r?$/gm)].map(match => JSON.parse(match[1]));
+        assert.equal(aliases.length, 1, 'Require the actual Windows short-name diagnostic once');
+        const observed = aliases[0]; assert.equal(observed.differentSpelling, true); assert.equal(observed.observedShortComponent, true); assert.equal(observed.syntheticAliasConstructed, false);
+        record.windowsPathAliasObservation = observed;
+      }
     } catch (error) { failure(error.message); }
   }
 } catch (error) {
@@ -475,6 +530,10 @@ try {
       assert.deepEqual(visibleGitStatus(), fullOracle.status, 'Visible Git changes no longer match the three oracle-test targets');
       record.oracleTestOverlay.gitWorkingTreeMatchesOracleOverlayAfter = true;
     } catch (error) { failure('oracle-test Git postcheck: ' + error.message); }
+  }
+  if (windowsPath) {
+    try { assert.deepEqual(visibleGitStatus(), windowsPath.status, 'Visible Git changes differ from the three Windows path targets'); record.windowsPathOverlay.gitWorkingTreeMatchesOverlayAfter = true; }
+    catch (error) { failure('Windows path Git postcheck: ' + error.message); }
   }
   record.status = receivedSignal ? 'interrupted' : record.failures.length ? 'failed' : options.sourceOnly ? 'source-only' : 'passed';
   record.signal = receivedSignal ?? record.signal;

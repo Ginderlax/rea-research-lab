@@ -10,6 +10,7 @@ const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
 const ROOT_ID = { bytes: 147529, sha256: '82fc7f36c0805ee163a93aa1720ed708629ac455d90a9bdd343b30f554335304' };
 const CLOUD = 'products/rea-studio/results/cloud-flow-vault-20261015/';
 const TRANSITION = 'products/rea-studio/results/cloud-publication-source-transition-20261015/';
+const GIT_CLOSURE = 'products/rea-studio/results/publication-git-directory-closure-20261015/';
 const OLD = 'products/rea-studio/results/editor-vault-combined-20261013/';
 function same(observed, expected) { assert.deepEqual(identity(observed), { bytes: expected.bytes, sha256: expected.sha256 }); }
 function flip(bytes) { const changed = Buffer.from(bytes); assert.ok(changed.length); changed[changed.length - 1] ^= 1; return changed; }
@@ -38,10 +39,19 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   });
   negative('unknown-root-epoch', () => migration.resolve('scripts/verify-records.mjs', { bytes: 1, sha256: '0'.repeat(64) }), 'named identity resolver');
   negative('unknown-flow-source-epoch', () => migration.resolve('products/rea-studio/apps/flow/client.mjs', { bytes: 1, sha256: '0'.repeat(64) }), 'named identity resolver');
+  positive('three-fixed-followup-verifier-epochs', () => {
+    assert.equal(migration.resolve('scripts/verify-followup-records.mjs', { bytes: 45876, sha256: '856eeba61b820260f7e1bdc8d9bb9e8924e3ae3183a0c3c0495471e6152a8b5f' }), null);
+    assert.equal(migration.resolve('scripts/verify-followup-records.mjs', { bytes: 37879, sha256: '92a23a59963713966f8e6c630ea6f89e2dfe8248d8dadfacd662bf349bcd6f7e' }), GIT_CLOSURE + 'verifier-before/verify-followup-records.mjs.snapshot');
+    assert.equal(migration.resolve('scripts/verify-followup-records.mjs', { bytes: 37311, sha256: '0d06219b7437fc99d27597713a176c108fd60c9c3a1fb016ffe3acf321a4d58d' }), 'products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-followup-records.mjs.snapshot');
+  });
+  negative('unknown-followup-verifier-epoch', () => migration.resolve('scripts/verify-followup-records.mjs', { bytes: 1, sha256: '0'.repeat(64) }), 'named identity resolver');
   for (const [name, target] of [
     ['mandatory-current-flow-after', 'products/rea-studio/apps/flow/client.mjs'],
     ['mandatory-current-vault-after', 'products/rea-studio/apps/vault/client.mjs'],
     ['mandatory-middle-root-snapshot', TRANSITION + 'verifier-middle/verify-records.mjs.snapshot'],
+    ['mandatory-git-closure-payload', GIT_CLOSURE + 'payload/d29210777777dac0b3d12f6a656a073c9ba717cf6932dbc01b0cc6dc1e7779b8.snapshot'],
+    ['mandatory-git-closure-manifest', GIT_CLOSURE + 'preservation-manifest.json'],
+    ['mandatory-middle-followup-snapshot', GIT_CLOSURE + 'verifier-before/verify-followup-records.mjs.snapshot'],
   ]) negative(name, () => createEditorVaultProofMigration(file => file === target ? flip(read(file)) : read(file)), 'fixed source identity');
 
   // Execute the exact pinned historical937 block in an isolated context. Reads
@@ -92,7 +102,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const extra = path.join(fixture, CLOUD, 'unlisted-control.snapshot');
   try { fs.writeFileSync(extra, 'Owned negative inventory control.', { flag: 'wx' }); negative('finite282-extra-prefix-file', () => verifyCloudRecoveryRecords(fixture), 'exact finite capsule inventory'); }
   finally { assert.ok(path.relative(fixture, extra).startsWith('products' + path.sep)); fs.unlinkSync(extra); }
-  assert.equal(rows.length, 21); assert.ok(rows.every(row => row.passed));
+  assert.equal(rows.length, 26); assert.ok(rows.every(row => row.passed));
   return { schema: 'rea-cloud-publication-controls/v1', status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,

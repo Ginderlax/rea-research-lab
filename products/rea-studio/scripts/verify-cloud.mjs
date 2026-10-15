@@ -30,14 +30,14 @@ for (let i = 2; i < process.argv.length; i++) {
   assert(i + 1 < process.argv.length && !process.argv[i + 1].startsWith('--'), 'Missing value: ' + argument);
   options[names.get(argument)] = process.argv[++i];
 }
-assert(['flow-vault', 'full', 'archive-aes-experiment'].includes(options.scope), 'Use --scope flow-vault, full or archive-aes-experiment');
+assert(['flow-vault', 'full', 'archive-aes-experiment', 'full-oracle-experiment'].includes(options.scope), 'Use --scope flow-vault, full, archive-aes-experiment or full-oracle-experiment');
 assert(['all', 'active'].includes(options.snapshotScope), 'Use --snapshot-scope all or active');
 assert(typeof options.output === 'string' && path.isAbsolute(options.output), '--output must be absolute');
 options.timeoutMs = Number(options.timeoutMs);
 assert(Number.isSafeInteger(options.timeoutMs) && options.timeoutMs >= 1_000 && options.timeoutMs <= 2 * 60 * 60_000, 'Invalid bounded timeout');
 if (options.bootstrapManifest) assert(path.isAbsolute(options.bootstrapManifest), '--bootstrap-manifest must be absolute');
 if (options.overlayManifest) assert(path.isAbsolute(options.overlayManifest), '--overlay-manifest must be absolute');
-assert(options.scope === 'archive-aes-experiment' || !options.overlayManifest, 'Overlay provenance is exclusive to the explicit experimental scope');
+assert(['archive-aes-experiment', 'full-oracle-experiment'].includes(options.scope) || !options.overlayManifest, 'Overlay provenance is exclusive to an explicit experimental scope');
 
 // Resolve existing ancestors before creating anything, so an evidence-directory
 // symlink cannot put logs inside the source census.
@@ -58,7 +58,7 @@ assert(!inside(output, realStudio), 'Output cannot be Studio or one of its ances
 for (const directory of censusDirectories) assert(!inside(path.join(realStudio, directory), output), 'Output overlaps source census: ' + directory);
 fs.mkdirSync(output, { recursive: true });
 assert(fs.statSync(output).isDirectory(), 'Output must be a directory');
-const reserved = ['attempt-validation.json', 'attempt-validation.json.tmp', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'source-snapshot-manifest.json', 'source', 'runner.mjs.snapshot', 'development-validation.json', 'bootstrap-prerequisites.json.snapshot', 'overlay-composition.json.snapshot', 'experimental-test-selection.json.snapshot'];
+const reserved = ['attempt-validation.json', 'attempt-validation.json.tmp', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'source-snapshot-manifest.json', 'source', 'runner.mjs.snapshot', 'development-validation.json', 'bootstrap-prerequisites.json.snapshot', 'overlay-composition.json.snapshot', 'experimental-test-selection.json.snapshot', 'oracle-test-composition.json.snapshot', 'oracle-test-bundle.json.snapshot', 'git-baseline-active-source.json', 'prerequisite-receipts'];
 for (const name of reserved) assert(!fs.existsSync(path.join(output, name)), 'Evidence already exists; use a new run directory: ' + name);
 
 const open = name => fs.openSync(path.join(output, name), 'wx');
@@ -76,7 +76,7 @@ const record = {
   sourceSnapshotsInert: true, sourceSnapshotFiles: 0, limits,
   fullFeatureParityEstablished: false, universalSuperiorityEstablished: false,
   historicalReceiptsRebound: false, historicalDevelopmentReceiptOverwritten: false,
-  acceptanceScope: options.scope === 'archive-aes-experiment' ? 'Finite experimental Archive AES and Windows source metadata contracts on an explicitly composed hosted working tree. The Git revision alone describes the baseline and committed overlay payloads; composition provenance identifies the active experimental bytes. Production integration, full Archive acceptance, browser acceptance, full parity and superiority remain open.' : options.scope === 'flow-vault' ? 'Finite Flow and Vault implemented contracts; other applications are not executed.' : 'Current implemented development contracts; every documented original feature and comparative acceptance remain open.',
+  acceptanceScope: options.scope === 'full-oracle-experiment' ? 'Every current implemented development test with an explicitly composed three-file bsdtar oracle-test overlay. Application runtime sources retain their Git baseline bytes; two oracle loaders and a new helper belong to a new test-dependency epoch. A separate same-attempt composer postcheck remains required. No unchanged-test, historical-DLL, browser, product-parity or superiority acceptance.' : options.scope === 'archive-aes-experiment' ? 'Finite experimental Archive AES and Windows source metadata contracts on an explicitly composed hosted working tree. The Git revision alone describes the baseline and committed overlay payloads; composition provenance identifies the active experimental bytes. Production integration, full Archive acceptance, browser acceptance, full parity and superiority remain open.' : options.scope === 'flow-vault' ? 'Finite Flow and Vault implemented contracts; other applications are not executed.' : 'Current implemented development contracts; every documented original feature and comparative acceptance remain open.',
   evidenceDirectory: output, failures: [],
 };
 function flush() {
@@ -157,7 +157,7 @@ function selectTests(rows) {
     record.experimentalSelection = { ...identity(selectionBytes), expectedGroupsOnWindows: selection.expectedGroupsOnWindows, fullArchiveSuite: false };
     return expected;
   }
-  const selected = options.scope === 'full' ? tests : tests.filter(name => /^apps\/(flow|vault)\//.test(name));
+  const selected = ['full', 'full-oracle-experiment'].includes(options.scope) ? tests : tests.filter(name => /^apps\/(flow|vault)\//.test(name));
   assert(selected.length > 0, 'No current tests selected');
   if (options.scope === 'flow-vault') {
     const expectedFlow = ['app.test.mjs', 'link-http.test.mjs', 'link-original.test.mjs', 'link-ui.test.mjs', 'native-link.test.mjs', 'native-original.test.mjs', 'native.test.mjs', 'normalization-boundaries.test.mjs', 'normalization-ui.test.mjs'].map(name => 'apps/flow/' + name).sort();
@@ -176,7 +176,124 @@ function parseSummary(raw) {
   }));
 }
 
-let before = null;
+const fullPrerequisiteFiles = [
+  ['flow-vault', 'prerequisite-acquisition.json', 'rea-cloud-flow-vault-prerequisites/v1', 'acquired'],
+  ['archive', 'archive-original-prerequisites.json', 'rea-cloud-archive-original-prerequisites/v1', 'acquired'],
+  ['bsdtar', 'bsdtar-original-acquisition.json', 'rea-cloud-bsdtar-original-prerequisites/v1', 'acquired'],
+  ['additional', 'development-prerequisites.json', 'rea-cloud-development-additional-prerequisites/v1', 'acquired'],
+  ['bsdtar-smoke', 'bsdtar-original-smoke.json', 'rea-cloud-bsdtar-original-smoke/v1', 'passed'],
+];
+function sameAttempt(execution) {
+  for (const name of ['GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY']) {
+    assert.equal(typeof process.env[name], 'string', 'Missing workflow identity: ' + name);
+    assert.equal(execution[name], process.env[name], 'Evidence belongs to another workflow attempt: ' + name);
+  }
+}
+function readGit(arguments_, maxBuffer = 4 * 1024 * 1024) {
+  const result = spawnSync('git', arguments_, { cwd: path.resolve(studio, '../..'), encoding: 'buffer', windowsHide: true, shell: false, timeout: 30000, maxBuffer });
+  assert.equal(result.error, undefined, 'Git source authentication failed');
+  assert.equal(result.status, 0, 'Git source authentication failed');
+  return result.stdout;
+}
+function visibleGitStatus() {
+  return readGit(['status', '--porcelain=v1', '-z', '--untracked-files=all']).toString('utf8').split('\0').filter(Boolean).map(value => {
+    const status = value.slice(0, 2), relative = value.slice(3);
+    assert([' M', '??'].includes(status), 'Unexpected staged/deleted/renamed source state');
+    return { path: relative, status };
+  }).sort((a, b) => a.path.localeCompare(b.path));
+}
+function verifyFullPrerequisites(manifest) {
+  assert.equal(manifest.schema, 'rea-cloud-full-oracle-prerequisites/v1'); assert.equal(manifest.status, 'acquired');
+  sameAttempt(manifest.execution);
+  assert.deepEqual(manifest.receipts.map(row => [row.role, row.file]), fullPrerequisiteFiles.map(([role, file]) => [role, file]));
+  fs.mkdirSync(path.join(output, 'prerequisite-receipts'));
+  const records = [];
+  for (const [index, [role, file, schema, status]] of fullPrerequisiteFiles.entries()) {
+    const filename = path.join(path.dirname(options.bootstrapManifest), file), item = fs.lstatSync(filename);
+    assert(item.isFile() && !item.isSymbolicLink() && item.size <= 2 * 1024 * 1024, 'Invalid prerequisite receipt: ' + role);
+    const bytes = fs.readFileSync(filename), value = JSON.parse(bytes), claim = manifest.receipts[index];
+    assert.deepEqual(identity(bytes), { bytes: claim.bytes, sha256: claim.sha256 }, 'Prerequisite receipt identity changed: ' + role);
+    assert.equal(value.schema, schema); assert.equal(value.status, status, 'Incomplete prerequisite: ' + role);
+    if (role === 'bsdtar-smoke') {
+      sameAttempt({ GITHUB_SHA: value.sourceCommit, GITHUB_RUN_ID: value.runId, GITHUB_RUN_ATTEMPT: value.runAttempt, GITHUB_REPOSITORY: manifest.execution.GITHUB_REPOSITORY });
+      assert.equal(value.originalProcesses, 1); assert.equal(value.productComparisons, 0);
+      const acquisition = records.find(row => row.role === 'bsdtar');
+      assert.deepEqual(value.acquisition, { bytes: acquisition.bytes, sha256: acquisition.sha256 }, 'Smoke evidence belongs to another acquisition receipt');
+    } else sameAttempt(value.execution);
+    if (role === 'archive') {
+      assert.equal(value.assets.length, 5); assert.equal(value.bootstrapExtractionProcesses, 1); assert.equal(value.originalProcesses, 1); assert.equal(value.comparisonProcesses, 0);
+      const standalone = value.assets.find(row => row.path === 'projects/08-7zip/artifacts/extra/x64/7za.exe');
+      assert(standalone?.authenticated); assert.equal(standalone.bytes, 1335808); assert.equal(standalone.sha256, '15d4c788c148e3677e2fc1c4a01f191fb6669eba4f6acf8a465f0f1a6f1e1260');
+    }
+    if (role === 'bsdtar') assert.equal(value.assets.length, 2);
+    if (role === 'additional') {
+      assert.equal(value.prerequisites.automation.authenticatedSourceFiles, 4350);
+      assert.equal(value.prerequisites.automationRouting.files, 202);
+      assert.equal(value.prerequisites.sketch.assets.length, 3);
+      assert(value.prerequisites.restic.archive && value.prerequisites.restic.executable);
+      assert.equal(value.skippedPrerequisites, 0);
+    }
+    fs.writeFileSync(path.join(output, 'prerequisite-receipts', role + '.json.snapshot'), bytes, { flag: 'wx' });
+    records.push({ role, file, ...identity(bytes), schema, status });
+  }
+  return records;
+}
+function verifyOracleTestComposition() {
+  assert(options.overlayManifest, 'The full oracle-test experiment requires --overlay-manifest');
+  const bytes = fs.readFileSync(options.overlayManifest); assert(bytes.length <= 2 * 1024 * 1024);
+  const value = JSON.parse(bytes), repository = path.resolve(studio, '../..');
+  assert.equal(value.schema, 'rea-bsdtar-oracle-hosted-composition/v1'); assert.equal(value.status, 'composed-unexecuted-oracle-test-overlay');
+  sameAttempt(value.execution); assert.equal(value.baselineGitCommit, record.repositoryCommit); assert.equal(value.sourceCommit, record.repositoryCommit);
+  assert.equal(path.resolve(value.sourceRoot).toLowerCase(), fs.realpathSync(repository).toLowerCase());
+  assert.equal(value.applicationRuntimeChanged, false); assert.equal(value.productionInstalled, false);
+  assert.equal(value.historicalReceiptsRebound, false); assert.equal(value.historicalDLLDependencyEstablished, false);
+  const bundleBytes = fs.readFileSync(path.join(studio, 'experiments/bsdtar-oracle/bundle.json'));
+  assert.deepEqual(identity(bundleBytes), { bytes: value.sourceBundle.bytes, sha256: value.sourceBundle.sha256 });
+  const bundle = JSON.parse(bundleBytes); assert.equal(bundle.schema, 'rea-bsdtar-oracle-hosted-source-bundle/v1');
+  assert.equal(bundle.testBodiesAndExpectationsPreserved, true); assert.equal(bundle.applicationRuntimeChanged, false);
+  const targets = ['formats.test.mjs', 'zstd.test.mjs', 'bsdtar-original-test-helper.mjs'].map(name => 'products/rea-studio/apps/archive/' + name);
+  assert.deepEqual(bundle.transitions.map(row => row.target), targets); assert.equal(value.transitions.length, 3);
+  assert.deepEqual(value.transitions, bundle.transitions.map(row => ({ path: row.target, before: row.before === null ? null : { bytes: row.before.bytes, sha256: row.before.sha256 }, after: { bytes: row.after.bytes, sha256: row.after.sha256 }, sourcePayload: row.after.sourcePath })));
+  const expectedTargets = bundle.transitions.map(row => ({ path: row.target, bytes: row.after.bytes, sha256: row.after.sha256 })).sort((a, b) => a.path.localeCompare(b.path));
+  assert.deepEqual(value.currentTargets, expectedTargets);
+  assert.deepEqual(value.currentTargetSHA256, Object.fromEntries(expectedTargets.map(row => [row.path, row.sha256])));
+  for (const row of bundle.transitions) {
+    const current = fs.readFileSync(path.join(repository, row.target));
+    assert.deepEqual(identity(current), { bytes: row.after.bytes, sha256: row.after.sha256 });
+    assert.deepEqual(fs.readFileSync(path.join(path.dirname(options.overlayManifest), 'after', row.target + '.snapshot')), current, 'Composed source copy differs');
+    if (row.before) assert.deepEqual(identity(fs.readFileSync(path.join(path.dirname(options.overlayManifest), 'before', row.target + '.snapshot'))), { bytes: row.before.bytes, sha256: row.before.sha256 });
+  }
+  const status = bundle.transitions.map(row => ({ path: row.target, status: row.before === null ? '??' : ' M' })).sort((a, b) => a.path.localeCompare(b.path));
+  assert.deepEqual(value.gitStatus, status); assert.deepEqual(visibleGitStatus(), status, 'Only the three explicit oracle sources may differ from Git');
+  fs.writeFileSync(path.join(output, 'oracle-test-composition.json.snapshot'), bytes, { flag: 'wx' });
+  fs.writeFileSync(path.join(output, 'oracle-test-bundle.json.snapshot'), bundleBytes, { flag: 'wx' });
+  record.oracleTestOverlay = { ...identity(bytes), baselineGitCommit: record.repositoryCommit, applicationRuntimeChanged: false, oracleTestTargets: 3,
+    testsByteIdenticalToGit: false, separatePostcheckRequired: true, postcheckReceipt: 'bsdtar-postrun-source-check.json', fullDevelopmentReceiptEmitted: false };
+  return { targets: new Set(targets), status };
+}
+function verifyGitBaselineActiveSources(rows, contract) {
+  const blobs = new Map();
+  for (const entry of readGit(['ls-tree', '-rz', '--full-tree', 'HEAD', '--', 'products/rea-studio'], 32 * 1024 * 1024).toString('utf8').split('\0').filter(Boolean)) {
+    const match = /^([0-7]{6}) blob ([0-9a-f]{40,64})\t(.+)$/s.exec(entry);
+    if (match) blobs.set(match[3], { mode: match[1], object: match[2] });
+  }
+  const checked = [];
+  for (const row of rows.filter(row => !row.path.split('/').includes('results'))) {
+    const relative = 'products/rea-studio/' + row.path;
+    if (contract.targets.has(relative)) continue;
+    const blob = blobs.get(relative); assert(blob && ['100644', '100755'].includes(blob.mode), 'Active baseline source is not a committed ordinary file: ' + relative);
+    const bytes = fs.readFileSync(path.join(studio, row.path)); assert.deepEqual(identity(bytes), { bytes: row.bytes, sha256: row.sha256 });
+    const object = createHash(blob.object.length === 40 ? 'sha1' : 'sha256').update(Buffer.from(`blob ${bytes.length}\0`)).update(bytes).digest('hex');
+    assert.equal(object, blob.object, 'Active source bytes differ from the Git baseline: ' + relative);
+    checked.push({ path: row.path, ...identity(bytes), gitBlob: object });
+  }
+  saveJson('git-baseline-active-source.json', { schema: 'rea-cloud-git-baseline-active-source/v1', repositoryCommit: record.repositoryCommit,
+    excludedComposedOracleTargets: [...contract.targets], selection: 'All eligible active Studio census files outside historical results, excluding only the three explicit oracle-test targets.', files: checked });
+  record.oracleTestOverlay.gitBaselineEligibleActiveFiles = checked.length;
+  record.oracleTestOverlay.gitBaselineEligibleActiveBytesAuthenticated = true;
+}
+
+let before = null, fullOracle = null;
 try {
   saveAttempt();
   event('running', { scope: options.scope, sourceOnly: options.sourceOnly });
@@ -194,10 +311,11 @@ try {
     const bytes = fs.readFileSync(options.bootstrapManifest);
     assert(bytes.length <= 1024 * 1024, 'Bootstrap manifest exceeds limit');
     const manifest = JSON.parse(bytes);
-    record.originalPrerequisites = { path: options.bootstrapManifest, ...identity(bytes), schema: manifest.schema, status: manifest.status, scope: options.scope === 'archive-aes-experiment' ? 'Pinned 7-Zip original acquisition for this experimental Archive selection; acquisition is separate from comparison execution.' : 'Flow Node-RED and Vault KeePass acquisition; broader application prerequisites are not established by this manifest.', producerClaimsIndependentlyReexecuted: false };
+    record.originalPrerequisites = { path: options.bootstrapManifest, ...identity(bytes), schema: manifest.schema, status: manifest.status, scope: options.scope === 'full-oracle-experiment' ? 'Same-attempt Flow/Vault, full and extra7-Zip, explicit bsdtar EXE/DLL pair, Automation, Sketch and restic acquisition receipts plus a separately counted bsdtar smoke invocation.' : options.scope === 'archive-aes-experiment' ? 'Pinned 7-Zip original acquisition for this experimental Archive selection; acquisition is separate from comparison execution.' : 'Flow Node-RED and Vault KeePass acquisition; broader application prerequisites are not established by this manifest.', producerClaimsIndependentlyReexecuted: false };
     fs.writeFileSync(path.join(output, 'bootstrap-prerequisites.json.snapshot'), bytes, { flag: 'wx' });
-    assert.equal(manifest.schema, options.scope === 'archive-aes-experiment' ? 'rea-archive-aes-hosted-original-prerequisites/v1' : 'rea-cloud-flow-vault-prerequisites/v1', 'Unexpected bootstrap manifest schema');
+    assert.equal(manifest.schema, options.scope === 'full-oracle-experiment' ? 'rea-cloud-full-oracle-prerequisites/v1' : options.scope === 'archive-aes-experiment' ? 'rea-archive-aes-hosted-original-prerequisites/v1' : 'rea-cloud-flow-vault-prerequisites/v1', 'Unexpected bootstrap manifest schema');
     assert.equal(manifest.status, 'acquired', 'Original prerequisites have not been acquired');
+    if (options.scope === 'full-oracle-experiment') record.originalPrerequisites.receipts = verifyFullPrerequisites(manifest);
     if (options.scope === 'archive-aes-experiment') {
       assert.equal(manifest.sourceCommit, record.repositoryCommit);
       for (const name of ['GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_SHA', 'GITHUB_REPOSITORY']) assert.equal(manifest.execution[name], process.env[name], 'Acquisition belongs to another workflow attempt');
@@ -236,7 +354,12 @@ try {
     fs.writeFileSync(path.join(output, 'overlay-composition.json.snapshot'), bytes, { flag: 'wx' });
     record.experimentalOverlay = { ...identity(bytes), baselineGitCommit: record.repositoryCommit, composedActiveAppMatchesGitBaseline: false, productionInstalled: false, finalTargets: 21, transitions: 22, currentArchiveFiles: 62 };
   }
+  if (options.scope === 'full-oracle-experiment') {
+    assert(record.originalPrerequisites, 'The full oracle-test experiment requires --bootstrap-manifest');
+    fullOracle = verifyOracleTestComposition();
+  }
   before = census();
+  if (fullOracle) verifyGitBaselineActiveSources(before, fullOracle);
   saveJson('source-before.json', before);
   record.sourceFiles = before.length;
   record.selectedTestFiles = selectTests(before);
@@ -261,10 +384,11 @@ try {
   flush();
   if (!options.sourceOnly) {
     assert.equal(record.executionEnvironment, 'github-hosted', 'Execution requires a verified GitHub-hosted runner');
-    if (['flow-vault', 'archive-aes-experiment'].includes(options.scope)) {
+    if (['flow-vault', 'archive-aes-experiment', 'full-oracle-experiment'].includes(options.scope)) {
       assert.equal(process.platform, 'win32', 'Selected original comparisons require Windows');
       assert(record.originalPrerequisites, 'This scope requires --bootstrap-manifest');
     }
+    if (options.scope === 'full-oracle-experiment') assert.equal(process.version, 'v24.16.0', 'The full oracle-test epoch requires the pinned runtime');
     if (process.env.GITHUB_SHA) assert.equal(record.repositoryCommit, process.env.GITHUB_SHA, 'Checked-out Git commit differs from workflow identity');
     assert(!stopReason, stopReason);
     const env = { ...process.env };
@@ -345,6 +469,12 @@ try {
       record.sourceStable = JSON.stringify(before) === JSON.stringify(after);
       if (!record.sourceStable) failure('Eligible source files changed during this attempt');
     } catch (error) { failure('source-after capture: ' + error.message); }
+  }
+  if (fullOracle) {
+    try {
+      assert.deepEqual(visibleGitStatus(), fullOracle.status, 'Visible Git changes no longer match the three oracle-test targets');
+      record.oracleTestOverlay.gitWorkingTreeMatchesOracleOverlayAfter = true;
+    } catch (error) { failure('oracle-test Git postcheck: ' + error.message); }
   }
   record.status = receivedSignal ? 'interrupted' : record.failures.length ? 'failed' : options.sourceOnly ? 'source-only' : 'passed';
   record.signal = receivedSignal ?? record.signal;

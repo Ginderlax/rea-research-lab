@@ -38,7 +38,6 @@ jobs:
     timeout-minutes: 20
     env:
       CI: 'true'
-      PLAYWRIGHT_BROWSERS_PATH: ${{ runner.temp }}/rea-playwright-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - name: Enable long source paths
         shell: pwsh
@@ -60,6 +59,8 @@ jobs:
         run: |
           $evidence=Join-Path $env:RUNNER_TEMP ('rea-browser-evidence-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
           'REA_BROWSER_EVIDENCE='+$evidence | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $browserCache=Join-Path $env:RUNNER_TEMP ('rea-playwright-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          'PLAYWRIGHT_BROWSERS_PATH='+$browserCache | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Install exact locked browser tooling and matching Chromium on the hosted runner
         id: acquire
         shell: pwsh

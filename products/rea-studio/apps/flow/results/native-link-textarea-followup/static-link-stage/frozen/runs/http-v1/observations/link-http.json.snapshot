@@ -1,0 +1,52 @@
+{
+  "scope": "Actual unchanged shared Studio host, real HTTP and disk store; four owned ephemeral host starts across three finite cases, no browser/original GUI/benchmark",
+  "observations": [
+    {
+      "label": "cross-tab-restart",
+      "hostStarts": 1,
+      "hostClosed": true,
+      "tempRemoved": true,
+      "calls": [
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "name": "HTTP link fixture",
+            "text": "\r\n{\n   \"vendor\": {\n      \"raw\": \"retained\"\n   },\n   \"flows\": [\n      {\n         \"id\": \"tab\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"other\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"start\",\n         \"type\": \"inject\",\n         \"z\": \"tab\",\n         \"props\": [],\n         \"wires\": [\n            [\n               \"remember\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"remember\",\n         \"type\": \"change\",\n         \"z\": \"tab\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"last\",\n               \"pt\": \"global\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"source\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"out\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"out\",\n         \"type\": \"link out\",\n         \"z\": \"tab\",\n         \"links\": [],\n         \"wires\": [\n            [\n               \"unsupported-ignored\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"in\",\n         \"type\": \"link in\",\n         \"z\": \"other\",\n         \"links\": [\n            \"out\"\n         ],\n         \"wires\": [\n            [\n               \"destination\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"destination\",\n         \"type\": \"change\",\n         \"z\": \"other\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"copy\",\n               \"pt\": \"msg\",\n               \"to\": \"last\",\n               \"tot\": \"global\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"destination\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"debug\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"debug\",\n         \"type\": \"debug\",\n         \"z\": \"other\",\n         \"complete\": \"true\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"wires\": []\n      },\n      {\n         \"id\": \"unsupported-ignored\",\n         \"type\": \"community-not-implemented\",\n         \"z\": \"tab\",\n         \"wires\": []\n      }\n   ]\n}\r\n"
+          }
+        }
+      ]
+    },
+    {
+      "label": "preflight-private-controls",
+      "hostStarts": 1,
+      "hostClosed": true,
+      "tempRemoved": true,
+      "calls": [
+        {
+          "action": "native-validate",
+          "status": 200,
+          "input": {
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[\"absent\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          }
+        }
+      ]
+    },
+    {
+      "label": "cycle-context-rollback",
+      "hostStarts": 1,
+      "hostClosed": true,
+      "tempRemoved": true,
+      "calls": [
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "name": "Rollback fixture",
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "schema": "rea-flow-native-source-aware-client-correction/v1",
+  "before": {
+    "bytes": 24277,
+    "sha256": "20b82b290fff7485cade95a45ed982bcfcfe1656721282c4ed2265553d8e2b8d"
+  },
+  "after": {
+    "bytes": 25892,
+    "sha256": "8cdc00162a0ce9c96b90e7cb06ce849a99be0f92f89062e271c3a7cd490e7ab3"
+  },
+  "edits": [
+    {
+      "before": "generation = 0,linkConnections=[],disposed=false;",
+      "after": "generation = 0,linkConnections=[],disposed=false,rawDraft=null,draftRevision=0;"
+    },
+    {
+      "before": "  const viewCurrent=()=>!disposed&&section.parentElement===root;",
+      "after": "  const viewCurrent=()=>!disposed&&section.parentElement===root;\n  // HTML textarea values normalize CRLF and bare CR, retaining other Unicode.\n  const textareaText=value=>String(value).replace(/\\r\\n?/g,'\\n');\n  function setNativeText(raw){text.value=raw;rawDraft={raw,display:text.value};draftRevision++;}\n  const draftText=()=>rawDraft&&rawDraft.display===text.value?rawDraft.raw:text.value;\n  const captureDraft=()=>({epoch:generation,revision:draftRevision,text:draftText(),display:text.value,name:name.value});\n  const sameDraft=capture=>viewCurrent()&&capture.epoch===generation&&capture.revision===draftRevision&&capture.display===text.value&&capture.text===draftText()&&capture.name===name.value;\n  text.addEventListener('input',()=>draftRevision++);name.addEventListener('input',()=>draftRevision++);"
+    },
+    {
+      "before": "  function nodes() { const parsed = JSON.parse(text.value); return Array.isArray(parsed) ? parsed : parsed.flows; }",
+      "after": "  function nodes() { const parsed = JSON.parse(draftText()); return Array.isArray(parsed) ? parsed : parsed.flows; }"
+    },
+    {
+      "before": "    const document = JSON.parse(text.value), list = Array.isArray(document) ? document : document.flows;",
+      "after": "    const document = JSON.parse(draftText()), list = Array.isArray(document) ? document : document.flows;"
+    },
+    {
+      "before": "    text.value = JSON.stringify(document, null, 2); status.textContent = 'Draft changed; save and deploy to run the new revision.';",
+      "after": "    setNativeText(JSON.stringify(document, null, 2)); status.textContent = 'Draft changed; save and deploy to run the new revision.';"
+    },
+    {
+      "before": "    const epoch = generation, draft = text.value; const result = await api('native-validate', { text: draft });\n    if (!viewCurrent()||epoch !== generation || draft !== text.value) return;",
+      "after": "    const capture=captureDraft(); const result = await api('native-validate', { text: capture.text });\n    if (!sameDraft(capture)) return;"
+    },
+    {
+      "before": "name.value = current.name; text.value = current.text; await preview();",
+      "after": "name.value = current.name; setNativeText(current.text); await preview();"
+    },
+    {
+      "before": "const epoch=++generation; const source = file.files[0]; if (!source) return; if (source.size > 4 * 1024 * 1024) throw new Error('Native JSON file exceeds 4 MiB'); const imported=await source.text();if(!viewCurrent()||epoch!==generation)return;text.value=imported; name.value = source.name.replace(/\\.json$/i, '').slice(0, 120) || 'Native flow';",
+      "after": "const beforeImport=captureDraft(),epoch=++generation; const source = file.files[0]; if (!source) return; if (source.size > 4 * 1024 * 1024) throw new Error('Native JSON file exceeds 4 MiB'); const sourceName=source.name,imported=await source.text();if(!viewCurrent()||epoch!==generation)return;if(beforeImport.revision!==draftRevision||beforeImport.display!==text.value||beforeImport.name!==name.value){status.textContent='Import response ignored; newer draft input remains.';return;}setNativeText(imported); name.value = sourceName.replace(/\\.json$/i, '').slice(0, 120) || 'Native flow';"
+    },
+    {
+      "before": "current = (await api('native-save', { id: current?.id, name: name.value, text: text.value })).flow; await refreshList(); await preview(); status.textContent = 'Native draft saved';",
+      "after": "const capture=captureDraft(),id=current?.id;const saved=await api('native-save',{id,name:capture.name,text:capture.text});if(capture.epoch!==generation)return;current=saved.flow;if(sameDraft(capture))rawDraft={raw:saved.flow.text,display:text.value};await refreshList();await preview();status.textContent=sameDraft(capture)?'Native draft saved':'Captured native draft saved; newer draft input remains.';"
+    },
+    {
+      "before": "if (text.value !== current.text) throw new Error('Save the edited draft before deploying');",
+      "after": "if (text.value !== textareaText(current.text)) throw new Error('Save the edited draft before deploying');"
+    },
+    {
+      "before": "await api('native-validate', { text: text.value }); const url = URL.createObjectURL(new Blob([text.value], { type: 'application/json' })), link = el('a', '', { href: url, download: `${name.value.replace(/[^\\w-]/g, '-').slice(0, 100) || 'native-flow'}.json` });",
+      "after": "const capture=captureDraft();await api('native-validate',{text:capture.text});if(!sameDraft(capture)){status.textContent='Draft changed during export; export the current draft again.';return;}const url = URL.createObjectURL(new Blob([capture.text], { type: 'application/json' })), link = el('a', '', { href: url, download: `${capture.name.replace(/[^\\w-]/g, '-').slice(0, 100) || 'native-flow'}.json` });"
+    },
+    {
+      "before": "const changed = JSON.parse(nodeEditor.value); if (changed.id !== selected)",
+      "after": "const capture=captureDraft(),properties=nodeEditor.value,selection=selected;const changed = JSON.parse(properties); if (changed.id !== selected)"
+    },
+    {
+      "before": "await api('native-validate', { text: next }); text.value = next; await preview();",
+      "after": "await api('native-validate', { text: next });if(!sameDraft(capture)||selected!==selection||nodeEditor.value!==properties)return;setNativeText(next); await preview();"
+    },
+    {
+      "before": "async function editLink(connect){const epoch=generation,draft=text.value,document=JSON.parse(draft)",
+      "after": "async function editLink(connect){const capture=captureDraft(),sourceId=linkFrom.value,targetId=linkTo.value,draft=capture.text,document=JSON.parse(draft)"
+    },
+    {
+      "before": "if(!viewCurrent()||epoch!==generation||draft!==text.value)return;text.value=next;await preview();",
+      "after": "if(!sameDraft(capture)||linkFrom.value!==sourceId||linkTo.value!==targetId)return;setNativeText(next);await preview();"
+    },
+    {
+      "before": "disposed=true;generation++;current=null;selected='';linkConnections=[];",
+      "after": "disposed=true;generation++;draftRevision++;rawDraft=null;current=null;selected='';linkConnections=[];"
+    }
+  ],
+  "inverseExact": true,
+  "scope": "Native view only. Raw decoded backing, HTML CR-only comparison, source-aware captured Save/Export/Import/validation/node/link publication and disposal. Static compiler/runtime/server/shared host unchanged."
+}

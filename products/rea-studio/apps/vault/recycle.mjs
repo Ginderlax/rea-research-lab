@@ -55,7 +55,7 @@ function canAddGroup(parent,group){return parent!==group&&!contained(parent,grou
 function previousGroup(m,g){const prev=previous(m,g);return prev&&canAddGroup(prev,g)?prev:null;}
 function groupMembers(m,g){return {groups:[...m.groups.values()].filter(item=>contained(item,g)),entries:[...m.entries.values()].filter(item=>contained(item.parent,g))};}
 function groupMetrics(m){const values=[...m.groups.values()],result=new Map(values.map(g=>[g,{groups:1,entries:0}]));for(const e of m.entries.values())result.get(e.parent).entries++;for(const g of values.reverse()){if(g.parent){const parent=result.get(g.parent),child=result.get(g);parent.groups+=child.groups;parent.entries+=child.entries;}}return result;}
-function groupRecord(m,g,graph,key,metrics){const size=metrics?.get(g)??{groups:groupMembers(m,g).groups.length,entries:groupMembers(m,g).entries.length},prev=previousGroup(m,g);return {id:g.id,name:text(one(g.node,'Name',true)),parentId:g.parent?.id??null,inRecycleBin:g.inBin,isRecycleBin:g===m.bin,groupCount:size.groups,entryCount:size.entries,canDelete:!!g.parent,deleteIsPermanent:!m.enabled||g.inBin||!!(m.bin&&contained(m.bin,g)),canRestorePreviousGroup:!!(g.inBin&&g!==m.bin&&prev&&!prev.inBin),previousGroup:prev?text(one(prev.node,'Name',true)):null,recycleRevision:groupToken(graph,g.id,key)};}
+function groupRecord(m,g,graph,key,metrics){const size=metrics?.get(g)??{groups:groupMembers(m,g).groups.length,entries:groupMembers(m,g).entries.length},prev=previousGroup(m,g);return {id:g.id,name:text(one(g.node,'Name',true)),parentId:g.parent?.id??null,inRecycleBin:g.inBin,isRecycleBin:g===m.bin,groupCount:size.groups,entryCount:size.entries,canDelete:!!g.parent,canEdit:!g.inBin,canCreateChild:!g.inBin&&m.groups.size<MAX_GROUPS&&groupDepth(g)<63,deleteIsPermanent:!m.enabled||g.inBin||!!(m.bin&&contained(m.bin,g)),canRestorePreviousGroup:!!(g.inBin&&g!==m.bin&&prev&&!prev.inBin),previousGroup:prev?text(one(prev.node,'Name',true)):null,recycleRevision:groupToken(graph,g.id,key)};}
 export function recycleGroupView(data,key,{bin=false}={}){if(typeof bin!=='boolean')throw new Error('Group bin choice must be boolean.');const m=model(data),graph=digest(m,data,key),metrics=groupMetrics(m);return {enabled:m.enabled,hasBin:!!m.bin,groups:[...m.groups.values()].filter(g=>g.inBin===bin).map(g=>groupRecord(m,g,graph,key,metrics))};}
 export function recycleGroupRead(data,id,revision,key){const m=model(data),g=checkGroup(m,data,id,revision,key),graph=digest(m,data,key),members=groupMembers(m,g),rows=new Map(m.projected.map(row=>[row.id,row]));return {group:{...groupRecord(m,g,graph,key),notes:text(one(g.node,'Notes')),descendantGroups:members.groups.map(item=>({id:item.id,parentId:item.parent?.id??null,name:text(one(item.node,'Name',true))})),entries:members.entries.map(item=>{const row=rows.get(item.id);return {id:item.id,parentId:item.parent.id,title:row.title,username:row.username,url:row.url};})}};}
 function finishedGroup(data,m){const result=finish(data,m.xml);model(result);return result;}
@@ -67,4 +67,27 @@ export function deleteRecycleGroup(data,id,revision,key,{confirm=false,permanent
 }
 export function restoreRecycleGroup(data,id,revision,key,{confirm=false,now=new Date().toISOString()}={}){
   if(confirm!==true)throw new Error('Restoring a group and its descendants requires confirmation.');const m=model(data),g=checkGroup(m,data,id,revision,key),encoded=clock(now);if(!g.inBin||g===m.bin||!g.parent)throw new Error('Only a descendant group in the recycle bin can be restored here.');const prev=previousGroup(m,g);if(!prev||prev.inBin)throw new Error('The previous parent is unavailable or unsafe for group restoration.');const parent=g.parent,members=groupMembers(m,g);parent.node.children=parent.node.children.filter(n=>n!==g.node);prev.node.children.push(g.node);put(g.node,'PreviousParentGroup',uuid64(parent.id));put(one(g.node,'Times',true),'LocationChanged',encoded);return {data:finishedGroup(data,m),result:{restored:true,id,groupId:prev.id,groupCount:members.groups.length,entryCount:members.entries.length}};
+}
+
+// Selected name/notes subset of KeePass 2.61.1 GroupForm.OnBtnOK and
+// MainForm.OnGroupAdd. Other group settings remain preserved and uneditable.
+function groupFields(fields){
+  if(!fields||typeof fields!=='object'||Array.isArray(fields)||Object.keys(fields).some(k=>!['name','notes'].includes(k)))throw new Error('Only group name and notes are supported.');
+  for(const [key,max]of[['name',256],['notes',100000]])if(typeof fields[key]!=='string'||fields[key].length>max)throw new Error(`Group ${key} must be text of at most ${max} characters.`);
+  return {name:fields.name,notes:fields.notes};
+}
+function touchEditedGroup(node,encoded){touch(node,encoded);put(one(node,'Times',true),'LastModificationTime',encoded);}
+export function createNativeGroup(data,parentId,revision,key,fields,{now=new Date().toISOString(),groupId=randomUUID()}={}){
+  const m=model(data),parent=checkGroup(m,data,parentId,revision,key),values=groupFields(fields),encoded=clock(now);if(parent.inBin)throw new Error('Restore a recycled parent before creating a group.');
+  uuid64(groupId);if(uuid64(groupId)===ZERO||m.groups.has(groupId)||m.entries.has(groupId)||nodes(one(m.root,'DeletedObjects')??element('DeletedObjects'),'DeletedObject').some(row=>text(one(row,'UUID'))===uuid64(groupId)))throw new Error('New group identity collides or is zero.');
+  if(m.groups.size>=MAX_GROUPS||groupDepth(parent)>=63)throw new Error('Creating a group exceeds the local group/depth limit.');
+  const times=element('Times',['CreationTime','LastModificationTime','LastAccessTime','ExpiryTime','LocationChanged'].map(k=>element(k,encoded)));times.children.push(element('Expires','False'),element('UsageCount','0'));
+  const node=element('Group',[element('UUID',uuid64(groupId)),element('Name',values.name),element('Notes',values.notes),element('IconID','48'),times,element('IsExpanded','True'),element('DefaultAutoTypeSequence',''),element('EnableAutoType','null'),element('EnableSearching','null'),element('LastTopVisibleEntry',ZERO)]);
+  parent.node.children.push(node);put(parent.node,'IsExpanded','True');touchEditedGroup(node,encoded);
+  return {data:finishedGroup(data,m),result:{created:true,id:groupId,parentId:parent.id}};
+}
+export function editNativeGroup(data,id,revision,key,fields,{now=new Date().toISOString()}={}){
+  const m=model(data),g=checkGroup(m,data,id,revision,key),values=groupFields(fields),encoded=clock(now);if(g.inBin)throw new Error('Restore a recycled group before editing it.');
+  put(g.node,'Name',values.name);put(g.node,'Notes',values.notes);touchEditedGroup(g.node,encoded);
+  const members=groupMembers(m,g);return {data:finishedGroup(data,m),result:{saved:true,id:g.id,parentId:g.parent?.id??null,affectedEntryIds:members.entries.map(e=>e.id)}};
 }

@@ -1,0 +1,31 @@
+import assert from 'node:assert/strict';
+import {render} from './client.mjs';
+import {handle} from './server.mjs';
+export function linkScene(){return {rev:'opaque revision',vendor:{preserved:['yes',7]},flows:[{id:'tab',type:'tab'},{id:'start',type:'inject',z:'tab',props:[],wires:[['out']]},{id:'out',type:'link out',z:'tab',links:[],wires:[['ignored']],x:200,y:100,custom:'retained'},{id:'in',type:'link in',z:'tab',links:['out'],wires:[['debug']],x:400,y:100},{id:'debug',type:'debug',z:'tab',complete:'true',active:true,tosidebar:true,wires:[],x:600,y:100},{id:'ignored',type:'debug',z:'tab',complete:'true',active:true,tosidebar:true,wires:[],x:600,y:200}]};}
+export function memory(){const values=new Map();return {values,get:async(k,fallback)=>structuredClone(values.has(k)?values.get(k):fallback),set:async(k,value)=>values.set(k,structuredClone(value))};}
+class Element{
+ constructor(tag){this.tagName=tag.toLowerCase();this.children=[];this.listeners=new Map();this.attributes={};this.style={};this.disabled=false;this._text='';this._value=undefined;this.parentElement=null;}
+ get childNodes(){return this.children;}get firstChild(){return this.children[0]??null;}get options(){return this.children.filter(n=>n.tagName==='option');}
+ get value(){return this._value??(this.tagName==='select'?this.options[0]?.value??'':'');}set value(value){this._value=String(value);}
+ get textContent(){return this._text+this.children.map(n=>n.textContent).join('');}set textContent(value){this._text=String(value??'');this.replaceChildren();}
+ append(...nodes){for(const n of nodes){if(n.parentElement)n.parentElement.children.splice(n.parentElement.children.indexOf(n),1);n.parentElement=this;this.children.push(n);}}
+ insertBefore(node,before){if(node.parentElement)node.parentElement.children.splice(node.parentElement.children.indexOf(node),1);node.parentElement=this;const i=this.children.indexOf(before);if(i<0)this.children.push(node);else this.children.splice(i,0,node);}
+ replaceChildren(...nodes){for(const n of this.children)n.parentElement=null;this.children=[];if(this.tagName==='select')this._value=undefined;this.append(...nodes);}
+ setAttribute(key,value){this.attributes[key]=String(value);}getAttribute(key){return this.attributes[key]??null;}removeAttribute(key){delete this.attributes[key];}
+ addEventListener(name,fn){const list=this.listeners.get(name)??[];list.push(fn);this.listeners.set(name,list);}
+ querySelectorAll(selector){const tags=selector.split(',');return this.walk().filter(n=>tags.includes(n.tagName));}walk(){return this.children.flatMap(n=>[n,...n.walk()]);}
+ getBoundingClientRect(){return {width:1100,height:700,left:0,top:0};}setPointerCapture(){}
+ async fire(name,event={}){if(this.disabled&&['click','input','change'].includes(name))return;const e={target:this,key:'',button:0,clientX:0,clientY:0,pointerId:1,preventDefault(){this.prevented=true;},...event};for(const fn of this.listeners.get(name)??[])await fn(e);return e;}
+ async click(){return this.fire('click');}
+}
+export async function fixture({scene=linkScene(),hold}={}){
+ const prior=globalThis.document;globalThis.document={createElement:tag=>new Element(tag),createElementNS:(_,tag)=>new Element(tag)};
+ const root=new Element('main'),store=memory(),calls=[],saved=await handle({action:'native-save',input:{name:'Fixture native',text:JSON.stringify(scene,null,3)+'\n'},store});
+ let notify,release;const held=new Promise(r=>notify=r),released=new Promise(r=>release=r);let used=false;
+ const api=async(action,input)=>{const call={action,input:structuredClone(input)};calls.push(call);const response=await handle({action,input,store});if(hold&&!used&&hold(action,input)){used=true;call.heldAfterActualHandler=true;notify({call,response});await released;}return response;};
+ const dispose=await render(root,api),section=root.children.find(n=>n.tagName==='section');assert(section);
+ const field=label=>section.walk().find(n=>(n.ariaLabel??n.getAttribute('aria-label'))===label);
+ const button=label=>section.walk().find(n=>n.tagName==='button'&&n.textContent===label);
+ async function load(){const picker=field('Saved native flows');picker.value=saved.flow.id;await picker.fire('change');}
+ return {root,section,store,calls,saved,field,button,held,release,load,dispose,async close(){release();dispose();globalThis.document=prior;}};
+}

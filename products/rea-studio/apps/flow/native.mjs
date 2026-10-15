@@ -2,9 +2,10 @@
 // Original Node-RED code is used by the independent comparison only, never by this application.
 import { Worker } from 'node:worker_threads';
 import { createHash, randomBytes } from 'node:crypto';
+import {compileNativeLinks} from './native-link.mjs';
 
 const unsafe = new Set(['__proto__', 'constructor', 'prototype']);
-const supported = new Set(['inject', 'change', 'switch', 'json', 'debug']);
+const supported = new Set(['inject', 'change', 'switch', 'json', 'debug', 'link in', 'link out']);
 const configuration = new Set(['tab', 'group', 'comment']);
 const valueTypes = new Set(['str', 'num', 'bool', 'json', 'bin', 'date', 'msg', 'flow', 'global']);
 const predicates = new Set(['eq', 'neq', 'lt', 'lte', 'gt', 'gte', 'btwn', 'cont', 'regex', 'true', 'false', 'null', 'nnull', 'empty', 'nempty', 'istype', 'hask', 'else', 'head', 'index']);
@@ -119,6 +120,7 @@ function nodeIssues(node) {
   const issues = [];
   if (!supported.has(node.type)) return configuration.has(node.type) ? issues : [`${node.type} execution is not implemented`];
   try {
+    if(node.type==='link out'&&(node.mode||'link')!=='link')throw new Error('Only static Link Out link mode is implemented; return/Link Call/event bus are not implemented');
     if (node.type === 'inject') {
       if (propsFor(node).length > 100) throw new Error('At most 100 inject properties');
       for (const p of propsFor(node)) { if (!p.p) continue; nativePath(p.p); if (!valueTypes.has(p.vt ?? 'str')) throw new Error(`Inject value type ${p.vt} is not implemented`); if (p.vt === 'date' && p.v && !['iso', 'object'].includes(p.v)) throw new Error('Custom native date formatting is not implemented'); if (['msg', 'flow', 'global'].includes(p.vt)) nativePath(p.v ?? ''); }
@@ -168,10 +170,11 @@ export function parseNative(text) {
       for (const port of node.wires) { if (!Array.isArray(port)) throw new Error('Native wire port must be an array'); for (const target of port) { id(target); if (++wires > 2000) throw new Error('At most 2,000 native wire destinations'); } }
     }
   }
-  const issues = nodes.flatMap(node => nodeIssues(node).map(reason => ({ node: node.id, type: node.type, reason })));
+  const links=compileNativeLinks(nodes);
+  const issues = [...nodes.flatMap(node => nodeIssues(node).map(reason => ({ node: node.id, type: node.type, reason }))),...links.issues];
   const schedules = nodes.filter(n => n.type === 'inject' && (n.repeat || n.crontab || n.once)).map(n => n.id);
   const starts = nodes.filter(n => n.type === 'inject' && !n.d && !nodes.find(t => t.id === n.z && t.type === 'tab')?.disabled).map(n => ({ id: n.id, name: n.name || n.id, tab: n.z || '' }));
-  return { document, nodes, revision: digest(text), starts, issues, schedules };
+  return { document, nodes, revision: digest(text), starts, issues, schedules,compiledNodes:links.nodes,linkConnections:links.linkConnections,linkIssues:links.issues };
 }
 export function describeNative(record) {
   const info = parseNative(record.text);
@@ -179,7 +182,7 @@ export function describeNative(record) {
   return { id: record.id, name: record.name, text: record.text, revision: info.revision, starts: info.starts, deployedStarts, issues: info.issues, schedules: info.schedules, nodeCount: info.nodes.length, updatedAt: record.updatedAt, deployedRevision: record.deployment?.revision ?? null, deployedAt: record.deployment?.at ?? null };
 }
 export function nativePreflight(info, start) {
-  const nodes = new Map(info.nodes.map(n => [n.id, n]));
+  const compiled=info.compiledNodes?{nodes:info.compiledNodes,issues:info.linkIssues}:compileNativeLinks(info.nodes),nodes=compiled.nodes;
   const disabled = node => Boolean(node.d || nodes.get(node.z)?.disabled);
   const first = nodes.get(start || info.starts[0]?.id);
   if (!first || first.type !== 'inject' || disabled(first)) throw new Error('Choose an enabled native inject node');
@@ -189,6 +192,7 @@ export function nativePreflight(info, start) {
     if (seen.has(node.id) || disabled(node)) continue; seen.add(node.id);
     if (configuration.has(node.type)) throw new Error(`Cannot run native configuration node ${node.id}`);
     const issues = nodeIssues(node); if (issues.length) throw new Error(`Cannot run native node ${node.id}: ${issues.join('; ')}`);
+    const linkIssues=(compiled.issues??[]).filter(issue=>issue.node===node.id);if(linkIssues.length)throw new Error(`Cannot run native node ${node.id}: ${linkIssues.map(issue=>issue.reason).join('; ')}`);
     if (node.type === 'switch' && (node.wires || []).some((port, i) => port.length && i >= node.rules.length)) throw new Error(`Switch ${node.id} has a wire beyond its rule outputs`);
     if (node.type !== 'switch' && (node.wires || []).slice(1).some(p => p.length)) throw new Error(`Node ${node.id} has unsupported extra outputs`);
     if (node.type !== 'debug') for (const port of node.wires || []) for (const target of port) pending.push(target);
@@ -333,6 +337,7 @@ export async function executeNative(text, { start, messages, packedState, now = 
     const event = queue[cursor]; queue[cursor++] = null; queuedBytes -= event.size;
     const node = nodes.get(event.node); if (disabled(node)) continue;
     const message = event.message; trace.push({ node: node.id, type: node.type, sequence: steps }); let ports = [0];
+    if(node.type==='link out'){message._event='node:'+node.id;bounded(message);}
     if (node.type === 'inject') {
       const overrides = message.__user_inject_props__; delete message.__user_inject_props__;
       if (overrides !== undefined) throw new Error('Native inject overrides are not implemented; edit the node properties');

@@ -1,0 +1,70 @@
+{
+  "scope": "Private client publication correction only",
+  "deltas": [
+    {
+      "label": "Allow a private already-fetched group list to be rendered without a second await",
+      "before": "async function groupList(bin=false,internal=false){",
+      "after": "async function groupList(bin=false,internal=false,loaded=null){",
+      "beforeIdentity": {
+        "bytes": 29809,
+        "sha256": "d706e9a91f784d6ba6473f542a221749186caade8523d318580eef1d263d7a4f"
+      },
+      "afterIdentity": {
+        "bytes": 29821,
+        "sha256": "7863c771c37013d744863472f58104388aaea7bf08710a90ffc30d9505eb76f2"
+      },
+      "occurrences": 1
+    },
+    {
+      "label": "Keep normal list reads unchanged; only the acknowledged mutation path supplies the loaded value",
+      "before": "const request=++groupGeneration,value=await api('recycleGroupList',{bin});",
+      "after": "const request=++groupGeneration,value=loaded??await api('recycleGroupList',{bin});",
+      "beforeIdentity": {
+        "bytes": 29821,
+        "sha256": "7863c771c37013d744863472f58104388aaea7bf08710a90ffc30d9505eb76f2"
+      },
+      "afterIdentity": {
+        "bytes": 29829,
+        "sha256": "4ed927469b180940f7313274d87a593360e96c38ce0de212f7cfaae271785190"
+      },
+      "occurrences": 1
+    },
+    {
+      "label": "Await the final list while the group form remains current, then check both current generation and signature",
+      "before": "if(signature()!==submittedSignature){const fresh=await api('recycleGroupList',{bin:false});if(!operationCurrent())return;const saved=fresh.groups.find(g=>g.id===result.id);",
+      "after": "const fresh=await api('recycleGroupList',{bin:false});if(!operationCurrent())return;\n              if(signature()!==submittedSignature){const saved=fresh.groups.find(g=>g.id===result.id);",
+      "beforeIdentity": {
+        "bytes": 29829,
+        "sha256": "4ed927469b180940f7313274d87a593360e96c38ce0de212f7cfaae271785190"
+      },
+      "afterIdentity": {
+        "bytes": 29844,
+        "sha256": "4da93266962e13f574d97896ab6ce576b1b571af96729824ea06dad06014bbfe"
+      },
+      "occurrences": 1
+    },
+    {
+      "label": "Only replace an unchanged acknowledged form from the already-fetched list",
+      "before": "await groupList(false,true);if(viewCurrent())status.textContent=result.created?'Group created.':'Group details saved.';",
+      "after": "await groupList(false,true,fresh);if(viewCurrent())status.textContent=result.created?'Group created.':'Group details saved.';",
+      "beforeIdentity": {
+        "bytes": 29844,
+        "sha256": "4da93266962e13f574d97896ab6ce576b1b571af96729824ea06dad06014bbfe"
+      },
+      "afterIdentity": {
+        "bytes": 29850,
+        "sha256": "29f99c9132286e93ffdcc26105daa9d4209591b4aedad438cc6830841f227908"
+      },
+      "occurrences": 1
+    }
+  ],
+  "inverseExact": true,
+  "before": {
+    "bytes": 29809,
+    "sha256": "d706e9a91f784d6ba6473f542a221749186caade8523d318580eef1d263d7a4f"
+  },
+  "after": {
+    "bytes": 29850,
+    "sha256": "29f99c9132286e93ffdcc26105daa9d4209591b4aedad438cc6830841f227908"
+  }
+}

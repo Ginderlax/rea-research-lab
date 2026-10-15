@@ -1,0 +1,20 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+const folder=path.join(import.meta.dirname,'root-vault-group-edit-corrected-browser-review-next');
+const control=JSON.parse(await fs.readFile(path.join(folder,'.local/private-control.json')));
+assert.equal(control.pid,54760);assert.equal(control.hostURL,'http://127.0.0.1:50265');
+const observations=[
+ {id:'empty-child-create',pass:true,observed:'Native Create group with empty Group name and multiline Unicode notes acknowledged; roster5→6, original three entries retained.'},
+ {id:'created-child-reopen',pass:true,observed:'New empty-named child reopens with exact empty name and notes Corrected browser child Ω🧭\\nsecond line. Native textarea converted supplied CRLF to LF.'},
+ {id:'subsequent-save',pass:true,observed:'Subsequent Save group details accepted literal two-space/slash/Greek/astral/two-space name and new multiline notes; acknowledged form removed.'},
+ {id:'saved-literal-roundtrip',pass:true,observed:'Actual DOM field reads retain name [two spaces]/Ω🧭[two spaces] and notes Saved again Ω🧭\\nretained child UUID.'},
+ {id:'unconfirmed-close',pass:true,observed:'Close group editor refused unsaved name Unsaved browser child, displays discard instruction and retains draft.'},
+ {id:'confirmed-discard',pass:true,observed:'Checking exact editor discard control then Close clears editor and refreshes roster, preserving committed literal child name.'},
+ {id:'parent-rename',pass:true,observed:'Parent renamed Browser parent renamed; native entry rows A/B show renamed descendant paths, C remains Other; group count6 and entries3.'},
+ {id:'entry-selection-conflict',pass:true,observed:'Opening synthetic A while group draft Unsaved conflicting group is present retains both; Save group details refuses until entry editor cleared, keeping newer group draft. Explicit New entry and confirmed group discard clear conflict.'},
+ {id:'reload-persistence',pass:true,observed:'Reload retains renamed A/B paths, unaffected C, six-group roster, exact literal child name and saved multiline notes. Unsaved conflicting name was never persisted.'}
+];
+await fs.writeFile(path.join(folder,'browser-observations.json'),JSON.stringify({schema:'rea-root-vault-corrected-group-browser-observations/v1',recordedAt:new Date().toISOString(),url:control.hostURL+'/#vault',tab:'19',nativeBrowser:'Codex in-app browser / Chrome',correctedClientSHA256:'29f99c9132286e93ffdcc26105daa9d4209591b4aedad438cc6830841f227908',candidateManifestSHA256:'289208dda19cada4aad11b38827414af77faa897b344d40ce71ff6ccec8013d3',observations,finiteObservations:9,pass:9,fail:0,automatedTestGroups:0,normalUnmodifiedSharedHost:true,sourceCount:13,heldTransportResponses:0,lateListDraftLossDirectlyExercisedInBrowser:false,lateListModelAcceptanceSeparate:'work/vault-group-edit-correction-independent-review/review-manifest.json',downloadDeliveryVerified:false,originalExecutions:0,productionWrites:0,screenshot:'Emitted in conversation only; no local screenshot artifact or pixel hash retained.',fullParity:false,universalSuperiority:false},null,2)+'\n',{flag:'wx'});
+await fs.writeFile(path.join(folder,'close-collector.mjs.snapshot'),await fs.readFile(import.meta.filename),{flag:'wx'});
+const response=await fetch(control.url,{method:'POST',headers:{'x-owned-control':control.token},signal:AbortSignal.timeout(10000)});assert.equal(response.status,200);assert.equal((await response.json()).closing,true);console.log(JSON.stringify({ownedPID:control.pid,shutdownRequested:true,browserObservations:9}));

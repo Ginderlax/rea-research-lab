@@ -1,0 +1,45 @@
+{
+  "schema": "rea-flow-native-textarea-model-adapter/v1",
+  "before": {
+    "path": "candidate/products/rea-studio/apps/flow/link-ui-fixture.mjs",
+    "bytes": 4333,
+    "sha256": "3ded00a2e08bd94fa6da3938413903ad142022448e1afa6388c3c479fb76a4c9"
+  },
+  "after": {
+    "path": "candidate/products/rea-studio/apps/flow/normalization-ui-fixture.mjs",
+    "bytes": 4718,
+    "sha256": "142e1a31fd85ed2b547c2fcbe15a8e417dc2887cad99058b91e0122549debb5f"
+  },
+  "edits": [
+    {
+      "before": "set value(value){this._value=String(value);}",
+      "after": "set value(value){this._value=this.tagName==='textarea'?String(value).replace(/\\r\\n?/g,'\\n'):String(value);}"
+    },
+    {
+      "before": "fixture({scene=linkScene(),hold}={})",
+      "after": "fixture({scene=linkScene(),rawText,hold}={})"
+    },
+    {
+      "before": "text:JSON.stringify(scene,null,3)+'\\n'",
+      "after": "text:rawText??JSON.stringify(scene,null,3)+'\\n'"
+    },
+    {
+      "before": "if(this.disabled&&['click','input','change'].includes(name))return;",
+      "after": "if(this.disabled&&!event.programmatic&&['click','input','change'].includes(name))return;"
+    },
+    {
+      "before": "const prior=globalThis.document;globalThis.document=",
+      "after": "const downloads=[],priorCreate=URL.createObjectURL,priorRevoke=URL.revokeObjectURL;URL.createObjectURL=blob=>{downloads.push(blob);return 'blob:owned-flow-export-'+downloads.length;};URL.revokeObjectURL=()=>{};const prior=globalThis.document;globalThis.document="
+    },
+    {
+      "before": "return {root,section,store,calls,saved,field,button,held,release,load,dispose,async close()",
+      "after": "return {root,section,store,calls,saved,field,button,held,release,load,dispose,downloads,async close()"
+    },
+    {
+      "before": "globalThis.document=prior;}};",
+      "after": "globalThis.document=prior;URL.createObjectURL=priorCreate;URL.revokeObjectURL=priorRevoke;}};"
+    }
+  ],
+  "inverseExact": true,
+  "scope": "Same actual client/handle fixture; textarea.value setter models CRLF/bareCR→LF, preserving U+2028 and all other Unicode. Explicit programmatic dispatch is a defensive held-response probe, not real typing into disabled controls. URL Blob observation is test-only, not actual browser download delivery."
+}

@@ -1,0 +1,246 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+
+// Source-only review: no candidate imports, application execution or source writes.
+const own = path.dirname(fileURLToPath(import.meta.url));
+const workspace = path.resolve(own, '..', '..');
+const repo = path.join(workspace, 'outputs/rea-research-lab');
+const planRoot = 'work/flow-static-link-textarea-publication-plan-next';
+const prefix = 'products/rea-studio/apps/flow/results/native-link-textarea-followup';
+const pins = {
+  'manifest.json': '7fe69cfdd42a44716e31c07b3a65a2ee29634e105acfdb35865bc4e9beb5d7a4',
+  'validation.json': '1a8b0eafa6f9a61d15af7339aa19414cf861ec0adf334efdcf2282ff830a36a2',
+  'public-source-map.json': 'd02325a6e0143ee58c32472a62e3eb4aa58f2b67ac6fd21950d48a3baf949575',
+  'installation-proposals.json': '6f619d3beb2a30539f0940d4869dfbdbe41a2116129999a4151fa6c6f8e58c5a'
+};
+const expectedEpochs = [
+  ['static-link-stage','work/flow-native-link-next',457,'0a03866476a81f83762bdfc10d65be639c24f25778b6c03fdac5b9ee906bea5d',['manifest.json','freeze.json']],
+  ['textarea-correction','work/flow-native-textarea-normalization-fix-next',197,'70c19b06ecca7b79a9461cb53680429cee2bdc91e022c5015fdf19b258f69ce9',['manifest.json','freeze.json']],
+  ['independent-model-review','work/flow-native-textarea-normalization-independent-review',64,'d96e755f491a5747ede7b612213ecaa12657c1f01dcfd7d55721e3110ec2ca78',['manifest.json']],
+  ['root-static-review','work/root-flow-link-review-preservation-next',38,'fd3fbb1e3b20cd0d4e21b996717c71e3dab5b504759ec30958488897d06efaaa',['manifest.json']],
+  ['root-negative-browser','work/root-flow-link-browser-review-next',28,'bae3c0a14e33e8bdd083a86046c6f1e15c455805d4d8e24f899ba0d0793c5f2b',['manifest.json']],
+  ['root-corrected-browser','work/root-flow-corrected-browser-review-next',38,'0ca2b70bfab5f5da6537e0eabd8829e0bbf0d582b4580926b06bc47ed89a5bee',['manifest.json']]
+];
+const hash = b => crypto.createHash('sha256').update(b).digest('hex');
+const identity = b => ({bytes:b.length,sha256:hash(b)});
+const observed = new Map();
+const checks = [];
+const negatives = [];
+const read = async (root, rel) => {
+  safeRelative(rel);
+  const full = path.join(root==='repo'?repo:workspace,root==='repo'?'':root,rel);
+  const b = await fs.readFile(full);
+  const key = `${root}/${rel}`;
+  const row = {root,path:rel,...identity(b)};
+  if (observed.has(key)) assert.deepEqual(row,observed.get(key),`Changed during review: ${key}`);
+  observed.set(key,row);
+  return b;
+};
+function safeRelative(rel) {
+  assert.equal(typeof rel,'string');
+  assert(rel.length>0 && !rel.includes('\\') && !path.isAbsolute(rel));
+  assert(rel.split('/').every(s=>s && s!=='.' && s!=='..'));
+}
+const parsed = async (root,rel) => JSON.parse((await read(root,rel)).toString('utf8'));
+const match = (b,expected,label) => {
+  assert.equal(hash(b),expected.sha256,label+' SHA');
+  if (expected.bytes!==undefined) assert.equal(b.length,expected.bytes,label+' bytes');
+};
+async function walk(root, rel='', skipLocal=false, exclusions=[]) {
+  const out=[];
+  for(const e of await fs.readdir(path.join(workspace,root,rel),{withFileTypes:true})) {
+    const p=rel?`${rel}/${e.name}`:e.name;
+    if(exclusions.includes(p) || (skipLocal && e.name==='.local')) continue;
+    assert(!e.isSymbolicLink(),`Link not allowed: ${root}/${p}`);
+    if(e.isDirectory()) out.push(...await walk(root,p,skipLocal,exclusions));
+    else { assert(e.isFile()); out.push(p); }
+  }
+  return out.sort();
+}
+async function strictEpoch(root,manifest,sidecars,count,skipLocal=false) {
+  const j=await parsed(root,manifest);
+  assert.equal(j.inventory.length,count);
+  assert.equal(new Set(j.inventory.map(r=>r.path)).size,count);
+  for(const r of j.inventory) match(await read(root,r.path),r,`${root}/${r.path}`);
+  const files=await walk(root,'',skipLocal,j.excludedPrivate??[]);
+  assert.deepEqual(files,[...j.inventory.map(r=>r.path),...sidecars].sort(),`Strict epoch census ${root}`);
+  return j;
+}
+function check(name,details={}) {checks.push({name,accepted:true,...details});console.log(JSON.stringify(checks.at(-1)));}
+function reject(name,fn) {let caught=false;try{fn();}catch(e){caught=true;negatives.push({name,rejected:true,error:e.message});}assert(caught,`Negative accepted: ${name}`);}
+function validateMap(rows,expected) {
+  assert.equal(rows.length,expected.size);
+  const publicSeen=new Set(),sourceSeen=new Set();
+  for(const r of rows) {
+    safeRelative(r.sourcePath); safeRelative(r.sourceRoot); safeRelative(r.publicPath);
+    assert.equal(r.publicPath,`${prefix}/${r.epoch}/frozen/${r.sourcePath}.snapshot`);
+    assert(!r.publicPath.split('/').some(p=>['.local','node_modules','tooling'].includes(p)));
+    assert(!/\.(?:tgz|exe|zip|dll)(?:\.snapshot)?$/i.test(r.publicPath));
+    assert.equal(r.inert,true);assert.equal(r.originalExecutable,false);
+    const key=`${r.sourceRoot}/${r.sourcePath}`;
+    assert(!publicSeen.has(r.publicPath));assert(!sourceSeen.has(key));
+    publicSeen.add(r.publicPath);sourceSeen.add(key);
+    assert.deepEqual({bytes:r.bytes,sha256:r.sha256},expected.get(key));
+  }
+}
+function reverse(text,edits) {
+  for(const e of [...edits].reverse()) {
+    if(e.appendOnly) { assert(text.endsWith(e.after));text=text.slice(0,-e.after.length); }
+    else { assert.equal(text.split(e.after).length-1,e.occurrences??1);text=text.replace(e.after,e.before); }
+  }
+  return Buffer.from(text,'utf8');
+}
+function resolveDocLinks(text,destination,available) {
+  let count=0;
+  for(const m of text.matchAll(/\[[^\]]*\]\(([^)]+)\)/g)) {
+    const url=m[1];if(/^(?:https?:|#|mailto:)/.test(url))continue;
+    const rel=decodeURIComponent(url.split('#')[0]);
+    const target=path.posix.normalize(path.posix.join(path.posix.dirname(destination),rel));
+    assert(available.has(target),`Missing document link: ${destination} -> ${url} (${target})`);count++;
+  }
+  return count;
+}
+
+const start = new Date().toISOString();
+let failure = null;
+let details = {};
+try {
+  for(const [f,sha256] of Object.entries(pins)) match(await read(planRoot,f),{sha256},f);
+  await strictEpoch(planRoot,'manifest.json',['manifest.json'],83);
+  check('exact83 source-plan inventory and four entry pins');
+  const map=await parsed(planRoot,'public-source-map.json');
+  assert.equal(map.publicPrefix,prefix);assert.equal(map.epochs.length,6);
+  const expected=new Map();
+  for(const [name,root,count,sha256,sidecars] of expectedEpochs) {
+    match(await read(root,'manifest.json'),{sha256},name+' manifest');
+    const j=await strictEpoch(root,'manifest.json',sidecars,count,name==='static-link-stage'||name==='textarea-correction');
+    const declared=map.epochs.find(e=>e.name===name);
+    assert(declared);assert.equal(declared.sourceRoot,root);assert.equal(declared.strictPayloads,count);assert.deepEqual(declared.sidecars,sidecars);
+    for(const r of j.inventory)expected.set(`${root}/${r.path}`,{bytes:r.bytes,sha256:r.sha256});
+    for(const f of sidecars)expected.set(`${root}/${f}`,identity(await read(root,f)));
+    check('exact whole source epoch',{name,selectedPayloads:count,sidecars:sidecars.length,privateUninventoriedPrefix:name==='static-link-stage'||name==='textarea-correction'?'.local':null});
+  }
+  validateMap(map.records,expected);
+  assert.equal(map.records.length,830);
+  assert.equal(new Set(map.records.map(r=>`${r.bytes}:${r.sha256}`)).size,233);
+  check('complete830 direct aliases /233 byte identities /597 duplicate identities');
+  const preparation=await parsed(planRoot,'preparation-source-identities.json');
+  const beforeAfter=await parsed(planRoot,'source-before-after.json');
+  assert.equal(preparation.length,852);assert.equal(beforeAfter.records.length,830);
+  for(const r of preparation) match(await read(r.root,r.path),r,'preparation identity '+r.root+'/'+r.path);
+  const finalActual=new Map(beforeAfter.records.map(r=>[`${r.sourceRoot}/${r.sourcePath}`,{bytes:r.bytes,sha256:r.sha256}]));
+  assert.deepEqual(finalActual,expected);
+  check('planner initial852 captured rows and final830 alias identities exact; initial capture predates39 corrected-browser rows',{initialPreparationRows:852,finalAliasCaptureRows:830});
+  const proposals=(await parsed(planRoot,'installation-proposals.json')).proposals;
+  assert.equal(proposals.length,19);assert.equal(new Set(proposals.map(r=>r.destination)).size,19);
+  const overlays=(await parsed(planRoot,'documentation-overlays.json')).records;
+  assert.equal(overlays.length,5);
+  for(const r of proposals) {
+    assert(r.destination.startsWith('products/rea-studio/apps/flow/'));safeRelative(r.destination);
+    const bytes=await read(planRoot,r.sourcePath);match(bytes,r.after,r.sourcePath);
+    const original=await read(r.sourceRoot,r.originalSourcePath);match(original,r.sourceIdentity,r.originalSourcePath);
+    if(r.operation==='REPLACE')match(await read('repo',r.destination),r.before,r.destination+' before');
+    else {assert.equal(r.operation,'ADD');assert.equal(r.before,null);assert.equal(await fs.stat(path.join(repo,r.destination)).then(()=>true,()=>false),false,`${r.destination} already exists`);}
+    if(r.pathOnlyAdapter)assert.deepEqual(reverse(bytes.toString(),r.pathOnlyAdapter.edits),original,`${r.sourcePath} exact adapted candidate inverse`);
+    else if(!r.documentationOverlay)assert.deepEqual(bytes,original,`${r.sourcePath} exact candidate`);
+  }
+  assert.equal(proposals.filter(r=>r.operation==='REPLACE').length,5);
+  check('19 exact proposals /5 current replacements /14 absent additions');
+  const adapters=await parsed(planRoot,'test-path-adapters.json');
+  const cache=adapters.originalCache;
+  const cacheText=(await read(planRoot,'proposals/'+cache.file)).toString();
+  assert.equal(cache.edits.length,2);assert.equal(cache.originalExecuted,false);
+  match(reverse(cacheText,cache.edits),cache.before,'original cache inverse');
+  assert.equal(adapters.normalizationSeed.adapters.length,2);
+  for(const r of adapters.normalizationSeed.adapters) {
+    assert.equal(r.edits.length,1);assert.equal(r.executed,false);
+    const b=await read(planRoot,'proposals/'+r.file);match(b,r.proposal,r.file);
+    const inverse=reverse(b.toString(),r.edits);match(inverse,r.source,r.file+' seed inverse');
+    const exact=await read('work/flow-native-textarea-normalization-fix-next','candidate/products/rea-studio/apps/flow/'+r.file);
+    assert.deepEqual(inverse,exact);
+  }
+  const seed=await read(planRoot,'proposals/fixtures/normalization-seed.json');
+  assert.deepEqual(seed,await read('work/flow-native-textarea-normalization-fix-next','authority/browser28-seed.json.snapshot'));
+  check('two cache substitutions and two seed substitutions exact inverse; fixture exact; no assertions changed');
+  let docLinks=0;
+  const available=new Set([...map.records.map(r=>r.publicPath),...proposals.map(r=>r.destination)]);
+  for(const d of overlays) {
+    const r=proposals.find(r=>path.posix.basename(r.destination)===d.file);assert(r);
+    const bytes=await read(planRoot,r.sourcePath);match(bytes,d.after,d.file+' overlay');
+    const inverse=reverse(bytes.toString(),d.edits);match(inverse,d.before,d.file+' doc inverse');
+    assert.deepEqual(inverse,await read(r.sourceRoot,r.originalSourcePath));
+    // Existing documentation links can resolve against current source, new links against aliases/proposals.
+    for(const m of bytes.toString().matchAll(/\[[^\]]*\]\(([^)]+)\)/g)) {
+      const url=m[1];if(/^(?:https?:|#|mailto:)/.test(url))continue;
+      const target=path.posix.normalize(path.posix.join(path.posix.dirname(r.destination),decodeURIComponent(url.split('#')[0])));
+      if(!available.has(target) && await fs.stat(path.join(repo,target)).then(s=>s.isFile(),()=>false))available.add(target);
+    }
+    docLinks+=resolveDocLinks(bytes.toString(),r.destination,available);
+  }
+  check('five documentation overlays exactly reversible; all relative links resolve',{relativeLinks:docLinks});
+  const provenance=await parsed('work/flow-native-link-next','source-provenance.json');
+  assert.equal(provenance.officialSources.length,8);assert.equal(provenance.verificationAuxiliary.length,10);
+  for(const r of [...provenance.officialSources,...provenance.verificationAuxiliary]) {
+    const b=await read('work/flow-native-link-next',r.snapshot);match(b,r,r.snapshot);
+    assert(map.records.some(a=>a.epoch==='static-link-stage'&&a.sourcePath===r.snapshot&&a.sha256===r.sha256));
+    if(r.package)assert.equal(r.version,'5.0.8');
+    if(/LICENSE/.test(r.snapshot))assert(b.toString().includes('Apache License')&&b.toString().includes('END OF TERMS AND CONDITIONS'));
+  }
+  const exclusions=(await parsed(planRoot,'excluded-local-carriers.json')).records;
+  assert.equal(exclusions.length,2);
+  for(const r of exclusions){match(await read(r.sourceRoot,r.sourcePath),r,r.sourcePath);assert.equal(r.public,false);assert(!map.records.some(m=>m.sourceRoot===r.sourceRoot&&m.sourcePath===r.sourcePath));}
+  const runtimeNames=['client.mjs','native.mjs','native-link.mjs','server.mjs'];
+  const runtimeImports=[];
+  for(const f of runtimeNames){const t=(await read(planRoot,'proposals/'+f)).toString();for(const m of t.matchAll(/(?:from\s+|import\s*\(|new URL\()(['"])([^'"\r\n]+)\1/g))runtimeImports.push({file:f,specifier:m[2]});assert(!/@node-red|node-red-node-test-helper|FLOW_ORIGINAL_CACHE/.test(t));}
+  assert(runtimeImports.some(r=>r.file==='native.mjs'&&r.specifier==='./native-link.mjs'));
+  assert(!runtimeImports.some(r=>r.file==='client.mjs'&&r.specifier==='./native-link.mjs'));
+  check('8 selected original+10 auxiliary sources and full Apache licenses; two local-only carriers exact; no original runtime import',{runtimeImports});
+  const baseline=await parsed(planRoot,'current-baseline18.json');assert.equal(baseline.length,18);
+  for(const r of baseline)match(await read('repo',r.path),r,r.path);
+  const devPath='products/rea-studio/results/development-validation.json';
+  match(await read('repo',devPath),{sha256:'333303c8bd8cd131da3f01e1414b0fba92bc321b2b63f178ab91d138b2bcfa44'},'current dev');
+  const dev=await parsed('repo',devPath);assert.equal(dev.summary.tests,937);assert.equal(dev.summary.pass,937);assert.equal(dev.source_files.length,737);
+  for(const r of dev.source_files)match(await read('repo','products/rea-studio/'+r.path),r,'current937 '+r.path);
+  const capsulePath='products/rea-studio/results/editor-vault-combined-20261013/preservation-manifest.json';
+  match(await read('repo',capsulePath),{sha256:'e1c9211ca4cd302faf4e819077e5809d01539091cc8fc541fbccfde428a0b80b'},'current capsule');
+  const capsule=await parsed('repo',capsulePath);assert.equal(capsule.snapshots.length,753);
+  for(const r of dev.source_files)assert(capsule.snapshots.some(s=>s.sourcePath===r.path&&s.sha256===r.sha256));
+  check('current18 and937/737 live-source census exact;753 capsule identity/source mapping (not payload replay)');
+  const registries=(await parsed(planRoot,'original-registry-identities.json')).registries;
+  let sourceIDs=0,capabilityIDs=0;
+  for(const r of registries){const j=await parsed('repo','products/rea-studio/requirements/'+r.filename);assert.deepEqual(j.sources.map(s=>({id:s.id,sha256:s.sha256})),r.sourceIDs);const capabilities=r.filename==='workspace-products.json'?j.capabilities:r.filename==='visual-products.json'?j.baselineProducts.flatMap(p=>p.requirements):j.products.flatMap(p=>p.capabilities);assert.deepEqual(capabilities.map(x=>x.id),r.capabilityIDs);sourceIDs+=r.sourceIDs.length;capabilityIDs+=r.capabilityIDs.length;}
+  assert.equal(sourceIDs,159);assert.equal(capabilityIDs,232);check('159 exact original ID/SHA pairs and232 capability IDs mandatory');
+  const scopes=await parsed(planRoot,'evidence-scopes.json');
+  const corrected=await parsed('work/root-flow-corrected-browser-review-next','browser-observations.json');
+  const oldBrowser=await parsed('work/root-flow-link-browser-review-next','browser-observations.json');
+  const browserHost=await parsed('work/root-flow-corrected-browser-review-next','validation.json');
+  assert.equal(corrected.observations.length,12);assert.equal(oldBrowser.observations.length,8);
+  assert.equal(browserHost.ownedHostClosed,true);assert.equal(browserHost.ownedDataRemoved,true);assert.equal(browserHost.privateControlRemoved,true);
+  assert.equal(browserHost.scope.normalSharedHostExact,true);assert.equal(browserHost.scope.handlerSubstitutions,0);assert.equal(browserHost.sourceRoster.length,13);assert.equal(browserHost.sourceStable,true);
+  assert.equal(scopes.correctedBrowser12.heldResponses,0);assert.equal(scopes.correctedBrowser12.bareCRBrowserAccepted,false);assert.equal(scopes.correctedBrowser12.pendingDisposalBrowserAccepted,false);
+  const downloads=map.records.filter(r=>r.epoch==='root-corrected-browser'&&/download/.test(r.sourcePath)&&r.bytes===1812&&r.sha256==='a3dfefae54ddcdee0f1a86a900cadfacf3a147a02e34c63915b6825a4080fa19');
+  assert.equal(downloads.length,3);
+  check('corrected12/old8 browser epochs separate;three1812-byte download artifacts exact;13 source/normal cleanup;no held/bareCR/disposal browser claim');
+  reject('missing alias',()=>validateMap(map.records.slice(1),expected));
+  reject('duplicate public/source alias',()=>validateMap([...map.records.slice(0,-1),map.records[0]],expected));
+  reject('path escape',()=>validateMap(map.records.map((r,i)=>i? r:{...r,sourcePath:'../escape'}),expected));
+  reject('incorrect source SHA',()=>validateMap(map.records.map((r,i)=>i?r:{...r,sha256:'0'.repeat(64)}),expected));
+  reject('wrong public epoch destination',()=>validateMap(map.records.map((r,i)=>i?r:{...r,publicPath:r.publicPath.replace('/static-link-stage/','/textarea-correction/')}),expected));
+  reject('archive advertised as inert source',()=>validateMap(map.records.map((r,i)=>i?r:{...r,publicPath:r.publicPath+'.tgz.snapshot'}),expected));
+  reject('cache helper extra source change',()=>match(reverse(cacheText+'\n// extra',cache.edits),cache.before,'tampered adapter'));
+  reject('documentation missing alias',()=>resolveDocLinks('[missing](results/native-link-textarea-followup/missing.snapshot)','products/rea-studio/apps/flow/README.md',available));
+  check('eight independent in-memory source-proof rejection controls',{negativeControls:negatives.length});
+  details={epochs:expectedEpochs.map(([name,root,payloads,manifestSHA256,sidecars])=>({name,root,payloads,manifestSHA256,sidecars})),aliases:830,distinctByteIdentities:233,duplicates:597,liveProposals:19,replacements:5,additions:14,cacheEdits:2,seedEdits:2,documentationOverlays:5,relativeLinks:docLinks,selectedOfficial:8,auxiliary:10,excludedCarriers:2,currentSources:737,currentTestsHistorical:937,requirementsSourceIDs:159,capabilityIDs:232,scopes,runtimeImports};
+} catch(e) {failure={name:e.name,message:e.message,stack:e.stack};console.error(e.stack);}
+const before=[...observed.values()].sort((a,b)=>(a.root+'/'+a.path).localeCompare(b.root+'/'+b.path));
+await fs.writeFile(path.join(own,'source-before.json'),JSON.stringify({schema:'rea-flow-source-only-independent-source-capture/v1',at:start,records:before},null,2)+'\n');
+const after=[];
+for(const r of before){const b=await fs.readFile(path.join(r.root==='repo'?repo:workspace,r.root==='repo'?'':r.root,r.path));const a={root:r.root,path:r.path,...identity(b)};after.push(a);assert.deepEqual(a,r,'Source stability after: '+r.root+'/'+r.path);}
+await fs.writeFile(path.join(own,'source-after.json'),JSON.stringify({schema:'rea-flow-source-only-independent-source-capture/v1',at:new Date().toISOString(),records:after},null,2)+'\n');
+const receipt={schema:'rea-flow-publication-plan-independent-source-review/v1',startedAt:start,endedAt:new Date().toISOString(),accepted:!failure,sourceOnly:true,plan:{root:planRoot,pins},checks,negativeControls:negatives,details,failure,sourceRows:before.length,sourceStable:true,applicationExecutions:0,originalExecutions:0,browserExecutions:0,benchmarks:0,productionWrites:0,publicWrites:0,oldEvidenceRebound:false,remaining:['Actual installed-path focused/full validation is root-owned and pending.','No new behavioral acceptance in this source-only review.','Browser held responses, bare CR and pending disposal remain open.'],fullProductParity:false,securityEquivalence:false,universalSuperiority:false};
+await fs.writeFile(path.join(own,'review-validation.json'),JSON.stringify(receipt,null,2)+'\n');
+console.log(JSON.stringify({accepted:receipt.accepted,checks:checks.length,negativeControls:negatives.length,sourceRows:before.length,sourceStable:true,failure}));
+if(failure)process.exitCode=1;

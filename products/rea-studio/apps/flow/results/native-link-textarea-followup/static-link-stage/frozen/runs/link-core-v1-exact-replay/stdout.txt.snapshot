@@ -1,0 +1,42 @@
+✔ union incoming/outgoing duplicates and integer object-key ordering match released compiler contract without input mutation (1.153ms)
+✔ missing/falsy outgoing links retain physical wires; an explicitly empty array compiles incoming backrefs (0.6536ms)
+✔ native execution follows compiled virtual path, records Link Out event and keeps exact raw JSON document (1.7805ms)
+✔ preflight traverses virtual targets and rejects missing/non-LinkIn/unsupported reachable nodes before context effects (0.8421ms)
+✖ static Link Out accepts released falsy/default link modes; return/LinkCall retained but cannot execute (1.7625ms)
+✔ disabled link nodes and tabs drop deliveries; incoming backref union still supplies enabled routing (0.4855ms)
+✔ bounded static link cycles refuse at5000 deliveries and preserve caller inputs/context representation (12.9525ms)
+✔ link declarations/identities/malformed truthy lists are bounded before execution (0.3859ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 80.9514
+
+✖ failing tests:
+
+test at work\flow-native-link-next\candidate\products\rea-studio\apps\flow\native-link.test.mjs:7:1
+✖ static Link Out accepts released falsy/default link modes; return/LinkCall retained but cannot execute (1.7625ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /not implemented/. Input:
+  
+  'Error: Cannot run native node out: Configured static link target in is not Link In'
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-link-next/candidate/products/rea-studio/apps/flow/native-link.test.mjs:7:579)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: Error: Cannot run native node out: Configured static link target in is not Link In
+        at nativePreflight (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-link-next/candidate/products/rea-studio/apps/flow/native.mjs:195:107)
+        at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-link-next/candidate/products/rea-studio/apps/flow/native-link.test.mjs:7:590
+        at getActual (node:assert:611:5)
+        at strict.throws (node:assert:759:24)
+        at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-link-next/candidate/products/rea-studio/apps/flow/native-link.test.mjs:7:579)
+        at async Test.run (node:internal/test_runner/test:1313:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:897:7),
+    expected: /not implemented/,
+    operator: 'throws',
+    diff: 'simple'
+  }

@@ -1,0 +1,37 @@
+✔ exact released parseConfig compiles finite static-link unions/order/omitted-list cases without adapting its algorithm (1160.3044ms)
+✔ actual released Link In/Out handlers preserve messages and default/falsy modes; original external event emission remains explicitly outside candidate runtime (1.4079ms)
+
+  #  C:\Program Files\nodejs\node.exe[9744]: void __cdecl node::InternalCallbackScope::Close(void) at src\api\callback.cc:165
+  #  Assertion failed: (env_->execution_async_id()) == (0)
+
+----- Native stack trace -----
+
+ 1: 00007FF74BCC035A EVP_MD_meth_get_input_blocksize+188602
+ 2: 00007FF74BDDA479 node::CallbackScope::~CallbackScope+1193
+ 3: 00007FF74BDDA04D node::CallbackScope::~CallbackScope+125
+ 4: 00007FF74BD81130 node::SetCppgcReference+67312
+ 5: 00007FF74BD7FF0E node::SetCppgcReference+62670
+ 6: 00007FF74C96A9AE uv_check_stop+222
+ 7: 00007FF74C975430 uv_run+816
+ 8: 00007FF74BDD876F node::DecodeWrite+351
+ 9: 00007FF74BC51F46 node::MultiIsolatePlatform::DisposeIsolate+256710
+10: 00007FF74BD217BC node::Start+1052
+11: 00007FF74CD3DF02 AES_cbc_encrypt+2546
+12: 00007FF74DBB7F74 v8::base::UnsignedDivisionByConstant<unsigned __int64>+2833348
+13: 00007FFBA54CCDF7 BaseThreadInitThunk+23
+14: 00007FFBA77FEE4C RtlUserThreadStart+44
+✖ C:\Users\evanh\Documents\Codex\2026-10-12\go\work\flow-native-link-next\candidate\products\rea-studio\apps\flow\link-original.test.mjs (6168.2263ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 2
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6174.3872
+
+✖ failing tests:
+
+test at work\flow-native-link-next\candidate\products\rea-studio\apps\flow\link-original.test.mjs:1:1
+✖ C:\Users\evanh\Documents\Codex\2026-10-12\go\work\flow-native-link-next\candidate\products\rea-studio\apps\flow\link-original.test.mjs (6168.2263ms)
+  'test failed'

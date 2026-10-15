@@ -223,7 +223,7 @@ try {
     assert.equal(bundle.schema, 'rea-archive-aes-hosted-experimental-source-bundle/v1');
     assert.equal(bundle.finalTargets.length, 21);
     assert.equal(composition.transitions.length, 22);
-    assert.equal(composition.afterSourceCensus.length, 56);
+    assert.equal(composition.afterSourceCensus.length, 62);
     const repository = path.resolve(studio, '../..');
     for (const row of bundle.finalTargets) {
       assert(/^products\/rea-studio\/apps\/archive\/[A-Za-z0-9.-]+$/.test(row.target), 'Experimental target must be an immediate allowlisted Archive file');
@@ -234,7 +234,7 @@ try {
       assert.deepEqual(current, { bytes: captured.bytes, sha256: captured.sha256 });
     }
     fs.writeFileSync(path.join(output, 'overlay-composition.json.snapshot'), bytes, { flag: 'wx' });
-    record.experimentalOverlay = { ...identity(bytes), baselineGitCommit: record.repositoryCommit, composedActiveAppMatchesGitBaseline: false, productionInstalled: false, finalTargets: 21, transitions: 22, currentArchiveFiles: 56 };
+    record.experimentalOverlay = { ...identity(bytes), baselineGitCommit: record.repositoryCommit, composedActiveAppMatchesGitBaseline: false, productionInstalled: false, finalTargets: 21, transitions: 22, currentArchiveFiles: 62 };
   }
   before = census();
   saveJson('source-before.json', before);

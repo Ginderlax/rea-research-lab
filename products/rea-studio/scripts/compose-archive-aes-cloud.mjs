@@ -69,7 +69,7 @@ const bundleBytes = await committedBytes(bundlePrefix + '/bundle.json');
 const bundle = JSON.parse(bundleBytes), selectionBytes = await committedBytes(bundlePrefix + '/test-selection.json'), selection = JSON.parse(selectionBytes);
 assert.equal(bundle.schema, 'rea-archive-aes-hosted-experimental-source-bundle/v1');
 assert.equal(bundle.sourceOnly, true); assert.equal(bundle.productionInstalled, false); assert.equal(bundle.fullProductParity, false);
-assert.equal(bundle.archiveBaseline.length, 41); assert.equal(bundle.proposal.length, 17); assert.equal(bundle.timestamp.length, 5);
+assert.equal(bundle.archiveBaseline.length, 47); assert.equal(bundle.proposal.length, 17); assert.equal(bundle.timestamp.length, 5);
 assert.equal(bundle.finalTargets.length, 21); assert.equal(bundle.selectedOriginalSources.length, 22);
 assert.deepEqual([...new Set(bundle.finalTargets.map(row => row.target))].sort(), [...allowedTargets].sort());
 assert.deepEqual(selection.tests, expectedTests); assert.equal(selection.expectedGroupsOnWindows, 160); assert.equal(selection.fullArchiveSuite, false);
@@ -101,7 +101,7 @@ async function sharedContext() {
 const expectedAfter = new Map(bundle.archiveBaseline.map(row => [row.path, normalizedIdentity(row)]));
 for (const row of bundle.finalTargets) expectedAfter.set(row.target, { path: row.target, ...row.after });
 const finalCensus = sorted([...expectedAfter.values()]);
-assert.equal(finalCensus.length, 56);
+assert.equal(finalCensus.length, 62);
 const receiptPath = path.join(evidence, 'composition.json');
 const execution = Object.fromEntries(['CI', 'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_REPOSITORY', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT'].map(name => [name, process.env[name] ?? null]));
 if (phase === 'compose') {
@@ -119,7 +119,7 @@ if (phase === 'compose') {
   async function save() { await fs.writeFile(receiptPath, JSON.stringify(receipt, null, 2) + '\n'); }
   try {
     receipt.beforeSourceCensus = await census();
-    assert.deepEqual(receipt.beforeSourceCensus, sorted(bundle.archiveBaseline.map(normalizedIdentity)), 'All41 current Archive baseline identities must match.');
+    assert.deepEqual(receipt.beforeSourceCensus, sorted(bundle.archiveBaseline.map(normalizedIdentity)), 'All47 current Archive baseline identities must match.');
     receipt.sharedBefore = await sharedContext();
     const payloads = new Map();
     for (const row of bundle.sourcePayloads) {

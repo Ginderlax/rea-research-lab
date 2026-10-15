@@ -49,6 +49,15 @@ jobs:
         shell: pwsh
         run: node products/rea-studio/scripts/bootstrap-cloud-flow-vault.mjs --evidence "$env:REA_CI_EVIDENCE"
 
+      - name: Authenticate preserved finite evidence and reject synthetic corruption
+        id: preservation_integrity
+        shell: pwsh
+        run: |
+          $report = & node products/rea-studio/scripts/verify-preserved-cloud-flow-vault.mjs --self-test
+          if ($LASTEXITCODE -ne 0) { throw 'Preserved finite evidence verification failed.' }
+          $report | Set-Content -LiteralPath (Join-Path $env:REA_CI_EVIDENCE 'preserved-flow-vault-integrity.json') -Encoding utf8
+          $report
+
       - name: Verify collector failure closure with isolated synthetic controls
         id: collector_controls
         shell: pwsh

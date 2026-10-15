@@ -6,12 +6,20 @@ complete-product, security, performance or superiority acceptance.
 
 `bundle.json` identifies17 unexecuted current-layout AES proposal sources,
 the five-file independently source-reviewed Windows metadata derivative,
-their21 distinct final app targets (six replacements and15 additions),41
+their21 distinct final app targets (six replacements and15 additions),47
 strict current-app baseline identities and four historical shared-context
 identities. Source snapshots retain their exact selected bytes. The original
 AES helper/test bodies and metadata helper/test bodies were not edited for
 packaging. The current-layout AES helper is the explicit prospective adapter
 to the existing `original-lzma-test-helper.mjs`, not the old local-stage helper.
+
+Hosted run38805892328 correctly refused the first composition before tests:
+the original41 rows were a selected author roster, while the full current-app
+census also contains six already committed inputs (`.gitignore`, the Node zlib
+reference and four synthetic Zstandard fixture files). The corrected strict
+47-file baseline pins those six exact bytes against both the failed hosted
+census and Git revision `a2e0aa78c408b8058cf0661343029046952fd675`. They remain
+included in the census. No app/test source or exclusion rule changed.
 
 The selected22 released source/manual/license files are retained as inert
 `.snapshot` files with exact origin/size/SHA/source mappings. They accompany
@@ -53,10 +61,10 @@ of `RUNNER_TEMP`; never execute the composer on the local machine.
    after the test attempt and retain both composition and source-check records.
 
 The composer allows only an ephemeral modified hosted working tree and records
-that state explicitly. Its before census must match all41 Archive baseline
+that state explicitly. Its before census must match all47 Archive baseline
 identities. It authenticates every committed experimental source before any
 app mutation, applies17 proposal rows then five derivative rows, and captures
-all56 resulting current Archive files outside explicit historical-result and
+all62 resulting current Archive files outside explicit historical-result and
 private-carrier prefixes. The four shared inputs are separately recorded from
 the actual Git checkout and must remain stable. Only21 allowlisted current-app
 paths may differ from Git; no historical source archive is modified. The

@@ -90,7 +90,16 @@ const test = base.extend({
 });
 test.beforeAll(async ({ browser }) => {
   expect(browser.version()).toBe('156.0.8078.4');
-  await write('browser-observation.json', { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 });
+  const observation = { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 };
+  const execution = Object.fromEntries(['CI', 'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY'].map(name => [name, process.env[name] ?? null]));
+  // A failed test can replace the worker even with retries=0. Keep every
+  // process observation; a later worker must not overwrite the first one.
+  await write('browser-observation-process-' + process.pid + '.json', { schema: 'rea-cloud-archive-browser-worker-observation/v1', observation, execution, pid: process.pid });
+  try { await write('browser-observation.json', observation); }
+  catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+    assert.deepEqual(JSON.parse(await fs.readFile(path.join(evidence, 'browser-observation.json'), 'utf8')), observation, 'A replacement worker must observe the same pinned browser');
+  }
 });
 async function open(s) { await s.page.goto(s.url + '/#archive'); await expect(s.page.getByRole('heading', { name: 'REA Archive', exact: true })).toBeVisible(); }
 async function done(s) { await expect(rootView(s.page)).toHaveAttribute('aria-busy', 'false'); await expect(rootView(s.page).locator(':scope > p.status')).toHaveText('Done.'); }
@@ -100,7 +109,7 @@ async function source(s) {
   await s.page.getByRole('button', { name: 'Create file', exact: true }).click(); await done(s);
 }
 async function configure(s, { encrypted = true, headers = false, output = 'archive/browser.7z', password } = {}) {
-  await s.page.getByLabel('Archive format', { exact: true }).selectOption(encrypted ? 'sevenzip' : 'zip');
+  await s.page.getByRole('combobox', { name: 'Archive format', exact: true }).selectOption(encrypted ? 'sevenzip' : 'zip');
   await s.page.getByLabel('New archive path', { exact: true }).fill(output);
   if (encrypted) {
     await s.page.getByLabel('Encrypt 7Z contents with AES-256', { exact: true }).check();

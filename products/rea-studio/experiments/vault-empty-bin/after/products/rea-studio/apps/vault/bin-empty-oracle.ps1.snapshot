@@ -11,7 +11,15 @@ $cfg=Get-Content -LiteralPath $configInfo.FullName -Raw|ConvertFrom-Json
 $oracle=[IO.Path]::GetFullPath([string]$cfg.oracle)
 $original=Get-Item -LiteralPath $oracle -Force
 if($original.Length -ne 3265880 -or ($original.Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'Pinned ordinary executable size required.'}
-$digest=(Get-FileHash -LiteralPath $oracle -Algorithm SHA256).Hash.ToLowerInvariant()
+$hashStream=$null;$hashAlgorithm=$null
+try{
+  $hashStream=[IO.File]::OpenRead($oracle)
+  $hashAlgorithm=[Security.Cryptography.SHA256]::Create()
+  $digest=[BitConverter]::ToString($hashAlgorithm.ComputeHash($hashStream)).Replace('-','').ToLowerInvariant()
+}finally{
+  if($null -ne $hashAlgorithm){$hashAlgorithm.Dispose()}
+  if($null -ne $hashStream){$hashStream.Dispose()}
+}
 if($digest -ne '04d29636c393f0c1fc99ff739295494be3adefded93271e44591e8e300225a5a'){throw 'Pinned executable digest required before assembly load.'}
 $database=[IO.Path]::GetFullPath([string]$cfg.database)
 if([IO.Path]::GetDirectoryName($database) -ne $configInfo.Directory.FullName -or [IO.Path]::GetFileName($database) -ne 'synthetic.kdbx'){throw 'Database must be the owned config sibling.'}

@@ -381,7 +381,7 @@ function verifyVaultEmptyBinComposition() {
   assert.equal(value.baselineGitCommit, record.repositoryCommit); assert.equal(value.sourceCommit, record.repositoryCommit);
   assert.equal(path.resolve(value.sourceRoot).toLowerCase(), fs.realpathSync(repository).toLowerCase()); assert.equal(value.productionInstalled, false); assert.equal(value.historicalReceiptsRebound, false);
   const bundlePath = 'products/rea-studio/experiments/vault-empty-bin/bundle.json', bundleBytes = fs.readFileSync(path.join(repository, bundlePath));
-  assert.deepEqual(identity(bundleBytes), {"bytes":9533,"sha256":"b8da7b2fadb49dbbc3a7fef221b56cf032744b3ee7b2b5ae03c5cc7da0111a9c"}); assert.deepEqual(bundleBytes, readGit(['show', 'HEAD:' + bundlePath]));
+  assert.deepEqual(identity(bundleBytes), {"bytes":9533,"sha256":"5da77639d41672f6e2123883926afa7013199dd6fec54c30640a36a161919245"}); assert.deepEqual(bundleBytes, readGit(['show', 'HEAD:' + bundlePath]));
   assert.deepEqual(value.sourceBundle, { path: bundlePath, ...identity(bundleBytes) });
   const bundle = JSON.parse(bundleBytes); assert.equal(bundle.schema, 'rea-vault-empty-bin-hosted-source-bundle/v1'); assert.equal(bundle.productionInstalled, false); assert.equal(bundle.sourceAuthoringOnly, true);
   const targets = ["products/rea-studio/apps/vault/recycle.mjs","products/rea-studio/apps/vault/server.mjs","products/rea-studio/apps/vault/client.mjs","products/rea-studio/apps/vault/bin-empty.test.mjs","products/rea-studio/apps/vault/bin-empty-server.test.mjs","products/rea-studio/apps/vault/bin-empty-ui.test.mjs","products/rea-studio/apps/vault/bin-empty-adjacent.test.mjs","products/rea-studio/apps/vault/bin-empty-original.test.mjs","products/rea-studio/apps/vault/bin-empty-oracle.ps1"];

@@ -277,6 +277,12 @@ try {
     assert.equal(fs.readdirSync(path.join(evidence, 'screenshots')).filter(name => name.endsWith('.png')).length, count);
     record.screenshots = screenshots;
     if (archiveScope) {
+      const workers = fs.readdirSync(evidence).filter(name => /^browser-observation-process-[0-9]+\.json$/.test(name));
+      assert.equal(workers.length, 1, 'A passing six-case campaign must finish in its one configured worker');
+      const workerBytes = fs.readFileSync(path.join(evidence, workers[0])), worker = readJson(path.join(evidence, workers[0]));
+      assert.equal(worker.schema, 'rea-cloud-archive-browser-worker-observation/v1'); sameAttempt(worker);
+      assert(Number.isSafeInteger(worker.pid) && worker.pid > 0); assert.equal(workers[0], 'browser-observation-process-' + worker.pid + '.json');
+      assert.deepEqual(worker.observation, browser); record.browserWorkers = [{ path: workers[0], ...identity(workerBytes), pid: worker.pid }];
       assert.equal(createdArchives, 3); assert.equal(restoredFiles, 5);
       assert.deepEqual(workspaceArtifacts.filter(row => /\.(zip|7z)$/.test(row.path)).map(row => row.path).sort(), ['workspace-artifacts/archive-aes-content.7z', 'workspace-artifacts/archive-aes-header.7z', 'workspace-artifacts/archive-plain.zip']);
       assert.equal(fs.readdirSync(path.join(evidence, 'workspace-artifacts')).length, workspaceArtifacts.length); record.workspaceArtifacts = workspaceArtifacts;

@@ -226,7 +226,13 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   negative('historical-carrier-mandatory-payload-corruption', () => createHistoricalCarrierPolicy(p => p === carrier.path ? flip(read(p)) : read(p)), 'mandatory fixed carrier byte/SHA identity');
   negative('historical-carrier-original-manifest-corruption', () => createHistoricalCarrierPolicy(p => p === carrier.declaringManifest ? flip(read(p)) : read(p)), 'original declaring manifest byte/SHA identity; deeper semantic branches not claimed exercised');
   negative('historical-carrier-closure-authority-corruption', () => createHistoricalCarrierPolicy(p => p === 'products/rea-studio/results/historical-carrier-delivery-20261015/preservation-manifest.json' ? flip(read(p)) : read(p)), 'fixed closure authority identity; no generic fallback');
-  assert.equal(rows.length, 76); assert.ok(rows.every(row => row.passed));
+  const groupEditDoc = 'products/rea-studio/apps/vault/GROUP-EDIT.md';
+  const groupEditDocBefore = {"bytes":7847,"sha256":"a06a163ce96424fb4e5923b29c4acfdc9e9c7e2fa780f07e4751dad3fc30b8c4"}, groupEditDocAfter = {"bytes":7861,"sha256":"05c2d2989f154e312228062b40aba90ab610960fd51ab1eaa65144ecdc77abf9"};
+  positive('group-edit-document-exact-before-after-identities', () => { const scope = migration.summary(); assert.equal(scope.groupEditDocumentCurrentSourceMandatory, 1); assert.equal(scope.groupEditDocumentHistoricalRoute, 1); assert.equal(migration.resolve(groupEditDoc, groupEditDocAfter), null); assert.equal(migration.resolve(groupEditDoc, groupEditDocBefore), 'products/rea-studio/results/vault-group-edit-document-route-20261015/before/products/rea-studio/apps/vault/GROUP-EDIT.md.snapshot'); same(read(groupEditDoc), groupEditDocAfter); });
+  negative('group-edit-document-unlisted-identity', () => migration.resolve(groupEditDoc, { bytes: 1, sha256: '0'.repeat(64) }), 'one exact GROUP-EDIT document before and after identity');
+  negative('group-edit-document-missing-identity', () => migration.resolve(groupEditDoc), 'explicit expected identity is mandatory for the named document');
+  negative('group-edit-document-mandatory-current-byte-change', () => createEditorVaultProofMigration(name => name === groupEditDoc ? flip(read(name)) : read(name)), 'new current document remains mandatory while immutable next.sources reads exact preserved before');
+  assert.equal(rows.length, 80); assert.ok(rows.every(row => row.passed));
   return { schema: 'rea-cloud-publication-controls/v1', status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,

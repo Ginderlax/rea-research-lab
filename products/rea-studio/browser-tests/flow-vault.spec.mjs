@@ -25,6 +25,25 @@ const test = base.extend({
     const instance = await start({ port: 0, dataDir });
     const observations = [], requests = [], faults = [], held = [], expectedAuxiliaryResourceErrors = [];
     const errors = [];
+    // Track requests owned by this page and loopback instance. Failed requests
+    // remain unexpected errors; draining does not turn an aborted request into success.
+    const pendingOwnedRequests = new Set(), drainWaiters = new Set();
+    const requestCounts = { started: 0, finished: 0, failed: 0 };
+    const ownsRequest = request => request.url().startsWith(instance.url + '/');
+    function settleOwnedRequest(request, kind) {
+      if (!ownsRequest(request)) return;
+      pendingOwnedRequests.delete(request); requestCounts[kind]++;
+      if (pendingOwnedRequests.size === 0) for (const resolve of drainWaiters) resolve();
+    }
+    async function drainOwnedRequests() {
+      if (pendingOwnedRequests.size === 0) return;
+      let resolve;
+      const drained = new Promise(done => { resolve = done; drainWaiters.add(done); });
+      try { if (pendingOwnedRequests.size === 0) resolve(); await drained; }
+      finally { drainWaiters.delete(resolve); }
+    }
+    page.on('request', request => { if (ownsRequest(request)) { pendingOwnedRequests.add(request); requestCounts.started++; } });
+    page.on('requestfinished', request => settleOwnedRequest(request, 'finished'));
     page.on('pageerror', error => errors.push({ type: 'pageerror', message: error.message }));
     page.on('console', message => {
       if (message.type() !== 'error') return;
@@ -34,7 +53,7 @@ const test = base.extend({
       if (value.location.url === instance.url + '/favicon.ico' && /404/.test(value.message)) expectedAuxiliaryResourceErrors.push(value);
       else errors.push(value);
     });
-    page.on('requestfailed', request => { if (request.url().startsWith(instance.url + '/')) errors.push({ type: 'requestfailed', path: new URL(request.url()).pathname, failure: request.failure() }); });
+    page.on('requestfailed', request => { settleOwnedRequest(request, 'failed'); if (request.url().startsWith(instance.url + '/')) errors.push({ type: 'requestfailed', path: new URL(request.url()).pathname, failure: request.failure() }); });
     page.on('request', request => {
       if (!request.url().startsWith(instance.url + '/api/')) return;
       assert(requests.length < 1000, 'Finite browser request bound exceeded');
@@ -68,24 +87,56 @@ const test = base.extend({
     const studio = { page, url: instance.url, api, hold, requests, observations, faults };
     try { await use(studio); }
     finally {
-      try {
+      const teardown = { stage: 'starting', drained: false, contextClosed: false, serverClosed: false, heldRoutesFinished: false, screenshotSaved: false, steps: [], requestCounts };
+      const cleanupFailures = [];
+      async function step(name, operation) {
+        teardown.stage = name;
+        const row = { stage: name, status: 'running', startedAtUtc: new Date().toISOString() }; teardown.steps.push(row);
+        try { await operation(); row.status = 'passed'; }
+        catch (error) { row.status = 'failed'; row.failure = { name: error.name, message: error.message }; cleanupFailures.push(error); }
+        finally { row.completedAtUtc = new Date().toISOString(); }
+      }
+      await step('release-held-routes', async () => {
         for (const gate of held) gate.release();
         await bounded(Promise.all(held.filter(gate => gate.used()).map(gate => gate.finished)), 5000, 'Held actual response cleanup deadline exceeded');
+        teardown.heldRoutesFinished = true;
+      });
+      await step('screenshot', async () => {
         await fs.mkdir(path.join(evidence, 'screenshots'), { recursive: true });
-        await page.screenshot({ path: path.join(evidence, 'screenshots', info.testId + '.png'), fullPage: false });
-      } finally {
-        let serverCloseObserved = false;
-        try { await bounded(instance.close(), 5000, 'Owned server close deadline exceeded'); serverCloseObserved = true; }
-        finally { await write('case-' + info.testId + '.json', { schema: 'rea-cloud-browser-case-observation/v1', testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry,
-          url: instance.url, ownedDataDirectory: dataDir, serverCloseObserved, realBrowser: true, actualHTTP: true, originalProductExecutions: 0, observations, requests, faults, expectedAuxiliaryResourceErrors, errors }); }
-      }
+        await page.screenshot({ path: path.join(evidence, 'screenshots', info.testId + '.png'), fullPage: false }); teardown.screenshotSaved = true;
+      });
+      await step('drain-owned-page-requests', async () => {
+        await bounded(drainOwnedRequests(), 5000, 'Owned page requests did not drain before context close'); teardown.drained = true;
+      });
+      // This test owns this context and its associated API request pool. Close
+      // them before asking the unchanged loopback host to close its connections.
+      // Each drain/close step retains its5s deadline; failures are recorded and still fail.
+      await step('close-owned-context', async () => {
+        await bounded(page.context().close(), 5000, 'Owned browser context close deadline exceeded'); teardown.contextClosed = true;
+        assert.equal(pendingOwnedRequests.size, 0, 'Owned request tracker must be empty after context close');
+      });
+      await step('close-owned-server', async () => {
+        await bounded(instance.close(), 5000, 'Owned server close deadline exceeded'); teardown.serverClosed = true;
+      });
+      teardown.pendingOwnedRequests = pendingOwnedRequests.size; teardown.stage = cleanupFailures.length ? 'failed' : 'completed';
+      await write('case-' + info.testId + '.json', { schema: 'rea-cloud-browser-case-observation/v1', testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry,
+        url: instance.url, ownedDataDirectory: dataDir, serverCloseObserved: teardown.serverClosed, teardown, realBrowser: true, actualHTTP: true, originalProductExecutions: 0, observations, requests, faults, expectedAuxiliaryResourceErrors, errors });
       expect(errors, 'No unexpected real browser errors').toEqual([]);
+      if (cleanupFailures.length) throw new AggregateError(cleanupFailures, 'Owned browser fixture cleanup failed');
+      expect(teardown.drained && teardown.contextClosed && teardown.serverClosed).toBe(true);
     }
   },
 });
 test.beforeAll(async ({ browser }) => {
   expect(browser.version()).toBe('156.0.8078.4');
-  await write('browser-observation.json', { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 });
+  const observation = { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 };
+  const execution = Object.fromEntries(['CI', 'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY'].map(name => [name, process.env[name] ?? null]));
+  await write('browser-observation-process-' + process.pid + '.json', { schema: 'rea-cloud-flow-vault-browser-worker-observation/v1', observation, execution, pid: process.pid });
+  try { await write('browser-observation.json', observation); }
+  catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+    assert.deepEqual(JSON.parse(await fs.readFile(path.join(evidence, 'browser-observation.json'), 'utf8')), observation, 'A replacement worker must observe the same pinned browser');
+  }
 });
 const flowScene = () => ({ rev: 'opaque browser revision', vendor: { preserved: ['yes', 7], unicode: 'before\u2028after 😀 e\u0301 é' }, flows: [
   { id: 'tab', type: 'tab', label: 'Owned browser fixture' },

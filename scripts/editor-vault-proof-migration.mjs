@@ -531,8 +531,8 @@ const fixed={
         "sha256": "8283f709444328e1dee3483c46322a07652c2be1d2ac71ff94269c2e645e6702"
       },
       "after": {
-        "bytes": 142684,
-        "sha256": "42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6"
+        "bytes": 147529,
+        "sha256": "82fc7f36c0805ee163a93aa1720ed708629ac455d90a9bdd343b30f554335304"
       },
       "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-records.mjs.snapshot"
     }
@@ -1099,6 +1099,14 @@ const next={
     "universalSuperiority": false
   }
 };
+// Third named root-verifier epoch. The original before-image and the other six
+// verifier transitions above keep their exact existing identities and routes.
+const publicationRootTransition={
+ path:'scripts/verify-records.mjs',
+ middle:{path:'products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/verify-records.mjs.snapshot',bytes:142684,sha256:'42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6'},
+ migrationBefore:{path:'products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/editor-vault-proof-migration.mjs.snapshot',bytes:47841,sha256:'3d0a4ee0b5e9eef36c357c9a3c6170008a2bb0882cc8a755756358aabdf6ced1'},
+ finiteVerifier:{path:'scripts/verify-cloud-recovery-records.mjs',bytes:15778,sha256:'405c90ac8c68acdc2b281e9563637cc391e1e0574705c1cbcdf7be8e1f794482'}
+};
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const identity=b=>({bytes:b.length,sha256:sha(b)});
 function same(a,b,n){assert.equal(a.bytes,b.bytes,n+' bytes');assert.equal(a.sha256,b.sha256,n+' SHA256');}
@@ -1124,10 +1132,11 @@ export function createEditorVaultProofMigration(rawRead){assert.equal(typeof raw
  for(const r of next.routes.filter(r=>r.path.endsWith('.mjs'))){const original=priorBefore.find(s=>'products/rea-studio/'+s.path===r.path);assert(original);same(original,r.before,'Previous937 source transition');}
  const priorStatus=JSON.parse(read(next.historical937.statusBefore.path,next.historical937.statusBefore));assert.equal(priorStatus.goal_status,'active');assert.equal(priorStatus.complete_replacement_products,0);assert.equal(priorStatus.source_stable_combined_checks.pass,937);assert.equal(priorStatus.source_stable_combined_checks.source_fingerprints,737);
  const verifierRoutes=new Map(fixed.verifiers.map(r=>[r.path,r]));assert.equal(verifierRoutes.size,7);for(const r of fixed.verifiers){read(r.path,r.after);read(r.historicalPath,r.before);}
+ read(publicationRootTransition.middle.path,publicationRootTransition.middle);read(publicationRootTransition.migrationBefore.path,publicationRootTransition.migrationBefore);read(publicationRootTransition.finiteVerifier.path,publicationRootTransition.finiteVerifier);
  for(const r of fixed.routes){read(r.historicalPath,r.before);const installationRow=installed.installed.find(s=>s.destination===r.path);assert(installationRow);same(installationRow.before,r.before,r.path);same(installationRow.after,r.after,r.path);}
  for(const r of Object.values(fixed.metadata))read(r.historicalPath,r);
- function resolveHistorical(p,r){safe(p);const newer=nextRoutes.get(p),row=sourceRoutes.get(p),v=verifierRoutes.get(p);if(!newer&&!row&&!v)return null;assert(r,'Named transition requires an explicit expected identity: '+p);const id=expected(r);if(newer){if(id.bytes===newer.after.bytes&&id.sha256===newer.after.sha256)return null;if(id.bytes===newer.before.bytes&&id.sha256===newer.before.sha256)return newer.historicalPath;if(!row&&!v)throw new Error('No unlisted historical identity allowed: '+p);}const older=row??v;if(!newer&&id.bytes===older.after.bytes&&id.sha256===older.after.sha256)return null;same(id,older.before,'No unlisted historical identity allowed: '+p);return older.historicalPath;}
- function summary(){for(const [p,r]of seen)read(p,r);return{sourceOnly:true,namedSourceRoutes:13,old720ChangedCodeRoutes:9,docsOutside720:4,currentInstalledSourcesMandatory:61,latestInstalledSourcesMandatory:35,unchangedEarlierInstalledSourcesMandatory:26,historicalEarlierInstalledAfterSourcesAuthenticated:4,latestBeforeImagesMandatory:9,historical937NotCurrentAcceptance:true,historical937SelectedSnapshots:4,currentSharedHostMandatory:1,currentVerifierAfterMandatory:7,historical847NotCurrentAcceptance:true,historical78NotCurrentAcceptance:true,unknownPathsNotMapped:true,authenticatedFiles:seen.size,authenticatedBytes:total,applicationExecutions:0,originalExecutions:0,browserExecutions:0,benchmarks:0,fullParity:false};}
+ function resolveHistorical(p,r){safe(p);const newer=nextRoutes.get(p),row=sourceRoutes.get(p),v=verifierRoutes.get(p);if(!newer&&!row&&!v)return null;assert(r,'Named transition requires an explicit expected identity: '+p);const id=expected(r);if(p===publicationRootTransition.path&&id.bytes===publicationRootTransition.middle.bytes&&id.sha256===publicationRootTransition.middle.sha256)return publicationRootTransition.middle.path;if(newer){if(id.bytes===newer.after.bytes&&id.sha256===newer.after.sha256)return null;if(id.bytes===newer.before.bytes&&id.sha256===newer.before.sha256)return newer.historicalPath;if(!row&&!v)throw new Error('No unlisted historical identity allowed: '+p);}const older=row??v;if(!newer&&id.bytes===older.after.bytes&&id.sha256===older.after.sha256)return null;same(id,older.before,'No unlisted historical identity allowed: '+p);return older.historicalPath;}
+ function summary(){for(const [p,r]of seen)read(p,r);return{sourceOnly:true,namedSourceRoutes:13,old720ChangedCodeRoutes:9,docsOutside720:4,currentInstalledSourcesMandatory:61,latestInstalledSourcesMandatory:35,unchangedEarlierInstalledSourcesMandatory:26,historicalEarlierInstalledAfterSourcesAuthenticated:4,latestBeforeImagesMandatory:9,historical937NotCurrentAcceptance:true,historical937SelectedSnapshots:4,currentSharedHostMandatory:1,currentVerifierAfterMandatory:7,currentFiniteCloudVerifierMandatory:1,rootVerifierHistoricalBeforeImages:2,priorMigrationSourceMandatory:1,historical847NotCurrentAcceptance:true,historical78NotCurrentAcceptance:true,unknownPathsNotMapped:true,authenticatedFiles:seen.size,authenticatedBytes:total,applicationExecutions:0,originalExecutions:0,browserExecutions:0,benchmarks:0,fullParity:false};}
  return{resolve:resolveHistorical,historicalMetadata(name){assert(Object.hasOwn(fixed.metadata,name),'Only development/status beforemetadata');const r=fixed.metadata[name];return read(r.historicalPath,r);},historicalVerifier(p){assert(verifierRoutes.has(p),'Only named verifier beforeimages');const r=verifierRoutes.get(p);return read(r.historicalPath,r.before);},editorMismatchesIncludingHistoricalHost(rows){assert(Array.isArray(rows)&&rows.length===31);const result=[];for(const r of rows){const route=sourceRoutes.get(r.path);if(route){same(r,route.before,'Fixed old Editor source');result.push({path:r.path,testedSha256:r.sha256,liveSha256:route.after.sha256});}else if(r.path===fixed.sharedHost.path){assert.equal(r.bytes,7741);assert.equal(r.sha256,'807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f');result.push({path:r.path,testedSha256:r.sha256,liveSha256:fixed.sharedHost.sha256});}}assert.equal(result.length,5);return result;},summary};
 }
 export function createEditorVaultProofMigrationFromRoot(root){const base=realpathSync(resolve(root));return createEditorVaultProofMigration(p=>{safe(p);let at=base;for(const s of p.split('/')){at=resolve(at,s);assert(!lstatSync(at).isSymbolicLink(),'Reparse proof path');}const real=realpathSync(at),rel=relative(base,real);assert(rel&&rel!=='..'&&!rel.startsWith('..'+sep)&&!rel.startsWith(sep));const stat=lstatSync(at);assert(stat.isFile()&&stat.size<=32*1024*1024);const b=readFileSync(at);assert.equal(b.length,stat.size);return b;});}

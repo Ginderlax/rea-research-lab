@@ -1,17 +1,19 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, readdirSync, lstatSync } from 'node:fs';
 import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';
 import { verifyFollowupRecords } from './verify-followup-records.mjs';
+import { verifyCloudRecoveryRecords } from './verify-cloud-recovery-records.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(readFileSync(join(root, 'PUBLICATION-MANIFEST.json'), 'utf8'));
 const index = JSON.parse(readFileSync(join(root, 'PROJECT-INDEX.json'), 'utf8'));
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sourceProofMigration=createEditorVaultProofMigrationFromRoot(root);
+const finiteCloudRecovery=verifyCloudRecoveryRecords(root);
 const followupEvidence = verifyFollowupRecords(root);
 const historicalMilestone = 'products/rea-studio/results/milestones/execution-archive-20261012/';
 function safeRecordPath(path) { assert.ok(typeof path === 'string' && path.length && !path.startsWith('/') && !path.split('/').includes('..') && !path.includes('\\'), `Invalid record path: ${path}`); }
@@ -349,7 +351,36 @@ let productDevelopment;
 if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   const developmentRoot = join(root, 'products/rea-studio');
   const status = JSON.parse(readFileSync(join(developmentRoot, 'STATUS.json'), 'utf8'));
-  const validation = JSON.parse(readFileSync(join(developmentRoot, 'results/development-validation.json'), 'utf8'));
+  // The immutable937 receipt describes its captured source epoch. Only the six
+  // explicitly reviewed Flow/Vault code transitions may differ from it today.
+  const historical937Prefix = 'products/rea-studio/results/editor-vault-combined-20261013/';
+  const historical937Seen = new Map(); let historical937Bytes = 0;
+  function historical937Read(name, expected) {
+    safeRecordPath(name); assert.ok(!/[:\x00-\x1f\x7f]/.test(name));
+    assert.ok(Number.isSafeInteger(expected.bytes) && expected.bytes >= 0 && expected.bytes <= 32 * 1024 * 1024 && /^[0-9a-f]{64}$/.test(expected.sha256));
+    let target = root;
+    for (const part of name.split('/')) { assert.ok(part && part !== '.'); target = join(target, part); assert.equal(lstatSync(target).isSymbolicLink(), false); }
+    const stat = lstatSync(target); assert.ok(stat.isFile() && stat.size <= 32 * 1024 * 1024);
+    const bytes = readFileSync(target); assert.equal(bytes.length, expected.bytes); assert.equal(bytes.length, stat.size); assert.equal(sha(bytes), expected.sha256, 'Historical937 proof changed: ' + name);
+    if (historical937Seen.has(name)) assert.deepEqual(historical937Seen.get(name), expected);
+    else { historical937Seen.set(name, { bytes: expected.bytes, sha256: expected.sha256 }); historical937Bytes += bytes.length; assert.ok(historical937Seen.size <= 1500 && historical937Bytes <= 256 * 1024 * 1024); }
+    return bytes;
+  }
+  const validationBytes = historical937Read('products/rea-studio/results/development-validation.json', { bytes: 137063, sha256: '333303c8bd8cd131da3f01e1414b0fba92bc321b2b63f178ab91d138b2bcfa44' });
+  const validation = JSON.parse(validationBytes);
+  const historical937Manifest = JSON.parse(historical937Read(historical937Prefix + 'preservation-manifest.json', { bytes: 226183, sha256: 'e1c9211ca4cd302faf4e819077e5809d01539091cc8fc541fbccfde428a0b80b' }));
+  assert.equal(historical937Manifest.sourceFiles, 737); assert.equal(historical937Manifest.snapshots.length, 753);
+  assert.equal(historical937Manifest.sourceStable, true); assert.equal(historical937Manifest.fullProductParity, false); assert.equal(historical937Manifest.universalSuperiority, false);
+  assert.equal(historical937Manifest.developmentValidationSHA256, sha(validationBytes));
+  const historical937Snapshots = new Map();
+  for (const row of historical937Manifest.snapshots) { safeRecordPath(row.sourcePath); safeRecordPath(row.path); assert.equal(historical937Snapshots.has(row.sourcePath), false); historical937Snapshots.set(row.sourcePath, row); }
+  const historical937BeforeRow = historical937Snapshots.get('source-before.json.snapshot');
+  assert.deepEqual({ bytes: historical937BeforeRow.bytes, sha256: historical937BeforeRow.sha256 }, { bytes: 138572, sha256: '8d2f8ca7414ed9db51d2980264da3daa660adef30ceedbc6c2a4c2b493bb97d1' });
+  const historical937Inventory = JSON.parse(historical937Read(historical937Prefix + historical937BeforeRow.path, { bytes: historical937BeforeRow.bytes, sha256: historical937BeforeRow.sha256 }));
+  const historical937Sources = new Map(historical937Inventory.map(row => [row.path, row]));
+  assert.equal(historical937Inventory.length, 737); assert.equal(historical937Sources.size, 737); assert.equal(validation.source_files.length, 737);
+  const historical937AllowedRoutes = new Set(['apps/flow/client.mjs', 'apps/flow/native.mjs', 'apps/flow/server.mjs', 'apps/vault/client.mjs', 'apps/vault/recycle.mjs', 'apps/vault/server.mjs']);
+  const historical937Checked = new Set(); let historical937Routed = 0, historical937Unchanged = 0;
   const browser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-verification.json'), 'utf8'));
   const comparison = JSON.parse(readFileSync(join(developmentRoot, 'results/editor-comparison.json'), 'utf8'));
   assert.equal(status.complete_replacement_products, 0);
@@ -359,10 +390,20 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(validation.summary.skipped,0);
   assert.equal(validation.full_feature_parity_established, false);
   assert.equal(validation.universal_superiority_established, false);
+  assert.equal(validation.summary.tests, 937); assert.equal(validation.summary.pass, 937);
+  assert.deepEqual(validation.summary, historical937Manifest.summary);
   for (const entry of validation.source_files) {
-    assert.ok(!entry.path.startsWith('/') && !entry.path.split('/').includes('..') && !entry.path.includes('\\'));
-    assert.equal(sha(readFileSync(join(developmentRoot, entry.path))), entry.sha256, `Development source changed after tests: ${entry.path}`);
+    safeRecordPath(entry.path); assert.equal(historical937Checked.has(entry.path), false); historical937Checked.add(entry.path);
+    const inventory = historical937Sources.get(entry.path), frozen = historical937Snapshots.get(entry.path);
+    assert.ok(inventory && frozen); assert.equal(frozen.path, 'source/' + entry.path + '.snapshot');
+    const expected = { bytes: inventory.bytes, sha256: inventory.sha256 };
+    assert.equal(entry.sha256, expected.sha256); assert.deepEqual({ bytes: frozen.bytes, sha256: frozen.sha256 }, expected);
+    historical937Read(historical937Prefix + frozen.path, expected);
+    const name = 'products/rea-studio/' + entry.path, historicalPath = sourceProofMigration.resolve(name, expected);
+    if (historicalPath) { assert.ok(historical937AllowedRoutes.has(entry.path), 'Unlisted937 source transition'); historical937Read(historicalPath, expected); historical937Routed++; }
+    else { historical937Read(name, expected); historical937Unchanged++; }
   }
+  assert.equal(historical937Checked.size, 737); assert.equal(historical937Routed, 6); assert.equal(historical937Unchanged, 731);
   assert.equal(validation.source_bytes_stable_across_run, true);
   assert.equal(new Set(browser.checks.map(check => check.app)).size, 10);
   assert.ok(browser.checks.every(check => check.passed));
@@ -779,7 +820,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(capabilityIds.size, requirementIndex.capability_area_rows);
   assert.equal(requirementIndex.exhaustive_feature_inventory_established, false);
   assert.equal(requirementIndex.full_product_parity_rows_passed, 0);
-  productDevelopment = { applications: 10, recorded_tests_passed: validation.summary.pass, tested_source_hashes_checked: validation.source_files.length, browser_workflow_records: browser.checks.length, historical_native_browser_workflow_records: currentBrowser.checks.length, historical_execution_browser_workflow_records: executionBrowser.checks.length, historical_execution_archive_source_hashes_checked: historicalExecution.sources.size, historical_execution_archive_source_revision: historicalExecution.source_revision, historical_joplin_original_method_checks: joplinOracle.passed, historical_keepass_interoperability_test_collection: vaultOracle.result.passed, automation_execution_test_collection: automationExecution.summary.pass, historical_archive_zip_test_collection: archiveZip.checks.successful_result.passed, historical_archive_format_test_collection: archiveFormats.summary.pass, current_archive_test_collection: archiveZstd.checks.result.passed, grafana_unchanged_original_fixtures: grafanaSchema.fixtureChecks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
+  productDevelopment = { applications: 10, historical_937_recorded_tests_passed: validation.summary.pass, historical_937_tested_source_hashes_checked: validation.source_files.length, historical_937_reviewed_source_routes: historical937Routed, historical_937_unchanged_current_source_rows: historical937Unchanged, full_development_suite_rerun: false, browser_workflow_records: browser.checks.length, historical_native_browser_workflow_records: currentBrowser.checks.length, historical_execution_browser_workflow_records: executionBrowser.checks.length, historical_execution_archive_source_hashes_checked: historicalExecution.sources.size, historical_execution_archive_source_revision: historicalExecution.source_revision, historical_joplin_original_method_checks: joplinOracle.passed, historical_keepass_interoperability_test_collection: vaultOracle.result.passed, automation_execution_test_collection: automationExecution.summary.pass, historical_archive_zip_test_collection: archiveZip.checks.successful_result.passed, historical_archive_format_test_collection: archiveFormats.summary.pass, current_archive_test_collection: archiveZstd.checks.result.passed, grafana_unchanged_original_fixtures: grafanaSchema.fixtureChecks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
   Object.assign(productDevelopment, {
     historical_backup_compression_tests_passed: backupCompression.summary.pass,
     historical_backup_compression_source_hashes_checked: backupCompression.implementationFingerprints.length,
@@ -886,6 +927,7 @@ const receipt = {
   credential_pattern_scan_passed: true, root_document_links_resolve: true,
   preserved_vendor_and_historical_document_links_not_rebased: true,
   source_proof_migration: sourceProofMigration.summary(),
+  finite_cloud_flow_vault: finiteCloudRecovery,
   followup_evidence: followupEvidence,
   named_historical_shared_host_receipts: { backup64: { current_nonhost_rows:41, historical_host_rows:1 }, automation_recovery_browser: { current_nonhost_rows:40, historical_host_rows:1 }, automation_recovery: { current_nonhost_rows:42, historical_host_rows:1 }, webdav_host_dependencies: { current_nonhost_rows:2, historical_host_rows:1 }, metrics_algorithm_baseline: { current_nonhost_rows:7, historical_host_rows:1 }, backup_rabin_sources: { current_nonhost_rows:27, prior_other_historical_rows:6, historical_host_rows:1 }, historical_host_sha256:'807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f', current_host_sha256:'85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94', prior_receipts_rebound:false, original_behavior_rerun:false, current_host_still_required:true },
   ...(productDevelopment ? { product_development: productDevelopment } : {}),

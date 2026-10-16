@@ -264,7 +264,46 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   negative('requirement-evidence-unchanged-current-size-declaration', () => requirementEvidence({ entries: [{ ...requirementUnchanged, bytes: requirementUnchanged.bytes + 1 }] }), 'the optional size assertion is preserved for direct current reads');
   negative('requirement-evidence-unsafe-record-path', () => requirementEvidence({ entries: [{ ...requirementUnchanged, path: '../unlisted' }] }), 'the actual pinned root safeRecordPath rejects traversal before any read');
   for (const target of ["products/rea-studio/results/requirement-evidence-provenance-20261015/preservation-manifest.json","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/verify-records.mjs.snapshot","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot"]) negative('requirement-provenance-mandatory-byte-corruption:' + target, () => createEditorVaultProofMigration(name => name === target ? flip(read(name)) : read(name)), 'new fixed requirement provenance closure identity; historical receipts and registries remain unchanged');
-  assert.equal(rows.length, 92); assert.ok(rows.every(row => row.passed));
+
+  // Execute only the exact producer projection, using the actual preserved failing
+  // attempt outputs. No publication producer or application entry point is run here.
+  const repeatProducerBytes = read('scripts/verify-cloud-publication.mjs'); same(repeatProducerBytes, {"bytes":28574,"sha256":"5145bee46db8290ce97551fb283fffb253d3d3ed454609b9364f0afab3075df5"});
+  const repeatProducer = repeatProducerBytes.toString('utf8');
+  const repeatStart = '// BEGIN exact publication repeat projection (only three owned observation clocks).', repeatEnd = '// END exact publication repeat projection.';
+  assert.equal(repeatProducer.split(repeatStart).length, 2); assert.equal(repeatProducer.split(repeatEnd).length, 2);
+  const repeatScript = new vm.Script(repeatProducer.slice(repeatProducer.indexOf(repeatStart), repeatProducer.indexOf(repeatEnd)) + '\npublicationRepeatProjection(value, phase)', { filename: 'exact-reviewed-publication-repeat-clock-control.mjs' });
+  const repeatProject = (value, phase) => repeatScript.runInNewContext({ assert, Date, structuredClone, value, phase }, { timeout: 1000 });
+  const repeatPrefix = 'products/rea-studio/results/publication-repeat-clock-correction-20261016/failed-run/';
+  function repeatInput(filename, expected) { const bytes = read(repeatPrefix + filename + '.snapshot'); same(bytes, expected); return bytes; }
+  const repeatAttempt = JSON.parse(repeatInput('attempt-validation.json', {"bytes":3968,"sha256":"2d2597991ef5063f7fb3ec46f35e41824189778155d124a1531b34b01e50d224"}));
+  const repeatFirst = JSON.parse(repeatInput('publication-write.stdout.txt', {"bytes":30263,"sha256":"862a17818dfd53d4f28ad2c319e29add8b99e93194e4fe885712ad19fe9c9c4d"}).toString('utf8').trim().split(/\r?\n/).at(-1));
+  const repeatSecond = JSON.parse(repeatInput('publication-recheck.stdout.txt', {"bytes":30263,"sha256":"1305e558844934ad70aeea8b9902bf3b52d218f4ec9eaaa90bb54e7ae468ffdc"}).toString('utf8').trim().split(/\r?\n/).at(-1));
+  assert.equal(repeatAttempt.status, 'failed'); assert.equal(repeatAttempt.generatedManifestValidated, false); assert.equal(repeatAttempt.controls.checks, 92);
+  function repeatCompare(first = repeatFirst, second = repeatSecond, phases = repeatAttempt.phases) {
+    const a = repeatProject(first, phases[0]), b = repeatProject(second, phases[1]);
+    assert.ok(Date.parse(phases[0].completedAtUtc) <= Date.parse(phases[1].startedAtUtc)); assert.deepEqual(b.stable, a.stable); return [a, b];
+  }
+  positive('publication-repeat-actual-preserved-clock-only-difference', () => { const firstRaw = JSON.stringify(repeatFirst), secondRaw = JSON.stringify(repeatSecond); const [a,b] = repeatCompare(); assert.notEqual(a.clocks.sketchStarted, b.clocks.sketchStarted); assert.notEqual(a.clocks.sketchFinished, b.clocks.sketchFinished); assert.equal(JSON.stringify(repeatFirst), firstRaw); assert.equal(JSON.stringify(repeatSecond), secondRaw); });
+  for (const [name, change] of [
+    ['identity-change', value => { value.followup_evidence.notesLayoutValueApiCheckpoint.sketch.identities.reviewManifest = '0'.repeat(64); }],
+    ['source-count-change', value => { value.followup_evidence.notesLayoutValueApiCheckpoint.sketch.current10Mandatory++; }],
+    ['unrelated-top-field', value => { value.payload_files++; }],
+    ['unlisted-nested-clock', value => { value.followup_evidence.notesLayoutValueApiCheckpoint.sketch.unlistedStarted = value.checked_at_utc; }],
+    ['out-of-scope-same-named-clock', value => { value.followup_evidence.notesLayoutValueApiCheckpoint.editorValueApi.started = value.checked_at_utc; }],
+    ['wrong-schema', value => { value.followup_evidence.notesLayoutValueApiCheckpoint.sketch.schema = 'unlisted/v1'; }],
+    ['false-source-only', value => { value.followup_evidence.notesLayoutValueApiCheckpoint.sketch.sourceOnly = false; }],
+    ['missing-start', value => { delete value.followup_evidence.notesLayoutValueApiCheckpoint.sketch.started; }],
+    ['non-utc-clock', value => { value.followup_evidence.notesLayoutValueApiCheckpoint.sketch.started = '2026-10-16T00:13:18.134+00:00'; }],
+    ['invalid-calendar-clock', value => { value.followup_evidence.notesLayoutValueApiCheckpoint.sketch.started = '2026-02-30T00:13:18.134Z'; }],
+    ['reversed-observation-clocks', value => { const sketch = value.followup_evidence.notesLayoutValueApiCheckpoint.sketch; [sketch.started, sketch.finished] = [sketch.finished, sketch.started]; }],
+    ['before-own-phase', value => { value.followup_evidence.notesLayoutValueApiCheckpoint.sketch.started = repeatAttempt.phases[0].startedAtUtc; }],
+    ['after-own-phase', value => { value.checked_at_utc = '2026-10-16T00:14:16.540Z'; }],
+    ['root-check-before-proof-finishes', value => { value.checked_at_utc = value.followup_evidence.notesLayoutValueApiCheckpoint.sketch.started; }],
+  ]) negative('publication-repeat-reject:' + name, () => { const changed = structuredClone(repeatSecond); change(changed); repeatCompare(repeatFirst, changed); }, 'exact producer projection requires bounded named clocks and deep equality for every remaining field');
+  negative('publication-repeat-reject:first-phase-clock-corruption', () => { const changed = structuredClone(repeatFirst); changed.followup_evidence.notesLayoutValueApiCheckpoint.sketch.finished = '2026-10-16T00:14:16.540Z'; repeatCompare(changed); }, 'both raw observations are independently bounded');
+  negative('publication-repeat-reject:overlapping-owned-phases', () => { const phases = structuredClone(repeatAttempt.phases); phases[0].completedAtUtc = new Date(Date.parse(phases[1].startedAtUtc) + 1).toISOString(); repeatCompare(repeatFirst, repeatSecond, phases); }, 'phase intervals must be ordered and nonoverlapping');
+  negative('publication-repeat-reject:reversed-owned-phase', () => { const phases = structuredClone(repeatAttempt.phases); [phases[1].startedAtUtc, phases[1].completedAtUtc] = [phases[1].completedAtUtc, phases[1].startedAtUtc]; repeatCompare(repeatFirst, repeatSecond, phases); }, 'owned phase timestamps must themselves be valid and ordered');
+  assert.equal(rows.length, 110); assert.ok(rows.every(row => row.passed));
   return { schema: 'rea-cloud-publication-controls/v1', status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,

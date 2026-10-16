@@ -73,6 +73,32 @@ const REVIEWED = {
   'products/rea-studio/results/publication-editor-git-observer-20261015/workflow-attempt.json.snapshot': [419, '903841dc5e67ab46e4e86e0ab83bb90e10392cfef3a9c208c4115da9f7b3d34c'],
   'products/rea-studio/results/publication-editor-git-observer-20261015/wrapper-job-116702343166.log.snapshot': [29564, '06cf6158b6dfb691ff5a3c02af2a8eefff3b4b918b635438efcc2fd65f9dabbd'],
 };
+// BEGIN exact publication repeat projection (only three owned observation clocks).
+function publicationRepeatProjection(value, phase) {
+  function utc(value, label) {
+    assert.equal(typeof value, 'string', label + ' must be an exact UTC timestamp');
+    assert.match(value, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/, label + ' must use millisecond UTC ISO');
+    const parsed = Date.parse(value); assert.ok(Number.isFinite(parsed), label + ' must be a real timestamp');
+    assert.equal(new Date(parsed).toISOString(), value, label + ' must round trip exactly'); return parsed;
+  }
+  assert.ok(phase && ['publication-write', 'publication-recheck'].includes(phase.name));
+  assert.equal(phase.status, 'passed'); assert.equal(phase.exitCode, 0); assert.equal(phase.closeObserved, true);
+  const phaseStart = utc(phase.startedAtUtc, 'owned phase start'), phaseEnd = utc(phase.completedAtUtc, 'owned phase end');
+  assert.ok(phaseStart <= phaseEnd, 'Owned phase clocks must be ordered');
+  assert.equal(value.status, 'passed');
+  const checked = utc(value.checked_at_utc, 'root checked_at_utc');
+  const sketch = value.followup_evidence?.notesLayoutValueApiCheckpoint?.sketch;
+  assert.ok(sketch); assert.equal(sketch.schema, 'rea-sketch-layout-installed-source-proof/v1'); assert.equal(sketch.sourceOnly, true);
+  const started = utc(sketch.started, 'Sketch source proof start'), finished = utc(sketch.finished, 'Sketch source proof finish');
+  assert.ok(phaseStart <= started && started <= finished && finished <= checked && checked <= phaseEnd, 'Observation clocks must be ordered inside their own observed child phase');
+  const stable = structuredClone(value); delete stable.checked_at_utc;
+  delete stable.followup_evidence.notesLayoutValueApiCheckpoint.sketch.started;
+  delete stable.followup_evidence.notesLayoutValueApiCheckpoint.sketch.finished;
+  return { stable, clocks: { checked_at_utc: value.checked_at_utc, sketchStarted: sketch.started, sketchFinished: sketch.finished,
+    phaseStartedAtUtc: phase.startedAtUtc, phaseCompletedAtUtc: phase.completedAtUtc } };
+}
+// END exact publication repeat projection.
+
 const receipt = { schema: 'rea-hosted-publication-validation-attempt/v1', status: 'running', startedAtUtc: new Date().toISOString(),
   scope: 'Publication integrity, syntax, links, credential patterns, immutable historical sources and finite cloud records; no behavioral-suite rerun.',
   execution: Object.fromEntries(['CI', 'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_REPOSITORY', 'GITHUB_REF', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT'].map(name => [name, process.env[name] ?? null])),
@@ -163,7 +189,12 @@ try {
   const first = await child('publication-write', ['scripts/verify-records.mjs', '--write']); assert.equal(first.status, 'passed');
   const validationBytes = fs.readFileSync(path.join(root, DERIVED[1])), validation = JSON.parse(validationBytes); assert.deepEqual(first, validation); write('derived/' + DERIVED[1], validationBytes); receipt.firstRootWritePassed = true; save();
   const second = await child('publication-recheck', ['scripts/verify-records.mjs']); assert.equal(second.status, 'passed');
-  const firstStable = { ...first }, secondStable = { ...second }; delete firstStable.checked_at_utc; delete secondStable.checked_at_utc; assert.deepEqual(secondStable, firstStable);
+  const firstProjection = publicationRepeatProjection(first, receipt.phases[0]), secondProjection = publicationRepeatProjection(second, receipt.phases[1]);
+  assert.ok(Date.parse(receipt.phases[0].completedAtUtc) <= Date.parse(receipt.phases[1].startedAtUtc), 'Owned publication phases must be sequential');
+  assert.deepEqual(secondProjection.stable, firstProjection.stable);
+  receipt.repeatComparison = { status: 'passed', onlyNamedObservationClocksProjected: true, allOtherFieldsDeepEqual: true,
+    first: { clocks: firstProjection.clocks, rawStdout: identity(fs.readFileSync(path.join(evidence, 'publication-write.stdout.txt'))) },
+    second: { clocks: secondProjection.clocks, rawStdout: identity(fs.readFileSync(path.join(evidence, 'publication-recheck.stdout.txt'))) } }; save();
   const after = payload('after'); assert.deepEqual(after.rows, before.rows); receipt.payloadAfter = { files: after.rows.length, bytes: after.bytes, rowsIdentity: identity(Buffer.from(JSON.stringify(after.rows))) }; receipt.payloadStable = true;
   assert.equal(git(['rev-parse', 'HEAD']).trim(), process.env.GITHUB_SHA);
   const status = git(['status', '--porcelain=v1', '--untracked-files=all', '-z']).split('\0').filter(Boolean); assert.ok(status.every(row => row.slice(0, 2) === ' M' && DERIVED.includes(row.slice(3)))); receipt.derivedWorktreePaths = status.map(row => row.slice(3)).sort();

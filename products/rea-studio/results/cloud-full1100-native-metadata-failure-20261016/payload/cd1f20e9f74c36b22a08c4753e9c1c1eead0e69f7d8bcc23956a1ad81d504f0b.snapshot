@@ -1,0 +1,68 @@
+Hosted bsdtar pair proposal, 2026-10-15. SOURCE AUTHORED ONLY.
+
+No current app/test file or Archive experimental bundle was edited. No local
+bootstrap, original binary, test, build, syntax checker or patch checker ran.
+The proposed helper and two narrow patches have not been applied or accepted.
+
+Committed-source candidate authored separately:
+products/rea-studio/scripts/bootstrap-cloud-bsdtar.mjs
+
+It permits only standard GitHub-hosted Windows, CI=true, GITHUB_ACTIONS=true,
+Node24.16.0, and an explicit owned RUNNER_TEMP evidence child. It fetches the
+two stable official Microsoft Symbol Server URLs, caps each transfer at its
+exact recorded size with a45-second deadline, requires SHA256 and PE identity,
+and retains images only under ignored .local/bsdtar-original. Initial/terminal
+receipts distinguish acquisition from actual original execution. It does not
+launch originals, inspect signatures via a native program or claim a test pass.
+
+EXE: tar.exe,92280 bytes, SHA256
+4e598a8cec84af779e3377442fce2b94b976f614ed4c6e5a665e19308fd1e379
+https://msdl.microsoft.com/download/symbols/tar.exe/BE8EDDEC14000/tar.exe
+
+DLL: archiveint.dll,1482752 bytes, SHA256
+ca36efd61b33586e4cee69513bf3dcc8d20b65f37bd6495d5d82eb15833b5824
+https://msdl.microsoft.com/download/symbols/archiveint.dll/0B7F5A2E16a000/archiveint.dll
+
+These exact reference images remain in the local WinSxS build26100.9278
+components. Source investigation read their version metadata, static import
+strings and PE headers and performed one targeted hash per identified image.
+HEAD-only requests returned200 with the exact expected lengths. Actual hosted
+GET digest validation remains pending; no remote image was downloaded locally.
+Ephemeral redirected SAS URLs must not be saved or used as permanent sources.
+
+The old historical receipt pinned only tar.exe. A second retained3.8.8 DLL
+from build26100.9549 has a different hash; therefore this newly explicit
+paired-build9278 DLL identity is not proof of which DLL the old run loaded.
+Preserve every historical receipt/test snapshot and label new results as a
+new oracle-dependency epoch. Do not weaken the EXE pin or any skip/fail gate.
+
+Why a WINDIR-only adapter is insufficient: current tests copy the EXE into a
+private fixture directory before invoking it. The EXE imports archiveint.dll.
+Without copying the pinned DLL beside that executed copy, Windows may resolve
+the current system DLL. The proposed helper authenticates both cache files
+first, writes both with exclusive creation in the existing owned temporary
+fixture, rechecks copies and preserves the existing EXE basename expected by
+test bodies. The patches change only the import and local oracle-loader body;
+test bodies, original banners, frozen fixtures and expected outcomes remain.
+
+Hosted validation sequence, AFTER a reviewed new derivative epoch composes
+the work-only helper/patches and records exact before/after identities:
+
+node products/rea-studio/scripts/bootstrap-cloud-bsdtar.mjs --evidence <unique absolute RUNNER_TEMP child>
+
+Then use the streaming cloud collector or an equivalent recorded hosted
+selection to run formats.test.mjs and zstd.test.mjs with the complete pinned
+7-Zip prerequisites also acquired. Both loaders execute --version from the
+paired private copy before comparisons, retaining the existing banner checks.
+Record actual process exits/output, before/after source identities, the new
+paired DLL identity and the bootstrap receipt. A separate small hosted
+smoke invocation may run `.local/bsdtar-original/tar.exe --version` after
+both images authenticate; it is actual original execution and must be counted
+separately from acquisition and comparison calls. No binary upload or system
+file replacement is required.
+
+Microsoft primary reference for timestamp/image-size symbol-store indexing:
+https://learn.microsoft.com/en-us/windows/win32/debug/using-symstore
+Fallback package identified by Microsoft Support/Catalog is KB5120998,
+build26100.9278 (2026-08-27), approximately5GB for x64. Official small-image
+retrieval avoids that bulk download; it does not alter Microsoft licensing.

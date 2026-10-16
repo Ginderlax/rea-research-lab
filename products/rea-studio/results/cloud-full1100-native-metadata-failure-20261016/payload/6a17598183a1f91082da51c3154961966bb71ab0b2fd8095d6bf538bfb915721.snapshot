@@ -1,0 +1,45 @@
+TAP version 13
+# Subtest: archive HTTP file creation, ZIP validation and extraction persist through host restarts
+not ok 1 - archive HTTP file creation, ZIP validation and extraction persist through host restarts
+  ---
+  duration_ms: 15798.2349
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\app.integration.test.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Native Windows source metadata is unavailable or invalid; archive creation was refused.
+    
+    400 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 400
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.integration.test.mjs:13:51)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.integration.test.mjs:15:85)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: stored and deflated ZIP files preserve binary, UTF-8, empty files and directories
+not ok 2 - stored and deflated ZIP files preserve binary, UTF-8, empty files and directories
+  ---
+  duration_ms: 15590.5217
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\app.test.mjs:17:1'
+  failureType: 'testCodeFailure'
+  error: 'Native Windows source metadata is unavailable or invalid; archive creation was refused.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    unavailable (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:71:33)
+    readSourceMetadata (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:143:19)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async collect (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:49:20)
+    async run (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:106:22)
+    async handle (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:168:18)
+    async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.test.mjs:23:20)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...

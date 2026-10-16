@@ -1,0 +1,269 @@
+{
+  "schema": "rea-notes-todo-real-browser-case/v1",
+  "testId": "ce7710fa7634e1b776b4-ee3ea34d43cbed03b913",
+  "title": "Notes held actual committed response retains ordinarily typed newer draft and saves with the returned revision",
+  "statusAtFixtureClose": "passed",
+  "retry": 0,
+  "url": "http://127.0.0.1:61228",
+  "ownedDataDirectory": "D:\\a\\_temp\\rea-installed-notes-browser-synthetic-data-Vf867g\\notes-case-CofLw2",
+  "serverCloseObserved": true,
+  "realBrowser": true,
+  "actualHTTP": true,
+  "originalProductExecutions": 0,
+  "originalFullApplicationExecutions": 0,
+  "originalHelperExecutions": 0,
+  "programmaticDisabledControlProbes": 0,
+  "teardown": {
+    "stage": "completed",
+    "heldRoutesFinished": true,
+    "drained": true,
+    "contextClosed": true,
+    "serverClosed": true,
+    "screenshotSaved": true,
+    "requestCounts": {
+      "started": 22,
+      "finished": 22,
+      "failed": 0
+    },
+    "steps": [
+      {
+        "name": "release-held-routes",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:44.106Z",
+        "completedAtUtc": "2026-10-16T14:39:44.106Z"
+      },
+      {
+        "name": "screenshot",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:44.106Z",
+        "completedAtUtc": "2026-10-16T14:39:44.156Z"
+      },
+      {
+        "name": "drain-owned-page-requests",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:44.156Z",
+        "completedAtUtc": "2026-10-16T14:39:44.156Z"
+      },
+      {
+        "name": "capture-synthetic-final-record",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:44.156Z",
+        "completedAtUtc": "2026-10-16T14:39:44.157Z"
+      },
+      {
+        "name": "close-owned-context",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:44.157Z",
+        "completedAtUtc": "2026-10-16T14:39:44.215Z"
+      },
+      {
+        "name": "close-owned-server",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:44.215Z",
+        "completedAtUtc": "2026-10-16T14:39:44.216Z"
+      }
+    ],
+    "pendingOwnedRequests": 0
+  },
+  "observations": [
+    {
+      "kind": "actual-disk-commit-before-response-release",
+      "noteId": "db3d35ba-f878-4fa5-bd9f-33dba2570b8f",
+      "committedRevision": 3,
+      "nextSubmittedRevision": 3,
+      "finalRevision": 4,
+      "ordinaryEnabledFieldTyping": true,
+      "programmaticDisabledControlProbe": false
+    },
+    {
+      "kind": "owned-synthetic-disk-record",
+      "path": "notes-records/ce7710fa7634e1b776b4-ee3ea34d43cbed03b913.json",
+      "bytes": 1678,
+      "sha256": "7268e3a90123c9df152673c99ae8e510957fbe219fe526d9cceb228501e50dbd"
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"revision\":0,\"title\":\"Held commit task\",\"body\":\"Saved synthetic body\",\"notebook\":\"Notes\",\"tags\":[\"study\"]}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"db3d35ba-f878-4fa5-bd9f-33dba2570b8f\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/todo-type",
+      "postData": "{\"id\":\"db3d35ba-f878-4fa5-bd9f-33dba2570b8f\",\"revision\":1,\"type\":\"todo\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"db3d35ba-f878-4fa5-bd9f-33dba2570b8f\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/todo-completed",
+      "postData": "{\"id\":\"db3d35ba-f878-4fa5-bd9f-33dba2570b8f\",\"revision\":2,\"completed\":true}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"id\":\"db3d35ba-f878-4fa5-bd9f-33dba2570b8f\",\"revision\":3,\"title\":\"Ordinary newer title\",\"body\":\"Ordinary newer body after actual disk commit\",\"notebookId\":\"4cdd6db14da7bf859108ed2dd938a26e\",\"tags\":[\"study\"]}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"db3d35ba-f878-4fa5-bd9f-33dba2570b8f\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/todo-type",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/todo-completed",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST"
+    }
+  ],
+  "faults": [
+    {
+      "kind": "delay-after-actual-host-response",
+      "action": "todo-completed",
+      "status": 200,
+      "body": {
+        "bytes": 944,
+        "sha256": "0d07f069d4270603ec0a34cc773ced910105070ac9107512d0fb0b64dd2f7cb8"
+      },
+      "handlerMocked": false,
+      "responseRewritten": false
+    }
+  ],
+  "expectedHttpFailures": [],
+  "expectedConsole": [],
+  "auxiliaryErrors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:61228/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "errors": [],
+  "downloads": []
+}

@@ -314,7 +314,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   for (const target of ["products/rea-studio/results/requirement-evidence-provenance-20261015/preservation-manifest.json","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/verify-records.mjs.snapshot","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot"]) negative('requirement-provenance-mandatory-byte-corruption:' + target, () => createEditorVaultProofMigration(name => name === target ? flip(read(name)) : read(name)), 'new fixed requirement provenance closure identity; historical receipts and registries remain unchanged');
   // Execute only the exact producer projection, using the actual preserved failing
   // attempt outputs. No publication producer or application entry point is run here.
-  const repeatProducerBytes = read('scripts/verify-cloud-publication.mjs'); same(repeatProducerBytes, {"bytes":47328,"sha256":"c67857ad167f4b9d41c1805d7d477c682db10cea77fec24d77dacdc7f64c3696"});
+  const repeatProducerBytes = read('scripts/verify-cloud-publication.mjs'); same(repeatProducerBytes, {"bytes":47328,"sha256":"b036f37acbe88690ac1b22f7538d9e0f83935a1fd1b0622224879cc76cf6cd8b"});
   const repeatProducer = repeatProducerBytes.toString('utf8');
   const repeatStart = '// BEGIN exact publication repeat projection (only three owned observation clocks).', repeatEnd = '// END exact publication repeat projection.';
   assert.equal(repeatProducer.split(repeatStart).length, 2); assert.equal(repeatProducer.split(repeatEnd).length, 2);

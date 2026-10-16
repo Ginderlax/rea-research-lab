@@ -1,0 +1,331 @@
+"""Exact installed Notes92/8 backup reader; no product code is imported/executed."""
+import gzip,hashlib,io,json,re,stat,struct,subprocess,sys,tarfile,zipfile,zlib
+from pathlib import Path
+RUN='38917424088'
+HEAD='362bda055ac4cf7201b2d6a75a2b30dc6fedb578'
+source=Path(sys.argv[1]).resolve();expected=sys.argv[2];ROLE=sys.argv[3]
+assert ROLE in ('finite','browser') and sys.argv[4:]==[RUN,HEAD]
+WORK=Path(__file__).resolve().parent;LAB=WORK.parent/'outputs/rea-research-lab'
+assert source.is_relative_to((WORK/'cloud-verification-backups').resolve()) and source.parent.name=='run-'+RUN
+sha=lambda b:hashlib.sha256(b).hexdigest()
+identity=lambda b:{'bytes':len(b),'sha256':sha(b)}
+pin=lambda r:{k:r[k] for k in ('bytes','sha256')}
+raw=source.read_bytes();assert len(raw)<=16*1024*1024 and sha(raw)==expected
+folder=source.parent/source.stem;folder.mkdir(exist_ok=False)
+def safe(root,name):
+    assert isinstance(name,str) and name and not re.search(r'[\\:\x00-\x1f\x7f]',name) and not name.startswith('/')
+    assert all(p not in ('','.','..') for p in name.split('/'))
+    target=(root/name).resolve();assert target.is_relative_to(root.resolve()) and not target.is_symlink();return target
+def unpack(archive,destination,file_limit,byte_limit,individual_limit):
+    destination.mkdir(parents=True,exist_ok=False);records=[];names=set()
+    with zipfile.ZipFile(archive) as z:
+        entries=z.infolist();assert len(entries)<=file_limit and sum(r.file_size for r in entries)<=byte_limit
+        for row in entries:
+            assert row.filename not in names;names.add(row.filename);assert not stat.S_ISLNK(row.external_attr>>16)
+            target=safe(destination,row.filename.rstrip('/'))
+            if row.is_dir():target.mkdir(parents=True,exist_ok=True);continue
+            assert row.file_size<=individual_limit;data=z.read(row);assert len(data)==row.file_size
+            target.parent.mkdir(parents=True,exist_ok=True)
+            with target.open('xb') as out:out.write(data)
+            assert target.read_bytes()==data
+            records.append({'path':row.filename,**identity(data),'zipCRC32':format(row.CRC,'08x')})
+    return records
+outer=unpack(source,folder/'downloaded-contents',4,16*1024*1024,15*1024*1024)
+assert len(outer)==1 and outer[0]['path'] in ('rea-notes-installed-'+ROLE+'-'+RUN+'-1.zip','rea-notes-installed-incomplete-'+ROLE+'-'+RUN+'-1.zip')
+archive=folder/'downloaded-contents'/outer[0]['path'];evidence=folder/'readable-evidence'
+files=unpack(archive,evidence,2500,96*1024*1024,8*1024*1024)
+def content(name):
+    p=safe(evidence,name);assert p.is_file() and p.stat().st_size<=8*1024*1024;return p.read_bytes()
+def load(name):return json.loads(content(name).decode('utf-8-sig'))
+def png(data):
+    assert data[:8]==bytes.fromhex('89504e470d0a1a0a');offset=8;dimensions=None;ended=False
+    while offset+12<=len(data):
+        length=int.from_bytes(data[offset:offset+4],'big');kind=data[offset+4:offset+8];end=offset+12+length;assert end<=len(data)
+        payload=data[offset+8:offset+8+length];assert zlib.crc32(kind+payload)&0xffffffff==int.from_bytes(data[offset+8+length:end],'big')
+        if kind==b'IHDR':assert offset==8 and length==13;dimensions=struct.unpack('>II',payload[:8])
+        offset=end
+        if kind==b'IEND':assert length==0 and offset==len(data);ended=True;break
+    assert ended and dimensions==(1440,1100)
+execution={'CI':'true','GITHUB_ACTIONS':'true','RUNNER_ENVIRONMENT':'github-hosted','RUNNER_OS':'Windows','RUNNER_ARCH':'X64','GITHUB_SHA':HEAD,'GITHUB_RUN_ID':RUN,'GITHUB_RUN_ATTEMPT':'1','GITHUB_REPOSITORY':'Ginderlax/rea-research-lab'}
+result={'schema':'rea-local-installed-Notes-two-job-backup/v1','runId':RUN,'sourceCommit':HEAD,'role':ROLE,'artifact':str(source),'artifactSHA256':expected,'archiveBytes':len(raw),'portableEvidenceArchive':str(archive),'readableEvidence':str(evidence),'files':files,'allCRCAndBytesReadable':True,'recordedContractPassed':False,'evidenceConsistencyErrors':[],'localProductExecutions':0,'localTests':0,'localBuilds':0,'localBrowserExecutions':0,'fullParity':False,'superiority':False,'attempt':None}
+tree_raw=subprocess.run(['git','-C',str(LAB),'ls-tree','-rz',HEAD],capture_output=True,check=True).stdout
+tree={};tree_modes={}
+for item in tree_raw.split(b'\0'):
+    if item:
+        meta,name=item.split(b'\t',1);mode,kind,blob=meta.split()
+        if kind==b'blob':tree[name.decode()]=blob.decode();tree_modes[name.decode()]=mode
+def gitbound(name,data):
+    assert name in tree and tree_modes[name] in (b'100644',b'100755') and hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()==tree[name],name
+def installed_proof():
+    value=load('notes-installed-source-check.json');post=load('notes-installed-postrun-source-check.json')
+    assert value['schema']=='rea-Notes-hosted-installed-source-check/v1' and value['status']=='verified-unexecuted-committed-afterimages'
+    assert value['execution']==execution and value['sourceCommit']==HEAD and value['mode']=='notes-todo-installed'
+    assert value['sourceOnly'] is True and value['sourceMutationPerformed'] is False and value['installationPerformedByCommand'] is False
+    assert value['applicationExecutions']+value['originalExecutions']+value['browserExecutions']==0
+    auth=value['authentication'];assert auth['allNotesFiles']==32 and auth['eligibleNotesSources']==30 and auth['exactAfterTargets']==8
+    assert auth['all32NotesGitBlobsAuthenticated'] is True and auth['all8AfterPinsAuthenticated'] is True
+    assert len(auth['currentSources'])==32 and len({r['path'] for r in auth['currentSources']})==32
+    helper_path='products/rea-studio/scripts/verify-notes-installed-cloud.mjs'
+    helper=content(('verification/source/scripts/' if ROLE=='finite' else 'source/scripts/')+'verify-notes-installed-cloud.mjs.snapshot')
+    assert identity(helper)=={'bytes':16764,'sha256':'2248d91efbcdcefbf66ec933575076e2a3073d1cf13fb1da39ad31d4698e31c9'};gitbound(helper_path,helper)
+    fixed=json.loads(re.search(r'^const NOTES=(\[.*?\]);$',helper.decode(),re.M).group(1))
+    assert {r['path']:pin(r) for r in auth['currentSources']}=={'products/rea-studio/'+r['path']:pin(r) for r in fixed}
+    expected_names={p for p in tree if p.startswith('products/rea-studio/apps/notes/') and '/results/' not in p}
+    assert {r['path'] for r in auth['currentSources']}==expected_names
+    for row in auth['currentSources']:
+        data=content('installed-source/'+row['path']+'.snapshot');assert identity(data)==pin(row);gitbound(row['path'],data);assert tree[row['path']]==row['gitBlob']
+    assert len({r['path'] for r in auth['dependencies']})==len(auth['dependencies'])==27
+    for row in auth['dependencies']:
+        data=content('installed-dependencies/'+row['path']+'.snapshot');assert identity(data)==pin(row);gitbound(row['path'],data);assert tree[row['path']]==row['gitBlob']
+    bundle=load('installed-dependencies/products/rea-studio/experiments/notes-todo/bundle.json.snapshot')
+    assert identity(content('installed-dependencies/products/rea-studio/experiments/notes-todo/bundle.json.snapshot'))=={'bytes':10977,'sha256':'6489170855483748eaff4ece03bdbadc29f79ab87cf9a16015dede504891bd62'}
+    assert len(auth['exactTargets'])==8 and {r['path']:pin(r) for r in auth['exactTargets']}=={r['target']:pin(r['after']) for r in bundle['transitions']}
+    workflow_pin=json.loads(re.search(r'^const workflowSource=(\{.*?\});$',helper.decode(),re.M).group(1))
+    assert auth['installedWorkflow']==workflow_pin
+    assert identity(content('installed-dependencies/'+workflow_pin['path']+'.snapshot'))==pin(workflow_pin)
+    assert post['schema']=='rea-Notes-hosted-installed-postrun-source-check/v1' and post['status']=='source-verified'
+    assert post['execution']==execution and post['sourceCommit']==HEAD and post['sourceStable'] is True and post['authentication']==auth
+    assert post['beforeReceipt']==identity(content('notes-installed-source-check.json'))
+    assert post['applicationExecutions']+post['originalExecutions']+post['browserExecutions']==0
+    workflow=load('installed-workflow-attempt.json')
+    assert workflow['schema']=='rea-Notes-installed-workflow-attempt/v1' and workflow['role']==ROLE and workflow['sourceCommit']==HEAD
+    assert workflow['runId']==RUN and workflow['runAttempt']=='1' and workflow['runnerEnvironment']=='github-hosted'
+    assert [workflow[k] for k in ('checkoutOutcome','sourceBeforeOutcome','verificationOutcome','sourceAfterOutcome')]==['success']*4
+    for k in ('sourceOverlay','installationPerformedByWorkflow','productionInstallationReceiptAuthenticated','historicalReceiptsRebound','fullParity','superiority'):assert workflow[k] is False
+    if ROLE=='browser':assert workflow['acquisitionOutcome']=='success' and workflow['browserPostcheckOutcome']=='success'
+    assert not (evidence/'storage-failure.json').exists()
+    result['installedSourceAuthentication']={'allNotesFiles':32,'eligibleNotesSources':30,'exactAfterTargets':8,'allNotesAndDependenciesGitBlobAuthenticated':True,'dependencyFiles':len(auth['dependencies'])}
+    result['installedSourcePostcheck']=identity(content('notes-installed-postrun-source-check.json'))
+    return value,auth,bundle
+def census(prefix,attempt,browser=False):
+    before=load(prefix+('browser-source-before.json' if browser else 'source-before.json'));after=load(prefix+('browser-source-after.json' if browser else 'source-after.json'))
+    assert before==after and len({r['path'] for r in before})==len(before)==attempt['sourceFiles']
+    assert attempt['sourceCapturedBeforeExecution'] is True and attempt['sourceStable'] is True
+    rows=before if browser else [r for r in before if 'results' not in r['path'].split('/')]
+    assert len(rows)<=2000 and sum(r['bytes'] for r in rows)<=64*1024*1024
+    for row in rows:
+        data=content(prefix+'source/'+row['path']+'.snapshot');assert identity(data)==pin(row);gitbound('products/rea-studio/'+row['path'],data)
+    assert {r['path'] for r in files if r['path'].startswith(prefix+'source/')}=={prefix+'source/'+r['path']+'.snapshot' for r in rows}
+    assert len([r for r in rows if r['path'].startswith('apps/notes/')])==30
+    result['censusFiles']=len(before);result['sourceSnapshotFilesVerified']=len(rows);result['allEligibleSourceGitBlobsAuthenticated']=len(rows)
+    return before,rows
+def audit_finite():
+    if not (evidence/'verification/attempt-validation.json').exists():result['attemptMissing']=True;return
+    attempt=load('verification/attempt-validation.json');result['attempt']={k:attempt.get(k) for k in ('status','scope','repositoryCommit','summary','sourceFiles','sourceStable','failure')}
+    if attempt['status']!='passed':result['hostedAttemptNotPassing']=True;return
+    value,auth,bundle=installed_proof()
+    assert attempt['schema']=='rea-cloud-development-attempt/v1' and attempt['scope']=='notes-todo-installed' and attempt['phase']=='terminal'
+    assert attempt['repositoryCommit']==HEAD and all(attempt['environment'][k]==v for k,v in execution.items())
+    assert attempt['runtime']['version']=='v24.16.0' and attempt['runtime']['platform']=='win32'
+    assert attempt['summary']['tests']==attempt['summary']['pass']==92 and sum(attempt['summary'][k] for k in ('fail','cancelled','skipped','todo'))==0
+    assert attempt['exitCode']==0 and attempt['signal'] is None and attempt['childCloseObserved'] is True and attempt['failures']==[] and attempt['failure'] is None
+    assert attempt['output']['droppedOutputBytes']==0 and attempt['output']['retainedOutputTruncated'] is False
+    before,rows=census('verification/',attempt)
+    snapshot=load('verification/source-snapshot-manifest.json');assert snapshot['censusFiles']==len(before) and len(snapshot['files'])==len(rows)==attempt['sourceSnapshotFiles']
+    baseline=load('verification/git-baseline-active-source.json');assert baseline['repositoryCommit']==HEAD and baseline['excludedTargets']==[]
+    assert {r['path']:pin(r) for r in baseline['files']}=={r['path']:pin(r) for r in rows}
+    assert all(tree['products/rea-studio/'+r['path']]==r['gitBlob'] for r in baseline['files'])
+    assert attempt['selectedTestFiles']==[p.removeprefix('products/rea-studio/') for p in bundle['tests']] and len(attempt['selectedTestFiles'])==17
+    assert attempt['command'][1:4]==['--test','--test-reporter=tap','--test-concurrency=1'] and attempt['command'][4:]==attempt['selectedTestFiles']
+    assert pin(attempt['notesInstalled'])==identity(content('notes-installed-source-check.json')) and attempt['notesInstalled']['allCommittedSourcesStableAfter'] is True
+    assert attempt['notesInstalled']['gitBaselineEligibleActiveFiles']==len(rows) and attempt['notesInstalled']['gitBaselineEligibleActiveBytesAuthenticated'] is True
+    assert content('verification/notes-installed-source-check.json.snapshot')==content('notes-installed-source-check.json')
+    raw=content('verification/stdout.txt').decode()
+    for key,value in attempt['summary'].items():
+        found=re.findall(r'^# '+re.escape(key)+r' (\d+(?:\.\d+)?)\r?$',raw,re.M);assert len(found)==1 and float(found[0])==value
+    assert not re.search(r'^not ok \d+ - ',raw,re.M)
+    for name in bundle['authoredNewGroupNames']:assert len(re.findall(r'^# Subtest: '+re.escape(name)+r'\r?$',raw,re.M))==1
+    observations=load('verification/notes-todo-observations.json');assert observations['execution']==attempt['environment'] and observations['authoredNewGroupsObserved']==23 and observations['originalHelperComparisons']==20 and observations['countsAddedToTestGroups'] is False
+    original=observations['original'];assert original['sourceSha256']==bundle['originalNote']['sha256'] and original['sourceUrl']==bundle['originalNote']['url']
+    assert original['conversionComparisons']==16 and original['completionComparisons']==4 and original['clock']==1790000000123
+    assert all(original[k]==0 for k in ('originalFullApplicationExecutions','originalDatabaseExecutions','originalGuiSessions'))
+    delivery=observations['actualHttpModuleDelivery'];assert delivery['unchangedPublicModuleBoundary'] is True and delivery['actualBrowserExecution'] is False
+    assert [r['path'] for r in delivery['delivered']]==['/apps/notes/markdown.mjs','/apps/notes/core.mjs']
+    assert delivery['client']==identity(content('verification/source/apps/notes/client.mjs.snapshot'))
+    for row in delivery['delivered']:assert pin(row)==identity(content('verification/source/'+row['path'].lstrip('/')+'.snapshot'))
+    assert attempt['notesLegacyObservation']['present'] is True and (evidence/'verification/notes-legacy-trash-original.json').is_file()
+    result['finiteObservations']={'groups':92,'testFiles':17,'newNames':23,'originalHelperComparisons':20,'conversionComparisons':16,'completionComparisons':4,'originalFullApplicationExecutions':0,'actualHttpModuleDeliveryVerified':True,'countsAggregated':False}
+    result['recordedContractPassed']=True
+def audit_browser():
+    if not (evidence/'browser-attempt.json').exists():result['attemptMissing']=True;return
+    attempt=load('browser-attempt.json');result['attempt']={k:attempt.get(k) for k in ('status','sourceCommit','summary','sourceFiles','sourceStable','failure')}
+    if attempt['status']!='passed':result['hostedAttemptNotPassing']=True;return
+    value,auth,bundle=installed_proof()
+    assert attempt['schema']=='rea-cloud-browser-attempt/v1' and attempt['execution']==execution and attempt['sourceCommit']==HEAD
+    expected_summary={'tests':8,'passed':8,'failed':0,'skipped':0,'flaky':0,'retries':0,'exactRealDownloads':2,'actualResponseHolds':4,'genuineRevisionConflicts':1,'originalProcesses':0}
+    assert attempt['summary']==expected_summary and attempt['productTests']==8 and attempt['testsByteOverlay'] is False
+    installed=attempt['notesInstalled'];assert pin(installed)==identity(content('notes-installed-source-check.json'))
+    assert installed['sourceCommit']==HEAD and installed['allNotesFiles']==32 and installed['exactAfterTargets']==8
+    assert installed['allNotesGitBound'] is True and installed['separatePostcheckRequired'] is True
+    assert installed['sourceMutationPerformed'] is False and installed['installationPerformedByCollector'] is False and installed['productionInstallationReceiptVerified'] is False
+    assert attempt['applicationSourcesChanged'] is False and attempt['historicalReceiptsRebound'] is False
+    before,rows=census('',attempt,True)
+    assert attempt['sourceAuthentication']=={'allEligibleGitBlobs':len(rows),'allEligibleNotesSources':30,'allNotesFiles':32,'exactNotesTargets':8,'sourceOverlay':False,'allOtherEligibleSourcesGitBound':True}
+    assert all(attempt[k]==0 for k in ('retries','originalProductExecutions')) and attempt['workers']==1 and attempt['failure'] is None
+    assert len(attempt['children'])==1
+    child=attempt['children'][0];assert child['label']=='eight-real-installed-notes-browser-scenarios' and child['exitCode']==0 and child['closeObserved'] is True and child['signal'] is None and child['stopReason'] is None
+    acquisition=load('browser-tooling-acquisition.json');assert acquisition['status']=='acquired' and acquisition['execution']==execution and acquisition['sourceCommit']==HEAD
+    assert attempt['acquisition']==identity(content('browser-tooling-acquisition.json')) and acquisition['browserImage']==attempt['browserImage'] and acquisition['toolingSource']==attempt['toolingSource']
+    assert attempt['browserImage']['revision']=='1248' and attempt['browserImage']['expectedVersion']=='156.0.8078.4'
+    browser=load('browser-observation.json');assert browser=={'schema':'rea-cloud-real-browser-observation/v1','browser':'chromium','channel':'chromium','version':'156.0.8078.4','realBrowserFixtureCreated':True,'retries':0}
+    worker_names=[r['path'] for r in files if re.fullmatch(r'browser-observation-process-[0-9]+\.json',r['path'])];assert len(worker_names)==1
+    worker=load(worker_names[0]);assert worker['schema']=='rea-cloud-notes-todo-browser-worker-observation/v1' and worker['execution']==execution and worker['observation']==browser
+    assert worker_names[0]=='browser-observation-process-'+str(worker['pid'])+'.json'
+    assert attempt['browserWorkers']==[{'path':worker_names[0],**identity(content(worker_names[0])),'pid':worker['pid']}]
+    expected_pins=[{'path':r['target'].removeprefix('products/rea-studio/'),**pin(r['after'])} for r in bundle['transitions']]
+    assert sorted(worker['sourcePins'],key=lambda r:r['path'])==sorted(expected_pins,key=lambda r:r['path'])
+    assert attempt['notesVerifierSource']=={'path':'products/rea-studio/scripts/verify-notes-installed-cloud.mjs','bytes':16764,'sha256':'2248d91efbcdcefbf66ec933575076e2a3073d1cf13fb1da39ad31d4698e31c9'}
+    assert identity(content('notes-installed-workflow.yml.snapshot'))==pin(auth['installedWorkflow']) and attempt['workflowSource']==auth['installedWorkflow']
+    roster = load('source/browser-tests/notes-todo-roster.json.snapshot')
+    assert len(roster) == len(set(roster)) == 8 and attempt['scenarios'] == roster
+    report = load('playwright-results.json')
+    specs = []
+    def visit(suite):
+        specs.extend(suite.get('specs', []))
+        for nested in suite.get('suites', []):
+            visit(nested)
+    for suite in report['suites']:
+        visit(suite)
+    assert report['errors'] == [] and [report['stats'][k] for k in ('expected', 'unexpected', 'skipped', 'flaky')] == [8, 0, 0, 0]
+    assert len(specs) == 8 and sorted(spec['title'] for spec in specs) == sorted(roster)
+    for spec in specs:
+        assert spec['ok'] is True and len(spec['tests']) == 1
+        item = spec['tests'][0]
+        assert item['status'] == 'expected' and len(item['results']) == 1
+        assert item['results'][0]['status'] == 'passed' and item['results'][0]['retry'] == 0
+    kinds = ['ordinary-browser-task-lifecycle', 'dirty-draft-no-transport', 'actual-disk-commit-before-response-release',
+             'new-editor-generation-after-actual-commit', 'actual-navigation-disposal-after-commit',
+             'actual-host-revision-conflict-and-explicit-retry', 'actual-post-accept-list-refresh-draft',
+             'actual-jex-native-tar-and-resource-download']
+    case_names = [row['path'] for row in files if re.fullmatch(r'case-[A-Za-z0-9-]+\.json', row['path'])]
+    assert len(case_names) == 8
+    cases = [load(name) for name in case_names]
+    assert sorted(case['title'] for case in cases) == sorted(roster)
+    holds, downloads, screenshots, disk_rows, cleanups, summaries = [], [], [], [], [], []
+    for name, case in zip(case_names, cases):
+        index = roster.index(case['title'])
+        assert case['schema'] == 'rea-notes-todo-real-browser-case/v1' and case['statusAtFixtureClose'] == 'passed'
+        assert case['retry'] == 0 and case['realBrowser'] is True and case['actualHTTP'] is True and case['serverCloseObserved'] is True
+        assert case['errors'] == [] and name == 'case-' + case['testId'] + '.json'
+        assert all(case[k] == 0 for k in ('originalProductExecutions', 'originalFullApplicationExecutions', 'originalHelperExecutions', 'programmaticDisabledControlProbes'))
+        teardown = case['teardown']
+        assert all(teardown[k] is True for k in ('heldRoutesFinished', 'drained', 'contextClosed', 'serverClosed', 'screenshotSaved'))
+        assert teardown['stage'] == 'completed' and teardown['pendingOwnedRequests'] == 0
+        assert teardown['requestCounts']['failed'] == 0 and teardown['requestCounts']['started'] == teardown['requestCounts']['finished']
+        assert [row['name'] for row in teardown['steps']] == ['release-held-routes', 'screenshot', 'drain-owned-page-requests', 'capture-synthetic-final-record', 'close-owned-context', 'close-owned-server']
+        assert all(row['status'] == 'passed' for row in teardown['steps'])
+        observed = [row for row in case['observations'] if row['kind'] == kinds[index]]
+        assert len(observed) == 1
+        observed = observed[0]
+        image_name = 'screenshots/' + case['testId'] + '.png'
+        image = content(image_name)
+        png(image)
+        screenshots.append({'path': image_name, **identity(image), 'width': 1440, 'height': 1100})
+        record = [row for row in case['observations'] if row['kind'] == 'owned-synthetic-disk-record']
+        assert len(record) == 1 and record[0]['path'] == 'notes-records/' + case['testId'] + '.json'
+        assert identity(content(record[0]['path'])) == pin(record[0])
+        stored = load(record[0]['path'])
+        assert stored['schema'] == 2
+        disk_rows.append({'path': record[0]['path'], **pin(record[0])})
+        assert len(case['faults']) == (1 if index in (2, 3, 4, 6) else 0)
+        for fault in case['faults']:
+            assert fault['kind'] == 'delay-after-actual-host-response' and fault['status'] == 200
+            assert fault['action'] == ('list' if index == 6 else 'todo-completed')
+            assert fault['handlerMocked'] is False and fault['responseRewritten'] is False
+            assert fault['body']['bytes'] > 0 and re.fullmatch('[0-9a-f]{64}', fault['body']['sha256'])
+            holds.append({'title': case['title'], **fault})
+        failures = [row for row in case['responses'] if row['status'] >= 400]
+        assert len(case['expectedHttpFailures']) == len(failures) == (1 if index == 5 else 0)
+        if index == 0:
+            assert observed['fiveTaskFiltersObserved'] is True and observed['combinedSearchTagNotebook'] is True
+            assert observed['dueTimestamp'] == 1899710813123 and observed['dueMetadataIsNotAlarm'] is True
+        if index == 1:
+            assert observed['additionalMutatingRequests'] == 0 and observed['storedBytesBefore'] == observed['storedBytesAfter']
+            assert stored['notes'][observed['noteId']]['todo']['isTodo'] is True
+        if index in (2, 6):
+            assert observed['ordinaryEnabledFieldTyping'] is True and observed['nextSubmittedRevision'] == observed['committedRevision']
+            assert observed['finalRevision'] == observed['committedRevision'] + 1
+            assert stored['notes'][observed['noteId']]['revision'] == observed['finalRevision']
+        if index == 3:
+            assert observed['originalId'] != observed['newId'] and observed['newRevision'] == 1
+            assert stored['notes'][observed['newId']]['revision'] == 1
+            assert stored['notes'][observed['originalId']]['revision'] == observed['originalCommittedRevision']
+        if index == 4:
+            assert observed['lateNotesRequests'] == 0 and observed['detachedControlObserved'] is True
+            assert observed['detachedControlScrubbingClaimed'] is False
+        if index == 5:
+            error = 'Note changed since it was opened. Reopen it before saving; your draft is preserved.'
+            expected_failure = case['expectedHttpFailures'][0]
+            assert expected_failure['path'] == '/api/notes/todo-completed' and expected_failure['status'] == 400
+            assert expected_failure['observed'] is True and expected_failure['errorMessage'] == error
+            assert failures[0]['status'] == 400 and failures[0]['expectedActualHostFailure'] is True and failures[0]['error'] == error
+            assert observed['responseMocked'] is False and observed['rejectedHTTPStatus'] == 400
+            assert observed['reopenedRevision'] == observed['concurrentRevision']
+            assert observed['successfulRetryRevision'] == observed['concurrentRevision'] + 1
+            assert stored['notes'][observed['noteId']]['revision'] == observed['successfulRetryRevision']
+        else:
+            assert case['expectedConsole'] == []
+        assert len(case['downloads']) == (2 if index == 7 else 0)
+        for download in case['downloads']:
+            data = content(download['path'])
+            assert identity(data) == download['observed']
+            assert [row for row in case['observations'] if row.get('path') == download['path']] == [download]
+            if download['suggestedFilename'] == 'sample.bin':
+                assert data == bytes([0, 1, 127, 128, 255])
+            else:
+                assert download['suggestedFilename'] == 'rea-notes.jex' and len(data) % 512 == 0
+                provenance = load('source/apps/notes/fixtures/pinned-joplin.json.snapshot')
+                assert identity(content('source/apps/notes/fixtures/pinned-joplin.json.snapshot')) == {'bytes': 6174, 'sha256': 'cabc16edfc51e2e58fa0f147f31f5b5b54345a49597a3567583c3623d0fad220'}
+                with tarfile.open(fileobj=io.BytesIO(data), mode='r:') as tar:
+                    members = tar.getmembers()
+                    assert len(members) == 8 and len({m.name for m in members}) == 8
+                    assert all(m.isfile() and m.size <= 1024 * 1024 and not m.name.startswith('/') and '..' not in m.name.split('/') for m in members)
+                    entries = {m.name: tar.extractfile(m).read() for m in members}
+                native_listing = content('notes-native-tar-list-' + case['testId'] + '.txt')
+                assert identity(native_listing) == observed['independentNativeTar']['listing']
+                assert set(native_listing.decode('utf-8').strip().splitlines()) == set(entries)
+                assert entries['resources/' + '5' * 32 + '.bin'] == bytes([0, 1, 127, 128, 255])
+                unchanged = [key for key in provenance['expected'] if key != '3' * 32]
+                assert len(unchanged) == 6
+                for key in unchanged:
+                    assert sha(entries[key + '.md']) == provenance['expected'][key]['rawSha256']
+                assert observed['independentNativeTar']['unchangedRawRecordComparisons'] == 6
+                edited = entries['3' * 32 + '.md'].decode('utf-8').rstrip('\n').split('\n')
+                boundary = max(i for i, line in enumerate(edited) if line == '')
+                props = dict(line.split(': ', 1) for line in edited[boundary+1:])
+                assert props['is_todo'] == '1' and props['todo_due'] == str(observed['dueTimestamp'])
+                assert props['todo_completed'] == str(observed['completionTimestamp']) and props['deleted_time'] == '0'
+                result['independentTarReadback'] = {'members': sorted(entries), 'unchangedRawRecords': 6,
+                    'binaryResource': identity(entries['resources/' + '5' * 32 + '.bin']), 'taskFieldsMatchedRecordedActualDiskObservation': True,
+                    'localTarExecutableCalls': 0, 'reader': 'Python standard library tarfile, bytes only'}
+            downloads.append({'path': download['path'], **identity(data), 'suggestedFilename': download['suggestedFilename']})
+        cleanups.append({'testId': case['testId'], 'stage': teardown['stage'], 'requestCounts': teardown['requestCounts'], 'steps': teardown['steps']})
+        summaries.append({'title': case['title'], 'testId': case['testId'], 'observation': observed})
+    assert len(holds) == 4 and len(downloads) == 2 and len(screenshots) == len(disk_rows) == len(cleanups) == 8
+    ordered = lambda rows: sorted(rows, key=lambda row: row['path'])
+    assert ordered(screenshots) == ordered(attempt['screenshots'])
+    assert ordered(downloads) == ordered(attempt['downloads'])
+    assert ordered(disk_rows) == ordered(attempt['notesBrowser']['ownedDiskRecords'])
+    assert sorted(holds, key=lambda row: row['title']) == sorted(attempt['notesBrowser']['realHolds'], key=lambda row: row['title'])
+    assert {row['path'] for row in files if row['path'].startswith('screenshots/')} == {row['path'] for row in screenshots}
+    assert {row['path'] for row in files if row['path'].startswith('downloads/')} == {row['path'] for row in downloads}
+    assert {row['path'] for row in files if row['path'].startswith('notes-records/')} == {row['path'] for row in disk_rows}
+    browser_post=load('browser-postrun-source-check.json')
+    assert browser_post['schema']=='rea-cloud-Notes-installed-browser-postrun-source-check/v1' and browser_post['status']=='source-verified'
+    assert browser_post['execution']==execution and browser_post['sourceCommit']==HEAD and browser_post['priorBrowserStatus']=='passed'
+    assert browser_post['sourceStable'] is True and browser_post['applicationSourcesChanged'] is False
+    assert browser_post['browserAttempt']==identity(content('browser-attempt.json'))
+    assert browser_post['notesSourcePostcheck']==identity(content('notes-installed-postrun-source-check.json'))
+    assert browser_post['sourceAuthentication']==attempt['sourceAuthentication'] and load('browser-postrun-source-after.json')==before
+    assert browser_post['notesInstalled']==attempt['notesInstalled']
+    result.update({'recordedContractPassed':True,'recordedEightScenarioNotesGatesConsistent':True,'realHoldsVerified':holds,'realDownloadsVerified':downloads,'pngCRCReadbacks':screenshots,'ownedSyntheticDiskRecordsVerified':disk_rows,'ownedCleanupRecordsVerified':cleanups,'scenarioObservations':summaries,'browserPostcheckVerified':identity(content('browser-postrun-source-check.json')),'sameAttemptWorkerRecordsVerified':1,'sourceAuthentication':attempt['sourceAuthentication']})
+try:
+    (audit_finite if ROLE=='finite' else audit_browser)()
+except Exception as error:
+    import traceback
+    result['evidenceConsistencyErrors'].append({'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()})
+    result['recordedContractPassed']=False
+output=folder/'local-installed-notes-backup-verification.json'
+with output.open('x',encoding='utf8') as out:json.dump(result,out,indent=2);out.write('\n')
+assert json.loads(output.read_bytes())==result
+print(json.dumps({k:v for k,v in result.items() if k not in ('files','ownedCleanupRecordsVerified','scenarioObservations','realHoldsVerified','pngCRCReadbacks','ownedSyntheticDiskRecordsVerified')}))

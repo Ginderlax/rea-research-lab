@@ -73,6 +73,11 @@ jobs:
           $source = Join-Path $env:REA_INSTALLED_EVIDENCE 'archive-installed-source-check.json'
           $original = Join-Path $env:REA_INSTALLED_EVIDENCE 'original-acquisition.json'
           node products/rea-studio/scripts/verify-cloud.mjs --scope archive-aes-installed --output "$output" --installed-manifest "$source" --bootstrap-manifest "$original" --timeout-ms 1200000
+      - name: Execute three corrected bounds groups separately from finite161
+        id: bounds
+        if: always() && steps.before.outcome == 'success'
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-archive-installed-cloud.mjs --phase bounds --evidence "$env:REA_INSTALLED_EVIDENCE"
       - name: Independently reauthenticate all 62 files after every started attempt
         id: after
         if: always() && steps.before.outcome == 'success'
@@ -86,7 +91,7 @@ jobs:
           $evidence = $env:REA_INSTALLED_EVIDENCE
           if (-not $evidence) { $evidence = Join-Path $env:RUNNER_TEMP ('rea-archive-installed-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT) }
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
-          @{schema='rea-archive-installed-finite-workflow-attempt/v1';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;installationPerformedByWorkflow=$false;productionInstallationReceiptVerified=$false;acceptancePreclaimed=$false;historicalReceiptsRebound=$false;fullArchiveSuite=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $evidence 'installed-workflow-attempt.json') -Encoding utf8
+          @{schema='rea-archive-installed-finite-workflow-attempt/v1';boundsOutcome='${{ steps.bounds.outcome }}';boundsGroupsSeparateFromFinite161=$true;sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;installationPerformedByWorkflow=$false;productionInstallationReceiptVerified=$false;acceptancePreclaimed=$false;historicalReceiptsRebound=$false;fullArchiveSuite=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $evidence 'installed-workflow-attempt.json') -Encoding utf8
           $files = @(Get-ChildItem -LiteralPath $evidence -File -Recurse)
           $rawBytes = ($files | Measure-Object Length -Sum).Sum
           $bounded = $files.Count -le 2500 -and $rawBytes -le 96*1024*1024 -and @($files | Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0

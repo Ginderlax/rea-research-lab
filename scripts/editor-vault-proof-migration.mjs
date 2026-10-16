@@ -1526,6 +1526,79 @@ function expected(r){assert(r&&Number.isSafeInteger(r.bytes)&&r.bytes>=0&&r.byte
  * The before bytes remain historical; every named installed after is required.
  * This is bounded I/O authentication, not an atomic filesystem snapshot.
  */
+const archiveFixtureCorrection={
+  "manifest": {
+    "path": "products/rea-studio/results/archive-aes-properties-fixture-correction-20261016/source-transition.json",
+    "bytes": 2486,
+    "sha256": "c076b092431eae7bc3c468d168633ee07aa7858aba1291d510edcaa1ded4919f"
+  },
+  "declaration": {
+    "schema": "rea-archive-aes-single-test-source-correction/v1",
+    "sourceOnly": true,
+    "currentTarget": "products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs",
+    "before": {
+      "bytes": 4437,
+      "sha256": "de8b502980907967bab762da46e6056b024dc93a5ddd5b1bd5e21610e6980c71"
+    },
+    "after": {
+      "bytes": 5255,
+      "sha256": "1bdeed45439ab2094c55973d0790866991ed3f81ab5eca505d01977dee84b303"
+    },
+    "beforeImage": {
+      "path": "products/rea-studio/results/archive-aes-properties-fixture-correction-20261016/source-before/sevenzip-aes-bounds.test.mjs.snapshot",
+      "bytes": 4437,
+      "sha256": "de8b502980907967bab762da46e6056b024dc93a5ddd5b1bd5e21610e6980c71"
+    },
+    "afterImage": {
+      "path": "products/rea-studio/results/archive-aes-properties-fixture-correction-20261016/source-after/sevenzip-aes-bounds.test.mjs.snapshot",
+      "bytes": 5255,
+      "sha256": "1bdeed45439ab2094c55973d0790866991ed3f81ab5eca505d01977dee84b303"
+    },
+    "historicalAfterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs.snapshot",
+    "originalDecoder": {
+      "path": "products/rea-studio/experiments/archive-aes/selected-original-source/official-source/full-source/CPP/7zip/Crypto/7zAes.cpp.snapshot",
+      "bytes": 7244,
+      "sha256": "d1d45ef7740bb3dadb39dfeb07834d7261b8ec7ad9e01ccdab521e08a5a011c8"
+    },
+    "currentArchiveFiles": 62,
+    "currentTargetCount": 21,
+    "changedTargetCount": 1,
+    "unchangedTargets": 20,
+    "topLevelTestGroupsBefore": 3,
+    "topLevelTestGroupsAfter": 3,
+    "historicalFiniteGroups": 161,
+    "historicalFiniteSelectionContainsBoundsTestPath": true,
+    "historicalFiniteBoundsContentIsPredecessor": true,
+    "freshFiniteIncludesCorrectedBoundsGroups": 3,
+    "targeted3OverlapFiniteSelection": true,
+    "propertiesRejectionAssertionPreserved": true,
+    "deterministicCounterexamples": [
+      {
+        "firstSaltByte": 239,
+        "droppedLeadingBytes": 33,
+        "cyclesPower": 63,
+        "saltBytes": 15,
+        "encodedIvBytes": 16
+      },
+      {
+        "firstSaltByte": 254,
+        "droppedLeadingBytes": 33,
+        "cyclesPower": 63,
+        "saltBytes": 16,
+        "encodedIvBytes": 15
+      }
+    ],
+    "runtimeChanged": false,
+    "historicalBundleRewritten": false,
+    "historicalFiniteReceiptRewritten": false,
+    "historicalInstallationJournalRewritten": false,
+    "genericHistoricalFallback": false,
+    "currentBehavioralAcceptanceEstablished": false,
+    "localProductExecutions": 0,
+    "localTests": 0
+  }
+};
+
 function verifyArchiveSourceTransition(rawRead, priorBefore, oldCapsule){
  const seen=new Map();let total=0;
  function read(p,r){safe(p);const b=rawRead(p);assert(Buffer.isBuffer(b)&&b.length<=256*1024);const observed=identity(b);same(observed,expected(r),p);if(seen.has(p))same(observed,seen.get(p),'Changed fixed Archive proof '+p);else{seen.set(p,observed);total+=b.length;assert(seen.size<=96&&total<=8*1024*1024,'Fixed Archive proof aggregate bound');}return b;}
@@ -1534,8 +1607,9 @@ function verifyArchiveSourceTransition(rawRead, priorBefore, oldCapsule){
  const index=JSON.parse(read(archiveTransition.index.path,archiveTransition.index));
  assert.equal(index.schema,'rea-archive-aes-installed-source-publication-map/v1');assert.equal(index.status,'source-plan-not-installation-receipt');assert.equal(index.sourceOnly,true);assert.equal(index.productionInstallationReceiptVerified,false);assert.equal(index.newBehaviorExecutedByMap,0);assert.equal(index.historicalReceiptsRebound,false);assert.equal(index.distinctTargets,21);assert.equal(index.replacements,6);assert.equal(index.additions,15);assert.deepEqual(index.currentTargets,archiveTransition.sources);assert.equal(index.currentSourceMatchingAfterPinsRequired,true);assert.equal(index.selectedReleasedSourceFiles,22);assert.equal(index.selectedSourcesAreInert,true);assert.equal(index.fullUpstreamSourceCorpusClaimed,false);
  const bundle=JSON.parse(read(archiveTransition.bundle.path,archiveTransition.bundle));assert.equal(bundle.schema,'rea-archive-aes-hosted-experimental-source-bundle/v1');assert.equal(bundle.productionInstalled,false);assert.equal(bundle.sourceOnly,true);assert.equal(bundle.finalTargets.length,21);assert.equal(bundle.archiveBaseline.length,47);assert.equal(bundle.selectedOriginalSources.length,22);assert.deepEqual(index.selectedOriginalSources,bundle.selectedOriginalSources);
+ const correction=JSON.parse(read(archiveFixtureCorrection.manifest.path,archiveFixtureCorrection.manifest));assert.deepEqual(correction,archiveFixtureCorrection.declaration);read(correction.beforeImage.path,correction.before);read(correction.afterImage.path,correction.after);assert.equal(correction.currentTarget,'products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs');assert.equal(correction.changedTargetCount,1);assert.equal(correction.unchangedTargets,20);
  const routes=new Map(archiveTransition.sources.map(r=>[r.path,r]));assert.equal(routes.size,21);let replacements=0,previousRuntimeRoutes=0;
- for(const row of archiveTransition.sources){const original=bundle.finalTargets.find(r=>r.target===row.path);assert(original);assert.deepEqual(row.before,original.before);assert.deepEqual(row.after,original.after);assert.equal(row.afterImage,original.source);read(row.path,row.after);read(row.afterImage,row.after);if(row.before){read(row.beforeImage,row.before);assert.equal(row.beforeImage,archiveTransition.prefix+'before/'+row.path+'.snapshot');replacements++;const prior=priorBefore.find(r=>'products/rea-studio/'+r.path===row.path);if(prior){same(prior,row.before,'Exact Archive old937 source');const old720=oldCapsule.snapshots.find(r=>r.sourcePath==='source/'+row.path.slice('products/rea-studio/'.length)+'.snapshot');assert(old720);same(old720,row.before,'Exact Archive old720 source');previousRuntimeRoutes++;}else assert(row.path.endsWith('.md'));}else{assert.equal(row.beforeImage,null);assert.equal(priorBefore.some(r=>'products/rea-studio/'+r.path===row.path),false);}}
+ for(const row of archiveTransition.sources){const original=bundle.finalTargets.find(r=>r.target===row.path);assert(original);assert.deepEqual(row.before,original.before);assert.deepEqual(row.after,original.after);assert.equal(row.afterImage,original.source);if(row.path===correction.currentTarget){assert.deepEqual(row.after,correction.before);assert.equal(row.afterImage,correction.historicalAfterImage);read(row.path,correction.after);}else read(row.path,row.after);read(row.afterImage,row.after);if(row.before){read(row.beforeImage,row.before);assert.equal(row.beforeImage,archiveTransition.prefix+'before/'+row.path+'.snapshot');replacements++;const prior=priorBefore.find(r=>'products/rea-studio/'+r.path===row.path);if(prior){same(prior,row.before,'Exact Archive old937 source');const old720=oldCapsule.snapshots.find(r=>r.sourcePath==='source/'+row.path.slice('products/rea-studio/'.length)+'.snapshot');assert(old720);same(old720,row.before,'Exact Archive old720 source');previousRuntimeRoutes++;}else assert(row.path.endsWith('.md'));}else{assert.equal(row.beforeImage,null);assert.equal(priorBefore.some(r=>'products/rea-studio/'+r.path===row.path),false);}}
  assert.equal(replacements,6);assert.equal(previousRuntimeRoutes,3);
  for(const row of index.selectedOriginalSources){assert(row.publicSnapshot.startsWith('products/rea-studio/experiments/archive-aes/selected-original-source/')&&row.publicSnapshot.endsWith('.snapshot'));read(row.publicSnapshot,row);}
  assert.equal(index.license.currentNotice,'products/rea-studio/apps/archive/SEVENZIP-AES-LGPL.txt');assert.equal(index.license.metadataOwnCodeNotice,'products/rea-studio/apps/archive/NOTICE-SOURCE-METADATA.txt');
@@ -1557,7 +1631,7 @@ function verifyArchiveSourceTransition(rawRead, priorBefore, oldCapsule){
  assert.deepEqual(before,after);assert.equal(before.length,779);assert.equal(new Set(before.map(r=>r.path)).size,779);assert.equal(snapshots.schema,'rea-cloud-source-snapshots/v1');assert.equal(snapshots.censusFiles,779);assert.equal(snapshots.snapshotScope,'active');assert.equal(snapshots.files.length,357);let eligible=0;
  for(const row of archiveTransition.sources){const composed=composition.afterSourceCensus.find(r=>r.path===row.path);assert(composed);same(composed,row.after,'Finite161 final composed source');const prior=before.find(r=>'products/rea-studio/'+r.path===row.path),snapshot=snapshots.files.find(r=>'products/rea-studio/'+r.sourcePath===row.path);if(/\.(mjs|json|html|css|ps1)$/.test(row.path)){assert(prior&&snapshot);same(prior,row.after,'Finite161 eligible tested source');same(snapshot,row.after,'Finite161 source snapshot identity');eligible++;}else{assert.equal(prior,undefined);assert.equal(snapshot,undefined);}}assert.equal(eligible,14);
  const raw=selected.get('verification/stdout.txt').toString('utf8');for(const key of ['tests','pass','fail','cancelled','skipped','todo'])assert.equal(Number(raw.match(new RegExp('^# '+key+' ([0-9.]+)$','m'))?.[1]),attempt.summary[key]);assert.equal(selected.get('verification/stderr.txt').length,0);
- return{routes,read,recheck(){for(const[p,r]of seen)read(p,r);},summary(){return{archiveCurrentSourcesMandatory:21,archiveHistoricalReplacementRoutes:6,archiveHistorical937RuntimeRoutes:3,archiveSelectedReleasedSourceFiles:22,archiveFiniteExperimentalGroups:161,archiveFiniteSelectedMetadataAuthenticated:true,archiveFiniteSelectedMetadataOnly:true,archiveInstallationReceiptAuthenticated:false,archiveFreshBehavioralAcceptance:false,archiveAuthenticatedFiles:seen.size,archiveAuthenticatedBytes:total,archiveFixedReadFileLimit:96,archiveFixedReadByteLimit:8*1024*1024};}};
+ return{routes,read,recheck(){for(const[p,r]of seen)read(p,r);},summary(){return{archiveCurrentSourcesMandatory:21,archiveSingleTestCorrectionMandatory:1,archiveCorrectedTestHistoricalAfterRoute:1,archiveCorrectionFreshBehavioralAcceptance:false,archiveHistoricalReplacementRoutes:6,archiveHistorical937RuntimeRoutes:3,archiveSelectedReleasedSourceFiles:22,archiveFiniteExperimentalGroups:161,archiveFiniteSelectedMetadataAuthenticated:true,archiveFiniteSelectedMetadataOnly:true,archiveInstallationReceiptAuthenticated:false,archiveFreshBehavioralAcceptance:false,archiveAuthenticatedFiles:seen.size,archiveAuthenticatedBytes:total,archiveFixedReadFileLimit:96,archiveFixedReadByteLimit:8*1024*1024};}};
 }
 
 const historicalCarrierTransition={
@@ -1667,7 +1741,7 @@ export function createEditorVaultProofMigration(rawRead){assert.equal(typeof raw
   safe(p);if(p===groupEditDocumentTransition.path){assert(r,'Named GROUP-EDIT document transition requires explicit identity');const requested=expected(r);if(requested.bytes===groupEditDocumentTransition.after.bytes&&requested.sha256===groupEditDocumentTransition.after.sha256)return null;if(requested.bytes===groupEditDocumentTransition.before.bytes&&requested.sha256===groupEditDocumentTransition.before.sha256)return groupEditDocumentTransition.beforeImage.path;throw new Error('No unlisted GROUP-EDIT document historical identity allowed');}const archive=archiveProof.routes.get(p),windows=windowsRoutes.get(p),newer=nextRoutes.get(p),row=sourceRoutes.get(p),v=verifierRoutes.get(p);
   if(!archive&&!windows&&!newer&&!row&&!v)return null;
   assert(r,'Named transition requires an explicit expected identity: '+p);const id=expected(r);
-  if(archive){if(id.bytes===archive.after.bytes&&id.sha256===archive.after.sha256)return null;if(archive.before&&id.bytes===archive.before.bytes&&id.sha256===archive.before.sha256)return archive.beforeImage;throw new Error('No unlisted Archive historical identity allowed: '+p);}
+  if(archive){if(p===archiveFixtureCorrection.declaration.currentTarget){const correction=archiveFixtureCorrection.declaration;if(id.bytes===correction.after.bytes&&id.sha256===correction.after.sha256)return null;if(id.bytes===correction.before.bytes&&id.sha256===correction.before.sha256)return correction.historicalAfterImage;throw new Error('No unlisted Archive corrected-test identity allowed: '+p);}if(id.bytes===archive.after.bytes&&id.sha256===archive.after.sha256)return null;if(archive.before&&id.bytes===archive.before.bytes&&id.sha256===archive.before.sha256)return archive.beforeImage;throw new Error('No unlisted Archive historical identity allowed: '+p);}
   if(windows){if(id.bytes===windows.after.bytes&&id.sha256===windows.after.sha256)return null;if(windows.before&&id.bytes===windows.before.bytes&&id.sha256===windows.before.sha256)return windows.beforeImage;throw new Error('No unlisted Windows path historical identity allowed: '+p);}
   if(p==='scripts/verify-records.mjs'&&id.bytes===archiveTransition.rootBefore.bytes&&id.sha256===archiveTransition.rootBefore.sha256)return archiveTransition.rootBefore.path;
   if(p==='scripts/verify-records.mjs'&&id.bytes===requirementEvidenceTransition.rootBefore.bytes&&id.sha256===requirementEvidenceTransition.rootBefore.sha256)return requirementEvidenceTransition.rootBefore.path;

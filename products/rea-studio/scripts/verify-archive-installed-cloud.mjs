@@ -8,6 +8,78 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const bundlePath = 'products/rea-studio/experiments/archive-aes/bundle.json';
 const bundlePin = { bytes: 80331, sha256: 'ed6d16f52f9209ac144f1f08d395c3e86e4c124c73a3a18a488654506ff155bb' };
+const archiveFixtureCorrection={
+  "manifest": {
+    "path": "products/rea-studio/results/archive-aes-properties-fixture-correction-20261016/source-transition.json",
+    "bytes": 2486,
+    "sha256": "c076b092431eae7bc3c468d168633ee07aa7858aba1291d510edcaa1ded4919f"
+  },
+  "declaration": {
+    "schema": "rea-archive-aes-single-test-source-correction/v1",
+    "sourceOnly": true,
+    "currentTarget": "products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs",
+    "before": {
+      "bytes": 4437,
+      "sha256": "de8b502980907967bab762da46e6056b024dc93a5ddd5b1bd5e21610e6980c71"
+    },
+    "after": {
+      "bytes": 5255,
+      "sha256": "1bdeed45439ab2094c55973d0790866991ed3f81ab5eca505d01977dee84b303"
+    },
+    "beforeImage": {
+      "path": "products/rea-studio/results/archive-aes-properties-fixture-correction-20261016/source-before/sevenzip-aes-bounds.test.mjs.snapshot",
+      "bytes": 4437,
+      "sha256": "de8b502980907967bab762da46e6056b024dc93a5ddd5b1bd5e21610e6980c71"
+    },
+    "afterImage": {
+      "path": "products/rea-studio/results/archive-aes-properties-fixture-correction-20261016/source-after/sevenzip-aes-bounds.test.mjs.snapshot",
+      "bytes": 5255,
+      "sha256": "1bdeed45439ab2094c55973d0790866991ed3f81ab5eca505d01977dee84b303"
+    },
+    "historicalAfterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs.snapshot",
+    "originalDecoder": {
+      "path": "products/rea-studio/experiments/archive-aes/selected-original-source/official-source/full-source/CPP/7zip/Crypto/7zAes.cpp.snapshot",
+      "bytes": 7244,
+      "sha256": "d1d45ef7740bb3dadb39dfeb07834d7261b8ec7ad9e01ccdab521e08a5a011c8"
+    },
+    "currentArchiveFiles": 62,
+    "currentTargetCount": 21,
+    "changedTargetCount": 1,
+    "unchangedTargets": 20,
+    "topLevelTestGroupsBefore": 3,
+    "topLevelTestGroupsAfter": 3,
+    "historicalFiniteGroups": 161,
+    "historicalFiniteSelectionContainsBoundsTestPath": true,
+    "historicalFiniteBoundsContentIsPredecessor": true,
+    "freshFiniteIncludesCorrectedBoundsGroups": 3,
+    "targeted3OverlapFiniteSelection": true,
+    "propertiesRejectionAssertionPreserved": true,
+    "deterministicCounterexamples": [
+      {
+        "firstSaltByte": 239,
+        "droppedLeadingBytes": 33,
+        "cyclesPower": 63,
+        "saltBytes": 15,
+        "encodedIvBytes": 16
+      },
+      {
+        "firstSaltByte": 254,
+        "droppedLeadingBytes": 33,
+        "cyclesPower": 63,
+        "saltBytes": 16,
+        "encodedIvBytes": 15
+      }
+    ],
+    "runtimeChanged": false,
+    "historicalBundleRewritten": false,
+    "historicalFiniteReceiptRewritten": false,
+    "historicalInstallationJournalRewritten": false,
+    "genericHistoricalFallback": false,
+    "currentBehavioralAcceptanceEstablished": false,
+    "localProductExecutions": 0,
+    "localTests": 0
+  }
+};
 const selectionPath = 'products/rea-studio/experiments/archive-aes/test-selection.json';
 const app = 'products/rea-studio/apps/archive/';
 const excludes = ['results', '.local', 'fixtures/oracles'];
@@ -55,8 +127,11 @@ export function authenticateInstalledArchive(repository) {
   assert.equal(bundle.schema, 'rea-archive-aes-hosted-experimental-source-bundle/v1'); assert.equal(bundle.sourceOnly, true); assert.equal(bundle.productionInstalled, false);
   assert.equal(bundle.archiveBaseline.length, 47); assert.equal(bundle.finalTargets.length, 21); assert.equal(bundle.selectedOriginalSources.length, 22);
   const targets = new Map(); for (const row of bundle.finalTargets) { assert(/^products\/rea-studio\/apps\/archive\/[A-Za-z0-9.-]+$/.test(row.target)); assert(!targets.has(row.target)); targets.set(row.target, row); }
+  const correction=JSON.parse(committed(archiveFixtureCorrection.manifest.path,archiveFixtureCorrection.manifest).bytes);assert.deepEqual(correction,archiveFixtureCorrection.declaration);committed(correction.beforeImage.path,correction.before);committed(correction.afterImage.path,correction.after);
+  const currentPin=row=>row.target===correction.currentTarget?correction.after:row.after;
+  const correctedTarget=targets.get(correction.currentTarget);assert(correctedTarget);assert.deepEqual(correctedTarget.after,correction.before);assert.equal(correctedTarget.source,correction.historicalAfterImage);
   const expected = new Map(bundle.archiveBaseline.map(row => [row.path, { path: row.path, bytes: row.bytes, sha256: row.sha256 }]));
-  for (const row of targets.values()) expected.set(row.target, { path: row.target, ...row.after }); assert.equal(expected.size, 62);
+  for (const row of targets.values()) expected.set(row.target, { path: row.target, ...currentPin(row) }); assert.equal(expected.size, 62);
   const current = [];
   function walk(relative, local = '', depth = 0) {
     assert(depth <= 32); const directory = path.join(repository, ...safe(relative).split('/')); const info = fs.lstatSync(directory); assert(info.isDirectory() && !info.isSymbolicLink());
@@ -68,7 +143,7 @@ export function authenticateInstalledArchive(repository) {
   }
   walk(app.slice(0, -1)); assert.equal(current.length, 62);
   const archiveSources = ordered(current); assert.deepEqual(archiveSources.map(({ gitBlob, ...row }) => row), ordered(expected.values()));
-  const currentTargets = ordered([...targets.values()].map(row => committed(row.target, row.after).row));
+  const currentTargets = ordered([...targets.values()].map(row => committed(row.target, currentPin(row)).row));
   for (const row of targets.values()) committed(row.source, row.after);
   const originalSources = bundle.selectedOriginalSources.map(row => { assert(row.publicSnapshot.startsWith('products/rea-studio/experiments/archive-aes/selected-original-source/') && row.publicSnapshot.endsWith('.snapshot')); return committed(row.publicSnapshot, row).row; });
   const sharedSources = bundle.historicalSharedContext.map(row => committed(row.path).row);
@@ -77,6 +152,7 @@ export function authenticateInstalledArchive(repository) {
   const prerequisite = committed(selection.historicalReadOnlyPrerequisite.path); assert.equal(prerequisite.row.sha256, selection.historicalReadOnlyPrerequisite.sha256);
   assert.equal(git(repository, ['status', '--porcelain=v1', '-z', '--untracked-files=all']).length, 0); assert.equal(git(repository, ['rev-parse', 'HEAD']).toString('utf8').trim(), head);
   return { mode: 'archive-aes-installed', sourceCommit: head, sourceBundle: { path: bundlePath, ...bundlePin }, sourceSelection: selectionRead.row,
+    fixtureCorrection: { manifest: archiveFixtureCorrection.manifest, target: correction.currentTarget, before: correction.before, after: correction.after, historicalAfterImage: correction.historicalAfterImage, changedTargets: 1, historicalReceiptsRebound: false },
     archiveSources, currentTargets, selectedOriginalSources: originalSources, sharedSources, historicalReadOnlyPrerequisite: prerequisite.row,
     currentArchiveFiles: 62, exactAfterTargets: 21, currentTargetsGitBound: true, allArchiveGitBound: true, sourceMutationPerformed: false, historicalReceiptsRebound: false,
     productionInstallationReceiptVerified: false, authenticatedPaths: seen.size, authenticatedBytes: total, fileLimit: 128, byteLimit: 8 * 1024 * 1024, individualByteLimit: 256 * 1024 };
@@ -95,7 +171,7 @@ export function verifyInstalledArchiveReceipt(repository, filename) {
   return { receipt: identity(bytes), authentication };
 }
 async function main() {
-  hosted(); const args = process.argv.slice(2); assert.equal(args.length, 4); assert.equal(args[0], '--phase'); assert(['before', 'bootstrap', 'after'].includes(args[1])); assert.equal(args[2], '--evidence'); assert(path.isAbsolute(args[3]));
+  hosted(); const args = process.argv.slice(2); assert.equal(args.length, 4); assert.equal(args[0], '--phase'); assert(['before', 'bootstrap', 'bounds', 'after'].includes(args[1])); assert.equal(args[2], '--evidence'); assert(path.isAbsolute(args[3]));
   const repository = fs.realpathSync(fileURLToPath(new URL('../../../', import.meta.url))), phase = args[1], evidence = path.resolve(args[3]), temporary = fs.realpathSync(process.env.RUNNER_TEMP);
   const relative = path.relative(temporary, evidence); assert(relative && !path.isAbsolute(relative) && relative !== '..' && !relative.startsWith('..' + path.sep));
   fs.mkdirSync(evidence, { recursive: true }); assert.equal(fs.realpathSync(evidence).toLowerCase(), evidence.toLowerCase());
@@ -105,7 +181,7 @@ async function main() {
   if (phase === 'before') {
     const value = { schema: 'rea-archive-hosted-installed-source-check/v1', status: 'verified-unexecuted-committed-afterimages', mode: 'archive-aes-installed', checkedAtUtc: new Date().toISOString(), execution: execution(), sourceCommit: process.env.GITHUB_SHA,
       sourceRoot: repository, sourceOnly: true, sourceMutationPerformed: false, installationPerformedByCommand: false, historicalReceiptsRebound: false, applicationExecutions: 0, originalExecutions: 0, browserExecutions: 0,
-      productionInstallationReceiptVerified: false, authentication, scope: 'All62 committed Archive source/doc/test/reference files and21 exact current after pins, selected original-source/license payloads and four current shared inputs. No source installation or behavioral acceptance.' };
+      productionInstallationReceiptVerified: false, authentication, scope: 'All62 committed Archive source/doc/test/reference files and21 exact current pins including one named corrected test; immutable21 historical after snapshots remain authenticated, selected original-source/license payloads and four current shared inputs. No source installation or behavioral acceptance.' };
     for (const row of [...authentication.archiveSources, ...authentication.selectedOriginalSources]) {
       const target = path.join(evidence, 'installed-source', ...row.path.split('/')) + '.snapshot', bytes = checkedFile(repository, row.path); assert.deepEqual(identity(bytes), { bytes: row.bytes, sha256: row.sha256 }); fs.mkdirSync(path.dirname(target), { recursive: true }); fs.writeFileSync(target, bytes, { flag: 'wx' });
     }
@@ -125,6 +201,21 @@ async function main() {
       value.status = 'acquired';
     } catch (error) { value.status = 'failed'; value.failure = { name: error.name, message: error.message }; throw error; }
     finally { value.completedAtUtc = new Date().toISOString(); fs.writeFileSync(filename, JSON.stringify(value, null, 2) + '\n'); }
+  } else if (phase === 'bounds') {
+    const proof=verifyInstalledArchiveReceipt(repository,beforePath), source=authentication.currentTargets.find(row=>row.path===archiveFixtureCorrection.declaration.currentTarget);assert(source);
+    const command=['--test','--test-reporter=tap','--test-concurrency=1','apps/archive/sevenzip-aes-bounds.test.mjs'],startedAtUtc=new Date().toISOString();
+    const receipt={schema:'rea-archive-installed-bounds-attempt/v1',status:'running',sourceCommit:process.env.GITHUB_SHA,execution:execution(),sourceRoot:repository,startedAtUtc,command:{executable:process.execPath,arguments:command,cwd:'products/rea-studio'},selectedTestFiles:['apps/archive/sevenzip-aes-bounds.test.mjs'],expectedGroups:3,source,installedSourceCheck:proof.receipt,fixtureCorrection:authentication.fixtureCorrection,timeoutMs:120000,maxBufferBytes:2*1024*1024,finite161Aggregated:false,originalExecutions:0,fullArchiveSuite:false,fullParity:false,superiority:false,historicalReceiptsRebound:false};
+    let child;
+    try {
+      child=spawnSync(process.execPath,command,{cwd:path.join(repository,'products/rea-studio'),windowsHide:true,shell:false,timeout:receipt.timeoutMs,maxBuffer:receipt.maxBufferBytes});
+      const stdout=Buffer.from(child.stdout??''),stderr=Buffer.from(child.stderr??'');
+      fs.writeFileSync(path.join(evidence,'bounds.stdout.txt'),stdout,{flag:'wx'});fs.writeFileSync(path.join(evidence,'bounds.stderr.txt'),stderr,{flag:'wx'});
+      receipt.output={stdout:identity(stdout),stderr:identity(stderr),complete:!child.error};receipt.synchronousChildReturned=true;receipt.exitCode=child.status;receipt.signal=child.signal;receipt.childError=child.error?{name:child.error.name,message:String(child.error.message).slice(0,2048),code:child.error.code??null}:null;
+      assert.equal(child.error,undefined);assert.equal(child.status,0);assert.equal(child.signal,null);assert.equal(stderr.length,0);
+      const text=stdout.toString('utf8'),summary={};for(const key of ['tests','pass','fail','cancelled','skipped','todo']){const matches=[...text.matchAll(new RegExp('^# '+key+' ([0-9]+)$','gm'))];assert.equal(matches.length,1);summary[key]=Number(matches[0][1]);}receipt.summary=summary;
+      assert.equal(summary.tests,3);assert.equal(summary.pass,3);for(const key of ['fail','cancelled','skipped','todo'])assert.equal(summary[key],0);receipt.status='passed';
+    }catch(error){receipt.status='failed';receipt.failure={name:error.name,message:String(error.message).slice(0,2048)};throw error;}
+    finally{try{assert.deepEqual(authenticateInstalledArchive(repository),authentication);receipt.sourceStable=true;}catch(error){receipt.status='failed';receipt.sourceStable=false;receipt.sourceFailure={name:error.name,message:String(error.message).slice(0,2048)};process.exitCode=1;}receipt.completedAtUtc=new Date().toISOString();write('bounds-attempt.json',receipt);}
   } else {
     const proof = verifyInstalledArchiveReceipt(repository, beforePath);
     write('archive-installed-postrun-source-check.json', { schema: 'rea-archive-hosted-installed-postrun-source-check/v1', status: 'source-verified', mode: 'archive-aes-installed', checkedAtUtc: new Date().toISOString(), execution: execution(), sourceCommit: process.env.GITHUB_SHA,

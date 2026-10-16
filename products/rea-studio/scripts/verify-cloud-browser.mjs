@@ -115,7 +115,9 @@ async function verifyArchiveInstalled() {
   const helper = 'products/rea-studio/scripts/verify-archive-installed-cloud.mjs'; committedSource(helper);
   const module = await import(pathToFileURL(repositoryFile(helper)).href), proof = module.verifyInstalledArchiveReceipt(repository, args[7]);
   const bundle = JSON.parse(committedSource(archiveBundlePath, archiveBundlePin));
-  return { bundle, targets: new Map(bundle.finalTargets.map(row => [row.target, row])), status: [], receipt: proof.receipt, authentication: proof.authentication, module };
+  const current = new Map(proof.authentication.currentTargets.map(row => [row.path, row])); assert.equal(current.size, 21);
+  const targets = new Map(bundle.finalTargets.map(row => { const source = current.get(row.target); assert(source, 'Every bundle target needs an authenticated current installed source'); return [row.target, { ...row, after: { bytes: source.bytes, sha256: source.sha256 } }]; })); assert.equal(targets.size, 21);
+  return { bundle, targets, status: [], receipt: proof.receipt, authentication: proof.authentication, module };
 }
 function verifyArchiveComposition() {
   assert.equal(path.resolve(args[7]).toLowerCase(), path.join(evidence, 'composition.json').toLowerCase());

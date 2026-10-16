@@ -1,0 +1,494 @@
+{
+  "schema": "rea-cloud-development-additional-prerequisites/v1",
+  "status": "acquired",
+  "startedAtUtc": "2026-10-16T13:19:05.619Z",
+  "scope": "Automation native/routing, Sketch original helpers and Backup restic acquisition only. Flow/Vault, 7-Zip and bsdtar are separate prerequisites. No full-suite execution or acceptance.",
+  "execution": {
+    "CI": "true",
+    "GITHUB_ACTIONS": "true",
+    "RUNNER_ENVIRONMENT": "github-hosted",
+    "RUNNER_OS": "Windows",
+    "RUNNER_ARCH": "X64",
+    "GITHUB_SHA": "b0eb4118dced28922537c187ce4cac548932df2c",
+    "GITHUB_REPOSITORY": "Ginderlax/rea-research-lab",
+    "GITHUB_RUN_ID": "38905581957",
+    "GITHUB_RUN_ATTEMPT": "1"
+  },
+  "runtime": {
+    "version": "v24.16.0",
+    "platform": "win32",
+    "architecture": "x64"
+  },
+  "bootstrap": {
+    "bytes": 20156,
+    "sha256": "b5682021d990d20f68ef1ad33b82f7f5c4e5d1556493226a02fff4da9de74f54"
+  },
+  "phases": [
+    {
+      "name": "automation-native-acquisition",
+      "status": "completed",
+      "startedAtUtc": "2026-10-16T13:19:05.622Z",
+      "command": [
+        "C:\\hostedtoolcache\\windows\\node\\24.16.0\\x64\\node.exe",
+        "products/rea-studio/apps/automation/compare-original.mjs",
+        "--acquire-only"
+      ],
+      "timeoutMs": 360000,
+      "stdout": {
+        "path": "development-prerequisite-logs/automation-native-acquisition.stdout.txt",
+        "bytes": 106,
+        "limitBytes": 2097152
+      },
+      "stderr": {
+        "path": "development-prerequisite-logs/automation-native-acquisition.stderr.txt",
+        "bytes": 340,
+        "limitBytes": 524288
+      },
+      "droppedBytes": 0,
+      "pid": 5360,
+      "exitCode": 0,
+      "signal": null,
+      "closeObserved": true,
+      "failure": null,
+      "completedAtUtc": "2026-10-16T13:19:11.968Z"
+    },
+    {
+      "name": "automation-routing-extract-1",
+      "status": "completed",
+      "startedAtUtc": "2026-10-16T13:19:13.450Z",
+      "command": [
+        "tar.exe",
+        "-xzf",
+        "D:\\a\\rea-research-lab\\rea-research-lab\\.local\\automation-routing-original-acquisition-38905581957-1\\original\\n8n-nodes-base-2.16.0.tgz",
+        "-C",
+        "D:\\a\\rea-research-lab\\rea-research-lab\\.local\\automation-routing-original-acquisition-38905581957-1\\original",
+        "--",
+        "package/dist/nodes/If/V2/IfV2.node.d.ts",
+        "package/dist/nodes/If/V2/IfV2.node.d.ts.map",
+        "package/dist/nodes/If/V2/IfV2.node.js",
+        "package/dist/nodes/If/V2/IfV2.node.js.map",
+        "package/dist/nodes/If/V2/utils.d.ts",
+        "package/dist/nodes/If/V2/utils.d.ts.map",
+        "package/dist/nodes/If/V2/utils.js",
+        "package/dist/nodes/If/V2/utils.js.map",
+        "package/dist/nodes/Merge/Merge.node.d.ts",
+        "package/dist/nodes/Merge/Merge.node.d.ts.map",
+        "package/dist/nodes/Merge/Merge.node.js",
+        "package/dist/nodes/Merge/Merge.node.js.map",
+        "package/dist/nodes/Merge/Merge.node.json",
+        "package/dist/nodes/Merge/merge.svg",
+        "package/dist/nodes/Merge/v1/MergeV1.node.d.ts",
+        "package/dist/nodes/Merge/v1/MergeV1.node.d.ts.map",
+        "package/dist/nodes/Merge/v1/MergeV1.node.js",
+        "package/dist/nodes/Merge/v1/MergeV1.node.js.map",
+        "package/dist/nodes/Merge/v2/descriptions.d.ts",
+        "package/dist/nodes/Merge/v2/descriptions.d.ts.map",
+        "package/dist/nodes/Merge/v2/descriptions.js",
+        "package/dist/nodes/Merge/v2/descriptions.js.map",
+        "package/dist/nodes/Merge/v2/interfaces.d.ts",
+        "package/dist/nodes/Merge/v2/interfaces.d.ts.map",
+        "package/dist/nodes/Merge/v2/interfaces.js",
+        "package/dist/nodes/Merge/v2/interfaces.js.map",
+        "package/dist/nodes/Merge/v2/MergeV2.node.d.ts",
+        "package/dist/nodes/Merge/v2/MergeV2.node.d.ts.map",
+        "package/dist/nodes/Merge/v2/MergeV2.node.js",
+        "package/dist/nodes/Merge/v2/MergeV2.node.js.map",
+        "package/dist/nodes/Merge/v2/utils.d.ts",
+        "package/dist/nodes/Merge/v2/utils.d.ts.map",
+        "package/dist/nodes/Merge/v2/utils.js",
+        "package/dist/nodes/Merge/v2/utils.js.map",
+        "package/dist/nodes/Merge/v3/actions/mode/append.d.ts",
+        "package/dist/nodes/Merge/v3/actions/mode/append.d.ts.map",
+        "package/dist/nodes/Merge/v3/actions/mode/append.js",
+        "package/dist/nodes/Merge/v3/actions/mode/append.js.map",
+        "package/dist/nodes/Merge/v3/actions/mode/chooseBranch.d.ts",
+        "package/dist/nodes/Merge/v3/actions/mode/chooseBranch.d.ts.map",
+        "package/dist/nodes/Merge/v3/actions/mode/chooseBranch.js",
+        "package/dist/nodes/Merge/v3/actions/mode/chooseBranch.js.map",
+        "package/dist/nodes/Merge/v3/actions/mode/combineAll.d.ts",
+        "package/dist/nodes/Merge/v3/actions/mode/combineAll.d.ts.map",
+        "package/dist/nodes/Merge/v3/actions/mode/combineAll.js",
+        "package/dist/nodes/Merge/v3/actions/mode/combineAll.js.map",
+        "package/dist/nodes/Merge/v3/actions/mode/combineByFields.d.ts",
+        "package/dist/nodes/Merge/v3/actions/mode/combineByFields.d.ts.map",
+        "package/dist/nodes/Merge/v3/actions/mode/combineByFields.js",
+        "package/dist/nodes/Merge/v3/actions/mode/combineByFields.js.map",
+        "package/dist/nodes/Merge/v3/actions/mode/combineByPosition.d.ts",
+        "package/dist/nodes/Merge/v3/actions/mode/combineByPosition.d.ts.map",
+        "package/dist/nodes/Merge/v3/actions/mode/combineByPosition.js",
+        "package/dist/nodes/Merge/v3/actions/mode/combineByPosition.js.map",
+        "package/dist/nodes/Merge/v3/actions/mode/combineBySql.d.ts",
+        "package/dist/nodes/Merge/v3/actions/mode/combineBySql.d.ts.map",
+        "package/dist/nodes/Merge/v3/actions/mode/combineBySql.js",
+        "package/dist/nodes/Merge/v3/actions/mode/combineBySql.js.map",
+        "package/dist/nodes/Merge/v3/actions/mode/index.d.ts",
+        "package/dist/nodes/Merge/v3/actions/mode/index.d.ts.map",
+        "package/dist/nodes/Merge/v3/actions/mode/index.js",
+        "package/dist/nodes/Merge/v3/actions/mode/index.js.map",
+        "package/dist/nodes/Merge/v3/actions/node.type.d.ts",
+        "package/dist/nodes/Merge/v3/actions/node.type.d.ts.map",
+        "package/dist/nodes/Merge/v3/actions/node.type.js",
+        "package/dist/nodes/Merge/v3/actions/node.type.js.map",
+        "package/dist/nodes/Merge/v3/actions/router.d.ts",
+        "package/dist/nodes/Merge/v3/actions/router.d.ts.map",
+        "package/dist/nodes/Merge/v3/actions/router.js",
+        "package/dist/nodes/Merge/v3/actions/router.js.map",
+        "package/dist/nodes/Merge/v3/actions/versionDescription.d.ts",
+        "package/dist/nodes/Merge/v3/actions/versionDescription.d.ts.map",
+        "package/dist/nodes/Merge/v3/actions/versionDescription.js",
+        "package/dist/nodes/Merge/v3/actions/versionDescription.js.map",
+        "package/dist/nodes/Merge/v3/helpers/descriptions.d.ts",
+        "package/dist/nodes/Merge/v3/helpers/descriptions.d.ts.map",
+        "package/dist/nodes/Merge/v3/helpers/descriptions.js",
+        "package/dist/nodes/Merge/v3/helpers/descriptions.js.map",
+        "package/dist/nodes/Merge/v3/helpers/interfaces.d.ts",
+        "package/dist/nodes/Merge/v3/helpers/interfaces.d.ts.map",
+        "package/dist/nodes/Merge/v3/helpers/interfaces.js",
+        "package/dist/nodes/Merge/v3/helpers/interfaces.js.map",
+        "package/dist/nodes/Merge/v3/helpers/sandbox-utils.d.ts",
+        "package/dist/nodes/Merge/v3/helpers/sandbox-utils.d.ts.map",
+        "package/dist/nodes/Merge/v3/helpers/sandbox-utils.js",
+        "package/dist/nodes/Merge/v3/helpers/sandbox-utils.js.map",
+        "package/dist/nodes/Merge/v3/helpers/utils.d.ts",
+        "package/dist/nodes/Merge/v3/helpers/utils.d.ts.map",
+        "package/dist/nodes/Merge/v3/helpers/utils.js",
+        "package/dist/nodes/Merge/v3/helpers/utils.js.map",
+        "package/dist/nodes/Merge/v3/MergeV3.node.d.ts",
+        "package/dist/nodes/Merge/v3/MergeV3.node.d.ts.map",
+        "package/dist/nodes/Merge/v3/MergeV3.node.js",
+        "package/dist/nodes/Merge/v3/MergeV3.node.js.map",
+        "package/dist/nodes/Merge/v3/methods/index.d.ts",
+        "package/dist/nodes/Merge/v3/methods/index.d.ts.map",
+        "package/dist/nodes/Merge/v3/methods/index.js",
+        "package/dist/nodes/Merge/v3/methods/index.js.map",
+        "package/dist/nodes/Merge/v3/methods/loadOptions.d.ts",
+        "package/dist/nodes/Merge/v3/methods/loadOptions.d.ts.map",
+        "package/dist/nodes/Merge/v3/methods/loadOptions.js",
+        "package/dist/nodes/Merge/v3/methods/loadOptions.js.map",
+        "package/dist/nodes/Switch/Switch.node.d.ts",
+        "package/dist/nodes/Switch/Switch.node.d.ts.map",
+        "package/dist/nodes/Switch/Switch.node.js",
+        "package/dist/nodes/Switch/Switch.node.js.map",
+        "package/dist/nodes/Switch/Switch.node.json",
+        "package/dist/nodes/Switch/V1/SwitchV1.node.d.ts",
+        "package/dist/nodes/Switch/V1/SwitchV1.node.d.ts.map",
+        "package/dist/nodes/Switch/V1/SwitchV1.node.js",
+        "package/dist/nodes/Switch/V1/SwitchV1.node.js.map",
+        "package/dist/nodes/Switch/V2/SwitchV2.node.d.ts",
+        "package/dist/nodes/Switch/V2/SwitchV2.node.d.ts.map",
+        "package/dist/nodes/Switch/V2/SwitchV2.node.js",
+        "package/dist/nodes/Switch/V2/SwitchV2.node.js.map",
+        "package/dist/nodes/Switch/V3/SwitchV3.node.d.ts",
+        "package/dist/nodes/Switch/V3/SwitchV3.node.d.ts.map",
+        "package/dist/nodes/Switch/V3/SwitchV3.node.js",
+        "package/dist/nodes/Switch/V3/SwitchV3.node.js.map",
+        "package/dist/utils/allCurrencies.d.ts",
+        "package/dist/utils/allCurrencies.d.ts.map",
+        "package/dist/utils/allCurrencies.js",
+        "package/dist/utils/allCurrencies.js.map",
+        "package/dist/utils/binary.d.ts",
+        "package/dist/utils/binary.d.ts.map",
+        "package/dist/utils/binary.js",
+        "package/dist/utils/binary.js.map",
+        "package/dist/utils/connection-pool-manager.d.ts",
+        "package/dist/utils/connection-pool-manager.d.ts.map",
+        "package/dist/utils/connection-pool-manager.js",
+        "package/dist/utils/connection-pool-manager.js.map",
+        "package/dist/utils/constants.d.ts",
+        "package/dist/utils/constants.d.ts.map",
+        "package/dist/utils/constants.js",
+        "package/dist/utils/constants.js.map",
+        "package/dist/utils/descriptions.d.ts",
+        "package/dist/utils/descriptions.d.ts.map",
+        "package/dist/utils/descriptions.js",
+        "package/dist/utils/descriptions.js.map",
+        "package/dist/utils/highlightedData/descriptions.d.ts",
+        "package/dist/utils/highlightedData/descriptions.d.ts.map",
+        "package/dist/utils/highlightedData/descriptions.js",
+        "package/dist/utils/highlightedData/descriptions.js.map",
+        "package/dist/utils/highlightedData/index.d.ts",
+        "package/dist/utils/highlightedData/index.d.ts.map",
+        "package/dist/utils/highlightedData/index.js",
+        "package/dist/utils/highlightedData/index.js.map",
+        "package/dist/utils/highlightedData/utils.d.ts",
+        "package/dist/utils/highlightedData/utils.d.ts.map",
+        "package/dist/utils/highlightedData/utils.js",
+        "package/dist/utils/highlightedData/utils.js.map",
+        "package/dist/utils/ISOCountryCodes.d.ts",
+        "package/dist/utils/ISOCountryCodes.d.ts.map",
+        "package/dist/utils/ISOCountryCodes.js",
+        "package/dist/utils/ISOCountryCodes.js.map",
+        "package/dist/utils/sendAndWait/configureWaitTillDate.util.d.ts",
+        "package/dist/utils/sendAndWait/configureWaitTillDate.util.d.ts.map",
+        "package/dist/utils/sendAndWait/configureWaitTillDate.util.js",
+        "package/dist/utils/sendAndWait/configureWaitTillDate.util.js.map",
+        "package/dist/utils/sendAndWait/descriptions.d.ts",
+        "package/dist/utils/sendAndWait/descriptions.d.ts.map",
+        "package/dist/utils/sendAndWait/descriptions.js",
+        "package/dist/utils/sendAndWait/descriptions.js.map",
+        "package/dist/utils/sendAndWait/email-templates.d.ts",
+        "package/dist/utils/sendAndWait/email-templates.d.ts.map",
+        "package/dist/utils/sendAndWait/email-templates.js",
+        "package/dist/utils/sendAndWait/email-templates.js.map",
+        "package/dist/utils/sendAndWait/interfaces.d.ts",
+        "package/dist/utils/sendAndWait/interfaces.d.ts.map",
+        "package/dist/utils/sendAndWait/interfaces.js",
+        "package/dist/utils/sendAndWait/interfaces.js.map",
+        "package/dist/utils/sendAndWait/utils.d.ts",
+        "package/dist/utils/sendAndWait/utils.d.ts.map",
+        "package/dist/utils/sendAndWait/utils.js",
+        "package/dist/utils/sendAndWait/utils.js.map",
+        "package/dist/utils/sshTunnel.properties.d.ts",
+        "package/dist/utils/sshTunnel.properties.d.ts.map",
+        "package/dist/utils/sshTunnel.properties.js",
+        "package/dist/utils/sshTunnel.properties.js.map",
+        "package/dist/utils/utilities.d.ts",
+        "package/dist/utils/utilities.d.ts.map",
+        "package/dist/utils/utilities.js",
+        "package/dist/utils/utilities.js.map",
+        "package/dist/utils/webhook-signature-verification.d.ts",
+        "package/dist/utils/webhook-signature-verification.d.ts.map",
+        "package/dist/utils/webhook-signature-verification.js",
+        "package/dist/utils/webhook-signature-verification.js.map",
+        "package/dist/utils/workflow-backtracking.d.ts",
+        "package/dist/utils/workflow-backtracking.d.ts.map",
+        "package/dist/utils/workflow-backtracking.js",
+        "package/dist/utils/workflow-backtracking.js.map",
+        "package/dist/utils/workflowInputsResourceMapping/constants.d.ts",
+        "package/dist/utils/workflowInputsResourceMapping/constants.d.ts.map",
+        "package/dist/utils/workflowInputsResourceMapping/constants.js",
+        "package/dist/utils/workflowInputsResourceMapping/constants.js.map",
+        "package/dist/utils/workflowInputsResourceMapping/GenericFunctions.d.ts",
+        "package/dist/utils/workflowInputsResourceMapping/GenericFunctions.d.ts.map",
+        "package/dist/utils/workflowInputsResourceMapping/GenericFunctions.js",
+        "package/dist/utils/workflowInputsResourceMapping/GenericFunctions.js.map",
+        "package/LICENSE.md",
+        "package/package.json"
+      ],
+      "timeoutMs": 60000,
+      "stdout": {
+        "path": "development-prerequisite-logs/automation-routing-extract-1.stdout.txt",
+        "bytes": 0,
+        "limitBytes": 2097152
+      },
+      "stderr": {
+        "path": "development-prerequisite-logs/automation-routing-extract-1.stderr.txt",
+        "bytes": 0,
+        "limitBytes": 524288
+      },
+      "droppedBytes": 0,
+      "pid": 2240,
+      "exitCode": 0,
+      "signal": null,
+      "closeObserved": true,
+      "failure": null,
+      "completedAtUtc": "2026-10-16T13:19:13.823Z"
+    },
+    {
+      "name": "sketch-acquisition",
+      "status": "completed",
+      "startedAtUtc": "2026-10-16T13:19:13.973Z",
+      "command": [
+        "C:\\hostedtoolcache\\windows\\node\\24.16.0\\x64\\node.exe",
+        "products/rea-studio/scripts/verify-sketch-geometry.mjs",
+        "--bootstrap-oracle"
+      ],
+      "timeoutMs": 180000,
+      "stdout": {
+        "path": "development-prerequisite-logs/sketch-acquisition.stdout.txt",
+        "bytes": 96,
+        "limitBytes": 2097152
+      },
+      "stderr": {
+        "path": "development-prerequisite-logs/sketch-acquisition.stderr.txt",
+        "bytes": 0,
+        "limitBytes": 524288
+      },
+      "droppedBytes": 0,
+      "pid": 6420,
+      "exitCode": 0,
+      "signal": null,
+      "closeObserved": true,
+      "failure": null,
+      "completedAtUtc": "2026-10-16T13:19:14.535Z"
+    },
+    {
+      "name": "restic-acquisition",
+      "status": "completed",
+      "startedAtUtc": "2026-10-16T13:19:14.581Z",
+      "command": [
+        "C:\\hostedtoolcache\\windows\\node\\24.16.0\\x64\\node.exe",
+        "projects/09-restic/acquire.mjs"
+      ],
+      "timeoutMs": 180000,
+      "stdout": {
+        "path": "development-prerequisite-logs/restic-acquisition.stdout.txt",
+        "bytes": 196,
+        "limitBytes": 2097152
+      },
+      "stderr": {
+        "path": "development-prerequisite-logs/restic-acquisition.stderr.txt",
+        "bytes": 0,
+        "limitBytes": 524288
+      },
+      "droppedBytes": 0,
+      "pid": 6672,
+      "exitCode": 0,
+      "signal": null,
+      "closeObserved": true,
+      "failure": null,
+      "completedAtUtc": "2026-10-16T13:19:15.119Z"
+    }
+  ],
+  "prerequisites": {
+    "automation": {
+      "manifest": {
+        "path": "products/rea-studio/apps/automation/native-original-manifest.json",
+        "bytes": 536848,
+        "sha256": "3cbe67f29673298e68d71838599fc8f57428aae22d5a667a3e25c590a1f93076"
+      },
+      "root": "D:\\a\\rea-research-lab\\rea-research-lab\\.local\\automation-original",
+      "lock": {
+        "path": "package-lock.json",
+        "bytes": 72265,
+        "sha256": "3e9e349fb834ecbacf5f5a1b66d3360a71a88f739732b9f842db8d08d931b594"
+      },
+      "archives": [
+        {
+          "path": "n8n-2.16.0.tgz",
+          "bytes": 2141748,
+          "sha256": "7887e1f062725fb1da5f2496ff8e9d43213418aa3bff875702b6723895ce3272"
+        },
+        {
+          "path": "n8n-workflow-2.16.0.tgz",
+          "bytes": 662036,
+          "sha256": "d9b7ff4250c8f07eae1f8e5e6100069a83cf72e1e266d88f1bfc3d5937110e8a"
+        },
+        {
+          "path": "n8n-nodes-base-2.16.0.tgz",
+          "bytes": 9203477,
+          "sha256": "64e058ea668bae613b3d040be2bd60f6b21be5d74db2839cf3d7e2ab87c76338"
+        },
+        {
+          "path": "n8n-core-2.16.0.tgz",
+          "bytes": 322672,
+          "sha256": "b41896a64f2e0a48d48f38da0747998195bec38f65cce4bfb7b8efb77c474eef"
+        }
+      ],
+      "authenticatedSourceFiles": 4350,
+      "authenticatedSourceBytes": 34477591,
+      "contracts": [
+        {
+          "path": "contract-0.ts",
+          "bytes": 1281,
+          "sha256": "a0815b54925552431971445ed382ab58d0f0adfe3a05acd772fbbe4a305f1d25"
+        },
+        {
+          "path": "contract-1.ts",
+          "bytes": 9854,
+          "sha256": "94787f2d080a1ece6641d9521ed67135c76b124edbd9e84eec33adc0cf886631"
+        },
+        {
+          "path": "contract-2.ts",
+          "bytes": 8323,
+          "sha256": "2f702bdb746d852dd876a736ba2a334ea36b05b1f05451df388b5b19323ac7bf"
+        },
+        {
+          "path": "contract-3.ts",
+          "bytes": 3537,
+          "sha256": "0da38a844565a70bab7bc8261b76cd5aa56740e965ab4c0c20a68f100aa9f406"
+        },
+        {
+          "path": "contract-4.ts",
+          "bytes": 36045,
+          "sha256": "fe7e2277dd6ba30aae289e658d8dfd30f67aea062b3bac3921c8b359b9a543b6"
+        },
+        {
+          "path": "contract-5.ts",
+          "bytes": 16060,
+          "sha256": "d2b114778ce09371fc4bbf064d747d6477caed4197fe5e95b4b0dd3b10edff7c"
+        },
+        {
+          "path": "contract-6.ts",
+          "bytes": 353,
+          "sha256": "d446fc1ece63d85bb82c95592081b5df2eec3fc3980d093ec4b44b5b71dae8b0"
+        },
+        {
+          "path": "contract-7.ts",
+          "bytes": 6517,
+          "sha256": "a4fb33a7f397baa662eca2f44c7abc63ba25dd698be8ef16eb969d74b7c2afda"
+        },
+        {
+          "path": "contract-8.ts",
+          "bytes": 59450,
+          "sha256": "7fd2d698e85d0d809d9b761e5ed4b3dd65d42723868926af4cf90da003107602"
+        }
+      ],
+      "comparisonTestsExecuted": 0
+    },
+    "automationRouting": {
+      "manifest": {
+        "path": "products/rea-studio/apps/automation/routing-original-manifest.json",
+        "bytes": 27218,
+        "sha256": "87de7922724fc757263bd530dfe5641a1f0bb324bb4ca6d64eb03ad235823877"
+      },
+      "root": "D:\\a\\rea-research-lab\\rea-research-lab\\.local\\automation-routing-original",
+      "files": 202,
+      "reconstructedExactMembers": 201,
+      "archiveCopiedExactly": true,
+      "extractionProcesses": 1,
+      "originalCodeExecutedByReconstruction": false
+    },
+    "sketch": {
+      "version": "0.18.1",
+      "assets": [
+        {
+          "name": "archive",
+          "path": "D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\sketch\\.local\\original\\package.tgz",
+          "bytes": 31234066,
+          "sha256": "b280d4b364b65cba264c5aa4e7435cc2ce6421eabbbef9765a56997a0fadf534"
+        },
+        {
+          "name": "bundle",
+          "path": "D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\sketch\\.local\\original\\bundle.js",
+          "bytes": 969103,
+          "sha256": "3cfe278cb537fde73b42bbd4697b392946517d3dc02d3f3cf8487d8476f63ba2"
+        },
+        {
+          "name": "map",
+          "path": "D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\sketch\\.local\\original\\source-map.json",
+          "bytes": 1801977,
+          "sha256": "3df41b92bd8c248f482c3d5b163349e02a506c6807a638a38ff722d7e4c98552"
+        }
+      ],
+      "originalHelperExecutionsByThisBootstrap": 0
+    },
+    "restic": {
+      "manifest": {
+        "path": "projects/09-restic/artifact-manifest.json",
+        "bytes": 835,
+        "sha256": "8655827d6f930fcf9ff2d1ff9c296e565449b5548c3abd3202c5d1675daf222e"
+      },
+      "version": "v0.19.1",
+      "archive": {
+        "path": "artifacts/restic_0.19.1_windows_amd64.zip",
+        "bytes": 11237567,
+        "sha256": "da948ad707ed690426473aaba2046cd61f8f90f6f0e7dab6be0d5796531de67d"
+      },
+      "executable": {
+        "path": "artifacts/unpacked/restic_0.19.1_windows_amd64.exe",
+        "bytes": 31660032,
+        "sha256": "b0dd1fd21eea5d8fe1325f55f7118213c21f36de8a261e04c0624a5ab9fd7830"
+      },
+      "originalExecutionsByThisBootstrap": 0
+    }
+  },
+  "comparativeTestProcessesExecutedByThisBootstrap": 0,
+  "originalApplicationServicesStarted": 0,
+  "originalModuleInitialization": "The existing Automation acquisition command imports its released-code test harness for integrity/module initialization. These operations are not counted as comparative tests, and no zero-original-code-execution claim is made.",
+  "unknownContractsRefuse": true,
+  "skippedPrerequisites": 0,
+  "vendorBinariesPublished": false,
+  "routingStaging": "D:\\a\\rea-research-lab\\rea-research-lab\\.local\\automation-routing-original-acquisition-38905581957-1",
+  "completedAtUtc": "2026-10-16T13:19:15.178Z"
+}

@@ -59,7 +59,7 @@ const REVIEWED = {
   'products/rea-studio/results/publication-editor-save-git-closure-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot': [50750, '8e72b3b70a9b44d1ef5ab33c11a7c28a0cda90d79f22375771a2a4dceee22f48'],
   'products/rea-studio/results/publication-editor-save-git-closure-20261015/verifier-before/verify-editor-save-followup.mjs.snapshot': [7424, 'fb3f465eaaefab1197c170410355f30764308e3f5b4e58e30d0c8059fe3e96c3'],
   'scripts/verify-records.mjs': [149064, '3878efc73e671246305e4368f7d3c52f288473591a4fe1697b343ab70249ae1e'],
-  'scripts/editor-vault-proof-migration.mjs': [103417, 'b8f562687cbd98b719971f7b7f794f608d546093fbdcab2781661068762942a6'],
+  'scripts/editor-vault-proof-migration.mjs': [103454, 'dd9ae80ddd90266588609131bfe1b5279966e837cab07462694cdab10b56a50f'],
   'scripts/verify-cloud-recovery-records.mjs': [15778, '405c90ac8c68acdc2b281e9563637cc391e1e0574705c1cbcdf7be8e1f794482'],
   'products/rea-studio/results/cloud-publication-source-transition-20261015/preservation-manifest.json': [3069, '8daf5506d935254110dadf2c32e394d6b02f773692867b3a30120a14055ee576'],
   'products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/verify-records.mjs.snapshot': [142684, '42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6'],

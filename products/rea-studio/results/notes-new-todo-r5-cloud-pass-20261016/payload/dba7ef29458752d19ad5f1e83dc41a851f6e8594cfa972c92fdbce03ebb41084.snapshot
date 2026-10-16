@@ -1,0 +1,54 @@
+{
+  "schema": "rea-independent-NewTodo-two-canonical-baseline-source-corrections-review/v1",
+  "status": "approved-exact-two-test-source-corrections-only",
+  "reviewer": "/root/archive_review_1245",
+  "authority": {
+    "path": "work/notes-new-todo-canonical-baseline-correction-20261016-next/change-authority.json",
+    "bytes": 3268,
+    "sha256": "2e4a05f6778f6cc42b08b7c539fbea01a2d7baffcd5c3ea77a4080054526dded"
+  },
+  "files": [
+    {
+      "path": "products/rea-studio/apps/notes/new-todo.integration.test.mjs",
+      "before": {
+        "bytes": 5185,
+        "sha256": "27e88d76cb1db9dd4cd685b14c34266d8a9462cc5008f8d89ed59a258aa88eb1"
+      },
+      "after": {
+        "bytes": 6131,
+        "sha256": "e98cfe05932c8b0a6c2bf15582aeaef4257e9aa67f2ed8409856789a3aad6bcf"
+      }
+    },
+    {
+      "path": "products/rea-studio/browser-tests/notes-new-todo.spec.mjs",
+      "before": {
+        "bytes": 41689,
+        "sha256": "a9507d147a92665eae81c507aa313997f7e0e30976775c1255cfcc2161656d19"
+      },
+      "after": {
+        "bytes": 42394,
+        "sha256": "037522c77be34b54a822d207011609b64409f632708d14756bc98dff2f2a62ec"
+      }
+    }
+  ],
+  "sourceRead": "Read full6,131-byte integration source, both complete before/after diffs, complete3,268-byte authority, unchanged ensureOrganization line14 and edited-note helper, plus the actual failed finite raw assertion. Earlier complete41,689-byte browser source was independently reviewed; only the displayed case1 delta changes here.",
+  "findings": [],
+  "reasoning": [
+    "Actual finite group23 compares initial Save response against a later GET. The sole actual diff is metadataEdited:false, which the unchanged ensureOrganization explicitly materializes on a read copy when the field was absent. This is an existing API epoch distinction, not a new invalid-request write.",
+    "Integration now compares the complete GET response to the explicit full {...firstSave,metadataEdited:false} contract. It does not drop metadataEdited or any other field, normalize arbitrary differences, or change the runtime normalizer.",
+    "The original persisted Buffer is captured before GET and must remain byte-identical after GET, each invalid400, existing-note flag refusal, restart and list. Full normalized note equality remains mandatory, and the later valid retry must leave the complete original normalized note unchanged.",
+    "Browser performs a genuine second ordinary Save and explicitly requires sameID/revision2/history1/metadataEdited:true before capturing the complete raw stored baseline. Existing edited-note semantics set that flag during a valid Save.",
+    "The entire baseline note still must be deeply equal after unrelated task creation. New before/after whole-note JSON identities are additionally recorded. Empty-title400 still requires the entire prior persisted state byte-identical before explicit retry.",
+    "Only these two experimental test sources change. Three integration groups and all eight browser titles, counts, statuses, every comparison field, all17 prior test files, original adapters and runtime normalization remain unchanged.",
+    "The frozen R4 feature proposal and committed cloud-v3 source epoch remain preserved. Future assembled cloud-v4 source pins and its source authority must bind these new bytes before actual execution."
+  ],
+  "acceptanceBoundary": "Source-only approval of the exact two test corrections. This does not convert actual107/111 or7/8 failed results to passes, install a runtime change, or approve a partial pin update. A fully reviewed assembled inert proposal and fresh hosted111/8 results remain required.",
+  "localProductExecutions": 0,
+  "localTests": 0,
+  "localBuilds": 0,
+  "localBrowserExecutions": 0,
+  "localSyntaxChecks": 0,
+  "localCandidateImports": 0,
+  "activeWrites": 0,
+  "gitMutations": 0
+}

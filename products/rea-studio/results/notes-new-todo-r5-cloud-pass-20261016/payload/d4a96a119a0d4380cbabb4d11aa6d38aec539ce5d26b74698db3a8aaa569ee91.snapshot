@@ -1,0 +1,286 @@
+{
+  "schema": "rea-notes-new-todo-real-browser-case/v1",
+  "testId": "3cad05b47669028ddfa0-f2b1d20ec737b04fcc73",
+  "title": "New To-do committed save distinguishes genuine list400 from persistence failure and explicit refresh preserves state",
+  "statusAtFixtureClose": "passed",
+  "retry": 0,
+  "url": "http://127.0.0.1:52014",
+  "ownedDataDirectory": "D:\\a\\_temp\\rea-new-todo-synthetic-browser-1BNHE4\\notes-new-todo-case-qkYsQL",
+  "serverCloseObserved": true,
+  "realBrowser": true,
+  "actualHTTP": true,
+  "originalProductExecutions": 0,
+  "originalFullApplicationExecutions": 0,
+  "originalHelperExecutions": 0,
+  "programmaticDisabledControlProbes": 0,
+  "teardown": {
+    "stage": "completed",
+    "heldRoutesFinished": true,
+    "drained": true,
+    "contextClosed": true,
+    "serverClosed": true,
+    "screenshotSaved": true,
+    "requestCounts": {
+      "started": 14,
+      "finished": 14,
+      "failed": 0
+    },
+    "steps": [
+      {
+        "name": "release-held-routes",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T16:16:12.466Z",
+        "completedAtUtc": "2026-10-16T16:16:12.466Z"
+      },
+      {
+        "name": "screenshot",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T16:16:12.466Z",
+        "completedAtUtc": "2026-10-16T16:16:12.539Z"
+      },
+      {
+        "name": "drain-owned-page-requests",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T16:16:12.539Z",
+        "completedAtUtc": "2026-10-16T16:16:12.539Z"
+      },
+      {
+        "name": "capture-synthetic-final-record",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T16:16:12.539Z",
+        "completedAtUtc": "2026-10-16T16:16:12.540Z"
+      },
+      {
+        "name": "close-owned-context",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T16:16:12.540Z",
+        "completedAtUtc": "2026-10-16T16:16:12.624Z"
+      },
+      {
+        "name": "close-owned-server",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T16:16:12.624Z",
+        "completedAtUtc": "2026-10-16T16:16:12.624Z"
+      }
+    ],
+    "pendingOwnedRequests": 0,
+    "activeOwnedIOFault": false
+  },
+  "observations": [
+    {
+      "kind": "new-task-committed-save-refresh-failure-explicit-recovery",
+      "noteId": "88650420-7ff8-42fb-aab6-d104f1cef08c",
+      "committedRevision": 1,
+      "actualHTTPStatus": 400,
+      "syntheticOwnedFilesystemFault": true,
+      "responseMocked": false,
+      "restoredBeforeDelivery": true,
+      "explicitRefreshStatus": 200,
+      "stateBefore": {
+        "bytes": 860,
+        "sha256": "1b56ee8750975730fc1be3c75555103cb501f5cfd58cd6a8382423a04df06fcd"
+      },
+      "stateAfter": {
+        "bytes": 860,
+        "sha256": "1b56ee8750975730fc1be3c75555103cb501f5cfd58cd6a8382423a04df06fcd"
+      }
+    },
+    {
+      "kind": "owned-synthetic-disk-record",
+      "path": "notes-records/3cad05b47669028ddfa0-f2b1d20ec737b04fcc73.json",
+      "bytes": 860,
+      "sha256": "1b56ee8750975730fc1be3c75555103cb501f5cfd58cd6a8382423a04df06fcd"
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"revision\":0,\"title\":\"Reported genuine refresh failure\",\"body\":\"Synthetic new-task body\",\"notebook\":\"Notes\",\"tags\":[\"study\"],\"newTodo\":true}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"88650420-7ff8-42fb-aab6-d104f1cef08c\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"revision\":0,\"title\":\"Reported genuine refresh failure\",\"body\":\"Synthetic new-task body\",\"notebook\":\"Notes\",\"tags\":[\"study\"],\"newTodo\":true}"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"id\":\"88650420-7ff8-42fb-aab6-d104f1cef08c\"}"
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 400,
+      "method": "POST",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}",
+      "body": {
+        "bytes": 58,
+        "sha256": "54c786e36ad179c3e6a0b5b9219df38573df4a83f05dacd8c201f560f13b8eba"
+      },
+      "error": "EISDIR: illegal operation on a directory, read",
+      "expectedActualHostFailure": true
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    }
+  ],
+  "faults": [
+    {
+      "kind": "actual-host-list400-after-owned-filesystem-read-fault",
+      "title": "Reported genuine refresh failure",
+      "handlerMocked": false,
+      "responseRewritten": false,
+      "heldAfterRestore": false,
+      "steps": [
+        {
+          "name": "all-other-owned-requests-and-attachment-response-drained",
+          "atUtc": "2026-10-16T16:16:12.361Z"
+        },
+        {
+          "name": "fault-ownership-entered",
+          "atUtc": "2026-10-16T16:16:12.362Z"
+        },
+        {
+          "name": "committed-state-renamed-to-owned-sibling",
+          "atUtc": "2026-10-16T16:16:12.362Z"
+        },
+        {
+          "name": "empty-directory-installed-at-owned-state-file",
+          "atUtc": "2026-10-16T16:16:12.362Z"
+        },
+        {
+          "name": "unchanged-host-returned-real-filesystem400",
+          "atUtc": "2026-10-16T16:16:12.367Z"
+        },
+        {
+          "name": "owned-empty-directory-removed-without-recursion",
+          "atUtc": "2026-10-16T16:16:12.367Z"
+        },
+        {
+          "name": "original-state-restored",
+          "atUtc": "2026-10-16T16:16:12.367Z"
+        },
+        {
+          "name": "restored-exact-original-bytes-verified",
+          "atUtc": "2026-10-16T16:16:12.368Z"
+        },
+        {
+          "name": "actual-response-release-requested",
+          "atUtc": "2026-10-16T16:16:12.368Z"
+        },
+        {
+          "name": "unchanged-actual400-delivered-after-restoration",
+          "atUtc": "2026-10-16T16:16:12.370Z"
+        }
+      ],
+      "noteId": "88650420-7ff8-42fb-aab6-d104f1cef08c",
+      "committedRevision": 1,
+      "originalCommittedState": {
+        "bytes": 860,
+        "sha256": "1b56ee8750975730fc1be3c75555103cb501f5cfd58cd6a8382423a04df06fcd"
+      },
+      "actualStatus": 400,
+      "actualError": "EISDIR: illegal operation on a directory, read",
+      "actualBody": {
+        "bytes": 58,
+        "sha256": "54c786e36ad179c3e6a0b5b9219df38573df4a83f05dacd8c201f560f13b8eba"
+      },
+      "restoredState": {
+        "bytes": 860,
+        "sha256": "1b56ee8750975730fc1be3c75555103cb501f5cfd58cd6a8382423a04df06fcd"
+      },
+      "restoreCompletedBeforeResponseDelivery": true
+    }
+  ],
+  "expectedHttpFailures": [
+    {
+      "path": "/api/notes/list",
+      "status": 400,
+      "errorMessage": "EISDIR: illegal operation on a directory, read",
+      "observed": true
+    }
+  ],
+  "expectedConsole": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "location": {
+        "url": "http://127.0.0.1:52014/api/notes/list",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "auxiliaryErrors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:52014/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "errors": [],
+  "downloads": []
+}

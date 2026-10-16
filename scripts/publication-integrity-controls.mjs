@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
-const ROOT_ID = { bytes: 148558, sha256: 'a78a9467ecd76ae44c3d2413b6d341c735bb1f98a657646d3b00a13dccf066f8' };
+const ROOT_ID = { bytes: 148688, sha256: 'cd524543c7b6c9bf2050194994667e3e805165a934da209957ecbb5559d211c4' };
 const CLOUD = 'products/rea-studio/results/cloud-flow-vault-20261015/';
 const TRANSITION = 'products/rea-studio/results/cloud-publication-source-transition-20261015/';
 const GIT_CLOSURE = 'products/rea-studio/results/publication-git-directory-closure-20261015/';
@@ -50,8 +50,9 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
     ['missing-exact-editor-git-mismatch-route', rows => { rows.find(row => row.path.endsWith('/editor/git.test.mjs')).path += '.unlisted'; }],
     ['duplicate-editor31-source-row', rows => { rows[1] = { ...rows[0] }; }],
   ]) negative(name, () => { const rows = structuredClone(editor31); change(rows); migration.editorMismatchesIncludingHistoricalHost(rows); }, 'fixed six-row historical Editor mismatch declaration');
-  positive('five-fixed-root-epochs', () => {
+  positive('six-fixed-root-epochs', () => {
     assert.equal(migration.resolve('scripts/verify-records.mjs', ROOT_ID), null);
+    assert.equal(migration.resolve('scripts/verify-records.mjs', {"bytes":148558,"sha256":"a78a9467ecd76ae44c3d2413b6d341c735bb1f98a657646d3b00a13dccf066f8"}), 'products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/verify-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 148351, sha256: 'a81c2f4b53fd346a6b86e4dcb63c9b39fb07a4f1e551bcfdbc3c755fce394046' }), 'products/rea-studio/results/historical-carrier-delivery-20261015/verifier-before/verify-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 147529, sha256: '82fc7f36c0805ee163a93aa1720ed708629ac455d90a9bdd343b30f554335304' }), WINDOWS_PATH + 'verifier-before/verify-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 142684, sha256: '42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6' }), TRANSITION + 'verifier-middle/verify-records.mjs.snapshot');
@@ -232,7 +233,38 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   negative('group-edit-document-unlisted-identity', () => migration.resolve(groupEditDoc, { bytes: 1, sha256: '0'.repeat(64) }), 'one exact GROUP-EDIT document before and after identity');
   negative('group-edit-document-missing-identity', () => migration.resolve(groupEditDoc), 'explicit expected identity is mandatory for the named document');
   negative('group-edit-document-mandatory-current-byte-change', () => createEditorVaultProofMigration(name => name === groupEditDoc ? flip(read(name)) : read(name)), 'new current document remains mandatory while immutable next.sources reads exact preserved before');
-  assert.equal(rows.length, 80); assert.ok(rows.every(row => row.passed));
+
+  // Exercise only the actual pinned root requirement source-read loop. These
+  // controls execute publication assertions in a closed VM, never app/test code.
+  const requirementStart = '    for (const entry of localEvidence) {', requirementEnd = '\n    for (const row of rows) { assert.ok(!capabilityIds.has(row.id),';
+  assert.equal(source.split(requirementStart).length, 2); assert.equal(source.split(requirementEnd).length, 2);
+  const safeRecordLine = source.split('\n').filter(line => line.startsWith('function safeRecordPath(path) ')); assert.equal(safeRecordLine.length, 1);
+  const requirementScript = new vm.Script(safeRecordLine[0] + '\n' + source.slice(source.indexOf(requirementStart), source.indexOf(requirementEnd)), { filename: 'exact-reviewed-requirement-source-read-control.mjs' });
+  const requirementEntries = [];
+  for (const file of ['workspace-products.json', 'visual-products.json', 'system-products.json']) {
+    const registry = JSON.parse(read('products/rea-studio/requirements/' + file));
+    requirementEntries.push(...(file === 'workspace-products.json' ? registry.localImplementationEvidence : file === 'visual-products.json' ? registry.baselineProducts.flatMap(product => product.implementationFiles ?? []) : registry.products.flatMap(product => product.local_implementation_evidence ?? [])));
+  }
+  assert.equal(requirementEntries.length, 251);
+  const requirementEditor = requirementEntries.find(entry => entry.path === 'products/rea-studio/apps/editor/git.test.mjs');
+  const requirementUnchanged = requirementEntries.find(entry => entry.path === 'products/rea-studio/apps/editor/app.test.mjs'); assert(requirementEditor && requirementUnchanged);
+  assert.equal(requirementEditor.bytes, 11458); assert.equal(requirementEditor.sha256, 'ab8213c182d1568254ea73db57133affbd48304b98f0d275d27c1fcf8b33f0cc');
+  function requirementEvidence({ entries = requirementEntries, changed = null } = {}) {
+    const reads = []; requirementScript.runInNewContext({ root, localEvidence: structuredClone(entries), assert, join: path.join, sha, sourceProofMigration: migration,
+      readFileSync(filename) { const name = path.relative(root, filename).split(path.sep).join('/'); reads.push(name); const bytes = read(name); return name === changed ? flip(bytes) : bytes; },
+    }, { timeout: 120000 }); return reads;
+  }
+  positive('requirement-evidence-actual-loop-all-declared-rows', () => { assert.equal(requirementEvidence().length, 251); });
+  positive('requirement-evidence-known-editor-historical-before', () => { assert.deepEqual(requirementEvidence({ entries: [requirementEditor] }), [WINDOWS_PATH + 'before/products/rea-studio/apps/editor/git.test.mjs.snapshot']); });
+  positive('requirement-evidence-unlisted-path-remains-current', () => { assert.deepEqual(requirementEvidence({ entries: [requirementUnchanged] }), [requirementUnchanged.path]); });
+  negative('requirement-evidence-historical-byte-corruption', () => requirementEvidence({ entries: [requirementEditor], changed: WINDOWS_PATH + 'before/products/rea-studio/apps/editor/git.test.mjs.snapshot' }), 'actual pinned root read site requires the exact historical SHA and size after routing');
+  negative('requirement-evidence-unknown-named-SHA', () => requirementEvidence({ entries: [{ ...requirementEditor, sha256: '0'.repeat(64) }] }), 'actual pinned requirement read site calls the existing closed migration resolver');
+  negative('requirement-evidence-unknown-named-size', () => requirementEvidence({ entries: [{ ...requirementEditor, bytes: requirementEditor.bytes + 1 }] }), 'named historical identity includes its exact byte count');
+  negative('requirement-evidence-unchanged-current-byte-corruption', () => requirementEvidence({ entries: [requirementUnchanged], changed: requirementUnchanged.path }), 'unlisted paths remain direct current reads with unchanged SHA assertion');
+  negative('requirement-evidence-unchanged-current-size-declaration', () => requirementEvidence({ entries: [{ ...requirementUnchanged, bytes: requirementUnchanged.bytes + 1 }] }), 'the optional size assertion is preserved for direct current reads');
+  negative('requirement-evidence-unsafe-record-path', () => requirementEvidence({ entries: [{ ...requirementUnchanged, path: '../unlisted' }] }), 'the actual pinned root safeRecordPath rejects traversal before any read');
+  for (const target of ["products/rea-studio/results/requirement-evidence-provenance-20261015/preservation-manifest.json","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/verify-records.mjs.snapshot","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot"]) negative('requirement-provenance-mandatory-byte-corruption:' + target, () => createEditorVaultProofMigration(name => name === target ? flip(read(name)) : read(name)), 'new fixed requirement provenance closure identity; historical receipts and registries remain unchanged');
+  assert.equal(rows.length, 92); assert.ok(rows.every(row => row.passed));
   return { schema: 'rea-cloud-publication-controls/v1', status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,

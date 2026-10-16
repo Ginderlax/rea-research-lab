@@ -819,7 +819,9 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
       : registry.file === 'visual-products.json' ? record.baselineProducts.flatMap(product => product.implementationFiles ?? [])
       : record.products.flatMap(product => product.local_implementation_evidence ?? []);
     for (const entry of localEvidence) {
-      const bytes = readFileSync(join(root, entry.path));
+      safeRecordPath(entry.path);
+      const historicalPath = sourceProofMigration.resolve(entry.path, entry);
+      const bytes = readFileSync(join(root, historicalPath ?? entry.path));
       assert.equal(sha(bytes), entry.sha256, `Requirement implementation changed: ${entry.path}`);
       if (entry.bytes !== undefined) assert.equal(bytes.length, entry.bytes, `Requirement implementation size changed: ${entry.path}`);
     }

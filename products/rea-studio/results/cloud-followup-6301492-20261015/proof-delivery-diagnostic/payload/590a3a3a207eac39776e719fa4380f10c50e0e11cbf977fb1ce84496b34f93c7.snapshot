@@ -1,0 +1,87 @@
+"""Bounded authorized audit-artifact backup only; never import/run audit code."""
+import hashlib, json, stat, sys, zipfile
+from pathlib import Path
+
+source = Path(sys.argv[1]).resolve()
+expected = sys.argv[2]
+run_id = sys.argv[3]
+commit = sys.argv[4]
+base = Path(__file__).resolve().parent / 'cloud-verification-backups'
+assert source.is_relative_to(base.resolve()) and source.is_file()
+assert run_id.isdigit() and len(commit) == 40
+digest = lambda b: hashlib.sha256(b).hexdigest()
+raw = source.read_bytes()
+assert len(raw) <= 32 * 1024 * 1024 and digest(raw) == expected
+folder = source.parent / source.stem
+folder.mkdir(exist_ok=False)
+
+def unpack(archive, destination, max_files, max_total, max_single, allowed=None):
+    destination.mkdir(parents=True, exist_ok=False)
+    rows, seen = [], set()
+    with zipfile.ZipFile(archive) as zipped:
+        entries = zipped.infolist()
+        assert len(entries) <= max_files
+        assert sum(e.file_size for e in entries) <= max_total
+        for entry in entries:
+            name = entry.filename
+            assert name and name.casefold() not in seen
+            seen.add(name.casefold())
+            assert not name.startswith(('/', '\\')) and '\\' not in name and ':' not in name
+            assert all(p not in ('..', '.') for p in Path(name).parts)
+            assert not stat.S_ISLNK(entry.external_attr >> 16)
+            target = (destination / name).resolve()
+            assert target.is_relative_to(destination.resolve()) and not entry.is_dir()
+            if allowed is not None:
+                assert name in allowed
+            assert entry.file_size <= max_single
+            data = zipped.read(entry)
+            assert len(data) == entry.file_size
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with target.open('xb') as out:
+                out.write(data)
+            assert target.read_bytes() == data
+            rows.append({'path': name, 'bytes': len(data), 'sha256': digest(data)})
+    return rows
+
+outer = unpack(source, folder / 'downloaded-contents', 1, 16 * 1024 * 1024, 16 * 1024 * 1024)
+assert len(outer) == 1 and outer[0]['path'].endswith('.zip')
+archive = folder / 'downloaded-contents' / outer[0]['path']
+allowed = {'attempt-running.json', 'events.jsonl', 'audit-script.mjs.snapshot', 'audit-workflow.yml.snapshot',
+           'closed-aliases.jsonl', 'missing-git.jsonl', 'size-mismatches.jsonl', 'manifests.jsonl',
+           'unresolved.jsonl', 'audit-report.json', 'workflow-attempt.json', 'storage-failure.json'}
+evidence = folder / 'readable-evidence'
+files = unpack(archive, evidence, 12, 24 * 1024 * 1024, 4 * 1024 * 1024, allowed)
+workflow = json.loads((evidence / 'workflow-attempt.json').read_text(encoding='utf-8-sig'))
+assert workflow['schema'] == 'rea-hosted-proof-delivery-workflow/v1'
+assert workflow['sourceCommit'] == commit and str(workflow['runId']) == run_id
+assert str(workflow['runAttempt']) == '1'
+assert workflow['productExecutions'] == 0 and workflow['publicationAccepted'] is False
+result = {'schema': 'rea-local-proof-delivery-audit-backup/v1', 'artifact': str(source),
+          'artifactSHA256': expected, 'archiveBytes': len(raw), 'runId': run_id,
+          'sourceCommit': commit, 'readableEvidence': str(evidence), 'files': files,
+          'allCRCAndBytesReadable': True, 'localAuditExecutions': 0, 'localProductExecutions': 0,
+          'localTests': 0, 'localBuilds': 0, 'publicationAcceptance': False,
+          'payloadSHAAuthenticationClaimed': False, 'storageIncomplete': (evidence / 'storage-failure.json').exists()}
+report_file = evidence / 'audit-report.json'
+if report_file.exists():
+    report = json.loads(report_file.read_text(encoding='utf-8'))
+    assert report['schema'] == 'rea-hosted-proof-delivery-audit/v1'
+    assert report['status'] in ('completed', 'failed')
+    assert report['provenance']['sourceCommit'] == commit
+    assert str(report['provenance']['runId']) == run_id
+    assert report['provenance']['repository'] == 'Ginderlax/rea-research-lab'
+    assert report['productExecutions'] == 0 and report['proofVerifierExecutions'] == 0
+    result['audit'] = {k: report.get(k) for k in ('status', 'coverageComplete', 'declaredDeliveryComplete',
+                     'declaredSizesMatch', 'counts', 'missingByPrefix', 'schemaCounts', 'errors')}
+    for name in ('missing-git.jsonl', 'unresolved.jsonl', 'closed-aliases.jsonl', 'size-mismatches.jsonl'):
+        at = evidence / name
+        if at.exists():
+            lines = [json.loads(line) for line in at.read_text(encoding='utf-8').splitlines() if line]
+            result.setdefault('readableJSONLRows', {})[name] = len(lines)
+else:
+    result['evidenceState'] = 'No terminal audit report; available workflow diagnostics only.'
+with (folder / 'local-backup-verification.json').open('x', encoding='utf-8') as out:
+    out.write(json.dumps(result, indent=2) + '\n')
+print(json.dumps({k: v for k, v in result.items() if k not in ('files', 'audit')}))
+if 'audit' in result:
+    print(json.dumps(result['audit']))

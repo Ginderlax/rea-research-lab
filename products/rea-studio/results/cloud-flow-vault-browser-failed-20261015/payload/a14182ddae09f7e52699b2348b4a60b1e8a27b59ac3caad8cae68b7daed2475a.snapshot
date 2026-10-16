@@ -1,0 +1,223 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: flow-vault.spec.mjs >> Flow disposal scrubs detached native controls during actual validation
+- Location: flow-vault.spec.mjs:170:1
+
+# Error details
+
+```
+Error: Owned server close deadline exceeded
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - text: REA
+      - strong [ref=e4]: Studio
+    - generic [ref=e5]: Local applications · development
+  - generic [ref=e6]:
+    - complementary [ref=e7]:
+      - paragraph [ref=e8]: YOUR WORKSPACE
+      - navigation "Applications" [ref=e9]:
+        - button "Lab Editor" [ref=e10] [cursor=pointer]
+        - button "Lab Metrics" [ref=e11] [cursor=pointer]
+        - button "Lab Automation" [ref=e12] [cursor=pointer]
+        - button "Lab Sketch" [ref=e13] [cursor=pointer]
+        - button "Lab Notes" [ref=e14] [cursor=pointer]
+        - button "Lab Flow" [ref=e15] [cursor=pointer]
+        - button "Lab Vault" [active] [ref=e16] [cursor=pointer]
+        - button "Lab Archive" [ref=e17] [cursor=pointer]
+        - button "Lab Backup" [ref=e18] [cursor=pointer]
+        - button "Lab Sync" [ref=e19] [cursor=pointer]
+      - generic [ref=e20]: Files and records are stored on this machine.
+    - main [ref=e21]:
+      - generic [ref=e22]:
+        - heading "Lab Vault" [level=1] [ref=e23]
+        - paragraph [ref=e24]: Encrypted entries and password utilities
+        - paragraph [ref=e25]: Development version. Full product feature parity and comparative improvements are still being evaluated.
+      - generic [ref=e27]:
+        - heading "REA Vault" [level=2] [ref=e28]
+        - paragraph [ref=e29]: Encrypted local entries, a password generator and one-time codes. The vault locks after five minutes without a vault request.
+        - paragraph [ref=e30]: Done.
+        - generic [ref=e31]:
+          - generic [ref=e32]:
+            - heading "Create your vault" [level=3] [ref=e33]
+            - generic [ref=e34]:
+              - text: Master password
+              - textbox "Master password" [ref=e35]
+            - button "Create encrypted vault" [ref=e36] [cursor=pointer]
+            - generic [ref=e37]:
+              - text: Encrypted vault JSON to import
+              - textbox "Encrypted vault JSON to import" [ref=e38]
+            - generic [ref=e39]:
+              - text: Replace an existing vault
+              - checkbox "Replace an existing vault" [ref=e40]
+            - button "Import encrypted vault" [ref=e41] [cursor=pointer]
+          - generic [ref=e42]:
+            - heading "Import a KeePass database" [level=3] [ref=e43]
+            - paragraph [ref=e44]: KDBX 3.1, 4.0 and 4.1. The complete document and attachments stay encrypted locally; extra KeePass fields are preserved for export. Import replaces the local vault.
+            - generic [ref=e45]:
+              - text: KeePass database file
+              - button "KeePass database file" [ref=e46]
+            - generic [ref=e47]:
+              - text: KeePass database password
+              - textbox "KeePass database password" [ref=e48]
+            - generic [ref=e49]:
+              - text: Use password component (uncheck for a key file only)
+              - checkbox "Use password component (uncheck for a key file only)" [checked] [ref=e50]
+            - generic [ref=e51]:
+              - text: Optional KeePass key file
+              - button "Optional KeePass key file" [ref=e52]
+            - generic [ref=e53]:
+              - text: Local vault master password (at least 10 characters)
+              - textbox "Local vault master password (at least 10 characters)" [ref=e54]
+            - generic [ref=e55]:
+              - text: Confirm replacement of the existing local vault
+              - checkbox "Confirm replacement of the existing local vault" [ref=e56]
+            - button "Import KDBX database" [ref=e57] [cursor=pointer]
+        - generic [ref=e58]:
+          - heading "Generate a password" [level=3] [ref=e59]
+          - generic [ref=e60]:
+            - text: Length
+            - spinbutton "Length" [ref=e61]: "24"
+          - generic [ref=e62]:
+            - text: Generated password
+            - textbox "Generated password" [ref=e63]
+          - button "Generate" [ref=e64] [cursor=pointer]
+          - button "Show / hide generated password" [ref=e65] [cursor=pointer]
+```
+
+# Test source
+
+```ts
+  1   | // Finite real-browser acceptance only. All data is synthetic. The timing gates
+  2   | // fetch the actual unchanged host response and delay publication without
+  3   | // replacing its status, headers or body. No original product is invoked.
+  4   | import assert from 'node:assert/strict';
+  5   | import fs from 'node:fs/promises';
+  6   | import path from 'node:path';
+  7   | import { createHash } from 'node:crypto';
+  8   | import { test as base, expect } from '@playwright/test';
+  9   | assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
+  10  | assert.equal(process.env.CI, 'true'); assert.equal(process.env.GITHUB_ACTIONS, 'true');
+  11  | assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
+  12  | const { start } = await import('../server.mjs');
+  13  | const { exportKdbx } = await import('../apps/vault/kdbx.mjs');
+  14  | const { fixture: groupFixture, ids } = await import('../apps/vault/group-fixture.mjs');
+  15  | const evidence = await fs.realpath(process.env.REA_BROWSER_EVIDENCE);
+  16  | const dataRoot = await fs.realpath(process.env.REA_BROWSER_DATA_ROOT);
+  17  | const metadata = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+  18  | const write = async (name, value) => fs.writeFile(path.join(evidence, name), JSON.stringify(value, null, 2) + '\n', { flag: 'wx' });
+  19  | const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };
+> 20  | async function bounded(promise, milliseconds, label) { let timer; try { return await Promise.race([promise, new Promise((_, reject) => timer = setTimeout(() => reject(new Error(label)), milliseconds))]); } finally { clearTimeout(timer); } }
+      |                                                                                                                                                                        ^ Error: Owned server close deadline exceeded
+  21  | const password = 'Owned synthetic browser group master 2026';
+  22  | const test = base.extend({
+  23  |   studio: async ({ page }, use, info) => {
+  24  |     const dataDir = await fs.mkdtemp(path.join(dataRoot, 'case-'));
+  25  |     const instance = await start({ port: 0, dataDir });
+  26  |     const observations = [], requests = [], faults = [], held = [], expectedAuxiliaryResourceErrors = [];
+  27  |     const errors = [];
+  28  |     page.on('pageerror', error => errors.push({ type: 'pageerror', message: error.message }));
+  29  |     page.on('console', message => {
+  30  |       if (message.type() !== 'error') return;
+  31  |       // The unchanged host has no favicon endpoint. Preserve this explicit
+  32  |       // auxiliary404 observation; application/API/other resource errors fail.
+  33  |       const value = { type: 'console', message: message.text(), location: message.location() };
+  34  |       if (value.location.url === instance.url + '/favicon.ico' && /404/.test(value.message)) expectedAuxiliaryResourceErrors.push(value);
+  35  |       else errors.push(value);
+  36  |     });
+  37  |     page.on('requestfailed', request => { if (request.url().startsWith(instance.url + '/')) errors.push({ type: 'requestfailed', path: new URL(request.url()).pathname, failure: request.failure() }); });
+  38  |     page.on('request', request => {
+  39  |       if (!request.url().startsWith(instance.url + '/api/')) return;
+  40  |       assert(requests.length < 1000, 'Finite browser request bound exceeded');
+  41  |       requests.push({ method: request.method(), path: new URL(request.url()).pathname, postData: request.postData() });
+  42  |     });
+  43  |     async function api(app, action, input = {}) {
+  44  |       const response = await page.request.post(instance.url + '/api/' + app + '/' + action, { headers: { 'X-REA-Token': instance.token }, data: input });
+  45  |       assert(response.ok(), 'Owned fixture/observation API failed: ' + action + ':' + response.status());
+  46  |       return (await response.json()).result;
+  47  |     }
+  48  |     async function hold(app, action, predicate = () => true) {
+  49  |       const entered = deferred(), released = deferred(), finished = deferred(); let used = false;
+  50  |       const pattern = instance.url + '/api/' + app + '/' + action;
+  51  |       const handler = async route => {
+  52  |         if (used || !predicate(route.request().postDataJSON())) return route.continue();
+  53  |         used = true;
+  54  |         try {
+  55  |           const response = await route.fetch({ timeout: 15000 });
+  56  |           const body = await response.body();
+  57  |           assert(response.ok(), 'Timing gate must observe an actual successful host response');
+  58  |           const value = JSON.parse(body).result;
+  59  |           faults.push({ kind: 'delay-after-actual-host-response', app, action, status: response.status(), body: metadata(body), handlerMocked: false });
+  60  |           entered.resolve(value);
+  61  |           await released.promise; await route.fulfill({ response });
+  62  |         } catch (error) { entered.reject(error); throw error; } finally { finished.resolve(); }
+  63  |       };
+  64  |       await page.route(pattern, handler);
+  65  |       const gate = { entered: entered.promise, release: released.resolve, finished: finished.promise, used: () => used };
+  66  |       held.push(gate); return gate;
+  67  |     }
+  68  |     const studio = { page, url: instance.url, api, hold, requests, observations, faults };
+  69  |     try { await use(studio); }
+  70  |     finally {
+  71  |       try {
+  72  |         for (const gate of held) gate.release();
+  73  |         await bounded(Promise.all(held.filter(gate => gate.used()).map(gate => gate.finished)), 5000, 'Held actual response cleanup deadline exceeded');
+  74  |         await fs.mkdir(path.join(evidence, 'screenshots'), { recursive: true });
+  75  |         await page.screenshot({ path: path.join(evidence, 'screenshots', info.testId + '.png'), fullPage: false });
+  76  |       } finally {
+  77  |         let serverCloseObserved = false;
+  78  |         try { await bounded(instance.close(), 5000, 'Owned server close deadline exceeded'); serverCloseObserved = true; }
+  79  |         finally { await write('case-' + info.testId + '.json', { schema: 'rea-cloud-browser-case-observation/v1', testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry,
+  80  |           url: instance.url, ownedDataDirectory: dataDir, serverCloseObserved, realBrowser: true, actualHTTP: true, originalProductExecutions: 0, observations, requests, faults, expectedAuxiliaryResourceErrors, errors }); }
+  81  |       }
+  82  |       expect(errors, 'No unexpected real browser errors').toEqual([]);
+  83  |     }
+  84  |   },
+  85  | });
+  86  | test.beforeAll(async ({ browser }) => {
+  87  |   expect(browser.version()).toBe('156.0.8078.4');
+  88  |   await write('browser-observation.json', { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 });
+  89  | });
+  90  | const flowScene = () => ({ rev: 'opaque browser revision', vendor: { preserved: ['yes', 7], unicode: 'before\u2028after 😀 e\u0301 é' }, flows: [
+  91  |   { id: 'tab', type: 'tab', label: 'Owned browser fixture' },
+  92  |   { id: 'start', type: 'inject', z: 'tab', props: [], wires: [['out']], x: 100, y: 100 },
+  93  |   { id: 'out', type: 'link out', z: 'tab', links: [], wires: [['ignored']], x: 300, y: 100, custom: 'retained' },
+  94  |   { id: 'in', type: 'link in', z: 'tab', links: ['out'], wires: [['debug']], x: 550, y: 100 },
+  95  |   { id: 'debug', type: 'debug', z: 'tab', complete: 'true', active: true, tosidebar: true, wires: [], x: 800, y: 100 },
+  96  |   { id: 'ignored', type: 'debug', z: 'tab', complete: 'true', active: true, tosidebar: true, wires: [], x: 800, y: 230 },
+  97  | ] });
+  98  | const normalized = raw => raw.replace(/\r\n?/g, '\n');
+  99  | const rawScene = ending => JSON.stringify(flowScene(), null, 3).replace(/\n/g, ending) + ending;
+  100 | const native = page => page.locator('section').filter({ has: page.getByRole('heading', { name: 'Native Node-RED flows', exact: true }) }).first();
+  101 | async function openFlow(s, raw = rawScene('\n')) {
+  102 |   await s.page.goto(s.url + '/#flow');
+  103 |   await expect(s.page.getByRole('heading', { name: 'Native Node-RED flows', exact: true })).toBeVisible();
+  104 |   await s.page.getByText('Native JSON document', { exact: true }).click();
+  105 |   await s.page.getByLabel('Import Node-RED flow file', { exact: true }).setInputFiles({ name: 'owned-native.json', mimeType: 'application/json', buffer: Buffer.from(raw) });
+  106 |   await expect(native(s.page).getByRole('status')).toContainText('Native UTF-8 JSON imported');
+  107 |   await expect(s.page.getByLabel('Native Node-RED flow JSON', { exact: true })).toHaveValue(normalized(raw));
+  108 |   return s.page.getByLabel('Native Node-RED flow JSON', { exact: true });
+  109 | }
+  110 | async function saveFlow(s) {
+  111 |   const response = s.page.waitForResponse(r => r.url() === s.url + '/api/flow/native-save' && r.request().method() === 'POST');
+  112 |   await s.page.getByRole('button', { name: 'Save native draft', exact: true }).click();
+  113 |   const value = (await (await response).json()).result;
+  114 |   await expect(native(s.page).getByRole('status')).toContainText('Native draft saved');
+  115 |   return value.flow;
+  116 | }
+  117 | async function downloadFlow(s, expected, label) {
+  118 |   const pending = s.page.waitForEvent('download');
+  119 |   await s.page.getByRole('button', { name: 'Export Node-RED JSON', exact: true }).click();
+  120 |   const download = await pending;
+```

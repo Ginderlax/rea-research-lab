@@ -1,0 +1,58 @@
+# Test-only actual KeePass2.61.1 DeleteAllObjects; no GUI/program launch.
+# Source-assisted GPL-2.0-or-later contract; no original clock rewriting.
+param([Parameter(Mandatory=$true)][string]$Config)
+$ErrorActionPreference='Stop'
+Set-StrictMode -Version Latest
+[Console]::OutputEncoding=New-Object Text.UTF8Encoding -ArgumentList $false
+if($env:CI -ne 'true' -or $env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted'){throw 'Verified hosted CI required.'}
+$configInfo=Get-Item -LiteralPath $Config -Force
+if($configInfo.Length -gt 65536 -or ($configInfo.Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'Owned small ordinary config required.'}
+$cfg=Get-Content -LiteralPath $configInfo.FullName -Raw|ConvertFrom-Json
+$oracle=[IO.Path]::GetFullPath([string]$cfg.oracle)
+$original=Get-Item -LiteralPath $oracle -Force
+if($original.Length -ne 3265880 -or ($original.Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'Pinned ordinary executable size required.'}
+$digest=(Get-FileHash -LiteralPath $oracle -Algorithm SHA256).Hash.ToLowerInvariant()
+if($digest -ne '04d29636c393f0c1fc99ff739295494be3adefded93271e44591e8e300225a5a'){throw 'Pinned executable digest required before assembly load.'}
+$database=[IO.Path]::GetFullPath([string]$cfg.database)
+if([IO.Path]::GetDirectoryName($database) -ne $configInfo.Directory.FullName -or [IO.Path]::GetFileName($database) -ne 'synthetic.kdbx'){throw 'Database must be the owned config sibling.'}
+$databaseInfo=Get-Item -LiteralPath $database -Force
+if($databaseInfo.Length -gt 8388608 -or ($databaseInfo.Attributes -band [IO.FileAttributes]::ReparsePoint)){throw 'Owned bounded ordinary synthetic database required.'}
+if($cfg.save -isnot [bool]){throw 'Explicit save boolean required.'}
+[void][Reflection.Assembly]::LoadFrom($oracle)
+[Console]::Error.WriteLine('REA_EMPTY_BIN_ASSEMBLY_LOADED_2_61_1')
+function IdText($id){$s=[BitConverter]::ToString($id.UuidBytes).Replace('-','').ToLowerInvariant();return $s.Substring(0,8)+'-'+$s.Substring(8,4)+'-'+$s.Substring(12,4)+'-'+$s.Substring(16,4)+'-'+$s.Substring(20)}
+function Iso($date){return $date.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ',[Globalization.CultureInfo]::InvariantCulture)}
+function HeaderVersion([string]$filename){$headerStream=[IO.File]::OpenRead($filename);try{if($headerStream.Length -gt 8388608){throw 'Synthetic saved database exceeds bound.'};$header=New-Object byte[] 12;$read=0;while($read -lt 12){$part=$headerStream.Read($header,$read,12-$read);if($part -le 0){throw 'Synthetic database header is incomplete.'};$read+=$part};return [BitConverter]::ToUInt32($header,8)}finally{$headerStream.Dispose()}}
+function GroupRows($group){
+  $rows=@([ordered]@{id=IdText $group.Uuid;parentId=if($null -eq $group.ParentGroup){$null}else{IdText $group.ParentGroup.Uuid};name=$group.Name;notes=$group.Notes;iconId=[int]$group.IconId;customIcon=IdText $group.CustomIconUuid;expanded=$group.IsExpanded;enableAutoType=$group.EnableAutoType;enableSearching=$group.EnableSearching;defaultSequence=$group.DefaultAutoTypeSequence;lastTopVisible=IdText $group.LastTopVisibleEntry;previous=IdText $group.PreviousParentGroup;created=Iso $group.CreationTime;access=Iso $group.LastAccessTime;modified=Iso $group.LastModificationTime;location=Iso $group.LocationChanged;expiry=Iso $group.ExpiryTime;expires=$group.Expires;usage=[string]$group.UsageCount})
+  foreach($child in $group.Groups){$rows+=@(GroupRows $child)}
+  return $rows
+}
+function Projection($db){
+  $entries=@()
+  foreach($entry in $db.RootGroup.GetEntries($true)){
+    $history=@();foreach($old in $entry.History){$history+=@([ordered]@{title=$old.Strings.ReadSafe('Title');password=$old.Strings.ReadSafe('Password');modified=Iso $old.LastModificationTime})}
+    $binaries=@();foreach($pair in $entry.Binaries){$binaries+=@([ordered]@{name=$pair.Key;base64=[Convert]::ToBase64String($pair.Value.ReadData());protected=$pair.Value.IsProtected})}
+    $entries+=@([ordered]@{id=IdText $entry.Uuid;parentId=IdText $entry.ParentGroup.Uuid;title=$entry.Strings.ReadSafe('Title');password=$entry.Strings.ReadSafe('Password');created=Iso $entry.CreationTime;modified=Iso $entry.LastModificationTime;history=$history;binaries=$binaries})
+  }
+  $deleted=@();foreach($row in $db.DeletedObjects){$deleted+=@([ordered]@{id=IdText $row.Uuid;time=Iso $row.DeletionTime})}
+  return [ordered]@{binUuid=IdText $db.RecycleBinUuid;enabled=$db.RecycleBinEnabled;groups=@(GroupRows $db.RootGroup);entries=$entries;deleted=$deleted}
+}
+$key=New-Object KeePassLib.Keys.CompositeKey
+$key.AddUserKey((New-Object KeePassLib.Keys.KcpPassword -ArgumentList ([string]$cfg.password)))
+$db=New-Object KeePassLib.PwDatabase
+$calls=[ordered]@{assemblyLoads=1;databaseOpens=0;deleteAllObjects=0;databaseSaves=0;originalClockAssignments=0;originalUuidAssignments=0;originalGUI=0;originalProgram=0}
+try{
+  $inputHeaderVersion=HeaderVersion $database
+  $db.Open([KeePassLib.Serialization.IOConnectionInfo]::FromPath($database),$key,$null);$calls.databaseOpens++
+  $bin=$db.RootGroup.FindGroup($db.RecycleBinUuid,$true)
+  if($null -eq $bin -or $bin -eq $db.RootGroup){throw 'This differential uses valid nonroot bin fixtures only; malformed-root difference is not accepted.'}
+  $before=Projection $db
+  $started=[DateTime]::UtcNow
+  $bin.DeleteAllObjects($db);$calls.deleteAllObjects++
+  $completed=[DateTime]::UtcNow
+  $after=Projection $db
+  $reopened=$null
+  if($cfg.save){$db.Save($null);$calls.databaseSaves++;$db.Close();$db=New-Object KeePassLib.PwDatabase;$db.Open([KeePassLib.Serialization.IOConnectionInfo]::FromPath($database),$key,$null);$calls.databaseOpens++;$reopened=Projection $db}
+  [ordered]@{schema='rea-keepass-empty-bin-actual-library/v1';release='2.61.1';executableBytes=3265880;executableSHA256=$digest;before=$before;after=$after;reopened=$reopened;inputHeaderVersion=$inputHeaderVersion;outputHeaderVersion=(HeaderVersion $database);savePerformed=[bool]$cfg.save;operationStartedUtc=Iso $started;operationCompletedUtc=Iso $completed;calls=$calls;scope='Actual released PwGroup.DeleteAllObjects on a valid UUID-designated nonroot bin; actual clock values and KDBX header versions retained. Candidate-generated synthetic KDBX input, no original GUI/full-program launch; named projections do not claim arbitrary XML or unchanged file-version preservation.'}|ConvertTo-Json -Depth 32 -Compress
+}finally{$db.Close()}

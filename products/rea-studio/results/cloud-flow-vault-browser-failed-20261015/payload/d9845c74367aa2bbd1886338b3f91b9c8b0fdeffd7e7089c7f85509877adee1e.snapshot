@@ -1,0 +1,88 @@
+{
+  "schema": "rea-cloud-browser-case-observation/v1",
+  "testId": "07aebca8e2338d025e8b-6c0fdf33237286258759",
+  "title": "Flow committed Save retains an adversarial programmatic newer draft",
+  "statusAtFixtureClose": "passed",
+  "retry": 0,
+  "url": "http://127.0.0.1:57460",
+  "ownedDataDirectory": "D:\\a\\_temp\\rea-browser-synthetic-data-ZuRQPq\\case-l96Ssy",
+  "serverCloseObserved": true,
+  "realBrowser": true,
+  "actualHTTP": true,
+  "originalProductExecutions": 0,
+  "observations": [
+    {
+      "kind": "adversarial-programmatic-disabled-control-bypass",
+      "ordinaryUserTyping": false,
+      "actualBrowserDOM": true,
+      "value": {
+        "bytes": 1313,
+        "sha256": "7fa24a43fcfcf16ac6cb7c7b30f85c2c5fd4a10076f89d8dab563dd7f9e103a9"
+      }
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/session",
+      "postData": null
+    },
+    {
+      "method": "POST",
+      "path": "/api/flow/list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/flow/native-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/flow/native-validate",
+      "postData": "{\"text\":\"{\\n   \\\"rev\\\": \\\"opaque browser revision\\\",\\n   \\\"vendor\\\": {\\n      \\\"preserved\\\": [\\n         \\\"yes\\\",\\n         7\\n      ],\\n      \\\"unicode\\\": \\\"before after 😀 é é\\\"\\n   },\\n   \\\"flows\\\": [\\n      {\\n         \\\"id\\\": \\\"tab\\\",\\n         \\\"type\\\": \\\"tab\\\",\\n         \\\"label\\\": \\\"Owned browser fixture\\\"\\n      },\\n      {\\n         \\\"id\\\": \\\"start\\\",\\n         \\\"type\\\": \\\"inject\\\",\\n         \\\"z\\\": \\\"tab\\\",\\n         \\\"props\\\": [],\\n         \\\"wires\\\": [\\n            [\\n               \\\"out\\\"\\n            ]\\n         ],\\n         \\\"x\\\": 100,\\n         \\\"y\\\": 100\\n      },\\n      {\\n         \\\"id\\\": \\\"out\\\",\\n         \\\"type\\\": \\\"link out\\\",\\n         \\\"z\\\": \\\"tab\\\",\\n         \\\"links\\\": [],\\n         \\\"wires\\\": [\\n            [\\n               \\\"ignored\\\"\\n            ]\\n         ],\\n         \\\"x\\\": 300,\\n         \\\"y\\\": 100,\\n         \\\"custom\\\": \\\"retained\\\"\\n      },\\n      {\\n         \\\"id\\\": \\\"in\\\",\\n         \\\"type\\\": \\\"link in\\\",\\n         \\\"z\\\": \\\"tab\\\",\\n         \\\"links\\\": [\\n            \\\"out\\\"\\n         ],\\n         \\\"wires\\\": [\\n            [\\n               \\\"debug\\\"\\n            ]\\n         ],\\n         \\\"x\\\": 550,\\n         \\\"y\\\": 100\\n      },\\n      {\\n         \\\"id\\\": \\\"debug\\\",\\n         \\\"type\\\": \\\"debug\\\",\\n         \\\"z\\\": \\\"tab\\\",\\n         \\\"complete\\\": \\\"true\\\",\\n         \\\"active\\\": true,\\n         \\\"tosidebar\\\": true,\\n         \\\"wires\\\": [],\\n         \\\"x\\\": 800,\\n         \\\"y\\\": 100\\n      },\\n      {\\n         \\\"id\\\": \\\"ignored\\\",\\n         \\\"type\\\": \\\"debug\\\",\\n         \\\"z\\\": \\\"tab\\\",\\n         \\\"complete\\\": \\\"true\\\",\\n         \\\"active\\\": true,\\n         \\\"tosidebar\\\": true,\\n         \\\"wires\\\": [],\\n         \\\"x\\\": 800,\\n         \\\"y\\\": 230\\n      }\\n   ]\\n}\\n\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/flow/native-save",
+      "postData": "{\"name\":\"owned-native\",\"text\":\"{\\n   \\\"rev\\\": \\\"opaque browser revision\\\",\\n   \\\"vendor\\\": {\\n      \\\"preserved\\\": [\\n         \\\"yes\\\",\\n         7\\n      ],\\n      \\\"unicode\\\": \\\"before after 😀 é é\\\"\\n   },\\n   \\\"flows\\\": [\\n      {\\n         \\\"id\\\": \\\"tab\\\",\\n         \\\"type\\\": \\\"tab\\\",\\n         \\\"label\\\": \\\"Owned browser fixture\\\"\\n      },\\n      {\\n         \\\"id\\\": \\\"start\\\",\\n         \\\"type\\\": \\\"inject\\\",\\n         \\\"z\\\": \\\"tab\\\",\\n         \\\"props\\\": [],\\n         \\\"wires\\\": [\\n            [\\n               \\\"out\\\"\\n            ]\\n         ],\\n         \\\"x\\\": 100,\\n         \\\"y\\\": 100\\n      },\\n      {\\n         \\\"id\\\": \\\"out\\\",\\n         \\\"type\\\": \\\"link out\\\",\\n         \\\"z\\\": \\\"tab\\\",\\n         \\\"links\\\": [],\\n         \\\"wires\\\": [\\n            [\\n               \\\"ignored\\\"\\n            ]\\n         ],\\n         \\\"x\\\": 300,\\n         \\\"y\\\": 100,\\n         \\\"custom\\\": \\\"retained\\\"\\n      },\\n      {\\n         \\\"id\\\": \\\"in\\\",\\n         \\\"type\\\": \\\"link in\\\",\\n         \\\"z\\\": \\\"tab\\\",\\n         \\\"links\\\": [\\n            \\\"out\\\"\\n         ],\\n         \\\"wires\\\": [\\n            [\\n               \\\"debug\\\"\\n            ]\\n         ],\\n         \\\"x\\\": 550,\\n         \\\"y\\\": 100\\n      },\\n      {\\n         \\\"id\\\": \\\"debug\\\",\\n         \\\"type\\\": \\\"debug\\\",\\n         \\\"z\\\": \\\"tab\\\",\\n         \\\"complete\\\": \\\"true\\\",\\n         \\\"active\\\": true,\\n         \\\"tosidebar\\\": true,\\n         \\\"wires\\\": [],\\n         \\\"x\\\": 800,\\n         \\\"y\\\": 100\\n      },\\n      {\\n         \\\"id\\\": \\\"ignored\\\",\\n         \\\"type\\\": \\\"debug\\\",\\n         \\\"z\\\": \\\"tab\\\",\\n         \\\"complete\\\": \\\"true\\\",\\n         \\\"active\\\": true,\\n         \\\"tosidebar\\\": true,\\n         \\\"wires\\\": [],\\n         \\\"x\\\": 800,\\n         \\\"y\\\": 230\\n      }\\n   ]\\n}\\n\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/flow/native-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/flow/native-validate",
+      "postData": "{\"text\":\"{\\n  \\\"rev\\\": \\\"opaque browser revision\\\",\\n  \\\"vendor\\\": {\\n    \\\"preserved\\\": [\\n      \\\"yes\\\",\\n      7\\n    ],\\n    \\\"unicode\\\": \\\"before after 😀 é é\\\"\\n  },\\n  \\\"flows\\\": [\\n    {\\n      \\\"id\\\": \\\"tab\\\",\\n      \\\"type\\\": \\\"tab\\\",\\n      \\\"label\\\": \\\"Owned browser fixture\\\"\\n    },\\n    {\\n      \\\"id\\\": \\\"start\\\",\\n      \\\"type\\\": \\\"inject\\\",\\n      \\\"z\\\": \\\"tab\\\",\\n      \\\"props\\\": [],\\n      \\\"wires\\\": [\\n        [\\n          \\\"out\\\"\\n        ]\\n      ],\\n      \\\"x\\\": 100,\\n      \\\"y\\\": 100\\n    },\\n    {\\n      \\\"id\\\": \\\"out\\\",\\n      \\\"type\\\": \\\"link out\\\",\\n      \\\"z\\\": \\\"tab\\\",\\n      \\\"links\\\": [],\\n      \\\"wires\\\": [\\n        [\\n          \\\"ignored\\\"\\n        ]\\n      ],\\n      \\\"x\\\": 300,\\n      \\\"y\\\": 100,\\n      \\\"custom\\\": \\\"retained\\\"\\n    },\\n    {\\n      \\\"id\\\": \\\"in\\\",\\n      \\\"type\\\": \\\"link in\\\",\\n      \\\"z\\\": \\\"tab\\\",\\n      \\\"links\\\": [\\n        \\\"out\\\"\\n      ],\\n      \\\"wires\\\": [\\n        [\\n          \\\"debug\\\"\\n        ]\\n      ],\\n      \\\"x\\\": 550,\\n      \\\"y\\\": 100\\n    },\\n    {\\n      \\\"id\\\": \\\"debug\\\",\\n      \\\"type\\\": \\\"debug\\\",\\n      \\\"z\\\": \\\"tab\\\",\\n      \\\"complete\\\": \\\"true\\\",\\n      \\\"active\\\": true,\\n      \\\"tosidebar\\\": true,\\n      \\\"wires\\\": [],\\n      \\\"x\\\": 800,\\n      \\\"y\\\": 100\\n    },\\n    {\\n      \\\"id\\\": \\\"ignored\\\",\\n      \\\"type\\\": \\\"debug\\\",\\n      \\\"z\\\": \\\"tab\\\",\\n      \\\"complete\\\": \\\"true\\\",\\n      \\\"active\\\": true,\\n      \\\"tosidebar\\\": true,\\n      \\\"wires\\\": [],\\n      \\\"x\\\": 800,\\n      \\\"y\\\": 230\\n    }\\n  ],\\n  \\\"newer\\\": \\\"retained after real commit\\\"\\n}\"}"
+    }
+  ],
+  "faults": [
+    {
+      "kind": "delay-after-actual-host-response",
+      "app": "flow",
+      "action": "native-save",
+      "status": 200,
+      "body": {
+        "bytes": 2101,
+        "sha256": "d6e3ac31025f737fdbe6930d6644ef0d361684cf4b85cf1f96d454b8a72bc63d"
+      },
+      "handlerMocked": false
+    }
+  ],
+  "expectedAuxiliaryResourceErrors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:57460/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "errors": []
+}

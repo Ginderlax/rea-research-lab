@@ -531,8 +531,8 @@ const fixed={
         "sha256": "8283f709444328e1dee3483c46322a07652c2be1d2ac71ff94269c2e645e6702"
       },
       "after": {
-        "bytes": 148688,
-        "sha256": "cd524543c7b6c9bf2050194994667e3e805165a934da209957ecbb5559d211c4"
+        "bytes": 149064,
+        "sha256": "3878efc73e671246305e4368f7d3c52f288473591a4fe1697b343ab70249ae1e"
       },
       "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-records.mjs.snapshot"
     }
@@ -1248,6 +1248,275 @@ const editorGitMismatchTransition={
     "sha256": "0fde86c42377c6267ba08dfa11366582d9f4d8ed9662a6a566619d5f0015c3b5"
   }
 };
+const archiveTransition={
+  "prefix": "products/rea-studio/results/archive-aes-source-transition-20261015/",
+  "sources": [
+    {
+      "path": "products/rea-studio/apps/archive/client.mjs",
+      "before": {
+        "bytes": 8881,
+        "sha256": "21a5ee67b639ebb56208defd56b195d6fe9ee2bbe911976033d106951ffe6b01"
+      },
+      "after": {
+        "bytes": 10936,
+        "sha256": "56a61b81715c7cbafb4d5c9db6a2925372d050d51a6533e4e7f7fdfd2e6fd103"
+      },
+      "beforeImage": "products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/client.mjs.snapshot",
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/client.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/LZMA-COMPATIBILITY.md",
+      "before": {
+        "bytes": 8171,
+        "sha256": "6e29d723e149422bc1ba69988b9780b55cb4cad9667c7b33824d28fe54aa1b11"
+      },
+      "after": {
+        "bytes": 8325,
+        "sha256": "294b981bcc145817694e14cd5f4d85b060b81ac6d9b915f045abe39532e78109"
+      },
+      "beforeImage": "products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/LZMA-COMPATIBILITY.md.snapshot",
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/LZMA-COMPATIBILITY.md.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/NOTICE-SOURCE-METADATA.txt",
+      "before": null,
+      "after": {
+        "bytes": 1632,
+        "sha256": "2f633fb40d69afb10e613132f2582acc41d9721e34ac88e4faa2f2b1cbb12e12"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/NOTICE-SOURCE-METADATA.txt.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/original-aes-test-helper.mjs",
+      "before": null,
+      "after": {
+        "bytes": 2966,
+        "sha256": "60505de35288e47be1fb55b6438a4db3a7ce2dc3431c1c6a989da7f0c16e6051"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/original-aes-test-helper.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/README.md",
+      "before": {
+        "bytes": 14861,
+        "sha256": "f796caf227929a00bec27df7e912e1f634e1d0fadbf6dc66c0f3310c26d668e0"
+      },
+      "after": {
+        "bytes": 16291,
+        "sha256": "42e5f0b9a90b40e04640efcf59dd50d8344d31cd95ca2e18f49dfa22ed084d53"
+      },
+      "beforeImage": "products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/README.md.snapshot",
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/README.md.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/server.mjs",
+      "before": {
+        "bytes": 11633,
+        "sha256": "f64a7d232552eb351ee15563b53abfe88afac667c7b005747b590ab9a580410d"
+      },
+      "after": {
+        "bytes": 13610,
+        "sha256": "3aeb207a4a4f07d785493bba21dc299368d758dc1877703d2c5dc7c3c0174507"
+      },
+      "beforeImage": "products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/server.mjs.snapshot",
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/server.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 4437,
+        "sha256": "de8b502980907967bab762da46e6056b024dc93a5ddd5b1bd5e21610e6980c71"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/SEVENZIP-AES-COMPATIBILITY.md",
+      "before": null,
+      "after": {
+        "bytes": 7268,
+        "sha256": "f8a2956e326ab5f7650a8b0ddb546cab9df1671806a4a2078fdeb9c26ad76077"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/SEVENZIP-AES-COMPATIBILITY.md.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip-aes-container.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 2010,
+        "sha256": "2b58b500143fb4965f4c71f0c69469709923284303cf4b00ec178828c71f23d0"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes-container.test.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip-aes-http.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 6069,
+        "sha256": "0269e0c5be99c4da048e99a1bfaa2767260346e9d32509d9353fcf3bbe1f268a"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes-http.test.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/SEVENZIP-AES-LGPL.txt",
+      "before": null,
+      "after": {
+        "bytes": 27032,
+        "sha256": "1e7e6bae5a5bde32f1ae5a7c37a082d1ab03cf89354f7f936ac40be9e39a6531"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/SEVENZIP-AES-LGPL.txt.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip-aes-original.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 4113,
+        "sha256": "21dee30cf10463464e21c4821574e74ff2b806b05ca659f5c34c16c22be0d1e9"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes-original.test.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip-aes-ui-fixture.mjs",
+      "before": null,
+      "after": {
+        "bytes": 2496,
+        "sha256": "5a1fdbc3be0f9d9e77ada96fa5b610d51b9c4df66be6bc2dba5e4e9bb527f81d"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes-ui-fixture.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip-aes-ui.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 4649,
+        "sha256": "46cebe79126c4f22b392e5a1f3af193465d18accb689858b6627a4544cf2ac34"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes-ui.test.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip-aes.mjs",
+      "before": null,
+      "after": {
+        "bytes": 5144,
+        "sha256": "6f505517c220126ba9ba7594fdc74f54bdfb570b4b94ca1a9df9ccf215cb4e27"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip-aes.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 3209,
+        "sha256": "261fb39f84b87dcf91e03655d2bdd9bc0304fe4ebb315986f8f782d4523870a5"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes.test.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/SEVENZIP-COMPATIBILITY.md",
+      "before": {
+        "bytes": 10417,
+        "sha256": "1d8041a403c4de8f2bedaf6ed8fcb75fe237c49b6cdbd7190f1caca72a81fd89"
+      },
+      "after": {
+        "bytes": 10585,
+        "sha256": "54e8f99fe4348b8d23941d8d9fbf54b7b2164dafd95e8ee3ee3630fb9b74cd66"
+      },
+      "beforeImage": "products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/SEVENZIP-COMPATIBILITY.md.snapshot",
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/SEVENZIP-COMPATIBILITY.md.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip.mjs",
+      "before": {
+        "bytes": 25949,
+        "sha256": "7b8b775816951bd7fdbc25821503236732831169e0e35e7f4dfc3b9d719f016c"
+      },
+      "after": {
+        "bytes": 30483,
+        "sha256": "4f8aa3eb4dfb6ebbfa08068b310449ea9cb1e788df8ff6dd889a04e533136782"
+      },
+      "beforeImage": "products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/sevenzip.mjs.snapshot",
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/source-metadata.mjs",
+      "before": null,
+      "after": {
+        "bytes": 8968,
+        "sha256": "79bf64f3cf9f8a25ce73faf45201aa5b9a547ff4cb3d019fe046dbf7ba4bbeed"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/source-metadata.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/source-metadata.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 21423,
+        "sha256": "27f2d65571fa31c0db55f29c4270903dd9322dba7458ba406a017c3a4ed9469a"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/source-metadata.test.mjs.snapshot"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/WINDOWS-SOURCE-METADATA.md",
+      "before": null,
+      "after": {
+        "bytes": 4025,
+        "sha256": "7b799afbdcd6713c5ab5a23954c67408f0c70aba137023109d6045b44a09a5bb"
+      },
+      "beforeImage": null,
+      "afterImage": "products/rea-studio/experiments/archive-aes/snapshots/timestamp/products/rea-studio/apps/archive/WINDOWS-SOURCE-METADATA.md.snapshot"
+    }
+  ],
+  "manifest": {
+    "path": "products/rea-studio/results/archive-aes-source-transition-20261015/preservation-manifest.json",
+    "bytes": 17491,
+    "sha256": "2587f9e158445a5ce48533aa92d0c7b4568a267a6ebe669387addb5e00b45e1d"
+  },
+  "index": {
+    "path": "products/rea-studio/apps/archive/results/aes-followup/publication-index.json",
+    "bytes": 31564,
+    "sha256": "cb1547b75fa9039f21b71ab40952c8b348c4253e47f9df3272e799375d8ab7dc"
+  },
+  "bundle": {
+    "path": "products/rea-studio/experiments/archive-aes/bundle.json",
+    "bytes": 80331,
+    "sha256": "ed6d16f52f9209ac144f1f08d395c3e86e4c124c73a3a18a488654506ff155bb"
+  },
+  "finitePrefix": "products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/",
+  "finiteManifest": {
+    "path": "products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/preservation-manifest.json",
+    "bytes": 87704,
+    "sha256": "0231c511359d8ed8cf0de75b23a9b703fbfdbb65d816d74bf6a1a563e83dec0d"
+  },
+  "rootBefore": {
+    "path": "products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/verify-records-requirement-evidence-provenance.mjs.snapshot",
+    "bytes": 148688,
+    "sha256": "cd524543c7b6c9bf2050194994667e3e805165a934da209957ecbb5559d211c4"
+  },
+  "migrationBefore": {
+    "path": "products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration-requirement-evidence-provenance.mjs.snapshot",
+    "bytes": 77007,
+    "sha256": "44d91261320d1ba3abbe57a2bdb2ca4466f8c2921602457cd83a1f602bbafd2c"
+  },
+  "integrityReader": {
+    "path": "scripts/verify-archive-integration-records.mjs",
+    "bytes": 6451,
+    "sha256": "4e945c7ccbd9833a460f0d609e298ac94a53081635afa971d07ce7f3358071e0"
+  }
+};
 const sha=b=>createHash('sha256').update(b).digest('hex');
 const identity=b=>({bytes:b.length,sha256:sha(b)});
 function same(a,b,n){assert.equal(a.bytes,b.bytes,n+' bytes');assert.equal(a.sha256,b.sha256,n+' SHA256');}
@@ -1257,6 +1526,39 @@ function expected(r){assert(r&&Number.isSafeInteger(r.bytes)&&r.bytes>=0&&r.byte
  * The before bytes remain historical; every named installed after is required.
  * This is bounded I/O authentication, not an atomic filesystem snapshot.
  */
+function verifyArchiveSourceTransition(rawRead, priorBefore, oldCapsule){
+ const seen=new Map();let total=0;
+ function read(p,r){safe(p);const b=rawRead(p);assert(Buffer.isBuffer(b)&&b.length<=256*1024);const observed=identity(b);same(observed,expected(r),p);if(seen.has(p))same(observed,seen.get(p),'Changed fixed Archive proof '+p);else{seen.set(p,observed);total+=b.length;assert(seen.size<=96&&total<=8*1024*1024,'Fixed Archive proof aggregate bound');}return b;}
+ const declaration=JSON.parse(read(archiveTransition.manifest.path,archiveTransition.manifest));
+ assert.equal(declaration.schema,'rea-archive-aes-source-proof-transition/v1');assert.equal(declaration.sourceOnly,true);assert.equal(declaration.productionInstalled,false);assert.equal(declaration.actualInstallationReceiptAvailable,false);assert.equal(declaration.actualFocusedAttemptAcceptedByDeclaration,false);assert.equal(declaration.oldReceiptsRewritten,false);assert.equal(declaration.oracleThreePermanentlyInstalled,false);assert.deepEqual(declaration.sources,archiveTransition.sources);assert.equal(declaration.currentSourcesMandatory,21);assert.equal(declaration.historicalReplacementRoutes,6);
+ const index=JSON.parse(read(archiveTransition.index.path,archiveTransition.index));
+ assert.equal(index.schema,'rea-archive-aes-installed-source-publication-map/v1');assert.equal(index.status,'source-plan-not-installation-receipt');assert.equal(index.sourceOnly,true);assert.equal(index.productionInstallationReceiptVerified,false);assert.equal(index.newBehaviorExecutedByMap,0);assert.equal(index.historicalReceiptsRebound,false);assert.equal(index.distinctTargets,21);assert.equal(index.replacements,6);assert.equal(index.additions,15);assert.deepEqual(index.currentTargets,archiveTransition.sources);assert.equal(index.currentSourceMatchingAfterPinsRequired,true);assert.equal(index.selectedReleasedSourceFiles,22);assert.equal(index.selectedSourcesAreInert,true);assert.equal(index.fullUpstreamSourceCorpusClaimed,false);
+ const bundle=JSON.parse(read(archiveTransition.bundle.path,archiveTransition.bundle));assert.equal(bundle.schema,'rea-archive-aes-hosted-experimental-source-bundle/v1');assert.equal(bundle.productionInstalled,false);assert.equal(bundle.sourceOnly,true);assert.equal(bundle.finalTargets.length,21);assert.equal(bundle.archiveBaseline.length,47);assert.equal(bundle.selectedOriginalSources.length,22);assert.deepEqual(index.selectedOriginalSources,bundle.selectedOriginalSources);
+ const routes=new Map(archiveTransition.sources.map(r=>[r.path,r]));assert.equal(routes.size,21);let replacements=0,previousRuntimeRoutes=0;
+ for(const row of archiveTransition.sources){const original=bundle.finalTargets.find(r=>r.target===row.path);assert(original);assert.deepEqual(row.before,original.before);assert.deepEqual(row.after,original.after);assert.equal(row.afterImage,original.source);read(row.path,row.after);read(row.afterImage,row.after);if(row.before){read(row.beforeImage,row.before);assert.equal(row.beforeImage,archiveTransition.prefix+'before/'+row.path+'.snapshot');replacements++;const prior=priorBefore.find(r=>'products/rea-studio/'+r.path===row.path);if(prior){same(prior,row.before,'Exact Archive old937 source');const old720=oldCapsule.snapshots.find(r=>r.sourcePath==='source/'+row.path.slice('products/rea-studio/'.length)+'.snapshot');assert(old720);same(old720,row.before,'Exact Archive old720 source');previousRuntimeRoutes++;}else assert(row.path.endsWith('.md'));}else{assert.equal(row.beforeImage,null);assert.equal(priorBefore.some(r=>'products/rea-studio/'+r.path===row.path),false);}}
+ assert.equal(replacements,6);assert.equal(previousRuntimeRoutes,3);
+ for(const row of index.selectedOriginalSources){assert(row.publicSnapshot.startsWith('products/rea-studio/experiments/archive-aes/selected-original-source/')&&row.publicSnapshot.endsWith('.snapshot'));read(row.publicSnapshot,row);}
+ assert.equal(index.license.currentNotice,'products/rea-studio/apps/archive/SEVENZIP-AES-LGPL.txt');assert.equal(index.license.metadataOwnCodeNotice,'products/rea-studio/apps/archive/NOTICE-SOURCE-METADATA.txt');
+ assert.equal(declaration.records.length,14);assert.deepEqual(declaration.publicationIndex,archiveTransition.index);assert.deepEqual(declaration.oldRoot,archiveTransition.rootBefore);assert.deepEqual(declaration.oldMigration,archiveTransition.migrationBefore);for(const row of declaration.records)read(archiveTransition.prefix+row.path,row);read(archiveTransition.rootBefore.path,archiveTransition.rootBefore);read(archiveTransition.migrationBefore.path,archiveTransition.migrationBefore);read(archiveTransition.integrityReader.path,archiveTransition.integrityReader);
+ const finite=index.recordedFiniteEvidence;assert.deepEqual(finite.manifest,archiveTransition.finiteManifest);assert.equal(finite.run,38808918976);assert.equal(finite.attempt,1);assert.equal(finite.testedMerge,'7d5bde3fb94e3383e6d85e50e7d567516cc6202c');assert.equal(finite.pullRequestHeadPrefix,'aeb62e6');assert.equal(finite.originalProductionInstalledField,false);assert.equal(finite.publicActiveSourcePayloads,0);assert.equal(finite.completeLocalBackupVerified,true);
+ const preservation=JSON.parse(read(finite.manifest.path,finite.manifest));assert.equal(preservation.schema,'rea-cloud-archive-aes-finite-pass-preservation/v1');assert.equal(preservation.status,'passed-finite-experimental-contracts');assert.equal(preservation.runId,finite.run);assert.equal(preservation.runAttempt,1);assert.equal(preservation.sourceCommit,finite.testedMerge);assert.equal(preservation.testedGitCommit,finite.testedMerge);assert.equal(preservation.artifactId,12007542747);assert.equal(preservation.artifactSHA256,'dda4e991a00ab59484b0dda0524e8189b8abce0263c4c7631ca1aa411bb6caf9');assert.equal(preservation.records.length,35);assert.equal(preservation.uniqueInertObjects,26);assert.equal(preservation.sourceFiles,779);assert.equal(preservation.sourceStableDuringRecordedComposedRun,true);assert.equal(preservation.activeSourceSnapshotsInVerifiedLocalBackup,357);assert.equal(preservation.publicSourceSnapshotPayloads,0);assert.equal(preservation.omittedSourceSnapshotPayloads.length,357);assert.equal(preservation.completeLocalBackupVerified,true);
+ for(const flag of ['productionInstalled','productionIntegrationAccepted','browserAcceptance','fullArchiveAcceptance','historicalReceiptsRebound','fullDevelopmentSuiteAcceptance','fullParity','superiority'])assert.equal(preservation[flag],false);
+ const expectedNames=['composition.json','postrun-source-check.json','test-selection.json','verification/attempt-validation.json','verification/source-before.json','verification/source-after.json','verification/source-snapshot-manifest.json','verification/stdout.txt','verification/stderr.txt'];assert.deepEqual(finite.selected.map(r=>r.sourcePath),expectedNames);const selected=new Map();
+ for(const row of finite.selected){const original=preservation.records.filter(r=>r.sourcePath===row.sourcePath);assert.equal(original.length,1);same(original[0],row,'Selected immutable161 metadata');assert.equal(row.path,archiveTransition.finitePrefix+original[0].path);assert.equal(selected.has(row.sourcePath),false);selected.set(row.sourcePath,read(row.path,row));}
+ const json=name=>JSON.parse(selected.get(name)),composition=json('composition.json'),post=json('postrun-source-check.json'),selection=json('test-selection.json'),attempt=json('verification/attempt-validation.json'),before=json('verification/source-before.json'),after=json('verification/source-after.json'),snapshots=json('verification/source-snapshot-manifest.json');
+ assert.equal(composition.schema,'rea-archive-aes-hosted-composition/v1');assert.equal(composition.status,'composed-unexecuted-experimental-overlay');assert.equal(composition.productionInstalled,false);assert.equal(composition.baselineGitCommit,finite.testedMerge);assert.equal(composition.sourceCommit,finite.testedMerge);assert.deepEqual(composition.sourceBundle,{path:archiveTransition.bundle.path,bytes:archiveTransition.bundle.bytes,sha256:archiveTransition.bundle.sha256});assert.equal(composition.beforeSourceCensus.length,47);assert.equal(composition.afterSourceCensus.length,62);assert.equal(composition.transitions.length,22);assert.deepEqual(composition.sharedBefore,composition.sharedAfter);
+ const expectedTransitions=[];for(const [phase,rows]of [['proposal17',bundle.proposal],['timestamp5',bundle.timestamp]])for(const row of rows)expectedTransitions.push({phase,target:row.target,before:row.before,after:row.after,source:row.source,sourceGitCommit:finite.testedMerge,originEpoch:row.originEpoch});assert.deepEqual(composition.transitions,expectedTransitions);
+ assert.equal(post.schema,'rea-archive-aes-hosted-postrun-source-check/v1');assert.equal(post.sourceStable,true);assert.equal(post.sharedStable,true);assert.equal(post.modifiedGitWorktree,true);assert.equal(post.baselineGitCommit,finite.testedMerge);assert.equal(post.currentArchiveSourceFiles,62);assert.deepEqual(post.afterSourceCensus,composition.afterSourceCensus);assert.deepEqual(post.gitStatusAfter,composition.gitStatusAfter);
+ for(const execution of [composition.execution,post.execution,attempt.environment]){assert.equal(execution.GITHUB_SHA,finite.testedMerge);assert.equal(execution.GITHUB_RUN_ID,'38808918976');assert.equal(execution.GITHUB_RUN_ATTEMPT,'1');assert.equal(execution.GITHUB_REPOSITORY,'Ginderlax/rea-research-lab');}
+ assert.equal(attempt.schema,'rea-cloud-development-attempt/v1');assert.equal(attempt.status,'passed');assert.equal(attempt.scope,'archive-aes-experiment');assert.equal(attempt.repositoryCommit,finite.testedMerge);assert.equal(attempt.executionEnvironment,'github-hosted');assert.equal(attempt.runtime.version,'v24.16.0');assert.equal(attempt.exitCode,0);assert.equal(attempt.signal,null);assert.equal(attempt.failure,null);assert.equal(attempt.sourceStable,true);assert.equal(attempt.sourceCapturedBeforeExecution,true);assert.equal(attempt.sourceSnapshotsInert,true);assert.equal(attempt.sourceFiles,779);assert.equal(attempt.sourceSnapshotFiles,357);assert.equal(attempt.childCloseObserved,true);assert.equal(attempt.output.retainedOutputTruncated,false);assert.equal(attempt.output.droppedOutputBytes,0);assert.equal(attempt.experimentalOverlay.productionInstalled,false);assert.equal(attempt.experimentalOverlay.finalTargets,21);assert.equal(attempt.experimentalOverlay.transitions,22);assert.equal(attempt.experimentalOverlay.sha256,finite.compositionSHA256);assert.equal(sha(selected.get('composition.json')),finite.compositionSHA256);assert.equal(preservation.sourceIdentity.compositionSHA256,finite.compositionSHA256);
+ assert.equal(attempt.summary.tests,161);assert.equal(attempt.summary.pass,161);for(const key of ['fail','cancelled','skipped','todo'])assert.equal(attempt.summary[key],0);assert.deepEqual(attempt.summary,preservation.summary);assert.deepEqual(attempt.summary,finite.summary);assert.equal(attempt.fullFeatureParityEstablished,false);assert.equal(attempt.universalSuperiorityEstablished,false);assert.equal(attempt.historicalReceiptsRebound,false);assert.equal(attempt.historicalDevelopmentReceiptOverwritten,false);
+ assert.equal(selection.schema,'rea-archive-aes-cloud-experimental-selection/v1');assert.equal(selection.expectedGroupsOnWindows,161);assert.equal(selection.fullArchiveSuite,false);assert.equal(selection.tests.length,13);assert.deepEqual(attempt.selectedTestFiles,selection.tests.map(p=>p.slice('products/rea-studio/'.length)));assert.deepEqual(attempt.command.slice(4),attempt.selectedTestFiles);
+ assert.deepEqual(before,after);assert.equal(before.length,779);assert.equal(new Set(before.map(r=>r.path)).size,779);assert.equal(snapshots.schema,'rea-cloud-source-snapshots/v1');assert.equal(snapshots.censusFiles,779);assert.equal(snapshots.snapshotScope,'active');assert.equal(snapshots.files.length,357);let eligible=0;
+ for(const row of archiveTransition.sources){const composed=composition.afterSourceCensus.find(r=>r.path===row.path);assert(composed);same(composed,row.after,'Finite161 final composed source');const prior=before.find(r=>'products/rea-studio/'+r.path===row.path),snapshot=snapshots.files.find(r=>'products/rea-studio/'+r.sourcePath===row.path);if(/\.(mjs|json|html|css|ps1)$/.test(row.path)){assert(prior&&snapshot);same(prior,row.after,'Finite161 eligible tested source');same(snapshot,row.after,'Finite161 source snapshot identity');eligible++;}else{assert.equal(prior,undefined);assert.equal(snapshot,undefined);}}assert.equal(eligible,14);
+ const raw=selected.get('verification/stdout.txt').toString('utf8');for(const key of ['tests','pass','fail','cancelled','skipped','todo'])assert.equal(Number(raw.match(new RegExp('^# '+key+' ([0-9.]+)$','m'))?.[1]),attempt.summary[key]);assert.equal(selected.get('verification/stderr.txt').length,0);
+ return{routes,read,recheck(){for(const[p,r]of seen)read(p,r);},summary(){return{archiveCurrentSourcesMandatory:21,archiveHistoricalReplacementRoutes:6,archiveHistorical937RuntimeRoutes:3,archiveSelectedReleasedSourceFiles:22,archiveFiniteExperimentalGroups:161,archiveFiniteSelectedMetadataAuthenticated:true,archiveFiniteSelectedMetadataOnly:true,archiveInstallationReceiptAuthenticated:false,archiveFreshBehavioralAcceptance:false,archiveAuthenticatedFiles:seen.size,archiveAuthenticatedBytes:total,archiveFixedReadFileLimit:96,archiveFixedReadByteLimit:8*1024*1024};}};
+}
+
 const historicalCarrierTransition={
   "manifest": {
     "path": "products/rea-studio/results/historical-carrier-delivery-20261015/preservation-manifest.json",
@@ -1324,7 +1626,7 @@ const requirementEvidenceTransition={
 };
 export function createEditorVaultProofMigration(rawRead){assert.equal(typeof rawRead,'function');const seen=new Map();let total=0;
  function read(p,r){safe(p);if(p===groupEditDocumentTransition.path){assert(r,'Named GROUP-EDIT document read requires explicit identity');const requested=expected(r);if(requested.bytes===groupEditDocumentTransition.before.bytes&&requested.sha256===groupEditDocumentTransition.before.sha256)p=groupEditDocumentTransition.beforeImage.path;else same(requested,groupEditDocumentTransition.after,'No unlisted GROUP-EDIT document read identity allowed');}const b=rawRead(p);assert(Buffer.isBuffer(b)&&b.length<=32*1024*1024);const id=identity(b);if(r)same(id,expected(r),p);if(seen.has(p))same(id,seen.get(p),'Changed proof '+p);else{seen.set(p,id);total+=b.length;assert(seen.size<=160&&total<=16*1024*1024,'Transition aggregate bound');}return b;}
- const requirementDeclaration=JSON.parse(read(requirementEvidenceTransition.manifest.path,requirementEvidenceTransition.manifest));assert.equal(requirementDeclaration.schema,'rea-requirement-evidence-provenance-transition/v1');assert.equal(requirementDeclaration.sourceOnly,true);for(const flag of ['registriesRewritten','capabilityGatesChanged','currentBehavioralAcceptanceRebound','unknownNamedIdentitiesAccepted','genericHistoricalFallback','oldReceiptsRewritten','applicationRuntimeChanged'])assert.equal(requirementDeclaration[flag],false);assert.equal(requirementDeclaration.optionalSizeAssertionPreserved,true);assert.deepEqual(requirementDeclaration.records,[requirementEvidenceTransition.rootBefore,requirementEvidenceTransition.migrationBefore]);same(requirementDeclaration.rootBefore,requirementEvidenceTransition.rootBefore,'Exact prior requirement root epoch');same(requirementDeclaration.migrationBefore,requirementEvidenceTransition.migrationBefore,'Exact prior requirement migration epoch');same(requirementDeclaration.rootAfter,fixed.verifiers.find(r=>r.path==='scripts/verify-records.mjs').after,'Current requirement read-site root epoch');for(const r of requirementDeclaration.records)read(r.path,r);
+ const requirementDeclaration=JSON.parse(read(requirementEvidenceTransition.manifest.path,requirementEvidenceTransition.manifest));assert.equal(requirementDeclaration.schema,'rea-requirement-evidence-provenance-transition/v1');assert.equal(requirementDeclaration.sourceOnly,true);for(const flag of ['registriesRewritten','capabilityGatesChanged','currentBehavioralAcceptanceRebound','unknownNamedIdentitiesAccepted','genericHistoricalFallback','oldReceiptsRewritten','applicationRuntimeChanged'])assert.equal(requirementDeclaration[flag],false);assert.equal(requirementDeclaration.optionalSizeAssertionPreserved,true);assert.deepEqual(requirementDeclaration.records,[requirementEvidenceTransition.rootBefore,requirementEvidenceTransition.migrationBefore]);same(requirementDeclaration.rootBefore,requirementEvidenceTransition.rootBefore,'Exact prior requirement root epoch');same(requirementDeclaration.migrationBefore,requirementEvidenceTransition.migrationBefore,'Exact prior requirement migration epoch');same(requirementDeclaration.rootAfter,archiveTransition.rootBefore,'Exact predecessor requirement read-site root epoch');for(const r of requirementDeclaration.records)read(r.path,r);
  const groupEditDocumentDeclaration=JSON.parse(read(groupEditDocumentTransition.manifest.path,groupEditDocumentTransition.manifest));assert.equal(groupEditDocumentDeclaration.schema,'rea-vault-group-edit-document-link-transition/v1');assert.equal(groupEditDocumentDeclaration.sourceOnly,true);assert.equal(groupEditDocumentDeclaration.immutableNextSourcesAndAuthoritiesRewritten,false);assert.equal(groupEditDocumentDeclaration.arbitraryFallback,false);assert.equal(groupEditDocumentDeclaration.genericPathAlias,false);assert.equal(groupEditDocumentDeclaration.oldReceiptsRewritten,false);assert.equal(groupEditDocumentDeclaration.target,groupEditDocumentTransition.path);same(groupEditDocumentDeclaration.before,groupEditDocumentTransition.before,'Exact GROUP-EDIT document before identity');same(groupEditDocumentDeclaration.after,groupEditDocumentTransition.after,'Exact GROUP-EDIT document after identity');assert.deepEqual(groupEditDocumentDeclaration.records,[groupEditDocumentTransition.beforeImage,groupEditDocumentTransition.oldMigration]);for(const r of groupEditDocumentDeclaration.records)read(r.path,r);read(groupEditDocumentTransition.path,groupEditDocumentTransition.after);
  const manifest=JSON.parse(read(fixed.installation.manifest.path,fixed.installation.manifest));assert.equal(manifest.schema,'rea-editor-vault-root-installation-preservation/v1');assert.equal(manifest.records.length,1098);
  const oldCapsule=JSON.parse(read(fixed.oldCapsule.path,fixed.oldCapsule));assert.equal(oldCapsule.sourceFiles,720);assert.equal(oldCapsule.snapshots.length,727);assert.equal(oldCapsule.developmentValidationSHA256,fixed.metadata.development.sha256);
@@ -1351,6 +1653,7 @@ export function createEditorVaultProofMigration(rawRead){assert.equal(typeof raw
  const composition=windowsPathFocusedEvidence.selected.find(r=>r.sourcePath==='windows-path-composition.json');assert.equal(composition.sha256,'7774bfa56f708adbe35eacebc21385a9eed56175e2df6f67c8fec0350af4b7b0');assert.equal(focused.compositionSHA256,composition.sha256);assert.equal(fp.compositionSHA256,composition.sha256);assert.equal(fa.windowsPathOverlay.sha256,composition.sha256);assert.equal(fa.windowsPathOverlay.productionInstalled,false);assert.equal(fa.windowsPathOverlay.fullDevelopmentReceiptEmitted,false);assert.equal(fa.windowsPathOverlay.gitBaselineEligibleActiveFiles,347);assert.equal(fa.windowsPathOverlay.gitBaselineEligibleActiveBytesAuthenticated,true);assert.equal(fa.windowsPathOverlay.gitWorkingTreeMatchesOverlayAfter,true);assert.equal(fa.windowsPathAliasObservation.differentSpelling,true);assert.equal(fa.windowsPathAliasObservation.observedShortComponent,true);assert.equal(fa.windowsPathAliasObservation.syntheticAliasConstructed,false);assert.deepEqual(fa.windowsPathAliasObservation,focused.actualWindowsShortPathObservation);
  assert.deepEqual(fb,fe);assert.equal(fb.length,772);assert.equal(new Set(fb.map(r=>r.path)).size,772);assert.equal(fs.schema,'rea-cloud-source-snapshots/v1');assert.equal(fs.censusFiles,772);assert.equal(fs.snapshotScope,'active');assert.equal(fs.files.length,350);for(const r of windowsPathTransition.sources){const entry=fb.find(s=>'products/rea-studio/'+s.path===r.path),snapshot=fs.files.find(s=>'products/rea-studio/'+s.sourcePath===r.path);assert(entry&&snapshot);same(entry,r.after,'Actual finite47 tested target');same(snapshot,r.after,'Actual finite47 snapshot identity');const transition=fc.transitions.find(s=>s.path===r.path),post=fp.currentTargets.find(s=>s.path===r.path);assert(transition&&post);assert.deepEqual(transition.before,r.before);same(transition.after,r.after,'Actual finite47 composed after');same(post,r.after,'Actual finite47 postcheck target');}
  const raw=selectedFocused.get('stdout.txt').toString('utf8');for(const text of ['# tests 47','# pass 47','# fail 0','# cancelled 0','# skipped 0','# todo 0'])assert(raw.includes(text),'Actual finite47 raw TAP summary');assert.equal(selectedFocused.get('stderr.txt').length,0);assert.equal(fa.output.droppedOutputBytes,0);assert.equal(fa.output.retainedOutputTruncated,false);assert.equal(fa.output.childCloseObserved,true);
+ const archiveProof=verifyArchiveSourceTransition(rawRead,priorBefore,oldCapsule);
  const verifierRoutes=new Map(fixed.verifiers.map(r=>[r.path,r]));assert.equal(verifierRoutes.size,7);for(const r of fixed.verifiers){read(r.path,r.after);read(r.historicalPath,r.before);}
  read(publicationRootTransition.middle.path,publicationRootTransition.middle);read(publicationRootTransition.migrationBefore.path,publicationRootTransition.migrationBefore);read(publicationRootTransition.finiteVerifier.path,publicationRootTransition.finiteVerifier);
  for(const r of [gitDirectoryVerifierTransition.manifest,gitDirectoryVerifierTransition.payload,gitDirectoryVerifierTransition.middle,gitDirectoryVerifierTransition.migrationBefore])read(r.path,r);
@@ -1360,10 +1663,12 @@ export function createEditorVaultProofMigration(rawRead){assert.equal(typeof raw
  for(const r of fixed.routes){read(r.historicalPath,r.before);const installationRow=installed.installed.find(s=>s.destination===r.path);assert(installationRow);same(installationRow.before,r.before,r.path);same(installationRow.after,r.after,r.path);}
  for(const r of Object.values(fixed.metadata))read(r.historicalPath,r);
  function resolveHistorical(p,r){
-  safe(p);if(p===groupEditDocumentTransition.path){assert(r,'Named GROUP-EDIT document transition requires explicit identity');const requested=expected(r);if(requested.bytes===groupEditDocumentTransition.after.bytes&&requested.sha256===groupEditDocumentTransition.after.sha256)return null;if(requested.bytes===groupEditDocumentTransition.before.bytes&&requested.sha256===groupEditDocumentTransition.before.sha256)return groupEditDocumentTransition.beforeImage.path;throw new Error('No unlisted GROUP-EDIT document historical identity allowed');}const windows=windowsRoutes.get(p),newer=nextRoutes.get(p),row=sourceRoutes.get(p),v=verifierRoutes.get(p);
-  if(!windows&&!newer&&!row&&!v)return null;
+  safe(p);if(p===groupEditDocumentTransition.path){assert(r,'Named GROUP-EDIT document transition requires explicit identity');const requested=expected(r);if(requested.bytes===groupEditDocumentTransition.after.bytes&&requested.sha256===groupEditDocumentTransition.after.sha256)return null;if(requested.bytes===groupEditDocumentTransition.before.bytes&&requested.sha256===groupEditDocumentTransition.before.sha256)return groupEditDocumentTransition.beforeImage.path;throw new Error('No unlisted GROUP-EDIT document historical identity allowed');}const archive=archiveProof.routes.get(p),windows=windowsRoutes.get(p),newer=nextRoutes.get(p),row=sourceRoutes.get(p),v=verifierRoutes.get(p);
+  if(!archive&&!windows&&!newer&&!row&&!v)return null;
   assert(r,'Named transition requires an explicit expected identity: '+p);const id=expected(r);
+  if(archive){if(id.bytes===archive.after.bytes&&id.sha256===archive.after.sha256)return null;if(archive.before&&id.bytes===archive.before.bytes&&id.sha256===archive.before.sha256)return archive.beforeImage;throw new Error('No unlisted Archive historical identity allowed: '+p);}
   if(windows){if(id.bytes===windows.after.bytes&&id.sha256===windows.after.sha256)return null;if(windows.before&&id.bytes===windows.before.bytes&&id.sha256===windows.before.sha256)return windows.beforeImage;throw new Error('No unlisted Windows path historical identity allowed: '+p);}
+  if(p==='scripts/verify-records.mjs'&&id.bytes===archiveTransition.rootBefore.bytes&&id.sha256===archiveTransition.rootBefore.sha256)return archiveTransition.rootBefore.path;
   if(p==='scripts/verify-records.mjs'&&id.bytes===requirementEvidenceTransition.rootBefore.bytes&&id.sha256===requirementEvidenceTransition.rootBefore.sha256)return requirementEvidenceTransition.rootBefore.path;
   if(p==='scripts/verify-records.mjs'&&id.bytes===historicalCarrierTransition.rootBefore.bytes&&id.sha256===historicalCarrierTransition.rootBefore.sha256)return historicalCarrierTransition.rootBefore.path;
   if(p==='scripts/verify-records.mjs'&&id.bytes===windowsPathTransition.rootBefore.bytes&&id.sha256===windowsPathTransition.rootBefore.sha256)return windowsPathTransition.rootBefore.path;
@@ -1373,7 +1678,7 @@ export function createEditorVaultProofMigration(rawRead){assert.equal(typeof raw
   if(newer){if(id.bytes===newer.after.bytes&&id.sha256===newer.after.sha256)return null;if(id.bytes===newer.before.bytes&&id.sha256===newer.before.sha256)return newer.historicalPath;if(!row&&!v)throw new Error('No unlisted historical identity allowed: '+p);}
   const older=row??v;if(!newer&&id.bytes===older.after.bytes&&id.sha256===older.after.sha256)return null;same(id,older.before,'No unlisted historical identity allowed: '+p);return older.historicalPath;
  }
- function summary(){for(const [p,r]of seen)read(p,r);return{sourceOnly:true,namedSourceRoutes:16,old720ChangedCodeRoutes:11,docsOutside720:5,groupEditDocumentCurrentSourceMandatory:1,groupEditDocumentHistoricalRoute:1,groupEditDocumentLinkOnlyTransition:true,requirementEvidenceHistoricalReadSite:true,requirementRegistriesRewritten:false,requirementEvidenceNotCurrentBehavioralAcceptance:true,currentInstalledSourcesMandatory:64,windowsPathCurrentSourcesMandatory:3,windowsPathHistoricalSourceRoutes:2,windowsPathSourceDeclarationOnly:true,historicalFiniteWindowsPathGroups:47,windowsPathFocusedEvidenceAuthenticated:true,windowsPathFocusedEvidenceSelectedMetadataOnly:true,windowsPathFocusedEvidenceFullSuiteAccepted:false,windowsPathFocusedEvidenceProductionInstalled:false,windowsPathBehavioralAcceptanceEstablished:false,windowsPathInstallationReceiptAuthenticated:false,latestInstalledSourcesMandatory:35,unchangedEarlierInstalledSourcesMandatory:26,historicalEarlierInstalledAfterSourcesAuthenticated:4,latestBeforeImagesMandatory:9,historical937NotCurrentAcceptance:true,historical937SelectedSnapshots:4,currentSharedHostMandatory:1,currentVerifierAfterMandatory:7,currentFiniteCloudVerifierMandatory:1,rootVerifierHistoricalBeforeImages:5,historicalCarrierPolicySourceMandatory:1,historicalCarrierExceptions:11,historicalCarrierKnownRestored:80,historicalCarrierAuditCoverageComplete:false,followupVerifierHistoricalBeforeImages:2,editorSaveVerifierHistoricalBeforeImages:2,gitDirectoryClosurePayloadMandatory:1,priorMigrationSourceMandatory:8,editorHistoricalMismatchProjectionRows:6,historical847NotCurrentAcceptance:true,historical78NotCurrentAcceptance:true,unknownPathsNotMapped:true,authenticatedFiles:seen.size,authenticatedBytes:total,applicationExecutions:0,originalExecutions:0,browserExecutions:0,benchmarks:0,fullParity:false};}
+ function summary(){archiveProof.recheck();for(const [p,r]of seen)read(p,r);return{sourceOnly:true,...archiveProof.summary(),namedSourceRoutes:22,old720ChangedCodeRoutes:14,docsOutside720:8,groupEditDocumentCurrentSourceMandatory:1,groupEditDocumentHistoricalRoute:1,groupEditDocumentLinkOnlyTransition:true,requirementEvidenceHistoricalReadSite:true,requirementRegistriesRewritten:false,requirementEvidenceNotCurrentBehavioralAcceptance:true,currentInstalledSourcesMandatory:85,windowsPathCurrentSourcesMandatory:3,windowsPathHistoricalSourceRoutes:2,windowsPathSourceDeclarationOnly:true,historicalFiniteWindowsPathGroups:47,windowsPathFocusedEvidenceAuthenticated:true,windowsPathFocusedEvidenceSelectedMetadataOnly:true,windowsPathFocusedEvidenceFullSuiteAccepted:false,windowsPathFocusedEvidenceProductionInstalled:false,windowsPathBehavioralAcceptanceEstablished:false,windowsPathInstallationReceiptAuthenticated:false,latestInstalledSourcesMandatory:35,unchangedEarlierInstalledSourcesMandatory:26,historicalEarlierInstalledAfterSourcesAuthenticated:4,latestBeforeImagesMandatory:9,historical937NotCurrentAcceptance:true,historical937SelectedSnapshots:4,currentSharedHostMandatory:1,currentVerifierAfterMandatory:7,currentFiniteCloudVerifierMandatory:1,rootVerifierHistoricalBeforeImages:6,historicalCarrierPolicySourceMandatory:1,historicalCarrierExceptions:11,historicalCarrierKnownRestored:80,historicalCarrierAuditCoverageComplete:false,followupVerifierHistoricalBeforeImages:2,editorSaveVerifierHistoricalBeforeImages:2,gitDirectoryClosurePayloadMandatory:1,priorMigrationSourceMandatory:9,editorHistoricalMismatchProjectionRows:6,historical847NotCurrentAcceptance:true,historical78NotCurrentAcceptance:true,unknownPathsNotMapped:true,authenticatedFiles:seen.size,authenticatedBytes:total,applicationExecutions:0,originalExecutions:0,browserExecutions:0,benchmarks:0,fullParity:false};}
  return{resolve:resolveHistorical,historicalMetadata(name){assert(Object.hasOwn(fixed.metadata,name),'Only development/status beforemetadata');const r=fixed.metadata[name];return read(r.historicalPath,r);},historicalVerifier(p){assert(verifierRoutes.has(p),'Only named verifier beforeimages');const r=verifierRoutes.get(p);return read(r.historicalPath,r.before);},editorMismatchesIncludingHistoricalHost(rows){assert(Array.isArray(rows)&&rows.length===31);assert.equal(new Set(rows.map(r=>r.path)).size,31,'Distinct historical Editor source rows');const result=[];for(const r of rows){const route=sourceRoutes.get(r.path)??(r.path==='products/rea-studio/apps/editor/git.test.mjs'?windowsRoutes.get(r.path):null);if(route){same(r,route.before,'Fixed old Editor source');result.push({path:r.path,testedSha256:r.sha256,liveSha256:route.after.sha256});}else if(r.path===fixed.sharedHost.path){assert.equal(r.bytes,7741);assert.equal(r.sha256,'807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f');result.push({path:r.path,testedSha256:r.sha256,liveSha256:fixed.sharedHost.sha256});}}assert.equal(result.length,6);return result;},summary};
 }
 export function createEditorVaultProofMigrationFromRoot(root){const base=realpathSync(resolve(root));return createEditorVaultProofMigration(p=>{safe(p);let at=base;for(const s of p.split('/')){at=resolve(at,s);assert(!lstatSync(at).isSymbolicLink(),'Reparse proof path');}const real=realpathSync(at),rel=relative(base,real);assert(rel&&rel!=='..'&&!rel.startsWith('..'+sep)&&!rel.startsWith(sep));const stat=lstatSync(at);assert(stat.isFile()&&stat.size<=32*1024*1024);const b=readFileSync(at);assert.equal(b.length,stat.size);return b;});}

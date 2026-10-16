@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
-const ROOT_ID = { bytes: 148688, sha256: 'cd524543c7b6c9bf2050194994667e3e805165a934da209957ecbb5559d211c4' };
+const ROOT_ID = { bytes: 149064, sha256: '3878efc73e671246305e4368f7d3c52f288473591a4fe1697b343ab70249ae1e' };
 const CLOUD = 'products/rea-studio/results/cloud-flow-vault-20261015/';
 const TRANSITION = 'products/rea-studio/results/cloud-publication-source-transition-20261015/';
 const GIT_CLOSURE = 'products/rea-studio/results/publication-git-directory-closure-20261015/';
@@ -36,6 +36,35 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const read = name => fs.readFileSync(path.join(root, name));
   let migration;
   positive('named-migration-positive', () => { migration = createEditorVaultProofMigration(read); assert.equal(migration.summary().latestInstalledSourcesMandatory, 35); });
+  const archiveIndexPath = 'products/rea-studio/apps/archive/results/aes-followup/publication-index.json';
+  const archiveIndexBytes = read(archiveIndexPath); same(archiveIndexBytes, { bytes: 31564, sha256: 'cb1547b75fa9039f21b71ab40952c8b348c4253e47f9df3272e799375d8ab7dc' });
+  const archiveIndex = JSON.parse(archiveIndexBytes), archiveSources = archiveIndex.currentTargets;
+  const { verifyArchiveIntegrationRecords } = await import(pathToFileURL(path.join(root, 'scripts/verify-archive-integration-records.mjs')).href);
+  positive('archive-fixed21-after-and-six-before-routes', () => {
+    const scope = migration.summary(); assert.equal(scope.archiveCurrentSourcesMandatory, 21); assert.equal(scope.archiveHistoricalReplacementRoutes, 6); assert.equal(scope.currentInstalledSourcesMandatory, 85);
+    assert.equal(scope.archiveSelectedReleasedSourceFiles, 22); assert.equal(scope.archiveFiniteExperimentalGroups, 161); assert.equal(scope.archiveFiniteSelectedMetadataOnly, true); assert.equal(scope.archiveInstallationReceiptAuthenticated, false);
+    assert.equal(archiveSources.length, 21); assert.equal(archiveSources.filter(row => row.before).length, 6);
+    for (const row of archiveSources) { assert.equal(migration.resolve(row.path, row.after), null); if (row.before) assert.equal(migration.resolve(row.path, row.before), row.beforeImage); }
+  });
+  for (const row of archiveSources.filter(row => row.before)) negative('archive-unknown-epoch-' + path.posix.basename(row.path), () => migration.resolve(row.path, { bytes: 1, sha256: '0'.repeat(64) }), 'fixed Archive identity resolver');
+  negative('archive-unknown-added-source-epoch', () => migration.resolve('products/rea-studio/apps/archive/source-metadata.mjs', { bytes: 1, sha256: '0'.repeat(64) }), 'fixed Archive addition identity resolver');
+  for (const name of ['client.mjs', 'source-metadata.mjs', 'NOTICE-SOURCE-METADATA.txt']) negative('archive-missing-expected-identity-' + name, () => migration.resolve('products/rea-studio/apps/archive/' + name), 'explicit identity required for every fixed Archive target');
+  for (const row of archiveSources) negative('archive-mandatory-current-' + path.posix.basename(row.path), () => createEditorVaultProofMigration(name => name === row.path ? flip(read(name)) : read(name)), 'fixed mandatory current21 after-image');
+  for (const row of archiveSources.filter(row => row.before)) negative('archive-mandatory-before-' + path.posix.basename(row.path), () => createEditorVaultProofMigration(name => name === row.beforeImage ? flip(read(name)) : read(name)), 'fixed six historical Archive before-images');
+  for (const [name, target] of [
+    ['archive-mandatory-index', archiveIndexPath],
+    ['archive-mandatory-transition-manifest', 'products/rea-studio/results/archive-aes-source-transition-20261015/preservation-manifest.json'],
+    ['archive-mandatory-unchanged-bundle', 'products/rea-studio/experiments/archive-aes/bundle.json'],
+    ['archive-mandatory-new-integrity-reader', 'scripts/verify-archive-integration-records.mjs'],
+  ]) negative(name, () => createEditorVaultProofMigration(file => file === target ? flip(read(file)) : read(file)), 'fixed Archive source authority identity');
+  const finite161 = archiveIndex.recordedFiniteEvidence;
+  for (const [name, target] of [
+    ['archive-finite161-manifest-byte-change', finite161.manifest.path],
+    ['archive-finite161-attempt-byte-change', finite161.selected.find(row => row.sourcePath === 'verification/attempt-validation.json').path],
+    ['archive-finite161-before-inventory-byte-change', finite161.selected.find(row => row.sourcePath === 'verification/source-before.json').path],
+  ]) negative(name, () => createEditorVaultProofMigration(file => file === target ? flip(read(file)) : read(file)), 'immutable selected finite161 identity; deeper semantic rejection is not separately bypassed or claimed');
+  positive('archive-historical-lzma124-integrity-reader', () => { const checked = verifyArchiveIntegrationRecords(root); assert.equal(checked.fingerprints, 124); assert.equal(checked.historical_focused_archive_tests, 169); assert.equal(checked.exactHistoricalReplacementRoutes, 6); assert.equal(checked.archiveCurrentSourcesMandatory, 21); assert.equal(checked.behavioralTestsExecuted, 0); });
+
   const editor31Bytes = read('products/rea-studio/results/editor-save-followup/current-integration/frozen/validation.json.snapshot');
   same(editor31Bytes, { bytes: 11180, sha256: 'f4edee0afc7d40a169576ae9b87fe9d4c9227a1ea355ef19c80fa273b26eee25' }); const editor31 = JSON.parse(editor31Bytes).currentSources;
   positive('historical-editor31-exact-six-live-mismatch-projection', () => {
@@ -50,9 +79,10 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
     ['missing-exact-editor-git-mismatch-route', rows => { rows.find(row => row.path.endsWith('/editor/git.test.mjs')).path += '.unlisted'; }],
     ['duplicate-editor31-source-row', rows => { rows[1] = { ...rows[0] }; }],
   ]) negative(name, () => { const rows = structuredClone(editor31); change(rows); migration.editorMismatchesIncludingHistoricalHost(rows); }, 'fixed six-row historical Editor mismatch declaration');
-  positive('six-fixed-root-epochs', () => {
+  positive('seven-fixed-root-epochs', () => {
     assert.equal(migration.resolve('scripts/verify-records.mjs', ROOT_ID), null);
-    assert.equal(migration.resolve('scripts/verify-records.mjs', {"bytes":148558,"sha256":"a78a9467ecd76ae44c3d2413b6d341c735bb1f98a657646d3b00a13dccf066f8"}), 'products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/verify-records.mjs.snapshot');
+    assert.equal(migration.resolve('scripts/verify-records.mjs', {"bytes":148688,"sha256":"cd524543c7b6c9bf2050194994667e3e805165a934da209957ecbb5559d211c4"}), 'products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/verify-records-requirement-evidence-provenance.mjs.snapshot');
+    assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 148558, sha256: 'a78a9467ecd76ae44c3d2413b6d341c735bb1f98a657646d3b00a13dccf066f8' }), 'products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/verify-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 148351, sha256: 'a81c2f4b53fd346a6b86e4dcb63c9b39fb07a4f1e551bcfdbc3c755fce394046' }), 'products/rea-studio/results/historical-carrier-delivery-20261015/verifier-before/verify-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 147529, sha256: '82fc7f36c0805ee163a93aa1720ed708629ac455d90a9bdd343b30f554335304' }), WINDOWS_PATH + 'verifier-before/verify-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-records.mjs', { bytes: 142684, sha256: '42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6' }), TRANSITION + 'verifier-middle/verify-records.mjs.snapshot');
@@ -169,7 +199,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
       readFileSync(filename, ...args) { const bytes = fs.readFileSync(filename, ...args); return changed && path.resolve(filename).toLowerCase() === path.resolve(root, changed).toLowerCase() ? flip(bytes) : bytes; },
     }, { timeout: 120000 });
   }
-  positive('historical937-exact-block-positive', () => { const result = historical937(); assert.equal(result.rows, 737); assert.equal(result.routed, 8); assert.equal(result.unchanged, 729); });
+  positive('historical937-exact-block-positive', () => { const result = historical937(); assert.equal(result.rows, 737); assert.equal(result.routed, 11); assert.equal(result.unchanged, 726); });
   negative('historical937-frozen-source-byte-change', () => historical937({ changed: OLD + 'source/apps/archive/app.test.mjs.snapshot' }), 'exact reviewed937 block: frozen source hash');
   negative('historical937-unchanged-current-byte-change', () => historical937({ changed: 'products/rea-studio/apps/archive/app.test.mjs' }), 'exact reviewed937 block: current source hash');
   negative('historical937-receipt-byte-change', () => historical937({ changed: 'products/rea-studio/results/development-validation.json' }), 'exact immutable937 receipt hash');
@@ -233,7 +263,6 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   negative('group-edit-document-unlisted-identity', () => migration.resolve(groupEditDoc, { bytes: 1, sha256: '0'.repeat(64) }), 'one exact GROUP-EDIT document before and after identity');
   negative('group-edit-document-missing-identity', () => migration.resolve(groupEditDoc), 'explicit expected identity is mandatory for the named document');
   negative('group-edit-document-mandatory-current-byte-change', () => createEditorVaultProofMigration(name => name === groupEditDoc ? flip(read(name)) : read(name)), 'new current document remains mandatory while immutable next.sources reads exact preserved before');
-
   // Exercise only the actual pinned root requirement source-read loop. These
   // controls execute publication assertions in a closed VM, never app/test code.
   const requirementStart = '    for (const entry of localEvidence) {', requirementEnd = '\n    for (const row of rows) { assert.ok(!capabilityIds.has(row.id),';
@@ -264,10 +293,9 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   negative('requirement-evidence-unchanged-current-size-declaration', () => requirementEvidence({ entries: [{ ...requirementUnchanged, bytes: requirementUnchanged.bytes + 1 }] }), 'the optional size assertion is preserved for direct current reads');
   negative('requirement-evidence-unsafe-record-path', () => requirementEvidence({ entries: [{ ...requirementUnchanged, path: '../unlisted' }] }), 'the actual pinned root safeRecordPath rejects traversal before any read');
   for (const target of ["products/rea-studio/results/requirement-evidence-provenance-20261015/preservation-manifest.json","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/verify-records.mjs.snapshot","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot"]) negative('requirement-provenance-mandatory-byte-corruption:' + target, () => createEditorVaultProofMigration(name => name === target ? flip(read(name)) : read(name)), 'new fixed requirement provenance closure identity; historical receipts and registries remain unchanged');
-
   // Execute only the exact producer projection, using the actual preserved failing
   // attempt outputs. No publication producer or application entry point is run here.
-  const repeatProducerBytes = read('scripts/verify-cloud-publication.mjs'); same(repeatProducerBytes, {"bytes":28574,"sha256":"5145bee46db8290ce97551fb283fffb253d3d3ed454609b9364f0afab3075df5"});
+  const repeatProducerBytes = read('scripts/verify-cloud-publication.mjs'); same(repeatProducerBytes, {"bytes":34261,"sha256":"01b0f4eea9dfc7614bda6909f054514ae203c6159b69e53a3eeb7df156d3ce1e"});
   const repeatProducer = repeatProducerBytes.toString('utf8');
   const repeatStart = '// BEGIN exact publication repeat projection (only three owned observation clocks).', repeatEnd = '// END exact publication repeat projection.';
   assert.equal(repeatProducer.split(repeatStart).length, 2); assert.equal(repeatProducer.split(repeatEnd).length, 2);
@@ -303,7 +331,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   negative('publication-repeat-reject:first-phase-clock-corruption', () => { const changed = structuredClone(repeatFirst); changed.followup_evidence.notesLayoutValueApiCheckpoint.sketch.finished = '2026-10-16T00:14:16.540Z'; repeatCompare(changed); }, 'both raw observations are independently bounded');
   negative('publication-repeat-reject:overlapping-owned-phases', () => { const phases = structuredClone(repeatAttempt.phases); phases[0].completedAtUtc = new Date(Date.parse(phases[1].startedAtUtc) + 1).toISOString(); repeatCompare(repeatFirst, repeatSecond, phases); }, 'phase intervals must be ordered and nonoverlapping');
   negative('publication-repeat-reject:reversed-owned-phase', () => { const phases = structuredClone(repeatAttempt.phases); [phases[1].startedAtUtc, phases[1].completedAtUtc] = [phases[1].completedAtUtc, phases[1].startedAtUtc]; repeatCompare(repeatFirst, repeatSecond, phases); }, 'owned phase timestamps must themselves be valid and ordered');
-  assert.equal(rows.length, 110); assert.ok(rows.every(row => row.passed));
+  assert.equal(rows.length, 156); assert.ok(rows.every(row => row.passed));
   return { schema: 'rea-cloud-publication-controls/v1', status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,

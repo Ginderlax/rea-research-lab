@@ -7,6 +7,7 @@ import { spawnSync } from 'node:child_process';
 import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';
 import { verifyFollowupRecords } from './verify-followup-records.mjs';
 import { verifyCloudRecoveryRecords } from './verify-cloud-recovery-records.mjs';
+import { verifyArchiveIntegrationRecords } from './verify-archive-integration-records.mjs';
 import { createHistoricalCarrierPolicyFromRoot } from './historical-carrier-policy.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -353,8 +354,8 @@ let productDevelopment;
 if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   const developmentRoot = join(root, 'products/rea-studio');
   const status = JSON.parse(readFileSync(join(developmentRoot, 'STATUS.json'), 'utf8'));
-  // The immutable937 receipt describes its captured source epoch. Only the six
-  // explicitly reviewed Flow/Vault code transitions may differ from it today.
+  // The immutable937 receipt keeps its captured source epoch. Only the eleven
+  // fixed Flow/Vault, Windows-path and Archive runtime transitions are routed.
   const historical937Prefix = 'products/rea-studio/results/editor-vault-combined-20261013/';
   const historical937Seen = new Map(); let historical937Bytes = 0;
   function historical937Read(name, expected) {
@@ -381,7 +382,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   const historical937Inventory = JSON.parse(historical937Read(historical937Prefix + historical937BeforeRow.path, { bytes: historical937BeforeRow.bytes, sha256: historical937BeforeRow.sha256 }));
   const historical937Sources = new Map(historical937Inventory.map(row => [row.path, row]));
   assert.equal(historical937Inventory.length, 737); assert.equal(historical937Sources.size, 737); assert.equal(validation.source_files.length, 737);
-  const historical937AllowedRoutes = new Set(['apps/editor/git.test.mjs', 'apps/flow/client.mjs', 'apps/flow/native.mjs', 'apps/flow/server.mjs', 'apps/sync/dav-transfer.mjs', 'apps/vault/client.mjs', 'apps/vault/recycle.mjs', 'apps/vault/server.mjs']);
+  const historical937AllowedRoutes = new Set(['apps/archive/client.mjs', 'apps/archive/server.mjs', 'apps/archive/sevenzip.mjs', 'apps/editor/git.test.mjs', 'apps/flow/client.mjs', 'apps/flow/native.mjs', 'apps/flow/server.mjs', 'apps/sync/dav-transfer.mjs', 'apps/vault/client.mjs', 'apps/vault/recycle.mjs', 'apps/vault/server.mjs']);
   const historical937Checked = new Set(); let historical937Routed = 0, historical937Unchanged = 0;
   const browser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-verification.json'), 'utf8'));
   const comparison = JSON.parse(readFileSync(join(developmentRoot, 'results/editor-comparison.json'), 'utf8'));
@@ -405,7 +406,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     if (historicalPath) { assert.ok(historical937AllowedRoutes.has(entry.path), 'Unlisted937 source transition'); historical937Read(historicalPath, expected); historical937Routed++; }
     else { historical937Read(name, expected); historical937Unchanged++; }
   }
-  assert.equal(historical937Checked.size, 737); assert.equal(historical937Routed, 8); assert.equal(historical937Unchanged, 729);
+  assert.equal(historical937Checked.size, 737); assert.equal(historical937Routed, 11); assert.equal(historical937Unchanged, 726);
   assert.equal(validation.source_bytes_stable_across_run, true);
   assert.equal(new Set(browser.checks.map(check => check.app)).size, 10);
   assert.ok(browser.checks.every(check => check.passed));
@@ -556,9 +557,9 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(archiveLzma.schema, 'rea-lzma-application-validation/v1'); assert.equal(archiveLzma.integrated_application, true);
   assert.equal(archiveLzma.test_run.tests, 169); assert.equal(archiveLzma.test_run.passed, 169); assert.equal(archiveLzma.test_run.failed + archiveLzma.test_run.skipped, 0);
   for (const gate of ['full_feature_parity','all_ways_improved','original_compression_performance_parity','original_application_runtime_wrapper']) assert.equal(archiveLzma[gate], false);
-  const lzmaIntegrity = spawnSync(process.execPath, ['products/rea-studio/apps/archive/verify-lzma.mjs'], {cwd:root,encoding:'utf8',timeout:30000});
-  assert.equal(lzmaIntegrity.status, 0, lzmaIntegrity.stderr);
-  const lzmaIntegrityResult = JSON.parse(lzmaIntegrity.stdout); assert.equal(lzmaIntegrityResult.fingerprints, 124);
+  const lzmaIntegrityResult = verifyArchiveIntegrationRecords(root); assert.equal(lzmaIntegrityResult.status, 'pass');
+  assert.equal(lzmaIntegrityResult.fingerprints, 124); assert.equal(lzmaIntegrityResult.historicalLzmaNotCurrentAcceptance, true);
+  assert.equal(lzmaIntegrityResult.archiveCurrentSourcesMandatory, 21); assert.equal(lzmaIntegrityResult.exactHistoricalReplacementRoutes, 6);
   const compressionBrowser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-compression-remote-verification.json'), 'utf8'));
   assert.equal(compressionBrowser.schema, 'rea-compression-remote-browser-verification/v1'); assert.deepEqual(compressionBrowser.checks.map(v=>v.app).sort(), ['archive','backup','sync']); assert.ok(compressionBrowser.checks.every(v=>v.passed));
   for (const gate of ['every_documented_feature_verified','full_feature_parity_established','universal_superiority_established']) assert.equal(compressionBrowser[gate], false);
@@ -834,7 +835,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(capabilityIds.size, requirementIndex.capability_area_rows);
   assert.equal(requirementIndex.exhaustive_feature_inventory_established, false);
   assert.equal(requirementIndex.full_product_parity_rows_passed, 0);
-  productDevelopment = { applications: 10, historical_937_recorded_tests_passed: validation.summary.pass, historical_937_tested_source_hashes_checked: validation.source_files.length, historical_937_reviewed_source_routes: historical937Routed, historical_937_unchanged_current_source_rows: historical937Unchanged, full_development_suite_rerun: false, browser_workflow_records: browser.checks.length, historical_native_browser_workflow_records: currentBrowser.checks.length, historical_execution_browser_workflow_records: executionBrowser.checks.length, historical_execution_archive_source_hashes_checked: historicalExecution.sources.size, historical_execution_archive_source_revision: historicalExecution.source_revision, historical_joplin_original_method_checks: joplinOracle.passed, historical_keepass_interoperability_test_collection: vaultOracle.result.passed, automation_execution_test_collection: automationExecution.summary.pass, historical_archive_zip_test_collection: archiveZip.checks.successful_result.passed, historical_archive_format_test_collection: archiveFormats.summary.pass, current_archive_test_collection: archiveZstd.checks.result.passed, grafana_unchanged_original_fixtures: grafanaSchema.fixtureChecks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
+  productDevelopment = { applications: 10, historical_937_recorded_tests_passed: validation.summary.pass, historical_937_tested_source_hashes_checked: validation.source_files.length, historical_937_reviewed_source_routes: historical937Routed, historical_937_unchanged_current_source_rows: historical937Unchanged, full_development_suite_rerun: false, browser_workflow_records: browser.checks.length, historical_native_browser_workflow_records: currentBrowser.checks.length, historical_execution_browser_workflow_records: executionBrowser.checks.length, historical_execution_archive_source_hashes_checked: historicalExecution.sources.size, historical_execution_archive_source_revision: historicalExecution.source_revision, historical_joplin_original_method_checks: joplinOracle.passed, historical_keepass_interoperability_test_collection: vaultOracle.result.passed, automation_execution_test_collection: automationExecution.summary.pass, historical_archive_zip_test_collection: archiveZip.checks.successful_result.passed, historical_archive_format_test_collection: archiveFormats.summary.pass, historical_archive_zstandard_test_collection: archiveZstd.checks.result.passed, grafana_unchanged_original_fixtures: grafanaSchema.fixtureChecks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
   Object.assign(productDevelopment, {
     historical_backup_compression_tests_passed: backupCompression.summary.pass,
     historical_backup_compression_source_hashes_checked: backupCompression.implementationFingerprints.length,
@@ -884,8 +885,9 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     historical_webdav_test_collection: webdav.testRun.newWebDAVTests,
     historical_webdav_original_executions: webdav.oracle.authenticatedOriginalExecutions,
     historical_webdav_original_comparison_decisions: webdav.oracle.comparisonDecisions,
-    current_archive_test_collection: archiveLzma.test_run.passed,
-    current_archive_source_and_proof_hashes_checked: lzmaIntegrityResult.fingerprints,
+    historical_archive_lzma_test_collection: archiveLzma.test_run.passed,
+    historical_archive_lzma_source_and_proof_hashes_checked: lzmaIntegrityResult.fingerprints,
+    current_archive_source_after_images_authenticated: lzmaIntegrityResult.archiveCurrentSourcesMandatory,
     historical_compression_remote_browser_workflow_records: compressionBrowser.checks.length,
     historical_compression_remote_browser_source_hashes_checked: compressionBrowser.implementation_fingerprints.length,
     historical_compression_remote_source_revision: compressionRemoteHistory.source_revision,

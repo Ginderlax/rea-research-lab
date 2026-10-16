@@ -1,15 +1,9 @@
 name: Cloud experimental Archive AES browser acceptance
 
+# Historical overlay mode: run only from a preserved pre-installation ref.
+# Installed committed-source checks use archive-installed-cloud.yml.
 on:
   workflow_dispatch:
-  push:
-    branches: [codex/rea-cloud-recovery-20261015]
-    paths:
-      - '.github/workflows/browser-archive-aes-cloud.yml'
-      - 'products/rea-studio/browser-tests/archive-aes.spec.mjs'
-      - 'products/rea-studio/browser-tests/playwright.archive-aes.config.mjs'
-      - 'products/rea-studio/browser-tests/archive-aes-roster.json'
-      - 'products/rea-studio/scripts/verify-cloud-browser.mjs'
 
 permissions:
   contents: read

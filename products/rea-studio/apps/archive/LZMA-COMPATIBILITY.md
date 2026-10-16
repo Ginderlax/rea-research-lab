@@ -42,8 +42,10 @@ The decoder checks properties, distances, state/reset transitions, range
 initialization/finish, chunk lengths, declared expansion and consumed input.
 The container rejects CRC mismatches, unexplained/overlapping packed bytes,
 appended data and concatenated archives before extraction writes. Optional
-absent content CRCs are accepted and reported as unrecorded. One simple
-supported coder per folder and one encoded header are accepted; encryption,
+absent content CRCs are accepted and reported as unrecorded for unencrypted folders.
+The bounded AES slice adds selected AES+compression folders and encrypted
+headers under [SEVENZIP-AES-COMPATIBILITY.md](SEVENZIP-AES-COMPATIBILITY.md);
+the historical LZMA receipt does not bind those additions. Other
 filters/complex pipelines, external streams, SFX/split volumes, original GUI,
 other platforms, streaming and parallelism remain outside scope.
 

@@ -1,19 +1,8 @@
 name: Experimental Archive AES and timestamps
 
+# Historical overlay mode: run only from a preserved pre-installation ref.
+# Installed committed-source checks use archive-installed-cloud.yml.
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/archive-aes-cloud.yml'
-      - 'products/rea-studio/experiments/archive-aes/**'
-      - 'products/rea-studio/apps/archive/**'
-      - 'products/rea-studio/lib/**'
-      - 'products/rea-studio/scripts/verify-cloud.mjs'
-      - 'products/rea-studio/scripts/compose-archive-aes-cloud.mjs'
-      - 'products/rea-studio/scripts/bootstrap-cloud-bsdtar.mjs'
-      - 'products/rea-studio/scripts/bootstrap-cloud-development.mjs'
-      - 'products/rea-studio/scripts/verify-cloud-bsdtar.mjs'
-  pull_request:
   workflow_dispatch:
 
 permissions:

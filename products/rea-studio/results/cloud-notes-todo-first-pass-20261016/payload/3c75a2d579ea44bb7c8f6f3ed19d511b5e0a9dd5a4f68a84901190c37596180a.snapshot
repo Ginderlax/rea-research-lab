@@ -1,0 +1,122 @@
+[
+  {
+    "case": "same-editor four fields",
+    "revision": 3,
+    "passed": true
+  },
+  {
+    "case": "revision prevents edit-undo publication",
+    "passed": true
+  },
+  {
+    "case": "new-note selection",
+    "passed": true
+  },
+  {
+    "case": "post-Save refresh typing",
+    "passed": true
+  },
+  {
+    "case": "late old list after cascade",
+    "republished": false,
+    "backendDeleted": true,
+    "saveEnabled": false,
+    "calls": [
+      {
+        "action": "list",
+        "input": {
+          "search": "",
+          "tag": "",
+          "notebookId": "",
+          "trash": false,
+          "todoFilter": "all"
+        }
+      },
+      {
+        "action": "notebook-list",
+        "input": {}
+      },
+      {
+        "action": "get",
+        "input": {
+          "id": "773c47c2-a727-43ab-9855-bbf841110ecb"
+        }
+      },
+      {
+        "action": "attachment-list",
+        "input": {
+          "id": "773c47c2-a727-43ab-9855-bbf841110ecb"
+        }
+      },
+      {
+        "action": "save",
+        "input": {
+          "id": "773c47c2-a727-43ab-9855-bbf841110ecb",
+          "revision": 1,
+          "title": "A note",
+          "body": "Saved body",
+          "notebookId": "b5dda5d31a2afb2fcf09cb0b9b9b572a",
+          "tags": []
+        }
+      },
+      {
+        "action": "attachment-list",
+        "input": {
+          "id": "773c47c2-a727-43ab-9855-bbf841110ecb"
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": "",
+          "tag": "",
+          "notebookId": "",
+          "trash": false,
+          "todoFilter": "all"
+        }
+      },
+      {
+        "action": "notebook-trash",
+        "input": {
+          "id": "f84815daf700e3ac2b3040fbb4e64672",
+          "revision": 2,
+          "confirmed": true
+        }
+      },
+      {
+        "action": "get",
+        "input": {
+          "id": "773c47c2-a727-43ab-9855-bbf841110ecb"
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": "",
+          "tag": "",
+          "notebookId": "",
+          "trash": false,
+          "todoFilter": "all"
+        }
+      },
+      {
+        "action": "notebook-list",
+        "input": {}
+      },
+      {
+        "action": "attachment-list",
+        "input": {
+          "id": "773c47c2-a727-43ab-9855-bbf841110ecb"
+        }
+      }
+    ]
+  },
+  {
+    "case": "captured restore primitives",
+    "passed": true
+  },
+  {
+    "case": "second refresh await generation",
+    "passed": true
+  }
+]

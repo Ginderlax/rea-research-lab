@@ -11,10 +11,11 @@ assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
 assert.equal(process.env.GITHUB_REPOSITORY, 'Ginderlax/rea-research-lab');
 for (const name of ['GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'RUNNER_TEMP', 'PLAYWRIGHT_BROWSERS_PATH']) assert(process.env[name]);
 const args = process.argv.slice(2);
-const archiveScope = args.length === 8, archiveInstalledScope = archiveScope && args[5] === 'archive-aes-installed';
-assert([4, 8].includes(args.length)); assert.equal(args[0], '--phase'); assert((archiveScope ? ['verify', 'postcheck'] : ['acquire', 'verify']).includes(args[1]));
+const explicitScope = args.length === 8, notesScope = explicitScope && args[5] === 'notes-todo-experiment';
+const archiveScope = explicitScope && !notesScope, archiveInstalledScope = archiveScope && args[5] === 'archive-aes-installed';
+assert([4, 8].includes(args.length)); assert.equal(args[0], '--phase'); assert((explicitScope ? ['verify', 'postcheck'] : ['acquire', 'verify']).includes(args[1]));
 assert.equal(args[2], '--evidence'); assert(path.isAbsolute(args[3]));
-if (archiveScope) { assert.equal(args[4], '--scope'); assert(['archive-aes-experiment', 'archive-aes-installed'].includes(args[5])); assert.equal(args[6], archiveInstalledScope ? '--installed-manifest' : '--overlay-manifest'); assert(path.isAbsolute(args[7])); }
+if (explicitScope) { assert.equal(args[4], '--scope'); assert(['archive-aes-experiment', 'archive-aes-installed', 'notes-todo-experiment'].includes(args[5])); assert.equal(args[6], archiveInstalledScope ? '--installed-manifest' : '--overlay-manifest'); assert(path.isAbsolute(args[7])); }
 const phase = args[1], studio = fileURLToPath(new URL('../', import.meta.url)), repository = path.resolve(studio, '../..');
 const tools = path.join(studio, 'browser-tests'), temporary = fs.realpathSync(process.env.RUNNER_TEMP);
 const sourceLimits = { files: 2000, fileBytes: 8 * 1024 * 1024, totalBytes: 64 * 1024 * 1024, depth: 128 };
@@ -30,8 +31,8 @@ const identity = bytes => ({ bytes: bytes.length, sha256: digest(bytes) });
 const readJson = filename => { const item = fs.lstatSync(filename); assert(item.isFile() && !item.isSymbolicLink() && item.size <= 8 * 1024 * 1024, 'Invalid bounded JSON evidence'); return JSON.parse(fs.readFileSync(filename)); };
 const saveNew = (filename, value) => fs.writeFileSync(path.join(evidence, filename), JSON.stringify(value, null, 2) + '\n', { flag: 'wx' });
 const recordName = phase === 'acquire' ? 'browser-tooling-acquisition.json' : phase === 'postcheck' ? 'browser-postrun-source-check.json' : 'browser-attempt.json';
-const record = { schema: phase === 'acquire' ? 'rea-cloud-browser-tooling-acquisition/v1' : phase === 'postcheck' ? 'rea-cloud-browser-archive-postrun-source-check/v1' : 'rea-cloud-browser-attempt/v1', status: 'running', phase, startedAtUtc: new Date().toISOString(), execution,
-  scope: archiveInstalledScope ? 'Six explicit installed Archive Chromium scenarios on a clean committed checkout: all62 Archive Git blobs and21 after pins are authenticated, with independent always source postchecks. Requires three UI-created archives and five byte-exact restored files, no product download UI, zero downloads and zero original processes. No app overlay, full-suite, browser matrix, parity, security or superiority acceptance.' : archiveScope ? 'Six explicit experimental Archive real Chromium UI scenarios: plain ZIP and AES7Z create/list/extract, ZIP encryption refusal, wrong password, actual response timing holds and disposal. Exact21 ephemeral source overlay; real workspace artifacts, no product download UI, actualDownloads0, original executions0. No full-suite, matrix, parity, security or superiority acceptance.' : 'Twelve explicit current Flow/Vault real Chromium normalization, download, draft, static-link and disposal scenarios. Real loopback host, synthetic data and separately disclosed network timing holds. No Archive overlay, original product, browser matrix, full-suite, parity, security or superiority acceptance.',
+const record = { schema: phase === 'acquire' ? 'rea-cloud-browser-tooling-acquisition/v1' : phase === 'postcheck' ? (notesScope ? 'rea-cloud-notes-browser-postrun-source-check/v1' : 'rea-cloud-browser-archive-postrun-source-check/v1') : 'rea-cloud-browser-attempt/v1', status: 'running', phase, startedAtUtc: new Date().toISOString(), execution,
+  scope: notesScope ? 'Eight real Chromium Notes cases on an exact eight-target hosted source composition. Requires full six-directory source census, every other Git blob, independent composer/browser postchecks, four unchanged actual response holds, two raw browser downloads, eight PNGs and eight complete owned cleanup records. Zero original product/helper calls or disabled-control probes. No production installation, original GUI, browser matrix, full-suite, security, parity or superiority acceptance.' : archiveInstalledScope ? 'Six explicit installed Archive Chromium scenarios on a clean committed checkout: all62 Archive Git blobs and21 after pins are authenticated, with independent always source postchecks. Requires three UI-created archives and five byte-exact restored files, no product download UI, zero downloads and zero original processes. No app overlay, full-suite, browser matrix, parity, security or superiority acceptance.' : archiveScope ? 'Six explicit experimental Archive real Chromium UI scenarios: plain ZIP and AES7Z create/list/extract, ZIP encryption refusal, wrong password, actual response timing holds and disposal. Exact21 ephemeral source overlay; real workspace artifacts, no product download UI, actualDownloads0, original executions0. No full-suite, matrix, parity, security or superiority acceptance.' : 'Twelve explicit current Flow/Vault real Chromium normalization, download, draft, static-link and disposal scenarios. Real loopback host, synthetic data and separately disclosed network timing holds. No Archive overlay, original product, browser matrix, full-suite, parity, security or superiority acceptance.',
   retries: 0, workers: 1, sourceCaptureLimits: sourceLimits, originalProductExecutions: 0, applicationSourcesChanged: null, historicalReceiptsRebound: false, testsByteOverlay: false, children: [], failure: null };
 function save(initial = false) {
   const target = path.join(evidence, recordName), next = initial ? target : target + '.tmp';
@@ -82,12 +83,13 @@ function collect(directory, budget, depth = 0) {
 }
 function census() {
   const budget = { files: 0, bytes: 0 };
+  if (notesScope) return [...['apps', 'lib', 'public', 'browser-tests', 'scripts', 'tests'].flatMap(name => collect(path.join(studio, name), budget)), ...['server.mjs', 'catalog.mjs', 'package.json'].map(name => sourceRow(path.join(studio, name), budget))].sort((a, b) => a.path.localeCompare(b.path));
   const extra = archiveScope ? [archiveInstalledScope ? 'scripts/verify-archive-installed-cloud.mjs' : 'scripts/compose-archive-aes-cloud.mjs', 'package.json'] : [];
   return [...['apps', 'lib', 'public', 'browser-tests'].flatMap(name => collect(path.join(studio, name), budget)), ...['server.mjs', 'catalog.mjs', 'scripts/verify-cloud-browser.mjs', ...extra].map(name => sourceRow(path.join(studio, name), budget))].sort((a, b) => a.path.localeCompare(b.path));
 }
 const archiveBundlePath = 'products/rea-studio/experiments/archive-aes/bundle.json';
 const archiveBundlePin = { bytes: 80331, sha256: 'ed6d16f52f9209ac144f1f08d395c3e86e4c124c73a3a18a488654506ff155bb' };
-let archiveProof = null;
+let archiveProof = null, notesProof = null, notesModule = null;
 function gitBytes(arguments_) {
   const r = spawnSync('git', arguments_, { cwd: repository, shell: false, windowsHide: true, timeout: 30000, maxBuffer: 32 * 1024 * 1024 });
   assert.equal(r.error, undefined); assert.equal(r.status, 0); return r.stdout;
@@ -213,10 +215,42 @@ async function installedBrowser() {
   assert(executable.split(path.sep).includes('chromium-1248'), 'Installed browser revision differs');
   return { name: 'chromium', revision: '1248', expectedVersion: '156.0.8078.4', channel: 'chromium', executable, ...await fileIdentity(executable), digestKind: 'Observed hosted executable identity after the pinned official Playwright downloader; no independent publisher digest or signature assertion.' };
 }
+async function verifyNotesBrowserPhase() {
+  const helperPath = 'products/rea-studio/scripts/verify-notes-todo-browser-cloud.mjs', helperPin = {"bytes":20439,"sha256":"3afc8bb1ca5b496454c1cae10181e9b32466b39fd8ec0a908320c41ad6a027f0"};
+  committedSource(helperPath, helperPin); notesModule = await import(pathToFileURL(repositoryFile(helperPath)).href);
+  notesProof = notesModule.verifyNotesBrowserComposition(args[7]);
+  record.notesVerifierSource = { path: helperPath, ...helperPin };
+  record.notesOverlay = { ...notesProof.receipt, productionInstalled: false, exactAppTargets: 8, runtimeTargets: 3, documentationTargets: 1, newTestTargets: 4, baselineGitCommit: record.sourceCommit, modifiedEphemeralWorktree: true, browserBundle: notesProof.browserBundleIdentity, contract: notesProof.contractIdentity };
+  record.testsByteOverlay = true;
+  const workflow = notesProof.browserBundle.workflow, workflowBytes = committedSource(workflow.path, { bytes: workflow.bytes, sha256: workflow.sha256 });
+  record.workflowSource = { path: workflow.path, ...identity(workflowBytes) };
+  const source = verifyToolSource(); record.toolingSource = source; save();
+  if (phase === 'postcheck') {
+    const attemptBytes = fs.readFileSync(path.join(evidence, 'browser-attempt.json')), attempt = readJson(path.join(evidence, 'browser-attempt.json'));
+    sameAttempt(attempt); assert.equal(attempt.sourceCommit, record.sourceCommit); assert.equal(attempt.testsByteOverlay, true); assert.deepEqual(attempt.notesOverlay, record.notesOverlay); assert.deepEqual(attempt.workflowSource, record.workflowSource); assert.deepEqual(attempt.notesVerifierSource, record.notesVerifierSource);
+    before = readJson(path.join(evidence, 'browser-source-before.json')); const after = census(); assert.deepEqual(after, before, 'Separate Notes browser census changed');
+    record.sourceAuthentication = notesModule.authenticateNotesBrowserCensus(after, notesProof); record.composerPostcheck = notesModule.verifyNotesComposerPostcheck(evidence, notesProof);
+    record.browserAttempt = identity(attemptBytes); record.priorBrowserStatus = attempt.status; record.productTests = 0; record.sourceStable = true; record.applicationSourcesChanged = false; record.status = 'source-verified'; return;
+  }
+  fs.writeFileSync(path.join(evidence, 'notes-browser-workflow.yml.snapshot'), workflowBytes, { flag: 'wx' });
+  fs.writeFileSync(path.join(evidence, 'notes-browser-bundle.json.snapshot'), committedSource(notesProof.browserBundleIdentity.path, { bytes: notesProof.browserBundleIdentity.bytes, sha256: notesProof.browserBundleIdentity.sha256 }), { flag: 'wx' });
+  fs.writeFileSync(path.join(evidence, 'notes-browser-source-contract.md.snapshot'), committedSource(notesProof.contractIdentity.path, { bytes: notesProof.contractIdentity.bytes, sha256: notesProof.contractIdentity.sha256 }), { flag: 'wx' });
+  const acquisitionBytes = fs.readFileSync(path.join(evidence, 'browser-tooling-acquisition.json')), acquisition = JSON.parse(acquisitionBytes);
+  assert.equal(acquisition.schema, 'rea-cloud-browser-tooling-acquisition/v1'); assert.equal(acquisition.status, 'acquired'); sameAttempt(acquisition); assert.equal(acquisition.sourceCommit, record.sourceCommit); assert.deepEqual(acquisition.toolingSource, source);
+  record.acquisition = identity(acquisitionBytes); fs.writeFileSync(path.join(evidence, 'browser-prerequisites.json.snapshot'), acquisitionBytes, { flag: 'wx' });
+  record.browserImage = await installedBrowser(); assert.deepEqual(record.browserImage, acquisition.browserImage);
+  const data = fs.mkdtempSync(path.join(temporary, 'rea-notes-browser-synthetic-data-')); process.env.REA_BROWSER_DATA_ROOT = data; record.ownedDataRoot = data;
+  before = census(); record.sourceAuthentication = notesModule.authenticateNotesBrowserCensus(before, notesProof); saveNew('browser-source-before.json', before);
+  for (const row of before) { const target = path.join(evidence, 'source', row.path + '.snapshot'); fs.mkdirSync(path.dirname(target), { recursive: true }); const bytes = sourceBytes(path.join(studio, row.path)); assert.deepEqual(identity(bytes), { bytes: row.bytes, sha256: row.sha256 }); fs.writeFileSync(target, bytes, { flag: 'wx' }); }
+  record.sourceFiles = before.length; record.sourceCapturedBeforeExecution = true; record.scenarios = notesProof.roster; save();
+  await run([path.join(tools, 'node_modules/playwright/cli.js'), 'test', '--config', path.join(tools, 'playwright.notes-todo.config.mjs')], 11 * 60000, 'eight-real-notes-browser-scenarios');
+  Object.assign(record, notesModule.verifyNotesBrowserResults(evidence, notesProof)); record.productTests = 8; record.status = 'passed';
+}
 let before = null;
 save(true);
 try {
   record.sourceCommit = git(['rev-parse', 'HEAD']).trim(); assert.equal(record.sourceCommit, process.env.GITHUB_SHA);
+  if (notesScope) { await verifyNotesBrowserPhase(); } else {
   if (archiveScope) {
     archiveProof = archiveInstalledScope ? await verifyArchiveInstalled() : verifyArchiveComposition();
     if (archiveInstalledScope) record.archiveInstalled = { ...archiveProof.receipt, currentArchiveFiles: 62, exactAfterTargets: 21, allArchiveGitBound: true, sourceMutationPerformed: false, productionInstallationReceiptVerified: false };
@@ -308,9 +342,10 @@ try {
     }
     record.summary = { tests: count, passed: count, failed: 0, skipped: 0, flaky: 0, retries: 0, exactRealDownloads: downloads, ...(archiveScope ? { exactCreatedArchiveArtifacts: createdArchives, exactRestoredFileArtifacts: restoredFiles, productDownloadUIAbsent: true, originalProcesses: 0 } : {}) }; record.status = 'passed';
   }
+  }
 } catch (error) { record.status = interrupted ? 'interrupted' : 'failed'; record.failure = { name: error.name, message: error.message }; killOwnedChild(); process.exitCode = 1; }
 finally {
-  if (before) { try { const after = census(); saveNew(phase === 'postcheck' ? 'browser-postrun-source-after.json' : 'browser-source-after.json', after); record.sourceStable = JSON.stringify(before) === JSON.stringify(after); record.applicationSourcesChanged = record.sourceStable ? null : true; assert(record.sourceStable, 'Browser-attempt source changed'); if (archiveScope) { assert.deepEqual((archiveInstalledScope ? await verifyArchiveInstalled() : verifyArchiveComposition()).receipt, archiveProof.receipt); record.sourceAuthentication = authenticateArchiveCensus(after); } else assert.equal(git(['status', '--porcelain=v1', '--untracked-files=all']), ''); record.applicationSourcesChanged = false; } catch (error) { record.status = 'failed'; record.failure = { name: error.name, message: error.message }; process.exitCode = 1; } }
+  if (before) { try { const after = census(); saveNew(phase === 'postcheck' ? 'browser-postrun-source-after.json' : 'browser-source-after.json', after); record.sourceStable = JSON.stringify(before) === JSON.stringify(after); record.applicationSourcesChanged = record.sourceStable ? null : true; assert(record.sourceStable, 'Browser-attempt source changed'); if (notesScope) { assert.deepEqual(notesModule.verifyNotesBrowserComposition(args[7]).receipt, notesProof.receipt); record.sourceAuthentication = notesModule.authenticateNotesBrowserCensus(after, notesProof); } else if (archiveScope) { assert.deepEqual((archiveInstalledScope ? await verifyArchiveInstalled() : verifyArchiveComposition()).receipt, archiveProof.receipt); record.sourceAuthentication = authenticateArchiveCensus(after); } else assert.equal(git(['status', '--porcelain=v1', '--untracked-files=all']), ''); record.applicationSourcesChanged = false; } catch (error) { record.status = 'failed'; record.failure = { name: error.name, message: error.message }; process.exitCode = 1; } }
   if (interrupted) { record.status = 'interrupted'; process.exitCode = 143; }
   record.completedAtUtc = new Date().toISOString(); record.retainedOutputBytes = retained; save(); event('terminal', { status: record.status, failure: record.failure, summary: record.summary ?? null });
   for (const fd of [outFd, errFd, eventsFd]) fs.closeSync(fd);

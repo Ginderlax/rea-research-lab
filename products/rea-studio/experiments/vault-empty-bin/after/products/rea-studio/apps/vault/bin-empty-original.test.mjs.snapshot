@@ -16,6 +16,29 @@ const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
 const password = 'Owned empty-bin original-library fixture master';
 const directId = '10000000-0000-0000-0000-000000000004', priorId = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
+// Exact released KDBX4 Default serialization contract; raw observations stay intact.
+const serializedTimeSources = [{"path":"results/history-followup/stage/source/KeePassLib/Serialization/KdbxFile.Write.cs.snapshot","bytes":33386,"sha256":"9a0d45d6ec93106d8539d04f7ea043e5e98b95816986249cc4d88cd7420d1790","method":"WriteObject(string,DateTime)","lines":[781,805]},{"path":"results/history-followup/stage/source/KeePassLib/Utility/TimeUtil.cs.snapshot","bytes":12220,"sha256":"2345549af8189e64c22fd0134346a7200814fd037b247e03a17ffdb067219f5a","method":"SerializeUtc(DateTime)","lines":[214,220]}];
+async function authenticateSerializedTimeSources() {
+  for (const row of serializedTimeSources) assert.deepEqual(identity(await fs.readFile(new URL('./' + row.path, import.meta.url))), { bytes: row.bytes, sha256: row.sha256 });
+  return serializedTimeSources;
+}
+function serializedUtcSeconds(value) {
+  assert.equal(typeof value, 'string'); assert(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value), 'Named original projection must use exact millisecond UTC text');
+  const ms = Date.parse(value); assert(Number.isFinite(ms) && ms >= Date.parse('0001-01-01T00:00:00.000Z') && ms <= Date.parse('9999-12-31T23:59:59.999Z'));
+  assert.equal(new Date(ms).toISOString(), value);
+  // .NET ticks are non-negative since0001; their Unix-epoch offset is an
+  // exact whole-second multiple. Integer ticks/second therefore equals floor.
+  return new Date(Math.floor(ms / 1000) * 1000).toISOString();
+}
+function serializedReopenProjection(value, headerVersion) {
+  assert([0x00040000, 0x00040001].includes(headerVersion), 'Only observed/allowed KDBX4.0 or4.1 Default whole-second contract');
+  const expected = structuredClone(value), dates = [];
+  function date(row, key, at) { const raw = row[key], serialized = serializedUtcSeconds(raw); row[key] = serialized; dates.push({ path: at + '.' + key, rawInMemory: raw, exactExpectedSerialized: serialized }); }
+  expected.groups.forEach((row, index) => { for (const key of ['created', 'access', 'modified', 'location', 'expiry']) date(row, key, 'groups[' + index + ']'); });
+  expected.entries.forEach((row, index) => { for (const key of ['created', 'modified']) date(row, key, 'entries[' + index + ']'); row.history.forEach((old, history) => date(old, 'modified', 'entries[' + index + '].history[' + history + ']')); });
+  expected.deleted.forEach((row, index) => date(row, 'time', 'deleted[' + index + ']'));
+  return { expected, dates };
+}
 const observations = [];
 async function durableJSON(filename, value, initial = false) {
   const next = initial ? filename : filename + '.tmp', handle = await fs.open(next, 'wx');
@@ -88,7 +111,12 @@ async function original(t, name, input, { save = false } = {}) {
     for (const row of after.deleted.slice(count)) assert.equal(row.time, restoreNow.replace('Z', '.000Z'));
     assert.equal(actual.after.groups.some(row => row.id === ids.bin), true); assert.equal(actual.after.deleted.some(row => row.id === ids.bin), false);
     assert.equal(actual.inputHeaderVersion, record.syntheticInput.headerVersion); assert.equal(actual.savePerformed, save);
-    if (save) { assert.deepEqual(actual.reopened, actual.after); assert([0x00040000, 0x00040001].includes(actual.outputHeaderVersion)); } else { assert.equal(actual.reopened, null); assert.equal(actual.outputHeaderVersion, actual.inputHeaderVersion); }
+    if (save) {
+      const sources = await authenticateSerializedTimeSources(), rawAfter = JSON.stringify(actual.after), serialized = serializedReopenProjection(actual.after, actual.outputHeaderVersion);
+      record.serializedReopenContract = { sources, outputHeaderVersion: actual.outputHeaderVersion, rule: 'KDBX4 Default UTC DateTime ticks divided by ticks-per-second; exact whole seconds for every named date field', dates: serialized.dates, expectedReopened: serialized.expected, rawObservationsRewritten: false, nonTimeFieldsDeepExact: true };
+      assert.equal(JSON.stringify(actual.after), rawAfter, 'Raw in-memory original observations are not rewritten');
+      assert.deepEqual(actual.reopened, serialized.expected, 'Reopened original must equal exact source-defined serialized timestamp projection; all other fields remain deep-exact');
+    } else { assert.equal(actual.reopened, null); assert.equal(actual.outputHeaderVersion, actual.inputHeaderVersion); }
     record.headerVersionObservation = { input: actual.inputHeaderVersion, output: actual.outputHeaderVersion, savePerformed: save, downgradeObserved: actual.outputHeaderVersion < actual.inputHeaderVersion, sameFormatVersionClaimed: false, note: 'The deleted A entry carried QualityCheck=false; released save may choose4.0 after deletion. Actual header identity is retained; comparison covers named projections, not unchanged version or arbitrary XML.' };
     record.timestampComparison = { originalDatesRewritten: false, candidateUsesSingleCapturedClock: true, originalUsesPerRecursiveCallUTC: true, originalDatesWithinObservedBounds: true, exactTimestampEqualityClaimed: false };
     record.status = 'passed'; record.comparisonPassed = true;
@@ -100,4 +128,9 @@ async function original(t, name, input, { save = false } = {}) {
   }
 }
 test('actual released empty-bin nested/direct and disabled-bin library contracts agree', async t => { for (const disabled of [false, true]) await original(t, disabled ? 'disabled-existing-bin' : 'nested-direct-bin', fixture(disabled)); });
-test('actual released empty-bin save/reopen and fresh empty-bin no-op remain exact', async t => { await original(t, 'native-save-reopen', fixture(), { save: true }); await original(t, 'already-empty-bin', fixture(false, true)); });
+test('actual released empty-bin save/reopen and fresh empty-bin no-op remain exact', async t => {
+  assert.equal(serializedUtcSeconds('2026-10-15T23:56:30.440Z'), '2026-10-15T23:56:30.000Z');
+  assert.equal(serializedUtcSeconds('2026-10-15T23:56:30.999Z'), '2026-10-15T23:56:30.000Z');
+  assert.equal(serializedUtcSeconds('2026-10-15T23:56:30.000Z'), '2026-10-15T23:56:30.000Z');
+  await original(t, 'native-save-reopen', fixture(), { save: true }); await original(t, 'already-empty-bin', fixture(false, true));
+});

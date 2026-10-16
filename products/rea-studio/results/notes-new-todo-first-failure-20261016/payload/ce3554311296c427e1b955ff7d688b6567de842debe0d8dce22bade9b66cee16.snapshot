@@ -1,0 +1,773 @@
+TAP version 13
+# Subtest: notes HTTP save/history/export/trash survive host restarts on real disk
+ok 1 - notes HTTP save/history/export/trash survive host restarts on real disk
+  ---
+  duration_ms: 147.0226
+  type: 'test'
+  ...
+# Subtest: JEX imports and binary attachments survive HTTP host restarts with exact IDs and metadata
+ok 2 - JEX imports and binary attachments survive HTTP host restarts with exact IDs and metadata
+  ---
+  duration_ms: 621.7546
+  type: 'test'
+  ...
+# Subtest: notes CRUD, search/tag/notebook filtering, revisions, history, trash and restore
+ok 3 - notes CRUD, search/tag/notebook filtering, revisions, history, trash and restore
+  ---
+  duration_ms: 8.5156
+  type: 'test'
+  ...
+# Subtest: concurrent revision writes cannot overwrite the winning draft
+ok 4 - concurrent revision writes cannot overwrite the winning draft
+  ---
+  duration_ms: 0.8441
+  type: 'test'
+  ...
+# Subtest: Markdown export and JSON bundle re-import create independent note copies
+ok 5 - Markdown export and JSON bundle re-import create independent note copies
+  ---
+  duration_ms: 11.0188
+  type: 'test'
+  ...
+# Subtest: safe Markdown subset never emits HTML or dangerous link schemes
+ok 6 - safe Markdown subset never emits HTML or dangerous link schemes
+  ---
+  duration_ms: 1.0556
+  type: 'test'
+  ...
+# Subtest: history bounds and input validation prevent unbounded individual notes
+ok 7 - history bounds and input validation prevent unbounded individual notes
+  ---
+  duration_ms: 4.8804
+  type: 'test'
+  ...
+# Subtest: long malformed Markdown openers stay plain text without repeated delimiter scans
+ok 8 - long malformed Markdown openers stay plain text without repeated delimiter scans
+  ---
+  duration_ms: 30.4026
+  type: 'test'
+  ...
+# Subtest: multiline labels reject API and bundle writes before mutation while note bodies retain line breaks
+ok 9 - multiline labels reject API and bundle writes before mutation while note bodies retain line breaks
+  ---
+  duration_ms: 9.011
+  type: 'test'
+  ...
+# Subtest: saved multiline legacy labels remain intact during body edits and JSON backup
+ok 10 - saved multiline legacy labels remain intact during body edits and JSON backup
+  ---
+  duration_ms: 0.8584
+  type: 'test'
+  ...
+# Subtest: internal Joplin links navigate local notes and download referenced resources without replacing retained drafts
+ok 11 - internal Joplin links navigate local notes and download referenced resources without replacing retained drafts
+  ---
+  duration_ms: 29.087
+  type: 'test'
+  ...
+# Subtest: native-TAR original-serialized fixture imports with IDs, hierarchy, metadata, links, tags and bytes intact
+ok 12 - native-TAR original-serialized fixture imports with IDs, hierarchy, metadata, links, tags and bytes intact
+  ---
+  duration_ms: 421.5797
+  type: 'test'
+  ...
+# Subtest: edits and new attachments retain original metadata and produce valid raw relationships
+ok 13 - edits and new attachments retain original metadata and produce valid raw relationships
+  ---
+  duration_ms: 27.9462
+  type: 'test'
+  ...
+# Subtest: colliding IDs and unsupported or broken records reject the whole import before mutation
+ok 14 - colliding IDs and unsupported or broken records reject the whole import before mutation
+  ---
+  duration_ms: 26.8523
+  type: 'test'
+  ...
+# Subtest: saving an unchanged imported title, notebook or tag never normalizes metadata away
+ok 15 - saving an unchanged imported title, notebook or tag never normalizes metadata away
+  ---
+  duration_ms: 13.6418
+  type: 'test'
+  ...
+# Subtest: TAR checksum, truncation, duplicates, traversal, links, missing resources and trailing payload fail closed
+ok 16 - TAR checksum, truncation, duplicates, traversal, links, missing resources and trailing payload fail closed
+  ---
+  duration_ms: 2.9737
+  type: 'test'
+  ...
+# Subtest: checksum-valid high-bit TAR names and numeric fields reject before storing anything
+ok 17 - checksum-valid high-bit TAR names and numeric fields reject before storing anything
+  ---
+  duration_ms: 9.0783
+  type: 'test'
+  ...
+# Subtest: binary bounds, tamper detection and failed storage commits protect attachments
+ok 18 - binary bounds, tamper detection and failed storage commits protect attachments
+  ---
+  duration_ms: 33.318
+  type: 'test'
+  ...
+# Subtest: existing legacy notes migrate without deletion and export as valid Joplin identifiers
+ok 19 - existing legacy notes migrate without deletion and export as valid Joplin identifiers
+  ---
+  duration_ms: 10.033
+  type: 'test'
+  ...
+# {"notesNewTodoOriginalHelperComparisons":{"sourceCommit":"7e2765a3857754d12dbadea442b60ceaf9d4b23d","sourcePins":{"note":[45302,"5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647"],"base":[26960,"c0a19f6d2d689cc75de99e4ba57058ec02f9171c5b5b3c739aa45d11d5920fde"]},"bindings":[{"owner":"BaseModel","name":"new","startLine":256,"endLine":265,"sha256":"2cc53a28e5430dfcc998ea56af7acd6bf628059a90cbb6c5fab462209d940957"},{"owner":"Note","name":"new","startLine":272,"endLine":276,"sha256":"aaf70c0163cb4aef491da4f799e31bf5418d49baa12531e890e7363319376c75"},{"owner":"Note","name":"newTodo","startLine":278,"endLine":282,"sha256":"db69a9dbcaf3845633895245331f99cdf7fd0c86b810cf1edd1b79607f5877be"}],"comparisons":4,"comparedFields":["parent_id","is_todo"],"fieldsAdapter":["parent_id","is_todo","adapterSentinel"],"dueAndCompletionZerosAreCandidateOnlyChecks":true,"originalDatabaseExecutions":0,"originalGuiExecutions":0,"originalFullApplicationExecutions":0,"countsAddedToTestGroups":false}}
+# (node:3068) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: four new-task parent/type results match exact released Note.new and newTodo helpers over a declared field adapter
+ok 20 - four new-task parent/type results match exact released Note.new and newTodo helpers over a declared field adapter
+  ---
+  duration_ms: 63.6447
+  type: 'test'
+  ...
+# {"notesNewTodoOriginalCommandComparisons":{"sourceCommit":"7e2765a3857754d12dbadea442b60ceaf9d4b23d","commandSource":{"bytes":591,"sha256":"218a695d94fafb17d1650dc0601ca4c684628c9a1a6c923887d73937211aef6f"},"newNoteSource":{"bytes":1341,"sha256":"f5f0e9f3a5f9f2188b99c51778dbb88e5d99d3ab6e2cf0ae0ec879cdb99c0eed"},"runtimeFactorySliceSha256":"3ab49e6267c5e06a70a715765bd35a54eba362535c7919f835b896c7b32bb2c8","comparisons":2,"comparedArguments":["body","isTodo"],"delegatedCommand":"newNote","actualNewNoteCommandExecuted":false,"originalProvisionalSaveExecuted":false,"originalDatabaseExecutions":0,"originalGuiExecutions":0,"originalFullApplicationExecutions":0,"countsAddedToTestGroups":false,"policyDifference":"The original desktop newNote command performs a provisional save. The candidate stores no note until explicit Save."}}
+# Subtest: two desktop New to-do command argument results match candidate body/type requests without executing original persistence
+ok 21 - two desktop New to-do command argument results match candidate body/type requests without executing original persistence
+  ---
+  duration_ms: 6.2189
+  type: 'test'
+  ...
+# Subtest: New to-do real HTTP cold restarts retain first-save state, later history and exact supported JEX metadata
+ok 22 - New to-do real HTTP cold restarts retain first-save state, later history and exact supported JEX metadata
+  ---
+  duration_ms: 549.2896
+  type: 'test'
+  ...
+# Subtest: New to-do actual HTTP400 flag failures do not mutate existing notes and queue remains usable
+not ok 23 - New to-do actual HTTP400 flag failures do not mutate existing notes and queue remains usable
+  ---
+  duration_ms: 44.0953
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\notes\\new-todo.integration.test.mjs:28:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly deep-equal:
+    + actual - expected
+    
+      {
+        body: 'Saved body',
+        createdAt: '2026-10-16T15:44:10.961Z',
+        deletedAt: null,
+        history: [],
+        id: 'cbb25fbd-4a55-4cd2-bf76-0d1859a09c5e',
+    +   metadataEdited: false,
+        notebook: 'Notes',
+        notebookId: '4cdd6db14da7bf859108ed2dd938a26e',
+        revision: 1,
+        tags: [],
+        title: 'Must stay a note',
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+    id: 'cbb25fbd-4a55-4cd2-bf76-0d1859a09c5e'
+    title: 'Must stay a note'
+    body: 'Saved body'
+    notebook: 'Notes'
+    tags:
+    createdAt: '2026-10-16T15:44:10.961Z'
+    updatedAt: '2026-10-16T15:44:10.961Z'
+    revision: 1
+    deletedAt: ~
+    history:
+    notebookId: '4cdd6db14da7bf859108ed2dd938a26e'
+  actual:
+    id: 'cbb25fbd-4a55-4cd2-bf76-0d1859a09c5e'
+    title: 'Must stay a note'
+    body: 'Saved body'
+    notebook: 'Notes'
+    tags:
+    createdAt: '2026-10-16T15:44:10.961Z'
+    updatedAt: '2026-10-16T15:44:10.961Z'
+    revision: 1
+    deletedAt: ~
+    history:
+    notebookId: '4cdd6db14da7bf859108ed2dd938a26e'
+    metadataEdited: false
+  operator: 'deepStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/notes/new-todo.integration.test.mjs:32:29)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: New to-do creation preserves every prior imported JEX record and binary through restart and export
+ok 24 - New to-do creation preserves every prior imported JEX record and binary through restart and export
+  ---
+  duration_ms: 56.4027
+  type: 'test'
+  ...
+# Subtest: New to-do first save commits its note, notebook and initial open state in one state write
+ok 25 - New to-do first save commits its note, notebook and initial open state in one state write
+  ---
+  duration_ms: 5.2033
+  type: 'test'
+  ...
+# Subtest: New to-do rejects ambiguous creation flags and existing-note flags without any state mutation
+ok 26 - New to-do rejects ambiguous creation flags and existing-note flags without any state mutation
+  ---
+  duration_ms: 1.4275
+  type: 'test'
+  ...
+# Subtest: New to-do failed state persistence leaves no partial note or notebook and permits explicit retry
+ok 27 - New to-do failed state persistence leaves no partial note or notebook and permits explicit retry
+  ---
+  duration_ms: 1.1436
+  type: 'test'
+  ...
+# Subtest: New to-do snapshots caller fields before waiting for the serialized state queue
+ok 28 - New to-do snapshots caller fields before waiting for the serialized state queue
+  ---
+  duration_ms: 0.6322
+  type: 'test'
+  ...
+# Subtest: New to-do ordinary edits and saved-version restore preserve its initial task state
+ok 29 - New to-do ordinary edits and saved-version restore preserve its initial task state
+  ---
+  duration_ms: 1.6504
+  type: 'test'
+  ...
+# Subtest: New to-do JEX preserves its supported task fields, parent and tags while excluding local history
+ok 30 - New to-do JEX preserves its supported task fields, parent and tags while excluding local history
+  ---
+  duration_ms: 5.7047
+  type: 'test'
+  ...
+# Subtest: New to-do starts an unsaved typed draft and creates an open task only on explicit Save
+ok 31 - New to-do starts an unsaved typed draft and creates an open task only on explicit Save
+  ---
+  duration_ms: 19.4893
+  type: 'test'
+  ...
+# Subtest: New to-do honours discard cancellation and New note resets an accepted task draft type
+ok 32 - New to-do honours discard cancellation and New note resets an accepted task draft type
+  ---
+  duration_ms: 3.3934
+  type: 'test'
+  ...
+# Subtest: New to-do real committed held save blocks duplicates and retains a newer body at the returned revision
+ok 33 - New to-do real committed held save blocks duplicates and retains a newer body at the returned revision
+  ---
+  duration_ms: 3.03
+  type: 'test'
+  ...
+# Subtest: New note owns the editor after an older New to-do creation response was held after commit
+ok 34 - New note owns the editor after an older New to-do creation response was held after commit
+  ---
+  duration_ms: 2.9964
+  type: 'test'
+  ...
+# Subtest: disposing a New to-do view after committed save suppresses every late publication and request
+ok 35 - disposing a New to-do view after committed save suppresses every late publication and request
+  ---
+  duration_ms: 1.6323
+  type: 'test'
+  ...
+# Subtest: failed New to-do persistence retains draft type and fields then supports one explicit retry
+ok 36 - failed New to-do persistence retains draft type and fields then supports one explicit retry
+  ---
+  duration_ms: 2.1578
+  type: 'test'
+  ...
+# Subtest: a held rejected New to-do write cannot publish its failure over a newer draft owner
+ok 37 - a held rejected New to-do write cannot publish its failure over a newer draft owner
+  ---
+  duration_ms: 1.3299
+  type: 'test'
+  ...
+# Subtest: committed New to-do save reports refresh failure separately and preserves a newer draft across a held rejected list reply
+ok 38 - committed New to-do save reports refresh failure separately and preserves a newer draft across a held rejected list reply
+  ---
+  duration_ms: 3.2373
+  type: 'test'
+  ...
+# Subtest: Cancel with an opened saved note leaves attachments, draft, generation-facing UI and backend requests unchanged
+ok 39 - Cancel with an opened saved note leaves attachments, draft, generation-facing UI and backend requests unchanged
+  ---
+  duration_ms: 18.9832
+  type: 'test'
+  ...
+# Subtest: visible Trash cancellation names recursive scope, keeps state and performs no backend read or mutation
+ok 40 - visible Trash cancellation names recursive scope, keeps state and performs no backend read or mutation
+  ---
+  duration_ms: 17.703
+  type: 'test'
+  ...
+# Subtest: real Confirm Trash and Restore preserve recursive backend behavior and explicitly include separately trashed notes
+ok 41 - real Confirm Trash and Restore preserve recursive backend behavior and explicitly include separately trashed notes
+  ---
+  duration_ms: 5.0038
+  type: 'test'
+  ...
+# Subtest: keyboard Tab and reverse Tab stay in the dialog; Escape cancels and preserves preexisting inert state
+ok 42 - keyboard Tab and reverse Tab stay in the dialog; Escape cancels and preserves preexisting inert state
+  ---
+  duration_ms: 1.5772
+  type: 'test'
+  ...
+# Subtest: keyboard Enter on focused Confirm submits once and Space on focused Cancel does not restore
+ok 43 - keyboard Enter on focused Confirm submits once and Space on focused Cancel does not restore
+  ---
+  duration_ms: 1.9554
+  type: 'test'
+  ...
+# Subtest: one confirmation/request stays pending across actual commit, refusing duplicate triggers/buttons and cancellation after submission
+ok 44 - one confirmation/request stays pending across actual commit, refusing duplicate triggers/buttons and cancellation after submission
+  ---
+  duration_ms: 3.0451
+  type: 'test'
+  ...
+# Subtest: dirty draft refuses confirmation before any operation, retaining all typed content
+ok 45 - dirty draft refuses confirmation before any operation, retaining all typed content
+  ---
+  duration_ms: 2.3117
+  type: 'test'
+  ...
+# Subtest: failed real commit closes confirmation, restores controls and allows a subsequent explicit retry
+ok 46 - failed real commit closes confirmation, restores controls and allows a subsequent explicit retry
+  ---
+  duration_ms: 2.3005
+  type: 'test'
+  ...
+# Subtest: disposing an unanswered dialog cancels it without API calls and ignores retained old buttons
+ok 47 - disposing an unanswered dialog cancels it without API calls and ignores retained old buttons
+  ---
+  duration_ms: 0.9909
+  type: 'test'
+  ...
+# Subtest: disposing after committed held response prevents old publication while a fresh view reads the committed trash
+ok 48 - disposing after committed held response prevents old publication while a fresh view reads the committed trash
+  ---
+  duration_ms: 2.7079
+  type: 'test'
+  ...
+# Subtest: programmatic field changes without input events are retained after older Save and persist to the committed ID
+ok 49 - programmatic field changes without input events are retained after older Save and persist to the committed ID
+  ---
+  duration_ms: 21.374
+  type: 'test'
+  ...
+# Subtest: new-note Save with a later draft uses its committed identity for the following Save
+ok 50 - new-note Save with a later draft uses its committed identity for the following Save
+  ---
+  duration_ms: 4.208
+  type: 'test'
+  ...
+# Subtest: late second refresh response cannot republish an older search after a newer query
+ok 51 - late second refresh response cannot republish an older search after a newer query
+  ---
+  duration_ms: 2.6067
+  type: 'test'
+  ...
+# Subtest: both new lifecycle requests capture confirmation and revision before a held queue resumes
+ok 52 - both new lifecycle requests capture confirmation and revision before a held queue resumes
+  ---
+  duration_ms: 1.4202
+  type: 'test'
+  ...
+# Subtest: enabled typing while Save response is held preserves all four fields and permits saving the newer revision
+ok 53 - enabled typing while Save response is held preserves all four fields and permits saving the newer revision
+  ---
+  duration_ms: 21.389
+  type: 'test'
+  ...
+# Subtest: edit then undo during Save still retains the enabled draft and dirty policy
+ok 54 - edit then undo during Save still retains the enabled draft and dirty policy
+  ---
+  duration_ms: 3.1966
+  type: 'test'
+  ...
+# Subtest: New note selection during Save prevents previous note publication into the new draft
+ok 55 - New note selection during Save prevents previous note publication into the new draft
+  ---
+  duration_ms: 3.2278
+  type: 'test'
+  ...
+# Subtest: typing while post-Save refresh is held retains body and dirty status
+ok 56 - typing while post-Save refresh is held retains body and dirty status
+  ---
+  duration_ms: 3.7302
+  type: 'test'
+  ...
+# Subtest: older post-Save active list cannot republish a note after a newer notebook-trash refresh
+not ok 57 - older post-Save active list cannot republish a note after a newer notebook-trash refresh
+  ---
+  duration_ms: 2.2497
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\notes\\notebook-trash-publication-boundaries.test.mjs:23:1'
+  failureType: 'testCodeFailure'
+  error: 'Expected visible notebook confirmation'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    Object.confirmNotebook (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/notes/notebook-trash-review-fixture.mjs:22:159)
+    TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/notes/notebook-trash-publication-boundaries.test.mjs:24:238)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: Restore request captures id, revision and confirmation before yielding to the queue
+ok 58 - Restore request captures id, revision and confirmation before yielding to the queue
+  ---
+  duration_ms: 1.8174
+  type: 'test'
+  ...
+# Subtest: older notebook-list completion cannot overwrite newer trashed organization after the second refresh await
+not ok 59 - older notebook-list completion cannot overwrite newer trashed organization after the second refresh await
+  ---
+  duration_ms: 1.735
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\notes\\notebook-trash-publication-boundaries.test.mjs:30:1'
+  failureType: 'testCodeFailure'
+  error: 'Expected visible notebook confirmation'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    Object.confirmNotebook (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/notes/notebook-trash-review-fixture.mjs:22:159)
+    TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/notes/notebook-trash-publication-boundaries.test.mjs:31:247)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: dirty draft prevents notebook cascade with no mutation request
+ok 60 - dirty draft prevents notebook cascade with no mutation request
+  ---
+  duration_ms: 19.0417
+  type: 'test'
+  ...
+# Subtest: held cascade disables real typing/selection and retains saved body after release
+ok 61 - held cascade disables real typing/selection and retains saved body after release
+  ---
+  duration_ms: 5.1508
+  type: 'test'
+  ...
+# Subtest: older completed Save response must preserve a draft typed after notebook trash
+not ok 62 - older completed Save response must preserve a draft typed after notebook trash
+  ---
+  duration_ms: 2.6749
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\notes\\notebook-trash-review.test.mjs:14:1'
+  failureType: 'testCodeFailure'
+  error: 'Expected visible notebook confirmation'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    Object.confirmNotebook (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/notes/notebook-trash-review-fixture.mjs:22:159)
+    TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/notes/notebook-trash-review.test.mjs:14:319)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: queued notebook trash snapshots the caller request before yielding
+ok 63 - queued notebook trash snapshots the caller request before yielding
+  ---
+  duration_ms: 0.792
+  type: 'test'
+  ...
+# Subtest: failed restore commit leaves persisted subtree and history unchanged; a later fresh server import restores
+ok 64 - failed restore commit leaves persisted subtree and history unchanged; a later fresh server import restores
+  ---
+  duration_ms: 19.9248
+  type: 'test'
+  ...
+# (node:6432) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: held-out multi-generation restore matches released helper final rows
+ok 65 - held-out multi-generation restore matches released helper final rows
+  ---
+  duration_ms: 54.5614
+  type: 'test'
+  ...
+# Subtest: invalid deep hierarchy and oversized aggregate refuse before modifying input
+ok 66 - invalid deep hierarchy and oversized aggregate refuse before modifying input
+  ---
+  duration_ms: 31.8832
+  type: 'test'
+  ...
+# {"notebookTrashHttp":{"hostRestarts":2,"independentImportHosts":1,"originalApplicationExecutions":0,"attachmentSha256":"0150a92bb1212cd00516b65fde0704614760000963874fcbb11eaa734ee87809","trashExportSha256":"3f5f2aa1b36b9a332594d982f4646b0722ce6a7aabef2ce7247129d217506df6","restoreExportSha256":"af6ba7976cf90caea976f5fbc96d703be5eabb0b8585f3b630bfe51e6deb4c90","defaultExportDanglingTrashedLinkRefused":true}}
+# Subtest: actual HTTP notebook trash and detached child restore survive cold restart with JEX and exact attachment bytes
+ok 67 - actual HTTP notebook trash and detached child restore survive cold restart with JEX and exact attachment bytes
+  ---
+  duration_ms: 299.9522
+  type: 'test'
+  ...
+# (node:2076) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: released recursive folder/note trash matches native final metadata, including prior trash and conflicts
+ok 68 - released recursive folder/note trash matches native final metadata, including prior trash and conflicts
+  ---
+  duration_ms: 59.9974
+  type: 'test'
+  ...
+# Subtest: released notebook restore restores independently trashed notes and deleted descendants with user times retained
+ok 69 - released notebook restore restores independently trashed notes and deleted descendants with user times retained
+  ---
+  duration_ms: 13.7872
+  type: 'test'
+  ...
+# Subtest: released restoring a child under a trashed parent detaches only the child subtree to root
+ok 70 - released restoring a child under a trashed parent detaches only the child subtree to root
+  ---
+  duration_ms: 13.6487
+  type: 'test'
+  ...
+# Subtest: released active child under trashed root leaves that active child notes untouched but restores trashed grandchild
+ok 71 - released active child under trashed root leaves that active child notes untouched but restores trashed grandchild
+  ---
+  duration_ms: 10.2541
+  type: 'test'
+  ...
+# Subtest: released direct note restore under a trashed parent falls back to unfiled and preserves conflict metadata
+ok 72 - released direct note restore under a trashed parent falls back to unfiled and preserves conflict metadata
+  ---
+  duration_ms: 13.8967
+  type: 'test'
+  ...
+# Subtest: released display parent helper matches virtual trash projection for six parent states
+ok 73 - released display parent helper matches virtual trash projection for six parent states
+  ---
+  duration_ms: 7.6774
+  type: 'test'
+  ...
+# Subtest: trash and restore refuse unconfirmed stale missing shared reserved cyclic and excessive states without source mutation
+ok 74 - trash and restore refuse unconfirmed stale missing shared reserved cyclic and excessive states without source mutation
+  ---
+  duration_ms: 24.1585
+  type: 'test'
+  ...
+# Subtest: single failed state commit leaves entire cascade unchanged; held commits serialize stale organization and note writers
+ok 75 - single failed state commit leaves entire cascade unchanged; held commits serialize stale organization and note writers
+  ---
+  duration_ms: 12.3737
+  type: 'test'
+  ...
+# Subtest: actual server JEX preserves IDs unknown metadata and tag relations through notebook trash/restore
+ok 76 - actual server JEX preserves IDs unknown metadata and tag relations through notebook trash/restore
+  ---
+  duration_ms: 18.7376
+  type: 'test'
+  ...
+# Subtest: actual server single note trash preserves user time and export matches released Note.batchDelete
+ok 77 - actual server single note trash preserves user time and export matches released Note.batchDelete
+  ---
+  duration_ms: 14.4514
+  type: 'test'
+  ...
+# {"notebookTrashOriginal":{"topLevelOriginalExecutions":13,"matchedItemProjections":73,"displayComparisons":6,"helperFixtureCases":8,"fullApplicationExecutions":0}}
+# Subtest: actual staged client confirms notebook cascade, allows management of trash, restores and keeps dirty drafts
+ok 78 - actual staged client confirms notebook cascade, allows management of trash, restores and keeps dirty drafts
+  ---
+  duration_ms: 20.646
+  type: 'test'
+  ...
+# Subtest: held notebook operation disables selection/editor controls and refuses duplicate requests until one commit
+ok 79 - held notebook operation disables selection/editor controls and refuses duplicate requests until one commit
+  ---
+  duration_ms: 2.618
+  type: 'test'
+  ...
+# {"notebookHttpObservation":{"privateEphemeralHost":true,"hostRestarts":2,"parentId":"af2cccf7f4cd927aa7f08698fafdbb91","childId":"f2050190c63100df627f53ea614d50fc","noteId":"40f0dde0-b88c-4281-843a-fb5b1472f268","attachmentSha256":"096a5d78ca5b29ff53b6c48451fafa47e26208c96719ff5e79d03941018ea597","exportSha256":"43bc01af06ae1fa0ebc1c4cc6e7764686b9f184642850073cb60a23b6f41f02d","identityFilterVerified":true}}
+# Subtest: notebook identity tree operations and note moves persist through actual HTTP host cold restarts and JEX export
+ok 80 - notebook identity tree operations and note moves persist through actual HTTP host cold restarts and JEX export
+  ---
+  duration_ms: 188.3297
+  type: 'test'
+  ...
+# Subtest: notebook create rename reparent and note move preserve native IDs metadata relationships bytes and roundtrip
+ok 81 - notebook create rename reparent and note move preserve native IDs metadata relationships bytes and roundtrip
+  ---
+  duration_ms: 70.4879
+  type: 'test'
+  ...
+# Subtest: identity notebook filters distinguish duplicate sibling titles and separator-containing titles
+ok 82 - identity notebook filters distinguish duplicate sibling titles and separator-containing titles
+  ---
+  duration_ms: 12.3577
+  type: 'test'
+  ...
+# Subtest: cycle missing IDs stale revisions multiline titles oversized descendant paths and failed commits do not mutate saved state
+ok 83 - cycle missing IDs stale revisions multiline titles oversized descendant paths and failed commits do not mutate saved state
+  ---
+  duration_ms: 20.3276
+  type: 'test'
+  ...
+# Subtest: legacy notebook text saves still create flat folders while stable-ID history restoration follows current hierarchy
+ok 84 - legacy notebook text saves still create flat folders while stable-ID history restoration follows current hierarchy
+  ---
+  duration_ms: 11.8813
+  type: 'test'
+  ...
+# Subtest: shared or trashed notebook mutations and trashed note moves reject while retained metadata can export
+ok 85 - shared or trashed notebook mutations and trashed note moves reject while retained metadata can export
+  ---
+  duration_ms: 31.6748
+  type: 'test'
+  ...
+# Subtest: notebook graph rejects excessive depth record counts and paths without assuming title separators are depth
+ok 86 - notebook graph rejects excessive depth record counts and paths without assuming title separators are depth
+  ---
+  duration_ms: 9.256
+  type: 'test'
+  ...
+# (node:5284) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: released original Folder nesting/path/move and Note move helpers match finite regular unshared fixtures
+ok 87 - released original Folder nesting/path/move and Note move helpers match finite regular unshared fixtures
+  ---
+  duration_ms: 51.9592
+  type: 'test'
+  ...
+# {"notebookOriginalObservations":[{"comparisons":24,"bindings":[{"path":"packages/lib/models/Folder.ts","method":"folderPath","startLine":867,"endLine":884,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"557e5c49fdc9a48a6179db9be4bdf3767454a4de1b148113ccb816f10b595584"},{"path":"packages/lib/models/Folder.ts","method":"canNestUnder","startLine":981,"endLine":1000,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"b08c139defcd9df89bf9f6d7b0f319a0eeed740d728d29b0e0cd0a5e0f7c01dc"},{"path":"packages/lib/models/Folder.ts","method":"moveToFolder","startLine":1002,"endLine":1028,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"381dc1ed8feb7e422aef2167063f861aee34c5a6e8ef5a0ce65965ae1cac092b"},{"path":"packages/lib/models/Note.ts","method":"moveToFolder","startLine":633,"endLine":654,"sourceSha256":"5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647","sliceSha256":"7665835c01e79de3dcc44e014a48133000b78ac64b8d84cadb2ca66be30d1af7"}],"scope":"Four exact released Desktop3.6.14 methods; in-memory load/save and fixed-clock stubs. No original database, synchronization, desktop UI or release executable is executed.","nestingComparisons":20,"pathComparisons":4,"originalMoveContractExecutions":2},{"candidateOriginalMoveComparisons":2,"originalMoveExecutions":2,"bindings":[{"path":"packages/lib/models/Folder.ts","method":"folderPath","startLine":867,"endLine":884,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"557e5c49fdc9a48a6179db9be4bdf3767454a4de1b148113ccb816f10b595584"},{"path":"packages/lib/models/Folder.ts","method":"canNestUnder","startLine":981,"endLine":1000,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"b08c139defcd9df89bf9f6d7b0f319a0eeed740d728d29b0e0cd0a5e0f7c01dc"},{"path":"packages/lib/models/Folder.ts","method":"moveToFolder","startLine":1002,"endLine":1028,"sourceSha256":"7e38d84466bd6023bd25a5de11d803714fad10a2bee15be66b506c5d77d7d4d6","sliceSha256":"381dc1ed8feb7e422aef2167063f861aee34c5a6e8ef5a0ce65965ae1cac092b"},{"path":"packages/lib/models/Note.ts","method":"moveToFolder","startLine":633,"endLine":654,"sourceSha256":"5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647","sliceSha256":"7665835c01e79de3dcc44e014a48133000b78ac64b8d84cadb2ca66be30d1af7"}],"scope":"Four exact released Desktop3.6.14 methods; in-memory load/save and fixed-clock stubs. No original database, synchronization, desktop UI or release executable is executed.","priorUserEditTimestampPreserved":true}]}
+# Subtest: actual candidate notebook and note move exports match released original helper effects with user times retained
+ok 88 - actual candidate notebook and note move exports match released original helper effects with user times retained
+  ---
+  duration_ms: 40.9361
+  type: 'test'
+  ...
+# {"notesTodoOriginalComparisons":{"sourceUrl":"https://github.com/laurent22/joplin/blob/7e2765a3857754d12dbadea442b60ceaf9d4b23d/packages/lib/models/Note.ts","sourceSha256":"5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647","bindings":[{"name":"changeNoteType","startLine":656,"endLine":669,"sha256":"05738a2f6d4cc91c9bf00c5a1d8c5b087f58de3e58114831dfbeff6af75e9d79"},{"name":"toggleTodoCompleted","startLine":675,"endLine":686,"sha256":"41e80578e2d226edb9f8932abe9785e2c6a847c5312692cc7f2c4ee5117ebba8"}],"conversionComparisons":16,"completionComparisons":4,"clock":1790000000123,"originalFullApplicationExecutions":0,"originalDatabaseExecutions":0,"originalGuiSessions":0,"scope":"Only two exact helpers. API persistence, revisions, due editing, filters and UI are candidate-only checks. Same-state explicit API no-ops and shared/locked-note refusal are app policies."}}
+# (node:6232) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: 20 finite to-do field transitions match two authenticated released Joplin helpers with a fixed clock
+ok 89 - 20 finite to-do field transitions match two authenticated released Joplin helpers with a fixed clock
+  ---
+  duration_ms: 45.4668
+  type: 'test'
+  ...
+# {"notesTodoActualHttpModuleDelivery":{"client":{"bytes":29503,"sha256":"fc4f803445d216019417c752b5e86f4af4b6556350cdd95f2dd6e9934d3558a5"},"delivered":[{"path":"/apps/notes/markdown.mjs","bytes":5135,"sha256":"409b2bcc489c785e725d3257f21af1c6a3cd4f1f78fa0d0ca74d538876f24915"},{"path":"/apps/notes/core.mjs","bytes":2657,"sha256":"06bf9ad2485e39d6c7dea51a3be9a232fefe9d1a2ed1e46482b0459d605aa44c"}],"unchangedPublicModuleBoundary":true,"actualBrowserExecution":false}}
+# Subtest: real HTTP cold restarts retain to-do transitions, history, due metadata and static browser module delivery
+ok 90 - real HTTP cold restarts retain to-do transitions, history, due metadata and static browser module delivery
+  ---
+  duration_ms: 140.093
+  type: 'test'
+  ...
+# Subtest: editing imported to-do preserves exact resource bytes, IDs, relationships and unrelated JEX metadata over restart/export
+ok 91 - editing imported to-do preserves exact resource bytes, IDs, relationships and unrelated JEX metadata over restart/export
+  ---
+  duration_ms: 70.82
+  type: 'test'
+  ...
+# Subtest: conversion, completion/reopening and due dates persist without changing title/body/identity/notebook/tags
+ok 92 - conversion, completion/reopening and due dates persist without changing title/body/identity/notebook/tags
+  ---
+  duration_ms: 6.9921
+  type: 'test'
+  ...
+# Subtest: already desired state is an explicit no-write/no-revision no-op but a stale no-op still rejects
+ok 93 - already desired state is an explicit no-write/no-revision no-op but a stale no-op still rejects
+  ---
+  duration_ms: 1.4058
+  type: 'test'
+  ...
+# Subtest: all malformed commands and unsupported transitions reject before persistence
+ok 94 - all malformed commands and unsupported transitions reject before persistence
+  ---
+  duration_ms: 2.3946
+  type: 'test'
+  ...
+# Subtest: concurrent explicit completion commands accept one revision and reject the stale rival
+ok 95 - concurrent explicit completion commands accept one revision and reject the stale rival
+  ---
+  duration_ms: 0.9245
+  type: 'test'
+  ...
+# Subtest: request primitives are frozen before a queued store read and cannot change command ownership
+ok 96 - request primitives are frozen before a queued store read and cannot change command ownership
+  ---
+  duration_ms: 0.6836
+  type: 'test'
+  ...
+# Subtest: failed atomic persistence preserves prior state and an explicit retry succeeds
+ok 97 - failed atomic persistence preserves prior state and an explicit retry succeeds
+  ---
+  duration_ms: 0.595
+  type: 'test'
+  ...
+# Subtest: history restores captured to-do metadata as a fresh revision; earlier snapshots without this field retain current state
+ok 98 - history restores captured to-do metadata as a fresh revision; earlier snapshots without this field retain current state
+  ---
+  duration_ms: 1.3264
+  type: 'test'
+  ...
+# Subtest: JEX roundtrip carries edited local to-do fields and independent JSON copies retain validated state
+ok 99 - JEX roundtrip carries edited local to-do fields and independent JSON copies retain validated state
+  ---
+  duration_ms: 6.649
+  type: 'test'
+  ...
+# Subtest: import-style metadata is read without normalization; changing type resets only due/completion fields
+ok 100 - import-style metadata is read without normalization; changing type resets only due/completion fields
+  ---
+  duration_ms: 0.2804
+  type: 'test'
+  ...
+# Subtest: all five app filters distinguish note/open/completed state and combine with existing text/tag/notebook/trash filters
+ok 101 - all five app filters distinguish note/open/completed state and combine with existing text/tag/notebook/trash filters
+  ---
+  duration_ms: 11.283
+  type: 'test'
+  ...
+# Subtest: trashed, shared and locked note commands reject without changing saved bytes
+ok 102 - trashed, shared and locked note commands reject without changing saved bytes
+  ---
+  duration_ms: 1.055
+  type: 'test'
+  ...
+# Subtest: saved-note UI converts, completes, reopens, edits/clears due metadata and filters actual saved results
+ok 103 - saved-note UI converts, completes, reopens, edits/clears due metadata and filters actual saved results
+  ---
+  duration_ms: 24.9752
+  type: 'test'
+  ...
+# Subtest: unsaved drafts submit no to-do command and retain every typed field
+ok 104 - unsaved drafts submit no to-do command and retain every typed field
+  ---
+  duration_ms: 2.5421
+  type: 'test'
+  ...
+# Subtest: blank or invalid due inputs submit nothing; unchanged millisecond precision is retained
+ok 105 - blank or invalid due inputs submit nothing; unchanged millisecond precision is retained
+  ---
+  duration_ms: 3.0007
+  type: 'test'
+  ...
+# Subtest: actual committed held response blocks duplicate mutations and preserves a newer typed draft at the new revision
+ok 106 - actual committed held response blocks duplicate mutations and preserves a newer typed draft at the new revision
+  ---
+  duration_ms: 2.7813
+  type: 'test'
+  ...
+# Subtest: selecting a new draft while a committed response is held keeps the new editor ownership
+ok 107 - selecting a new draft while a committed response is held keeps the new editor ownership
+  ---
+  duration_ms: 1.6171
+  type: 'test'
+  ...
+# Subtest: disposing after actual commit suppresses every late read/publication without undoing saved state
+ok 108 - disposing after actual commit suppresses every late read/publication without undoing saved state
+  ---
+  duration_ms: 2.2798
+  type: 'test'
+  ...
+# Subtest: failed persistence restores enabled controls and supports a later explicit retry
+ok 109 - failed persistence restores enabled controls and supports a later explicit retry
+  ---
+  duration_ms: 1.5015
+  type: 'test'
+  ...
+# Subtest: a held rejected write cannot publish its failure into a newer note editor generation
+ok 110 - a held rejected write cannot publish its failure into a newer note editor generation
+  ---
+  duration_ms: 1.2478
+  type: 'test'
+  ...
+# Subtest: typing after accepted state while list refresh is held retains the newer unsaved-draft status
+ok 111 - typing after accepted state while list refresh is held retains the newer unsaved-draft status
+  ---
+  duration_ms: 1.8151
+  type: 'test'
+  ...
+1..111
+# tests 111
+# suites 0
+# pass 107
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5566.688

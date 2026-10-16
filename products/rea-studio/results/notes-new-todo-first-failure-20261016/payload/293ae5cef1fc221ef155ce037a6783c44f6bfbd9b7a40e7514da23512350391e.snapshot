@@ -1,0 +1,152 @@
+{
+  "schema": "rea-notes-new-todo-real-browser-case/v1",
+  "testId": "3cad05b47669028ddfa0-631fc375e6412719f756",
+  "title": "New To-do actual navigation disposal suppresses all late Notes publication and reads after held first commit",
+  "statusAtFixtureClose": "passed",
+  "retry": 0,
+  "url": "http://127.0.0.1:58941",
+  "ownedDataDirectory": "D:\\a\\_temp\\rea-new-todo-synthetic-browser-wMrZm0\\notes-new-todo-case-QaivvN",
+  "serverCloseObserved": true,
+  "realBrowser": true,
+  "actualHTTP": true,
+  "originalProductExecutions": 0,
+  "originalFullApplicationExecutions": 0,
+  "originalHelperExecutions": 0,
+  "programmaticDisabledControlProbes": 0,
+  "teardown": {
+    "stage": "completed",
+    "heldRoutesFinished": true,
+    "drained": true,
+    "contextClosed": true,
+    "serverClosed": true,
+    "screenshotSaved": true,
+    "requestCounts": {
+      "started": 13,
+      "finished": 13,
+      "failed": 0
+    },
+    "steps": [
+      {
+        "name": "release-held-routes",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:27.126Z",
+        "completedAtUtc": "2026-10-16T15:44:27.126Z"
+      },
+      {
+        "name": "screenshot",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:27.126Z",
+        "completedAtUtc": "2026-10-16T15:44:27.182Z"
+      },
+      {
+        "name": "drain-owned-page-requests",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:27.182Z",
+        "completedAtUtc": "2026-10-16T15:44:27.182Z"
+      },
+      {
+        "name": "capture-synthetic-final-record",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:27.182Z",
+        "completedAtUtc": "2026-10-16T15:44:27.184Z"
+      },
+      {
+        "name": "close-owned-context",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:27.184Z",
+        "completedAtUtc": "2026-10-16T15:44:27.259Z"
+      },
+      {
+        "name": "close-owned-server",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:27.259Z",
+        "completedAtUtc": "2026-10-16T15:44:27.260Z"
+      }
+    ],
+    "pendingOwnedRequests": 0,
+    "activeOwnedIOFault": false
+  },
+  "observations": [
+    {
+      "kind": "new-task-disposal-after-actual-first-commit",
+      "noteId": "441a8c71-03af-47a2-bd3e-457ce24fa557",
+      "committedRevision": 1,
+      "lateNotesRequests": 0,
+      "detachedControlObserved": true,
+      "detachedControlScrubbingClaimed": false
+    },
+    {
+      "kind": "owned-synthetic-disk-record",
+      "path": "notes-records/3cad05b47669028ddfa0-631fc375e6412719f756.json",
+      "bytes": 850,
+      "sha256": "bb365c2be576c1594d2daf4a14b24c4f66aff067c06ec4ecaf2e56d2976f5e7e"
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"revision\":0,\"title\":\"Disposed task creation\",\"body\":\"Synthetic new-task body\",\"notebook\":\"Notes\",\"tags\":[\"study\"],\"newTodo\":true}"
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"revision\":0,\"title\":\"Disposed task creation\",\"body\":\"Synthetic new-task body\",\"notebook\":\"Notes\",\"tags\":[\"study\"],\"newTodo\":true}"
+    }
+  ],
+  "faults": [
+    {
+      "kind": "delay-after-actual-host-response",
+      "action": "save",
+      "status": 200,
+      "body": {
+        "bytes": 372,
+        "sha256": "c85604a17addb0231b05b48152cbaae218df903a284c8cecc33ad8f3c80924ca"
+      },
+      "handlerMocked": false,
+      "responseRewritten": false
+    }
+  ],
+  "expectedHttpFailures": [],
+  "expectedConsole": [],
+  "auxiliaryErrors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:58941/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "errors": [],
+  "downloads": []
+}

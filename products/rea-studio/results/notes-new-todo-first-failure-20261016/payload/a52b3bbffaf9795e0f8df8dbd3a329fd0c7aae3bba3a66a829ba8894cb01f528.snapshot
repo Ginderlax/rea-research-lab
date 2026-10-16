@@ -1,0 +1,50 @@
+
+Running 8 tests using 1 worker
+
+[1/8] notes-new-todo.spec.mjs:407:1 › New To-do ordinary unsaved draft sends no save and genuine empty-title400 retains fields before explicit retry
+  1) notes-new-todo.spec.mjs:407:1 › New To-do ordinary unsaved draft sends no save and genuine empty-title400 retains fields before explicit retry 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 0
+    + Received  + 1
+
+    @@ -2,10 +2,11 @@
+        "body": "Saved synthetic body",
+        "createdAt": "2026-10-16T15:44:22.114Z",
+        "deletedAt": null,
+        "history": Array [],
+        "id": "1ece79a5-dd77-44d7-b00c-34dcd4603b0a",
+    +   "metadataEdited": false,
+        "notebook": "Notes",
+        "notebookId": "4cdd6db14da7bf859108ed2dd938a26e",
+        "revision": 1,
+        "tags": Array [
+          "study",
+
+      412 |   await expect(status(s.page)).toHaveText('Give the note a title.'); await expect(button(s.page, 'Save note')).toBeEnabled(); await expect(field(s.page, 'Markdown note')).toHaveValue('Keep this body after validation'); expect((await s.disk()).bytes.equals(before.bytes)).toBe(true);
+      413 |   await field(s.page, 'Note title').fill('Explicitly retried new task'); const note = await save(s); openTask(note); expect(note.body).toBe('Keep this body after validation'); expect(note.tags).toEqual(['study','draft']);
+    > 414 |   expect(JSON.parse(saves(s).at(-1).postData).newTodo).toBe(true); expect((await diskNote(s, baseline.id))).toEqual(before.state.notes[baseline.id]);
+          |                                                                                                             ^
+      415 |   s.observations.push({ kind: 'new-task-unsaved-validation-and-explicit-retry', ordinaryDraftMutationRequests: 0, actualEmptyTitleStatus: 400, failedState: before.identity, noteId: note.id, firstRevision: note.revision, initialHistoryLength: note.history.length, explicitNewTodo: true });
+      416 | });
+      417 |
+        at D:\a\rea-research-lab\rea-research-lab\products\rea-studio\browser-tests\notes-new-todo.spec.mjs:414:109
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\..\..\_temp\rea-notes-new-todo-browser-38926216286-1\playwright-output\notes-new-todo-New-To-do-o-394d5-ields-before-explicit-retry\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\..\..\_temp\rea-notes-new-todo-browser-38926216286-1\playwright-output\notes-new-todo-New-To-do-o-394d5-ields-before-explicit-retry\error-context.md
+
+
+[2/8] notes-new-todo.spec.mjs:418:1 › New To-do native discard cancellation retains draft fields and accepted New note resets creation type
+[3/8] notes-new-todo.spec.mjs:428:1 › New To-do real committed Save response blocks native duplicate clicks and retains newer ordinary typing at returned revision
+[4/8] notes-new-todo.spec.mjs:438:1 › New To-do new editor owns a separate unsaved task while older actual creation response is held after commit
+[5/8] notes-new-todo.spec.mjs:445:1 › New To-do actual navigation disposal suppresses all late Notes publication and reads after held first commit
+[6/8] notes-new-todo.spec.mjs:451:1 › New To-do newer typing survives a held genuine post-commit list400 after exact owned filesystem restoration
+[7/8] notes-new-todo.spec.mjs:458:1 › New To-do committed save distinguishes genuine list400 from persistence failure and explicit refresh preserves state
+[8/8] notes-new-todo.spec.mjs:469:1 › New To-do actual JEX and resource downloads preserve all seven prior records and binary alongside new task metadata
+  1 failed
+    notes-new-todo.spec.mjs:407:1 › New To-do ordinary unsaved draft sends no save and genuine empty-title400 retains fields before explicit retry 
+  7 passed (12.0s)

@@ -20,8 +20,8 @@ const write = (name, value) => fs.writeFile(path.join(evidence, name), JSON.stri
 const sourcePins = [
   [
     "apps/notes/README.md",
-    20103,
-    "bd97afbf21f973498a34623e12cffd6b8bc6a57134617b01bfebfd5eca4d8c9c"
+    21495,
+    "1fc382d31ede4d4b82c6bb57fa64b5e1448f533e5a776f1a1a5deb1048c27d0e"
   ],
   [
     "apps/notes/app.integration.test.mjs",
@@ -35,8 +35,8 @@ const sourcePins = [
   ],
   [
     "apps/notes/client.mjs",
-    29503,
-    "fc4f803445d216019417c752b5e86f4af4b6556350cdd95f2dd6e9934d3558a5"
+    29531,
+    "d6f301dcc803c4bfd12a1c03eb71896710d1b42053fa10ee13d25e76d6930daa"
   ],
   [
     "apps/notes/core.mjs",
@@ -85,8 +85,8 @@ const sourcePins = [
   ],
   [
     "apps/notes/new-todo.integration.test.mjs",
-    5185,
-    "27e88d76cb1db9dd4cd685b14c34266d8a9462cc5008f8d89ed59a258aa88eb1"
+    6131,
+    "e98cfe05932c8b0a6c2bf15582aeaef4257e9aa67f2ed8409856789a3aad6bcf"
   ],
   [
     "apps/notes/new-todo.test.mjs",
@@ -405,14 +405,18 @@ async function confirmedNew(s, name) { const dialog = s.page.waitForEvent('dialo
 function openTask(note) { expect(note.revision).toBe(1); expect(note.history).toEqual([]); expect(note.todo).toEqual({ isTodo: true, due: 0, completed: 0 }); }
 
 test('New To-do ordinary unsaved draft sends no save and genuine empty-title400 retains fields before explicit retry', async ({ studio: s }) => {
-  await openNotes(s); const baseline = await createNote(s, 'Unrelated saved baseline'); const before = await s.disk(), count = saves(s).length;
+  await openNotes(s); const firstSave = await createNote(s, 'Unrelated saved baseline');
+  // Establish an explicitly saved canonical revision before the no-change
+  // boundary. This is a real ordinary Save, not a dropped metadata assertion.
+  const baseline = await save(s); expect(baseline.id).toBe(firstSave.id); expect(baseline.revision).toBe(2); expect(baseline.metadataEdited).toBe(true); expect(baseline.history).toHaveLength(1);
+  const before = await s.disk(), count = saves(s).length; expect(before.state.notes[baseline.id]).toEqual(baseline);
   await newTaskDraft(s, '', 'Keep this body after validation', 'study, draft'); await s.settle();
   expect(saves(s)).toHaveLength(count); expect((await s.disk()).bytes.equals(before.bytes)).toBe(true); await expect(button(s.page, 'Convert to note')).toBeDisabled();
   s.expectHttpFailure('save', 'Give the note a title.'); const rejected = s.page.waitForResponse(r => r.url() === s.url + '/api/notes/save'); await button(s.page, 'Save note').click(); expect((await rejected).status()).toBe(400);
   await expect(status(s.page)).toHaveText('Give the note a title.'); await expect(button(s.page, 'Save note')).toBeEnabled(); await expect(field(s.page, 'Markdown note')).toHaveValue('Keep this body after validation'); expect((await s.disk()).bytes.equals(before.bytes)).toBe(true);
   await field(s.page, 'Note title').fill('Explicitly retried new task'); const note = await save(s); openTask(note); expect(note.body).toBe('Keep this body after validation'); expect(note.tags).toEqual(['study','draft']);
   expect(JSON.parse(saves(s).at(-1).postData).newTodo).toBe(true); expect((await diskNote(s, baseline.id))).toEqual(before.state.notes[baseline.id]);
-  s.observations.push({ kind: 'new-task-unsaved-validation-and-explicit-retry', ordinaryDraftMutationRequests: 0, actualEmptyTitleStatus: 400, failedState: before.identity, noteId: note.id, firstRevision: note.revision, initialHistoryLength: note.history.length, explicitNewTodo: true });
+  s.observations.push({ kind: 'new-task-unsaved-validation-and-explicit-retry', ordinaryDraftMutationRequests: 0, actualEmptyTitleStatus: 400, failedState: before.identity, noteId: note.id, firstRevision: note.revision, initialHistoryLength: note.history.length, explicitNewTodo: true, canonicalBaselineRevision: baseline.revision, canonicalBaselineMetadataEdited: baseline.metadataEdited, unrelatedRawNoteBefore: metadata(Buffer.from(JSON.stringify(before.state.notes[baseline.id]))), unrelatedRawNoteAfter: metadata(Buffer.from(JSON.stringify(await diskNote(s, baseline.id)))) });
 });
 
 test('New To-do native discard cancellation retains draft fields and accepted New note resets creation type', async ({ studio: s }) => {

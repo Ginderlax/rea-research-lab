@@ -8,9 +8,9 @@ import { fileURLToPath } from 'node:url';
 export const repository=path.resolve(fileURLToPath(new URL('../../../',import.meta.url)));
 export const studio=path.join(repository,'products/rea-studio');
 const self='products/rea-studio/scripts/compose-notes-new-todo-cloud.mjs';
-const bundleSource={path:'products/rea-studio/experiments/notes-new-todo/bundle.json',bytes:30920,sha256:'25e6cafeda55ad4f21badf45b6dc30904767a1bfb4d48a295fcafeebde3edbb0'};
-const authorityPin={bytes:7958,sha256:'f34bc8608b1661202c11acf42f531051706b1c29b24db155945766cae841be64'};
-const peerPin={bytes:9942,sha256:'94069513adb32e1bb98b4b2eee4b28c47fd1ccf5fcb0a64f9011c81fef940379'};
+const bundleSource={path:'products/rea-studio/experiments/notes-new-todo/bundle.json',bytes:31483,sha256:'37f8d9780bf1d12b0963c3ee8765df93885ac53f2d2601856dd68822b44a8d74'};
+const authorityPin={bytes:12444,sha256:'3761f2727dc549992c6a0e56c601d0f7c674fba10cfd770d5de039b82c93d310'};
+const peerPin={bytes:6520,sha256:'f1fe470de0346126b69920f7b321b197d549800dce519fc3fafab33c114625bc'};
 export const sourceLimits={files:2000,fileBytes:8*1024*1024,totalBytes:64*1024*1024,depth:128};
 export const identity=bytes=>({bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
 const pin=row=>({bytes:row.bytes,sha256:row.sha256});
@@ -36,7 +36,7 @@ function proof(value,composed){const seen=new Map(),captured=new Map();let bytes
  const definitions=composed?value.composedNotesSources:value.baselineNotesSources;assert.deepEqual(noteFiles(path.join(studio,'apps/notes')),definitions.map(row=>row.path).sort());
  const targets=new Map(value.transitions.map(row=>[row.path,row]));for(const row of definitions){const target=targets.get(row.path);read(row,!(composed&&target));if(composed&&target&&target.before){const original=git(['show','HEAD:'+row.path]);assert.deepEqual(identity(original),pin(target.before));}if(composed&&target&&!target.before)assert(!tree().has(row.path));}
  assert.equal(seen.size,composed?60:56);
- const authority=JSON.parse(read(value.payloads.find(row=>row.kind==='review'&&row.path.endsWith('/source-authority-r4.json.snapshot'))));assert.deepEqual(identity(captured.get(value.payloads.find(row=>row.path.endsWith('/source-authority-r4.json.snapshot')).path)),authorityPin);assert.equal(authority.candidateFiles,12);assert.equal(authority.authoredAdditionalGroups,19);assert.equal(authority.plannedFutureNotesGroups,111);
+ const authority=JSON.parse(read(value.payloads.find(row=>row.kind==='review'&&row.path.endsWith('/source-authority-r5.json.snapshot'))));assert.deepEqual(identity(captured.get(value.payloads.find(row=>row.path.endsWith('/source-authority-r5.json.snapshot')).path)),authorityPin);assert.equal(authority.candidateFiles,12);assert.equal(authority.authoredAdditionalGroups,19);assert.equal(authority.plannedFutureNotesGroups,111);
  for(const row of authority.files){const target=targets.get(row.path),data=value.payloads.find(item=>item.path===row.path);if(target)assert.deepEqual(pin(target.after),row.after);else{assert(data);assert.deepEqual(pin(data),row.after);}}
  assert.deepEqual(definitions.filter(row=>row.path.endsWith('.test.mjs')).map(row=>row.path.slice('products/rea-studio/'.length)).sort(),composed?[...value.fixedTests].sort():value.fixedTests.filter(name=>!targets.has('products/rea-studio/'+name)).sort());
  return{currentSources:definitions.map(row=>({path:row.path,...pin(row)})),sourceInputs:[...seen].map(([name,p])=>({path:name,...p})),readFiles:seen.size,readBytes:bytes,fileLimit:64,byteLimit:8*1024*1024,captured};

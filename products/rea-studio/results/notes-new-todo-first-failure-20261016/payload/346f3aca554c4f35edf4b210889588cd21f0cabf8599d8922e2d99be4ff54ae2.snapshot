@@ -1,0 +1,195 @@
+{
+  "schema": "rea-notes-new-todo-real-browser-case/v1",
+  "testId": "3cad05b47669028ddfa0-7782de3a5c06e30c246b",
+  "title": "New To-do new editor owns a separate unsaved task while older actual creation response is held after commit",
+  "statusAtFixtureClose": "passed",
+  "retry": 0,
+  "url": "http://127.0.0.1:58935",
+  "ownedDataDirectory": "D:\\a\\_temp\\rea-new-todo-synthetic-browser-wMrZm0\\notes-new-todo-case-5VzySK",
+  "serverCloseObserved": true,
+  "realBrowser": true,
+  "actualHTTP": true,
+  "originalProductExecutions": 0,
+  "originalFullApplicationExecutions": 0,
+  "originalHelperExecutions": 0,
+  "programmaticDisabledControlProbes": 0,
+  "teardown": {
+    "stage": "completed",
+    "heldRoutesFinished": true,
+    "drained": true,
+    "contextClosed": true,
+    "serverClosed": true,
+    "screenshotSaved": true,
+    "requestCounts": {
+      "started": 14,
+      "finished": 14,
+      "failed": 0
+    },
+    "steps": [
+      {
+        "name": "release-held-routes",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:26.245Z",
+        "completedAtUtc": "2026-10-16T15:44:26.245Z"
+      },
+      {
+        "name": "screenshot",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:26.245Z",
+        "completedAtUtc": "2026-10-16T15:44:26.314Z"
+      },
+      {
+        "name": "drain-owned-page-requests",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:26.314Z",
+        "completedAtUtc": "2026-10-16T15:44:26.314Z"
+      },
+      {
+        "name": "capture-synthetic-final-record",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:26.314Z",
+        "completedAtUtc": "2026-10-16T15:44:26.315Z"
+      },
+      {
+        "name": "close-owned-context",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:26.315Z",
+        "completedAtUtc": "2026-10-16T15:44:26.388Z"
+      },
+      {
+        "name": "close-owned-server",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T15:44:26.388Z",
+        "completedAtUtc": "2026-10-16T15:44:26.389Z"
+      }
+    ],
+    "pendingOwnedRequests": 0,
+    "activeOwnedIOFault": false
+  },
+  "observations": [
+    {
+      "kind": "new-task-editor-ownership-after-actual-commit",
+      "oldId": "aec45482-a637-45fb-95fe-928d169fee6b",
+      "newId": "00eb9a50-9901-40f7-8b36-a8ee9c82c694",
+      "oldRevision": 1,
+      "newRevision": 1
+    },
+    {
+      "kind": "owned-synthetic-disk-record",
+      "path": "notes-records/3cad05b47669028ddfa0-7782de3a5c06e30c246b.json",
+      "bytes": 1264,
+      "sha256": "a6ab466ebb70052445f8be714eebb62028546e791aae02caf0ee78f59aa9d1da"
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"revision\":0,\"title\":\"Old held creation\",\"body\":\"Synthetic new-task body\",\"notebook\":\"Notes\",\"tags\":[\"study\"],\"newTodo\":true}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"revision\":0,\"title\":\"Independent newer task\",\"body\":\"New editor owns this body\",\"notebook\":\"Notes\",\"tags\":[],\"newTodo\":true}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"00eb9a50-9901-40f7-8b36-a8ee9c82c694\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"revision\":0,\"title\":\"Old held creation\",\"body\":\"Synthetic new-task body\",\"notebook\":\"Notes\",\"tags\":[\"study\"],\"newTodo\":true}"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"revision\":0,\"title\":\"Independent newer task\",\"body\":\"New editor owns this body\",\"notebook\":\"Notes\",\"tags\":[],\"newTodo\":true}"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"id\":\"00eb9a50-9901-40f7-8b36-a8ee9c82c694\"}"
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    }
+  ],
+  "faults": [
+    {
+      "kind": "delay-after-actual-host-response",
+      "action": "save",
+      "status": 200,
+      "body": {
+        "bytes": 367,
+        "sha256": "7eb984eb866c2c738045441d1db444d52f31dfe22b5c57ba4be726f9fb8ee18d"
+      },
+      "handlerMocked": false,
+      "responseRewritten": false
+    }
+  ],
+  "expectedHttpFailures": [],
+  "expectedConsole": [],
+  "auxiliaryErrors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:58935/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "errors": [],
+  "downloads": []
+}

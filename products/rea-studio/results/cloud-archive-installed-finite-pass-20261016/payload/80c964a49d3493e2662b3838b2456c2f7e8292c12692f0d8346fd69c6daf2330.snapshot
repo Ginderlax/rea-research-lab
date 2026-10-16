@@ -1,0 +1,85 @@
+"""Readback of native portable artifacts and retained original observations only."""
+from pathlib import Path
+import hashlib, json, zipfile, zlib
+
+work = Path(__file__).resolve().parent
+base = work / 'cloud-verification-backups/run-38905573441'
+browser = base / 'artifact-12048121855/readable-evidence'
+finite = base / 'artifact-12047373880/readable-evidence'
+sha = lambda value: hashlib.sha256(value).hexdigest()
+identity = lambda value: {'bytes': len(value), 'sha256': sha(value)}
+read = lambda folder, name: json.loads((folder / name).read_text(encoding='utf-8-sig'))
+attempt = read(browser, 'browser-attempt.json')
+assert attempt['status'] == 'passed' and attempt['testsByteOverlay'] is False
+assert attempt['sourceCommit'] == '5ff0a2fcd99ae2447311780a39688c554fc8fb2b'
+cases = [read(browser, filename.name) for filename in browser.glob('case-*.json')]
+native = {row['path']: {'bytes': row['bytes'], 'sha256': row['sha256']} for row in attempt['workspaceArtifacts']}
+assert len(native) == 8
+created, restored = [], []
+for case in cases:
+    assert case['statusAtFixtureClose'] == 'passed' and case['errors'] == [] and case['serverCloseObserved'] is True
+    for row in case['observations']:
+        if row['kind'] == 'real-ui-created-workspace-archive':
+            relative = row['path']
+            created.append(relative)
+        elif row['kind'] == 'real-ui-extraction-content':
+            relative = row['artifact']
+            restored.append(relative)
+        else:
+            continue
+        assert relative in native and row['expected'] == row['observed'] == native[relative]
+        assert identity((browser / relative).read_bytes()) == native[relative]
+assert len(set(created)) == len(created) == 3 and len(set(restored)) == len(restored) == 5
+assert set(created + restored) == set(native)
+expected_restored = {'bytes': 62, 'sha256': 'a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0'}
+assert all(native[name] == expected_restored for name in restored)
+zip_contents = []
+for relative in created:
+    filename = browser / relative
+    value = filename.read_bytes()
+    if relative.endswith('.zip'):
+        with zipfile.ZipFile(filename) as archive:
+            for row in archive.infolist():
+                if not row.is_dir():
+                    content = archive.read(row)
+                    assert identity(content) == expected_restored
+                    zip_contents.append({'archive': relative, 'entry': row.filename, **identity(content)})
+        assert len(zip_contents) == 1
+    else:
+        assert relative.endswith('.7z') and value[:6] == bytes.fromhex('377abcaf271c')
+        assert zlib.crc32(value[12:32]) & 0xffffffff == int.from_bytes(value[8:12], 'little')
+        offset, length = int.from_bytes(value[12:20], 'little'), int.from_bytes(value[20:28], 'little')
+        assert 32 + offset + length == len(value)
+        assert zlib.crc32(value[32+offset:32+offset+length]) & 0xffffffff == int.from_bytes(value[28:32], 'little')
+workers = attempt['browserWorkers']
+assert len(workers) == 1
+worker_bytes = (browser / workers[0]['path']).read_bytes()
+assert identity(worker_bytes) == {'bytes': workers[0]['bytes'], 'sha256': workers[0]['sha256']}
+worker = json.loads(worker_bytes)
+assert worker['schema'] == 'rea-cloud-archive-browser-worker-observation/v1' and worker['execution'] == attempt['execution']
+assert worker['pid'] == workers[0]['pid']
+assert read(browser, 'browser-observation.json') == worker['observation']
+assert worker['observation']['realBrowserFixtureCreated'] and worker['observation']['version'] == '156.0.8078.4'
+original = read(finite, 'observations/bidirectional.json')
+assert original['schema'] == 'rea-sevenzip-aes-original-observations/v1' and original['credentialsRetained'] is False
+assert original['originalProcesses'] == len(original['records']) == 63 and original['vectorCount'] == len(original['vectors']) == 29 and original['originalGUI'] == 0
+pins = [{'name': '7z.exe', 'bytes': 577536, 'sha256': '95fff19b73eff77c87c0d7bd32822e43fb90dd2932459f962eb532d8dfb6ba53'}, {'name': '7z.dll', 'bytes': 1907712, 'sha256': '899cd73d7fc60e1c1c35c7de0f5bed3dc69bfe2cecbd48014d868a347970a0b1'}]
+for index, row in enumerate(original['records'], 1):
+    assert row['number'] == index and row['identity'] == pins and row['signal'] is None and row['error'] is None
+    assert row['exitCode'] in (0, 2)  # Wrong-password refusal is a deliberate original comparison.
+    assert all(not value.startswith('-p') or value == '-p' for value in row['args'])
+http = read(finite, 'observations/http.json')
+assert http['schema'] == 'rea-sevenzip-aes-http-observations/v1' and http['credentialsRetained'] is False
+assert http['originalExecutions'] == http['browserExecutions'] == 0
+summary = {'schema': 'rea-installed-archive-native-backup-readback/v1', 'runId': '38905573441', 'sourceCommit': attempt['sourceCommit'],
+           'createdArchivesVerified': 3, 'restoredFilesByteExactVerified': 5, 'nativeArtifactIdentities': native,
+           'plainZipEntryReadback': zip_contents, 'encrypted7ZHeaderCRCReadbacks': 2, 'encryptedArchivesDecryptedLocally': 0,
+           'singleBrowserWorkerObservationAuthenticated': True, 'browserWorkerPID': worker['pid'], 'browserVersion': worker['observation']['version'],
+           'originalObservation': {'recordedHelperInvocations': 63, 'recordedVectors': 29, 'everyRecordedExecutableAndDLLIdentityPinned': True, 'recordedWrongPasswordRefusalExitCodesPreserved': True,
+                                   'notTotalOriginalProcessCountForAll13Files': True, 'notLocallyReexecuted': True},
+           'localProductExecutions': 0, 'localBrowserExecutions': 0, 'localOriginalExecutions': 0, 'localTests': 0, 'localBuilds': 0,
+           'scope': 'Native artifact byte readability/identity and recorded original-observation consistency only. Source Archives, full tests, parity and superiority are separate.'}
+with (base / 'native-artifacts-and-original-observation-readback.json').open('x', encoding='utf-8') as output:
+    json.dump(summary, output, indent=2)
+    output.write('\n')
+print(json.dumps(summary))

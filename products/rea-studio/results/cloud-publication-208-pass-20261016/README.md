@@ -1,0 +1,5 @@
+# Publication integrity: 208 controls passed
+
+Actual GitHub-hosted Windows publication verification passed 208 strict source controls, both root write/recheck phases, 959 syntax checks, root links, credential scanning and exact 28,386-file payload stability for branch 25b54d73/tested merge fee4a29b. The separate 56-source Notes proof envelope was authenticated as data. Generated metadata is validated only for that exact payload and preserved as inert historical artifacts. This does not import it into later changed payloads, run behavioral/original products, promote historical uninstalled flags or establish every-feature parity/superiority. Earlier 1100/92/8/937/282 counts remain distinct authenticated behavioral records.
+
+All 92 uploaded roles, the exact complete outer artifact ZIP and all 56 decoded Notes-envelope sources are retained. Each logical record gives decoded and stored byte counts/SHA256. Decompress gzip objects before checking decoded identities. Both raw root outputs, all source clocks, original/generated metadata and failed predecessors remain intact. These generated metadata copies are inert evidence, not a later-payload import.

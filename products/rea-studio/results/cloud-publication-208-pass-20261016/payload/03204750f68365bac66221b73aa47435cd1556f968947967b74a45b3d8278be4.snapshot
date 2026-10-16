@@ -1,0 +1,93 @@
+name: Hosted publication integrity
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/publication-integrity-cloud.yml'
+      - 'scripts/verify-cloud-publication.mjs'
+      - 'scripts/publication-integrity-controls.mjs'
+      - 'scripts/verify-records.mjs'
+      - 'scripts/editor-vault-proof-migration.mjs'
+      - 'scripts/verify-cloud-recovery-records.mjs'
+      - 'products/rea-studio/results/cloud-publication-source-transition-20261015/**'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publication-integrity-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publication-integrity:
+    runs-on: windows-2022
+    timeout-minutes: 55
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+
+      - name: Check out the exact requested revision
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Select pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+
+      - name: Regenerate and verify publication metadata with controls
+        id: verification
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-publication-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node scripts/verify-cloud-publication.mjs --evidence "$evidence"
+
+      - name: Package bounded publication evidence
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-publication-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          @{ schema = 'rea-hosted-publication-workflow-attempt/v1'; sourceCommit = $env:GITHUB_SHA; runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; runnerEnvironment = $env:RUNNER_ENVIRONMENT; checkoutOutcome = '${{ steps.checkout.outcome }}'; verificationOutcome = '${{ steps.verification.outcome }}'; published = $false; historicalReceiptsRewritten = $false; fullDevelopmentSuiteAcceptance = $false; fullParity = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files = @(Get-ChildItem -LiteralPath $evidence -File -Recurse)
+          $rawBytes = ($files | Measure-Object Length -Sum).Sum
+          $bounded = $files.Count -le 40 -and $rawBytes -le 35 * 1024 * 1024 -and @($files | Where-Object { $_.Length -gt 12 * 1024 * 1024 }).Count -eq 0
+          $archive = Join-Path $env:RUNNER_TEMP ('rea-publication-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if ($bounded) { [System.IO.Compression.ZipFile]::CreateFromDirectory($evidence, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false) }
+          $complete = $bounded -and (Get-Item -LiteralPath $archive).Length -le 15 * 1024 * 1024
+          if (-not $complete) {
+            $fallback = Join-Path $env:RUNNER_TEMP ('rea-publication-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback | Out-Null
+            foreach ($relative in @('workflow-attempt.json', 'attempt-validation.json', 'controls.json', 'events.jsonl', 'publication-write.stderr.txt', 'publication-recheck.stderr.txt')) {
+              $candidate = Join-Path $evidence $relative
+              if ((Test-Path -LiteralPath $candidate -PathType Leaf) -and (Get-Item -LiteralPath $candidate).Length -le 2 * 1024 * 1024) { Copy-Item -LiteralPath $candidate -Destination (Join-Path $fallback $relative) }
+            }
+            @{ schema = 'rea-cloud-evidence-storage-failure/v1'; status = 'failed'; rawEvidenceFiles = $files.Count; rawEvidenceBytes = $rawBytes; rawLimitBytes = 35 * 1024 * 1024; archiveLimitBytes = 15 * 1024 * 1024; fullEvidenceUploaded = $false; derivedMetadataUploaded = $false; reason = 'The publication evidence exceeded its bounded artifact budget; only incomplete diagnostics are retained.' } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive = Join-Path $env:RUNNER_TEMP ('rea-publication-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
+            [System.IO.Compression.ZipFile]::CreateFromDirectory($fallback, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false)
+          }
+          'artifact_path=' + $archive | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          'complete=' + $complete.ToString().ToLowerInvariant() | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          if (-not $complete) { throw 'Complete publication evidence exceeded the artifact budget; the uploaded fallback is incomplete.' }
+
+      - name: Preserve success or failure evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: publication-integrity-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

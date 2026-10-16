@@ -135,8 +135,9 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   ]) negative(name, () => createEditorVaultProofMigration(file => file === WINDOWS_FINITE + target ? flip(read(file)) : read(file)), 'fixed finite47 metadata identity; deeper semantic branches are not bypassed or claimed exercised');
   negative('unknown-root-epoch', () => migration.resolve('scripts/verify-records.mjs', { bytes: 1, sha256: '0'.repeat(64) }), 'named identity resolver');
   negative('unknown-flow-source-epoch', () => migration.resolve('products/rea-studio/apps/flow/client.mjs', { bytes: 1, sha256: '0'.repeat(64) }), 'named identity resolver');
-  positive('three-fixed-followup-verifier-epochs', () => {
-    assert.equal(migration.resolve('scripts/verify-followup-records.mjs', { bytes: 45876, sha256: '856eeba61b820260f7e1bdc8d9bb9e8924e3ae3183a0c3c0495471e6152a8b5f' }), null);
+  positive('four-fixed-followup-verifier-epochs', () => {
+    assert.equal(migration.resolve('scripts/verify-followup-records.mjs', { bytes: 46118, sha256: '4129e5ea25fca6b91804a6ee1ab12a3b0f7a9efa8f0e9bf8c766738a2e4ed019' }), null);
+    assert.equal(migration.resolve('scripts/verify-followup-records.mjs', { bytes: 45876, sha256: '856eeba61b820260f7e1bdc8d9bb9e8924e3ae3183a0c3c0495471e6152a8b5f' }), 'products/rea-studio/results/notes-todo-source-transition-20261016/verifier-before/verify-followup-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-followup-records.mjs', { bytes: 37879, sha256: '92a23a59963713966f8e6c630ea6f89e2dfe8248d8dadfacd662bf349bcd6f7e' }), GIT_CLOSURE + 'verifier-before/verify-followup-records.mjs.snapshot');
     assert.equal(migration.resolve('scripts/verify-followup-records.mjs', { bytes: 37311, sha256: '0d06219b7437fc99d27597713a176c108fd60c9c3a1fb016ffe3acf321a4d58d' }), 'products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-followup-records.mjs.snapshot');
   });

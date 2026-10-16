@@ -354,8 +354,8 @@ let productDevelopment;
 if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   const developmentRoot = join(root, 'products/rea-studio');
   const status = JSON.parse(readFileSync(join(developmentRoot, 'STATUS.json'), 'utf8'));
-  // The immutable937 receipt keeps its captured source epoch. Only the eleven
-  // fixed Flow/Vault, Windows-path and Archive runtime transitions are routed.
+  // The immutable937 receipt keeps its captured source epoch. Only the thirteen
+  // fixed Flow/Vault, Windows-path, Archive and Notes runtime transitions are routed.
   const historical937Prefix = 'products/rea-studio/results/editor-vault-combined-20261013/';
   const historical937Seen = new Map(); let historical937Bytes = 0;
   function historical937Read(name, expected) {
@@ -382,7 +382,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   const historical937Inventory = JSON.parse(historical937Read(historical937Prefix + historical937BeforeRow.path, { bytes: historical937BeforeRow.bytes, sha256: historical937BeforeRow.sha256 }));
   const historical937Sources = new Map(historical937Inventory.map(row => [row.path, row]));
   assert.equal(historical937Inventory.length, 737); assert.equal(historical937Sources.size, 737); assert.equal(validation.source_files.length, 737);
-  const historical937AllowedRoutes = new Set(['apps/archive/client.mjs', 'apps/archive/server.mjs', 'apps/archive/sevenzip.mjs', 'apps/editor/git.test.mjs', 'apps/flow/client.mjs', 'apps/flow/native.mjs', 'apps/flow/server.mjs', 'apps/sync/dav-transfer.mjs', 'apps/vault/client.mjs', 'apps/vault/recycle.mjs', 'apps/vault/server.mjs']);
+  const historical937AllowedRoutes = new Set(['apps/archive/client.mjs', 'apps/archive/server.mjs', 'apps/archive/sevenzip.mjs', 'apps/editor/git.test.mjs', 'apps/flow/client.mjs', 'apps/flow/native.mjs', 'apps/flow/server.mjs', 'apps/notes/client.mjs', 'apps/notes/server.mjs', 'apps/sync/dav-transfer.mjs', 'apps/vault/client.mjs', 'apps/vault/recycle.mjs', 'apps/vault/server.mjs']);
   const historical937Checked = new Set(); let historical937Routed = 0, historical937Unchanged = 0;
   const browser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-verification.json'), 'utf8'));
   const comparison = JSON.parse(readFileSync(join(developmentRoot, 'results/editor-comparison.json'), 'utf8'));
@@ -406,7 +406,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     if (historicalPath) { assert.ok(historical937AllowedRoutes.has(entry.path), 'Unlisted937 source transition'); historical937Read(historicalPath, expected); historical937Routed++; }
     else { historical937Read(name, expected); historical937Unchanged++; }
   }
-  assert.equal(historical937Checked.size, 737); assert.equal(historical937Routed, 11); assert.equal(historical937Unchanged, 726);
+  assert.equal(historical937Checked.size, 737); assert.equal(historical937Routed, 13); assert.equal(historical937Unchanged, 724);
   assert.equal(validation.source_bytes_stable_across_run, true);
   assert.equal(new Set(browser.checks.map(check => check.app)).size, 10);
   assert.ok(browser.checks.every(check => check.passed));

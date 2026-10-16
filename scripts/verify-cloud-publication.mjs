@@ -1,6 +1,7 @@
 // Hosted publication metadata producer. No commit, push, finalizer or product suite.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { gzipSync } from 'node:zlib';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -58,13 +59,13 @@ const REVIEWED = {
   'products/rea-studio/results/publication-editor-save-git-closure-20261015/preservation-manifest.json': [3291, '543db5761be73b19447bb6d0d9113efd77d80c105a3c894a38baa524a27d76c9'],
   'products/rea-studio/results/publication-editor-save-git-closure-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot': [50750, '8e72b3b70a9b44d1ef5ab33c11a7c28a0cda90d79f22375771a2a4dceee22f48'],
   'products/rea-studio/results/publication-editor-save-git-closure-20261015/verifier-before/verify-editor-save-followup.mjs.snapshot': [7424, 'fb3f465eaaefab1197c170410355f30764308e3f5b4e58e30d0c8059fe3e96c3'],
-  'scripts/verify-records.mjs': [149064, '3878efc73e671246305e4368f7d3c52f288473591a4fe1697b343ab70249ae1e'],
-  'scripts/editor-vault-proof-migration.mjs': [107538, '8e5a048dba78b58faeed3455cc19f60981f5a6320babd60cf837120b54aef1d8'],
+  'scripts/verify-records.mjs': [149123, 'b5d48417f94e9464c071610ffc2720451cebae126b94b674e67c8f6fe16967d8'],
+  'scripts/editor-vault-proof-migration.mjs': [177855, '5ef7065c6681de938d64b78ddf2e0cc50da50498a95fabb42e3d8a13b69753b8'],
   'scripts/verify-cloud-recovery-records.mjs': [15778, '405c90ac8c68acdc2b281e9563637cc391e1e0574705c1cbcdf7be8e1f794482'],
   'products/rea-studio/results/cloud-publication-source-transition-20261015/preservation-manifest.json': [3069, '8daf5506d935254110dadf2c32e394d6b02f773692867b3a30120a14055ee576'],
   'products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/verify-records.mjs.snapshot': [142684, '42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6'],
   'products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/editor-vault-proof-migration.mjs.snapshot': [47841, '3d0a4ee0b5e9eef36c357c9a3c6170008a2bb0882cc8a755756358aabdf6ced1'],
-  'scripts/verify-followup-records.mjs': [45876, '856eeba61b820260f7e1bdc8d9bb9e8924e3ae3183a0c3c0495471e6152a8b5f'],
+  'scripts/verify-followup-records.mjs': [46118, '4129e5ea25fca6b91804a6ee1ab12a3b0f7a9efa8f0e9bf8c766738a2e4ed019'],
   'products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json': [7382, '37b34ad5324719094e9842343d7649af4ffbd5606f47488137e04a6ee380e49b'],
   'products/rea-studio/results/publication-git-directory-closure-20261015/payload/d29210777777dac0b3d12f6a656a073c9ba717cf6932dbc01b0cc6dc1e7779b8.snapshot': [7, 'd29210777777dac0b3d12f6a656a073c9ba717cf6932dbc01b0cc6dc1e7779b8'],
   'products/rea-studio/results/publication-git-directory-closure-20261015/verifier-before/verify-followup-records.mjs.snapshot': [37879, '92a23a59963713966f8e6c630ea6f89e2dfe8248d8dadfacd662bf349bcd6f7e'],
@@ -99,6 +100,234 @@ const REVIEWED = {
   'products/rea-studio/results/publication-editor-git-observer-20261015/storage-failure.json.snapshot': [400, '4f4a3daf42ae421324e3bcf51ab40c19a92d58165fb2c2a2a68b421d82c57763'],
   'products/rea-studio/results/publication-editor-git-observer-20261015/workflow-attempt.json.snapshot': [419, '903841dc5e67ab46e4e86e0ab83bb90e10392cfef3a9c208c4115da9f7b3d34c'],
   'products/rea-studio/results/publication-editor-git-observer-20261015/wrapper-job-116702343166.log.snapshot': [29564, '06cf6158b6dfb691ff5a3c02af2a8eefff3b4b918b635438efcc2fd65f9dabbd'],
+};
+const NOTES_INSTALLED_TOOLING={
+  "products/rea-studio/scripts/verify-notes-installed-cloud.mjs": [
+    16764,
+    "2248d91efbcdcefbf66ec933575076e2a3073d1cf13fb1da39ad31d4698e31c9"
+  ],
+  ".github/workflows/notes-installed-cloud.yml": [
+    14895,
+    "3cfb0b71128ad57c19162dd3dc1722689ea6c4831c5cd2f793c0a45e91519c5f"
+  ],
+  "products/rea-studio/scripts/verify-cloud.mjs": [
+    86074,
+    "e58d4ba706b0d127a82d6ba66a7369f1401eb16a3bb2705110ec1b068a67312e"
+  ],
+  "products/rea-studio/scripts/verify-cloud-browser.mjs": [
+    48600,
+    "86dc714b3c9bb14f9a374028ab6df36c5c8e4468a18da5cac0ff83422832b3df"
+  ]
+};
+const NOTES_REVIEWED={
+  "products/rea-studio/apps/notes/server.mjs": [
+    24800,
+    "492ab5fb79a077a888376f8f8b6b13c830fc4004e21a0e2033546e90e0e36181"
+  ],
+  "products/rea-studio/apps/notes/client.mjs": [
+    28048,
+    "09f7a63badf83336b1b0fd36935256461babcb31333ff500b192307b587928db"
+  ],
+  "products/rea-studio/apps/notes/README.md": [
+    18406,
+    "65b8eec8da3295d44adb0afd0b9840fe38107b676af750d0a2be27243857705d"
+  ],
+  "products/rea-studio/apps/notes/core.mjs": [
+    2657,
+    "06bf9ad2485e39d6c7dea51a3be9a232fefe9d1a2ed1e46482b0459d605aa44c"
+  ],
+  "products/rea-studio/apps/notes/todo.test.mjs": [
+    10873,
+    "38c66f3b553888923098c98bb083899f00ca42df45dab30ad66548d4ff576e18"
+  ],
+  "products/rea-studio/apps/notes/todo.ui.test.mjs": [
+    8623,
+    "65de552f75be2e7b6ebbd45723740c76e55bda09d13d550bf38ec6228e4d83f5"
+  ],
+  "products/rea-studio/apps/notes/todo.integration.test.mjs": [
+    5802,
+    "442da2522755a4a0c02a6602a8a63ce367a20d2a65d940a53062a7dc08e9d05e"
+  ],
+  "products/rea-studio/apps/notes/todo-original.test.mjs": [
+    4397,
+    "51e4f9594525b046ae3b6a5ed2af92736df158743049e792fff50e9b774717d0"
+  ],
+  "products/rea-studio/experiments/notes-todo/after/products/rea-studio/apps/notes/server.mjs.snapshot": [
+    24800,
+    "492ab5fb79a077a888376f8f8b6b13c830fc4004e21a0e2033546e90e0e36181"
+  ],
+  "products/rea-studio/experiments/notes-todo/before/products/rea-studio/apps/notes/server.mjs.snapshot": [
+    23320,
+    "e592e599c414cd38e8b3b278896792713e001a51950b8a4b3f3e0bc6662f900d"
+  ],
+  "products/rea-studio/experiments/notes-todo/after/products/rea-studio/apps/notes/client.mjs.snapshot": [
+    28048,
+    "09f7a63badf83336b1b0fd36935256461babcb31333ff500b192307b587928db"
+  ],
+  "products/rea-studio/experiments/notes-todo/before/products/rea-studio/apps/notes/client.mjs.snapshot": [
+    23038,
+    "90886819feef847847fcae8c442e0a401a1146a7a4aa1fd862a54b5e01f41da9"
+  ],
+  "products/rea-studio/experiments/notes-todo/after/products/rea-studio/apps/notes/README.md.snapshot": [
+    18406,
+    "65b8eec8da3295d44adb0afd0b9840fe38107b676af750d0a2be27243857705d"
+  ],
+  "products/rea-studio/experiments/notes-todo/before/products/rea-studio/apps/notes/README.md.snapshot": [
+    16506,
+    "6325d142e7dfeb0bebb625699eb2b0d3967ab47f94d6b929fd73c49616a49524"
+  ],
+  "products/rea-studio/experiments/notes-todo/after/products/rea-studio/apps/notes/core.mjs.snapshot": [
+    2657,
+    "06bf9ad2485e39d6c7dea51a3be9a232fefe9d1a2ed1e46482b0459d605aa44c"
+  ],
+  "products/rea-studio/experiments/notes-todo/after/products/rea-studio/apps/notes/todo.test.mjs.snapshot": [
+    10873,
+    "38c66f3b553888923098c98bb083899f00ca42df45dab30ad66548d4ff576e18"
+  ],
+  "products/rea-studio/experiments/notes-todo/after/products/rea-studio/apps/notes/todo.ui.test.mjs.snapshot": [
+    8623,
+    "65de552f75be2e7b6ebbd45723740c76e55bda09d13d550bf38ec6228e4d83f5"
+  ],
+  "products/rea-studio/experiments/notes-todo/after/products/rea-studio/apps/notes/todo.integration.test.mjs.snapshot": [
+    5802,
+    "442da2522755a4a0c02a6602a8a63ce367a20d2a65d940a53062a7dc08e9d05e"
+  ],
+  "products/rea-studio/experiments/notes-todo/after/products/rea-studio/apps/notes/todo-original.test.mjs.snapshot": [
+    4397,
+    "51e4f9594525b046ae3b6a5ed2af92736df158743049e792fff50e9b774717d0"
+  ],
+  "products/rea-studio/experiments/notes-todo/original/to-dos.md.snapshot": [
+    1821,
+    "69032c8f30c6aa782b105fe852a38a7756cfa16bcc3fcd426e2b09d9fedb1c11"
+  ],
+  "products/rea-studio/experiments/notes-todo/original/LICENSE.snapshot": [
+    998,
+    "f6b29267fe2c4251ed95cf9c846b47774a970c5960be9eb8a409f21ffd98425e"
+  ],
+  "products/rea-studio/experiments/notes-todo/SOURCE-CONTRACT.md.snapshot": [
+    7826,
+    "18ef024b4262a9534837683d819cdefb82d6f50dad1b370441b534e6db2ca24a"
+  ],
+  "products/rea-studio/experiments/notes-todo/source-authority.json.snapshot": [
+    6217,
+    "335d78a02f53174f8c33a0fe918157418a23eceb80d6ba0e02371f0e8aee32f0"
+  ],
+  "products/rea-studio/experiments/notes-todo/independent-r2-review.json.snapshot": [
+    4156,
+    "3ffa761a14ab2ed2f853b1cd3c36e3ed6099ea045fd92ca6c0ed190c021ec0c9"
+  ],
+  "products/rea-studio/experiments/notes-todo/README.txt": [
+    866,
+    "0789e3f28ba6c87c8c32a83058db4ca4bfe0bf39d49be826508595b8e180a01c"
+  ],
+  "products/rea-studio/experiments/notes-todo/bundle.json": [
+    10977,
+    "6489170855483748eaff4ece03bdbadc29f79ab87cf9a16015dede504891bd62"
+  ],
+  "products/rea-studio/apps/notes/results/notebooks-followup/stage/original/packages/lib/models/Note.ts.snapshot.snapshot": [
+    45302,
+    "5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647"
+  ],
+  "products/rea-studio/results/notes-todo-source-transition-20261016/verifier-before/verify-records.mjs.snapshot": [
+    149064,
+    "3878efc73e671246305e4368f7d3c52f288473591a4fe1697b343ab70249ae1e"
+  ],
+  "products/rea-studio/results/notes-todo-source-transition-20261016/verifier-before/editor-vault-proof-migration.mjs.snapshot": [
+    107538,
+    "8e5a048dba78b58faeed3455cc19f60981f5a6320babd60cf837120b54aef1d8"
+  ],
+  "products/rea-studio/results/notes-todo-source-transition-20261016/verifier-before/verify-followup-records.mjs.snapshot": [
+    45876,
+    "856eeba61b820260f7e1bdc8d9bb9e8924e3ae3183a0c3c0495471e6152a8b5f"
+  ],
+  "products/rea-studio/results/notes-todo-source-transition-20261016/preservation-manifest.json": [
+    7317,
+    "234cb40ab67e6d27efccfd174ad2eaee0676f7e5a5cab0bfd1ba34e49c57aee9"
+  ],
+  "products/rea-studio/apps/notes/results/todo-followup/publication-index.json": [
+    5086,
+    "3889a8d676930dde323edd5a37a74393093dc334ee7557ded90804ed925cc731"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-first-pass-20261016/preservation-manifest.json": [
+    109749,
+    "b8fce979bcc24c869c51ae745f7f6df9280b0cbf19b688777b799f6f3bbf1bee"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-first-pass-20261016/payload/36f83a2bdc7b7b4ada8430da0428052d513eae4891c716a87d3ae344d34e0166.snapshot": [
+    5856,
+    "36f83a2bdc7b7b4ada8430da0428052d513eae4891c716a87d3ae344d34e0166"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-first-pass-20261016/payload/d9b56b119f60edf8525f216484b50401f5b0717cf09dee571ad5a9d8be9b5b25.snapshot": [
+    9081,
+    "d9b56b119f60edf8525f216484b50401f5b0717cf09dee571ad5a9d8be9b5b25"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-first-pass-20261016/payload/13c4f7a431ba827a92d284b03eaa8be92ea75e482c886fa9ac517cb8cfc8474c.snapshot": [
+    6282,
+    "13c4f7a431ba827a92d284b03eaa8be92ea75e482c886fa9ac517cb8cfc8474c"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-first-pass-20261016/payload/2e0ff567a871d045e3dc0fba1abac5a629780f72f486dbfb68a5398e0f3f8bf2.gz.snapshot": [
+    31881,
+    "36bf4d6f211b8085ebc85ff9e58c7da8094df14bb9448c70b06bf1d587f07a04"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-first-pass-20261016/payload/cd86d1b3a47f06d71d16ba896dbdf9ab2ae36d68e1c03b124cffd5a0a5175c59.gz.snapshot": [
+    19670,
+    "7772c363ab9ee665033610ca9f418a427d9749e1feb1b72c8dec85a4964fb245"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-first-pass-20261016/payload/3a596c108f7ac1de40121eeec135c0925a7f51f3e8dd49d26d3e663403f9c529.snapshot": [
+    29616,
+    "3a596c108f7ac1de40121eeec135c0925a7f51f3e8dd49d26d3e663403f9c529"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-first-pass-20261016/payload/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.snapshot": [
+    0,
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/preservation-manifest.json": [
+    61825,
+    "47b21811f00088b895107f9122c98adab97268ed9ba6393eb63dfe55883f6291"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/dc7f8c101111836973a84a8f5ca76de2d1a4315b30b5cd457ada0faef8e46751.snapshot": [
+    14926,
+    "dc7f8c101111836973a84a8f5ca76de2d1a4315b30b5cd457ada0faef8e46751"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/7e55bf8dabd1f4a056901703055aae258ceaf76d6e175e0a3e9fa9d31df37c8b.snapshot": [
+    9081,
+    "7e55bf8dabd1f4a056901703055aae258ceaf76d6e175e0a3e9fa9d31df37c8b"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/03576df3955385fef0601b24256dfb56d3aa30dbe040ed5ffd1cfe5c54029614.snapshot": [
+    6282,
+    "03576df3955385fef0601b24256dfb56d3aa30dbe040ed5ffd1cfe5c54029614"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/c99c82c51eae708f23a29a563738d8dc47dc45ee324a83c4f0c6355ae958e98b.snapshot": [
+    3896,
+    "c99c82c51eae708f23a29a563738d8dc47dc45ee324a83c4f0c6355ae958e98b"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/8ea77373c45541a6e59ea9fac6f60804424a484064f937923219c1f88928bb14.gz.snapshot": [
+    20053,
+    "9b9d9588f4a77620053f546d52213b341b7d78ce8fb254be1806b0dca0bac871"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/3c72cb8b46819c5bd645530775afa187b2a2a2daafa6b17f29bbe12c6592f3e0.snapshot": [
+    15264,
+    "3c72cb8b46819c5bd645530775afa187b2a2a2daafa6b17f29bbe12c6592f3e0"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/e62bc7de93399cabbd9b5c67264ec7676283e424afa7b0364a899164d0b33917.snapshot": [
+    1961,
+    "e62bc7de93399cabbd9b5c67264ec7676283e424afa7b0364a899164d0b33917"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/f15997348b7e81ebb287b16a14949aad4fbb67408ec46ff9548b86ec794ae69a.snapshot": [
+    631,
+    "f15997348b7e81ebb287b16a14949aad4fbb67408ec46ff9548b86ec794ae69a"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/859eeeaee3d90d295b45d08e6c6de8ab4a9de9efa34405588090a5cf9f71ee31.gz.snapshot": [
+    32126,
+    "ac0b982d1dbef559ed63c03a2248012df1dd63e82a5460458772fd13788c99cc"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/b3a90572fb2f976047a344393c742b3bf9a973e6a1f248c5cd48e974af3fefcc.snapshot": [
+    5372,
+    "b3a90572fb2f976047a344393c742b3bf9a973e6a1f248c5cd48e974af3fefcc"
+  ],
+  "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/66d5f61b136007f6e3dfec51ff95c9599b19b31034cc6a11a35e3a06fa4203ee.gz.snapshot": [
+    30629,
+    "65ef99b06bc942d7442bf9a7b623001a32f55979db0600dfc43f351397d97ae3"
+  ]
 };
 // BEGIN exact publication repeat projection (only three owned observation clocks).
 function publicationRepeatProjection(value, phase) {
@@ -189,6 +418,10 @@ try {
   assert.ok(tree.length > 24000 && tree.length <= 30000); assert.equal(new Set(tree.map(row => row.path)).size, tree.length);
   const tracked = new Set(tree.map(row => row.path));
   for (const [name, [bytes, sha256]] of Object.entries(REVIEWED)) { assert.ok(tracked.has(name), 'Reviewed source must already be committed: ' + name); const content = fs.readFileSync(publicFile(name)); assert.deepEqual(identity(content), { bytes, sha256 }); write('reviewed-sources/' + name + '.snapshot', content); }
+  const notesRows=[];let notesBytes=0;assert.equal(Object.keys(NOTES_REVIEWED).length,52);
+  for(const[name,[bytes,sha256]]of Object.entries(NOTES_REVIEWED)){assert.ok(tracked.has(name),'Notes proof must already be committed: '+name);const content=fs.readFileSync(publicFile(name));assert.deepEqual(identity(content),{bytes,sha256});assert.ok(content.length<=256*1024);notesBytes+=content.length;assert.ok(notesRows.length<64&&notesBytes<=8*1024*1024);notesRows.push({path:name,...identity(content),base64:content.toString('base64')});}
+  assert.equal(Object.keys(NOTES_INSTALLED_TOOLING).length,4);for(const[name,[bytes,sha256]]of Object.entries(NOTES_INSTALLED_TOOLING)){assert.ok(tracked.has(name));const content=fs.readFileSync(publicFile(name));assert.deepEqual(identity(content),{bytes,sha256});assert.ok(content.length<=256*1024);notesBytes+=content.length;assert.ok(notesRows.length<64&&notesBytes<=8*1024*1024);notesRows.push({path:name,...identity(content),base64:content.toString('base64'),group:'installed-Notes-tooling'});}assert.equal(notesRows.length,56);
+  const notesEnvelope=Buffer.from(JSON.stringify({schema:'rea-closed-Notes-source-proof-envelope/v1',sourceCommit:process.env.GITHUB_SHA,sourceFiles:notesRows.length,rawSourceBytes:notesBytes,rows:notesRows}));assert.ok(notesEnvelope.length<=8*1024*1024);const notesGzip=gzipSync(notesEnvelope,{mtime:0});assert.ok(notesGzip.length<=4*1024*1024);write('notes-reviewed-sources.json.gz.snapshot',notesGzip);receipt.notesSourceProofEnvelope={path:'notes-reviewed-sources.json.gz.snapshot',sourceFiles:56,proofSourceFiles:52,installedToolingSourceFiles:4,rawSourceBytes:notesBytes,decoded:identity(notesEnvelope),stored:identity(notesGzip),separateReadBudget:true};save();
   for (const name of ['scripts/verify-cloud-publication.mjs', 'scripts/publication-integrity-controls.mjs', '.github/workflows/publication-integrity-cloud.yml']) { assert.ok(tracked.has(name)); write('collector-sources/' + name + '.snapshot', fs.readFileSync(publicFile(name))); }
   const oldManifestBytes = fs.readFileSync(publicFile(DERIVED[0])), oldValidationBytes = fs.readFileSync(publicFile(DERIVED[1]));
   write('metadata-before/' + DERIVED[0] + '.snapshot', oldManifestBytes); write('metadata-before/' + DERIVED[1] + '.snapshot', oldValidationBytes);

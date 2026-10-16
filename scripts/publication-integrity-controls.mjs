@@ -7,7 +7,7 @@ import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
-const ROOT_ID = { bytes: 149064, sha256: '3878efc73e671246305e4368f7d3c52f288473591a4fe1697b343ab70249ae1e' };
+const ROOT_ID = { bytes: 149123, sha256: 'b5d48417f94e9464c071610ffc2720451cebae126b94b674e67c8f6fe16967d8' };
 const CLOUD = 'products/rea-studio/results/cloud-flow-vault-20261015/';
 const TRANSITION = 'products/rea-studio/results/cloud-publication-source-transition-20261015/';
 const GIT_CLOSURE = 'products/rea-studio/results/publication-git-directory-closure-20261015/';
@@ -36,6 +36,19 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const read = name => fs.readFileSync(path.join(root, name));
   let migration;
   positive('named-migration-positive', () => { migration = createEditorVaultProofMigration(read); assert.equal(migration.summary().latestInstalledSourcesMandatory, 35); });
+  const notesIndexPath='products/rea-studio/apps/notes/results/todo-followup/publication-index.json';
+  const notesIndex=JSON.parse(read(notesIndexPath)),notesSources=notesIndex.currentTargets;
+  positive('notes-eight-current-three-before-and-historical-metadata',()=>{const s=migration.summary();assert.equal(s.notesCurrentSourcesMandatory,8);assert.equal(s.notesHistoricalReplacementRoutes,3);assert.equal(s.notesHistorical937RuntimeRoutes,2);assert.equal(s.notesHistoricalFiniteGroups,92);assert.equal(s.notesHistoricalOriginalHelperComparisons,20);assert.equal(s.notesHistoricalBrowserCases,8);assert.equal(s.notesAuthenticatedFiles,52);assert.equal(s.notesFixedReadFileLimit,64);assert.equal(s.notesFreshInstalledBehavioralAcceptance,false);for(const r of notesSources){assert.equal(migration.resolve(r.path,r.after),null);if(r.before)assert.equal(migration.resolve(r.path,r.before),r.beforeImage);}});
+  for(const r of notesSources)negative('notes-mandatory-current:'+path.posix.basename(r.path),()=>createEditorVaultProofMigration(p=>p===r.path?flip(read(p)):read(p)),'fixed current Notes afterimage');
+  for(const r of notesSources.filter(r=>r.before))negative('notes-mandatory-before:'+path.posix.basename(r.path),()=>createEditorVaultProofMigration(p=>p===r.beforeImage?flip(read(p)):read(p)),'fixed Notes historical beforeimage');
+  for(const r of notesSources)negative('notes-mandatory-after-alias:'+path.posix.basename(r.path),()=>createEditorVaultProofMigration(p=>p===r.afterImage?flip(read(p)):read(p)),'fixed Notes afterimage alias');
+  for(const r of notesSources)negative('notes-unknown-epoch:'+path.posix.basename(r.path),()=>migration.resolve(r.path,{bytes:1,sha256:'0'.repeat(64)}),'exact named Notes resolver');
+  for(const r of notesSources)negative('notes-missing-identity:'+path.posix.basename(r.path),()=>migration.resolve(r.path),'mandatory explicit Notes identity');
+  for(const p of [notesIndexPath,'products/rea-studio/results/notes-todo-source-transition-20261016/preservation-manifest.json'])negative('notes-declaration-byte-change:'+path.posix.basename(p),()=>createEditorVaultProofMigration(n=>n===p?flip(read(n)):read(n)),'immutable closed Notes declaration identity');
+  for(const[p,label]of [["products/rea-studio/results/cloud-notes-todo-first-pass-20261016/payload/36f83a2bdc7b7b4ada8430da0428052d513eae4891c716a87d3ae344d34e0166.snapshot","finite92"],["products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/payload/dc7f8c101111836973a84a8f5ca76de2d1a4315b30b5cd457ada0faef8e46751.snapshot","browser8"]])negative('notes-historical-attempt-byte-change:'+label,()=>createEditorVaultProofMigration(n=>n===p?flip(read(n)):read(n)),'immutable selected historical attempt identity; no deeper branch bypass claimed');
+  positive('notes-exact-reader-intermediate-epochs',()=>{for(const r of [{"reader":"scripts/verify-records.mjs","path":"products/rea-studio/results/notes-todo-source-transition-20261016/verifier-before/verify-records.mjs.snapshot","bytes":149064,"sha256":"3878efc73e671246305e4368f7d3c52f288473591a4fe1697b343ab70249ae1e"},{"reader":"scripts/editor-vault-proof-migration.mjs","path":"products/rea-studio/results/notes-todo-source-transition-20261016/verifier-before/editor-vault-proof-migration.mjs.snapshot","bytes":107538,"sha256":"8e5a048dba78b58faeed3455cc19f60981f5a6320babd60cf837120b54aef1d8"},{"reader":"scripts/verify-followup-records.mjs","path":"products/rea-studio/results/notes-todo-source-transition-20261016/verifier-before/verify-followup-records.mjs.snapshot","bytes":45876,"sha256":"856eeba61b820260f7e1bdc8d9bb9e8924e3ae3183a0c3c0495471e6152a8b5f"}]){if(r.reader.endsWith('editor-vault-proof-migration.mjs'))continue;assert.equal(migration.resolve(r.reader,{bytes:r.bytes,sha256:r.sha256}),r.path);}});
+  for(const p of ['scripts/verify-records.mjs','scripts/verify-followup-records.mjs'])negative('notes-unlisted-reader-epoch:'+path.posix.basename(p),()=>migration.resolve(p,{bytes:1,sha256:'0'.repeat(64)}),'all prior verifier epochs remain explicitly named');
+  positive('notes-three-unchanged-requirement-identities',()=>{const req=JSON.parse(read('products/rea-studio/requirements/workspace-products.json'));const rows=req.localImplementationEvidence.filter(r=>notesSources.some(n=>n.path===r.path));assert.equal(rows.length,3);for(const r of rows){const n=notesSources.find(n=>n.path===r.path);assert.deepEqual({bytes:r.bytes,sha256:r.sha256},n.before);assert.equal(migration.resolve(r.path,r),n.beforeImage);}});
   const archiveIndexPath = 'products/rea-studio/apps/archive/results/aes-followup/publication-index.json';
   const archiveIndexBytes = read(archiveIndexPath); same(archiveIndexBytes, { bytes: 31564, sha256: 'cb1547b75fa9039f21b71ab40952c8b348c4253e47f9df3272e799375d8ab7dc' });
   const archiveIndex = JSON.parse(archiveIndexBytes), archiveSources = archiveIndex.currentTargets;
@@ -205,7 +218,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
       readFileSync(filename, ...args) { const bytes = fs.readFileSync(filename, ...args); return changed && path.resolve(filename).toLowerCase() === path.resolve(root, changed).toLowerCase() ? flip(bytes) : bytes; },
     }, { timeout: 120000 });
   }
-  positive('historical937-exact-block-positive', () => { const result = historical937(); assert.equal(result.rows, 737); assert.equal(result.routed, 11); assert.equal(result.unchanged, 726); });
+  positive('historical937-exact-block-positive', () => { const result = historical937(); assert.equal(result.rows, 737); assert.equal(result.routed, 13); assert.equal(result.unchanged, 724); });
   negative('historical937-frozen-source-byte-change', () => historical937({ changed: OLD + 'source/apps/archive/app.test.mjs.snapshot' }), 'exact reviewed937 block: frozen source hash');
   negative('historical937-unchanged-current-byte-change', () => historical937({ changed: 'products/rea-studio/apps/archive/app.test.mjs' }), 'exact reviewed937 block: current source hash');
   negative('historical937-receipt-byte-change', () => historical937({ changed: 'products/rea-studio/results/development-validation.json' }), 'exact immutable937 receipt hash');
@@ -301,7 +314,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   for (const target of ["products/rea-studio/results/requirement-evidence-provenance-20261015/preservation-manifest.json","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/verify-records.mjs.snapshot","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot"]) negative('requirement-provenance-mandatory-byte-corruption:' + target, () => createEditorVaultProofMigration(name => name === target ? flip(read(name)) : read(name)), 'new fixed requirement provenance closure identity; historical receipts and registries remain unchanged');
   // Execute only the exact producer projection, using the actual preserved failing
   // attempt outputs. No publication producer or application entry point is run here.
-  const repeatProducerBytes = read('scripts/verify-cloud-publication.mjs'); same(repeatProducerBytes, {"bytes":34261,"sha256":"7ddb50afc5712209664410a7e48a675453a946775e4985eeec71bfb4a85396e8"});
+  const repeatProducerBytes = read('scripts/verify-cloud-publication.mjs'); same(repeatProducerBytes, {"bytes":47328,"sha256":"c67857ad167f4b9d41c1805d7d477c682db10cea77fec24d77dacdc7f64c3696"});
   const repeatProducer = repeatProducerBytes.toString('utf8');
   const repeatStart = '// BEGIN exact publication repeat projection (only three owned observation clocks).', repeatEnd = '// END exact publication repeat projection.';
   assert.equal(repeatProducer.split(repeatStart).length, 2); assert.equal(repeatProducer.split(repeatEnd).length, 2);
@@ -337,7 +350,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   negative('publication-repeat-reject:first-phase-clock-corruption', () => { const changed = structuredClone(repeatFirst); changed.followup_evidence.notesLayoutValueApiCheckpoint.sketch.finished = '2026-10-16T00:14:16.540Z'; repeatCompare(changed); }, 'both raw observations are independently bounded');
   negative('publication-repeat-reject:overlapping-owned-phases', () => { const phases = structuredClone(repeatAttempt.phases); phases[0].completedAtUtc = new Date(Date.parse(phases[1].startedAtUtc) + 1).toISOString(); repeatCompare(repeatFirst, repeatSecond, phases); }, 'phase intervals must be ordered and nonoverlapping');
   negative('publication-repeat-reject:reversed-owned-phase', () => { const phases = structuredClone(repeatAttempt.phases); [phases[1].startedAtUtc, phases[1].completedAtUtc] = [phases[1].completedAtUtc, phases[1].startedAtUtc]; repeatCompare(repeatFirst, repeatSecond, phases); }, 'owned phase timestamps must themselves be valid and ordered');
-  assert.equal(rows.length, 164); assert.ok(rows.every(row => row.passed));
+  assert.equal(rows.length, 208); assert.ok(rows.every(row => row.passed));
   return { schema: 'rea-cloud-publication-controls/v1', status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,

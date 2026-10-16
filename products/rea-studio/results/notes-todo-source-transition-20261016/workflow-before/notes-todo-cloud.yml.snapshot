@@ -1,0 +1,96 @@
+name: Cloud Notes to-do experiment
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/rea-cloud-recovery-20261015]
+    paths:
+      - '.github/workflows/notes-todo-cloud.yml'
+      - 'products/rea-studio/experiments/notes-todo/**'
+      - 'products/rea-studio/scripts/compose-notes-todo-cloud.mjs'
+
+permissions:
+  contents: read
+concurrency:
+  group: notes-todo-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  finite-notes-todo:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research snapshot paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact baseline and inert reviewed source bundle
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Select pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Select owned evidence outside the source census
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes-todo-evidence-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          'REA_NOTES_TODO_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Compose exactly eight source targets in the ephemeral checkout
+        id: compose
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-notes-todo-cloud.mjs --phase compose --evidence "$env:REA_NOTES_TODO_EVIDENCE"
+      - name: Execute all current Notes files plus every new authored case
+        id: tests
+        shell: pwsh
+        run: |
+          $composition=Join-Path $env:REA_NOTES_TODO_EVIDENCE 'notes-todo-composition.json'
+          node products/rea-studio/scripts/verify-cloud.mjs --scope notes-todo-experiment --output "$env:REA_NOTES_TODO_EVIDENCE" --overlay-manifest "$composition" --timeout-ms 1200000
+      - name: Independently recheck the exact source composition after every observable attempt
+        id: postcheck
+        if: always() && steps.compose.outcome != '' && steps.compose.outcome != 'skipped'
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-notes-todo-cloud.mjs --phase verify-after --evidence "$env:REA_NOTES_TODO_EVIDENCE"
+      - name: Package bounded portable evidence after failures too
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes-todo-evidence-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-cloud-notes-todo-workflow-attempt/v1';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';compositionOutcome='${{ steps.compose.outcome }}';testOutcome='${{ steps.tests.outcome }}';postcheckOutcome='${{ steps.postcheck.outcome }}';statusBeforePackaging='${{ job.status }}';productionInstalled=$false;historicalReceiptsRebound=$false;acceptancePreclaimed=$false;originalComparisonsAreSeparate=$true}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'notes-todo-workflow-attempt.json') -Encoding utf8
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-notes-todo-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+          $limit=15*1024*1024;$bytes=(Get-Item -LiteralPath $archive).Length
+          if($bytes -gt $limit){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes-todo-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback|Out-Null
+            $retained=@();$omitted=@()
+            foreach($file in Get-ChildItem -LiteralPath $evidence -File){
+              if($file.Length -le 1024*1024){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name);$retained+=$file.Name}
+              elseif($file.Extension -eq '.txt'){$target=Join-Path $fallback ($file.BaseName+'.tail.txt');$logInput=[IO.File]::OpenRead($file.FullName);$logOutput=[IO.File]::Create($target);try{$logInput.Position=[Math]::Max(0,$logInput.Length-256*1024);$logInput.CopyTo($logOutput)}finally{$logOutput.Dispose();$logInput.Dispose()};$omitted+=@{file=$file.Name;originalBytes=$file.Length;tailOnly=$true}}
+              else{$omitted+=@{file=$file.Name;bytes=$file.Length;tailOnly=$false}}
+            }
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';fullArchiveBytes=$bytes;limitBytes=$limit;completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;originalRawEvidenceComplete=$false;retainedFiles=$retained;omittedOrTailed=$omitted;reason='Full Notes experiment evidence exceeded15MiB. This fallback is incomplete; complete backup acceptance is not established.'}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes-todo-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le $limit){'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
+            throw 'Full evidence exceeded15MiB; only an explicitly incomplete diagnostic fallback can be uploaded.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve the portable evidence archive
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes-todo-experiment-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

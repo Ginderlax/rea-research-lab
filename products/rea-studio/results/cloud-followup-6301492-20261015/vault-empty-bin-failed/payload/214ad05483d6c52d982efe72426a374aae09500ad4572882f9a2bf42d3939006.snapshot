@@ -1,0 +1,58 @@
+// Authored encrypted-store contracts; not executed at authoring time.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { handle, dispose } from './server.mjs';
+const password = 'Owned synthetic empty-bin master';
+async function fixture(t) {
+  const records = new Map(), workspace = { root: 'owned-empty-bin-' + randomUUID() };
+  const store = { get: async (key, fallback) => records.has(key) ? structuredClone(records.get(key)) : fallback,
+    set: async (key, value) => { records.set(key, structuredClone(value)); } };
+  const api = (action, input = {}) => handle({ action, input, store, workspace }); t.after(() => dispose(workspace));
+  await api('create', { password });
+  await api('save', { title: 'A', group: 'Parent/Selected', password: 'Owned secret A' });
+  await api('save', { title: 'B', group: 'Parent/Selected/Deep', password: 'Owned secret B' });
+  await api('save', { title: 'C', group: 'Other', password: 'Owned secret C' });
+  const group = (await api('recycleGroupList')).groups.find(row => row.name === 'Selected');
+  await api('recycleGroupDelete', { id: group.id, revision: group.recycleRevision, confirm: true });
+  return { records, workspace, store, api };
+}
+const input = preview => ({ id: preview.id, revision: preview.revision, confirm: true });
+test('encrypted empty-bin commit retains bin and outside entry through lock/reopen', async t => {
+  const f = await fixture(t), preview = await f.api('recycleBinPreview'); assert.equal(preview.entryCount, 2); assert(!JSON.stringify(preview).includes('Owned secret'));
+  const value = await f.api('emptyRecycleBin', input(preview)); assert.equal(value.binPreserved, true); assert.equal(value.groupCount, 2);
+  await f.api('lock'); await f.api('unlock', { password }); assert.deepEqual((await f.api('list')).entries.map(row => row.title), ['C']);
+  const after = await f.api('recycleBinPreview'); assert.equal(after.id, preview.id); assert.equal(after.entryCount + after.groupCount, 0);
+  assert.equal((await f.api('recycleGroupList', { bin: true })).groups.length, 1); assert(!JSON.stringify(f.records.get('vault.database')).includes('Owned secret'));
+});
+test('unchecked/extra-input/cross-domain/stale commands refuse before encrypted persistence', async t => {
+  const f = await fixture(t), preview = await f.api('recycleBinPreview'), before = structuredClone(f.records.get('vault.database'));
+  await assert.rejects(f.api('emptyRecycleBin', { ...input(preview), confirm: false }), /confirmation/);
+  await assert.rejects(f.api('emptyRecycleBin', { ...input(preview), permanent: true }), /only its preview/);
+  await assert.rejects(f.api('recycleBinPreview', { id: preview.id }), /no selection inputs/);
+  const group = (await f.api('recycleGroupList', { bin: true })).groups.find(row => row.isRecycleBin);
+  await assert.rejects(f.api('emptyRecycleBin', { ...input(preview), revision: group.recycleRevision }), /contents changed/);
+  assert.deepEqual(f.records.get('vault.database'), before);
+  await f.api('save', { title: 'New unrelated active entry' }); await assert.rejects(f.api('emptyRecycleBin', input(preview)), /contents changed/);
+});
+test('failed store write leaves encrypted backend/session unchanged and permits explicit fresh retry', async t => {
+  const f = await fixture(t), preview = await f.api('recycleBinPreview'), before = structuredClone(f.records.get('vault.database')), real = f.store.set;
+  f.store.set = async () => { throw new Error('Owned empty-bin store failure'); };
+  await assert.rejects(f.api('emptyRecycleBin', input(preview)), /store failure/); assert.deepEqual(f.records.get('vault.database'), before);
+  assert.equal((await f.api('recycleBinPreview')).entryCount, 2); assert.equal((await f.api('list')).entries.length, 1);
+  f.store.set = real; const fresh = await f.api('recycleBinPreview'); assert.equal((await f.api('emptyRecycleBin', input(fresh))).emptied, true);
+});
+test('queued caller data is captured and concurrent old selection refuses after the first commit', async t => {
+  const f = await fixture(t), preview = await f.api('recycleBinPreview'), real = f.store.set; let entered, release;
+  const started = new Promise(resolve => { entered = resolve; }), gate = new Promise(resolve => { release = resolve; }); t.after(() => release());
+  f.store.set = async (key, value) => { entered(); await gate; return real(key, value); };
+  const submitted = input(preview), first = f.api('emptyRecycleBin', submitted); submitted.id = 'mutated'; submitted.confirm = false;
+  await started; const second = assert.rejects(f.api('emptyRecycleBin', input(preview)), /contents changed/); release(); await first; await second;
+  assert.equal((await f.api('recycleBinPreview')).entryCount, 0);
+});
+test('fresh already-empty command is a no-op with no extra encrypted-store write', async t => {
+  const f = await fixture(t), first = await f.api('recycleBinPreview'); await f.api('emptyRecycleBin', input(first));
+  const before = structuredClone(f.records.get('vault.database')), fresh = await f.api('recycleBinPreview'); let writes = 0;
+  f.store.set = async () => { writes++; throw Error('No-op must not write'); };
+  assert.equal((await f.api('emptyRecycleBin', input(fresh))).changed, false); assert.equal(writes, 0); assert.deepEqual(f.records.get('vault.database'), before);
+});

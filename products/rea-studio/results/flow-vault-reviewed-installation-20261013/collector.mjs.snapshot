@@ -1,0 +1,113 @@
+import {pathToFileURL} from 'node:url';import fs from 'node:fs/promises';import path from 'node:path';import assert from 'node:assert/strict';import{createHash}from'node:crypto';
+const work=import.meta.dirname,base=path.dirname(work),lab=path.resolve(work,'../outputs/rea-research-lab'),own=path.join(work,'flow-vault-reviewed-installation-next'),sha=b=>createHash('sha256').update(b).digest('hex'),id=b=>({bytes:b.length,sha256:sha(b)});
+const globalPrefix='products/rea-studio/results/flow-vault-reviewed-installation-20261013',proofPrefix='products/rea-studio/results/flow-vault-proof-transition-20261013';
+const stages=[{name:'flow',folder:'flow-static-link-textarea-publication-plan-next',pin:'7fe69cfdd42a44716e31c07b3a65a2ee29634e105acfdb35865bc4e9beb5d7a4',files:83,rowsFile:'installation-proposals.json',key:'proposals',rows:19,publicPrefix:'products/rea-studio/apps/flow/results/native-link-textarea-followup'}, {name:'vault',folder:'vault-group-edit-installation-plan-next',pin:'08ba0c57de6456c8cb5c508be318703a1c55977dc0c9d7f4bd6b5271f513d99d',files:291,rowsFile:'installation-plan.json',key:'rows',rows:16,publicPrefix:'products/rea-studio/apps/vault/results/group-edit-followup'}, {name:'proof',folder:'flow-vault-proof-transition-next',pin:'1eee491b8e980014c813f9f626219c2bb9e6a0adfcbbd0360ac5ddb4e0247d08',files:22,publicPrefix:proofPrefix}];
+function safe(p){assert(typeof p==='string'&&p.length>0&&p.length<4096&&!p.startsWith('/')&&!/[\\:\x00-\x1f\x7f]/.test(p));assert(p.split('/').every(s=>s&&s!=='.'&&s!=='..'&&!['.local','node_modules','artifacts','tooling'].includes(s)));return p;}
+async function read(root,p){safe(p);let at=root;for(const s of p.split('/')){at=path.join(at,s);assert(!(await fs.lstat(at)).isSymbolicLink());}const s=await fs.stat(at);assert(s.isFile()&&s.size<=32*1024*1024);const b=await fs.readFile(at);assert.equal(b.length,s.size);return b;}
+async function auth(folder,pin,files){safe(folder);const root=path.join(work,folder),b=await read(root,'manifest.json');assert.equal(sha(b),pin);const j=JSON.parse(b);assert.equal(j.inventory.length,files);const names=new Set();for(const r of j.inventory){assert(!names.has(r.path));names.add(r.path);assert.deepEqual(id(await read(root,r.path)),{bytes:r.bytes,sha256:r.sha256});}return{root,bytes:b,manifest:j};}
+const authorities=[];for(const s of stages)authorities.push(await auth(s.folder,s.pin,s.files));
+const latest=[],maps=[];for(const [i,s]of stages.entries())if(s.rowsFile){const j=JSON.parse(await read(authorities[i].root,s.rowsFile));assert.equal(j[s.key].length,s.rows);for(const r of j[s.key]){const p=r.destination??r.target;safe(p);assert(p.startsWith('products/rea-studio/apps/'+s.name+'/'));const b=await read(authorities[i].root,r.sourcePath??r.source);assert.deepEqual(id(b),r.after);if(r.before)assert.deepEqual(id(await read(lab,p)),r.before);else assert.equal(await fs.stat(path.join(lab,p)).then(()=>true,()=>false),false);latest.push({destination:p,before:r.before,after:r.after,sourceRoot:s.folder,sourcePath:r.sourcePath??r.source});}}
+assert.equal(latest.length,35);assert.equal(new Set(latest.map(r=>r.destination)).size,35);assert.equal(latest.filter(r=>r.before).length,9);
+const transition=JSON.parse(await read(authorities[2].root,'validation.json'));assert.equal(transition.exactInverse,true);assert.equal(transition.summary.currentInstalledSourcesMandatory,61);const proofRow={destination:transition.candidate.path,before:transition.candidate.before,after:transition.candidate.after,sourceRoot:stages[2].folder,sourcePath:'candidate/'+transition.candidate.path};assert.equal(proofRow.destination,'scripts/editor-vault-proof-migration.mjs');assert.deepEqual(id(await read(lab,proofRow.destination)),proofRow.before);assert.deepEqual(id(await read(authorities[2].root,proofRow.sourcePath)),proofRow.after);
+const ownedLocalSources=[
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/close-after-purge.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/a55c8bbdb02f5f794dfefb302d86f0ed9e536bc6437e5fc8a8183e5f20cec2e3.snapshot",
+    "bytes": 1274,
+    "sha256": "a55c8bbdb02f5f794dfefb302d86f0ed9e536bc6437e5fc8a8183e5f20cec2e3"
+  },
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/close-after-restore.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/a2c991cdf68723a35ee609050a18756fa7257907479139557a540603ee78b83d.snapshot",
+    "bytes": 1250,
+    "sha256": "a2c991cdf68723a35ee609050a18756fa7257907479139557a540603ee78b83d"
+  },
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/close-reopen-held-mutation.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/6f69f0d32d31120a05fc8e715b84a4d603b0214f873ea12fcf8c166546d3fd5b.snapshot",
+    "bytes": 1183,
+    "sha256": "6f69f0d32d31120a05fc8e715b84a4d603b0214f873ea12fcf8c166546d3fd5b"
+  },
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/delete-keeps-newer-draft.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/a85d841b174b339c14c6fab1f103bc80527fcbc08b3f7a50d2465c87ceccafcd.snapshot",
+    "bytes": 1118,
+    "sha256": "a85d841b174b339c14c6fab1f103bc80527fcbc08b3f7a50d2465c87ceccafcd"
+  },
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/disposed-held-preview.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/f7398876fcbf2adaf195496eb9372a874459372c93368fb53a630d5d37c5c68d.snapshot",
+    "bytes": 1047,
+    "sha256": "f7398876fcbf2adaf195496eb9372a874459372c93368fb53a630d5d37c5c68d"
+  },
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/new-preview-during-active-refresh.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/5150387be91acb60a9e71d4052ed82124f949a7a06a6f5a8863e8ce26bc5b917.snapshot",
+    "bytes": 1593,
+    "sha256": "5150387be91acb60a9e71d4052ed82124f949a7a06a6f5a8863e8ce26bc5b917"
+  },
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/normal-purge.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/ec24f5d9dc974e1341e3efb3da865df73357ceb0105e9da2d5c922b365c6896f.snapshot",
+    "bytes": 1267,
+    "sha256": "ec24f5d9dc974e1341e3efb3da865df73357ceb0105e9da2d5c922b365c6896f"
+  },
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/normal-restore.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/5a1a9584c4d98b18488b7ee9b132766749b22b7b21331be166817614e3474b3c.snapshot",
+    "bytes": 1243,
+    "sha256": "5a1a9584c4d98b18488b7ee9b132766749b22b7b21331be166817614e3474b3c"
+  },
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/stale-token-preview-control.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/47ee9b2594d7168f3b14eec63e2a650a37c5addc9d5198f2ac98049b1a19c664.snapshot",
+    "bytes": 1832,
+    "sha256": "47ee9b2594d7168f3b14eec63e2a650a37c5addc9d5198f2ac98049b1a19c664"
+  },
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/unchecked-purge.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/628d88079231f41d7b0ee55ffe802b8a85af4eebd3ac73dacd90b96889351993.snapshot",
+    "bytes": 1347,
+    "sha256": "628d88079231f41d7b0ee55ffe802b8a85af4eebd3ac73dacd90b96889351993"
+  },
+  {
+    "sourceRoot": "work/vault-group-edit-next",
+    "sourcePath": "products/rea-studio/.local/recycle-boundary-review/unchecked-restore.json",
+    "publicPath": "products/rea-studio/apps/vault/results/group-edit-followup/source-proof/payload/ab1c930cfeb9e14f8918b563c7ea7bd8baf4b42c3cc24da6a055166fe93cc36d.snapshot",
+    "bytes": 1323,
+    "sha256": "ab1c930cfeb9e14f8918b563c7ea7bd8baf4b42c3cc24da6a055166fe93cc36d"
+  }
+];
+async function sourceBytes(r){const key=r.sourceRoot+'/'+r.sourcePath,qualified=ownedLocalSources.find(s=>s.sourceRoot+'/'+s.sourcePath===key);if(!qualified)return read(base,key);assert.deepEqual({sourceRoot:r.sourceRoot,sourcePath:r.sourcePath,publicPath:r.publicPath,bytes:r.bytes,sha256:r.sha256},qualified);assert.equal(r.reusedExistingPublic,false);assert.equal(r.epoch,'author885');const b=await read(authorities[1].root,'source-proof/payload/'+qualified.sha256+'.snapshot');assert.deepEqual(id(b),{bytes:qualified.bytes,sha256:qualified.sha256});return b;}
+const flowMap=JSON.parse(await read(authorities[0].root,'public-source-map.json')),vaultMap=JSON.parse(await read(authorities[1].root,'source-proof/preservation-manifest.json'));assert.equal(flowMap.records.length,830);assert.equal(vaultMap.records.length,1230);assert.equal(vaultMap.newPayloads.length,234);
+for(const [i,m]of[[0,flowMap],[1,vaultMap]]){const publicPaths=new Map();for(const r of m.records){safe(r.sourceRoot);assert(r.sourceRoot.startsWith('work/'));safe(r.publicPath);assert(r.publicPath.endsWith('.snapshot'));const b=await sourceBytes(r);assert.deepEqual(id(b),{bytes:r.bytes,sha256:r.sha256});if(r.reusedExistingPublic)assert.deepEqual(id(await read(lab,r.publicPath)),{bytes:r.bytes,sha256:r.sha256});else assert(r.publicPath.startsWith(stages[i].publicPrefix+'/'));const prior=publicPaths.get(r.publicPath);if(prior)assert.deepEqual(prior,id(b));else publicPaths.set(r.publicPath,id(b));}maps.push({stage:i,map:m,unique:publicPaths.size});}
+const oldCensus=JSON.parse(await read(lab,'products/rea-studio/results/editor-vault-combined-20261013/source-before.json.snapshot'));assert.equal(oldCensus.length,737);for(const r of oldCensus)assert.deepEqual(id(await read(lab,'products/rea-studio/'+r.path)),{bytes:r.bytes,sha256:r.sha256});
+const reviews=[];for(const s of stages){const arg=process.argv.indexOf('--'+s.name+'-review');assert(arg>=0&&process.argv[arg+1],'Missing independent '+s.name+' review');const value=process.argv[arg+1],parts=value.split('@');assert.equal(parts.length,2);const [folder,pin]=parts;assert(/^[0-9a-f]{64}$/.test(pin));safe(folder);const b=await read(work,folder+'/manifest.json');assert.equal(sha(b),pin);const j=JSON.parse(b);assert(Array.isArray(j.inventory)&&j.inventory.length>0);for(const r of j.inventory)assert.deepEqual(id(await read(path.join(work,folder),r.path)),{bytes:r.bytes,sha256:r.sha256});reviews.push({name:s.name,folder,pin,bytes:b,manifest:j});}
+assert(process.argv.includes('--install'),'Root explicitly selects --install after reviewing all three receipts.');
+assert.equal(await fs.stat(own).then(()=>true,()=>false),false);for(const s of stages)assert.equal(await fs.stat(path.join(lab,s.publicPrefix)).then(()=>true,()=>false),false);assert.equal(await fs.stat(path.join(lab,globalPrefix)).then(()=>true,()=>false),false);await fs.mkdir(own);
+async function ownSave(p,b){safe(p);const f=path.join(own,p);await fs.mkdir(path.dirname(f),{recursive:true});await fs.writeFile(f,b,{flag:'wx'});}
+await ownSave('collector.mjs.snapshot',await fs.readFile(import.meta.filename));const metadataPaths=['README.md','products/rea-studio/README.md','products/rea-studio/STATUS.json','products/rea-studio/results/development-validation.json','products/rea-studio/requirements/workspace-products.json','products/rea-studio/requirements/system-products.json','products/rea-studio/requirements/visual-products.json','products/rea-studio/requirements/README.md'];const beforeMetadata=[];
+for(const p of metadataPaths){const b=await read(lab,p);await ownSave('before-metadata/'+p+'.snapshot',b);beforeMetadata.push({path:p,...id(b)});}
+for(const r of [...latest,proofRow])if(r.before)await ownSave('before-images/'+r.destination+'.snapshot',await read(lab,r.destination));
+const publicRows=[];async function publish(p,b,source){safe(p);const f=path.join(lab,p);await fs.mkdir(path.dirname(f),{recursive:true});await fs.writeFile(f,b,{flag:'wx'});assert.deepEqual(id(await read(lab,p)),id(b));publicRows.push({source,path:p,...id(b)});}
+const copied=new Set();for(const {map:m}of maps)for(const r of m.records)if(!r.reusedExistingPublic&&!copied.has(r.publicPath)){const b=await sourceBytes(r);assert.deepEqual(id(b),{bytes:r.bytes,sha256:r.sha256});await publish(r.publicPath,b,r.sourceRoot+'/'+r.sourcePath);copied.add(r.publicPath);}
+for(const [i,s]of stages.entries()){const a=authorities[i];for(const r of a.manifest.inventory){const p=s.publicPrefix+'/plan/'+r.path+(r.path.endsWith('.snapshot')?'':'.snapshot');if(i===2){const proofPublic=proofPrefix+'/'+r.path+(r.path.endsWith('.snapshot')?'':'.snapshot');await publish(proofPublic,await read(a.root,r.path),'work/'+s.folder+'/'+r.path);}else await publish(p,await read(a.root,r.path),'work/'+s.folder+'/'+r.path);}
+ await publish(s.publicPrefix+'/plan-manifest.json.snapshot',a.bytes,'work/'+s.folder+'/manifest.json');
+ const localRows=publicRows.filter(r=>r.path.startsWith(s.publicPrefix+'/')),receipt={schema:'rea-reviewed-flow-vault-app-source-preservation/v1',stage:s.name,strictPlanSHA256:s.pin,strictPlanFiles:s.files,publicRows:localRows,sourceAliases:i===0?flowMap.records.length:i===1?vaultMap.records.length:12,allCopiesExact:true,allCopiesInert:true,applicationExecutions:0,originalExecutions:0,browserExecutions:0,fullParity:false,superiority:false};await publish(s.publicPrefix+'/preservation-manifest.json',Buffer.from(JSON.stringify(receipt,null,2)+'\n'),'root source preservation');}
+for(const review of reviews){for(const r of review.manifest.inventory)await publish(globalPrefix+'/independent-review/'+review.name+'/'+r.path+(r.path.endsWith('.snapshot')?'':'.snapshot'),await read(path.join(work,review.folder),r.path),'work/'+review.folder+'/'+r.path);await publish(globalPrefix+'/independent-review/'+review.name+'/manifest.json.snapshot',review.bytes,'work/'+review.folder+'/manifest.json');}
+const installed=[];for(const r of [...latest,proofRow]){const b=await read(path.join(work,r.sourceRoot),r.sourcePath);assert.deepEqual(id(b),r.after);if(r.before)assert.deepEqual(id(await read(lab,r.destination)),r.before);else assert.equal(await fs.stat(path.join(lab,r.destination)).then(()=>true,()=>false),false);await fs.mkdir(path.dirname(path.join(lab,r.destination)),{recursive:true});await fs.writeFile(path.join(lab,r.destination),b,{flag:r.before?'w':'wx'});assert.deepEqual(id(await read(lab,r.destination)),r.after);installed.push(r);}
+for(const s of stages)await auth(s.folder,s.pin,s.files);for(const r of beforeMetadata)assert.deepEqual(id(await read(lab,r.path)),{bytes:r.bytes,sha256:r.sha256});const changed=new Set(latest.filter(r=>r.before).map(r=>r.destination));let priorUnchanged=0;for(const r of oldCensus){const p='products/rea-studio/'+r.path;if(changed.has(p))continue;assert.deepEqual(id(await read(lab,p)),{bytes:r.bytes,sha256:r.sha256});priorUnchanged++;}assert.equal(priorUnchanged,731);
+const m=await import(pathToFileURL(path.join(lab,'scripts/editor-vault-proof-migration.mjs')).href);const sourceProof=m.createEditorVaultProofMigrationFromRoot(lab).summary();assert.equal(sourceProof.currentInstalledSourcesMandatory,61);
+const receipt={schema:'rea-reviewed-flow-vault-root-installation/v1',at:new Date().toISOString(),installed,applicationPaths:35,applicationReplacements:9,applicationAdditions:26,proofModuleReplacements:1,original737UnchangedCodeSources:731,beforeMetadata,independentReviews:reviews.map(r=>({name:r.name,folder:r.folder,manifestSHA256:r.pin,files:r.manifest.inventory.length})),sourceProof,sourceOnly:true,applicationOriginalBrowserBenchmarkExecutions:0,newFullSuiteRequired:true,newSuiteSummaryPreclaimed:false,oldReceiptsRebound:false,fullParity:false,superiority:false};await ownSave('installation.json',Buffer.from(JSON.stringify(receipt,null,2)+'\n'));
+async function preserveOwn(p=''){for(const e of(await fs.readdir(path.join(own,p),{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))){const n=p?p+'/'+e.name:e.name;assert(!e.isSymbolicLink());if(e.isDirectory())await preserveOwn(n);else await publish(globalPrefix+'/'+n+(n.endsWith('.snapshot')?'':'.snapshot'),await read(own,n),'work/'+path.basename(own)+'/'+n);}}await preserveOwn();
+const preservation={schema:'rea-reviewed-flow-vault-installation-preservation/v1',at:new Date().toISOString(),records:publicRows,publicCopies:publicRows.length,logicalSourceAliases:2060,latestApplicationPaths:35,rootProofTransitionPaths:1,allCopiesExact:true,allCopiesInertExceptPreservationMaps:true,oldReceiptsRebound:false,newFullSuiteRequired:true,fullParity:false,superiority:false};const pb=Buffer.from(JSON.stringify(preservation,null,2)+'\n');await fs.writeFile(path.join(lab,globalPrefix,'preservation-manifest.json'),pb,{flag:'wx'});console.log(JSON.stringify({installed:36,publicCopies:publicRows.length,sourceProof,preservationSHA256:sha(pb)}));

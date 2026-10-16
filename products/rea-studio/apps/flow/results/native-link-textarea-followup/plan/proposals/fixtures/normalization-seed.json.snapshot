@@ -1,0 +1,96 @@
+{
+  "name": "Owned static Link In/Out fixture",
+  "text": "\r\n{\n   \"rev\": \"opaque publisher revision\",\n   \"vendor\": {\n      \"untouched\": [\n         \"Flow static-link fixture\",\n         17\n      ],\n      \"nativeMetadata\": true\n   },\n   \"flows\": [\n      {\n         \"id\": \"tab\",\n         \"type\": \"tab\",\n         \"label\": \"Owned static links\"\n      },\n      {\n         \"id\": \"start\",\n         \"type\": \"inject\",\n         \"z\": \"tab\",\n         \"name\": \"Owned manual Inject\",\n         \"props\": [],\n         \"x\": 120,\n         \"y\": 120,\n         \"wires\": [\n            [\n               \"out\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"out\",\n         \"type\": \"link out\",\n         \"z\": \"tab\",\n         \"name\": \"Static Out\",\n         \"links\": [],\n         \"x\": 340,\n         \"y\": 120,\n         \"wires\": [\n            [\n               \"physical-debug\"\n            ]\n         ],\n         \"opaque\": {\n            \"originalOption\": [\n               \"retained\",\n               true\n            ]\n         }\n      },\n      {\n         \"id\": \"in\",\n         \"type\": \"link in\",\n         \"z\": \"tab\",\n         \"name\": \"Static In\",\n         \"links\": [\n            \"out\"\n         ],\n         \"x\": 540,\n         \"y\": 120,\n         \"wires\": [\n            [\n               \"virtual-debug\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"virtual-debug\",\n         \"type\": \"debug\",\n         \"z\": \"tab\",\n         \"name\": \"Virtual Debug\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"complete\": \"true\",\n         \"x\": 780,\n         \"y\": 120,\n         \"wires\": []\n      },\n      {\n         \"id\": \"physical-debug\",\n         \"type\": \"debug\",\n         \"z\": \"tab\",\n         \"name\": \"Overwritten physical Debug\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"complete\": \"true\",\n         \"x\": 780,\n         \"y\": 280,\n         \"wires\": []\n      }\n   ]\n}\r\n",
+  "document": {
+    "rev": "opaque publisher revision",
+    "vendor": {
+      "untouched": [
+        "Flow static-link fixture",
+        17
+      ],
+      "nativeMetadata": true
+    },
+    "flows": [
+      {
+        "id": "tab",
+        "type": "tab",
+        "label": "Owned static links"
+      },
+      {
+        "id": "start",
+        "type": "inject",
+        "z": "tab",
+        "name": "Owned manual Inject",
+        "props": [],
+        "x": 120,
+        "y": 120,
+        "wires": [
+          [
+            "out"
+          ]
+        ]
+      },
+      {
+        "id": "out",
+        "type": "link out",
+        "z": "tab",
+        "name": "Static Out",
+        "links": [],
+        "x": 340,
+        "y": 120,
+        "wires": [
+          [
+            "physical-debug"
+          ]
+        ],
+        "opaque": {
+          "originalOption": [
+            "retained",
+            true
+          ]
+        }
+      },
+      {
+        "id": "in",
+        "type": "link in",
+        "z": "tab",
+        "name": "Static In",
+        "links": [
+          "out"
+        ],
+        "x": 540,
+        "y": 120,
+        "wires": [
+          [
+            "virtual-debug"
+          ]
+        ]
+      },
+      {
+        "id": "virtual-debug",
+        "type": "debug",
+        "z": "tab",
+        "name": "Virtual Debug",
+        "active": true,
+        "tosidebar": true,
+        "complete": "true",
+        "x": 780,
+        "y": 120,
+        "wires": []
+      },
+      {
+        "id": "physical-debug",
+        "type": "debug",
+        "z": "tab",
+        "name": "Overwritten physical Debug",
+        "active": true,
+        "tosidebar": true,
+        "complete": "true",
+        "x": 780,
+        "y": 280,
+        "wires": []
+      }
+    ]
+  },
+  "synthetic": true
+}

@@ -1,0 +1,91 @@
+name: Hosted proof delivery audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/rea-cloud-recovery-20261015
+    paths:
+      - '.github/workflows/proof-delivery-audit-cloud.yml'
+      - 'scripts/audit-proof-delivery.mjs'
+      - 'scripts/verify-records.mjs'
+      - 'scripts/verify-cloud-publication.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: proof-delivery-audit-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+
+      - name: Check out the exact requested revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Select pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+
+      - name: Read committed proof declarations
+        id: audit
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-proof-delivery-audit-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node scripts/audit-proof-delivery.mjs --output "$evidence"
+
+      - name: Preserve bounded audit evidence
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-proof-delivery-audit-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          @{ schema = 'rea-hosted-proof-delivery-workflow/v1'; sourceCommit = $env:GITHUB_SHA; runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; auditOutcome = '${{ steps.audit.outcome }}'; productExecutions = 0; publicationAccepted = $false; historicalReceiptsRewritten = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files = @(Get-ChildItem -LiteralPath $evidence -File)
+          $rawBytes = ($files | Measure-Object Length -Sum).Sum
+          $bounded = $files.Count -le 12 -and $rawBytes -le 24 * 1024 * 1024 -and @($files | Where-Object { $_.Length -gt 4 * 1024 * 1024 }).Count -eq 0
+          $archive = Join-Path $env:RUNNER_TEMP ('rea-proof-delivery-audit-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if ($bounded) { [System.IO.Compression.ZipFile]::CreateFromDirectory($evidence, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false) }
+          $complete = $bounded -and (Get-Item -LiteralPath $archive).Length -le 15 * 1024 * 1024
+          if (-not $complete) {
+            $fallback = Join-Path $env:RUNNER_TEMP ('rea-proof-delivery-audit-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback | Out-Null
+            foreach ($name in @('workflow-attempt.json','attempt-running.json','audit-report.json','events.jsonl')) {
+              $candidate = Join-Path $evidence $name
+              if ((Test-Path -LiteralPath $candidate -PathType Leaf) -and (Get-Item -LiteralPath $candidate).Length -le 2 * 1024 * 1024) { Copy-Item -LiteralPath $candidate -Destination (Join-Path $fallback $name) }
+            }
+            @{ schema = 'rea-proof-delivery-audit-storage-failure/v1'; status = 'failed'; completeEvidenceUploaded = $false; rawFiles = $files.Count; rawBytes = $rawBytes; rawLimitBytes = 24 * 1024 * 1024; zipLimitBytes = 15 * 1024 * 1024; missingAndUnresolvedDetailFilesMayBeUnavailable = $true } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive = Join-Path $env:RUNNER_TEMP ('rea-proof-delivery-audit-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
+            [System.IO.Compression.ZipFile]::CreateFromDirectory($fallback, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false)
+            if ((Get-Item -LiteralPath $archive).Length -gt 15 * 1024 * 1024) { throw 'Even incomplete audit diagnostics exceed the artifact budget.' }
+          }
+          'artifact_path=' + $archive | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          if (-not $complete) { throw 'Complete audit detail exceeded its reviewed budget; only explicitly incomplete diagnostics are uploaded.' }
+
+      - name: Upload diagnostic evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: proof-delivery-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

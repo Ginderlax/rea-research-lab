@@ -1,0 +1,78 @@
+{
+  "schema": "rea-work-only-NewTodo-save-organization-ownership-client-proposal/v1",
+  "status": "source-only-proposal-independent-peer-and-hosted-rerun-required",
+  "sourceProposalAuthority": {
+    "path": "work/notes-new-todo-r4-next/change-authority.json",
+    "bytes": 7958,
+    "sha256": "f34bc8608b1661202c11acf42f531051706b1c29b24db155945766cae841be64"
+  },
+  "sourceProposalPath": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-new-todo-r4-next\\candidate\\products\\rea-studio\\apps\\notes\\client.mjs",
+  "candidatePath": "C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\work\\notes-new-todo-save-organization-ownership-next\\candidate\\products\\rea-studio\\apps\\notes\\client.mjs",
+  "targetPath": "products/rea-studio/apps/notes/client.mjs",
+  "before": {
+    "bytes": 29503,
+    "sha256": "fc4f803445d216019417c752b5e86f4af4b6556350cdd95f2dd6e9934d3558a5"
+  },
+  "after": {
+    "bytes": 29531,
+    "sha256": "d6f301dcc803c4bfd12a1c03eb71896710d1b42053fa10ee13d25e76d6930daa"
+  },
+  "beforeImage": "before/client.mjs.snapshot",
+  "scope": "Replacement experimental after-image only; before is the frozen R4 proposal, not the32-file currently installed application. This proposal performs no active copy and is not a standalone production installation authority.",
+  "runtimeLiteralReplacements": [
+    {
+      "before": "if(!mounted||organizationBusy||((todoBusy||saveBusy)&&!readOnly))return;",
+      "after": "if(!mounted||organizationBusy||(todoBusy&&!readOnly))return;",
+      "occurrences": 1,
+      "reason": "Restore general run admission while Save is pending; preserve existing mounted/organization/to-do guards."
+    },
+    {
+      "before": "if (!mounted || todoBusy || organizationBusy) return;",
+      "after": "if (!mounted || todoBusy || organizationBusy || saveBusy) return;",
+      "occurrences": 1,
+      "reason": "Move the save-pending to-do exclusion into its explicit mutation boundary."
+    },
+    {
+      "before": "saveBusy=false;if(mounted){save.disabled=Boolean(current?.deletedAt);refreshTodo();}",
+      "after": "saveBusy=false;if(mounted){save.disabled=organizationBusy||Boolean(current?.deletedAt);refreshTodo();}",
+      "occurrences": 1,
+      "reason": "Save cleanup releases only its own busy state and keeps the control disabled for an overlapping organization owner."
+    },
+    {
+      "before": "save.disabled=Boolean(current?.deletedAt);moveNote.disabled=",
+      "after": "save.disabled=saveBusy||Boolean(current?.deletedAt);moveNote.disabled=",
+      "occurrences": 1,
+      "reason": "Organization cleanup releases only its own busy state and retains native Save disabling while the prior save is still pending."
+    }
+  ],
+  "actualFailedRun": 38926216286,
+  "actualFailedHead": "b635c33d971768682360e2c518b9b2bb0840985b",
+  "actualFiniteResult": {
+    "groups": 111,
+    "passed": 107,
+    "failed": 4,
+    "ownedThreeUiRegressions": [
+      57,
+      59,
+      62
+    ],
+    "otherFlagNormalizationFailure": 23
+  },
+  "unchangedBoundaries": [
+    "saveNote still refuses duplicate pending saves and keeps native Save disabled",
+    "mounted/editorGeneration/draftRevision/all-four-field ownership logic is unchanged",
+    "to-do busy/readOnly behavior and newDraft organization/dirty/discard policy are unchanged",
+    "current deleted note remains unsavable",
+    "all17 historical test source files and all111 planned groups remain unchanged",
+    "old frozen R4 and historical/installed receipts remain unchanged"
+  ],
+  "localProductExecutions": 0,
+  "localTests": 0,
+  "localBuilds": 0,
+  "localSyntaxChecks": 0,
+  "localCandidateImports": 0,
+  "activeWrites": 0,
+  "gitMutations": 0,
+  "independentReviewRequired": true,
+  "freshHosted111And8Required": true
+}

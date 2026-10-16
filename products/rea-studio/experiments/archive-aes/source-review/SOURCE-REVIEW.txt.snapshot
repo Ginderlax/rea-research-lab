@@ -1,0 +1,80 @@
+Archive source-metadata derivative: independent source review, 2026-10-15
+
+Disposition: SOURCE-ONLY APPROVAL; no blocking implementation issue found in
+the inspected five-file overlay. This is not test, integration, original,
+browser, product-parity, security or performance acceptance.
+
+Scope read: derivative README and all five overlay files; frozen793 candidate
+server.mjs, operation-budget.mjs, original-aes-test-helper.mjs, and base README.
+A read-only unified diff directly compared both server files. No stage edits,
+application execution, syntax check, tests, builds, bootstrap, service start,
+bulk hashing or whole-stage census were performed. This note is the only
+reviewer-authored file.
+
+Base authority identifiers were supplied by the parent and repeated in the
+overlay README. They were not independently rehashed here:
+manifest a37d03df0fdf4ef53fcd8e5bbcca7aab465b6329810ca9cab33210417af0825e
+validation 456bb217f78ffb2ceb9ccf901a3e22bda726bd45bbbb53dd07a744e5d56ae11e
+base server 232d0c94e0b38da741ba751d7dbe39e1fd51da0c5d1a3511b2aae16ab36ba9c6
+
+Findings supporting source-only approval:
+
+1. Paths cross the native process boundary only in bounded UTF-8 stdin JSON.
+   The EncodedCommand is a constant UTF-16LE program. No path or password is
+   interpolated into program text or command arguments. execFile uses an
+   explicit installed Windows PowerShell path, shell:false and windowsHide.
+
+2. JS validates an absolute root, confined absolute source paths, unique
+   case-folded paths, boolean source types and bounded request size. The
+   child repeats confinement and root-to-target reparse/type checks using
+   literal paths. JS correlates every returned row by ordered index, path
+   and type, preventing reordered or substituted native observations.
+
+3. Native UTC strings are correlated with independent decimal milliseconds
+   at 100-nanosecond precision before reducing to the existing whole-ms
+   archive contract. Negative fractional milliseconds are represented by
+   signed decimal ticks; the date parser's whole-ms value plus the final
+   four fractional digits gives the matching negative-epoch ticks.
+   Invalid/normalized dates and inconsistent values refuse safely.
+
+4. Directory and single-file creation await validated metadata before any
+   output-parent mkdir, container commit or archive write. Existing size
+   checks and no-link walk remain. Native parse/transport/disappearance
+   failures therefore occur before output-directory creation. Reparse and
+   concurrent content/metadata replacement races remain explicitly disclosed.
+
+5. Non-Windows dates use the same stat objects captured before content reads.
+   Windows dates intentionally come from the native batch after content
+   reads; access-time updates may therefore be observed. The documentation
+   states this change and the non-atomic source-capture limitation.
+
+6. The direct server diff has six localized hunks: metadata import and queue
+   declaration relocation; collection signature; collected date plumbing;
+   run signature; single-file metadata plumbing; handler factory/default
+   singleton. Date/container/extraction/crypto implementations outside those
+   explicit regions are unchanged in the compared files. The default handler
+   retains the original per-workspace serialized queue and password deletion.
+   Exact byte-hash/inverse and complete-base authentication remain cloud
+   composition checks; no whole793 identity claim follows from this diff.
+
+7. MIT notice is scoped to the independent new metadata adapter and tests;
+   the overlay explicitly retains all frozen source-assisted AES/LZMA and
+   existing server licensing. No original binary is added to the overlay.
+
+Bounds and acceptance limitations:
+
+- Native input is capped at 32 MiB, output at 64 MiB, source count at 10,000,
+  and the process at 15 seconds. The same caller OperationBudget is checked
+  immediately before/after the metadata await. Expiry prevents archive commit,
+  but a child is not preempted at a smaller caller-supplied maxTimeMs. This is
+  cooperative bounded I/O, not a strict wall-clock operation deadline.
+- Nine authored test groups were read but not run. They include Unicode and
+  shell-looking paths, decimal/UTC checks, 1969/2106/2107 native fixtures,
+  plain ZIP/plain and encrypted7Z restoration, refusal paths and a junction.
+- New tests do not explicitly exercise source/request/response caps, actual
+  native timeout, or expiry while an awaited metadata batch is held. Fresh
+  cloud-only controls should accompany any acceptance claim about those bounds.
+- Exact pre/post source identities, original-prerequisite acquisition and
+  original-process accounting, native raw observations, the base151 regression
+  selection and current actual-browser acceptance remain separate work.
+- Frozen793, its old151 receipt and the live Archive app were not changed.

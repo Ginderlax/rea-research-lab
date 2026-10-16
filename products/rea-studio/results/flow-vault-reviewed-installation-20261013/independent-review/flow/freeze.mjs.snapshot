@@ -1,0 +1,30 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import assert from 'node:assert/strict';
+const own=path.dirname(fileURLToPath(import.meta.url)),workspace=path.resolve(own,'../..');
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const references=[];
+const copy=async(sourceRoot,sourcePath,destination)=>{const b=await fs.readFile(path.join(workspace,sourceRoot,sourcePath));await fs.mkdir(path.dirname(path.join(own,destination)),{recursive:true});await fs.writeFile(path.join(own,destination),b);references.push({sourceRoot,sourcePath,path:destination,bytes:b.length,sha256:sha(b),inert:true});};
+const plan='work/flow-static-link-textarea-publication-plan-next';
+for(const f of ['manifest.json','validation.json','public-source-map.json','installation-proposals.json','test-path-adapters.json','documentation-overlays.json','DOCUMENTATION-CONTRACT.md','evidence-scopes.json','excluded-local-carriers.json','original-registry-identities.json','current-baseline18.json','current-registry-identity-audit.json'])await copy(plan,f,'authority/plan/'+f+'.snapshot');
+for(const root of ['flow-native-link-next','flow-native-textarea-normalization-fix-next','flow-native-textarea-normalization-independent-review','root-flow-link-review-preservation-next','root-flow-link-browser-review-next','root-flow-corrected-browser-review-next'])await copy('work/'+root,'manifest.json','authority/epochs/'+root+'.manifest.json.snapshot');
+for(const f of ['source-provenance.json','official-source/node-red-nodes/LICENSE.snapshot','official-source/node-red-runtime/LICENSE.snapshot','verification-source/node-red-node-test-helper/LICENSE.snapshot'])await copy('work/flow-native-link-next',f,'authority/original/'+f+'.snapshot');
+for(const root of ['root-flow-link-browser-review-next','root-flow-corrected-browser-review-next'])for(const f of ['browser-observations.json','validation.json'])await copy('work/'+root,f,'authority/browser/'+root+'.'+f+'.snapshot');
+await fs.writeFile(path.join(own,'authority-copy-list.json'),JSON.stringify({schema:'rea-flow-independent-review-exact-inert-authority-copy-list/v1',records:references,recursivePayloadCopy:false},null,2)+'\n');
+const diagnostics=JSON.parse(await fs.readFile(path.join(own,'preparation-diagnostics.json')));diagnostics.collectorAttempts=[
+ {path:'attempts/v1',reason:'Incorrectly assumed initial preparation source count852 must equal final alias count830.'},
+ {path:'attempts/v2',reason:'Incorrectly required already-declared seed-path-adapted tests to equal raw pre-adapter candidate.'},
+ {path:'attempts/v3',reason:'Incorrectly assumed a uniform baselineProducts/requirements capability schema; actual workspace/system schemas differ.'},
+ {path:'attempts/v4',reason:'Incorrectly treated sourceRoster numeric13 as an array.'},
+ {path:'attempts/v5',reason:'Incorrectly used corrected pass rather than old passed observation field.'}
+];diagnostics.extraReadDiagnostic='The v3 schema inspection repeated the uniform baselineProducts assumption against system-products; read-only TypeError retained in this diagnostic, corrected through direct schema inspection. No product defect.';
+await fs.writeFile(path.join(own,'preparation-diagnostics.json'),JSON.stringify(diagnostics,null,2)+'\n');
+const receipt=JSON.parse(await fs.readFile(path.join(own,'review-validation.json')));assert.equal(receipt.accepted,true);assert.equal(receipt.negativeControls.length,8);assert.equal(receipt.sourceRows,1681);
+const inventory=[];
+async function walk(rel=''){for(const e of await fs.readdir(path.join(own,rel),{withFileTypes:true})){const p=rel?rel+'/'+e.name:e.name;if(p==='manifest.json')continue;assert(!e.isSymbolicLink());if(e.isDirectory())await walk(p);else{const b=await fs.readFile(path.join(own,p));inventory.push({path:p,bytes:b.length,sha256:sha(b)});}}}
+await walk();inventory.sort((a,b)=>a.path.localeCompare(b.path));
+const manifest={schema:'rea-flow-publication-plan-independent-review-strict-freeze/v1',at:new Date().toISOString(),strict:true,inventory,files:inventory.length,sourceOnly:true,applicationExecutions:0,originalExecutions:0,browserExecutions:0,productionWrites:0,publicWrites:0,oldEvidenceRebound:false};
+const text=JSON.stringify(manifest,null,2)+'\n';await fs.writeFile(path.join(own,'manifest.json'),text);
+console.log(JSON.stringify({files:inventory.length,manifestSHA256:sha(Buffer.from(text)),receiptSHA256:sha(await fs.readFile(path.join(own,'review-validation.json'))),authorityCopies:references.length,totalBytes:inventory.reduce((n,r)=>n+r.bytes,0)}));

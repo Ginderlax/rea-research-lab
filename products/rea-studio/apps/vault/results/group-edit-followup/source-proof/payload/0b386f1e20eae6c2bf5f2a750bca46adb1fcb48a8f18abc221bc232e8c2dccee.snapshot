@@ -1,0 +1,18 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+const work=import.meta.dirname,folder=path.join(work,'vault-group-edit-correction-independent-review');
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const manifest=await fs.readFile(path.join(folder,'review-manifest.json'));
+assert.equal(sha(manifest),'47a187e41db5406d7fb927184b1eba6854e90b73895c606ed0639abdae2c3075');
+const m=JSON.parse(manifest);assert.equal(m.inventory.length,55);
+for(const row of m.inventory){assert(!row.path.includes('..')&&!row.path.includes('\\')&&!path.isAbsolute(row.path));const b=await fs.readFile(path.join(folder,row.path));assert.equal(b.length,row.bytes);assert.equal(sha(b),row.sha256);}
+const review=JSON.parse(await fs.readFile(path.join(folder,'review-validation.json')));
+assert.equal(review.finiteAcceptance,true);assert.equal(review.confirmedNewCandidateFaults,0);assert.deepEqual(review.counts,{tests:15,pass:15,fail:0,skipped:0,cancelled:0,todo:0});
+assert.equal(review.authoritiesSourceBeforeAfterStable,true);assert.equal(review.initialNegativeControlCaseBodies11Unchanged,true);assert.equal(review.fixtureAdapterInverseExact,true);
+const own=path.join(work,'root-vault-group-edit-corrected-browser-review-next');
+await fs.writeFile(path.join(own,'independent-review-manifest.json.snapshot'),manifest,{flag:'wx'});
+await fs.writeFile(path.join(own,'root-review-auth.mjs.snapshot'),await fs.readFile(import.meta.filename),{flag:'wx'});
+await fs.writeFile(path.join(own,'root-review-auth.json'),JSON.stringify({at:new Date().toISOString(),sourceOnly:true,strictIndependentReviewFiles:55,manifestSHA256:sha(manifest),acceptedFiniteModelGroups:15,newApplicationOriginalBrowserExecutions:0,productionWrites:0},null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({reviewFiles:55,finiteAcceptance:true,productionWrites:0}));

@@ -1,0 +1,36 @@
+import assert from'node:assert/strict';import fs from'node:fs/promises';import path from'node:path';import os from'node:os';import{createHash}from'node:crypto';
+import{render}from'../vault-group-edit-next/products/rea-studio/apps/vault/client.mjs';
+import{handle,dispose}from'../vault-group-edit-next/products/rea-studio/apps/vault/server.mjs';
+import{exportKdbx}from'../vault-group-edit-next/products/rea-studio/apps/vault/kdbx.mjs';
+import{fixture as canonicalFixture,ids}from'../vault-group-edit-next/products/rea-studio/apps/vault/group-fixture.mjs';
+export{ids};export const observations=[];
+const clone=v=>structuredClone(v),sha=b=>createHash('sha256').update(b).digest('hex');
+export class Element{
+ constructor(tag){this.tagName=tag.toUpperCase();this.children=[];this.parentElement=null;this._text='';this._value='';this.checked=false;this.disabled=false;this.readOnly=false;this.listeners=new Map();this.style={};this.attributes={};}
+ get value(){return this._value;}set value(v){this._value=this.tagName==='TEXTAREA'?String(v).replace(/\r\n?/g,'\n'):String(v);}
+ get textContent(){return this._text+this.children.map(n=>n.textContent).join('');}set textContent(v){this._text=String(v);this.replaceChildren();}
+ append(...ns){for(const n of ns){assert(n instanceof Element);if(n.parentElement)n.parentElement.children=n.parentElement.children.filter(c=>c!==n);n.parentElement=this;this.children.push(n);}}
+ replaceChildren(...ns){for(const n of this.children)n.parentElement=null;this.children=[];this.append(...ns);}
+ addEventListener(name,fn){if(!this.listeners.has(name))this.listeners.set(name,[]);this.listeners.get(name).push(fn);}
+ setAttribute(k,v){this.attributes[k]=String(v);}getAttribute(k){return this.attributes[k]??null;}
+}
+export function walk(root){return[root,...root.children.flatMap(walk)];}
+export function button(root,title){const list=walk(root).filter(n=>n.tagName==='BUTTON'&&n.textContent===title);assert.equal(list.length,1,'Unique button '+title);return list[0];}
+export function field(root,label){const list=walk(root).filter(n=>n.tagName==='LABEL'&&n._text===label);assert.equal(list.length,1,'Unique field '+label);const input=list[0].children.find(n=>['INPUT','TEXTAREA','SELECT'].includes(n.tagName));assert(input);return input;}
+export function groupRow(root,name){const list=walk(root).filter(n=>n.tagName==='STRONG'&&n.textContent===name);assert.equal(list.length,1,'Unique group/entry row '+name);return list[0].parentElement;}
+export async function click(node){assert(!node.disabled,'An enabled button is required');for(const fn of node.listeners.get('click')??[])await fn({target:node});}
+export async function type(node,value){assert(!node.disabled&&!node.readOnly,'Enabled writable control');node.value=value;for(const fn of node.listeners.get('input')??[])await fn({target:node});}
+export function deferred(){let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b});return{promise,resolve,reject};}
+export async function mount(t,name){
+ const tmp=await fs.mkdtemp(path.join(os.tmpdir(),'rea-vault-group-editor-review-')),workspace={root:tmp};const values=new Map();let failNext=false;
+ const store={async get(k,fallback){return values.has(k)?clone(values.get(k)):fallback;},async set(k,v){if(failNext){failNext=false;throw Error('Owned persistence failure');}values.set(k,clone(v));},failNext(){failNext=true;},identity(){return sha(Buffer.from(JSON.stringify([...values])));}};
+ const direct=(action,input={})=>handle({workspace,store,action,input});const pass='Owned synthetic independent group master';
+ const data=canonicalFixture(),file=await exportKdbx(data,{password:pass},{kdf:'aes',aesRounds:100,compression:false});await direct('importKdbx',{fileBase64:file.toString('base64'),password:pass,localPassword:pass,confirmReplace:true});file.fill(0);
+ const calls=[],holds=[];let cleanup,oldDocument=globalThis.document;
+ globalThis.document={createElement:tag=>new Element(tag)};const host=new Element('main'),root=new Element('section');host.append(root);
+ async function api(action,input={}){const request={action,input:clone(input)};calls.push(request);let result;try{result=await direct(action,input);request.result=clone(result);}catch(error){request.error=error.message;throw error;}const held=holds.find(h=>!h.used&&h.action===action&&(h.predicate?.(input,result)??true));if(held){held.used=true;held.started.resolve(clone(result));await held.release.promise;}return result;}
+ function hold(action,predicate){const h={action,predicate,used:false,started:deferred(),release:deferred()};holds.push(h);return h;}
+ cleanup=await render(root,api);const initialStore=store.identity();let finished=false;
+ async function close(){if(finished)return;finished=true;for(const h of holds)h.release.resolve();cleanup?.();dispose(workspace);globalThis.document=oldDocument;assert(path.dirname(tmp)===path.resolve(os.tmpdir())&&path.basename(tmp).startsWith('rea-vault-group-editor-review-'));assert.equal((await fs.readdir(tmp)).length,0);await fs.rmdir(tmp);observations.push({name,calls,initialEncryptedStoreSHA256:initialStore,finalEncryptedStoreSHA256:store.identity(),cleanup:true,tempGone:true,DOMModel:true,nativeBrowser:false,canonicalFixtureReusedWithProvenance:true,originalExecutions:0});}
+ t.after(close);return{root,host,api,direct,hold,store,cleanup,close,pass,calls,workspace};
+}

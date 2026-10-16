@@ -1,0 +1,11 @@
+# Corrected New To-do cloud evidence
+
+The corrected seven-target experimental composition passed **111/111 finite groups across21 files** and **8/8 real Chromium scenarios** in [run38930449217](https://github.com/Ginderlax/rea-research-lab/actions/runs/38930449217), on committed source `89e00f66c2249a50c701404accede7565094304e`. Counts from the two jobs stay separate. The proposal is not installed into the active Notes product.
+
+All23 required older names and19 new names were observed. Pinned released-Joplin comparisons cover20 existing conversion/completion comparisons,4 parent/type comparisons and2 delegated desktop command-argument comparisons. These do not execute the original full application, database, GUI or provisional save and are not added to111. Actual HTTP module delivery was checked.
+
+The browser evidence includes three held successful responses, one held failed response, two genuine restored filesystem list400 failures, one genuine empty-title400, two real downloads, eight PNGs and eight complete owned cleanups. A real second Save establishes the canonical revision2/metadataEditedtrue/history1 baseline; the whole unrelated record remains equal before and after validation. JEX readback preserves all seven prior raw records plus the binary resource alongside the new task. All source proofs and always-run independent source postchecks passed.
+
+Both complete original GitHub ZIPs preserve every one of1,108 uploaded files. Every66 nonsource role is retained separately; the manifest maps logical roles to exact stored objects, with raw and gzip-storage SHA-256 identities. All source aliases remain inside the complete ZIPs and verified readable local backups. Raw event/attempt/helper clocks retain their exact origin and are not normalized or rebound.
+
+The earlier b635 run failed with107/111 finite groups passed and7/8 browser cases passed. Its complete separate failure capsule remains unchanged. This success is new experimental evidence and does not rewrite historical installed92/8 receipts. No full development-suite, every-feature, security, parity or superiority acceptance is claimed. All product/original/test/build/browser execution for these results occurred in the recorded GitHub-hosted jobs; local work was source authoring and portable evidence backup only.

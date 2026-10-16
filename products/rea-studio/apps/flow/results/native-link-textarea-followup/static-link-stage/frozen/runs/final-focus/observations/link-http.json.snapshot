@@ -1,0 +1,2271 @@
+{
+  "scope": "Actual unchanged shared Studio host, real HTTP and disk store; five owned ephemeral host starts across three finite cases, no browser/original GUI/benchmark",
+  "observations": [
+    {
+      "label": "cross-tab-restart",
+      "hostStarts": 2,
+      "hostClosed": true,
+      "tempRemoved": true,
+      "calls": [
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "name": "HTTP link fixture",
+            "text": "\r\n{\n   \"vendor\": {\n      \"raw\": \"retained\"\n   },\n   \"flows\": [\n      {\n         \"id\": \"tab\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"other\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"start\",\n         \"type\": \"inject\",\n         \"z\": \"tab\",\n         \"props\": [],\n         \"wires\": [\n            [\n               \"remember\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"remember\",\n         \"type\": \"change\",\n         \"z\": \"tab\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"last\",\n               \"pt\": \"global\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"source\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"out\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"out\",\n         \"type\": \"link out\",\n         \"z\": \"tab\",\n         \"links\": [],\n         \"wires\": [\n            [\n               \"unsupported-ignored\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"in\",\n         \"type\": \"link in\",\n         \"z\": \"other\",\n         \"links\": [\n            \"out\"\n         ],\n         \"wires\": [\n            [\n               \"destination\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"destination\",\n         \"type\": \"change\",\n         \"z\": \"other\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"copy\",\n               \"pt\": \"msg\",\n               \"to\": \"last\",\n               \"tot\": \"global\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"destination\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"debug\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"debug\",\n         \"type\": \"debug\",\n         \"z\": \"other\",\n         \"complete\": \"true\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"wires\": []\n      },\n      {\n         \"id\": \"unsupported-ignored\",\n         \"type\": \"community-not-implemented\",\n         \"z\": \"tab\",\n         \"wires\": []\n      }\n   ]\n}\r\n"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+                "name": "HTTP link fixture",
+                "text": "\r\n{\n   \"vendor\": {\n      \"raw\": \"retained\"\n   },\n   \"flows\": [\n      {\n         \"id\": \"tab\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"other\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"start\",\n         \"type\": \"inject\",\n         \"z\": \"tab\",\n         \"props\": [],\n         \"wires\": [\n            [\n               \"remember\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"remember\",\n         \"type\": \"change\",\n         \"z\": \"tab\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"last\",\n               \"pt\": \"global\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"source\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"out\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"out\",\n         \"type\": \"link out\",\n         \"z\": \"tab\",\n         \"links\": [],\n         \"wires\": [\n            [\n               \"unsupported-ignored\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"in\",\n         \"type\": \"link in\",\n         \"z\": \"other\",\n         \"links\": [\n            \"out\"\n         ],\n         \"wires\": [\n            [\n               \"destination\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"destination\",\n         \"type\": \"change\",\n         \"z\": \"other\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"copy\",\n               \"pt\": \"msg\",\n               \"to\": \"last\",\n               \"tot\": \"global\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"destination\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"debug\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"debug\",\n         \"type\": \"debug\",\n         \"z\": \"other\",\n         \"complete\": \"true\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"wires\": []\n      },\n      {\n         \"id\": \"unsupported-ignored\",\n         \"type\": \"community-not-implemented\",\n         \"z\": \"tab\",\n         \"wires\": []\n      }\n   ]\n}\r\n",
+                "revision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.658Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              }
+            }
+          }
+        },
+        {
+          "action": "native-validate",
+          "status": 200,
+          "input": {
+            "text": "\r\n{\n   \"vendor\": {\n      \"raw\": \"retained\"\n   },\n   \"flows\": [\n      {\n         \"id\": \"tab\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"other\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"start\",\n         \"type\": \"inject\",\n         \"z\": \"tab\",\n         \"props\": [],\n         \"wires\": [\n            [\n               \"remember\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"remember\",\n         \"type\": \"change\",\n         \"z\": \"tab\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"last\",\n               \"pt\": \"global\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"source\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"out\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"out\",\n         \"type\": \"link out\",\n         \"z\": \"tab\",\n         \"links\": [],\n         \"wires\": [\n            [\n               \"unsupported-ignored\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"in\",\n         \"type\": \"link in\",\n         \"z\": \"other\",\n         \"links\": [\n            \"out\"\n         ],\n         \"wires\": [\n            [\n               \"destination\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"destination\",\n         \"type\": \"change\",\n         \"z\": \"other\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"copy\",\n               \"pt\": \"msg\",\n               \"to\": \"last\",\n               \"tot\": \"global\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"destination\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"debug\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"debug\",\n         \"type\": \"debug\",\n         \"z\": \"other\",\n         \"complete\": \"true\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"wires\": []\n      },\n      {\n         \"id\": \"unsupported-ignored\",\n         \"type\": \"community-not-implemented\",\n         \"z\": \"tab\",\n         \"wires\": []\n      }\n   ]\n}\r\n"
+          },
+          "response": {
+            "result": {
+              "revision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+              "starts": [
+                {
+                  "id": "start",
+                  "name": "start",
+                  "tab": "tab"
+                }
+              ],
+              "issues": [
+                {
+                  "node": "unsupported-ignored",
+                  "type": "community-not-implemented",
+                  "reason": "community-not-implemented execution is not implemented"
+                }
+              ],
+              "schedules": [],
+              "nodeCount": 9,
+              "runReady": true,
+              "linkConnections": [
+                {
+                  "source": "out",
+                  "target": "in"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-deploy",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+                "name": "HTTP link fixture",
+                "text": "\r\n{\n   \"vendor\": {\n      \"raw\": \"retained\"\n   },\n   \"flows\": [\n      {\n         \"id\": \"tab\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"other\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"start\",\n         \"type\": \"inject\",\n         \"z\": \"tab\",\n         \"props\": [],\n         \"wires\": [\n            [\n               \"remember\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"remember\",\n         \"type\": \"change\",\n         \"z\": \"tab\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"last\",\n               \"pt\": \"global\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"source\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"out\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"out\",\n         \"type\": \"link out\",\n         \"z\": \"tab\",\n         \"links\": [],\n         \"wires\": [\n            [\n               \"unsupported-ignored\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"in\",\n         \"type\": \"link in\",\n         \"z\": \"other\",\n         \"links\": [\n            \"out\"\n         ],\n         \"wires\": [\n            [\n               \"destination\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"destination\",\n         \"type\": \"change\",\n         \"z\": \"other\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"copy\",\n               \"pt\": \"msg\",\n               \"to\": \"last\",\n               \"tot\": \"global\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"destination\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"debug\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"debug\",\n         \"type\": \"debug\",\n         \"z\": \"other\",\n         \"complete\": \"true\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"wires\": []\n      },\n      {\n         \"id\": \"unsupported-ignored\",\n         \"type\": \"community-not-implemented\",\n         \"z\": \"tab\",\n         \"wires\": []\n      }\n   ]\n}\r\n",
+                "revision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.658Z",
+                "deployedRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "deployedAt": "2026-10-13T05:25:44.671Z"
+              },
+              "runnableStarts": [
+                {
+                  "id": "start",
+                  "name": "start",
+                  "tab": "tab"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-inject",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+            "messages": [
+              {
+                "_msgid": "fixed",
+                "payload": 17
+              }
+            ]
+          },
+          "response": {
+            "result": {
+              "run": {
+                "id": "8227cb03-3aef-40f2-be0c-bd5a02974b8d",
+                "startedAt": "2026-10-13T05:25:44.675Z",
+                "deployedRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "debug": [
+                  {
+                    "node": "debug",
+                    "name": "",
+                    "sequence": 6,
+                    "message": {
+                      "_msgid": "fixed",
+                      "payload": 17,
+                      "_event": "node:out",
+                      "copy": 17
+                    },
+                    "value": {
+                      "_msgid": "fixed",
+                      "payload": 17,
+                      "_event": "node:out",
+                      "copy": 17
+                    }
+                  }
+                ],
+                "trace": [
+                  {
+                    "node": "start",
+                    "type": "inject",
+                    "sequence": 1
+                  },
+                  {
+                    "node": "remember",
+                    "type": "change",
+                    "sequence": 2
+                  },
+                  {
+                    "node": "out",
+                    "type": "link out",
+                    "sequence": 3
+                  },
+                  {
+                    "node": "in",
+                    "type": "link in",
+                    "sequence": 4
+                  },
+                  {
+                    "node": "destination",
+                    "type": "change",
+                    "sequence": 5
+                  },
+                  {
+                    "node": "debug",
+                    "type": "debug",
+                    "sequence": 6
+                  }
+                ],
+                "deliveries": 6,
+                "reachable": [
+                  "start",
+                  "remember",
+                  "out",
+                  "in",
+                  "destination",
+                  "debug"
+                ],
+                "sourceRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "status": "completed",
+                "durationMs": 2.072
+              }
+            }
+          }
+        },
+        {
+          "action": "native-inspect",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+                "name": "HTTP link fixture",
+                "text": "\r\n{\n   \"vendor\": {\n      \"raw\": \"retained\"\n   },\n   \"flows\": [\n      {\n         \"id\": \"tab\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"other\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"start\",\n         \"type\": \"inject\",\n         \"z\": \"tab\",\n         \"props\": [],\n         \"wires\": [\n            [\n               \"remember\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"remember\",\n         \"type\": \"change\",\n         \"z\": \"tab\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"last\",\n               \"pt\": \"global\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"source\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"out\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"out\",\n         \"type\": \"link out\",\n         \"z\": \"tab\",\n         \"links\": [],\n         \"wires\": [\n            [\n               \"unsupported-ignored\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"in\",\n         \"type\": \"link in\",\n         \"z\": \"other\",\n         \"links\": [\n            \"out\"\n         ],\n         \"wires\": [\n            [\n               \"destination\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"destination\",\n         \"type\": \"change\",\n         \"z\": \"other\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"copy\",\n               \"pt\": \"msg\",\n               \"to\": \"last\",\n               \"tot\": \"global\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"destination\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"debug\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"debug\",\n         \"type\": \"debug\",\n         \"z\": \"other\",\n         \"complete\": \"true\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"wires\": []\n      },\n      {\n         \"id\": \"unsupported-ignored\",\n         \"type\": \"community-not-implemented\",\n         \"z\": \"tab\",\n         \"wires\": []\n      }\n   ]\n}\r\n",
+                "revision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.658Z",
+                "deployedRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "deployedAt": "2026-10-13T05:25:44.671Z"
+              },
+              "stateStored": true,
+              "state": {
+                "flows": {
+                  "tab": {
+                    "source": 17
+                  },
+                  "other": {
+                    "destination": 17
+                  }
+                },
+                "global": {
+                  "last": 17
+                },
+                "previous": {}
+              },
+              "runs": [
+                {
+                  "id": "8227cb03-3aef-40f2-be0c-bd5a02974b8d",
+                  "startedAt": "2026-10-13T05:25:44.675Z",
+                  "deployedRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                  "debug": [
+                    {
+                      "node": "debug",
+                      "name": "",
+                      "sequence": 6,
+                      "message": {
+                        "_msgid": "fixed",
+                        "payload": 17,
+                        "_event": "node:out",
+                        "copy": 17
+                      },
+                      "value": {
+                        "_msgid": "fixed",
+                        "payload": 17,
+                        "_event": "node:out",
+                        "copy": 17
+                      }
+                    }
+                  ],
+                  "trace": [
+                    {
+                      "node": "start",
+                      "type": "inject",
+                      "sequence": 1
+                    },
+                    {
+                      "node": "remember",
+                      "type": "change",
+                      "sequence": 2
+                    },
+                    {
+                      "node": "out",
+                      "type": "link out",
+                      "sequence": 3
+                    },
+                    {
+                      "node": "in",
+                      "type": "link in",
+                      "sequence": 4
+                    },
+                    {
+                      "node": "destination",
+                      "type": "change",
+                      "sequence": 5
+                    },
+                    {
+                      "node": "debug",
+                      "type": "debug",
+                      "sequence": 6
+                    }
+                  ],
+                  "deliveries": 6,
+                  "reachable": [
+                    "start",
+                    "remember",
+                    "out",
+                    "in",
+                    "destination",
+                    "debug"
+                  ],
+                  "sourceRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                  "status": "completed",
+                  "durationMs": 2.072
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+            "name": "HTTP link fixture",
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+                "name": "HTTP link fixture",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "c94c00c1b149e74a08cc2b52855d27fb1eeb71202c50f7864f8195cbed206808",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.685Z",
+                "deployedRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "deployedAt": "2026-10-13T05:25:44.671Z"
+              }
+            }
+          }
+        },
+        {
+          "action": "native-export",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3"
+          },
+          "response": {
+            "result": {
+              "name": "HTTP link fixture",
+              "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+              "revision": "c94c00c1b149e74a08cc2b52855d27fb1eeb71202c50f7864f8195cbed206808"
+            }
+          }
+        },
+        {
+          "action": "native-inject",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+            "messages": [
+              {
+                "_msgid": "next",
+                "payload": 23
+              }
+            ]
+          },
+          "response": {
+            "result": {
+              "run": {
+                "id": "780ef6b8-c011-41c8-942c-b82445dd6667",
+                "startedAt": "2026-10-13T05:25:44.706Z",
+                "deployedRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "debug": [
+                  {
+                    "node": "debug",
+                    "name": "",
+                    "sequence": 6,
+                    "message": {
+                      "_msgid": "next",
+                      "payload": 23,
+                      "_event": "node:out",
+                      "copy": 23
+                    },
+                    "value": {
+                      "_msgid": "next",
+                      "payload": 23,
+                      "_event": "node:out",
+                      "copy": 23
+                    }
+                  }
+                ],
+                "trace": [
+                  {
+                    "node": "start",
+                    "type": "inject",
+                    "sequence": 1
+                  },
+                  {
+                    "node": "remember",
+                    "type": "change",
+                    "sequence": 2
+                  },
+                  {
+                    "node": "out",
+                    "type": "link out",
+                    "sequence": 3
+                  },
+                  {
+                    "node": "in",
+                    "type": "link in",
+                    "sequence": 4
+                  },
+                  {
+                    "node": "destination",
+                    "type": "change",
+                    "sequence": 5
+                  },
+                  {
+                    "node": "debug",
+                    "type": "debug",
+                    "sequence": 6
+                  }
+                ],
+                "deliveries": 6,
+                "reachable": [
+                  "start",
+                  "remember",
+                  "out",
+                  "in",
+                  "destination",
+                  "debug"
+                ],
+                "sourceRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "status": "completed",
+                "durationMs": 2.017
+              }
+            }
+          }
+        },
+        {
+          "action": "native-inspect",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+                "name": "HTTP link fixture",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "c94c00c1b149e74a08cc2b52855d27fb1eeb71202c50f7864f8195cbed206808",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.685Z",
+                "deployedRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "deployedAt": "2026-10-13T05:25:44.671Z"
+              },
+              "stateStored": true,
+              "state": {
+                "flows": {
+                  "tab": {
+                    "source": 23
+                  },
+                  "other": {
+                    "destination": 23
+                  }
+                },
+                "global": {
+                  "last": 23
+                },
+                "previous": {}
+              },
+              "runs": [
+                {
+                  "id": "8227cb03-3aef-40f2-be0c-bd5a02974b8d",
+                  "startedAt": "2026-10-13T05:25:44.675Z",
+                  "deployedRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                  "debug": [
+                    {
+                      "node": "debug",
+                      "name": "",
+                      "sequence": 6,
+                      "message": {
+                        "_msgid": "fixed",
+                        "payload": 17,
+                        "_event": "node:out",
+                        "copy": 17
+                      },
+                      "value": {
+                        "_msgid": "fixed",
+                        "payload": 17,
+                        "_event": "node:out",
+                        "copy": 17
+                      }
+                    }
+                  ],
+                  "trace": [
+                    {
+                      "node": "start",
+                      "type": "inject",
+                      "sequence": 1
+                    },
+                    {
+                      "node": "remember",
+                      "type": "change",
+                      "sequence": 2
+                    },
+                    {
+                      "node": "out",
+                      "type": "link out",
+                      "sequence": 3
+                    },
+                    {
+                      "node": "in",
+                      "type": "link in",
+                      "sequence": 4
+                    },
+                    {
+                      "node": "destination",
+                      "type": "change",
+                      "sequence": 5
+                    },
+                    {
+                      "node": "debug",
+                      "type": "debug",
+                      "sequence": 6
+                    }
+                  ],
+                  "deliveries": 6,
+                  "reachable": [
+                    "start",
+                    "remember",
+                    "out",
+                    "in",
+                    "destination",
+                    "debug"
+                  ],
+                  "sourceRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                  "status": "completed",
+                  "durationMs": 2.072
+                },
+                {
+                  "id": "780ef6b8-c011-41c8-942c-b82445dd6667",
+                  "startedAt": "2026-10-13T05:25:44.706Z",
+                  "deployedRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                  "debug": [
+                    {
+                      "node": "debug",
+                      "name": "",
+                      "sequence": 6,
+                      "message": {
+                        "_msgid": "next",
+                        "payload": 23,
+                        "_event": "node:out",
+                        "copy": 23
+                      },
+                      "value": {
+                        "_msgid": "next",
+                        "payload": 23,
+                        "_event": "node:out",
+                        "copy": 23
+                      }
+                    }
+                  ],
+                  "trace": [
+                    {
+                      "node": "start",
+                      "type": "inject",
+                      "sequence": 1
+                    },
+                    {
+                      "node": "remember",
+                      "type": "change",
+                      "sequence": 2
+                    },
+                    {
+                      "node": "out",
+                      "type": "link out",
+                      "sequence": 3
+                    },
+                    {
+                      "node": "in",
+                      "type": "link in",
+                      "sequence": 4
+                    },
+                    {
+                      "node": "destination",
+                      "type": "change",
+                      "sequence": 5
+                    },
+                    {
+                      "node": "debug",
+                      "type": "debug",
+                      "sequence": 6
+                    }
+                  ],
+                  "deliveries": 6,
+                  "reachable": [
+                    "start",
+                    "remember",
+                    "out",
+                    "in",
+                    "destination",
+                    "debug"
+                  ],
+                  "sourceRevision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                  "status": "completed",
+                  "durationMs": 2.017
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-deploy",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+                "name": "HTTP link fixture",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "c94c00c1b149e74a08cc2b52855d27fb1eeb71202c50f7864f8195cbed206808",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.685Z",
+                "deployedRevision": "c94c00c1b149e74a08cc2b52855d27fb1eeb71202c50f7864f8195cbed206808",
+                "deployedAt": "2026-10-13T05:25:44.715Z"
+              },
+              "runnableStarts": [
+                {
+                  "id": "start",
+                  "name": "start",
+                  "tab": "tab"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-inject",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+            "messages": [
+              {
+                "_msgid": "new",
+                "payload": 31
+              }
+            ]
+          },
+          "response": {
+            "result": {
+              "run": {
+                "id": "f94196b6-6ec7-4473-97bd-c5c9d1ff74f6",
+                "startedAt": "2026-10-13T05:25:44.718Z",
+                "deployedRevision": "c94c00c1b149e74a08cc2b52855d27fb1eeb71202c50f7864f8195cbed206808",
+                "debug": [],
+                "trace": [
+                  {
+                    "node": "start",
+                    "type": "inject",
+                    "sequence": 1
+                  },
+                  {
+                    "node": "remember",
+                    "type": "change",
+                    "sequence": 2
+                  },
+                  {
+                    "node": "out",
+                    "type": "link out",
+                    "sequence": 3
+                  }
+                ],
+                "deliveries": 3,
+                "reachable": [
+                  "start",
+                  "remember",
+                  "out"
+                ],
+                "sourceRevision": "c94c00c1b149e74a08cc2b52855d27fb1eeb71202c50f7864f8195cbed206808",
+                "status": "completed",
+                "durationMs": 1.735
+              }
+            }
+          }
+        },
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+            "name": "HTTP link fixture",
+            "text": "\r\n{\n   \"vendor\": {\n      \"raw\": \"retained\"\n   },\n   \"flows\": [\n      {\n         \"id\": \"tab\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"other\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"start\",\n         \"type\": \"inject\",\n         \"z\": \"tab\",\n         \"props\": [],\n         \"wires\": [\n            [\n               \"remember\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"remember\",\n         \"type\": \"change\",\n         \"z\": \"tab\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"last\",\n               \"pt\": \"global\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"source\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"out\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"out\",\n         \"type\": \"link out\",\n         \"z\": \"tab\",\n         \"links\": [],\n         \"wires\": [\n            [\n               \"unsupported-ignored\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"in\",\n         \"type\": \"link in\",\n         \"z\": \"other\",\n         \"links\": [\n            \"out\"\n         ],\n         \"wires\": [\n            [\n               \"destination\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"destination\",\n         \"type\": \"change\",\n         \"z\": \"other\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"copy\",\n               \"pt\": \"msg\",\n               \"to\": \"last\",\n               \"tot\": \"global\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"destination\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"debug\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"debug\",\n         \"type\": \"debug\",\n         \"z\": \"other\",\n         \"complete\": \"true\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"wires\": []\n      },\n      {\n         \"id\": \"unsupported-ignored\",\n         \"type\": \"community-not-implemented\",\n         \"z\": \"tab\",\n         \"wires\": []\n      }\n   ]\n}\r\n"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3",
+                "name": "HTTP link fixture",
+                "text": "\r\n{\n   \"vendor\": {\n      \"raw\": \"retained\"\n   },\n   \"flows\": [\n      {\n         \"id\": \"tab\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"other\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"start\",\n         \"type\": \"inject\",\n         \"z\": \"tab\",\n         \"props\": [],\n         \"wires\": [\n            [\n               \"remember\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"remember\",\n         \"type\": \"change\",\n         \"z\": \"tab\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"last\",\n               \"pt\": \"global\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"source\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"out\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"out\",\n         \"type\": \"link out\",\n         \"z\": \"tab\",\n         \"links\": [],\n         \"wires\": [\n            [\n               \"unsupported-ignored\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"in\",\n         \"type\": \"link in\",\n         \"z\": \"other\",\n         \"links\": [\n            \"out\"\n         ],\n         \"wires\": [\n            [\n               \"destination\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"destination\",\n         \"type\": \"change\",\n         \"z\": \"other\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"copy\",\n               \"pt\": \"msg\",\n               \"to\": \"last\",\n               \"tot\": \"global\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"destination\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"debug\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"debug\",\n         \"type\": \"debug\",\n         \"z\": \"other\",\n         \"complete\": \"true\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"wires\": []\n      },\n      {\n         \"id\": \"unsupported-ignored\",\n         \"type\": \"community-not-implemented\",\n         \"z\": \"tab\",\n         \"wires\": []\n      }\n   ]\n}\r\n",
+                "revision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.723Z",
+                "deployedRevision": "c94c00c1b149e74a08cc2b52855d27fb1eeb71202c50f7864f8195cbed206808",
+                "deployedAt": "2026-10-13T05:25:44.715Z"
+              }
+            }
+          }
+        },
+        {
+          "action": "native-export",
+          "status": 200,
+          "input": {
+            "id": "1f42ecaf-37e4-481d-b6b8-1617d5d419f3"
+          },
+          "response": {
+            "result": {
+              "name": "HTTP link fixture",
+              "text": "\r\n{\n   \"vendor\": {\n      \"raw\": \"retained\"\n   },\n   \"flows\": [\n      {\n         \"id\": \"tab\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"other\",\n         \"type\": \"tab\"\n      },\n      {\n         \"id\": \"start\",\n         \"type\": \"inject\",\n         \"z\": \"tab\",\n         \"props\": [],\n         \"wires\": [\n            [\n               \"remember\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"remember\",\n         \"type\": \"change\",\n         \"z\": \"tab\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"last\",\n               \"pt\": \"global\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"source\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"out\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"out\",\n         \"type\": \"link out\",\n         \"z\": \"tab\",\n         \"links\": [],\n         \"wires\": [\n            [\n               \"unsupported-ignored\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"in\",\n         \"type\": \"link in\",\n         \"z\": \"other\",\n         \"links\": [\n            \"out\"\n         ],\n         \"wires\": [\n            [\n               \"destination\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"destination\",\n         \"type\": \"change\",\n         \"z\": \"other\",\n         \"rules\": [\n            {\n               \"t\": \"set\",\n               \"p\": \"copy\",\n               \"pt\": \"msg\",\n               \"to\": \"last\",\n               \"tot\": \"global\"\n            },\n            {\n               \"t\": \"set\",\n               \"p\": \"destination\",\n               \"pt\": \"flow\",\n               \"to\": \"payload\",\n               \"tot\": \"msg\"\n            }\n         ],\n         \"wires\": [\n            [\n               \"debug\"\n            ]\n         ]\n      },\n      {\n         \"id\": \"debug\",\n         \"type\": \"debug\",\n         \"z\": \"other\",\n         \"complete\": \"true\",\n         \"active\": true,\n         \"tosidebar\": true,\n         \"wires\": []\n      },\n      {\n         \"id\": \"unsupported-ignored\",\n         \"type\": \"community-not-implemented\",\n         \"z\": \"tab\",\n         \"wires\": []\n      }\n   ]\n}\r\n",
+              "revision": "eaebf1d24a02036968f7bc36c89f3681b47b036d8d359c245aab0dc9a26a554a"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "label": "preflight-private-controls",
+      "hostStarts": 1,
+      "hostClosed": true,
+      "tempRemoved": true,
+      "calls": [
+        {
+          "action": "native-validate",
+          "status": 200,
+          "input": {
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[\"absent\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "revision": "2b21ced356caed5819ba1203471740281d2be6be2a1a1b29d102b26133d7da0a",
+              "starts": [
+                {
+                  "id": "start",
+                  "name": "start",
+                  "tab": "tab"
+                }
+              ],
+              "issues": [
+                {
+                  "node": "unsupported-ignored",
+                  "type": "community-not-implemented",
+                  "reason": "community-not-implemented execution is not implemented"
+                },
+                {
+                  "node": "out",
+                  "type": "link out",
+                  "reason": "Configured static link target absent is missing"
+                }
+              ],
+              "schedules": [],
+              "nodeCount": 9,
+              "runReady": false,
+              "runError": "Cannot run native node out: Configured static link target absent is missing",
+              "linkConnections": [
+                {
+                  "source": "out",
+                  "target": "absent"
+                },
+                {
+                  "source": "out",
+                  "target": "in"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "name": "missing",
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[\"absent\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "cd854f2b-2ddd-429b-bce7-a606c4bfc9e2",
+                "name": "missing",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[\"absent\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "2b21ced356caed5819ba1203471740281d2be6be2a1a1b29d102b26133d7da0a",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  },
+                  {
+                    "node": "out",
+                    "type": "link out",
+                    "reason": "Configured static link target absent is missing"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.748Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              }
+            }
+          }
+        },
+        {
+          "action": "native-deploy",
+          "status": 400,
+          "input": {
+            "id": "cd854f2b-2ddd-429b-bce7-a606c4bfc9e2"
+          },
+          "response": {
+            "error": "No native inject path can execute with the implemented nodes"
+          }
+        },
+        {
+          "action": "native-inspect",
+          "status": 200,
+          "input": {
+            "id": "cd854f2b-2ddd-429b-bce7-a606c4bfc9e2"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "cd854f2b-2ddd-429b-bce7-a606c4bfc9e2",
+                "name": "missing",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[\"absent\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "2b21ced356caed5819ba1203471740281d2be6be2a1a1b29d102b26133d7da0a",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  },
+                  {
+                    "node": "out",
+                    "type": "link out",
+                    "reason": "Configured static link target absent is missing"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.748Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              },
+              "stateStored": false,
+              "state": {
+                "flows": {},
+                "global": {},
+                "previous": {}
+              },
+              "runs": []
+            }
+          }
+        },
+        {
+          "action": "native-validate",
+          "status": 200,
+          "input": {
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[\"debug\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "revision": "158fd4ace3c30754f24f36a7ea311aa0c81924a56153a05bda9add180dd55476",
+              "starts": [
+                {
+                  "id": "start",
+                  "name": "start",
+                  "tab": "tab"
+                }
+              ],
+              "issues": [
+                {
+                  "node": "unsupported-ignored",
+                  "type": "community-not-implemented",
+                  "reason": "community-not-implemented execution is not implemented"
+                },
+                {
+                  "node": "out",
+                  "type": "link out",
+                  "reason": "Configured static link target debug is not Link In"
+                }
+              ],
+              "schedules": [],
+              "nodeCount": 9,
+              "runReady": false,
+              "runError": "Cannot run native node out: Configured static link target debug is not Link In",
+              "linkConnections": [
+                {
+                  "source": "out",
+                  "target": "debug"
+                },
+                {
+                  "source": "out",
+                  "target": "in"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "name": "not-link-in",
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[\"debug\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "71caadc0-e50b-4b0c-9ea1-4e5e54144283",
+                "name": "not-link-in",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[\"debug\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "158fd4ace3c30754f24f36a7ea311aa0c81924a56153a05bda9add180dd55476",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  },
+                  {
+                    "node": "out",
+                    "type": "link out",
+                    "reason": "Configured static link target debug is not Link In"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.756Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              }
+            }
+          }
+        },
+        {
+          "action": "native-deploy",
+          "status": 400,
+          "input": {
+            "id": "71caadc0-e50b-4b0c-9ea1-4e5e54144283"
+          },
+          "response": {
+            "error": "No native inject path can execute with the implemented nodes"
+          }
+        },
+        {
+          "action": "native-inspect",
+          "status": 200,
+          "input": {
+            "id": "71caadc0-e50b-4b0c-9ea1-4e5e54144283"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "71caadc0-e50b-4b0c-9ea1-4e5e54144283",
+                "name": "not-link-in",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[\"debug\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "158fd4ace3c30754f24f36a7ea311aa0c81924a56153a05bda9add180dd55476",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  },
+                  {
+                    "node": "out",
+                    "type": "link out",
+                    "reason": "Configured static link target debug is not Link In"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.756Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              },
+              "stateStored": false,
+              "state": {
+                "flows": {},
+                "global": {},
+                "previous": {}
+              },
+              "runs": []
+            }
+          }
+        },
+        {
+          "action": "native-validate",
+          "status": 200,
+          "input": {
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "revision": "f77c5c37854bda2a43705f8cd691b48669f371791bd963381adc8222e7e5bcde",
+              "starts": [
+                {
+                  "id": "start",
+                  "name": "start",
+                  "tab": "tab"
+                }
+              ],
+              "issues": [
+                {
+                  "node": "unsupported-ignored",
+                  "type": "community-not-implemented",
+                  "reason": "community-not-implemented execution is not implemented"
+                }
+              ],
+              "schedules": [],
+              "nodeCount": 9,
+              "runReady": false,
+              "runError": "Cannot run native node unsupported-ignored: community-not-implemented execution is not implemented",
+              "linkConnections": [
+                {
+                  "source": "out",
+                  "target": "in"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "name": "unsupported-after-in",
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "4fb91096-ed18-4317-990e-2e43a5cd6d1d",
+                "name": "unsupported-after-in",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "f77c5c37854bda2a43705f8cd691b48669f371791bd963381adc8222e7e5bcde",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.767Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              }
+            }
+          }
+        },
+        {
+          "action": "native-deploy",
+          "status": 400,
+          "input": {
+            "id": "4fb91096-ed18-4317-990e-2e43a5cd6d1d"
+          },
+          "response": {
+            "error": "No native inject path can execute with the implemented nodes"
+          }
+        },
+        {
+          "action": "native-inspect",
+          "status": 200,
+          "input": {
+            "id": "4fb91096-ed18-4317-990e-2e43a5cd6d1d"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "4fb91096-ed18-4317-990e-2e43a5cd6d1d",
+                "name": "unsupported-after-in",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "f77c5c37854bda2a43705f8cd691b48669f371791bd963381adc8222e7e5bcde",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.767Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              },
+              "stateStored": false,
+              "state": {
+                "flows": {},
+                "global": {},
+                "previous": {}
+              },
+              "runs": []
+            }
+          }
+        },
+        {
+          "action": "native-validate",
+          "status": 200,
+          "input": {
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]],\"mode\":\"return\"},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "revision": "d83bf4829f576a349efb6de591db812b841ffb80bba8e2218f78a573dc0b1fb4",
+              "starts": [
+                {
+                  "id": "start",
+                  "name": "start",
+                  "tab": "tab"
+                }
+              ],
+              "issues": [
+                {
+                  "node": "out",
+                  "type": "link out",
+                  "reason": "Only static Link Out link mode is implemented; return/Link Call/event bus are not implemented"
+                },
+                {
+                  "node": "unsupported-ignored",
+                  "type": "community-not-implemented",
+                  "reason": "community-not-implemented execution is not implemented"
+                }
+              ],
+              "schedules": [],
+              "nodeCount": 9,
+              "runReady": false,
+              "runError": "Cannot run native node out: Only static Link Out link mode is implemented; return/Link Call/event bus are not implemented",
+              "linkConnections": [
+                {
+                  "source": "out",
+                  "target": "in"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "name": "return-mode",
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]],\"mode\":\"return\"},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "71ac6e39-bd6e-40b9-a216-17d1f93cb0f5",
+                "name": "return-mode",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]],\"mode\":\"return\"},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "d83bf4829f576a349efb6de591db812b841ffb80bba8e2218f78a573dc0b1fb4",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "out",
+                    "type": "link out",
+                    "reason": "Only static Link Out link mode is implemented; return/Link Call/event bus are not implemented"
+                  },
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.776Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              }
+            }
+          }
+        },
+        {
+          "action": "native-deploy",
+          "status": 400,
+          "input": {
+            "id": "71ac6e39-bd6e-40b9-a216-17d1f93cb0f5"
+          },
+          "response": {
+            "error": "No native inject path can execute with the implemented nodes"
+          }
+        },
+        {
+          "action": "native-inspect",
+          "status": 200,
+          "input": {
+            "id": "71ac6e39-bd6e-40b9-a216-17d1f93cb0f5"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "71ac6e39-bd6e-40b9-a216-17d1f93cb0f5",
+                "name": "return-mode",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]],\"mode\":\"return\"},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "d83bf4829f576a349efb6de591db812b841ffb80bba8e2218f78a573dc0b1fb4",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "out",
+                    "type": "link out",
+                    "reason": "Only static Link Out link mode is implemented; return/Link Call/event bus are not implemented"
+                  },
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.776Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              },
+              "stateStored": false,
+              "state": {
+                "flows": {},
+                "global": {},
+                "previous": {}
+              },
+              "runs": []
+            }
+          }
+        },
+        {
+          "action": "native-validate",
+          "status": 200,
+          "input": {
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link call\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "revision": "ecd820957e546dfc216dcd6be8324a2daf478d8a65bb3a67c91a37a3734c540b",
+              "starts": [
+                {
+                  "id": "start",
+                  "name": "start",
+                  "tab": "tab"
+                }
+              ],
+              "issues": [
+                {
+                  "node": "out",
+                  "type": "link call",
+                  "reason": "link call execution is not implemented"
+                },
+                {
+                  "node": "unsupported-ignored",
+                  "type": "community-not-implemented",
+                  "reason": "community-not-implemented execution is not implemented"
+                }
+              ],
+              "schedules": [],
+              "nodeCount": 9,
+              "runReady": false,
+              "runError": "Cannot run native node out: link call execution is not implemented",
+              "linkConnections": []
+            }
+          }
+        },
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "name": "call-mode",
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link call\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "f0eaae47-3344-4945-a002-330a54ef1d66",
+                "name": "call-mode",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link call\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "ecd820957e546dfc216dcd6be8324a2daf478d8a65bb3a67c91a37a3734c540b",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "out",
+                    "type": "link call",
+                    "reason": "link call execution is not implemented"
+                  },
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.784Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              }
+            }
+          }
+        },
+        {
+          "action": "native-deploy",
+          "status": 400,
+          "input": {
+            "id": "f0eaae47-3344-4945-a002-330a54ef1d66"
+          },
+          "response": {
+            "error": "No native inject path can execute with the implemented nodes"
+          }
+        },
+        {
+          "action": "native-inspect",
+          "status": 200,
+          "input": {
+            "id": "f0eaae47-3344-4945-a002-330a54ef1d66"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "f0eaae47-3344-4945-a002-330a54ef1d66",
+                "name": "call-mode",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link call\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "ecd820957e546dfc216dcd6be8324a2daf478d8a65bb3a67c91a37a3734c540b",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "out",
+                    "type": "link call",
+                    "reason": "link call execution is not implemented"
+                  },
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.784Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              },
+              "stateStored": false,
+              "state": {
+                "flows": {},
+                "global": {},
+                "previous": {}
+              },
+              "runs": []
+            }
+          }
+        },
+        {
+          "action": "native-list",
+          "status": 403,
+          "input": {},
+          "response": {
+            "error": "A local session token is required"
+          }
+        },
+        {
+          "action": "private-helper-static-route",
+          "status": 404
+        }
+      ]
+    },
+    {
+      "label": "cycle-context-rollback",
+      "hostStarts": 2,
+      "hostClosed": true,
+      "tempRemoved": true,
+      "calls": [
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "name": "Rollback fixture",
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd",
+                "name": "Rollback fixture",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.812Z",
+                "deployedRevision": null,
+                "deployedAt": null
+              }
+            }
+          }
+        },
+        {
+          "action": "native-deploy",
+          "status": 200,
+          "input": {
+            "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd",
+                "name": "Rollback fixture",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.812Z",
+                "deployedRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                "deployedAt": "2026-10-13T05:25:44.816Z"
+              },
+              "runnableStarts": [
+                {
+                  "id": "start",
+                  "name": "start",
+                  "tab": "tab"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-inject",
+          "status": 200,
+          "input": {
+            "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd",
+            "messages": [
+              {
+                "_msgid": "good",
+                "payload": 5
+              }
+            ]
+          },
+          "response": {
+            "result": {
+              "run": {
+                "id": "56e3c842-0f4e-4d86-9d41-5d6145c7337e",
+                "startedAt": "2026-10-13T05:25:44.819Z",
+                "deployedRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                "debug": [
+                  {
+                    "node": "debug",
+                    "name": "",
+                    "sequence": 6,
+                    "message": {
+                      "_msgid": "good",
+                      "payload": 5,
+                      "_event": "node:out",
+                      "copy": 5
+                    },
+                    "value": {
+                      "_msgid": "good",
+                      "payload": 5,
+                      "_event": "node:out",
+                      "copy": 5
+                    }
+                  }
+                ],
+                "trace": [
+                  {
+                    "node": "start",
+                    "type": "inject",
+                    "sequence": 1
+                  },
+                  {
+                    "node": "remember",
+                    "type": "change",
+                    "sequence": 2
+                  },
+                  {
+                    "node": "out",
+                    "type": "link out",
+                    "sequence": 3
+                  },
+                  {
+                    "node": "in",
+                    "type": "link in",
+                    "sequence": 4
+                  },
+                  {
+                    "node": "destination",
+                    "type": "change",
+                    "sequence": 5
+                  },
+                  {
+                    "node": "debug",
+                    "type": "debug",
+                    "sequence": 6
+                  }
+                ],
+                "deliveries": 6,
+                "reachable": [
+                  "start",
+                  "remember",
+                  "out",
+                  "in",
+                  "destination",
+                  "debug"
+                ],
+                "sourceRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                "status": "completed",
+                "durationMs": 1.326
+              }
+            }
+          }
+        },
+        {
+          "action": "native-inspect",
+          "status": 200,
+          "input": {
+            "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd",
+                "name": "Rollback fixture",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"destination\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.812Z",
+                "deployedRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                "deployedAt": "2026-10-13T05:25:44.816Z"
+              },
+              "stateStored": true,
+              "state": {
+                "flows": {
+                  "tab": {
+                    "source": 5
+                  },
+                  "other": {
+                    "destination": 5
+                  }
+                },
+                "global": {
+                  "last": 5
+                },
+                "previous": {}
+              },
+              "runs": [
+                {
+                  "id": "56e3c842-0f4e-4d86-9d41-5d6145c7337e",
+                  "startedAt": "2026-10-13T05:25:44.819Z",
+                  "deployedRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                  "debug": [
+                    {
+                      "node": "debug",
+                      "name": "",
+                      "sequence": 6,
+                      "message": {
+                        "_msgid": "good",
+                        "payload": 5,
+                        "_event": "node:out",
+                        "copy": 5
+                      },
+                      "value": {
+                        "_msgid": "good",
+                        "payload": 5,
+                        "_event": "node:out",
+                        "copy": 5
+                      }
+                    }
+                  ],
+                  "trace": [
+                    {
+                      "node": "start",
+                      "type": "inject",
+                      "sequence": 1
+                    },
+                    {
+                      "node": "remember",
+                      "type": "change",
+                      "sequence": 2
+                    },
+                    {
+                      "node": "out",
+                      "type": "link out",
+                      "sequence": 3
+                    },
+                    {
+                      "node": "in",
+                      "type": "link in",
+                      "sequence": 4
+                    },
+                    {
+                      "node": "destination",
+                      "type": "change",
+                      "sequence": 5
+                    },
+                    {
+                      "node": "debug",
+                      "type": "debug",
+                      "sequence": 6
+                    }
+                  ],
+                  "deliveries": 6,
+                  "reachable": [
+                    "start",
+                    "remember",
+                    "out",
+                    "in",
+                    "destination",
+                    "debug"
+                  ],
+                  "sourceRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                  "status": "completed",
+                  "durationMs": 1.326
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-save",
+          "status": 200,
+          "input": {
+            "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd",
+            "name": "Rollback fixture",
+            "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"out\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd",
+                "name": "Rollback fixture",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"out\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "da667baf4a93b707a8de15e040ef34c6c63b4b4e39464fb1c8ae23ae42982d40",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.826Z",
+                "deployedRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                "deployedAt": "2026-10-13T05:25:44.816Z"
+              }
+            }
+          }
+        },
+        {
+          "action": "native-deploy",
+          "status": 200,
+          "input": {
+            "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd",
+                "name": "Rollback fixture",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"out\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "da667baf4a93b707a8de15e040ef34c6c63b4b4e39464fb1c8ae23ae42982d40",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.826Z",
+                "deployedRevision": "da667baf4a93b707a8de15e040ef34c6c63b4b4e39464fb1c8ae23ae42982d40",
+                "deployedAt": "2026-10-13T05:25:44.829Z"
+              },
+              "runnableStarts": [
+                {
+                  "id": "start",
+                  "name": "start",
+                  "tab": "tab"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-inject",
+          "status": 200,
+          "input": {
+            "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd",
+            "messages": [
+              {
+                "_msgid": "cycle",
+                "payload": 99
+              }
+            ]
+          },
+          "response": {
+            "result": {
+              "run": {
+                "id": "0411149d-9214-4dcd-8af6-a041466f46af",
+                "startedAt": "2026-10-13T05:25:44.833Z",
+                "deployedRevision": "da667baf4a93b707a8de15e040ef34c6c63b4b4e39464fb1c8ae23ae42982d40",
+                "status": "failed",
+                "error": "Native flow exceeded 5,000 deliveries; inspect cycles",
+                "durationMs": 21.921
+              }
+            }
+          }
+        },
+        {
+          "action": "native-inspect",
+          "status": 200,
+          "input": {
+            "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd",
+                "name": "Rollback fixture",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"out\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "da667baf4a93b707a8de15e040ef34c6c63b4b4e39464fb1c8ae23ae42982d40",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.826Z",
+                "deployedRevision": "da667baf4a93b707a8de15e040ef34c6c63b4b4e39464fb1c8ae23ae42982d40",
+                "deployedAt": "2026-10-13T05:25:44.829Z"
+              },
+              "stateStored": true,
+              "state": {
+                "flows": {
+                  "tab": {
+                    "source": 5
+                  },
+                  "other": {
+                    "destination": 5
+                  }
+                },
+                "global": {
+                  "last": 5
+                },
+                "previous": {}
+              },
+              "runs": [
+                {
+                  "id": "56e3c842-0f4e-4d86-9d41-5d6145c7337e",
+                  "startedAt": "2026-10-13T05:25:44.819Z",
+                  "deployedRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                  "debug": [
+                    {
+                      "node": "debug",
+                      "name": "",
+                      "sequence": 6,
+                      "message": {
+                        "_msgid": "good",
+                        "payload": 5,
+                        "_event": "node:out",
+                        "copy": 5
+                      },
+                      "value": {
+                        "_msgid": "good",
+                        "payload": 5,
+                        "_event": "node:out",
+                        "copy": 5
+                      }
+                    }
+                  ],
+                  "trace": [
+                    {
+                      "node": "start",
+                      "type": "inject",
+                      "sequence": 1
+                    },
+                    {
+                      "node": "remember",
+                      "type": "change",
+                      "sequence": 2
+                    },
+                    {
+                      "node": "out",
+                      "type": "link out",
+                      "sequence": 3
+                    },
+                    {
+                      "node": "in",
+                      "type": "link in",
+                      "sequence": 4
+                    },
+                    {
+                      "node": "destination",
+                      "type": "change",
+                      "sequence": 5
+                    },
+                    {
+                      "node": "debug",
+                      "type": "debug",
+                      "sequence": 6
+                    }
+                  ],
+                  "deliveries": 6,
+                  "reachable": [
+                    "start",
+                    "remember",
+                    "out",
+                    "in",
+                    "destination",
+                    "debug"
+                  ],
+                  "sourceRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                  "status": "completed",
+                  "durationMs": 1.326
+                },
+                {
+                  "id": "0411149d-9214-4dcd-8af6-a041466f46af",
+                  "startedAt": "2026-10-13T05:25:44.833Z",
+                  "deployedRevision": "da667baf4a93b707a8de15e040ef34c6c63b4b4e39464fb1c8ae23ae42982d40",
+                  "status": "failed",
+                  "error": "Native flow exceeded 5,000 deliveries; inspect cycles",
+                  "durationMs": 21.921
+                }
+              ]
+            }
+          }
+        },
+        {
+          "action": "native-inspect",
+          "status": 200,
+          "input": {
+            "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd"
+          },
+          "response": {
+            "result": {
+              "flow": {
+                "id": "c108b8df-5d14-4c11-8cac-0ea5feecd6fd",
+                "name": "Rollback fixture",
+                "text": "{\"vendor\":{\"raw\":\"retained\"},\"flows\":[{\"id\":\"tab\",\"type\":\"tab\"},{\"id\":\"other\",\"type\":\"tab\"},{\"id\":\"start\",\"type\":\"inject\",\"z\":\"tab\",\"props\":[],\"wires\":[[\"remember\"]]},{\"id\":\"remember\",\"type\":\"change\",\"z\":\"tab\",\"rules\":[{\"t\":\"set\",\"p\":\"last\",\"pt\":\"global\",\"to\":\"payload\",\"tot\":\"msg\"},{\"t\":\"set\",\"p\":\"source\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"out\"]]},{\"id\":\"out\",\"type\":\"link out\",\"z\":\"tab\",\"links\":[],\"wires\":[[\"unsupported-ignored\"]]},{\"id\":\"in\",\"type\":\"link in\",\"z\":\"other\",\"links\":[\"out\"],\"wires\":[[\"out\"]]},{\"id\":\"destination\",\"type\":\"change\",\"z\":\"other\",\"rules\":[{\"t\":\"set\",\"p\":\"copy\",\"pt\":\"msg\",\"to\":\"last\",\"tot\":\"global\"},{\"t\":\"set\",\"p\":\"destination\",\"pt\":\"flow\",\"to\":\"payload\",\"tot\":\"msg\"}],\"wires\":[[\"debug\"]]},{\"id\":\"debug\",\"type\":\"debug\",\"z\":\"other\",\"complete\":\"true\",\"active\":true,\"tosidebar\":true,\"wires\":[]},{\"id\":\"unsupported-ignored\",\"type\":\"community-not-implemented\",\"z\":\"tab\",\"wires\":[]}]}",
+                "revision": "da667baf4a93b707a8de15e040ef34c6c63b4b4e39464fb1c8ae23ae42982d40",
+                "starts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "deployedStarts": [
+                  {
+                    "id": "start",
+                    "name": "start",
+                    "tab": "tab"
+                  }
+                ],
+                "issues": [
+                  {
+                    "node": "unsupported-ignored",
+                    "type": "community-not-implemented",
+                    "reason": "community-not-implemented execution is not implemented"
+                  }
+                ],
+                "schedules": [],
+                "nodeCount": 9,
+                "updatedAt": "2026-10-13T05:25:44.826Z",
+                "deployedRevision": "da667baf4a93b707a8de15e040ef34c6c63b4b4e39464fb1c8ae23ae42982d40",
+                "deployedAt": "2026-10-13T05:25:44.829Z"
+              },
+              "stateStored": true,
+              "state": {
+                "flows": {
+                  "tab": {
+                    "source": 5
+                  },
+                  "other": {
+                    "destination": 5
+                  }
+                },
+                "global": {
+                  "last": 5
+                },
+                "previous": {}
+              },
+              "runs": [
+                {
+                  "id": "56e3c842-0f4e-4d86-9d41-5d6145c7337e",
+                  "startedAt": "2026-10-13T05:25:44.819Z",
+                  "deployedRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                  "debug": [
+                    {
+                      "node": "debug",
+                      "name": "",
+                      "sequence": 6,
+                      "message": {
+                        "_msgid": "good",
+                        "payload": 5,
+                        "_event": "node:out",
+                        "copy": 5
+                      },
+                      "value": {
+                        "_msgid": "good",
+                        "payload": 5,
+                        "_event": "node:out",
+                        "copy": 5
+                      }
+                    }
+                  ],
+                  "trace": [
+                    {
+                      "node": "start",
+                      "type": "inject",
+                      "sequence": 1
+                    },
+                    {
+                      "node": "remember",
+                      "type": "change",
+                      "sequence": 2
+                    },
+                    {
+                      "node": "out",
+                      "type": "link out",
+                      "sequence": 3
+                    },
+                    {
+                      "node": "in",
+                      "type": "link in",
+                      "sequence": 4
+                    },
+                    {
+                      "node": "destination",
+                      "type": "change",
+                      "sequence": 5
+                    },
+                    {
+                      "node": "debug",
+                      "type": "debug",
+                      "sequence": 6
+                    }
+                  ],
+                  "deliveries": 6,
+                  "reachable": [
+                    "start",
+                    "remember",
+                    "out",
+                    "in",
+                    "destination",
+                    "debug"
+                  ],
+                  "sourceRevision": "591fa9d2aeeff3fc50cb4ad9968a48a7774e459e479bf58a0bcca01d259b743c",
+                  "status": "completed",
+                  "durationMs": 1.326
+                },
+                {
+                  "id": "0411149d-9214-4dcd-8af6-a041466f46af",
+                  "startedAt": "2026-10-13T05:25:44.833Z",
+                  "deployedRevision": "da667baf4a93b707a8de15e040ef34c6c63b4b4e39464fb1c8ae23ae42982d40",
+                  "status": "failed",
+                  "error": "Native flow exceeded 5,000 deliveries; inspect cycles",
+                  "durationMs": 21.921
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

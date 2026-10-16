@@ -1,0 +1,15 @@
+import fs from 'node:fs/promises';import path from 'node:path';import assert from 'node:assert/strict';import{createHash}from'node:crypto';
+const work=import.meta.dirname,own=path.join(work,'root-flow-link-review-preservation-next'),sha=b=>createHash('sha256').update(b).digest('hex');await fs.mkdir(own);const rows=[];
+async function files(dir,prefix=''){const out=[];for(const e of(await fs.readdir(dir,{withFileTypes:true})).sort((a,b)=>a.name.localeCompare(b.name))){assert(!e.isSymbolicLink());if(e.isDirectory())out.push(...await files(path.join(dir,e.name),prefix+e.name+'/'));else out.push(prefix+e.name);}return out;}
+async function save(p,b){const d=path.join(own,p);await fs.mkdir(path.dirname(d),{recursive:true});await fs.writeFile(d,b,{flag:'wx'});rows.push({path:p,bytes:b.length,sha256:sha(b)});}
+const sources=[];
+for(const [role,name]of[['collector-format-failure','root-flow-link-independent-review-next'],['accepted-v2','root-flow-link-independent-review-v2']]){
+ const dir=path.join(work,name),names=await files(dir);for(const n of names){const b=await fs.readFile(path.join(dir,n));await save(role+'/'+n+'.snapshot',b);sources.push({source:'work/'+name+'/'+n,bytes:b.length,sha256:sha(b)});}
+}
+const accepted=JSON.parse(await fs.readFile(path.join(work,'root-flow-link-independent-review-v2/validation.json')));assert.equal(accepted.summary.pass,7);assert.equal(accepted.originalCompilerCalls,128);assert.equal(accepted.sourceStable,true);
+const compiler=await fs.readFile(path.resolve(work,'../outputs/rea-research-lab/.local/flow-original/node_modules/@node-red/runtime/lib/flows/util.js'));assert.equal(sha(compiler),'7881b34a1056bd2e75c132038e2d8e4acb5213165541be85fa40a8a4fcd0b87e');await save('released-compiler-util.js.snapshot',compiler);
+const license=await fs.readFile(path.join(work,'flow-native-link-next/official-source/node-red-runtime/LICENSE.snapshot'));await save('released-runtime-LICENSE.snapshot',license);
+for(const r of sources){const b=await fs.readFile(path.resolve(work,'..',r.source));assert.equal(b.length,r.bytes);assert.equal(sha(b),r.sha256);}
+await save('source-map.json',Buffer.from(JSON.stringify({sourceStable:true,sources},null,2)+'\n'));await save('collector.mjs.snapshot',await fs.readFile(import.meta.filename));
+await save('validation.json',Buffer.from(JSON.stringify({schema:'rea-root-flow-link-review-preservation/v1',at:new Date().toISOString(),accepted,firstCollectorFailure:'Default spec reporter produced actual7pass but TAP-only parser recorded-1; reporter-only correction kept exact same test bytes, new7-case/128compiler-call epoch retained separately.',originalCompilerPostReviewSHA256:sha(compiler),newAppExecutions:0,oldReceiptsRebound:false,sourceStable:true,fullProductParity:false,universalSuperiority:false},null,2)+'\n'));
+const mb=Buffer.from(JSON.stringify({schema:'rea-strict-work-review/v1',files:rows.length,inventory:rows},null,2)+'\n');await fs.writeFile(path.join(own,'manifest.json'),mb,{flag:'wx'});console.log(JSON.stringify({files:rows.length,manifestSHA256:sha(mb)}));

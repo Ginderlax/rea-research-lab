@@ -1,0 +1,225 @@
+{
+  "schema": "rea-cloud-publication-controls/v1",
+  "status": "passed",
+  "sourceOnly": true,
+  "rows": [
+    {
+      "name": "named-migration-positive",
+      "passed": true
+    },
+    {
+      "name": "three-fixed-root-epochs",
+      "passed": true
+    },
+    {
+      "name": "unknown-root-epoch",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "No unlisted historical identity allowed: scripts/verify-records.mjs bytes\n\n1 !== 142428\n"
+      },
+      "rejectionLayer": "named identity resolver"
+    },
+    {
+      "name": "unknown-flow-source-epoch",
+      "passed": true,
+      "rejected": {
+        "name": "Error",
+        "message": "No unlisted historical identity allowed: products/rea-studio/apps/flow/client.mjs"
+      },
+      "rejectionLayer": "named identity resolver"
+    },
+    {
+      "name": "three-fixed-followup-verifier-epochs",
+      "passed": true
+    },
+    {
+      "name": "unknown-followup-verifier-epoch",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "No unlisted historical identity allowed: scripts/verify-followup-records.mjs bytes\n\n1 !== 37311\n"
+      },
+      "rejectionLayer": "named identity resolver"
+    },
+    {
+      "name": "mandatory-current-flow-after",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/apps/flow/client.mjs SHA256\n+ actual - expected\n\n+ 'd23f64c3a51e4ae00655e7733130637bd401992ab1f02e92cc0bdd9daa07edd7'\n- '8cdc00162a0ce9c96b90e7cb06ce849a99be0f92f89062e271c3a7cd490e7ab3'\n"
+      },
+      "rejectionLayer": "fixed source identity"
+    },
+    {
+      "name": "mandatory-current-vault-after",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/apps/vault/client.mjs SHA256\n+ actual - expected\n\n+ '0424eccd9e6ac8449ce77b104117d509c7551668c91fa1f6f9169078e3cde395'\n- '29f99c9132286e93ffdcc26105daa9d4209591b4aedad438cc6830841f227908'\n"
+      },
+      "rejectionLayer": "fixed source identity"
+    },
+    {
+      "name": "mandatory-middle-root-snapshot",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/verify-records.mjs.snapshot SHA256\n+ actual - expected\n\n+ '6521887135a1ab37765e820f0bcb5a58d096c8f31b29459e793248cd3e36c85a'\n- '42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6'\n"
+      },
+      "rejectionLayer": "fixed source identity"
+    },
+    {
+      "name": "mandatory-git-closure-payload",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/results/publication-git-directory-closure-20261015/payload/d29210777777dac0b3d12f6a656a073c9ba717cf6932dbc01b0cc6dc1e7779b8.snapshot SHA256\n+ actual - expected\n\n+ '6aa038b44f2a5b59d7a349f63d1f881c8f00c161f2a171f2f5694dd63b9a44ed'\n- 'd29210777777dac0b3d12f6a656a073c9ba717cf6932dbc01b0cc6dc1e7779b8'\n"
+      },
+      "rejectionLayer": "fixed source identity"
+    },
+    {
+      "name": "mandatory-git-closure-manifest",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json SHA256\n+ actual - expected\n\n+ '1c49bf3e178623fc4731f6c768d87a47c0fa90f4453d77efc48cabb3b4e6c0dc'\n- '37b34ad5324719094e9842343d7649af4ffbd5606f47488137e04a6ee380e49b'\n"
+      },
+      "rejectionLayer": "fixed source identity"
+    },
+    {
+      "name": "mandatory-middle-followup-snapshot",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/results/publication-git-directory-closure-20261015/verifier-before/verify-followup-records.mjs.snapshot SHA256\n+ actual - expected\n\n+ '6e62998af9fb39bf968945c3c21f461c9ab8e3b1fa89052d64d683dd0644075b'\n- '92a23a59963713966f8e6c630ea6f89e2dfe8248d8dadfacd662bf349bcd6f7e'\n"
+      },
+      "rejectionLayer": "fixed source identity"
+    },
+    {
+      "name": "historical937-exact-block-positive",
+      "passed": true
+    },
+    {
+      "name": "historical937-frozen-source-byte-change",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "Historical937 proof changed: products/rea-studio/results/editor-vault-combined-20261013/source/apps/archive/app.test.mjs.snapshot\n+ actual - expected\n\n+ '2c6bb915c991c2365725378e37bf07f12253233a7321ca451a5bc7f0f92d6488'\n- '5c30d065062125f67927681f95d4d4479d40372e6916915a495acd8176487dbc'\n"
+      },
+      "rejectionLayer": "exact reviewed937 block: frozen source hash"
+    },
+    {
+      "name": "historical937-unchanged-current-byte-change",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "Historical937 proof changed: products/rea-studio/apps/archive/app.test.mjs\n+ actual - expected\n\n+ '2c6bb915c991c2365725378e37bf07f12253233a7321ca451a5bc7f0f92d6488'\n- '5c30d065062125f67927681f95d4d4479d40372e6916915a495acd8176487dbc'\n"
+      },
+      "rejectionLayer": "exact reviewed937 block: current source hash"
+    },
+    {
+      "name": "historical937-receipt-byte-change",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "Historical937 proof changed: products/rea-studio/results/development-validation.json\n+ actual - expected\n\n+ '875328b5dccee26524c1a80ccb40fc1472ddcfa06ec85855c458e166adc2176b'\n- '333303c8bd8cd131da3f01e1414b0fba92bc321b2b63f178ab91d138b2bcfa44'\n"
+      },
+      "rejectionLayer": "exact immutable937 receipt hash"
+    },
+    {
+      "name": "historical937-unlisted-resolver-route",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "Unlisted937 source transition"
+      },
+      "rejectionLayer": "exact reviewed937 block: six-route allowlist"
+    },
+    {
+      "name": "finite282-committed-positive",
+      "passed": true
+    },
+    {
+      "name": "finite282-owned-fixture-positive",
+      "passed": true
+    },
+    {
+      "name": "finite282-object-byte-change",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/results/cloud-flow-vault-20261015/payload/c98638a82e580d7424f9502fb8a1185c4118d898252bb8a8f8f57ccc5cac5fdf.snapshot\n+ actual - expected\n\n  {\n    bytes: 7025,\n+   sha256: '961cdb4f36ee54a3260f6004f0a6b97d7aadb646c9e3c8b191904e8db88c65ea'\n-   sha256: 'c98638a82e580d7424f9502fb8a1185c4118d898252bb8a8f8f57ccc5cac5fdf'\n  }\n"
+      },
+      "rejectionLayer": "immutable object identity"
+    },
+    {
+      "name": "finite282-duplicate-alias-manifest-change",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/results/cloud-flow-vault-20261015/preservation-manifest.json\n+ actual - expected\n\n  {\n+   bytes: 88573,\n+   sha256: '267cf67e754a6724991f2e49757a5b9c4826787f531e175e036e6304d91d24d8'\n-   bytes: 103366,\n-   sha256: '83d8f0f3bd42639f8f76edf589fe0f5330a92eacc046c1c2de36b3db745ebeb5'\n  }\n"
+      },
+      "rejectionLayer": "immutable manifest identity"
+    },
+    {
+      "name": "finite282-false-full-suite-flag",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/results/cloud-flow-vault-20261015/preservation-manifest.json\n+ actual - expected\n\n  {\n+   bytes: 88351,\n+   sha256: '389b36584180f16bd47544fce5d458742b8a9be6854a9d3acc0a6ed7cff1dd59'\n-   bytes: 103366,\n-   sha256: '83d8f0f3bd42639f8f76edf589fe0f5330a92eacc046c1c2de36b3db745ebeb5'\n  }\n"
+      },
+      "rejectionLayer": "immutable manifest identity"
+    },
+    {
+      "name": "finite282-selected-tests-change",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/results/cloud-flow-vault-20261015/payload/c98638a82e580d7424f9502fb8a1185c4118d898252bb8a8f8f57ccc5cac5fdf.snapshot\n+ actual - expected\n\n  {\n+   bytes: 6115,\n+   sha256: '05c0de2c93b997706c072a971cf4d9b9630741968ff1454047d6ba78f85ff5ac'\n-   bytes: 7025,\n-   sha256: 'c98638a82e580d7424f9502fb8a1185c4118d898252bb8a8f8f57ccc5cac5fdf'\n  }\n"
+      },
+      "rejectionLayer": "immutable attempt object identity (semantic branch is not bypassed or claimed exercised)"
+    },
+    {
+      "name": "finite282-false-pass-summary",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/results/cloud-flow-vault-20261015/payload/c98638a82e580d7424f9502fb8a1185c4118d898252bb8a8f8f57ccc5cac5fdf.snapshot\n+ actual - expected\n\n  {\n+   bytes: 6102,\n+   sha256: '7c8a667de995782677bc93943d14ee39dcd09bafbbbb0c7fcc6fb0d55e5f7132'\n-   bytes: 7025,\n-   sha256: 'c98638a82e580d7424f9502fb8a1185c4118d898252bb8a8f8f57ccc5cac5fdf'\n  }\n"
+      },
+      "rejectionLayer": "immutable attempt object identity (semantic branch is not bypassed or claimed exercised)"
+    },
+    {
+      "name": "finite282-false-full-parity-flag",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "products/rea-studio/results/cloud-flow-vault-20261015/payload/c98638a82e580d7424f9502fb8a1185c4118d898252bb8a8f8f57ccc5cac5fdf.snapshot\n+ actual - expected\n\n  {\n+   bytes: 6101,\n+   sha256: '89a2200f7c366610729d0bca65affe410bc6b4a3fed3f6274d7e38b7b9146232'\n-   bytes: 7025,\n-   sha256: 'c98638a82e580d7424f9502fb8a1185c4118d898252bb8a8f8f57ccc5cac5fdf'\n  }\n"
+      },
+      "rejectionLayer": "immutable attempt object identity (semantic branch is not bypassed or claimed exercised)"
+    },
+    {
+      "name": "finite282-extra-prefix-file",
+      "passed": true,
+      "rejected": {
+        "name": "AssertionError",
+        "message": "The expression evaluated to a falsy value:\n\n  assert.ok(++visitedEntries <= 353)\n"
+      },
+      "rejectionLayer": "exact finite capsule inventory"
+    }
+  ],
+  "checks": 26,
+  "exactReviewed937Block": {
+    "bytes": 147529,
+    "sha256": "82fc7f36c0805ee163a93aa1720ed708629ac455d90a9bdd343b30f554335304"
+  },
+  "fixtureFiles": 352,
+  "fixtureBytes": 4556836,
+  "actualCheckoutFilesMutated": 0,
+  "applicationTests": 0,
+  "originalExecutions": 0,
+  "limits": [
+    "Finite manifest/attempt mutations are rejected at their immutable identity layer; deeper semantic branches are not separately bypassed or claimed tested.",
+    "The937 block executes only publication assertions/readers in a bounded VM; it does not execute the historical937 behavioral tests."
+  ]
+}

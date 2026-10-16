@@ -1,0 +1,39 @@
+# Native Node-RED flow execution contract
+
+This document defines the current runnable slice against Node-RED 5.0.8. It is a bounded source-assisted implementation, not an exhaustive inventory of Node-RED features.
+
+## Documents and editing
+
+`parseNative` accepts a JSON node array or an object containing a `flows` array. Saved text is returned unchanged by `native-export`, retaining whitespace and unknown JSON fields. Browser file import decodes UTF-8 through `File.text()`; a UTF-8 BOM is stripped and malformed UTF-8 is replaced by the browser, so binary byte preservation is not claimed. Editing reformats JSON and changes selected properties. A document can contain 1–500 uniquely identified nodes, at most 100 output ports per node and 2,000 wire destinations. Documents are limited to 4 MiB and bounded depth/structure. Native IDs accept letters, digits, underscores, dots, colons and hyphens; reserved prototype-related names are refused.
+
+The diagram draws static coordinates, allows pointer movement and keyboard selection, and offers source/port/destination connect/disconnect controls. A selected node is edited as native property JSON. Loading another flow or importing a file clears the old selection. The native JSON editor remains available in a disclosure panel.
+
+Saving updates a draft. Deploying freezes its text, SHA-256 revision and runnable Inject IDs. Injection always uses this deployed text; editing, validation and saving a later draft do not change it. Deleting a saved definition removes it from the native list and clears its application records. The separate local flow format has its own index.
+
+## Runnable nodes
+
+| Node | Implemented configurations | Explicit exclusions |
+| --- | --- | --- |
+| Inject | Manual injection; ordered static properties; string, finite number, boolean, JSON, Buffer, timestamp, ISO and Date-object values; message/flow/global references; legacy payload/topic migration; message ID creation | Timers, cron/once scheduling, environment/JSONata/custom date formats and user override properties |
+| Change | Ordered set, delete, move and literal replacement; message/flow/global targets and references; deep-copy choice; typed values; JavaScript replacement tokens and coercion within the supported subset | Regex search, expression/environment values, dynamic paths and alternate context stores |
+| Switch | Native coercive equality/order; between, contains, regex, true/false, null/not-null, empty/not-empty, type, own-key, otherwise segments, sequence head/index and previous values; first/all matching | JSONata, tail buffering, sequence repair, expression properties and alternate stores |
+| JSON | Automatic parse/stringify, forced object/string, pretty output, static property paths and Buffer UTF-8 input | JSON schema validation |
+| Debug | Enabled sidebar observations for whole messages or static properties, retained message/value records | Original sidebar UI, console/status targets and expressions |
+
+Static property paths allow dotted names, quoted brackets and fixed numeric indexes, up to 200 characters/32 components and index 9,999. A leading `msg.` is stripped only for message-scoped operations; flow/global keys can themselves start with `msg`. Dynamic selectors and prototype paths are refused. Numeric array deletion splices; quoted numeric deletion leaves a hole. Buffer byte writes accept bounded numeric indexes and finite scalar values; deletion and non-byte Buffer property writes fail explicitly. Native Buffer cloning copies bytes and differs from upstream's shared-storage clone quirk.
+
+Unknown disconnected nodes can remain in a document. Disabled nodes/tabs drop deliveries. Before injection, reachable nodes and wires are checked; unsupported reachable nodes, configuration nodes, missing destinations and unsupported extra output ports fail before execution. JSON schema and message-dependent unsupported operations can fail during execution.
+
+## State, limits and failure behavior
+
+Messages use a FIFO queue and a 16-hex-character random identifier when an existing `_msgid` is absent or falsy. Existing truthy IDs are retained. Input can contain 1–1,000 message objects. Messages are copied before use, preserving caller inputs. The first destination receives the current message; other wire destinations receive copies. Objects retain within-run aliases; context encoding also preserves repeated object/Buffer/Date references, sparse arrays, undefined values and own properties across JSON storage. The decoder accepts older tree-encoded context records. Cycles remain unsupported and fail structural validation.
+
+Each message and decoded context is limited to 1 MiB, depth 64, 100,000 visited values and 10,000 array elements. The queue plus retained Debug results is limited to 6 MiB. Individual Inject properties and Change rules enforce limits immediately to prevent intermediate amplification. A run stops at 5,000 deliveries or ten seconds. Each regular expression executes in a disposable worker with a 32 MiB old-generation heap limit, at most one second, and the remaining run deadline; patterns are at most 4,096 characters. These are logical limits and worker caps, not a formal process-memory guarantee.
+
+Only successful runs save context. A failing manual batch records an error and rolls back its context, unlike upstream's independent-message error handling. Context is per saved native document, including per-tab flow objects, a global object and per-Switch previous values. Global state is not shared across separately saved documents. Previous values remain across redeploy/restart until reset. Up to 50 run records are retained with an aggregate 8 MiB history cap; reset clears context and refreshes displayed state while preserving history.
+
+## API and verification
+
+Loopback host routes are `/api/flow/native-{list,validate,save,export,deploy,inspect,reset,delete,inject}` and require the host request token. `native-save` takes `name`, `text` and optional existing `id`; other saved-definition actions take `id`. `native-inject` also accepts `start` and `messages`. Validation returns draft starts, warnings and first-path readiness. Descriptions include separate `starts` and `deployedStarts`. Inspect returns decoded context, whether state was stored and retained runs. Application operations are serialized by the host.
+
+The integrity-locked original runtime is downloaded by `scripts/bootstrap-node-red-oracle.mjs` solely for verification. `compare-original.mjs` checks source hashes before calling original modules. Its 51 runtime cases include Buffer byte coercion and a fixed supplied message ID, typed values, ordered changes, legacy properties, aliases, JSON conversion, otherwise rules and previous values. Its 828 scalar Switch cases cover selected values/rules in first/all modes. Generated IDs and original Debug/editor behavior are outside equality comparison. The corpus does not exercise every accepted configuration or establish performance, memory, usability, security or complete product parity.

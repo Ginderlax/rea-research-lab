@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, writeFile, readFile, rename, rm, access, symlink } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, readFile, rename, rm, access, symlink, realpath } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir, devNull } from 'node:os';
 import { promisify } from 'node:util';
@@ -34,7 +34,11 @@ test('source control refuses the parent repository and rejects paths outside its
   await assert.rejects(call('gitStage', { paths: ['../outside.txt'] }), /traversal|workspace/);
   await assert.rejects(call('gitStage', { paths: ['.git/config'] }), /workspace/);
   await assert.rejects(call('gitBranch', { name: '--help' }), /valid branch/);
-  assert.equal((await native(['rev-parse', '--show-toplevel'])).trim().replaceAll('\\', '/'), workspace.root.replaceAll('\\', '/'));
+  const reportedRoot = (await native(['rev-parse', '--show-toplevel'])).trim();
+  const canonicalReported = await realpath(reportedRoot), canonicalWorkspace = await realpath(workspace.root);
+  assert.equal(canonicalReported, canonicalWorkspace);
+  t.diagnostic(JSON.stringify({ observation: 'git-workspace-physical-root', reportedRoot, suppliedRoot: workspace.root, canonicalWorkspace,
+    differentPathSpelling: reportedRoot.replaceAll('\\', '/') !== workspace.root.replaceAll('\\', '/'), samePhysicalRoot: true }));
 });
 
 test('real Git staging, initial unstaging, commit, patches, branch switching and rename records preserve saved files', async t => {

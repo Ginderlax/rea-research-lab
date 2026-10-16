@@ -1,17 +1,21 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync, writeFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync, readdirSync, lstatSync } from 'node:fs';
 import { dirname, join, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';
 import { verifyFollowupRecords } from './verify-followup-records.mjs';
+import { verifyCloudRecoveryRecords } from './verify-cloud-recovery-records.mjs';
+import { verifyArchiveIntegrationRecords } from './verify-archive-integration-records.mjs';
+import { createHistoricalCarrierPolicyFromRoot } from './historical-carrier-policy.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const manifest = JSON.parse(readFileSync(join(root, 'PUBLICATION-MANIFEST.json'), 'utf8'));
 const index = JSON.parse(readFileSync(join(root, 'PROJECT-INDEX.json'), 'utf8'));
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const sourceProofMigration=createEditorVaultProofMigrationFromRoot(root);
+const finiteCloudRecovery=verifyCloudRecoveryRecords(root);
 const followupEvidence = verifyFollowupRecords(root);
 const historicalMilestone = 'products/rea-studio/results/milestones/execution-archive-20261012/';
 function safeRecordPath(path) { assert.ok(typeof path === 'string' && path.length && !path.startsWith('/') && !path.split('/').includes('..') && !path.includes('\\'), `Invalid record path: ${path}`); }
@@ -298,13 +302,14 @@ if (process.argv.includes('--historical-only')) {
   assert.ok(!process.argv.includes('--write'), 'Historical-only checks do not write current validation metadata.');
   console.log(JSON.stringify({ status: 'passed', scope: 'Historical receipt/source integrity only; no current behavioral or publication validation claim.', source_revision: historicalExecution.source_revision, receipt_hashes_checked: historicalExecution.receipts.size, source_hashes_checked: historicalExecution.sources.size })); process.exit(0);
 }
+const historicalCarrierPolicy = createHistoricalCarrierPolicyFromRoot(root);
 let checkedBytes = 0, parsedJson = 0, checkedScripts = 0;
 const forbidden = /(^|\/)(artifacts|node_modules|tooling|__pycache__|work|\.local)(\/|$)|\.(exe|dll|zip|tgz|bundle|tar|7z|pyc)$/i;
 const syntheticZip = { path: 'products/rea-studio/apps/archive/fixtures/zstd/native-zip93.zip', sha256: 'e9282f76dbd3c080d0e12ef95489458523ebbc65c2951f4b8f3cb880a16c5d8b' };
 const credentialPattern = /\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/;
 for (const entry of manifest.files) {
   assert.ok(!entry.path.startsWith('/') && !entry.path.split('/').includes('..') && !entry.path.includes('\\'));
-  assert.ok(!forbidden.test(entry.path) || entry.path === syntheticZip.path && entry.sha256 === syntheticZip.sha256, `Excluded vendor/runtime material found in publication: ${entry.path}`);
+  assert.ok(!forbidden.test(entry.path) || entry.path === syntheticZip.path && entry.sha256 === syntheticZip.sha256 || historicalCarrierPolicy.allows(entry), `Excluded vendor/runtime material found in publication: ${entry.path}`);
   const target = join(root, entry.path), bytes = readFileSync(target);
   assert.equal(bytes.length, entry.bytes, `Size mismatch: ${entry.path}`);
   assert.equal(sha(bytes), entry.sha256, `Digest mismatch: ${entry.path}`);
@@ -349,7 +354,36 @@ let productDevelopment;
 if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   const developmentRoot = join(root, 'products/rea-studio');
   const status = JSON.parse(readFileSync(join(developmentRoot, 'STATUS.json'), 'utf8'));
-  const validation = JSON.parse(readFileSync(join(developmentRoot, 'results/development-validation.json'), 'utf8'));
+  // The immutable937 receipt keeps its captured source epoch. Only the thirteen
+  // fixed Flow/Vault, Windows-path, Archive and Notes runtime transitions are routed.
+  const historical937Prefix = 'products/rea-studio/results/editor-vault-combined-20261013/';
+  const historical937Seen = new Map(); let historical937Bytes = 0;
+  function historical937Read(name, expected) {
+    safeRecordPath(name); assert.ok(!/[:\x00-\x1f\x7f]/.test(name));
+    assert.ok(Number.isSafeInteger(expected.bytes) && expected.bytes >= 0 && expected.bytes <= 32 * 1024 * 1024 && /^[0-9a-f]{64}$/.test(expected.sha256));
+    let target = root;
+    for (const part of name.split('/')) { assert.ok(part && part !== '.'); target = join(target, part); assert.equal(lstatSync(target).isSymbolicLink(), false); }
+    const stat = lstatSync(target); assert.ok(stat.isFile() && stat.size <= 32 * 1024 * 1024);
+    const bytes = readFileSync(target); assert.equal(bytes.length, expected.bytes); assert.equal(bytes.length, stat.size); assert.equal(sha(bytes), expected.sha256, 'Historical937 proof changed: ' + name);
+    if (historical937Seen.has(name)) assert.deepEqual(historical937Seen.get(name), expected);
+    else { historical937Seen.set(name, { bytes: expected.bytes, sha256: expected.sha256 }); historical937Bytes += bytes.length; assert.ok(historical937Seen.size <= 1500 && historical937Bytes <= 256 * 1024 * 1024); }
+    return bytes;
+  }
+  const validationBytes = historical937Read('products/rea-studio/results/development-validation.json', { bytes: 137063, sha256: '333303c8bd8cd131da3f01e1414b0fba92bc321b2b63f178ab91d138b2bcfa44' });
+  const validation = JSON.parse(validationBytes);
+  const historical937Manifest = JSON.parse(historical937Read(historical937Prefix + 'preservation-manifest.json', { bytes: 226183, sha256: 'e1c9211ca4cd302faf4e819077e5809d01539091cc8fc541fbccfde428a0b80b' }));
+  assert.equal(historical937Manifest.sourceFiles, 737); assert.equal(historical937Manifest.snapshots.length, 753);
+  assert.equal(historical937Manifest.sourceStable, true); assert.equal(historical937Manifest.fullProductParity, false); assert.equal(historical937Manifest.universalSuperiority, false);
+  assert.equal(historical937Manifest.developmentValidationSHA256, sha(validationBytes));
+  const historical937Snapshots = new Map();
+  for (const row of historical937Manifest.snapshots) { safeRecordPath(row.sourcePath); safeRecordPath(row.path); assert.equal(historical937Snapshots.has(row.sourcePath), false); historical937Snapshots.set(row.sourcePath, row); }
+  const historical937BeforeRow = historical937Snapshots.get('source-before.json.snapshot');
+  assert.deepEqual({ bytes: historical937BeforeRow.bytes, sha256: historical937BeforeRow.sha256 }, { bytes: 138572, sha256: '8d2f8ca7414ed9db51d2980264da3daa660adef30ceedbc6c2a4c2b493bb97d1' });
+  const historical937Inventory = JSON.parse(historical937Read(historical937Prefix + historical937BeforeRow.path, { bytes: historical937BeforeRow.bytes, sha256: historical937BeforeRow.sha256 }));
+  const historical937Sources = new Map(historical937Inventory.map(row => [row.path, row]));
+  assert.equal(historical937Inventory.length, 737); assert.equal(historical937Sources.size, 737); assert.equal(validation.source_files.length, 737);
+  const historical937AllowedRoutes = new Set(['apps/archive/client.mjs', 'apps/archive/server.mjs', 'apps/archive/sevenzip.mjs', 'apps/editor/git.test.mjs', 'apps/flow/client.mjs', 'apps/flow/native.mjs', 'apps/flow/server.mjs', 'apps/notes/client.mjs', 'apps/notes/server.mjs', 'apps/sync/dav-transfer.mjs', 'apps/vault/client.mjs', 'apps/vault/recycle.mjs', 'apps/vault/server.mjs']);
+  const historical937Checked = new Set(); let historical937Routed = 0, historical937Unchanged = 0;
   const browser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-verification.json'), 'utf8'));
   const comparison = JSON.parse(readFileSync(join(developmentRoot, 'results/editor-comparison.json'), 'utf8'));
   assert.equal(status.complete_replacement_products, 0);
@@ -359,10 +393,20 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(validation.summary.skipped,0);
   assert.equal(validation.full_feature_parity_established, false);
   assert.equal(validation.universal_superiority_established, false);
+  assert.equal(validation.summary.tests, 937); assert.equal(validation.summary.pass, 937);
+  assert.deepEqual(validation.summary, historical937Manifest.summary);
   for (const entry of validation.source_files) {
-    assert.ok(!entry.path.startsWith('/') && !entry.path.split('/').includes('..') && !entry.path.includes('\\'));
-    assert.equal(sha(readFileSync(join(developmentRoot, entry.path))), entry.sha256, `Development source changed after tests: ${entry.path}`);
+    safeRecordPath(entry.path); assert.equal(historical937Checked.has(entry.path), false); historical937Checked.add(entry.path);
+    const inventory = historical937Sources.get(entry.path), frozen = historical937Snapshots.get(entry.path);
+    assert.ok(inventory && frozen); assert.equal(frozen.path, 'source/' + entry.path + '.snapshot');
+    const expected = { bytes: inventory.bytes, sha256: inventory.sha256 };
+    assert.equal(entry.sha256, expected.sha256); assert.deepEqual({ bytes: frozen.bytes, sha256: frozen.sha256 }, expected);
+    historical937Read(historical937Prefix + frozen.path, expected);
+    const name = 'products/rea-studio/' + entry.path, historicalPath = sourceProofMigration.resolve(name, expected);
+    if (historicalPath) { assert.ok(historical937AllowedRoutes.has(entry.path), 'Unlisted937 source transition'); historical937Read(historicalPath, expected); historical937Routed++; }
+    else { historical937Read(name, expected); historical937Unchanged++; }
   }
+  assert.equal(historical937Checked.size, 737); assert.equal(historical937Routed, 13); assert.equal(historical937Unchanged, 724);
   assert.equal(validation.source_bytes_stable_across_run, true);
   assert.equal(new Set(browser.checks.map(check => check.app)).size, 10);
   assert.ok(browser.checks.every(check => check.passed));
@@ -488,7 +532,17 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   for (const gate of ['comparisonOfSpeedOrResourcesToOriginal','runtimeRunsOriginalOrVendorCode','allDocumentedFeaturesEnumerated','fullProductComplete','universalSuperiorityEstablished']) assert.equal(webdav[gate], false);
   assert.equal(webdav.oracle.authenticatedOriginalExecutions, 274); assert.equal(webdav.oracle.comparisonProfiles, 128); assert.equal(webdav.oracle.comparisonDecisions, 1408); assert.equal(webdav.oracle.heldOutFilteredTransferFolders, 8);
   assert.equal(webdav.officialSourceFiles, 16); assert.equal(webdav.sourceContracts, 29);
-  for (const [path, sha256] of Object.entries(webdav.sourceFiles)) currentFingerprint({path:webdavRoot + path,sha256}, 'WebDAV');
+  // The immutable72-case receipt continues to authenticate its exact tested
+  // transfer before-image. Every other WebDAV source remains a live exact pin.
+  for (const [path, sha256] of Object.entries(webdav.sourceFiles)) {
+    if (path === 'dav-transfer.mjs') {
+      assert.equal(sha256, '591146243ed9b378aed70ce4beedceeec1b12319d7747b1e21fad2282286c9bb');
+      const expected = { bytes: 14717, sha256 }, name = webdavRoot + path;
+      const historicalPath = sourceProofMigration.resolve(name, expected);
+      assert.equal(historicalPath, 'products/rea-studio/results/windows-path-source-transition-20261015/before/products/rea-studio/apps/sync/dav-transfer.mjs.snapshot');
+      currentFingerprint({ ...expected, path: historicalPath }, 'Historical WebDAV transfer source');
+    } else currentFingerprint({ path: webdavRoot + path, sha256 }, 'WebDAV unchanged source');
+  }
   for (const [path, sha256] of Object.entries(webdav.hostDependenciesAtTest)) { const target = resolve(root, webdavRoot, path); namedHistoricalHostFingerprint({path:relative(root,target).replaceAll('\\','/'),sha256}, 'WebDAV nonhost current source'); }
   for (const [path, entry] of Object.entries(webdav.receipts)) currentFingerprint({...entry,path:webdavRoot + 'results/' + path}, 'WebDAV evidence');
   const webdavProvenance = JSON.parse(readFileSync(join(root, webdavRoot, 'results/webdav-provenance.json'), 'utf8'));
@@ -503,9 +557,9 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(archiveLzma.schema, 'rea-lzma-application-validation/v1'); assert.equal(archiveLzma.integrated_application, true);
   assert.equal(archiveLzma.test_run.tests, 169); assert.equal(archiveLzma.test_run.passed, 169); assert.equal(archiveLzma.test_run.failed + archiveLzma.test_run.skipped, 0);
   for (const gate of ['full_feature_parity','all_ways_improved','original_compression_performance_parity','original_application_runtime_wrapper']) assert.equal(archiveLzma[gate], false);
-  const lzmaIntegrity = spawnSync(process.execPath, ['products/rea-studio/apps/archive/verify-lzma.mjs'], {cwd:root,encoding:'utf8',timeout:30000});
-  assert.equal(lzmaIntegrity.status, 0, lzmaIntegrity.stderr);
-  const lzmaIntegrityResult = JSON.parse(lzmaIntegrity.stdout); assert.equal(lzmaIntegrityResult.fingerprints, 124);
+  const lzmaIntegrityResult = verifyArchiveIntegrationRecords(root); assert.equal(lzmaIntegrityResult.status, 'pass');
+  assert.equal(lzmaIntegrityResult.fingerprints, 124); assert.equal(lzmaIntegrityResult.historicalLzmaNotCurrentAcceptance, true);
+  assert.equal(lzmaIntegrityResult.archiveCurrentSourcesMandatory, 21); assert.equal(lzmaIntegrityResult.exactHistoricalReplacementRoutes, 6);
   const compressionBrowser = JSON.parse(readFileSync(join(developmentRoot, 'results/browser-compression-remote-verification.json'), 'utf8'));
   assert.equal(compressionBrowser.schema, 'rea-compression-remote-browser-verification/v1'); assert.deepEqual(compressionBrowser.checks.map(v=>v.app).sort(), ['archive','backup','sync']); assert.ok(compressionBrowser.checks.every(v=>v.passed));
   for (const gate of ['every_documented_feature_verified','full_feature_parity_established','universal_superiority_established']) assert.equal(compressionBrowser[gate], false);
@@ -766,7 +820,9 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
       : registry.file === 'visual-products.json' ? record.baselineProducts.flatMap(product => product.implementationFiles ?? [])
       : record.products.flatMap(product => product.local_implementation_evidence ?? []);
     for (const entry of localEvidence) {
-      const bytes = readFileSync(join(root, entry.path));
+      safeRecordPath(entry.path);
+      const historicalPath = sourceProofMigration.resolve(entry.path, entry);
+      const bytes = readFileSync(join(root, historicalPath ?? entry.path));
       assert.equal(sha(bytes), entry.sha256, `Requirement implementation changed: ${entry.path}`);
       if (entry.bytes !== undefined) assert.equal(bytes.length, entry.bytes, `Requirement implementation size changed: ${entry.path}`);
     }
@@ -779,7 +835,7 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
   assert.equal(capabilityIds.size, requirementIndex.capability_area_rows);
   assert.equal(requirementIndex.exhaustive_feature_inventory_established, false);
   assert.equal(requirementIndex.full_product_parity_rows_passed, 0);
-  productDevelopment = { applications: 10, recorded_tests_passed: validation.summary.pass, tested_source_hashes_checked: validation.source_files.length, browser_workflow_records: browser.checks.length, historical_native_browser_workflow_records: currentBrowser.checks.length, historical_execution_browser_workflow_records: executionBrowser.checks.length, historical_execution_archive_source_hashes_checked: historicalExecution.sources.size, historical_execution_archive_source_revision: historicalExecution.source_revision, historical_joplin_original_method_checks: joplinOracle.passed, historical_keepass_interoperability_test_collection: vaultOracle.result.passed, automation_execution_test_collection: automationExecution.summary.pass, historical_archive_zip_test_collection: archiveZip.checks.successful_result.passed, historical_archive_format_test_collection: archiveFormats.summary.pass, current_archive_test_collection: archiveZstd.checks.result.passed, grafana_unchanged_original_fixtures: grafanaSchema.fixtureChecks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
+  productDevelopment = { applications: 10, historical_937_recorded_tests_passed: validation.summary.pass, historical_937_tested_source_hashes_checked: validation.source_files.length, historical_937_reviewed_source_routes: historical937Routed, historical_937_unchanged_current_source_rows: historical937Unchanged, full_development_suite_rerun: false, browser_workflow_records: browser.checks.length, historical_native_browser_workflow_records: currentBrowser.checks.length, historical_execution_browser_workflow_records: executionBrowser.checks.length, historical_execution_archive_source_hashes_checked: historicalExecution.sources.size, historical_execution_archive_source_revision: historicalExecution.source_revision, historical_joplin_original_method_checks: joplinOracle.passed, historical_keepass_interoperability_test_collection: vaultOracle.result.passed, automation_execution_test_collection: automationExecution.summary.pass, historical_archive_zip_test_collection: archiveZip.checks.successful_result.passed, historical_archive_format_test_collection: archiveFormats.summary.pass, historical_archive_zstandard_test_collection: archiveZstd.checks.result.passed, grafana_unchanged_original_fixtures: grafanaSchema.fixtureChecks.length, capability_area_rows: capabilityIds.size, source_fingerprint_records: sourceFingerprints, exhaustive_feature_inventory_established: false, complete_replacement_products: 0 };
   Object.assign(productDevelopment, {
     historical_backup_compression_tests_passed: backupCompression.summary.pass,
     historical_backup_compression_source_hashes_checked: backupCompression.implementationFingerprints.length,
@@ -825,12 +881,13 @@ if (existsSync(join(root, 'products/rea-studio/STATUS.json'))) {
     historical_rabin_routing_geometry_combined_tests_passed: rabinRoutingGeometryHistory.combined_tests,
     historical_rabin_routing_geometry_source_hashes_checked: rabinRoutingGeometrySources.size,
     preserved_backup_rabin_study_artifacts: rabinPreservation.snapshots.length,
-    current_sync_test_collection: webdav.testRun.pass,
-    current_webdav_test_collection: webdav.testRun.newWebDAVTests,
-    current_webdav_original_executions: webdav.oracle.authenticatedOriginalExecutions,
-    current_webdav_original_comparison_decisions: webdav.oracle.comparisonDecisions,
-    current_archive_test_collection: archiveLzma.test_run.passed,
-    current_archive_source_and_proof_hashes_checked: lzmaIntegrityResult.fingerprints,
+    historical_sync_test_collection: webdav.testRun.pass,
+    historical_webdav_test_collection: webdav.testRun.newWebDAVTests,
+    historical_webdav_original_executions: webdav.oracle.authenticatedOriginalExecutions,
+    historical_webdav_original_comparison_decisions: webdav.oracle.comparisonDecisions,
+    historical_archive_lzma_test_collection: archiveLzma.test_run.passed,
+    historical_archive_lzma_source_and_proof_hashes_checked: lzmaIntegrityResult.fingerprints,
+    current_archive_source_after_images_authenticated: lzmaIntegrityResult.archiveCurrentSourcesMandatory,
     historical_compression_remote_browser_workflow_records: compressionBrowser.checks.length,
     historical_compression_remote_browser_source_hashes_checked: compressionBrowser.implementation_fingerprints.length,
     historical_compression_remote_source_revision: compressionRemoteHistory.source_revision,
@@ -886,6 +943,7 @@ const receipt = {
   credential_pattern_scan_passed: true, root_document_links_resolve: true,
   preserved_vendor_and_historical_document_links_not_rebased: true,
   source_proof_migration: sourceProofMigration.summary(),
+  finite_cloud_flow_vault: finiteCloudRecovery,
   followup_evidence: followupEvidence,
   named_historical_shared_host_receipts: { backup64: { current_nonhost_rows:41, historical_host_rows:1 }, automation_recovery_browser: { current_nonhost_rows:40, historical_host_rows:1 }, automation_recovery: { current_nonhost_rows:42, historical_host_rows:1 }, webdav_host_dependencies: { current_nonhost_rows:2, historical_host_rows:1 }, metrics_algorithm_baseline: { current_nonhost_rows:7, historical_host_rows:1 }, backup_rabin_sources: { current_nonhost_rows:27, prior_other_historical_rows:6, historical_host_rows:1 }, historical_host_sha256:'807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f', current_host_sha256:'85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94', prior_receipts_rebound:false, original_behavior_rerun:false, current_host_still_required:true },
   ...(productDevelopment ? { product_development: productDevelopment } : {}),

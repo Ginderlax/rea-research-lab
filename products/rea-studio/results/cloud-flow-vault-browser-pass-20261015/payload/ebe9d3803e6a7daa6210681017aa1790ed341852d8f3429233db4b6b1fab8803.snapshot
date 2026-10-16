@@ -1,0 +1,175 @@
+"""Bounded browser artifact backup verification. Never execute product/browser code."""
+import hashlib
+import json
+import stat
+import struct
+import sys
+import zipfile
+import zlib
+from pathlib import Path
+
+source = Path(sys.argv[1]).resolve()
+expected = sys.argv[2]
+base = Path(__file__).resolve().parent / 'cloud-verification-backups'
+assert source.is_relative_to(base.resolve()) and source.is_file()
+sha = lambda b: hashlib.sha256(b).hexdigest()
+identity = lambda b: {'bytes': len(b), 'sha256': sha(b)}
+raw = source.read_bytes()
+assert len(raw) <= 32 * 1024 * 1024 and sha(raw) == expected
+folder = source.parent / source.stem
+folder.mkdir(exist_ok=False)
+
+
+def unpack(archive, destination):
+    destination.mkdir(parents=True, exist_ok=True)
+    records, seen = [], set()
+    with zipfile.ZipFile(archive) as z:
+        assert len(z.infolist()) <= 3000
+        assert sum(row.file_size for row in z.infolist()) <= 64 * 1024 * 1024
+        for row in z.infolist():
+            name = row.filename
+            assert name not in seen
+            seen.add(name)
+            assert name and not name.startswith(('/', '\\')) and '\\' not in name and ':' not in name
+            assert all(part not in ('.', '..') for part in Path(name).parts)
+            assert not stat.S_ISLNK(row.external_attr >> 16)
+            target = (destination / name).resolve()
+            assert target.is_relative_to(destination.resolve())
+            if row.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            assert row.file_size <= 24 * 1024 * 1024
+            data = z.read(row)
+            assert len(data) == row.file_size
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with target.open('xb') as stream:
+                stream.write(data)
+            records.append({'path': name, **identity(data)})
+    return records
+
+
+def read_json(filename):
+    assert filename.stat().st_size <= 8 * 1024 * 1024
+    return json.loads(filename.read_text(encoding='utf-8-sig'))
+
+
+def ordinary_relative(root, relative):
+    assert relative and not relative.startswith(('/', '\\')) and '\\' not in relative and ':' not in relative
+    assert all(part not in ('.', '..') for part in Path(relative).parts)
+    filename = (root / relative).resolve()
+    assert filename.is_relative_to(root.resolve()) and filename.is_file() and not filename.is_symlink()
+    return filename
+
+
+def verify_png(data):
+    assert data[:8] == bytes.fromhex('89504e470d0a1a0a')
+    position, dimensions, ended = 8, None, False
+    while position + 12 <= len(data):
+        length = int.from_bytes(data[position:position+4], 'big')
+        kind = data[position+4:position+8]
+        end = position + 12 + length
+        assert end <= len(data)
+        payload = data[position+8:position+8+length]
+        checksum = int.from_bytes(data[position+8+length:end], 'big')
+        assert (zlib.crc32(kind + payload) & 0xffffffff) == checksum
+        if kind == b'IHDR':
+            assert position == 8 and length == 13
+            dimensions = struct.unpack('>II', payload[:8])
+        position = end
+        if kind == b'IEND':
+            assert length == 0 and position == len(data)
+            ended = True
+            break
+    assert ended and dimensions == (1440, 1100)
+
+
+unpack(source, folder / 'downloaded-contents')
+archives = list((folder / 'downloaded-contents').rglob('*.zip'))
+assert len(archives) == 1
+evidence = folder / 'readable-evidence'
+files = unpack(archives[0], evidence)
+result = {
+    'schema': 'rea-local-browser-cloud-backup/v1',
+    'artifact': str(source), 'artifactSHA256': expected,
+    'archiveBytes': len(raw), 'portableEvidenceArchive': str(archives[0]),
+    'readableEvidence': str(evidence), 'files': files,
+    'allCRCAndBytesReadable': True, 'localProductExecutions': 0,
+    'localBrowserExecutions': 0, 'localTests': 0, 'localBuilds': 0,
+    'browserAcceptanceEstablishedByBackup': False,
+    'acceptanceScope': 'Backup byte readability and recorded evidence consistency only. No new product/browser behavior executes locally; failed or incomplete hosted attempts remain failed or incomplete.',
+    'attempt': None,
+}
+attempt_path = evidence / 'browser-attempt.json'
+if attempt_path.exists():
+    attempt = read_json(attempt_path)
+    assert attempt['schema'] == 'rea-cloud-browser-attempt/v1'
+    result['attempt'] = {key: attempt.get(key) for key in (
+        'status', 'sourceCommit', 'summary', 'sourceFiles', 'sourceStable', 'failure')}
+    before_path, after_path = evidence / 'browser-source-before.json', evidence / 'browser-source-after.json'
+    if before_path.exists() and after_path.exists():
+        before, after = read_json(before_path), read_json(after_path)
+        captured = attempt.get('sourceCapturedBeforeExecution') is True
+        result['sourceCaptureClaimedComplete'] = captured
+        if captured:
+            assert len(before) == attempt['sourceFiles']
+        if isinstance(attempt.get('sourceStable'), bool):
+            assert (before == after) == attempt['sourceStable']
+        assert len(before) <= 2000 and sum(row['bytes'] for row in before) <= 64 * 1024 * 1024
+        wanted, missing = set(), []
+        for row in before:
+            relative = 'source/' + row['path'] + '.snapshot'
+            candidate = (evidence / relative).resolve()
+            assert candidate.is_relative_to(evidence.resolve())
+            if not (evidence / relative).exists() and not captured:
+                missing.append(relative)
+                continue
+            data = ordinary_relative(evidence, relative).read_bytes()
+            assert identity(data) == {'bytes': row['bytes'], 'sha256': row['sha256']}
+            wanted.add(relative)
+        observed = {str(filename.relative_to(evidence)).replace('\\', '/') for filename in (evidence / 'source').rglob('*') if filename.is_file()}
+        assert observed == wanted
+        result['sourceSnapshotFilesVerified'] = len(wanted)
+        result['missingUncompletedSourceSnapshots'] = missing
+    if attempt['status'] == 'passed':
+        assert attempt['sourceStable'] is True and attempt['sourceCapturedBeforeExecution'] is True and before_path.exists() and after_path.exists()
+        assert attempt['summary'] == {'tests': 12, 'passed': 12, 'failed': 0, 'skipped': 0, 'flaky': 0, 'retries': 0, 'exactRealDownloads': 3}
+        acquisition = read_json(evidence / 'browser-tooling-acquisition.json')
+        assert acquisition['status'] == 'acquired' and acquisition['execution'] == attempt['execution']
+        assert acquisition['sourceCommit'] == attempt['sourceCommit']
+        assert identity((evidence / 'browser-tooling-acquisition.json').read_bytes()) == attempt['acquisition']
+        assert acquisition['browserImage'] == attempt['browserImage']
+        browser = read_json(evidence / 'browser-observation.json')
+        assert browser['realBrowserFixtureCreated'] and browser['version'] == '156.0.8078.4'
+        roster = read_json(evidence / 'source/browser-tests/scenario-roster.json.snapshot')
+        cases = [read_json(filename) for filename in evidence.glob('case-*.json')]
+        assert len(cases) == 12 and sorted(row['title'] for row in cases) == sorted(roster)
+        downloads = []
+        for case in cases:
+            assert case['realBrowser'] and case['actualHTTP'] and case['serverCloseObserved']
+            assert case['retry'] == 0 and case['errors'] == []
+            for row in case['observations']:
+                if row['kind'] == 'real-browser-file-download':
+                    assert row['path'] in ('downloads/flow-CRLF.json', 'downloads/flow-bareCR.json', 'downloads/flow-LF.json')
+                    assert identity(ordinary_relative(evidence, row['path']).read_bytes()) == row['observed'] == row['expected']
+                    downloads.append(row['path'])
+        assert len(set(downloads)) == len(downloads) == 3
+        assert len(attempt['screenshots']) == 12
+        for row in attempt['screenshots']:
+            data = ordinary_relative(evidence, row['path']).read_bytes()
+            assert identity(data) == {'bytes': row['bytes'], 'sha256': row['sha256']}
+            verify_png(data)
+        report = read_json(evidence / 'playwright-results.json')
+        assert [report['stats'][key] for key in ('expected', 'unexpected', 'skipped', 'flaky')] == [12, 0, 0, 0]
+        assert report['errors'] == []
+        workflow = read_json(evidence / 'browser-workflow-attempt.json')
+        assert [workflow[key] for key in ('checkoutOutcome', 'acquisitionOutcome', 'browserOutcome', 'statusBeforePackaging')] == ['success'] * 4
+        assert not (evidence / 'storage-failure.json').exists()
+        result['passedRecordedBrowserGatesConsistent'] = True
+acquisition_path = evidence / 'browser-tooling-acquisition.json'
+if acquisition_path.exists():
+    acquisition = read_json(acquisition_path)
+    result['acquisition'] = {key: acquisition.get(key) for key in ('status', 'sourceCommit', 'failure', 'browserImage')}
+with (folder / 'local-browser-backup-verification.json').open('x', encoding='utf-8') as stream:
+    json.dump(result, stream, indent=2)
+    stream.write('\n')
+print(json.dumps({key: value for key, value in result.items() if key != 'files'}))

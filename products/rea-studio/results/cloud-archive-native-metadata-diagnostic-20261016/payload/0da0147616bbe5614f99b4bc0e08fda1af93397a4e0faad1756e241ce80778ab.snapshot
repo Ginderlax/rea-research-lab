@@ -1,0 +1,60 @@
+"""Author inert, unbound backup templates from reviewed source identities only."""
+from pathlib import Path
+import json, hashlib
+ROOT=Path(__file__).resolve().parents[1]
+WORK=ROOT/'work'
+STAGE=WORK/'native-diagnostic-backup-template-20261016-next'
+assert not STAGE.exists()
+ident=lambda b:{'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+authority_path=WORK/'archive-native-diagnostic-proposal-r2-next/copy-authority.json'
+authority_raw=authority_path.read_bytes();assert ident(authority_raw)=={'bytes':15083,'sha256':'3ce7f863e5e1dde4599cdbe45449d372ecaa43e8baccaea67174635ae93b045f'}
+authority=json.loads(authority_raw)
+peer_path=WORK/'archive-native-diagnostic-r2-complete-independent-source-review-20261016.json'
+peer_raw=peer_path.read_bytes();assert ident(peer_raw)=={'bytes':4574,'sha256':'4bcede222634a060dbf731da2129d87991b30c218d729e1561e4eea29e0ed3d1'}
+rows=authority['fixedInputSources']+[{'path':row['path'],**row['after']} for row in authority['files']]
+assert len(rows)==70 and len({r['path'] for r in rows})==70 and sum(r['bytes'] for r in rows)==876714
+candidate=Path(authority['candidateRoot'])
+for row in authority['files']:
+ assert ident((candidate/row['path']).read_bytes())==row['after']
+collector_source=(candidate/'tooling/cloud/archive-native-metadata-diagnostic.mjs').read_text(encoding='utf-8')
+literal=json.loads(collector_source.split('const fixed=',1)[1].split(';\nconst tooling=',1)[0])
+assert literal==authority['fixedInputSources']
+STAGE.mkdir()
+before_dir=STAGE/'authoring-before';before_dir.mkdir()
+reader=WORK/'unpack-archive-native-diagnostic-PENDING.py';reader_before=reader.read_bytes()
+collector=WORK/'collect-archive-native-diagnostic-PENDING.mjs';collector_before=collector.read_bytes()
+(before_dir/reader.name).write_bytes(reader_before);(before_dir/collector.name).write_bytes(collector_before)
+assert reader_before.count(b'__FIXED_70_SOURCE_ROWS__')==1
+reader_after=reader_before.replace(b'__FIXED_70_SOURCE_ROWS__',json.dumps(rows,indent=2).encode())
+assert reader_after.count(b"RUN='PENDING_RUN'")==1 and reader_after.count(b"JOB='PENDING_JOB'")==1 and reader_after.count(b"HEAD='PENDING_HEAD'")==1
+reader.write_bytes(reader_after);assert reader.read_bytes()==reader_after
+reader_id=ident(reader_after)
+assert collector_before.count(b"'PENDING_READER_BYTES'")==1 and collector_before.count(b"'PENDING_READER_SHA256'")==1
+collector_after=collector_before.replace(b"'PENDING_READER_BYTES'",str(reader_id['bytes']).encode()).replace(b"'PENDING_READER_SHA256'",("'"+reader_id['sha256']+"'").encode())
+collector.write_bytes(collector_after);assert collector.read_bytes()==collector_after
+for file,raw in [(reader,reader_after),(collector,collector_after),(authority_path,authority_raw),(peer_path,peer_raw)]:
+ (STAGE/(file.name+'.snapshot')).write_bytes(raw)
+(STAGE/'fixed-source-rows.json').write_text(json.dumps(rows,indent=2)+'\n',encoding='utf-8',newline='')
+doc='''# Native metadata diagnostic backup templates
+
+These unbound source templates perform only read-only API orchestration and data-only ZIP backup/readback. Neither template has been executed. Both refuse before credentials, filesystem access or network access while run/head/job placeholders are unbound. The collector also pins the complete reader bytes.
+
+Binding after the root commits the reviewed diagnostic must create separate versioned files. Substitute only the actual run ID, actual push/manual head, exact sole job ID, reader filename and its resulting whole-file byte/hash identity. Retain these templates and their review. Artifact ID/size/digest must come from the exact authenticated run's sole artifact API object, not a historical receipt. The workflow supports only push/manual events and executes the exact committed branch head.
+
+The reader first retains exact outer and inner ZIP bytes and every safe CRC-checked member under96 members/16MiB raw/8MiB individual and ZIP limits. It then independently qualifies actual API/artifact provenance, all67 baseline+3 diagnostic sources against fixed SHA256 and actual Git blob identities, and both source phases. It records a useful qualified native-observation result separately from the strict complete five-check diagnostic outcome. A failed test can retain useful source-bound native observations but never receives five-check acceptance. An incomplete/fallback artifact or source/postcheck failure remains refused. Backup bytes and observer errors stay recoverable.
+
+Complete acceptance requires exactly78 roles:70 source snapshots, source-before/after, two raw command streams, diagnostic/workflow receipts and two distinct native worker traces. Every trace binds its filename PID, consecutive per-worker sequence, original test worker, exact UTF16 script SHA256, original15-second/64MiB options and sanitized non-content error shape. Exactly five raw unchanged TAP names/results and both worker records must match receipts. File enumeration order is ignored only for the trace path map; every row and per-worker sequence is exact. Source rows retain their literal producer order.
+
+The hook adds observation overhead. New observed errors belong only to this new instrumented attempt. They cannot retroactively identify the unobserved D24 native error or establish full-suite, performance, parity or superiority acceptance. Local candidate/product/test/build/syntax executions remain zero.
+'''
+(STAGE/'README.md').write_text(doc,encoding='utf-8',newline='')
+record={'schema':'rea-native-diagnostic-unbound-backup-template-authority/v1','sourceOnly':True,'unboundTemplatesRefuseBeforeFilesCredentialsAndApi':True,
+ 'reader':{'path':'work/'+reader.name,**reader_id},'collector':{'path':'work/'+collector.name,**ident(collector_after)},
+ 'diagnosticSourceAuthority':{'path':'work/'+str(authority_path.relative_to(WORK)).replace('\\','/'),**ident(authority_raw)},
+ 'diagnosticSourcePeer':{'path':'work/'+peer_path.name,**ident(peer_raw)},'fixedSourceRows':rows,'expectedCompleteMembers':78,'sourceSnapshots':70,'sourceBytes':876714,
+ 'bounds':{'members':96,'rawBytes':16777216,'individualBytes':8388608,'outerZipBytes':8388608,'innerZipBytes':8388608},
+ 'independentOriginalScriptUTF16SHA256':'76e3ac8e0aeb8b1fa42fbc84ec6956e2e2d044502f5de5e5552e8538f5f4b615',
+ 'qualificationUnitsSeparate':['byte/CRC/readability retention','actual API and committed-source/postcheck authentication','native observations, including useful failed native calls','strict five-check diagnostic acceptance'],
+ 'localCandidateExecutions':0,'localProductExecutions':0,'localTests':0,'localBuilds':0,'localSyntaxChecks':0,'activeRepositoryWrites':0,'historicalD24CauseProven':False}
+raw=(json.dumps(record,indent=2)+'\n').encode();(STAGE/'source-authority.json').write_bytes(raw)
+print(json.dumps({'stage':str(STAGE),'authority':ident(raw),'reader':reader_id,'collector':ident(collector_after),'templateExecutions':0}))

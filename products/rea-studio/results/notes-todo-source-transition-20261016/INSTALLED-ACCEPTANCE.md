@@ -1,0 +1,9 @@
+# Committed Notes acceptance: source proposal
+
+The exact eight Notes application afterimages remain those tested in the recorded92-group source-composition run and8-case Chromium campaign. Their README deliberately retains its original prospective/unexecuted/not-installed proposal wording. It is a frozen source epoch, not a current installation status statement. No README source epoch is changed by this proposal.
+
+The new two-job workflow authenticates all32 committed Notes files and all8 exact after pins. It then requires the unchanged17-file Notes roster,92 actual groups,23 new group names and20 separately counted released-Joplin helper comparisons. The separate Chromium job reuses the exact8-case spec, requiring4 genuine successful-response holds,2 actual downloads,8 PNGs and8 complete owned cleanup records. Every other eligible active source must match its committed Git blob. Independent always source postchecks remain required after a started check, including failures.
+
+The collectors perform no source installation and do not authenticate an installer receipt. An actual source-copy journal and fresh cloud run URLs must be filed separately after reviewed copy and commit. At source-authoring time no new installed workflow has executed, no fresh installed acceptance is claimed, and no original full application/GUI, full suite, security, parity or superiority result is established. All previous92/8/937 and other historical records retain their original source scope.
+
+The two old experimental workflows keep manual entry points while their automatic triggers retire. Their exact beforeimages are preserved. Old experimental source contracts and the pinned8-case browser bundle are unchanged; its former workflow hash remains historical context. The installed helper independently binds the new workflow. All work is still a reviewable source proposal until exact root copy and fresh verified cloud evidence.

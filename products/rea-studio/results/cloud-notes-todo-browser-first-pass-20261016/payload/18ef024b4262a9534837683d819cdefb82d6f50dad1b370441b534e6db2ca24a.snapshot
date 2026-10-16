@@ -1,0 +1,45 @@
+# Notes to-do candidate: source-only development stage
+
+No product, original helper, test, browser or syntax execution has occurred for this candidate. It is separate from the active application. Every documented feature remains the goal; this stage implements a finite part of the missing `joplin.todos` requirement.
+
+## Selected original release and source
+
+Joplin Desktop 3.6.14, tag `v3.6.14`, source commit `7e2765a3857754d12dbadea442b60ceaf9d4b23d`. Existing retained release/tag/package identity evidence remains under `products/rea-studio/apps/notes/results/notebooks-followup/stage/source-provenance.json.snapshot`. It is not replaced by this stage.
+
+The selected [official to-do documentation](https://github.com/laurent22/joplin/blob/7e2765a3857754d12dbadea442b60ceaf9d4b23d/readme/apps/to-dos.md) is retained separately as `original/to-dos.md.snapshot`, 1,821 bytes, SHA-256 `69032c8f30c6aa782b105fe852a38a7756cfa16bcc3fcd426e2b09d9fedb1c11`. A lightweight read on 2026-10-15 acquired these exact bytes. The existing requirements register previously bound identical documentation bytes to renderer source head `c17c205049ce74e449dc1ce08cbd1c875410d7d5`; this new release-specific acquisition is separate evidence rather than a rebinding of that earlier receipt.
+
+The already retained [official Note.ts](https://github.com/laurent22/joplin/blob/7e2765a3857754d12dbadea442b60ceaf9d4b23d/packages/lib/models/Note.ts) is 45,302 bytes, SHA-256 `5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647`, at `products/rea-studio/apps/notes/results/notebooks-followup/stage/original/packages/lib/models/Note.ts.snapshot.snapshot`.
+
+Selected original methods, Git LF source line numbers:
+
+- `changeNoteType`, lines 656–669: require `is_todo`; unchanged numeric type returns the existing input; switching copies the item and resets due/completion timestamps to zero.
+- `toggleTodoCompleted`, lines 675–686: require `todo_completed`; copy the input; an existing truthy completion value becomes zero, otherwise it becomes the current millisecond timestamp.
+
+The test-only candidate authenticates the whole original file before extracting these two exact methods, then runs them with a fixed clock using Node's TypeScript stripping and a VM context. The planned finite corpus has sixteen conversion and four completion comparisons. Original database, model persistence, Desktop executable and GUI executions are zero. Runtime modules do not import original code.
+
+## Candidate behavior and deliberate policies
+
+Saved-note controls convert between note and to-do, explicitly complete/reopen a to-do, set/clear due metadata in local browser time, and display UTC due/completion values. The due editor preserves milliseconds. List filters distinguish regular notes, all to-dos, open to-dos and completed to-dos and combine with the existing text/tag/notebook/trash filters. Existing updated-time ordering remains unchanged.
+
+Mutations use the existing exclusive queue, capture request primitives before queueing, require the exact saved revision and commit one cloned state record. Duplicate desired states are no-write/no-revision no-ops after revision checking. Failed writes retain the previous state. Editing trashed, shared or locked to-dos is refused by this local subset. These explicit-state APIs, permission refusals, revisions and no-op persistence policy are candidate contracts, not claims about the original helpers.
+
+Imported JEX metadata remains verbatim until changed. To-do edits retain note/native IDs, body/title, notebook identities, tags, unrelated raw metadata, attachments and resource links. Changed states export as original raw `is_todo`, `todo_due` and `todo_completed` fields. Local JSON note copies also retain validated to-do state; JSON still omits attachment bytes. New saved history snapshots capture to-do state, and restoring one restores those fields as a new revision. Earlier historical snapshots lacking to-do state retain the current fields; this prevents inventing missing history.
+
+The browser refuses to start a to-do command with a dirty note draft. A draft typed while a committed response is held remains owned by its current editor and uses the returned saved revision for the next save. New-note navigation and disposal suppress late editor publication. Repeated triggers during one pending mutation submit no second command. These behaviors need actual hosted tests and browser review; source authorship establishes no runtime outcome.
+
+## Planned acceptance and remaining gaps
+
+The candidate authors twenty-three test groups: eleven native API/state groups, nine DOM-model groups, two real HTTP/disk cold-restart groups, and one group containing twenty finite original helper comparisons. All are unexecuted. Run the complete existing Notes suite with these added tests in a source-authenticated GitHub-hosted Windows attempt. Preserve its source census, original-helper bindings, TAP totals, wrapper log and failure evidence. An independent source review must precede installation, and genuine browser acceptance must follow. Do not substitute these twenty helper comparisons for whole-application comparisons or the historical serialization/notebook receipts.
+
+Still absent: a separate New To-do draft workflow, original default incomplete-to-do ordering and configurable sort behavior, original search grammar/ranking, notifications/alarms and alarm permissions, mobile/terminal clients, original toolbar/context menus and drag/drop, synchronization/conflicts/sharing, accessibility and usability parity, performance/resource comparisons, and every other README/register gap. A due timestamp is metadata and does not deliver an alarm. The selected documentation contains inconsistent wording about incomplete/completed ordering and hiding; this stage preserves that ambiguity and does not infer broader behavior from those sentences. Full `joplin.todos` acceptance and full product parity remain open.
+
+## Licensing
+
+Laurent Cozic and Joplin contributors retain original copyright. The selected source is under AGPL-3.0-or-later according to the preserved upstream notice and `original/LICENSE.snapshot`. The test-only original methods retain those terms. Candidate runtime code is newly written source-assisted implementation; no clean-room or MIT derivation claim is made. Preserve the earlier study notices and upstream license. This stage does not determine a repository-wide license.
+
+
+## Independent review corrections, source r2
+
+The entire original eight-file source epoch and authority42b1c1f78b83d3b4423bec178f182852618b4beaaed9fac66031f4fae1b90a1e remain preserved under versions/source-r1. The independent initial review found four issues before execution. The browser runtime helper is now named core.mjs to use the existing public module boundary; the shared host is unchanged. The authored real-HTTP test now compares exact served client/module bytes and SHA-256 values, resolves both actual client dependency imports, and checks that the old todo.mjs endpoint remains absent. This is HTTP delivery acceptance, not browser execution.
+
+All twenty planned original comparisons now observe the candidate through todoState, including eight same-type cases that previously used the input projection. Rejected asynchronous to-do writes publish an error only into the editor generation owning that operation. Completion status after the accepted-state list refresh also requires the original draft revision and a clean draft. Two additional held-response DOM groups cover a rejected write after New note navigation and typing during the post-accept list refresh. These corrections and all twenty-three test groups remain unexecuted. The four original findings are preserved in notes8-independent-source-review.json; a separate r2 delta review is required.

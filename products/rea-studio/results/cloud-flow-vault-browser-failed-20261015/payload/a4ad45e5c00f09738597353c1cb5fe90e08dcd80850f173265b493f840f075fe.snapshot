@@ -1,0 +1,72 @@
+
+Running 12 tests using 1 worker
+
+[1/12] flow-vault.spec.mjs:132:82 › Flow CRLF import save deploy and actual download preserve raw UTF-8 bytes
+[2/12] flow-vault.spec.mjs:132:82 › Flow bareCR import save deploy and actual download preserve raw UTF-8 bytes
+[3/12] flow-vault.spec.mjs:132:82 › Flow LF import save deploy and actual download preserve raw UTF-8 bytes
+[4/12] flow-vault.spec.mjs:142:1 › Flow dirty native text blocks deployment before transport
+[5/12] flow-vault.spec.mjs:151:1 › Flow committed Save retains an adversarial programmatic newer draft
+[6/12] flow-vault.spec.mjs:162:1 › Flow held export validation refuses an adversarial programmatic draft download
+[7/12] flow-vault.spec.mjs:170:1 › Flow disposal scrubs detached native controls during actual validation
+  1) flow-vault.spec.mjs:170:1 › Flow disposal scrubs detached native controls during actual validation 
+
+    Error: Owned server close deadline exceeded
+
+      18 | const write = async (name, value) => fs.writeFile(path.join(evidence, name), JSON.stringify(value, null, 2) + '\n', { flag: 'wx' });
+      19 | const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };
+    > 20 | async function bounded(promise, milliseconds, label) { let timer; try { return await Promise.race([promise, new Promise((_, reject) => timer = setTimeout(() => reject(new Error(label)), milliseconds))]); } finally { clearTimeout(timer); } }
+         |                                                                                                                                                                        ^
+      21 | const password = 'Owned synthetic browser group master 2026';
+      22 | const test = base.extend({
+      23 |   studio: async ({ page }, use, info) => {
+        at Timeout.<anonymous> (D:\a\rea-research-lab\rea-research-lab\products\rea-studio\browser-tests\flow-vault.spec.mjs:20:168)
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\..\..\_temp\rea-browser-evidence-38824834990-1\playwright-output\flow-vault-Flow-disposal-s-d304a-ls-during-actual-validation\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\..\..\_temp\rea-browser-evidence-38824834990-1\playwright-output\flow-vault-Flow-disposal-s-d304a-ls-during-actual-validation\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\..\..\_temp\rea-browser-evidence-38824834990-1\playwright-output\flow-vault-Flow-disposal-s-d304a-ls-during-actual-validation\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\..\..\_temp\rea-browser-evidence-38824834990-1\playwright-output\flow-vault-Flow-disposal-s-d304a-ls-during-actual-validation\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[8/12] flow-vault.spec.mjs:179:1 › Flow static links and actual SVG drag preserve native metadata
+  2) flow-vault.spec.mjs:179:1 › Flow static links and actual SVG drag preserve native metadata ────
+
+    Error: EEXIST: file already exists, open 'D:\a\_temp\rea-browser-evidence-38824834990-1\browser-observation.json'
+
+      86 | test.beforeAll(async ({ browser }) => {
+      87 |   expect(browser.version()).toBe('156.0.8078.4');
+    > 88 |   await write('browser-observation.json', { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 });
+         |   ^
+      89 | });
+      90 | const flowScene = () => ({ rev: 'opaque browser revision', vendor: { preserved: ['yes', 7], unicode: 'before\u2028after 😀 e\u0301 é' }, flows: [
+      91 |   { id: 'tab', type: 'tab', label: 'Owned browser fixture' },
+        at D:\a\rea-research-lab\rea-research-lab\products\rea-studio\browser-tests\flow-vault.spec.mjs:88:3
+
+    Error Context: ..\..\..\..\..\_temp\rea-browser-evidence-38824834990-1\playwright-output\flow-vault-Flow-static-lin-b7406-ag-preserve-native-metadata\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\..\..\_temp\rea-browser-evidence-38824834990-1\playwright-output\flow-vault-Flow-static-lin-b7406-ag-preserve-native-metadata\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\..\..\_temp\rea-browser-evidence-38824834990-1\playwright-output\flow-vault-Flow-static-lin-b7406-ag-preserve-native-metadata\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+[9/12] flow-vault.spec.mjs:223:37 › Vault committed Create final list retains newer draft and saves one new group
+[10/12] flow-vault.spec.mjs:223:37 › Vault committed Save final list retains newer group draft
+[11/12] flow-vault.spec.mjs:241:1 › Vault dirty entry and group drafts block conflicting UI actions
+[12/12] flow-vault.spec.mjs:254:1 › Vault disposal scrubs detached group controls after committed Create
+  2 failed
+    flow-vault.spec.mjs:170:1 › Flow disposal scrubs detached native controls during actual validation 
+    flow-vault.spec.mjs:179:1 › Flow static links and actual SVG drag preserve native metadata ─────
+  4 did not run
+  6 passed (18.6s)

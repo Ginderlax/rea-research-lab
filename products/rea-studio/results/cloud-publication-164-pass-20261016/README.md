@@ -1,0 +1,5 @@
+# Publication integrity:164 controls passed
+
+Actual GitHub-hosted Windows publication verification passed164 source controls, both root write/recheck phases,953 syntax checks, root links, credential-pattern scanning and exact27,745-file payload stability for branch016ecd17/tested mergeb7bb3010. Generated metadata is validated for that exact payload and preserved only as inert historical artifacts. This does not import it into any later payload, execute behavioral/original products, promote historical uninstalled flags or establish full-feature parity/superiority. The historical937 and finite282 counts are authenticated earlier records, not new behavioral executions.
+
+Every non-reviewed-source artifact role is retained. Each record gives decoded bytes/SHA and stored bytes/SHA. Read identity storage directly; decompress gzip storage and verify its decoded identity. Both raw root phase streams, original/generated metadata and source clocks remain intact. Only the76 reviewed-source payloads are omitted publicly with exact identities and complete verified local copies. All metadata here is inert evidence, not a current-payload import.

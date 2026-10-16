@@ -1,0 +1,45 @@
+// Authored DOM-model contracts; not native-browser evidence and not executed.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mount, button, field, groupRow, click, type, walk } from './group-edit-review-fixture.mjs';
+const confirmation = 'Confirm permanently deleting all recycle-bin contents';
+async function ready(t, name) {
+  const f = await mount(t, name), selected = (await f.direct('recycleGroupList')).groups.find(row => row.name === 'Selected');
+  await f.direct('recycleGroupDelete', { id: selected.id, revision: selected.recycleRevision, confirm: true });
+  await click(button(f.root, 'Show recycled groups')); const bin = groupRow(f.root, 'Recycle Bin');
+  await click(button(bin, 'Preview empty recycle bin')); return { ...f, bin };
+}
+test('empty-bin UI requires explicit confirmation and retains bin/outside data', async t => {
+  const f = await ready(t, 'empty-bin-confirmation'), before = f.store.identity();
+  await click(button(f.bin, 'Empty recycle bin permanently')); assert.equal(f.calls.filter(row => row.action === 'emptyRecycleBin').length, 0); assert.equal(f.store.identity(), before);
+  assert(f.bin.textContent.includes('2 descendant groups and 2 entries')); field(f.bin, confirmation).checked = true;
+  await click(button(f.bin, 'Empty recycle bin permanently')); assert.equal(f.calls.filter(row => row.action === 'emptyRecycleBin').length, 1);
+  assert.equal((await f.direct('recycleBinPreview')).entryCount, 0); assert.deepEqual((await f.direct('list')).entries.map(row => row.title), ['C']); assert(groupRow(f.root, 'Recycle Bin'));
+});
+test('unsaved entry draft refuses empty-bin transport without clearing the draft/preview', async t => {
+  const f = await ready(t, 'empty-bin-dirty-refusal'); await type(field(f.root, 'Title'), 'Keep unsaved draft'); field(f.bin, confirmation).checked = true;
+  await click(button(f.bin, 'Empty recycle bin permanently')); assert.equal(f.calls.filter(row => row.action === 'emptyRecycleBin').length, 0);
+  assert.equal(field(f.root, 'Title').value, 'Keep unsaved draft'); assert(f.bin.textContent.includes('Permanently empty recycle bin')); assert.equal((await f.direct('recycleBinPreview')).entryCount, 2);
+});
+test('held old empty-bin preview cannot reopen a closed group panel', async t => {
+  const f = await ready(t, 'empty-bin-preview-close'), held = f.hold('recycleBinPreview'), pending = click(button(f.bin, 'Preview empty recycle bin'));
+  await held.started.promise; await click(button(f.root, 'Close group panel')); held.release.resolve(); await pending;
+  assert(!walk(f.root).some(row => row.tagName === 'BUTTON' && row.textContent === 'Empty recycle bin permanently')); assert.equal(f.calls.filter(row => row.action === 'emptyRecycleBin').length, 0);
+});
+test('held committed empty-bin response cannot clear a newer draft after panel close', async t => {
+  const f = await ready(t, 'empty-bin-commit-close'), held = f.hold('emptyRecycleBin'); field(f.bin, confirmation).checked = true;
+  const pending = click(button(f.bin, 'Empty recycle bin permanently')); await held.started.promise;
+  await type(field(f.root, 'Title'), 'Newer draft after commit'); await click(button(f.root, 'Close group panel')); const count = f.calls.length;
+  held.release.resolve(); await pending; assert.equal(f.calls.length, count); assert.equal(field(f.root, 'Title').value, 'Newer draft after commit'); assert.equal((await f.direct('recycleBinPreview')).entryCount, 0);
+});
+test('a refreshed empty-bin preview invalidates an older detached confirmation control', async t => {
+  const f = await ready(t, 'empty-bin-old-confirmation'), oldButton = button(f.bin, 'Empty recycle bin permanently'), oldConfirm = field(f.bin, confirmation); oldConfirm.checked = true;
+  await click(button(f.bin, 'Preview empty recycle bin')); assert.equal(field(f.bin, confirmation).checked, false); const before = f.store.identity();
+  await click(oldButton); assert.equal(f.calls.filter(row => row.action === 'emptyRecycleBin').length, 0); assert.equal(f.store.identity(), before);
+});
+test('ordinary persistence failure retains contents and requires a fresh unchecked preview before retry', async t => {
+  const f = await ready(t, 'empty-bin-store-failure'), before = f.store.identity(); field(f.bin, confirmation).checked = true; f.store.failNext();
+  await click(button(f.bin, 'Empty recycle bin permanently')); assert.equal(f.store.identity(), before); assert.equal((await f.direct('recycleBinPreview')).entryCount, 2);
+  await click(button(f.root, 'Show recycled groups')); const bin = groupRow(f.root, 'Recycle Bin'); await click(button(bin, 'Preview empty recycle bin')); assert.equal(field(bin, confirmation).checked, false);
+  field(bin, confirmation).checked = true; await click(button(bin, 'Empty recycle bin permanently')); assert.equal((await f.direct('recycleBinPreview')).entryCount, 0);
+});

@@ -25,7 +25,7 @@ async function handleNative(action, input, store) {
     const info = parseNative(input.text);
     let runReady = false, runError;
     try { nativePreflight(info, input.start); runReady = true; } catch (error) { runError = error.message; }
-    return { revision: info.revision, starts: info.starts, issues: info.issues, schedules: info.schedules, nodeCount: info.nodes.length, runReady, runError };
+    return { revision: info.revision, starts: info.starts, issues: info.issues, schedules: info.schedules, nodeCount: info.nodes.length, runReady, runError,linkConnections:info.linkConnections };
   }
   if (action === 'native-save') {
     parseNative(input.text);

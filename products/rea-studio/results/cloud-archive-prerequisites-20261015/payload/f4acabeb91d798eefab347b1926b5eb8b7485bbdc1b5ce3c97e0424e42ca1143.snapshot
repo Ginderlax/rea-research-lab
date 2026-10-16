@@ -1,0 +1,1459 @@
+﻿2026-10-15T21:12:10.5011364Z Current runner version: '2.337.0'
+2026-10-15T21:12:10.5034810Z ##[group]Runner Image Provisioner
+2026-10-15T21:12:10.5035585Z Hosted Compute Agent
+2026-10-15T21:12:10.5036121Z Version: 20261012.601
+2026-10-15T21:12:10.5036702Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-15T21:12:10.5037368Z Build Date: 2026-10-12T17:48:21Z
+2026-10-15T21:12:10.5038030Z Worker ID: {a9433e00-f116-4ac5-a027-21fee526c850}
+2026-10-15T21:12:10.5038689Z Region: westus2
+2026-10-15T21:12:10.5039212Z Cloud: Azure
+2026-10-15T21:12:10.5039689Z ##[endgroup]
+2026-10-15T21:12:10.5041045Z ##[group]Operating System
+2026-10-15T21:12:10.5041636Z Microsoft Windows Server 2022
+2026-10-15T21:12:10.5042261Z 10.0.20348
+2026-10-15T21:12:10.5042715Z Datacenter
+2026-10-15T21:12:10.5043178Z ##[endgroup]
+2026-10-15T21:12:10.5043663Z ##[group]Runner Image
+2026-10-15T21:12:10.5044179Z Image: windows-2022
+2026-10-15T21:12:10.5044710Z Version: 20261012.333.1
+2026-10-15T21:12:10.5046047Z Included Software: https://github.com/actions/runner-images/blob/win22/20261012.333/images/windows/Windows2022-Readme.md
+2026-10-15T21:12:10.5047549Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261012.333
+2026-10-15T21:12:10.5048428Z ##[endgroup]
+2026-10-15T21:12:10.5049475Z ##[group]GITHUB_TOKEN Permissions
+2026-10-15T21:12:10.5051200Z Contents: read
+2026-10-15T21:12:10.5051776Z Metadata: read
+2026-10-15T21:12:10.5052264Z ##[endgroup]
+2026-10-15T21:12:10.5054220Z Secret source: Actions
+2026-10-15T21:12:10.5055051Z Cache mode: write
+2026-10-15T21:12:10.5055703Z Prepare workflow directory
+2026-10-15T21:12:10.5451310Z Prepare all required actions
+2026-10-15T21:12:10.5497963Z Getting action download info
+2026-10-15T21:12:10.9478941Z Download action repository 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-15T21:12:11.1725640Z Download action repository 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-15T21:12:11.3838133Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-15T21:12:11.7475890Z Complete job name: archive-aes-experiment
+2026-10-15T21:12:11.9898289Z ##[group]Run git config --global core.longpaths true
+2026-10-15T21:12:11.9899265Z [36;1mgit config --global core.longpaths true[0m
+2026-10-15T21:12:11.9998327Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-15T21:12:11.9999349Z env:
+2026-10-15T21:12:11.9999765Z   CI: true
+2026-10-15T21:12:12.0000171Z ##[endgroup]
+2026-10-15T21:12:13.3011106Z ##[group]Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+2026-10-15T21:12:13.3012731Z with:
+2026-10-15T21:12:13.3013556Z   persist-credentials: false
+2026-10-15T21:12:13.3014559Z   fetch-depth: 1
+2026-10-15T21:12:13.3015489Z   repository: Ginderlax/rea-research-lab
+2026-10-15T21:12:13.3024297Z   token: ***
+2026-10-15T21:12:13.3025158Z   ssh-strict: true
+2026-10-15T21:12:13.3026018Z   ssh-user: git
+2026-10-15T21:12:13.3026851Z   clean: true
+2026-10-15T21:12:13.3027725Z   sparse-checkout-cone-mode: true
+2026-10-15T21:12:13.3028810Z   fetch-tags: false
+2026-10-15T21:12:13.3029679Z   show-progress: true
+2026-10-15T21:12:13.3030559Z   lfs: false
+2026-10-15T21:12:13.3031372Z   submodules: false
+2026-10-15T21:12:13.3032250Z   set-safe-directory: true
+2026-10-15T21:12:13.3033258Z   allow-unsafe-pr-checkout: false
+2026-10-15T21:12:13.3034277Z env:
+2026-10-15T21:12:13.3035010Z   CI: true
+2026-10-15T21:12:13.3035776Z ##[endgroup]
+2026-10-15T21:12:13.4715017Z Syncing repository: Ginderlax/rea-research-lab
+2026-10-15T21:12:13.4717765Z ##[group]Getting Git version info
+2026-10-15T21:12:13.4719216Z Working directory is 'D:\a\rea-research-lab\rea-research-lab'
+2026-10-15T21:12:13.5923698Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-15T21:12:13.6192862Z git version 2.56.0.windows.2
+2026-10-15T21:12:13.6230314Z ##[endgroup]
+2026-10-15T21:12:13.6244229Z Copying 'C:\Users\runneradmin\.gitconfig' to 'D:\a\_temp\ea423f99-ab26-4c93-bd7b-2176373530a9\.gitconfig'
+2026-10-15T21:12:13.6263263Z Temporarily overriding HOME='D:\a\_temp\ea423f99-ab26-4c93-bd7b-2176373530a9' before making global git config changes
+2026-10-15T21:12:13.6265904Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-15T21:12:13.6274155Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\rea-research-lab\rea-research-lab
+2026-10-15T21:12:13.6547546Z Deleting the contents of 'D:\a\rea-research-lab\rea-research-lab'
+2026-10-15T21:12:13.6552561Z ##[group]Initializing the repository
+2026-10-15T21:12:13.6561324Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\rea-research-lab\rea-research-lab
+2026-10-15T21:12:13.8208961Z Initialized empty Git repository in D:/a/rea-research-lab/rea-research-lab/.git/
+2026-10-15T21:12:13.8251010Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/Ginderlax/rea-research-lab
+2026-10-15T21:12:13.9315233Z ##[endgroup]
+2026-10-15T21:12:13.9316757Z ##[group]Disabling automatic garbage collection
+2026-10-15T21:12:13.9323621Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-10-15T21:12:13.9602324Z ##[endgroup]
+2026-10-15T21:12:13.9603732Z ##[group]Setting up auth
+2026-10-15T21:12:13.9613906Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-15T21:12:13.9889243Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-15T21:12:16.9189134Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-15T21:12:16.9478662Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-15T21:12:17.4377053Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-15T21:12:17.4673646Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-15T21:12:17.9704608Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-10-15T21:12:17.9995275Z ##[endgroup]
+2026-10-15T21:12:17.9995921Z ##[group]Fetching the repository
+2026-10-15T21:12:18.0012440Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b15d166db91d3b124a1f164547711f6c1806b232:refs/remotes/origin/codex/rea-cloud-recovery-20261015
+2026-10-15T21:12:25.9185165Z From https://github.com/Ginderlax/rea-research-lab
+2026-10-15T21:12:25.9186241Z  * [new ref]         b15d166db91d3b124a1f164547711f6c1806b232 -> origin/codex/rea-cloud-recovery-20261015
+2026-10-15T21:12:25.9220094Z ##[endgroup]
+2026-10-15T21:12:25.9220875Z ##[group]Determining the checkout info
+2026-10-15T21:12:25.9223629Z ##[endgroup]
+2026-10-15T21:12:25.9234763Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-10-15T21:12:25.9791895Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-10-15T21:12:26.0129386Z ##[group]Checking out the ref
+2026-10-15T21:12:26.0138834Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force -B codex/rea-cloud-recovery-20261015 refs/remotes/origin/codex/rea-cloud-recovery-20261015
+2026-10-15T21:12:27.1388266Z Updating files:  12% (3431/26560)
+2026-10-15T21:12:27.2294420Z Updating files:  13% (3453/26560)
+2026-10-15T21:12:27.2990604Z Updating files:  14% (3719/26560)
+2026-10-15T21:12:27.3587784Z Updating files:  15% (3984/26560)
+2026-10-15T21:12:27.4536915Z Updating files:  16% (4250/26560)
+2026-10-15T21:12:27.5184338Z Updating files:  17% (4516/26560)
+2026-10-15T21:12:27.5914493Z Updating files:  18% (4781/26560)
+2026-10-15T21:12:27.6552981Z Updating files:  19% (5047/26560)
+2026-10-15T21:12:27.7188953Z Updating files:  20% (5312/26560)
+2026-10-15T21:12:27.7821445Z Updating files:  21% (5578/26560)
+2026-10-15T21:12:27.8950296Z Updating files:  22% (5844/26560)
+2026-10-15T21:12:27.9595608Z Updating files:  23% (6109/26560)
+2026-10-15T21:12:28.0207295Z Updating files:  24% (6375/26560)
+2026-10-15T21:12:28.0883274Z Updating files:  25% (6640/26560)
+2026-10-15T21:12:28.1338309Z Updating files:  26% (6906/26560)
+2026-10-15T21:12:28.1458796Z Updating files:  26% (7112/26560)
+2026-10-15T21:12:28.2186193Z Updating files:  27% (7172/26560)
+2026-10-15T21:12:28.3089259Z Updating files:  28% (7437/26560)
+2026-10-15T21:12:28.3720617Z Updating files:  29% (7703/26560)
+2026-10-15T21:12:28.4353117Z Updating files:  30% (7968/26560)
+2026-10-15T21:12:28.4915953Z Updating files:  31% (8234/26560)
+2026-10-15T21:12:28.5469523Z Updating files:  32% (8500/26560)
+2026-10-15T21:12:28.6457033Z Updating files:  33% (8765/26560)
+2026-10-15T21:12:28.7135984Z Updating files:  34% (9031/26560)
+2026-10-15T21:12:28.7756628Z Updating files:  35% (9296/26560)
+2026-10-15T21:12:28.8400042Z Updating files:  36% (9562/26560)
+2026-10-15T21:12:28.9033737Z Updating files:  37% (9828/26560)
+2026-10-15T21:12:28.9618007Z Updating files:  38% (10093/26560)
+2026-10-15T21:12:29.0153989Z Updating files:  39% (10359/26560)
+2026-10-15T21:12:29.0685573Z Updating files:  40% (10624/26560)
+2026-10-15T21:12:29.1400666Z Updating files:  41% (10890/26560)
+2026-10-15T21:12:29.2186361Z Updating files:  41% (11006/26560)
+2026-10-15T21:12:29.2800769Z Updating files:  42% (11156/26560)
+2026-10-15T21:12:29.3376103Z Updating files:  43% (11421/26560)
+2026-10-15T21:12:29.3944441Z Updating files:  44% (11687/26560)
+2026-10-15T21:12:29.4469820Z Updating files:  45% (11952/26560)
+2026-10-15T21:12:29.4983514Z Updating files:  46% (12218/26560)
+2026-10-15T21:12:29.5853676Z Updating files:  47% (12484/26560)
+2026-10-15T21:12:29.7101722Z Updating files:  48% (12749/26560)
+2026-10-15T21:12:29.8380242Z Updating files:  49% (13015/26560)
+2026-10-15T21:12:29.9196830Z Updating files:  50% (13280/26560)
+2026-10-15T21:12:29.9860276Z Updating files:  51% (13546/26560)
+2026-10-15T21:12:30.0960898Z Updating files:  52% (13812/26560)
+2026-10-15T21:12:30.1359486Z Updating files:  53% (14077/26560)
+2026-10-15T21:12:30.1495972Z Updating files:  53% (14266/26560)
+2026-10-15T21:12:30.2046681Z Updating files:  54% (14343/26560)
+2026-10-15T21:12:30.2658459Z Updating files:  55% (14608/26560)
+2026-10-15T21:12:30.3411418Z Updating files:  56% (14874/26560)
+2026-10-15T21:12:30.4685175Z Updating files:  57% (15140/26560)
+2026-10-15T21:12:30.5084070Z Updating files:  58% (15405/26560)
+2026-10-15T21:12:30.5468475Z Updating files:  59% (15671/26560)
+2026-10-15T21:12:30.5884745Z Updating files:  60% (15936/26560)
+2026-10-15T21:12:30.6607527Z Updating files:  61% (16202/26560)
+2026-10-15T21:12:30.7003816Z Updating files:  62% (16468/26560)
+2026-10-15T21:12:30.7403920Z Updating files:  63% (16733/26560)
+2026-10-15T21:12:30.7851758Z Updating files:  64% (16999/26560)
+2026-10-15T21:12:30.8526136Z Updating files:  65% (17264/26560)
+2026-10-15T21:12:30.8923140Z Updating files:  66% (17530/26560)
+2026-10-15T21:12:30.9305053Z Updating files:  67% (17796/26560)
+2026-10-15T21:12:30.9703684Z Updating files:  68% (18061/26560)
+2026-10-15T21:12:31.0367898Z Updating files:  69% (18327/26560)
+2026-10-15T21:12:31.0791374Z Updating files:  70% (18592/26560)
+2026-10-15T21:12:31.1207491Z Updating files:  71% (18858/26560)
+2026-10-15T21:12:31.1361159Z Updating files:  72% (19124/26560)
+2026-10-15T21:12:31.1630383Z Updating files:  72% (19202/26560)
+2026-10-15T21:12:31.2225699Z Updating files:  73% (19389/26560)
+2026-10-15T21:12:31.2644229Z Updating files:  74% (19655/26560)
+2026-10-15T21:12:31.3157828Z Updating files:  75% (19920/26560)
+2026-10-15T21:12:31.3567511Z Updating files:  76% (20186/26560)
+2026-10-15T21:12:31.5066703Z Updating files:  77% (20452/26560)
+2026-10-15T21:12:31.5753882Z Updating files:  78% (20717/26560)
+2026-10-15T21:12:31.6374979Z Updating files:  79% (20983/26560)
+2026-10-15T21:12:31.7024486Z Updating files:  80% (21248/26560)
+2026-10-15T21:12:31.8118587Z Updating files:  81% (21514/26560)
+2026-10-15T21:12:31.8972994Z Updating files:  82% (21780/26560)
+2026-10-15T21:12:31.9741557Z Updating files:  83% (22045/26560)
+2026-10-15T21:12:32.0865129Z Updating files:  84% (22311/26560)
+2026-10-15T21:12:32.1371718Z Updating files:  85% (22576/26560)
+2026-10-15T21:12:32.2054917Z Updating files:  85% (22693/26560)
+2026-10-15T21:12:32.2731010Z Updating files:  86% (22842/26560)
+2026-10-15T21:12:32.3401918Z Updating files:  87% (23108/26560)
+2026-10-15T21:12:32.4180908Z Updating files:  88% (23373/26560)
+2026-10-15T21:12:32.5263859Z Updating files:  89% (23639/26560)
+2026-10-15T21:12:32.5942937Z Updating files:  90% (23904/26560)
+2026-10-15T21:12:32.6826576Z Updating files:  91% (24170/26560)
+2026-10-15T21:12:33.1238063Z Updating files:  92% (24436/26560)
+2026-10-15T21:12:33.1415394Z Updating files:  93% (24701/26560)
+2026-10-15T21:12:33.1883481Z Updating files:  93% (24773/26560)
+2026-10-15T21:12:33.3078975Z Updating files:  94% (24967/26560)
+2026-10-15T21:12:33.3718020Z Updating files:  95% (25232/26560)
+2026-10-15T21:12:33.4563732Z Updating files:  96% (25498/26560)
+2026-10-15T21:12:33.5179307Z Updating files:  97% (25764/26560)
+2026-10-15T21:12:33.5782242Z Updating files:  98% (26029/26560)
+2026-10-15T21:12:33.6433577Z Updating files:  99% (26295/26560)
+2026-10-15T21:12:33.6434152Z Updating files: 100% (26560/26560)
+2026-10-15T21:12:33.6434465Z Updating files: 100% (26560/26560), done.
+2026-10-15T21:12:33.7004446Z Switched to a new branch 'codex/rea-cloud-recovery-20261015'
+2026-10-15T21:12:33.7018122Z branch 'codex/rea-cloud-recovery-20261015' set up to track 'origin/codex/rea-cloud-recovery-20261015'.
+2026-10-15T21:12:33.7115574Z ##[endgroup]
+2026-10-15T21:12:33.7413726Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-10-15T21:12:33.7670834Z b15d166db91d3b124a1f164547711f6c1806b232
+2026-10-15T21:12:33.7702265Z ##[group]Removing auth
+2026-10-15T21:12:33.7710559Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-15T21:12:33.7987378Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-15T21:12:34.3150217Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-15T21:12:34.3576689Z http.https://github.com/.extraheader
+2026-10-15T21:12:34.3610477Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-10-15T21:12:34.3948407Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-15T21:12:34.8453394Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-15T21:12:34.8731528Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-15T21:12:35.3419733Z ##[endgroup]
+2026-10-15T21:12:35.3737809Z ##[group]Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+2026-10-15T21:12:35.3738270Z with:
+2026-10-15T21:12:35.3738463Z   node-version: 24.16.0
+2026-10-15T21:12:35.3738678Z   architecture: x64
+2026-10-15T21:12:35.3738864Z   check-latest: false
+2026-10-15T21:12:35.3739247Z   always-auth: false
+2026-10-15T21:12:35.3741764Z   token: ***
+2026-10-15T21:12:35.3741949Z env:
+2026-10-15T21:12:35.3742103Z   CI: true
+2026-10-15T21:12:35.3742273Z ##[endgroup]
+2026-10-15T21:12:35.5304273Z Attempting to download 24.16.0...
+2026-10-15T21:12:35.5576626Z (node:2560) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-15T21:12:35.5583122Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-15T21:12:36.0716143Z Acquiring 24.16.0 - x64 from https://github.com/actions/node-versions/releases/download/24.16.0-26265092718/node-24.16.0-win32-x64.7z
+2026-10-15T21:12:36.5200130Z Extracting ...
+2026-10-15T21:12:38.3340457Z Adding to the cache ...
+2026-10-15T21:12:42.1859537Z ##[group]Environment details
+2026-10-15T21:12:44.3245105Z node: v24.16.0
+2026-10-15T21:12:44.3245472Z npm: 11.13.0
+2026-10-15T21:12:44.3245766Z yarn: 1.22.22
+2026-10-15T21:12:44.3247235Z ##[endgroup]
+2026-10-15T21:12:44.3515330Z ##[group]Run $evidence = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-ci-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+2026-10-15T21:12:44.3516409Z [36;1m$evidence = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-ci-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)[0m
+2026-10-15T21:12:44.3517201Z [36;1m'REA_ARCHIVE_EVIDENCE=' + $evidence | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append[0m
+2026-10-15T21:12:44.3517982Z [36;1m'ARCHIVE_AES_OBSERVATIONS=' + (Join-Path $evidence 'observations') | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append[0m
+2026-10-15T21:12:44.3561540Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-15T21:12:44.3561881Z env:
+2026-10-15T21:12:44.3562042Z   CI: true
+2026-10-15T21:12:44.3562212Z ##[endgroup]
+2026-10-15T21:12:44.7393174Z ##[group]Run node products/rea-studio/scripts/compose-archive-aes-cloud.mjs --phase compose --evidence "$env:REA_ARCHIVE_EVIDENCE"
+2026-10-15T21:12:44.7394209Z [36;1mnode products/rea-studio/scripts/compose-archive-aes-cloud.mjs --phase compose --evidence "$env:REA_ARCHIVE_EVIDENCE"[0m
+2026-10-15T21:12:44.7433129Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-15T21:12:44.7433469Z env:
+2026-10-15T21:12:44.7433638Z   CI: true
+2026-10-15T21:12:44.7433956Z   REA_ARCHIVE_EVIDENCE: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1
+2026-10-15T21:12:44.7434524Z   ARCHIVE_AES_OBSERVATIONS: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1\observations
+2026-10-15T21:12:44.7434946Z ##[endgroup]
+2026-10-15T21:12:48.3188791Z {"status":"composed-unexecuted-experimental-overlay","sourceRoot":"D:\\a\\rea-research-lab\\rea-research-lab","gitBaseline":"b15d166db91d3b124a1f164547711f6c1806b232","modifiedWorktree":true,"currentArchiveSourceFiles":62,"proposedTests":161,"productionInstalled":false}
+2026-10-15T21:12:48.4248011Z ##[group]Run node products/rea-studio/scripts/compose-archive-aes-cloud.mjs --phase bootstrap --evidence "$env:REA_ARCHIVE_EVIDENCE"
+2026-10-15T21:12:48.4249070Z [36;1mnode products/rea-studio/scripts/compose-archive-aes-cloud.mjs --phase bootstrap --evidence "$env:REA_ARCHIVE_EVIDENCE"[0m
+2026-10-15T21:12:48.4288714Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-15T21:12:48.4289057Z env:
+2026-10-15T21:12:48.4289233Z   CI: true
+2026-10-15T21:12:48.4289534Z   REA_ARCHIVE_EVIDENCE: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1
+2026-10-15T21:12:48.4290086Z   ARCHIVE_AES_OBSERVATIONS: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1\observations
+2026-10-15T21:12:48.4290507Z ##[endgroup]
+2026-10-15T21:12:49.5763493Z {"status":"acquired","sourceCommit":"b15d166db91d3b124a1f164547711f6c1806b232","authenticatedAssets":2,"originalProcesses":0,"receipt":"D:\\a\\_temp\\rea-archive-aes-ci-evidence-38808025295-1\\original-acquisition.json"}
+2026-10-15T21:12:49.6861057Z ##[group]Run $output = Join-Path $env:REA_ARCHIVE_EVIDENCE 'verification'
+2026-10-15T21:12:49.6861654Z [36;1m$output = Join-Path $env:REA_ARCHIVE_EVIDENCE 'verification'[0m
+2026-10-15T21:12:49.6862965Z [36;1m$acquisition = Join-Path $env:REA_ARCHIVE_EVIDENCE 'original-acquisition.json'[0m
+2026-10-15T21:12:49.6863507Z [36;1m$composition = Join-Path $env:REA_ARCHIVE_EVIDENCE 'composition.json'[0m
+2026-10-15T21:12:49.6864468Z [36;1mnode products/rea-studio/scripts/verify-cloud.mjs --scope archive-aes-experiment --output "$output" --bootstrap-manifest "$acquisition" --overlay-manifest "$composition" --timeout-ms 1200000[0m
+2026-10-15T21:12:49.6904231Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-15T21:12:49.6904569Z env:
+2026-10-15T21:12:49.6904737Z   CI: true
+2026-10-15T21:12:49.6905037Z   REA_ARCHIVE_EVIDENCE: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1
+2026-10-15T21:12:49.6905650Z   ARCHIVE_AES_OBSERVATIONS: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1\observations
+2026-10-15T21:12:49.6906084Z ##[endgroup]
+2026-10-15T21:12:50.7405656Z TAP version 13
+2026-10-15T21:13:02.1769795Z # Subtest: archive HTTP file creation, ZIP validation and extraction persist through host restarts
+2026-10-15T21:13:02.1786665Z not ok 1 - archive HTTP file creation, ZIP validation and extraction persist through host restarts
+2026-10-15T21:13:02.1787890Z   ---
+2026-10-15T21:13:02.1788302Z   duration_ms: 11359.6175
+2026-10-15T21:13:02.1788709Z   type: 'test'
+2026-10-15T21:13:02.1789709Z   location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\app.integration.test.mjs:8:1'
+2026-10-15T21:13:02.1790791Z   failureType: 'testCodeFailure'
+2026-10-15T21:13:02.1791220Z   error: |-
+2026-10-15T21:13:02.1791936Z     Native Windows source metadata is unavailable or invalid; archive creation was refused.
+2026-10-15T21:13:02.1792702Z     
+2026-10-15T21:13:02.1792972Z     400 !== 200
+2026-10-15T21:13:02.1793296Z     
+2026-10-15T21:13:02.1793585Z   code: 'ERR_ASSERTION'
+2026-10-15T21:13:02.1794521Z   name: 'AssertionError'
+2026-10-15T21:13:02.1795463Z   expected: 200
+2026-10-15T21:13:02.1795825Z   actual: 400
+2026-10-15T21:13:02.1796162Z   operator: 'strictEqual'
+2026-10-15T21:13:02.1796503Z   stack: |-
+2026-10-15T21:13:02.1797508Z     call (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.integration.test.mjs:13:51)
+2026-10-15T21:13:02.1799233Z     process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-15T21:13:02.1801029Z     async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.integration.test.mjs:15:85)
+2026-10-15T21:13:02.1802578Z     async Test.run (node:internal/test_runner/test:1313:7)
+2026-10-15T21:13:02.1803539Z     async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+2026-10-15T21:13:02.1804328Z   ...
+2026-10-15T21:13:02.6787774Z # Subtest: stored and deflated ZIP files preserve binary, UTF-8, empty files and directories
+2026-10-15T21:13:02.6796903Z not ok 2 - stored and deflated ZIP files preserve binary, UTF-8, empty files and directories
+2026-10-15T21:13:02.6800655Z   ---
+2026-10-15T21:13:02.6801038Z   duration_ms: 390.0285
+2026-10-15T21:13:02.6801607Z   type: 'test'
+2026-10-15T21:13:02.6802466Z   location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\app.test.mjs:17:1'
+2026-10-15T21:13:02.6803413Z   failureType: 'testCodeFailure'
+2026-10-15T21:13:02.6804255Z   error: 'Native Windows source metadata is unavailable or invalid; archive creation was refused.'
+2026-10-15T21:13:02.6805103Z   code: 'ERR_TEST_FAILURE'
+2026-10-15T21:13:02.6805474Z   stack: |-
+2026-10-15T21:13:02.6806445Z     unavailable (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:71:33)
+2026-10-15T21:13:02.6810475Z     readSourceMetadata (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:143:19)
+2026-10-15T21:13:02.6812072Z     process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-15T21:13:02.6814135Z     async collect (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:49:20)
+2026-10-15T21:13:02.6815774Z     async run (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:106:22)
+2026-10-15T21:13:02.6816958Z     async handle (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:168:18)
+2026-10-15T21:13:02.6818448Z     async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.test.mjs:23:20)
+2026-10-15T21:13:02.6819135Z     async Test.run (node:internal/test_runner/test:1313:7)
+2026-10-15T21:13:02.6819958Z     async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+2026-10-15T21:13:02.6820693Z   ...
+2026-10-15T21:13:02.6821688Z # Subtest: ZIP parser validates CRC and headers and refuses traversal, duplicate paths, and oversized expansion
+2026-10-15T21:13:02.6823298Z ok 3 - ZIP parser validates CRC and headers and refuses traversal, duplicate paths, and oversized expansion
+2026-10-15T21:13:02.6824188Z   ---
+2026-10-15T21:13:02.6824515Z   duration_ms: 3.8572
+2026-10-15T21:13:02.6824880Z   type: 'test'
+2026-10-15T21:13:02.6825188Z   ...
+2026-10-15T21:13:03.0290834Z # Subtest: malicious archive cannot create files outside workspace and unconfirmed extraction does not write
+2026-10-15T21:13:03.0301272Z not ok 4 - malicious archive cannot create files outside workspace and unconfirmed extraction does not write
+2026-10-15T21:13:03.0302372Z   ---
+2026-10-15T21:13:03.0302726Z   duration_ms: 350.0778
+2026-10-15T21:13:03.0303081Z   type: 'test'
+2026-10-15T21:13:03.0303992Z   location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\app.test.mjs:44:1'
+2026-10-15T21:13:03.0305030Z   failureType: 'testCodeFailure'
+2026-10-15T21:13:03.0305927Z   error: 'Native Windows source metadata is unavailable or invalid; archive creation was refused.'
+2026-10-15T21:13:03.0306784Z   code: 'ERR_TEST_FAILURE'
+2026-10-15T21:13:03.0307164Z   stack: |-
+2026-10-15T21:13:03.0308164Z     unavailable (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:71:33)
+2026-10-15T21:13:03.0309963Z     readSourceMetadata (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:143:19)
+2026-10-15T21:13:03.0311456Z     process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-15T21:13:03.0312815Z     async collect (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:49:20)
+2026-10-15T21:13:03.0314678Z     async run (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:106:22)
+2026-10-15T21:13:03.0315637Z     async handle (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:168:18)
+2026-10-15T21:13:03.0316593Z     async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.test.mjs:45:104)
+2026-10-15T21:13:03.0317300Z     async Test.run (node:internal/test_runner/test:1313:7)
+2026-10-15T21:13:03.0317770Z     async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+2026-10-15T21:13:03.0318149Z   ...
+2026-10-15T21:13:04.0847872Z # Subtest: Windows .NET independently reads generated ZIP and our parser reads independently created ZIP
+2026-10-15T21:13:04.0850009Z ok 5 - Windows .NET independently reads generated ZIP and our parser reads independently created ZIP
+2026-10-15T21:13:04.0850943Z   ---
+2026-10-15T21:13:04.0851289Z   duration_ms: 1055.7093
+2026-10-15T21:13:04.0851671Z   type: 'test'
+2026-10-15T21:13:04.0851980Z   ...
+2026-10-15T21:13:15.2238499Z # Retained compressed-writer fixtures: D:\\a\\rea-research-lab\\rea-research-lab\\.local\\lzma-tests\\encoder-Y3UFa5
+2026-10-15T21:13:15.2310428Z # Subtest: original accepts candidate lzma/fast, solid=false, encoded=false
+2026-10-15T21:13:15.2312179Z ok 6 - original accepts candidate lzma/fast, solid=false, encoded=false
+2026-10-15T21:13:15.2382115Z   ---
+2026-10-15T21:13:15.2382648Z   duration_ms: 178.1293
+2026-10-15T21:13:15.2383686Z   type: 'test'
+2026-10-15T21:13:15.2384182Z   ...
+2026-10-15T21:13:15.2410611Z # Subtest: original accepts candidate lzma/fast, solid=false, encoded=true
+2026-10-15T21:13:15.2412965Z ok 7 - original accepts candidate lzma/fast, solid=false, encoded=true
+2026-10-15T21:13:15.2413910Z   ---
+2026-10-15T21:13:15.2414377Z   duration_ms: 110.9875
+2026-10-15T21:13:15.2414856Z   type: 'test'
+2026-10-15T21:13:15.2415330Z   ...
+2026-10-15T21:13:15.2416133Z # Subtest: original accepts candidate lzma/fast, solid=true, encoded=false
+2026-10-15T21:13:15.2418554Z ok 8 - original accepts candidate lzma/fast, solid=true, encoded=false
+2026-10-15T21:13:15.2419380Z   ---
+2026-10-15T21:13:15.2443176Z   duration_ms: 85.8944
+2026-10-15T21:13:15.2443719Z   type: 'test'
+2026-10-15T21:13:15.2444138Z   ...
+2026-10-15T21:13:15.2477048Z # Subtest: original accepts candidate lzma/fast, solid=true, encoded=true
+2026-10-15T21:13:15.2479165Z ok 9 - original accepts candidate lzma/fast, solid=true, encoded=true
+2026-10-15T21:13:15.2481130Z   ---
+2026-10-15T21:13:15.2481973Z   duration_ms: 91.8536
+2026-10-15T21:13:15.2483199Z   type: 'test'
+2026-10-15T21:13:15.2484617Z   ...
+2026-10-15T21:13:15.2485519Z # Subtest: original accepts candidate lzma/balanced, solid=false, encoded=false
+2026-10-15T21:13:15.2511104Z ok 10 - original accepts candidate lzma/balanced, solid=false, encoded=false
+2026-10-15T21:13:15.2512565Z   ---
+2026-10-15T21:13:15.2513575Z   duration_ms: 83.8315
+2026-10-15T21:13:15.2514062Z   type: 'test'
+2026-10-15T21:13:15.2514390Z   ...
+2026-10-15T21:13:15.2515130Z # Subtest: original accepts candidate lzma/balanced, solid=false, encoded=true
+2026-10-15T21:13:15.2518050Z ok 11 - original accepts candidate lzma/balanced, solid=false, encoded=true
+2026-10-15T21:13:15.2520262Z   ---
+2026-10-15T21:13:15.2522218Z   duration_ms: 85.9638
+2026-10-15T21:13:15.2523876Z   type: 'test'
+2026-10-15T21:13:15.2524231Z   ...
+2026-10-15T21:13:15.2525592Z # Subtest: original accepts candidate lzma/balanced, solid=true, encoded=false
+2026-10-15T21:13:15.2528791Z ok 12 - original accepts candidate lzma/balanced, solid=true, encoded=false
+2026-10-15T21:13:15.2529850Z   ---
+2026-10-15T21:13:15.2530462Z   duration_ms: 87.5042
+2026-10-15T21:13:15.2531074Z   type: 'test'
+2026-10-15T21:13:15.2531744Z   ...
+2026-10-15T21:13:15.2532743Z # Subtest: original accepts candidate lzma/balanced, solid=true, encoded=true
+2026-10-15T21:13:15.2536308Z ok 13 - original accepts candidate lzma/balanced, solid=true, encoded=true
+2026-10-15T21:13:15.2537089Z   ---
+2026-10-15T21:13:15.2537415Z   duration_ms: 87.3993
+2026-10-15T21:13:15.2537787Z   type: 'test'
+2026-10-15T21:13:15.2538158Z   ...
+2026-10-15T21:13:15.2539188Z # Subtest: original accepts candidate lzma/thorough, solid=false, encoded=false
+2026-10-15T21:13:15.2540526Z ok 14 - original accepts candidate lzma/thorough, solid=false, encoded=false
+2026-10-15T21:13:15.2541506Z   ---
+2026-10-15T21:13:15.2544179Z   duration_ms: 82.1342
+2026-10-15T21:13:15.2563444Z   type: 'test'
+2026-10-15T21:13:15.2563790Z   ...
+2026-10-15T21:13:15.2565832Z # Subtest: original accepts candidate lzma/thorough, solid=false, encoded=true
+2026-10-15T21:13:15.2566975Z ok 15 - original accepts candidate lzma/thorough, solid=false, encoded=true
+2026-10-15T21:13:15.2584123Z   ---
+2026-10-15T21:13:15.2584492Z   duration_ms: 83.2565
+2026-10-15T21:13:15.2585101Z   type: 'test'
+2026-10-15T21:13:15.2585459Z   ...
+2026-10-15T21:13:15.2586196Z # Subtest: original accepts candidate lzma/thorough, solid=true, encoded=false
+2026-10-15T21:13:15.2587305Z ok 16 - original accepts candidate lzma/thorough, solid=true, encoded=false
+2026-10-15T21:13:15.2590349Z   ---
+2026-10-15T21:13:15.2590786Z   duration_ms: 85.9273
+2026-10-15T21:13:15.2591171Z   type: 'test'
+2026-10-15T21:13:15.2591489Z   ...
+2026-10-15T21:13:15.2592526Z # Subtest: original accepts candidate lzma/thorough, solid=true, encoded=true
+2026-10-15T21:13:15.2593688Z ok 17 - original accepts candidate lzma/thorough, solid=true, encoded=true
+2026-10-15T21:13:15.2594386Z   ---
+2026-10-15T21:13:15.2594694Z   duration_ms: 87.174
+2026-10-15T21:13:15.2595051Z   type: 'test'
+2026-10-15T21:13:15.2595356Z   ...
+2026-10-15T21:13:15.2596041Z # Subtest: original accepts candidate lzma2/fast, solid=false, encoded=false
+2026-10-15T21:13:15.2597133Z ok 18 - original accepts candidate lzma2/fast, solid=false, encoded=false
+2026-10-15T21:13:15.2597802Z   ---
+2026-10-15T21:13:15.2598119Z   duration_ms: 128.4818
+2026-10-15T21:13:15.2598498Z   type: 'test'
+2026-10-15T21:13:15.2598790Z   ...
+2026-10-15T21:13:15.2599460Z # Subtest: original accepts candidate lzma2/fast, solid=false, encoded=true
+2026-10-15T21:13:15.2600511Z ok 19 - original accepts candidate lzma2/fast, solid=false, encoded=true
+2026-10-15T21:13:15.2601164Z   ---
+2026-10-15T21:13:15.2601478Z   duration_ms: 103.3521
+2026-10-15T21:13:15.2601845Z   type: 'test'
+2026-10-15T21:13:15.2602144Z   ...
+2026-10-15T21:13:15.2602933Z # Subtest: original accepts candidate lzma2/fast, solid=true, encoded=false
+2026-10-15T21:13:15.2603975Z ok 20 - original accepts candidate lzma2/fast, solid=true, encoded=false
+2026-10-15T21:13:15.2604636Z   ---
+2026-10-15T21:13:15.2604935Z   duration_ms: 112.4786
+2026-10-15T21:13:15.2605294Z   type: 'test'
+2026-10-15T21:13:15.2605594Z   ...
+2026-10-15T21:13:15.2606264Z # Subtest: original accepts candidate lzma2/fast, solid=true, encoded=true
+2026-10-15T21:13:15.2607318Z ok 21 - original accepts candidate lzma2/fast, solid=true, encoded=true
+2026-10-15T21:13:15.2607995Z   ---
+2026-10-15T21:13:15.2608310Z   duration_ms: 107.4613
+2026-10-15T21:13:15.2608672Z   type: 'test'
+2026-10-15T21:13:15.2608990Z   ...
+2026-10-15T21:13:15.2609749Z # Subtest: original accepts candidate lzma2/balanced, solid=false, encoded=false
+2026-10-15T21:13:15.2610889Z ok 22 - original accepts candidate lzma2/balanced, solid=false, encoded=false
+2026-10-15T21:13:15.2611580Z   ---
+2026-10-15T21:13:15.2611888Z   duration_ms: 103.0078
+2026-10-15T21:13:15.2612247Z   type: 'test'
+2026-10-15T21:13:15.2612551Z   ...
+2026-10-15T21:13:15.2613248Z # Subtest: original accepts candidate lzma2/balanced, solid=false, encoded=true
+2026-10-15T21:13:15.2614363Z ok 23 - original accepts candidate lzma2/balanced, solid=false, encoded=true
+2026-10-15T21:13:15.2615076Z   ---
+2026-10-15T21:13:15.2615383Z   duration_ms: 101.6452
+2026-10-15T21:13:15.2615744Z   type: 'test'
+2026-10-15T21:13:15.2616041Z   ...
+2026-10-15T21:13:15.2616733Z # Subtest: original accepts candidate lzma2/balanced, solid=true, encoded=false
+2026-10-15T21:13:15.2617841Z ok 24 - original accepts candidate lzma2/balanced, solid=true, encoded=false
+2026-10-15T21:13:15.2618492Z   ---
+2026-10-15T21:13:15.2618762Z   duration_ms: 106.1955
+2026-10-15T21:13:15.2619025Z   type: 'test'
+2026-10-15T21:13:15.2619268Z   ...
+2026-10-15T21:13:15.2619891Z # Subtest: original accepts candidate lzma2/balanced, solid=true, encoded=true
+2026-10-15T21:13:15.2620841Z ok 25 - original accepts candidate lzma2/balanced, solid=true, encoded=true
+2026-10-15T21:13:15.2621447Z   ---
+2026-10-15T21:13:15.2621694Z   duration_ms: 112.257
+2026-10-15T21:13:15.2621985Z   type: 'test'
+2026-10-15T21:13:15.2622235Z   ...
+2026-10-15T21:13:15.2622840Z # Subtest: original accepts candidate lzma2/thorough, solid=false, encoded=false
+2026-10-15T21:13:15.2623821Z ok 26 - original accepts candidate lzma2/thorough, solid=false, encoded=false
+2026-10-15T21:13:15.2624453Z   ---
+2026-10-15T21:13:15.2624726Z   duration_ms: 104.5024
+2026-10-15T21:13:15.2625041Z   type: 'test'
+2026-10-15T21:13:15.2625311Z   ...
+2026-10-15T21:13:15.2626166Z # Subtest: original accepts candidate lzma2/thorough, solid=false, encoded=true
+2026-10-15T21:13:15.2627168Z ok 27 - original accepts candidate lzma2/thorough, solid=false, encoded=true
+2026-10-15T21:13:15.2627784Z   ---
+2026-10-15T21:13:15.2629111Z   duration_ms: 105.739
+2026-10-15T21:13:15.2629439Z   type: 'test'
+2026-10-15T21:13:15.2629722Z   ...
+2026-10-15T21:13:15.2630327Z # Subtest: original accepts candidate lzma2/thorough, solid=true, encoded=false
+2026-10-15T21:13:15.2631319Z ok 28 - original accepts candidate lzma2/thorough, solid=true, encoded=false
+2026-10-15T21:13:15.2631930Z   ---
+2026-10-15T21:13:15.2632253Z   duration_ms: 106.9085
+2026-10-15T21:13:15.2632596Z   type: 'test'
+2026-10-15T21:13:15.2632876Z   ...
+2026-10-15T21:13:15.2633507Z # Subtest: original accepts candidate lzma2/thorough, solid=true, encoded=true
+2026-10-15T21:13:15.2634521Z ok 29 - original accepts candidate lzma2/thorough, solid=true, encoded=true
+2026-10-15T21:13:15.2635156Z   ---
+2026-10-15T21:13:15.2635440Z   duration_ms: 108.7851
+2026-10-15T21:13:15.2635779Z   type: 'test'
+2026-10-15T21:13:15.2636055Z   ...
+2026-10-15T21:13:15.2636635Z # Subtest: known compressible lzma/fast has genuine compressed symbols
+2026-10-15T21:13:15.2637537Z ok 30 - known compressible lzma/fast has genuine compressed symbols
+2026-10-15T21:13:15.2638110Z   ---
+2026-10-15T21:13:15.2638380Z   duration_ms: 4.0806
+2026-10-15T21:13:15.2638705Z   type: 'test'
+2026-10-15T21:13:15.2638974Z   ...
+2026-10-15T21:13:15.2639570Z # Subtest: known compressible lzma/balanced has genuine compressed symbols
+2026-10-15T21:13:15.2640505Z ok 31 - known compressible lzma/balanced has genuine compressed symbols
+2026-10-15T21:13:15.2641168Z   ---
+2026-10-15T21:13:15.2641440Z   duration_ms: 3.6291
+2026-10-15T21:13:15.2641759Z   type: 'test'
+2026-10-15T21:13:15.2642029Z   ...
+2026-10-15T21:13:15.2642616Z # Subtest: known compressible lzma/thorough has genuine compressed symbols
+2026-10-15T21:13:15.2643555Z ok 32 - known compressible lzma/thorough has genuine compressed symbols
+2026-10-15T21:13:15.2644139Z   ---
+2026-10-15T21:13:15.2644419Z   duration_ms: 3.6547
+2026-10-15T21:13:15.2644732Z   type: 'test'
+2026-10-15T21:13:15.2645002Z   ...
+2026-10-15T21:13:15.2645575Z # Subtest: known compressible lzma2/fast has genuine compressed symbols
+2026-10-15T21:13:15.2646452Z ok 33 - known compressible lzma2/fast has genuine compressed symbols
+2026-10-15T21:13:15.2647020Z   ---
+2026-10-15T21:13:15.2647292Z   duration_ms: 3.6602
+2026-10-15T21:13:15.2647614Z   type: 'test'
+2026-10-15T21:13:15.2647887Z   ...
+2026-10-15T21:13:15.2648488Z # Subtest: known compressible lzma2/balanced has genuine compressed symbols
+2026-10-15T21:13:15.2649432Z ok 34 - known compressible lzma2/balanced has genuine compressed symbols
+2026-10-15T21:13:15.2650025Z   ---
+2026-10-15T21:13:15.2650286Z   duration_ms: 3.5017
+2026-10-15T21:13:15.2650607Z   type: 'test'
+2026-10-15T21:13:15.2650882Z   ...
+2026-10-15T21:13:15.2651482Z # Subtest: known compressible lzma2/thorough has genuine compressed symbols
+2026-10-15T21:13:15.2652438Z ok 35 - known compressible lzma2/thorough has genuine compressed symbols
+2026-10-15T21:13:15.2653034Z   ---
+2026-10-15T21:13:15.2653303Z   duration_ms: 4.198
+2026-10-15T21:13:15.2653627Z   type: 'test'
+2026-10-15T21:13:15.2653880Z   ...
+2026-10-15T21:13:15.2654467Z # Subtest: original accepts incompressible lzma/fast without relabeling chunks
+2026-10-15T21:13:15.2655423Z ok 36 - original accepts incompressible lzma/fast without relabeling chunks
+2026-10-15T21:13:15.2656014Z   ---
+2026-10-15T21:13:15.2656269Z   duration_ms: 1082.0939
+2026-10-15T21:13:15.2656599Z   type: 'test'
+2026-10-15T21:13:15.2656854Z   ...
+2026-10-15T21:13:15.2657459Z # Subtest: original accepts incompressible lzma/balanced without relabeling chunks
+2026-10-15T21:13:15.2658425Z ok 37 - original accepts incompressible lzma/balanced without relabeling chunks
+2026-10-15T21:13:15.2659055Z   ---
+2026-10-15T21:13:15.2659319Z   duration_ms: 1395.3055
+2026-10-15T21:13:15.2659647Z   type: 'test'
+2026-10-15T21:13:15.2659913Z   ...
+2026-10-15T21:13:15.2661139Z # Subtest: original accepts incompressible lzma/thorough without relabeling chunks
+2026-10-15T21:13:15.2662262Z ok 38 - original accepts incompressible lzma/thorough without relabeling chunks
+2026-10-15T21:13:15.2663453Z   ---
+2026-10-15T21:13:15.2663721Z   duration_ms: 1425.7506
+2026-10-15T21:13:15.2664061Z   type: 'test'
+2026-10-15T21:13:15.2664334Z   ...
+2026-10-15T21:13:15.2664961Z # Subtest: original accepts incompressible lzma2/fast without relabeling chunks
+2026-10-15T21:13:15.2665957Z ok 39 - original accepts incompressible lzma2/fast without relabeling chunks
+2026-10-15T21:13:15.2666571Z   ---
+2026-10-15T21:13:15.2666839Z   duration_ms: 544.0117
+2026-10-15T21:13:15.2667163Z   type: 'test'
+2026-10-15T21:13:15.2667435Z   ...
+2026-10-15T21:13:15.2668091Z # Subtest: original accepts incompressible lzma2/balanced without relabeling chunks
+2026-10-15T21:13:15.2669146Z ok 40 - original accepts incompressible lzma2/balanced without relabeling chunks
+2026-10-15T21:13:15.2669814Z   ---
+2026-10-15T21:13:15.2670085Z   duration_ms: 575.9428
+2026-10-15T21:13:15.2670407Z   type: 'test'
+2026-10-15T21:13:15.2670688Z   ...
+2026-10-15T21:13:15.2671345Z # Subtest: original accepts incompressible lzma2/thorough without relabeling chunks
+2026-10-15T21:13:15.2672379Z ok 41 - original accepts incompressible lzma2/thorough without relabeling chunks
+2026-10-15T21:13:15.2673017Z   ---
+2026-10-15T21:13:15.2673257Z   duration_ms: 566.3734
+2026-10-15T21:13:15.2673544Z   type: 'test'
+2026-10-15T21:13:15.2673804Z   ...
+2026-10-15T21:13:15.2674261Z # Subtest: original accepts candidate lzma lc=0,lp=0,pb=0
+2026-10-15T21:13:15.2674957Z ok 42 - original accepts candidate lzma lc=0,lp=0,pb=0
+2026-10-15T21:13:15.2675440Z   ---
+2026-10-15T21:13:15.2675724Z   duration_ms: 120.2574
+2026-10-15T21:13:15.2676708Z   type: 'test'
+2026-10-15T21:13:15.2677069Z   ...
+2026-10-15T21:13:15.2679062Z # Subtest: original accepts candidate lzma2 lc=0,lp=0,pb=0
+2026-10-15T21:13:15.2680268Z ok 43 - original accepts candidate lzma2 lc=0,lp=0,pb=0
+2026-10-15T21:13:15.2680621Z   ---
+2026-10-15T21:13:15.2680797Z   duration_ms: 116.0016
+2026-10-15T21:13:15.2681018Z   type: 'test'
+2026-10-15T21:13:15.2681193Z   ...
+2026-10-15T21:13:15.2681483Z # Subtest: original accepts candidate lzma lc=4,lp=0,pb=4
+2026-10-15T21:13:15.2681892Z ok 44 - original accepts candidate lzma lc=4,lp=0,pb=4
+2026-10-15T21:13:15.2682174Z   ---
+2026-10-15T21:13:15.2682345Z   duration_ms: 117.2536
+2026-10-15T21:13:15.2682535Z   type: 'test'
+2026-10-15T21:13:15.2682700Z   ...
+2026-10-15T21:13:15.2682978Z # Subtest: original accepts candidate lzma2 lc=4,lp=0,pb=4
+2026-10-15T21:13:15.2683380Z ok 45 - original accepts candidate lzma2 lc=4,lp=0,pb=4
+2026-10-15T21:13:15.2683661Z   ---
+2026-10-15T21:13:15.2683817Z   duration_ms: 121.6813
+2026-10-15T21:13:15.2683999Z   type: 'test'
+2026-10-15T21:13:15.2684160Z   ...
+2026-10-15T21:13:15.2684421Z # Subtest: original accepts candidate lzma lc=0,lp=4,pb=1
+2026-10-15T21:13:15.2684816Z ok 46 - original accepts candidate lzma lc=0,lp=4,pb=1
+2026-10-15T21:13:15.2685098Z   ---
+2026-10-15T21:13:15.2685259Z   duration_ms: 116.5682
+2026-10-15T21:13:15.2685450Z   type: 'test'
+2026-10-15T21:13:15.2685615Z   ...
+2026-10-15T21:13:15.2685883Z # Subtest: original accepts candidate lzma2 lc=0,lp=4,pb=1
+2026-10-15T21:13:15.2686281Z ok 47 - original accepts candidate lzma2 lc=0,lp=4,pb=1
+2026-10-15T21:13:15.2686554Z   ---
+2026-10-15T21:13:15.2686729Z   duration_ms: 113.006
+2026-10-15T21:13:15.2686914Z   type: 'test'
+2026-10-15T21:13:15.2687077Z   ...
+2026-10-15T21:13:15.2687347Z # Subtest: original accepts candidate lzma lc=2,lp=2,pb=2
+2026-10-15T21:13:15.2687730Z ok 48 - original accepts candidate lzma lc=2,lp=2,pb=2
+2026-10-15T21:13:15.2688002Z   ---
+2026-10-15T21:13:15.2688165Z   duration_ms: 117.667
+2026-10-15T21:13:15.2688351Z   type: 'test'
+2026-10-15T21:13:15.2688513Z   ...
+2026-10-15T21:13:15.2688780Z # Subtest: original accepts candidate lzma2 lc=2,lp=2,pb=2
+2026-10-15T21:13:15.2689372Z ok 49 - original accepts candidate lzma2 lc=2,lp=2,pb=2
+2026-10-15T21:13:15.2689672Z   ---
+2026-10-15T21:13:15.2689854Z   duration_ms: 112.3066
+2026-10-15T21:13:15.2690146Z   type: 'test'
+2026-10-15T21:13:15.2690390Z   ...
+2026-10-15T21:13:15.2691069Z # Subtest: original independently reads LZMA-alone wrapper size=0, EOS=false
+2026-10-15T21:13:15.2691981Z ok 50 - original independently reads LZMA-alone wrapper size=0, EOS=false
+2026-10-15T21:13:15.2692578Z   ---
+2026-10-15T21:13:15.2692760Z   duration_ms: 54.3808
+2026-10-15T21:13:15.2692951Z   type: 'test'
+2026-10-15T21:13:15.2693117Z   ...
+2026-10-15T21:13:15.2693475Z # Subtest: original independently reads LZMA-alone wrapper size=0, EOS=true
+2026-10-15T21:13:15.2694019Z ok 51 - original independently reads LZMA-alone wrapper size=0, EOS=true
+2026-10-15T21:13:15.2694361Z   ---
+2026-10-15T21:13:15.2694531Z   duration_ms: 54.3469
+2026-10-15T21:13:15.2694721Z   type: 'test'
+2026-10-15T21:13:15.2694884Z   ...
+2026-10-15T21:13:15.2695248Z # Subtest: original independently reads LZMA-alone wrapper size=1, EOS=false
+2026-10-15T21:13:15.2695788Z ok 52 - original independently reads LZMA-alone wrapper size=1, EOS=false
+2026-10-15T21:13:15.2696146Z   ---
+2026-10-15T21:13:15.2696306Z   duration_ms: 51.5517
+2026-10-15T21:13:15.2696604Z   type: 'test'
+2026-10-15T21:13:15.2696865Z   ...
+2026-10-15T21:13:15.2697209Z # Subtest: original independently reads LZMA-alone wrapper size=1, EOS=true
+2026-10-15T21:13:15.2697731Z ok 53 - original independently reads LZMA-alone wrapper size=1, EOS=true
+2026-10-15T21:13:15.2698064Z   ---
+2026-10-15T21:13:15.2698221Z   duration_ms: 52.5554
+2026-10-15T21:13:15.2698464Z   type: 'test'
+2026-10-15T21:13:15.2698726Z   ...
+2026-10-15T21:13:15.2699241Z # Subtest: original independently reads LZMA-alone wrapper size=273, EOS=false
+2026-10-15T21:13:15.2699911Z ok 54 - original independently reads LZMA-alone wrapper size=273, EOS=false
+2026-10-15T21:13:15.2700460Z   ---
+2026-10-15T21:13:15.2700634Z   duration_ms: 51.1483
+2026-10-15T21:13:15.2700831Z   type: 'test'
+2026-10-15T21:13:15.2700991Z   ...
+2026-10-15T21:13:15.2702878Z # Subtest: original independently reads LZMA-alone wrapper size=273, EOS=true
+2026-10-15T21:13:15.2703529Z ok 55 - original independently reads LZMA-alone wrapper size=273, EOS=true
+2026-10-15T21:13:15.2704001Z   ---
+2026-10-15T21:13:15.2704256Z   duration_ms: 54.3767
+2026-10-15T21:13:15.2704583Z   type: 'test'
+2026-10-15T21:13:15.2704846Z   ...
+2026-10-15T21:13:15.2705534Z # Subtest: original independently reads LZMA-alone wrapper size=32768, EOS=false
+2026-10-15T21:13:15.2706861Z ok 56 - original independently reads LZMA-alone wrapper size=32768, EOS=false
+2026-10-15T21:13:15.2707362Z   ---
+2026-10-15T21:13:15.2707622Z   duration_ms: 61.7494
+2026-10-15T21:13:15.2707929Z   type: 'test'
+2026-10-15T21:13:15.2708177Z   ...
+2026-10-15T21:13:15.2708666Z # Subtest: original independently reads LZMA-alone wrapper size=32768, EOS=true
+2026-10-15T21:13:15.2709321Z ok 57 - original independently reads LZMA-alone wrapper size=32768, EOS=true
+2026-10-15T21:13:15.2723419Z   ---
+2026-10-15T21:13:15.2723737Z   duration_ms: 59.5491
+2026-10-15T21:13:15.2724074Z   type: 'test'
+2026-10-15T21:13:15.2724345Z   ...
+2026-10-15T21:13:15.2725024Z # Subtest: original independently reads LZMA-alone wrapper size=32769, EOS=false
+2026-10-15T21:13:15.2726232Z ok 58 - original independently reads LZMA-alone wrapper size=32769, EOS=false
+2026-10-15T21:13:15.2726949Z   ---
+2026-10-15T21:13:15.2727259Z   duration_ms: 58.6042
+2026-10-15T21:13:15.2727564Z   type: 'test'
+2026-10-15T21:13:15.2727744Z   ...
+2026-10-15T21:13:15.2728114Z # Subtest: original independently reads LZMA-alone wrapper size=32769, EOS=true
+2026-10-15T21:13:15.2728703Z ok 59 - original independently reads LZMA-alone wrapper size=32769, EOS=true
+2026-10-15T21:13:15.2729060Z   ---
+2026-10-15T21:13:15.2729222Z   duration_ms: 58.2589
+2026-10-15T21:13:15.2729412Z   type: 'test'
+2026-10-15T21:13:15.2729573Z   ...
+2026-10-15T21:13:15.2730149Z # Subtest: original independently reads LZMA-alone wrapper size=65537, EOS=false
+2026-10-15T21:13:15.2730743Z ok 60 - original independently reads LZMA-alone wrapper size=65537, EOS=false
+2026-10-15T21:13:15.2731192Z   ---
+2026-10-15T21:13:15.2731357Z   duration_ms: 67.6504
+2026-10-15T21:13:15.2731544Z   type: 'test'
+2026-10-15T21:13:15.2731706Z   ...
+2026-10-15T21:13:15.2732059Z # Subtest: original independently reads LZMA-alone wrapper size=65537, EOS=true
+2026-10-15T21:13:15.2732611Z ok 61 - original independently reads LZMA-alone wrapper size=65537, EOS=true
+2026-10-15T21:13:15.2732961Z   ---
+2026-10-15T21:13:15.2733119Z   duration_ms: 66.5295
+2026-10-15T21:13:15.2733302Z   type: 'test'
+2026-10-15T21:13:15.2733464Z   ...
+2026-10-15T21:13:15.2733877Z # Subtest: candidate LZMA2 uses genuine compressed chunks and honest mixed stored fallback
+2026-10-15T21:13:15.2734531Z ok 62 - candidate LZMA2 uses genuine compressed chunks and honest mixed stored fallback
+2026-10-15T21:13:15.2734924Z   ---
+2026-10-15T21:13:15.2735088Z   duration_ms: 115.553
+2026-10-15T21:13:15.2735277Z   type: 'test'
+2026-10-15T21:13:15.2735439Z   ...
+2026-10-15T21:13:15.2735814Z # Subtest: profiles have real dictionary differences on a distant-repeat workload
+2026-10-15T21:13:15.2736400Z ok 63 - profiles have real dictionary differences on a distant-repeat workload
+2026-10-15T21:13:15.2736756Z   ---
+2026-10-15T21:13:15.2736921Z   duration_ms: 635.1078
+2026-10-15T21:13:15.2737114Z   type: 'test'
+2026-10-15T21:13:15.2737277Z   ...
+2026-10-15T21:13:15.2737763Z # Subtest: LZMA2 chunk-size boundaries and profile options are genuine compressed original-compatible data
+2026-10-15T21:13:15.2738837Z ok 64 - LZMA2 chunk-size boundaries and profile options are genuine compressed original-compatible data
+2026-10-15T21:13:15.2739304Z   ---
+2026-10-15T21:13:15.2739484Z   duration_ms: 187.1614
+2026-10-15T21:13:15.2739686Z   type: 'test'
+2026-10-15T21:13:15.2739853Z   ...
+2026-10-15T21:13:15.2740224Z # Subtest: container LZMA2 encoded header and LZMA1 EOS are accepted by original
+2026-10-15T21:13:15.2740800Z ok 65 - container LZMA2 encoded header and LZMA1 EOS are accepted by original
+2026-10-15T21:13:15.2741155Z   ---
+2026-10-15T21:13:15.2741364Z   duration_ms: 180.0988
+2026-10-15T21:13:15.2741558Z   type: 'test'
+2026-10-15T21:13:15.2741723Z   ...
+2026-10-15T21:13:15.2742156Z # Subtest: byte input, dictionaries, literal contexts, search, output and option bounds reject
+2026-10-15T21:13:15.2742833Z ok 66 - byte input, dictionaries, literal contexts, search, output and option bounds reject
+2026-10-15T21:13:15.2743231Z   ---
+2026-10-15T21:13:15.2743392Z   duration_ms: 7.399
+2026-10-15T21:13:15.2743579Z   type: 'test'
+2026-10-15T21:13:15.2743741Z   ...
+2026-10-15T21:13:15.2744186Z # Subtest: optional work/time budgets reject deterministically and successful bounded work is exact
+2026-10-15T21:13:15.2744903Z ok 67 - optional work/time budgets reject deterministically and successful bounded work is exact
+2026-10-15T21:13:15.2745327Z   ---
+2026-10-15T21:13:15.2745488Z   duration_ms: 48.3182
+2026-10-15T21:13:15.2745674Z   type: 'test'
+2026-10-15T21:13:15.2745833Z   ...
+2026-10-15T21:13:15.2746236Z # Subtest: per-file, total, path and method limits remain enforced before container exchange
+2026-10-15T21:13:15.2746873Z ok 68 - per-file, total, path and method limits remain enforced before container exchange
+2026-10-15T21:13:15.2747256Z   ---
+2026-10-15T21:13:15.2747416Z   duration_ms: 13.1805
+2026-10-15T21:13:15.2747602Z   type: 'test'
+2026-10-15T21:13:15.2747764Z   ...
+2026-10-15T21:13:15.2748140Z # Subtest: receipt records exact source and independently verified original fixtures
+2026-10-15T21:13:15.2748736Z ok 69 - receipt records exact source and independently verified original fixtures
+2026-10-15T21:13:15.2749099Z   ---
+2026-10-15T21:13:15.2749259Z   duration_ms: 2.7018
+2026-10-15T21:13:15.2749442Z   type: 'test'
+2026-10-15T21:13:15.2749601Z   ...
+2026-10-15T21:13:15.8245494Z # Subtest: aggregate budget spans entries, header decoding, CRCs and separate codec calls
+2026-10-15T21:13:15.8246486Z ok 70 - aggregate budget spans entries, header decoding, CRCs and separate codec calls
+2026-10-15T21:13:15.8247550Z   ---
+2026-10-15T21:13:15.8247901Z   duration_ms: 292.2246
+2026-10-15T21:13:15.8248198Z   type: 'test'
+2026-10-15T21:13:15.8248422Z   ...
+2026-10-15T21:13:19.3562562Z # Retained application compressed-LZMA fixtures: D:\\a\\rea-research-lab\\rea-research-lab\\.local\\lzma-tests\\http-P76xXT
+2026-10-15T21:13:19.3565166Z # Subtest: HTTP genuine LZMA/LZMA2 all profiles, encoded headers and restart preserve exact content
+2026-10-15T21:13:19.3566359Z ok 71 - HTTP genuine LZMA/LZMA2 all profiles, encoded headers and restart preserve exact content
+2026-10-15T21:13:19.3566845Z   ---
+2026-10-15T21:13:19.3567045Z   duration_ms: 3534.5255
+2026-10-15T21:13:19.3567271Z   type: 'test'
+2026-10-15T21:13:19.3567448Z   ...
+2026-10-15T21:13:22.4416585Z # Retained LZMA research vectors: D:\\a\\rea-research-lab\\rea-research-lab\\.local\\lzma-tests\\decoder-AqpokR
+2026-10-15T21:13:22.4533367Z # Subtest: original LZMA raw and .7z roundtrip: single
+2026-10-15T21:13:22.4534883Z ok 72 - original LZMA raw and .7z roundtrip: single
+2026-10-15T21:13:22.4535756Z   ---
+2026-10-15T21:13:22.4536106Z   duration_ms: 61.4006
+2026-10-15T21:13:22.4536485Z   type: 'test'
+2026-10-15T21:13:22.4536807Z   ...
+2026-10-15T21:13:22.4537633Z # Subtest: original LZMA raw and .7z roundtrip: repeated
+2026-10-15T21:13:22.4544886Z ok 73 - original LZMA raw and .7z roundtrip: repeated
+2026-10-15T21:13:22.4546065Z   ---
+2026-10-15T21:13:22.4546583Z   duration_ms: 74.3948
+2026-10-15T21:13:22.4546961Z   type: 'test'
+2026-10-15T21:13:22.4547276Z   ...
+2026-10-15T21:13:22.4547787Z # Subtest: original LZMA raw and .7z roundtrip: random
+2026-10-15T21:13:22.4548813Z ok 74 - original LZMA raw and .7z roundtrip: random
+2026-10-15T21:13:22.4549373Z   ---
+2026-10-15T21:13:22.4549690Z   duration_ms: 169.916
+2026-10-15T21:13:22.4550070Z   type: 'test'
+2026-10-15T21:13:22.4551171Z   ...
+2026-10-15T21:13:22.4551726Z # Subtest: original LZMA raw and .7z roundtrip: distance
+2026-10-15T21:13:22.4552803Z ok 75 - original LZMA raw and .7z roundtrip: distance
+2026-10-15T21:13:22.4553584Z   ---
+2026-10-15T21:13:22.4554159Z   duration_ms: 150.6338
+2026-10-15T21:13:22.4554536Z   type: 'test'
+2026-10-15T21:13:22.4554846Z   ...
+2026-10-15T21:13:22.4555357Z # Subtest: original LZMA2 raw and .7z roundtrip: single
+2026-10-15T21:13:22.4557772Z ok 76 - original LZMA2 raw and .7z roundtrip: single
+2026-10-15T21:13:22.4561346Z   ---
+2026-10-15T21:13:22.4562255Z   duration_ms: 53.6746
+2026-10-15T21:13:22.4562948Z   type: 'test'
+2026-10-15T21:13:22.4563285Z   ...
+2026-10-15T21:13:22.4563866Z # Subtest: original LZMA2 raw and .7z roundtrip: repeated
+2026-10-15T21:13:22.4564956Z ok 77 - original LZMA2 raw and .7z roundtrip: repeated
+2026-10-15T21:13:22.4565517Z   ---
+2026-10-15T21:13:22.4566141Z   duration_ms: 66.4941
+2026-10-15T21:13:22.4566553Z   type: 'test'
+2026-10-15T21:13:22.4566873Z   ...
+2026-10-15T21:13:22.4567400Z # Subtest: original LZMA2 raw and .7z roundtrip: random
+2026-10-15T21:13:22.4568442Z ok 78 - original LZMA2 raw and .7z roundtrip: random
+2026-10-15T21:13:22.4569013Z   ---
+2026-10-15T21:13:22.4572211Z   duration_ms: 70.508
+2026-10-15T21:13:22.4572583Z   type: 'test'
+2026-10-15T21:13:22.4573319Z   ...
+2026-10-15T21:13:22.4575534Z # Subtest: original LZMA2 raw and .7z roundtrip: distance
+2026-10-15T21:13:22.4576427Z ok 79 - original LZMA2 raw and .7z roundtrip: distance
+2026-10-15T21:13:22.4576986Z   ---
+2026-10-15T21:13:22.4577577Z   duration_ms: 93.1918
+2026-10-15T21:13:22.4577986Z   type: 'test'
+2026-10-15T21:13:22.4578572Z   ...
+2026-10-15T21:13:22.4579282Z # Subtest: original LZMA nondefault lc=0:lp=0:pb=0
+2026-10-15T21:13:22.4579984Z ok 80 - original LZMA nondefault lc=0:lp=0:pb=0
+2026-10-15T21:13:22.4580459Z   ---
+2026-10-15T21:13:22.4580723Z   duration_ms: 62.3557
+2026-10-15T21:13:22.4581068Z   type: 'test'
+2026-10-15T21:13:22.4582794Z   ...
+2026-10-15T21:13:22.4650772Z # Subtest: original LZMA2 nondefault lc=0:lp=0:pb=0
+2026-10-15T21:13:22.4651578Z ok 81 - original LZMA2 nondefault lc=0:lp=0:pb=0
+2026-10-15T21:13:22.4652861Z   ---
+2026-10-15T21:13:22.4653169Z   duration_ms: 62.6917
+2026-10-15T21:13:22.4676581Z   type: 'test'
+2026-10-15T21:13:22.4676971Z   ...
+2026-10-15T21:13:22.4679864Z # Subtest: original LZMA nondefault lc=4:lp=0:pb=4
+2026-10-15T21:13:22.4680640Z ok 82 - original LZMA nondefault lc=4:lp=0:pb=4
+2026-10-15T21:13:22.4681133Z   ---
+2026-10-15T21:13:22.4681920Z   duration_ms: 64.1225
+2026-10-15T21:13:22.4682307Z   type: 'test'
+2026-10-15T21:13:22.4682618Z   ...
+2026-10-15T21:13:22.4683099Z # Subtest: original LZMA2 nondefault lc=4:lp=0:pb=4
+2026-10-15T21:13:22.4683812Z ok 83 - original LZMA2 nondefault lc=4:lp=0:pb=4
+2026-10-15T21:13:22.4684310Z   ---
+2026-10-15T21:13:22.4684620Z   duration_ms: 58.8415
+2026-10-15T21:13:22.4684998Z   type: 'test'
+2026-10-15T21:13:22.4685301Z   ...
+2026-10-15T21:13:22.4685790Z # Subtest: original LZMA nondefault lc=0:lp=4:pb=1
+2026-10-15T21:13:22.4686482Z ok 84 - original LZMA nondefault lc=0:lp=4:pb=1
+2026-10-15T21:13:22.4686993Z   ---
+2026-10-15T21:13:22.4687291Z   duration_ms: 57.8944
+2026-10-15T21:13:22.4687664Z   type: 'test'
+2026-10-15T21:13:22.4687972Z   ...
+2026-10-15T21:13:22.4688441Z # Subtest: original LZMA2 nondefault lc=0:lp=4:pb=1
+2026-10-15T21:13:22.4689158Z ok 85 - original LZMA2 nondefault lc=0:lp=4:pb=1
+2026-10-15T21:13:22.4689658Z   ---
+2026-10-15T21:13:22.4689970Z   duration_ms: 59.7361
+2026-10-15T21:13:22.4690327Z   type: 'test'
+2026-10-15T21:13:22.4690636Z   ...
+2026-10-15T21:13:22.4691103Z # Subtest: original LZMA nondefault lc=2:lp=2:pb=2
+2026-10-15T21:13:22.4691792Z ok 86 - original LZMA nondefault lc=2:lp=2:pb=2
+2026-10-15T21:13:22.4692290Z   ---
+2026-10-15T21:13:22.4692585Z   duration_ms: 59.6559
+2026-10-15T21:13:22.4692935Z   type: 'test'
+2026-10-15T21:13:22.4693238Z   ...
+2026-10-15T21:13:22.4693729Z # Subtest: original LZMA2 nondefault lc=2:lp=2:pb=2
+2026-10-15T21:13:22.4694472Z ok 87 - original LZMA2 nondefault lc=2:lp=2:pb=2
+2026-10-15T21:13:22.4694976Z   ---
+2026-10-15T21:13:22.4695285Z   duration_ms: 60.4693
+2026-10-15T21:13:22.4695655Z   type: 'test'
+2026-10-15T21:13:22.4695981Z   ...
+2026-10-15T21:13:22.4696617Z # Subtest: original raw LZMA with explicit end marker finishes exactly
+2026-10-15T21:13:22.4697635Z ok 88 - original raw LZMA with explicit end marker finishes exactly
+2026-10-15T21:13:22.4698310Z   ---
+2026-10-15T21:13:22.4698635Z   duration_ms: 119.5153
+2026-10-15T21:13:22.4698996Z   type: 'test'
+2026-10-15T21:13:22.4699320Z   ...
+2026-10-15T21:13:22.4700237Z # Subtest: original LZMA2 long continuing compressed chunks preserve probability state and dictionary
+2026-10-15T21:13:22.4701780Z ok 89 - original LZMA2 long continuing compressed chunks preserve probability state and dictionary
+2026-10-15T21:13:22.4702672Z   ---
+2026-10-15T21:13:22.4702969Z   duration_ms: 459.3117
+2026-10-15T21:13:22.4703350Z   type: 'test'
+2026-10-15T21:13:22.4703661Z   ...
+2026-10-15T21:13:22.4704516Z # Subtest: original LZMA2 mixed copy/compressed chunks preserve and initialize state correctly
+2026-10-15T21:13:22.4705907Z ok 90 - original LZMA2 mixed copy/compressed chunks preserve and initialize state correctly
+2026-10-15T21:13:22.4706743Z   ---
+2026-10-15T21:13:22.4707052Z   duration_ms: 427.6116
+2026-10-15T21:13:22.4707420Z   type: 'test'
+2026-10-15T21:13:22.4707737Z   ...
+2026-10-15T21:13:22.4708357Z # Subtest: ordinary original defaults .7z with encoded header, solid=off
+2026-10-15T21:13:22.4709364Z ok 91 - ordinary original defaults .7z with encoded header, solid=off
+2026-10-15T21:13:22.4710011Z   ---
+2026-10-15T21:13:22.4710321Z   duration_ms: 63.1337
+2026-10-15T21:13:22.4710689Z   type: 'test'
+2026-10-15T21:13:22.4711003Z   ...
+2026-10-15T21:13:22.4711607Z # Subtest: ordinary original LZMA .7z with encoded header, solid=off
+2026-10-15T21:13:22.4713639Z ok 92 - ordinary original LZMA .7z with encoded header, solid=off
+2026-10-15T21:13:22.4714329Z   ---
+2026-10-15T21:13:22.4714651Z   duration_ms: 60.4051
+2026-10-15T21:13:22.4715017Z   type: 'test'
+2026-10-15T21:13:22.4715566Z   ...
+2026-10-15T21:13:22.4716236Z # Subtest: ordinary original LZMA2 .7z with encoded header, solid=off
+2026-10-15T21:13:22.4717222Z ok 93 - ordinary original LZMA2 .7z with encoded header, solid=off
+2026-10-15T21:13:22.4717828Z   ---
+2026-10-15T21:13:22.4718134Z   duration_ms: 59.3552
+2026-10-15T21:13:22.4718489Z   type: 'test'
+2026-10-15T21:13:22.4718777Z   ...
+2026-10-15T21:13:22.4719402Z # Subtest: ordinary original defaults .7z with encoded header, solid=on
+2026-10-15T21:13:22.4720361Z ok 94 - ordinary original defaults .7z with encoded header, solid=on
+2026-10-15T21:13:22.4720987Z   ---
+2026-10-15T21:13:22.4721285Z   duration_ms: 58.7167
+2026-10-15T21:13:22.4721640Z   type: 'test'
+2026-10-15T21:13:22.4721929Z   ...
+2026-10-15T21:13:22.4722537Z # Subtest: ordinary original LZMA .7z with encoded header, solid=on
+2026-10-15T21:13:22.4723465Z ok 95 - ordinary original LZMA .7z with encoded header, solid=on
+2026-10-15T21:13:22.4724074Z   ---
+2026-10-15T21:13:22.4724387Z   duration_ms: 58.4547
+2026-10-15T21:13:22.4724742Z   type: 'test'
+2026-10-15T21:13:22.4725032Z   ...
+2026-10-15T21:13:22.4725635Z # Subtest: ordinary original LZMA2 .7z with encoded header, solid=on
+2026-10-15T21:13:22.4726581Z ok 96 - ordinary original LZMA2 .7z with encoded header, solid=on
+2026-10-15T21:13:22.4727185Z   ---
+2026-10-15T21:13:22.4727490Z   duration_ms: 58.3664
+2026-10-15T21:13:22.4727828Z   type: 'test'
+2026-10-15T21:13:22.4728091Z   ...
+2026-10-15T21:13:22.4728782Z # Subtest: raw input, dictionary, expansion, option and property limits reject before allocation
+2026-10-15T21:13:22.4730015Z ok 97 - raw input, dictionary, expansion, option and property limits reject before allocation
+2026-10-15T21:13:22.4730771Z   ---
+2026-10-15T21:13:22.4731044Z   duration_ms: 2.711
+2026-10-15T21:13:22.4731370Z   type: 'test'
+2026-10-15T21:13:22.4731659Z   ...
+2026-10-15T21:13:22.4732284Z # Subtest: all cuts of small original raw LZMA/LZMA2 vectors reject truncation
+2026-10-15T21:13:22.4733252Z ok 98 - all cuts of small original raw LZMA/LZMA2 vectors reject truncation
+2026-10-15T21:13:22.4733815Z   ---
+2026-10-15T21:13:22.4734062Z   duration_ms: 49.7877
+2026-10-15T21:13:22.4734364Z   type: 'test'
+2026-10-15T21:13:22.4734623Z   ...
+2026-10-15T21:13:22.4735355Z # Subtest: optional work and elapsed budgets reject deterministically without partial success
+2026-10-15T21:13:22.4736576Z ok 99 - optional work and elapsed budgets reject deterministically without partial success
+2026-10-15T21:13:22.4737294Z   ---
+2026-10-15T21:13:22.4737560Z   duration_ms: 85.0825
+2026-10-15T21:13:22.4737865Z   type: 'test'
+2026-10-15T21:13:22.4738128Z   ...
+2026-10-15T21:13:22.4738843Z # Subtest: maximum permitted dictionary and LZMA1 literal contexts have finite allocations
+2026-10-15T21:13:22.4740030Z ok 100 - maximum permitted dictionary and LZMA1 literal contexts have finite allocations
+2026-10-15T21:13:22.4740719Z   ---
+2026-10-15T21:13:22.4740976Z   duration_ms: 1.3931
+2026-10-15T21:13:22.4741286Z   type: 'test'
+2026-10-15T21:13:22.4741554Z   ...
+2026-10-15T21:13:22.4742191Z # Subtest: back references cannot escape the advertised dictionary or reset history
+2026-10-15T21:13:22.4743202Z ok 101 - back references cannot escape the advertised dictionary or reset history
+2026-10-15T21:13:22.4743795Z   ---
+2026-10-15T21:13:22.4744029Z   duration_ms: 44.0293
+2026-10-15T21:13:22.4744315Z   type: 'test'
+2026-10-15T21:13:22.4744565Z   ...
+2026-10-15T21:13:22.4745210Z # Subtest: exact consumption, declared output and range stream initialization are required
+2026-10-15T21:13:22.4746302Z ok 102 - exact consumption, declared output and range stream initialization are required
+2026-10-15T21:13:22.4746969Z   ---
+2026-10-15T21:13:22.4747229Z   duration_ms: 18.9494
+2026-10-15T21:13:22.4747534Z   type: 'test'
+2026-10-15T21:13:22.4748012Z   ...
+2026-10-15T21:13:22.4748791Z # Subtest: LZMA2 missing/reset controls, invalid properties, end marker and packed lengths reject
+2026-10-15T21:13:22.4750176Z ok 103 - LZMA2 missing/reset controls, invalid properties, end marker and packed lengths reject
+2026-10-15T21:13:22.4750873Z   ---
+2026-10-15T21:13:22.4751140Z   duration_ms: 1.1435
+2026-10-15T21:13:22.4751472Z   type: 'test'
+2026-10-15T21:13:22.4751734Z   ...
+2026-10-15T21:13:22.4752402Z # Subtest: compressed chunk and header mutation are caught by original container CRCs
+2026-10-15T21:13:22.4753468Z ok 104 - compressed chunk and header mutation are caught by original container CRCs
+2026-10-15T21:13:22.4754108Z   ---
+2026-10-15T21:13:22.4754367Z   duration_ms: 33.3609
+2026-10-15T21:13:22.4754660Z   type: 'test'
+2026-10-15T21:13:22.4754920Z   ...
+2026-10-15T21:13:22.4755540Z # Subtest: LZMA2 synthetic copy reset and compressed state/property transitions
+2026-10-15T21:13:22.4756516Z ok 105 - LZMA2 synthetic copy reset and compressed state/property transitions
+2026-10-15T21:13:22.4757104Z   ---
+2026-10-15T21:13:22.4757358Z   duration_ms: 9.9575
+2026-10-15T21:13:22.4757659Z   type: 'test'
+2026-10-15T21:13:22.4757930Z   ...
+2026-10-15T21:13:22.4758495Z # Subtest: receipt retains exact independent vectors and output digests
+2026-10-15T21:13:22.4759373Z ok 106 - receipt retains exact independent vectors and output digests
+2026-10-15T21:13:22.4759923Z   ---
+2026-10-15T21:13:22.4760201Z   duration_ms: 2.3461
+2026-10-15T21:13:22.4760512Z   type: 'test'
+2026-10-15T21:13:22.4760770Z   ...
+2026-10-15T21:13:22.7175605Z # Subtest: independent ordinary folder fixture enforces AES alignment, properties, file/expansion/path and missing-digest limits before output
+2026-10-15T21:13:22.7178702Z ok 107 - independent ordinary folder fixture enforces AES alignment, properties, file/expansion/path and missing-digest limits before output
+2026-10-15T21:13:22.7179921Z   ---
+2026-10-15T21:13:22.7180241Z   duration_ms: 13.5325
+2026-10-15T21:13:22.7180644Z   type: 'test'
+2026-10-15T21:13:22.7180955Z   ...
+2026-10-15T21:13:22.7186306Z # Subtest: CRC is corruption detection, not authentication: controlled IV tamper plus rebuilt CRC changes plaintext without re-encryption
+2026-10-15T21:13:22.7188718Z ok 108 - CRC is corruption detection, not authentication: controlled IV tamper plus rebuilt CRC changes plaintext without re-encryption
+2026-10-15T21:13:22.7191010Z   ---
+2026-10-15T21:13:22.7191610Z   duration_ms: 1.5187
+2026-10-15T21:13:22.7192434Z   type: 'test'
+2026-10-15T21:13:22.7193538Z   ...
+2026-10-15T21:13:22.7194952Z # Subtest: aggregate KDF budget spans separate encrypted read/write operations and deterministic small guards refuse work
+2026-10-15T21:13:22.7196556Z ok 109 - aggregate KDF budget spans separate encrypted read/write operations and deterministic small guards refuse work
+2026-10-15T21:13:22.7197110Z   ---
+2026-10-15T21:13:22.7197291Z   duration_ms: 155.471
+2026-10-15T21:13:22.7197497Z   type: 'test'
+2026-10-15T21:13:22.7197665Z   ...
+2026-10-15T21:13:24.9765049Z # Subtest: genuine AES chains roundtrip bounded Copy/Deflate/LZMA/LZMA2 data, solid and selected plain/encrypted/compressed headers
+2026-10-15T21:13:24.9766620Z ok 110 - genuine AES chains roundtrip bounded Copy/Deflate/LZMA/LZMA2 data, solid and selected plain/encrypted/compressed headers
+2026-10-15T21:13:24.9767788Z   ---
+2026-10-15T21:13:24.9768542Z   duration_ms: 2116.5249
+2026-10-15T21:13:24.9769199Z   type: 'test'
+2026-10-15T21:13:24.9769554Z   ...
+2026-10-15T21:13:24.9770460Z # Subtest: unencrypted archive behavior remains readable and encrypted reads require the exact password
+2026-10-15T21:13:24.9772526Z ok 111 - unencrypted archive behavior remains readable and encrypted reads require the exact password
+2026-10-15T21:13:24.9773151Z   ---
+2026-10-15T21:13:24.9773336Z   duration_ms: 67.5485
+2026-10-15T21:13:24.9773539Z   type: 'test'
+2026-10-15T21:13:24.9773712Z   ...
+2026-10-15T21:13:25.5181901Z # Subtest: real HTTP encrypted create/list/test/extract and restart retain exact files and persist no password records
+2026-10-15T21:13:25.5184053Z not ok 112 - real HTTP encrypted create/list/test/extract and restart retain exact files and persist no password records
+2026-10-15T21:13:25.5186298Z   ---
+2026-10-15T21:13:25.5186640Z   duration_ms: 442.6279
+2026-10-15T21:13:25.5187023Z   type: 'test'
+2026-10-15T21:13:25.5187622Z   location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\sevenzip-aes-http.test.mjs:4:1'
+2026-10-15T21:13:25.5188207Z   failureType: 'testCodeFailure'
+2026-10-15T21:13:25.5188459Z   error: |-
+2026-10-15T21:13:25.5189087Z     Native Windows source metadata is unavailable or invalid; archive creation was refused.
+2026-10-15T21:13:25.5190162Z     
+2026-10-15T21:13:25.5190468Z     400 !== 200
+2026-10-15T21:13:25.5190769Z     
+2026-10-15T21:13:25.5191073Z   code: 'ERR_ASSERTION'
+2026-10-15T21:13:25.5191468Z   name: 'AssertionError'
+2026-10-15T21:13:25.5191866Z   expected: 200
+2026-10-15T21:13:25.5192207Z   actual: 400
+2026-10-15T21:13:25.5192546Z   operator: 'strictEqual'
+2026-10-15T21:13:25.5192924Z   stack: |-
+2026-10-15T21:13:25.5194001Z     Object.call (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/sevenzip-aes-http.test.mjs:3:896)
+2026-10-15T21:13:25.5195517Z     process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-15T21:13:25.5198430Z     async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/sevenzip-aes-http.test.mjs:4:473)
+2026-10-15T21:13:25.5199915Z     async Test.run (node:internal/test_runner/test:1313:7)
+2026-10-15T21:13:25.5200826Z     async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+2026-10-15T21:13:25.5202001Z   ...
+2026-10-15T21:13:25.5735279Z # Subtest: HTTP password/method/deadline refusals leave no destination or archive and preserve existing source
+2026-10-15T21:13:25.5738254Z ok 113 - HTTP password/method/deadline refusals leave no destination or archive and preserve existing source
+2026-10-15T21:13:25.5739207Z   ---
+2026-10-15T21:13:25.5739523Z   duration_ms: 56.4096
+2026-10-15T21:13:25.5739908Z   type: 'test'
+2026-10-15T21:13:25.5740208Z   ...
+2026-10-15T21:13:25.9211625Z # Subtest: direct queued caller mutation cannot replace captured password/path/output or encryption intent
+2026-10-15T21:13:25.9213555Z not ok 114 - direct queued caller mutation cannot replace captured password/path/output or encryption intent
+2026-10-15T21:13:25.9214076Z   ---
+2026-10-15T21:13:25.9214265Z   duration_ms: 347.3087
+2026-10-15T21:13:25.9214469Z   type: 'test'
+2026-10-15T21:13:25.9215030Z   location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\sevenzip-aes-http.test.mjs:6:1'
+2026-10-15T21:13:25.9215630Z   failureType: 'testCodeFailure'
+2026-10-15T21:13:25.9216115Z   error: 'Native Windows source metadata is unavailable or invalid; archive creation was refused.'
+2026-10-15T21:13:25.9216593Z   code: 'ERR_TEST_FAILURE'
+2026-10-15T21:13:25.9216807Z   stack: |-
+2026-10-15T21:13:25.9217342Z     unavailable (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:71:33)
+2026-10-15T21:13:25.9218289Z     readSourceMetadata (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:143:19)
+2026-10-15T21:13:25.9219041Z     process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-15T21:13:25.9219750Z     async collect (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:49:20)
+2026-10-15T21:13:25.9220530Z     async run (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:106:22)
+2026-10-15T21:13:25.9221340Z     async handle (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:168:18)
+2026-10-15T21:13:25.9222505Z     async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/sevenzip-aes-http.test.mjs:6:849)
+2026-10-15T21:13:25.9223236Z     async Test.run (node:internal/test_runner/test:1313:7)
+2026-10-15T21:13:25.9223930Z     async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+2026-10-15T21:13:25.9224621Z   ...
+2026-10-15T21:13:31.4383348Z # Subtest: complete original encrypts bounded files; native decoder verifies plain and encrypted headers with UTF16 Unicode passwords
+2026-10-15T21:13:31.4384688Z ok 115 - complete original encrypts bounded files; native decoder verifies plain and encrypted headers with UTF16 Unicode passwords
+2026-10-15T21:13:31.4385435Z   ---
+2026-10-15T21:13:31.4386947Z   duration_ms: 1516.8157
+2026-10-15T21:13:31.4387545Z   type: 'test'
+2026-10-15T21:13:31.4387957Z   ...
+2026-10-15T21:13:31.4390410Z # Subtest: native encrypted chains with fresh salt/IV are tested and extracted byte-for-byte by the complete original
+2026-10-15T21:13:31.4391628Z ok 116 - native encrypted chains with fresh salt/IV are tested and extracted byte-for-byte by the complete original
+2026-10-15T21:13:31.4392634Z   ---
+2026-10-15T21:13:31.4392954Z   duration_ms: 3577.7382
+2026-10-15T21:13:31.4394465Z   type: 'test'
+2026-10-15T21:13:31.4394794Z   ...
+2026-10-15T21:13:31.4396934Z # Subtest: released empty-password read and passwordless plaintext-header listing remain explicitly distinct from writer/full-verification policy
+2026-10-15T21:13:31.4399159Z ok 117 - released empty-password read and passwordless plaintext-header listing remain explicitly distinct from writer/full-verification policy
+2026-10-15T21:13:31.4399916Z   ---
+2026-10-15T21:13:31.4400260Z   duration_ms: 171.9754
+2026-10-15T21:13:31.4400608Z   type: 'test'
+2026-10-15T21:13:31.4400789Z   ...
+2026-10-15T21:13:31.5207172Z # Subtest: actual staged component captures 7Z password/header choices, preserves compression level and clears private fields after success
+2026-10-15T21:13:31.5209631Z ok 118 - actual staged component captures 7Z password/header choices, preserves compression level and clears private fields after success
+2026-10-15T21:13:31.5210731Z   ---
+2026-10-15T21:13:31.5211320Z   duration_ms: 5.5367
+2026-10-15T21:13:31.5211694Z   type: 'test'
+2026-10-15T21:13:31.5212029Z   ...
+2026-10-15T21:13:31.5214186Z # Subtest: inspection captures even explicit empty read password, displays encrypted metadata and clears it after verification
+2026-10-15T21:13:31.5218093Z ok 119 - inspection captures even explicit empty read password, displays encrypted metadata and clears it after verification
+2026-10-15T21:13:31.5220616Z   ---
+2026-10-15T21:13:31.5220974Z   duration_ms: 1.2924
+2026-10-15T21:13:31.5221343Z   type: 'test'
+2026-10-15T21:13:31.5221734Z   ...
+2026-10-15T21:13:31.5223282Z # Subtest: held request blocks duplicate operations; disposal clears secrets and suppresses late success publication
+2026-10-15T21:13:31.5225586Z ok 120 - held request blocks duplicate operations; disposal clears secrets and suppresses late success publication
+2026-10-15T21:13:31.5226626Z   ---
+2026-10-15T21:13:31.5227230Z   duration_ms: 1.6141
+2026-10-15T21:13:31.5227576Z   type: 'test'
+2026-10-15T21:13:31.5227874Z   ...
+2026-10-15T21:13:31.5229106Z # Subtest: refused password operation restores usable controls and scrubs fields
+2026-10-15T21:13:31.5230282Z ok 121 - refused password operation restores usable controls and scrubs fields
+2026-10-15T21:13:31.5231009Z   ---
+2026-10-15T21:13:31.5231308Z   duration_ms: 1.2742
+2026-10-15T21:13:31.5231664Z   type: 'test'
+2026-10-15T21:13:31.5231971Z   ...
+2026-10-15T21:13:31.5232879Z # Subtest: late refused operation after disposal cannot republish status or retain password fields
+2026-10-15T21:13:31.5234378Z ok 122 - late refused operation after disposal cannot republish status or retain password fields
+2026-10-15T21:13:31.5235244Z   ---
+2026-10-15T21:13:31.5235550Z   duration_ms: 1.7005
+2026-10-15T21:13:31.5235899Z   type: 'test'
+2026-10-15T21:13:31.5236195Z   ...
+2026-10-15T21:13:31.5986854Z # Subtest: bounded AES primitive performs genuine CBC with released UTF16LE/counter SHA256 construction and zero padding
+2026-10-15T21:13:31.5995744Z ok 123 - bounded AES primitive performs genuine CBC with released UTF16LE/counter SHA256 construction and zero padding
+2026-10-15T21:13:31.5997700Z   ---
+2026-10-15T21:13:31.5997908Z   duration_ms: 4.6962
+2026-10-15T21:13:31.5998125Z   type: 'test'
+2026-10-15T21:13:31.5998305Z   ...
+2026-10-15T21:13:31.6001656Z # Subtest: direct63 decoding and empty-property defaults match finite released source branches without exposing key material
+2026-10-15T21:13:31.6004616Z ok 124 - direct63 decoding and empty-property defaults match finite released source branches without exposing key material
+2026-10-15T21:13:31.6008010Z   ---
+2026-10-15T21:13:31.6009213Z   duration_ms: 0.6977
+2026-10-15T21:13:31.6009589Z   type: 'test'
+2026-10-15T21:13:31.6009892Z   ...
+2026-10-15T21:13:31.6010957Z # Subtest: password/properties/cipher lengths/shared input/KDF and closed-context limits fail before unintended work
+2026-10-15T21:13:31.6012657Z ok 125 - password/properties/cipher lengths/shared input/KDF and closed-context limits fail before unintended work
+2026-10-15T21:13:31.6013202Z   ---
+2026-10-15T21:13:31.6013399Z   duration_ms: 1.4347
+2026-10-15T21:13:31.6013609Z   type: 'test'
+2026-10-15T21:13:31.6013786Z   ...
+2026-10-15T21:13:32.8529178Z # Subtest: UINT64 encodings include all lengths and upper boundary
+2026-10-15T21:13:32.8530672Z ok 126 - UINT64 encodings include all lengths and upper boundary
+2026-10-15T21:13:32.8531243Z   ---
+2026-10-15T21:13:32.8531594Z   duration_ms: 3.3094
+2026-10-15T21:13:32.8532484Z   type: 'test'
+2026-10-15T21:13:32.8533811Z   ...
+2026-10-15T21:13:32.8534699Z # Subtest: candidate copy, solid=false, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8535854Z ok 127 - candidate copy, solid=false, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8537943Z   ---
+2026-10-15T21:13:32.8538570Z   duration_ms: 81.9587
+2026-10-15T21:13:32.8538905Z   type: 'test'
+2026-10-15T21:13:32.8539204Z   ...
+2026-10-15T21:13:32.8540242Z # Subtest: candidate copy, solid=true, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8541459Z ok 128 - candidate copy, solid=true, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8542166Z   ---
+2026-10-15T21:13:32.8542492Z   duration_ms: 56.049
+2026-10-15T21:13:32.8544020Z   type: 'test'
+2026-10-15T21:13:32.8544302Z   ...
+2026-10-15T21:13:32.8545789Z # Subtest: candidate deflate, solid=false, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8547077Z ok 129 - candidate deflate, solid=false, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8548183Z   ---
+2026-10-15T21:13:32.8548498Z   duration_ms: 55.706
+2026-10-15T21:13:32.8548804Z   type: 'test'
+2026-10-15T21:13:32.8549078Z   ...
+2026-10-15T21:13:32.8549734Z # Subtest: candidate deflate, solid=true, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8551626Z ok 130 - candidate deflate, solid=true, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8552392Z   ---
+2026-10-15T21:13:32.8552684Z   duration_ms: 57.5432
+2026-10-15T21:13:32.8553152Z   type: 'test'
+2026-10-15T21:13:32.8553758Z   ...
+2026-10-15T21:13:32.8555075Z # Subtest: candidate lzma2-store, solid=false, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8556365Z ok 131 - candidate lzma2-store, solid=false, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8557472Z   ---
+2026-10-15T21:13:32.8562540Z   duration_ms: 55.5856
+2026-10-15T21:13:32.8562984Z   type: 'test'
+2026-10-15T21:13:32.8564056Z   ...
+2026-10-15T21:13:32.8564841Z # Subtest: candidate lzma2-store, solid=true, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8567964Z ok 132 - candidate lzma2-store, solid=true, exchanges exact files and timestamps with original
+2026-10-15T21:13:32.8570144Z   ---
+2026-10-15T21:13:32.8577203Z   duration_ms: 53.6535
+2026-10-15T21:13:32.8579610Z   type: 'test'
+2026-10-15T21:13:32.8579942Z   ...
+2026-10-15T21:13:32.8590391Z # Subtest: original Copy, solid=off, decodes with exact files and timestamps
+2026-10-15T21:13:32.8591767Z ok 133 - original Copy, solid=off, decodes with exact files and timestamps
+2026-10-15T21:13:32.8592472Z   ---
+2026-10-15T21:13:32.8592775Z   duration_ms: 27.2857
+2026-10-15T21:13:32.8593102Z   type: 'test'
+2026-10-15T21:13:32.8593362Z   ...
+2026-10-15T21:13:32.8593890Z # Subtest: original Copy, solid=on, decodes with exact files and timestamps
+2026-10-15T21:13:32.8594561Z ok 134 - original Copy, solid=on, decodes with exact files and timestamps
+2026-10-15T21:13:32.8597249Z   ---
+2026-10-15T21:13:32.8597613Z   duration_ms: 27.2422
+2026-10-15T21:13:32.8597936Z   type: 'test'
+2026-10-15T21:13:32.8621954Z   ...
+2026-10-15T21:13:32.8622755Z # Subtest: original Deflate, solid=off, decodes with exact files and timestamps
+2026-10-15T21:13:32.8633179Z ok 135 - original Deflate, solid=off, decodes with exact files and timestamps
+2026-10-15T21:13:32.8634476Z   ---
+2026-10-15T21:13:32.8634788Z   duration_ms: 33.201
+2026-10-15T21:13:32.8635161Z   type: 'test'
+2026-10-15T21:13:32.8635466Z   ...
+2026-10-15T21:13:32.8636140Z # Subtest: original Deflate, solid=on, decodes with exact files and timestamps
+2026-10-15T21:13:32.8637213Z ok 136 - original Deflate, solid=on, decodes with exact files and timestamps
+2026-10-15T21:13:32.8637883Z   ---
+2026-10-15T21:13:32.8638180Z   duration_ms: 34.1575
+2026-10-15T21:13:32.8638519Z   type: 'test'
+2026-10-15T21:13:32.8638804Z   ...
+2026-10-15T21:13:32.8639511Z # Subtest: candidate supported compressed header is accepted by original and reader
+2026-10-15T21:13:32.8640701Z ok 137 - candidate supported compressed header is accepted by original and reader
+2026-10-15T21:13:32.8641419Z   ---
+2026-10-15T21:13:32.8641713Z   duration_ms: 56.2948
+2026-10-15T21:13:32.8642051Z   type: 'test'
+2026-10-15T21:13:32.8642356Z   ...
+2026-10-15T21:13:32.8643050Z # Subtest: default original LZMA2 data and LZMA encoded header extract exact bytes
+2026-10-15T21:13:32.8644238Z ok 138 - default original LZMA2 data and LZMA encoded header extract exact bytes
+2026-10-15T21:13:32.8644929Z   ---
+2026-10-15T21:13:32.8645222Z   duration_ms: 74.7751
+2026-10-15T21:13:32.8645458Z   type: 'test'
+2026-10-15T21:13:32.8645630Z   ...
+2026-10-15T21:13:32.8646409Z # Subtest: original multiple alignment properties and optional creation/access times decode
+2026-10-15T21:13:32.8647487Z ok 139 - original multiple alignment properties and optional creation/access times decode
+2026-10-15T21:13:32.8648298Z   ---
+2026-10-15T21:13:32.8648602Z   duration_ms: 240.9897
+2026-10-15T21:13:32.8648934Z   type: 'test'
+2026-10-15T21:13:32.8649238Z   ...
+2026-10-15T21:13:32.8649883Z # Subtest: candidate metadata bitmaps beyond one byte and undefined timestamps are compatible
+2026-10-15T21:13:32.8650609Z ok 140 - candidate metadata bitmaps beyond one byte and undefined timestamps are compatible
+2026-10-15T21:13:32.8651034Z   ---
+2026-10-15T21:13:32.8651206Z   duration_ms: 89.1161
+2026-10-15T21:13:32.8651411Z   type: 'test'
+2026-10-15T21:13:32.8651578Z   ...
+2026-10-15T21:13:32.8651947Z # Subtest: empty archive, empty streams, omitted and pre-1970 timestamps
+2026-10-15T21:13:32.8652454Z ok 141 - empty archive, empty streams, omitted and pre-1970 timestamps
+2026-10-15T21:13:32.8652776Z   ---
+2026-10-15T21:13:32.8652936Z   duration_ms: 0.9433
+2026-10-15T21:13:32.8653125Z   type: 'test'
+2026-10-15T21:13:32.8653289Z   ...
+2026-10-15T21:13:32.8653698Z # Subtest: signature/start/header/packed CRC corruption and trailing concatenation fail
+2026-10-15T21:13:32.8654411Z ok 142 - signature/start/header/packed CRC corruption and trailing concatenation fail
+2026-10-15T21:13:32.8655017Z   ---
+2026-10-15T21:13:32.8655183Z   duration_ms: 2.4855
+2026-10-15T21:13:32.8655376Z   type: 'test'
+2026-10-15T21:13:32.8655539Z   ...
+2026-10-15T21:13:32.8656070Z # Subtest: writer refuses unsafe or ambiguous paths and bounded inputs
+2026-10-15T21:13:32.8656575Z ok 143 - writer refuses unsafe or ambiguous paths and bounded inputs
+2026-10-15T21:13:32.8656995Z   ---
+2026-10-15T21:13:32.8657154Z   duration_ms: 4.4763
+2026-10-15T21:13:32.8657337Z   type: 'test'
+2026-10-15T21:13:32.8657501Z   ...
+2026-10-15T21:13:32.8657874Z # Subtest: direct codec checks accepted byte types and bounds before copying input
+2026-10-15T21:13:32.8658452Z ok 144 - direct codec checks accepted byte types and bounds before copying input
+2026-10-15T21:13:32.8658810Z   ---
+2026-10-15T21:13:32.8658967Z   duration_ms: 14.0892
+2026-10-15T21:13:32.8659153Z   type: 'test'
+2026-10-15T21:13:32.8659317Z   ...
+2026-10-15T21:13:32.8659671Z # Subtest: reader verifies independent pack, folder and solid substream CRCs
+2026-10-15T21:13:32.8660215Z ok 145 - reader verifies independent pack, folder and solid substream CRCs
+2026-10-15T21:13:32.8660568Z   ---
+2026-10-15T21:13:32.8660733Z   duration_ms: 1.9524
+2026-10-15T21:13:32.8660929Z   type: 'test'
+2026-10-15T21:13:32.8661093Z   ...
+2026-10-15T21:13:32.8661469Z # Subtest: reader refuses malformed counts, out-of-bound sizes and unassigned data
+2026-10-15T21:13:32.8662055Z ok 146 - reader refuses malformed counts, out-of-bound sizes and unassigned data
+2026-10-15T21:13:32.8662413Z   ---
+2026-10-15T21:13:32.8662574Z   duration_ms: 1.753
+2026-10-15T21:13:32.8662757Z   type: 'test'
+2026-10-15T21:13:32.8662917Z   ...
+2026-10-15T21:13:32.8663332Z # Subtest: reader validates filesystem names, anti-items, attributes and repeated alignment
+2026-10-15T21:13:32.8663988Z ok 147 - reader validates filesystem names, anti-items, attributes and repeated alignment
+2026-10-15T21:13:32.8664379Z   ---
+2026-10-15T21:13:32.8664536Z   duration_ms: 4.1183
+2026-10-15T21:13:32.8664721Z   type: 'test'
+2026-10-15T21:13:32.8664885Z   ...
+2026-10-15T21:13:32.8665251Z # Subtest: raw DEFLATE rejects trailing bytes and output inconsistent with headers
+2026-10-15T21:13:32.8665867Z ok 148 - raw DEFLATE rejects trailing bytes and output inconsistent with headers
+2026-10-15T21:13:32.8666310Z   ---
+2026-10-15T21:13:32.8666463Z   duration_ms: 1.2083
+2026-10-15T21:13:32.8666650Z   type: 'test'
+2026-10-15T21:13:32.8666807Z   ...
+2026-10-15T21:13:32.8667233Z # Subtest: uncompressed LZMA2 enforces reset, controls, terminator, dictionary and exact output
+2026-10-15T21:13:32.8667917Z ok 149 - uncompressed LZMA2 enforces reset, controls, terminator, dictionary and exact output
+2026-10-15T21:13:32.8668325Z   ---
+2026-10-15T21:13:32.8668487Z   duration_ms: 2.0526
+2026-10-15T21:13:32.8668674Z   type: 'test'
+2026-10-15T21:13:32.8668835Z   ...
+2026-10-15T21:13:36.3222344Z # Subtest: 7Z HTTP creation, listing, solid metadata, extraction and restart persistence
+2026-10-15T21:13:36.3223696Z ok 150 - 7Z HTTP creation, listing, solid metadata, extraction and restart persistence
+2026-10-15T21:13:36.3224485Z   ---
+2026-10-15T21:13:36.3224810Z   duration_ms: 3475.6537
+2026-10-15T21:13:36.3225240Z   type: 'test'
+2026-10-15T21:13:36.3225554Z   ...
+2026-10-15T21:13:36.3646776Z # Retained independent exchange fixtures and manifest: D:\\a\\rea-research-lab\\rea-research-lab\\.local\\sevenzip-tests\\run-kGUqIm
+2026-10-15T21:13:36.3648489Z # Subtest: 7Z HTTP refuses malformed archives before any extraction writes
+2026-10-15T21:13:36.3649566Z ok 151 - 7Z HTTP refuses malformed archives before any extraction writes
+2026-10-15T21:13:36.3650244Z   ---
+2026-10-15T21:13:36.3650559Z   duration_ms: 42.476
+2026-10-15T21:13:36.3650923Z   type: 'test'
+2026-10-15T21:13:36.3651243Z   ...
+2026-10-15T21:13:36.4594090Z # Subtest: Windows batch reader correlates every Unicode path/type and preserves dates across the 32-bit-seconds boundary
+2026-10-15T21:13:36.4596725Z ok 152 - Windows batch reader correlates every Unicode path/type and preserves dates across the 32-bit-seconds boundary
+2026-10-15T21:13:36.4597800Z   ---
+2026-10-15T21:13:36.4598415Z   duration_ms: 4.1026
+2026-10-15T21:13:36.4603708Z   type: 'test'
+2026-10-15T21:13:36.4604226Z   ...
+2026-10-15T21:13:36.4606425Z # Subtest: Windows metadata transport correlates literal DOS-short aliases and refuses substituted expanded paths
+2026-10-15T21:13:36.4609987Z ok 153 - Windows metadata transport correlates literal DOS-short aliases and refuses substituted expanded paths
+2026-10-15T21:13:36.4611465Z   ---
+2026-10-15T21:13:36.4611964Z   duration_ms: 0.9144
+2026-10-15T21:13:36.4624784Z   type: 'test'
+2026-10-15T21:13:36.4625152Z   ...
+2026-10-15T21:13:36.4626067Z # Subtest: exact native UTC and decimal milliseconds agree before whole-millisecond reduction, including negative fractional milliseconds
+2026-10-15T21:13:36.4627926Z ok 154 - exact native UTC and decimal milliseconds agree before whole-millisecond reduction, including negative fractional milliseconds
+2026-10-15T21:13:36.4628527Z   ---
+2026-10-15T21:13:36.4628720Z   duration_ms: 0.5902
+2026-10-15T21:13:36.4628918Z   type: 'test'
+2026-10-15T21:13:36.4629090Z   ...
+2026-10-15T21:13:36.4629752Z # Subtest: malformed native output, missing/reordered/type-mismatched paths and inconsistent/nonfinite dates refuse with redacted errors
+2026-10-15T21:13:36.4631103Z ok 155 - malformed native output, missing/reordered/type-mismatched paths and inconsistent/nonfinite dates refuse with redacted errors
+2026-10-15T21:13:36.4631694Z   ---
+2026-10-15T21:13:36.4631869Z   duration_ms: 1.8408
+2026-10-15T21:13:36.4632066Z   type: 'test'
+2026-10-15T21:13:36.4632239Z   ...
+2026-10-15T21:13:36.4632769Z # Subtest: metadata reader rejects escaped/duplicate paths and preserves the original non-Windows stat-date contract
+2026-10-15T21:13:36.4634150Z ok 156 - metadata reader rejects escaped/duplicate paths and preserves the original non-Windows stat-date contract
+2026-10-15T21:13:36.4635138Z   ---
+2026-10-15T21:13:36.4635446Z   duration_ms: 0.4659
+2026-10-15T21:13:36.4635810Z   type: 'test'
+2026-10-15T21:13:36.4636118Z   ...
+2026-10-15T21:13:36.4880457Z # Subtest: one metadata collection covers every walked directory/file; failure precedes output directory/archive creation
+2026-10-15T21:13:36.4882175Z ok 157 - one metadata collection covers every walked directory/file; failure precedes output directory/archive creation
+2026-10-15T21:13:36.4882919Z   ---
+2026-10-15T21:13:36.4883104Z   duration_ms: 33.1114
+2026-10-15T21:13:36.4883312Z   type: 'test'
+2026-10-15T21:13:36.4883487Z   ...
+2026-10-15T21:13:36.4957036Z # Subtest: single-file GZIP/Zstandard metadata failure also precedes output writes
+2026-10-15T21:13:36.4959750Z ok 158 - single-file GZIP/Zstandard metadata failure also precedes output writes
+2026-10-15T21:13:36.4960843Z   ---
+2026-10-15T21:13:36.4961177Z   duration_ms: 7.5242
+2026-10-15T21:13:36.4961553Z   type: 'test'
+2026-10-15T21:13:36.4961884Z   ...
+2026-10-15T21:13:37.2527738Z # Subtest: Windows native source → plain ZIP/plain+encrypted 7Z → native restored dates cover 1969/2106 boundary/2107 and Unicode names
+2026-10-15T21:13:37.2531048Z not ok 159 - Windows native source → plain ZIP/plain+encrypted 7Z → native restored dates cover 1969/2106 boundary/2107 and Unicode names
+2026-10-15T21:13:37.2532200Z   ---
+2026-10-15T21:13:37.2532539Z   duration_ms: 755.8119
+2026-10-15T21:13:37.2532936Z   type: 'test'
+2026-10-15T21:13:37.2533973Z   location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\source-metadata.test.mjs:202:1'
+2026-10-15T21:13:37.2535065Z   failureType: 'testCodeFailure'
+2026-10-15T21:13:37.2536021Z   error: 'Native Windows source metadata is unavailable or invalid; archive creation was refused.'
+2026-10-15T21:13:37.2536564Z   code: 'ERR_TEST_FAILURE'
+2026-10-15T21:13:37.2536787Z   stack: |-
+2026-10-15T21:13:37.2537348Z     unavailable (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:71:33)
+2026-10-15T21:13:37.2538466Z     readSourceMetadata (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:143:19)
+2026-10-15T21:13:37.2540051Z     process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-15T21:13:37.2540912Z     async sourceMetadata (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.test.mjs:229:22)
+2026-10-15T21:13:37.2542038Z     async collect (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:49:20)
+2026-10-15T21:13:37.2543428Z     async run (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:106:22)
+2026-10-15T21:13:37.2544229Z     async handle (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:168:18)
+2026-10-15T21:13:37.2545981Z     async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.test.mjs:235:5)
+2026-10-15T21:13:37.2547378Z     async Test.run (node:internal/test_runner/test:1313:7)
+2026-10-15T21:13:37.2548309Z     async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+2026-10-15T21:13:37.2549058Z   ...
+2026-10-15T21:13:37.2551690Z # {"kind":"windows-source-path-spelling","label":"zip","literalRoot":"C:\\\\Users\\\\RUNNER~1\\\\AppData\\\\Local\\\\Temp\\\\rea-source-metadata-ZzRPSj\\\\workspace","canonicalRoot":"C:\\\\Users\\\\runneradmin\\\\AppData\\\\Local\\\\Temp\\\\rea-source-metadata-ZzRPSj\\\\workspace","differentSpelling":true}
+2026-10-15T21:13:37.7931427Z # Subtest: Windows invalid JSON, process failure and disappeared source refuse before any archive output
+2026-10-15T21:13:37.7933011Z ok 160 - Windows invalid JSON, process failure and disappeared source refuse before any archive output
+2026-10-15T21:13:37.7933904Z   ---
+2026-10-15T21:13:37.7934229Z   duration_ms: 541.2363
+2026-10-15T21:13:37.7934608Z   type: 'test'
+2026-10-15T21:13:37.7934918Z   ...
+2026-10-15T21:13:37.8004410Z # Subtest: Windows existing no-link walk rejects a junction before calling the metadata batch
+2026-10-15T21:13:37.8005729Z ok 161 - Windows existing no-link walk rejects a junction before calling the metadata batch
+2026-10-15T21:13:37.8006174Z   ---
+2026-10-15T21:13:37.8006360Z   duration_ms: 7.7813
+2026-10-15T21:13:37.8006580Z   type: 'test'
+2026-10-15T21:13:37.8006762Z   ...
+2026-10-15T21:13:37.8101807Z 1..161
+2026-10-15T21:13:37.8102407Z # tests 161
+2026-10-15T21:13:37.8102763Z # suites 0
+2026-10-15T21:13:37.8103101Z # pass 155
+2026-10-15T21:13:37.8103417Z # fail 6
+2026-10-15T21:13:37.8103767Z # cancelled 0
+2026-10-15T21:13:37.8104134Z # skipped 0
+2026-10-15T21:13:37.8104457Z # todo 0
+2026-10-15T21:13:37.8104840Z # duration_ms 47092.9734
+2026-10-15T21:13:38.1648376Z {"status":"failed","scope":"archive-aes-experiment","summary":{"tests":161,"pass":155,"fail":6,"cancelled":0,"skipped":0,"todo":0,"duration_ms":47092.9734},"sourceFiles":779,"sourceStable":true,"evidenceDirectory":"D:\\a\\_temp\\rea-archive-aes-ci-evidence-38808025295-1\\verification"}
+2026-10-15T21:13:38.1962939Z ##[error]Process completed with exit code 1.
+2026-10-15T21:13:38.2099290Z ##[group]Run node products/rea-studio/scripts/bootstrap-cloud-bsdtar.mjs --evidence "$env:REA_ARCHIVE_EVIDENCE"
+2026-10-15T21:13:38.2100232Z [36;1mnode products/rea-studio/scripts/bootstrap-cloud-bsdtar.mjs --evidence "$env:REA_ARCHIVE_EVIDENCE"[0m
+2026-10-15T21:13:38.2141111Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-15T21:13:38.2141446Z env:
+2026-10-15T21:13:38.2141605Z   CI: true
+2026-10-15T21:13:38.2141910Z   REA_ARCHIVE_EVIDENCE: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1
+2026-10-15T21:13:38.2142457Z   ARCHIVE_AES_OBSERVATIONS: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1\observations
+2026-10-15T21:13:38.2142899Z ##[endgroup]
+2026-10-15T21:13:39.8477371Z Both pinned Microsoft bsdtar images acquired and statically authenticated; no original program was executed.
+2026-10-15T21:13:39.9591649Z ##[group]Run node products/rea-studio/scripts/verify-cloud-bsdtar.mjs --evidence "$env:REA_ARCHIVE_EVIDENCE"
+2026-10-15T21:13:39.9592508Z [36;1mnode products/rea-studio/scripts/verify-cloud-bsdtar.mjs --evidence "$env:REA_ARCHIVE_EVIDENCE"[0m
+2026-10-15T21:13:39.9631082Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-15T21:13:39.9631571Z env:
+2026-10-15T21:13:39.9631728Z   CI: true
+2026-10-15T21:13:39.9632022Z   REA_ARCHIVE_EVIDENCE: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1
+2026-10-15T21:13:39.9633453Z   ARCHIVE_AES_OBSERVATIONS: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1\observations
+2026-10-15T21:13:39.9634443Z ##[endgroup]
+2026-10-15T21:13:40.2664755Z {"status":"passed","banner":"bsdtar 3.8.8 - libarchive 3.8.8 zlib/1.2.13.1-motley liblzma/5.8.1 bz2lib/1.0.8 libzstd/1.5.7 cng/2.0 libb2/bundled","originalProcesses":1,"productComparisons":0}
+2026-10-15T21:13:40.3676936Z ##[group]Run node products/rea-studio/scripts/bootstrap-cloud-development.mjs --evidence "$env:REA_ARCHIVE_EVIDENCE"
+2026-10-15T21:13:40.3677869Z [36;1mnode products/rea-studio/scripts/bootstrap-cloud-development.mjs --evidence "$env:REA_ARCHIVE_EVIDENCE"[0m
+2026-10-15T21:13:40.3718863Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-15T21:13:40.3719212Z env:
+2026-10-15T21:13:40.3719368Z   CI: true
+2026-10-15T21:13:40.3719664Z   REA_ARCHIVE_EVIDENCE: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1
+2026-10-15T21:13:40.3720228Z   ARCHIVE_AES_OBSERVATIONS: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1\observations
+2026-10-15T21:13:40.3720660Z ##[endgroup]
+2026-10-15T21:13:45.6242362Z npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+2026-10-15T21:13:46.8126604Z npm warn deprecated uuid@10.0.0: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+2026-10-15T21:13:48.4723435Z 
+2026-10-15T21:13:48.4724054Z added 163 packages in 5s
+2026-10-15T21:13:51.8624102Z All original archives, source/dependency files and immutable contracts verified
+2026-10-15T21:13:56.2768155Z Sketch original 0.18.1 archive, bundle and source map authenticated in ignored app-local cache.
+2026-10-15T21:13:57.2840244Z {"product":"restic","version":"v0.19.1","sha256_verified":true,"executable":"D:\\a\\rea-research-lab\\rea-research-lab\\projects\\09-restic\\artifacts\\unpacked\\restic_0.19.1_windows_amd64.exe"}
+2026-10-15T21:13:57.3727370Z Additional Automation, Sketch and Backup prerequisites acquired; no product comparison suite was run.
+2026-10-15T21:13:57.4801077Z ##[group]Run node products/rea-studio/scripts/compose-archive-aes-cloud.mjs --phase verify-after --evidence "$env:REA_ARCHIVE_EVIDENCE"
+2026-10-15T21:13:57.4802143Z [36;1mnode products/rea-studio/scripts/compose-archive-aes-cloud.mjs --phase verify-after --evidence "$env:REA_ARCHIVE_EVIDENCE"[0m
+2026-10-15T21:13:57.4841828Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-15T21:13:57.4842169Z env:
+2026-10-15T21:13:57.4842326Z   CI: true
+2026-10-15T21:13:57.4842624Z   REA_ARCHIVE_EVIDENCE: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1
+2026-10-15T21:13:57.4843194Z   ARCHIVE_AES_OBSERVATIONS: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1\observations
+2026-10-15T21:13:57.4843628Z ##[endgroup]
+2026-10-15T21:13:58.1194508Z {"sourceStable":true,"sourceRoot":"D:\\a\\rea-research-lab\\rea-research-lab","modifiedGitWorktree":true,"currentArchiveSourceFiles":62,"productionInstalled":false}
+2026-10-15T21:13:58.2478881Z ##[group]Run $evidence = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-ci-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+2026-10-15T21:13:58.2479968Z [36;1m$evidence = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-ci-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)[0m
+2026-10-15T21:13:58.2480670Z [36;1mNew-Item -ItemType Directory -Path $evidence -Force | Out-Null[0m
+2026-10-15T21:13:58.2483201Z [36;1m@{ schema = 'rea-archive-aes-workflow-attempt/v1'; sourceCommit = $env:GITHUB_SHA; runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; runnerEnvironment = $env:RUNNER_ENVIRONMENT; checkoutOutcome = 'success'; composeOutcome = 'success'; acquisitionOutcome = 'success'; verificationOutcome = 'failure'; sourceCheckOutcome = 'success'; pairedOracleAcquisitionOutcome = 'success'; pairedOracleSmokeOutcome = 'success'; experimentalOverlay = $true; productionInstalled = $false; fullArchiveAcceptance = $false; fullParity = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8[0m
+2026-10-15T21:13:58.2486081Z [36;1m$archive = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')[0m
+2026-10-15T21:13:58.2486703Z [36;1mAdd-Type -AssemblyName System.IO.Compression.FileSystem[0m
+2026-10-15T21:13:58.2487423Z [36;1m[System.IO.Compression.ZipFile]::CreateFromDirectory($evidence, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false)[0m
+2026-10-15T21:13:58.2488119Z [36;1m$archiveBytes = (Get-Item -LiteralPath $archive).Length[0m
+2026-10-15T21:13:58.2488471Z [36;1mif ($archiveBytes -gt 15 * 1024 * 1024) {[0m
+2026-10-15T21:13:58.2489052Z [36;1m  $fallback = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)[0m
+2026-10-15T21:13:58.2489708Z [36;1m  New-Item -ItemType Directory -Path $fallback | Out-Null[0m
+2026-10-15T21:13:58.2490802Z [36;1m  foreach ($relative in @('workflow-attempt.json', 'composition.json', 'original-acquisition.json', 'postrun-source-check.json', 'verification/attempt-validation.json', 'bsdtar-original-acquisition.json', 'bsdtar-original-smoke.json')) {[0m
+2026-10-15T21:13:58.2503399Z [36;1m    $candidate = Join-Path $evidence $relative[0m
+2026-10-15T21:13:58.2504082Z [36;1m    if ((Test-Path -LiteralPath $candidate -PathType Leaf) -and (Get-Item -LiteralPath $candidate).Length -le 1024 * 1024) {[0m
+2026-10-15T21:13:58.2504876Z [36;1m      Copy-Item -LiteralPath $candidate -Destination (Join-Path $fallback $relative.Replace('/', '-'))[0m
+2026-10-15T21:13:58.2505358Z [36;1m    }[0m
+2026-10-15T21:13:58.2505542Z [36;1m  }[0m
+2026-10-15T21:13:58.2507185Z [36;1m  @{ schema = 'rea-cloud-evidence-storage-failure/v1'; status = 'failed'; fullArchiveBytes = $archiveBytes; limitBytes = 15 * 1024 * 1024; fullEvidenceUploaded = $false; sourceSnapshotsUploaded = $false; rawLogsUploaded = $false; reason = 'The complete experimental evidence exceeded the bounded artifact budget. This diagnostic fallback is incomplete.' } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8[0m
+2026-10-15T21:13:58.2509232Z [36;1m  $archive = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')[0m
+2026-10-15T21:13:58.2510169Z [36;1m  [System.IO.Compression.ZipFile]::CreateFromDirectory($fallback, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false)[0m
+2026-10-15T21:13:58.2510977Z [36;1m  'artifact_path=' + $archive | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append[0m
+2026-10-15T21:13:58.2511671Z [36;1m  throw 'Full experimental evidence exceeded 15 MiB. Only incomplete diagnostic records will be uploaded.'[0m
+2026-10-15T21:13:58.2512153Z [36;1m}[0m
+2026-10-15T21:13:58.2512499Z [36;1m'artifact_path=' + $archive | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append[0m
+2026-10-15T21:13:58.2554553Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-15T21:13:58.2554950Z env:
+2026-10-15T21:13:58.2555121Z   CI: true
+2026-10-15T21:13:58.2555428Z   REA_ARCHIVE_EVIDENCE: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1
+2026-10-15T21:13:58.2555988Z   ARCHIVE_AES_OBSERVATIONS: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1\observations
+2026-10-15T21:13:58.2556414Z ##[endgroup]
+2026-10-15T21:13:58.8442521Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-10-15T21:13:58.8442977Z with:
+2026-10-15T21:13:58.8443202Z   name: archive-aes-experimental-38808025295-1
+2026-10-15T21:13:58.8443536Z   path: D:\a\_temp\rea-archive-aes-38808025295-1.zip
+2026-10-15T21:13:58.8444009Z   if-no-files-found: error
+2026-10-15T21:13:58.8444238Z   compression-level: 0
+2026-10-15T21:13:58.8444433Z   retention-days: 1
+2026-10-15T21:13:58.8444612Z   overwrite: false
+2026-10-15T21:13:58.8444800Z   include-hidden-files: false
+2026-10-15T21:13:58.8445011Z env:
+2026-10-15T21:13:58.8445158Z   CI: true
+2026-10-15T21:13:58.8445456Z   REA_ARCHIVE_EVIDENCE: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1
+2026-10-15T21:13:58.8445998Z   ARCHIVE_AES_OBSERVATIONS: D:\a\_temp\rea-archive-aes-ci-evidence-38808025295-1\observations
+2026-10-15T21:13:58.8446416Z ##[endgroup]
+2026-10-15T21:13:59.0253961Z (node:4884) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-15T21:13:59.0254748Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-15T21:13:59.0304455Z With the provided path, there will be 1 file uploaded
+2026-10-15T21:13:59.0309829Z Artifact name is valid!
+2026-10-15T21:13:59.0312343Z Root directory input is valid!
+2026-10-15T21:13:59.4229802Z Beginning upload of artifact content to blob storage
+2026-10-15T21:13:59.4509905Z (node:4884) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-15T21:14:00.5024044Z Uploaded bytes 1456343
+2026-10-15T21:14:00.5816783Z Finished uploading artifact content to blob storage!
+2026-10-15T21:14:00.5818109Z SHA256 digest of uploaded artifact zip is ed24216ef5e3bee49e85edda059cf24f86d07672a7edbe0762b1ef3c9fad6e85
+2026-10-15T21:14:00.5820286Z Finalizing artifact upload
+2026-10-15T21:14:00.8631465Z Artifact archive-aes-experimental-38808025295-1.zip successfully finalized. Artifact ID 12007207184
+2026-10-15T21:14:00.8633063Z Artifact archive-aes-experimental-38808025295-1 has been successfully uploaded! Final size is 1456343 bytes. Artifact ID is 12007207184
+2026-10-15T21:14:00.8643158Z Artifact download URL: https://github.com/Ginderlax/rea-research-lab/actions/runs/38808025295/artifacts/12007207184
+2026-10-15T21:14:00.8931788Z Post job cleanup.
+2026-10-15T21:14:01.0787391Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-15T21:14:01.1061419Z git version 2.56.0.windows.2
+2026-10-15T21:14:01.1115181Z Copying 'C:\Users\runneradmin\.gitconfig' to 'D:\a\_temp\5a6e7ab3-ec51-4f93-bdf1-0b3ca47084b8\.gitconfig'
+2026-10-15T21:14:01.1136344Z Temporarily overriding HOME='D:\a\_temp\5a6e7ab3-ec51-4f93-bdf1-0b3ca47084b8' before making global git config changes
+2026-10-15T21:14:01.1137909Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-15T21:14:01.1148188Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\rea-research-lab\rea-research-lab
+2026-10-15T21:14:01.1454329Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-15T21:14:01.1750180Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-15T21:14:01.6536192Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-15T21:14:01.6830248Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-15T21:14:02.1527256Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-15T21:14:02.1817027Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-15T21:14:02.6716366Z Cleaning up orphan processes
+2026-10-15T21:14:02.6745042Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11d5960a326750d5838078e36cf38b85af677262, actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020, actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

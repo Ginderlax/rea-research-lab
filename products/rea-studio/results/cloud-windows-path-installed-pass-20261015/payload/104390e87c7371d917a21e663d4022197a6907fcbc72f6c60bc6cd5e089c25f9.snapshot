@@ -1,0 +1,25 @@
+{
+  "schema": "rea-source-review/v1",
+  "status": "source-reviewed-no-blocker-unexecuted",
+  "reviewer": "cloud_ci_recovery",
+  "candidate": "candidate/products/rea-studio/apps/editor/git.test.mjs",
+  "candidateSHA256": "c40c070ab2dc74e6d1de1d8b80a02744740864b566d2e5de695baf3ca00da3a2",
+  "failureEvidence": {
+    "run": "38810678336",
+    "testedMerge": "abcac0b2f7905838198bdaa2e11461ac52cdb75e",
+    "test": 395,
+    "source": "work/cloud-verification-backups/run-38810678336/artifact-12008743017/readable-evidence/stdout.txt",
+    "failure": "The final observer at git.test.mjs:37 compared Git's long physical path C:/Users/runneradmin/... to workspace.root's valid C:/Users/RUNNER~1/... spelling. Earlier parent-repository and traversal/Git metadata/branch rejection checks passed."
+  },
+  "assessment": [
+    "The candidate adds only the realpath import, canonicalizes both existing reported/workspace paths before equality, and emits a diagnostic preserving both original spellings and the physical-root result.",
+    "The canonical equality matches the unchanged runtime present() guard, which already compares await realpath(top) to await realpath(workspace.root). It still rejects a genuinely different physical repository root.",
+    "Parent-repository isolation, ../ traversal rejection, .git path rejection and option-like branch rejection remain unchanged in this test.",
+    "All application source and original runtime lstat/tree/junction/external Git metadata/config/alternates/submodule guards remain unchanged. Resolving the observer's physical spelling does not bypass those runtime guards.",
+    "The diagnostic is an observation after the physical equality assertion, not a replacement for the assertion. It does not assert historical spelling equivalence or a new execution result."
+  ],
+  "localTests": 0,
+  "localBuilds": 0,
+  "localProductExecutions": 0,
+  "requiredNextEvidence": "Execute the corrected test in the explicit hosted Windows path experiment and preserve actual same-attempt source composition, strict zero-skip TAP and post-run source checks."
+}

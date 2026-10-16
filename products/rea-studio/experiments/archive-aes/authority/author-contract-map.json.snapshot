@@ -1,0 +1,202 @@
+{
+  "schema": "rea-sevenzip-aes-finite-contracts/v1",
+  "release": "7-Zip26.04 complete Windowsx64",
+  "contracts": [
+    {
+      "id": "method-and-kdf",
+      "scope": "Exact7zAES method ID; UTF16LE password; SHA256 salt/password/LE64 counter, direct63; bounded powers differ",
+      "sources": [
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/Crypto/7zAesRegister.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/Crypto/7zAesRegister.cpp.snapshot",
+          "bytes": 236,
+          "sha256": "8b9a5f93e5e8c373ffa58011c16ea3432acfd74ebba22de3eaee345af74b0d59",
+          "lineCount": 18,
+          "startLine": 1,
+          "endLine": 18
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/Crypto/7zAes.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/Crypto/7zAes.cpp.snapshot",
+          "bytes": 7244,
+          "sha256": "d1d45ef7740bb3dadb39dfeb07834d7261b8ec7ad9e01ccdab521e08a5a011c8",
+          "lineCount": 316,
+          "startLine": 27,
+          "endLine": 118
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/Archive/7z/7zEncode.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/Archive/7z/7zEncode.cpp.snapshot",
+          "bytes": 18930,
+          "sha256": "6cd197dd777d06b8e67490389c83d89c57f5b3c3019dfbcc6443024f2fd88f98",
+          "lineCount": 703,
+          "startLine": 223,
+          "endLine": 236
+        }
+      ],
+      "candidate": "sevenzip-aes.mjs",
+      "acceptance": "Primitive comparisons and actual original encrypted vectors; powers21–24 refused locally."
+    },
+    {
+      "id": "properties-and-defaults",
+      "scope": "Compact salt/IV lengths0–16, padded IV, decoder zero-size defaults, writer power19/fresh IV; our writer adds16-byte salt",
+      "sources": [
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/Crypto/7zAes.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/Crypto/7zAes.cpp.snapshot",
+          "bytes": 7244,
+          "sha256": "d1d45ef7740bb3dadb39dfeb07834d7261b8ec7ad9e01ccdab521e08a5a011c8",
+          "lineCount": 316,
+          "startLine": 192,
+          "endLine": 279
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/Crypto/7zAes.h",
+          "snapshot": "official-source/full-source/CPP/7zip/Crypto/7zAes.h.snapshot",
+          "bytes": 2608,
+          "sha256": "5fab75416e87244fe2d2b1567c46301290652fd9a9baa20c2caafa77c2564896",
+          "lineCount": 131,
+          "startLine": 1,
+          "endLine": 131
+        }
+      ],
+      "candidate": "sevenzip-aes.mjs",
+      "acceptance": "Malformed properties/source branch controls and candidate→original archives."
+    },
+    {
+      "id": "folder-and-header-chains",
+      "scope": "AES decoder followed by selected compression, explicit simple binding order and declared coder outputs; encrypted header same pipeline",
+      "sources": [
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/Archive/7z/7zEncode.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/Archive/7z/7zEncode.cpp.snapshot",
+          "bytes": 18930,
+          "sha256": "6cd197dd777d06b8e67490389c83d89c57f5b3c3019dfbcc6443024f2fd88f98",
+          "lineCount": 703,
+          "startLine": 534,
+          "endLine": 703
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/Archive/7z/7zDecode.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/Archive/7z/7zDecode.cpp.snapshot",
+          "bytes": 16086,
+          "sha256": "e32c02ba8933bf862ff618bb1d7b29a3df2bd7fe9e9ed789ad1e85100c893f6d",
+          "lineCount": 600,
+          "startLine": 260,
+          "endLine": 465
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/Common/FilterCoder.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/Common/FilterCoder.cpp.snapshot",
+          "bytes": 16183,
+          "sha256": "8f5fa9720109f66a33f9c06b019e3dffa165dcfd5cd816c45e31688e7d4853a1",
+          "lineCount": 583,
+          "startLine": 1,
+          "endLine": 280
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/DOC/7zFormat.txt",
+          "snapshot": "official-source/full-source/DOC/7zFormat.txt.snapshot",
+          "bytes": 7577,
+          "sha256": "8ec976b73ca88710286be1e991e49dbab485d9c0bf2410a80fa87e657850f82b",
+          "lineCount": 470,
+          "startLine": 1,
+          "endLine": 450
+        }
+      ],
+      "candidate": "sevenzip.mjs",
+      "acceptance": "Copy/Deflate/LZMA/LZMA2 with solid/plain/encrypted/compressed headers; unsupported complex filters refused."
+    },
+    {
+      "id": "console-password-transport",
+      "scope": "Actual console update bare-p asks but extraction/testing bare-p is defined empty; omit-p read callbacks, UTF8 stdin selected by scc",
+      "sources": [
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/UI/Console/Main.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/UI/Console/Main.cpp.snapshot",
+          "bytes": 45166,
+          "sha256": "487339c02e5be09348b519871bbbe701cd3223a6cf1ea772094bd1eb45b2ea28",
+          "lineCount": 1664,
+          "startLine": 940,
+          "endLine": 980
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/UI/Console/Main.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/UI/Console/Main.cpp.snapshot",
+          "bytes": 45166,
+          "sha256": "487339c02e5be09348b519871bbbe701cd3223a6cf1ea772094bd1eb45b2ea28",
+          "lineCount": 1664,
+          "startLine": 1350,
+          "endLine": 1378
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/UI/Console/Main.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/UI/Console/Main.cpp.snapshot",
+          "bytes": 45166,
+          "sha256": "487339c02e5be09348b519871bbbe701cd3223a6cf1ea772094bd1eb45b2ea28",
+          "lineCount": 1664,
+          "startLine": 1570,
+          "endLine": 1590
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/UI/Console/UserInputUtils.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/UI/Console/UserInputUtils.cpp.snapshot",
+          "bytes": 3106,
+          "sha256": "81e26cde08aa12626d2b061135c6b943fb37fda5aaa972a207ea9f6041c18814",
+          "lineCount": 119,
+          "startLine": 87,
+          "endLine": 119
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/Common/StdInStream.cpp",
+          "snapshot": "official-source/full-source/CPP/Common/StdInStream.cpp.snapshot",
+          "bytes": 1931,
+          "sha256": "966089b1d7d8c09697ec28ac663090cc838eea0129175e504c4469ee05eafd54",
+          "lineCount": 99,
+          "startLine": 63,
+          "endLine": 82
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/full-source/CPP/7zip/UI/Console/UpdateCallbackConsole.cpp",
+          "snapshot": "official-source/full-source/CPP/7zip/UI/Console/UpdateCallbackConsole.cpp.snapshot",
+          "bytes": 22474,
+          "sha256": "8cd1c9cf17f0c45b3db840c0f4bec9870f78f17ed39308ad76f37998640b0c08",
+          "lineCount": 1013,
+          "startLine": 830,
+          "endLine": 878
+        }
+      ],
+      "candidate": "original-aes-test-helper.mjs verification only",
+      "acceptance": "Private stdin Unicode and empty-password actual original calls; initial incorrect transport preserved."
+    },
+    {
+      "id": "bounded-application-and-lifecycle",
+      "scope": "Existing path/size/exclusive extraction plus password capture/no persistence, actual encrypted metadata and disposed response guards",
+      "sources": [
+        {
+          "source": "work/full-archive-baseline-20261012/manual/cmdline/switches/password.htm",
+          "snapshot": "official-source/manual/cmdline/switches/password.htm.snapshot",
+          "bytes": 2444,
+          "sha256": "04ed61d2d494343a02a7d1281de4755aed5690ccdd09584eabcff0e37daad223",
+          "lineCount": 81,
+          "startLine": 1,
+          "endLine": 60
+        },
+        {
+          "source": "work/full-archive-baseline-20261012/manual/general/7z.htm",
+          "snapshot": "official-source/manual/general/7z.htm.snapshot",
+          "bytes": 5808,
+          "sha256": "f7aa1e14318d856f7d7469a033232fffd1647fb111a046110d31ae1436bea2bc",
+          "lineCount": 118,
+          "startLine": 1,
+          "endLine": 110
+        }
+      ],
+      "candidate": "server.mjs/client.mjs",
+      "acceptance": "Finite own HTTP/DOM policy; original UI/persistence/application contract parity not claimed."
+    }
+  ],
+  "sourceOnlyBindings": true,
+  "originalRendererGUI": 0,
+  "fullParity": false
+}

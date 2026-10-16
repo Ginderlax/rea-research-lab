@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: LGPL-2.1-or-later
+// AES folder-chain additions are source-assisted by Igor Pavlov's26.04
+// Crypto/7zAes and Archive/7z contracts; see SEVENZIP-AES-LGPL.txt.
 // Bounded .7z codec. Container contracts were
 // studied in the pinned official 7-Zip 26.04 SDK 7zFormat.txt / Methods.txt and
 // full-product 7zIn.cpp / 7zOut.cpp. No original application is invoked here.
@@ -5,6 +8,8 @@ import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { decodeLzma, decodeLzma2 } from './lzma.mjs';
 import { encodeLzma, encodeLzma2 } from './encode-lzma.mjs';
 import { operationBudget } from './operation-budget.mjs';
+import { createAesContext, makeAesProperties } from './sevenzip-aes.mjs';
+import { randomBytes } from 'node:crypto';
 
 export const LIMITS = Object.freeze({ file: 16 * 1024 ** 2, total: 64 * 1024 ** 2,
   container: 96 * 1024 ** 2, header: 16 * 1024 ** 2, entries: 10000, depth: 128 });
@@ -147,10 +152,11 @@ function storedLzma2Decode(data, size, properties) {
   }
   if (output !== size) fail('LZMA2 output size mismatch'); return join(chunks);
 }
-function decodeCoder(packed, folder, budget) {
+function decodeSingleCoder(packed, folder, budget, aes) {
   budget.check();
   const { method, properties, size } = folder; let data;
-  if (method === '00') {
+  if (method === '06f10701') data = aes.get().decrypt(packed, properties, size);
+  else if (method === '00') {
     if (properties.length) fail('Copy properties are not supported'); data = packed;
   } else if (method === '040108') {
     if (properties.length) fail('DEFLATE properties are not supported');
@@ -163,6 +169,7 @@ function decodeCoder(packed, folder, budget) {
   else fail(`unsupported coder ${method}`);
   budget.check(); if (data.length !== size) fail('folder output size mismatch'); return data;
 }
+function decodeCoder(packed,folder,budget,aes){let data=packed;try{for(const coder of folder.chain){const previous=data;data=decodeSingleCoder(data,coder,budget,aes);if(previous!==packed&&previous!==data)previous.fill(0);}return data;}catch(error){if(folder.encrypted&&data!==packed)data.fill(0);throw error;}}
 function parseStreams(r, outputBound) {
   let id = r.property(), packPos = 0, packSizes = [], packCRCs = [], folders = [];
   if (id === 6) {
@@ -175,16 +182,16 @@ function parseStreams(r, outputBound) {
   if (id === 7) {
     r.id(11); const count = r.number(LIMITS.entries, 'folder count'); if (r.byte() !== 0) fail('external folder metadata is not supported');
     folders = Array.from({ length: count }, () => {
-      if (r.number(32, 'coder count') !== 1) fail('multiple coders and filters are not supported');
-      const flags = r.byte(), n = flags & 15; if (!n || n > 8 || flags & 0xc0) fail('invalid coder flags');
-      const methodBytes = r.take(n); if (n === 8 && methodBytes[0] & 0x80) fail('method ID exceeds 63 bits');
-      const method = methodBytes.toString('hex');
-      if (flags & 16 && (r.number(16) !== 1 || r.number(16) !== 1)) fail('complex coder streams are not supported');
-      const properties = flags & 32 ? r.take(r.number(1024, 'coder properties size')) : Buffer.alloc(0);
-      return { method, properties, size: 0, crc: null, subSizes: [], subCRCs: [] };
+      const coderCount=r.number(32,'coder count');if(coderCount<1||coderCount>2)fail('only single coders or AES plus one compression coder are supported');
+      const coders=Array.from({length:coderCount},()=>{const flags=r.byte(),n=flags&15;if(!n||n>8||flags&0xc0)fail('invalid coder flags');const methodBytes=r.take(n);if(n===8&&methodBytes[0]&0x80)fail('method ID exceeds63 bits');if(flags&16&&(r.number(16)!==1||r.number(16)!==1))fail('complex coder streams are not supported');const properties=flags&32?r.take(r.number(1024,'coder properties size')):Buffer.alloc(0);return{method:methodBytes.toString('hex'),properties,size:0};});
+      const inputBound=new Set(),outputBoundSet=new Set(),next=new Map();for(let i=1;i<coderCount;i++){const input=r.number(coderCount-1,'bind input'),output=r.number(coderCount-1,'bind output');if(input===output||inputBound.has(input)||outputBoundSet.has(output))fail('invalid coder bind pairs');inputBound.add(input);outputBoundSet.add(output);next.set(output,input);}
+      const first=coders.map((_,i)=>i).find(i=>!inputBound.has(i)),last=coders.map((_,i)=>i).find(i=>!outputBoundSet.has(i)),order=[];let index=first;while(index!==undefined){if(order.includes(index))fail('cyclic coder chain');order.push(index);index=next.get(index);}if(order.length!==coderCount||order.at(-1)!==last)fail('disconnected coder chain');
+      const chain=order.map(i=>coders[i]),encrypted=chain.some(c=>c.method==='06f10701');if(coderCount>1&&(!encrypted||chain[0].method!=='06f10701'||chain[1].method==='06f10701'))fail('only AES then compression decoder chains are supported');
+      if(chain.some(c=>!['00','040108','21','030101','06f10701'].includes(c.method)))fail('unsupported coder in folder');
+      return {coders,chain,last,encrypted,method:chain.at(-1).method==='06f10701'?'00':chain.at(-1).method,properties:chain.at(-1).properties,size:0,crc:null,subSizes:[],subCRCs:[]};
     });
     r.id(12); let total = 0;
-    for (const folder of folders) { folder.size = r.number(outputBound, 'folder output size'); total += folder.size; if (total > outputBound) fail('total folder output exceeds bound'); }
+    for (const folder of folders) { for(const coder of folder.coders)coder.size=r.number(coder.method==='06f10701'?LIMITS.container:outputBound,'coder output size');folder.size=folder.coders[folder.last].size;if(folder.size>outputBound)fail('folder output exceeds bound');total += folder.size; if (total > outputBound) fail('total folder output exceeds bound'); }
     id = r.property(); if (id === 10) { const crcs = digests(r, count); folders.forEach((f, i) => { f.crc = crcs[i]; }); id = r.property(); }
     if (id !== 0) fail('unsupported UnpackInfo property'); id = r.property();
   }
@@ -264,7 +271,7 @@ function parseFiles(r) {
   });
   checkPaths(files); return files;
 }
-function readPacked(streams, archive, nextStart, ranges, outputBound, budget) {
+function readPacked(streams, archive, nextStart, ranges, outputBound, budget, aes) {
   let pos = 32 + streams.packPos, total = 0; const substreams = [];
   streams.folders.forEach((folder, i) => {
     const size = streams.packSizes[i];
@@ -273,7 +280,8 @@ function readPacked(streams, archive, nextStart, ranges, outputBound, budget) {
     const packed = archive.subarray(pos, pos + size); pos += size;
     budget.check();
     if (streams.packCRCs[i] !== null && crc32(packed, budget) !== streams.packCRCs[i]) fail('packed stream CRC mismatch');
-    const output = decodeCoder(packed, folder, budget); total += output.length; if (total > outputBound) fail('output exceeds bound');
+    if(folder.encrypted&&folder.crc===null&&(!folder.subCRCs.length||folder.subCRCs.some(c=>c===null)))fail('encrypted folder needs recorded unpacked CRCs');
+    const output = decodeCoder(packed, folder, budget, aes); try { total += output.length; if (total > outputBound) fail('output exceeds bound');
     if (folder.crc !== null && crc32(output, budget) !== folder.crc) fail('folder CRC mismatch');
     let offset = 0;
     folder.subSizes.forEach((size, j) => {
@@ -282,14 +290,19 @@ function readPacked(streams, archive, nextStart, ranges, outputBound, budget) {
       budget.work(data.length);
       const method = folder.method === '00' ? 'store' : folder.method === '040108' ? 'deflate' : folder.method === '030101' ? 'lzma' : 'lzma2';
       substreams.push({ data: Buffer.from(data), crc, method, solid: folder.subSizes.length > 1,
-        block: i, compressedSize: folder.subSizes.length > 1 ? null : streams.packSizes[i] });
+        block: i, ...(folder.encrypted?{encrypted:true}:{}), compressedSize: folder.subSizes.length > 1 ? null : streams.packSizes[i] });
     });
     if (offset !== output.length) fail('folder substreams do not consume output');
+    } finally { if (folder.encrypted && output !== packed) output.fill(0); }
   });
   return substreams;
 }
-export function read7z(archive, opts = {}) {
-  const budget = operationBudget(opts); budget.check();
+export function read7z(archive,opts={}){return read7zWithInfo(archive,opts).entries;}
+export function read7zWithInfo(archive, opts = {}) {
+  const budget = operationBudget(opts);
+  let aesContext;const password=opts.password,aes={get:()=>aesContext??=createAesContext(password,{operationBudget:budget})};
+  try{
+  budget.check();
   const length = byteLength(archive, 'archive input');
   if (length < 32 || length > LIMITS.container) fail('container size exceeds bound');
   if (!Buffer.isBuffer(archive)) archive = copyBytes(archive, length);
@@ -300,11 +313,12 @@ export function read7z(archive, opts = {}) {
   if (offset > BigInt(LIMITS.container) || size > BigInt(LIMITS.header) || 32n + offset + size !== BigInt(archive.length)) fail('invalid next header bounds or trailing archive data');
   const nextStart = 32 + Number(offset), next = archive.subarray(nextStart);
   if (crc32(next, budget) !== archive.readUInt32LE(28)) fail('next header CRC mismatch');
-  if (!size) { if (offset) fail('unreferenced payload'); return []; }
-  const ranges = []; let r = new Reader(next, budget), id = r.property();
+  if (!size) { if (offset) fail('unreferenced payload'); return {entries:[],headerEncrypted:false}; }
+  const ranges = []; let r = new Reader(next, budget), id = r.property(),headerEncrypted=false;
   if (id === 23) {
     const encoded = parseStreams(r, LIMITS.header); r.end();
-    const streams = readPacked(encoded, archive, nextStart, ranges, LIMITS.header, budget);
+    headerEncrypted=encoded.folders.some(f=>f.encrypted);
+    const streams = readPacked(encoded, archive, nextStart, ranges, LIMITS.header, budget, aes);
     if (streams.length !== 1) fail('encoded header must have one output stream');
     r = new Reader(streams[0].data, budget); id = r.property();
   }
@@ -322,7 +336,7 @@ export function read7z(archive, opts = {}) {
   if (id === 5) { files = parseFiles(r); id = r.property(); }
   if (id !== 0) fail('unsupported Header property'); r.end();
   if (streams && streams.folders.some(f => f.subSizes.some(n => n > LIMITS.file))) fail('file size exceeds bound');
-  const unpacked = streams ? readPacked(streams, archive, nextStart, ranges, LIMITS.total, budget) : [];
+  const unpacked = streams ? readPacked(streams, archive, nextStart, ranges, LIMITS.total, budget, aes) : [];
   let index = 0;
   files.forEach(file => {
     if (file.hasStream) {
@@ -334,7 +348,8 @@ export function read7z(archive, opts = {}) {
   ranges.sort((a, b) => a[0] - b[0]); let end = 32;
   for (const [start, stop] of ranges) { if (start !== end) fail('overlapping or unreferenced packed data'); end = stop; }
   if (end !== nextStart) fail('unreferenced packed data');
-  budget.check(); return files.map(({ hasStream, attributes, ...file }) => file);
+  budget.check(); return {entries:files.map(({ hasStream, attributes, ...file }) => file),headerEncrypted};
+  }finally{aesContext?.close();}
 }
 function packStreams(groups, method, packPos = 0, budget) {
   const methodBytes = Buffer.from(method === 'copy' ? '00' : method === 'deflate' ? '040108' : method === 'lzma' ? '030101' : '21', 'hex');
@@ -343,10 +358,9 @@ function packStreams(groups, method, packPos = 0, budget) {
     writeDigests(groups.map(g => crc32(g.packed, budget))), byte(0), byte(7), byte(11), encodeNumber(groups.length), byte(0)];
   for (const g of groups) {
     const props = g.properties ?? defaultProps;
-    header.push(encodeNumber(1), byte(methodBytes.length | (props.length ? 32 : 0)), methodBytes);
-    if (props.length) header.push(encodeNumber(props.length), props);
+    const coders=g.coders??[{method:methodBytes,properties:props,size:g.raw.length}];header.push(encodeNumber(coders.length));for(const coder of coders){header.push(byte(coder.method.length|(coder.properties.length?32:0)),coder.method);if(coder.properties.length)header.push(encodeNumber(coder.properties.length),coder.properties);}if(coders.length===2)header.push(encodeNumber(1),encodeNumber(0));
   }
-  header.push(byte(12), ...groups.map(g => encodeNumber(g.raw.length)), writeDigests(groups.map(g => crc32(g.raw, budget))), byte(0), byte(8));
+  header.push(byte(12), ...groups.flatMap(g => (g.coders??[{size:g.raw.length}]).map(c=>encodeNumber(c.size))), writeDigests(groups.map(g => crc32(g.raw, budget))), byte(0), byte(8));
   if (groups.some(g => g.files.length !== 1)) header.push(byte(13), ...groups.map(g => encodeNumber(g.files.length)));
   if (groups.some(g => g.files.length > 1)) header.push(byte(9), ...groups.flatMap(g => g.files.slice(0, -1).map(f => encodeNumber(f.data.length))));
   const subCRCs = groups.flatMap(g => g.files.length === 1 ? [] : g.files.map(f => crc32(f.data, budget)));
@@ -355,6 +369,7 @@ function packStreams(groups, method, packPos = 0, budget) {
 }
 const prop = (id, data) => join([byte(id), encodeNumber(data.length), data]);
 export function write7z(input, opts = {}) {
+  const password=opts.password,encrypt=password!==undefined,encryptHeaders=opts.encryptHeaders===true;if(encryptHeaders&&!encrypt)fail('header encryption requires a password');if(encrypt&&(typeof password!=='string'||!password.length||password.length>128))fail('writer password must contain1–128 UTF16 code units');let aesContext;try{
   const { method = 'deflate', level = 6, solid = false, encodedHeader = false, profile = 'balanced', dictionarySize, searchDepth, chunkSize, lc, lp, pb, endMarker = false, maxTimeMs, maxSteps } = opts;
   const budget = operationBudget(opts), headerMethod = opts.headerMethod ?? (['lzma', 'lzma2', 'lzma2-store'].includes(method) ? 'lzma' : 'deflate');
   if (!['copy', 'deflate', 'lzma2-store', 'lzma', 'lzma2'].includes(method)) fail('unsupported writer method');
@@ -379,14 +394,15 @@ export function write7z(input, opts = {}) {
   const nonempty = files.filter(f => !f.directory && f.data.length);
   let packedTotal = 0;
   const encoderOptions = { profile, dictionarySize, searchDepth, chunkSize, lc, lp, pb, endMarker, maxTimeMs, maxSteps, operationBudget: budget };
+  const aesSalt=encrypt?randomBytes(16):null;const encryptGroup=(g,codecMethod)=>{if(!encrypt)return g;aesContext??=createAesContext(password,{operationBudget:budget});const properties=makeAesProperties({salt:aesSalt}),size=g.packed.length,encrypted=aesContext.encrypt(g.packed,{properties}),compression={method:Buffer.from(codecMethod==='copy'?'00':codecMethod==='deflate'?'040108':codecMethod==='lzma'?'030101':'21','hex'),properties:g.properties??(codecMethod==='lzma2-store'?Buffer.from([0]):Buffer.alloc(0)),size:g.raw.length};return {...g,packed:encrypted.packed,coders:[{method:Buffer.from('06f10701','hex'),properties,size},...(codecMethod==='copy'?[]:[compression])]};};
   const groups = (solid && nonempty.length ? [nonempty] : nonempty.map(f => [f])).map(group => {
     budget.check(); const raw = join(group.map(f => f.data)); budget.work(raw.length); budget.check();
     const opts = { ...encoderOptions, maxOutput: LIMITS.container - packedTotal };
     const encoded = method === 'lzma' ? encodeLzma(raw, opts) : method === 'lzma2' ? encodeLzma2(raw, opts) : { packed: method === 'copy' ? raw : method === 'deflate' ? deflateRawSync(raw, { level }) : storedLzma2Encode(raw) };
     if (encoded.packed.length > LIMITS.container - packedTotal) fail('packed output exceeds container bound');
     budget.check();
-    packedTotal += encoded.packed.length;
-    return { files: group, raw, ...encoded };
+    const result=encryptGroup({files:group,raw,...encoded},method);if(result.packed.length>LIMITS.container-packedTotal)fail('encrypted packed output exceeds container bound');packedTotal += result.packed.length;
+    return result;
   });
   const header = [byte(1)]; if (groups.length) header.push(byte(4), packStreams(groups, method, 0, budget));
   if (files.length) {
@@ -405,14 +421,16 @@ export function write7z(input, opts = {}) {
   }
   header.push(byte(0)); let next = join(header), packed = groups.map(g => g.packed);
   if (next.length > LIMITS.header) fail('header exceeds bound');
-  if (encodedHeader) {
-    if (!['lzma', 'lzma2', 'deflate'].includes(headerMethod)) fail('unsupported header method');
-    const encoded = headerMethod === 'lzma' ? encodeLzma(next, { ...encoderOptions, endMarker: false, maxOutput: LIMITS.container - packedTotal }) : headerMethod === 'lzma2' ? encodeLzma2(next, { ...encoderOptions, endMarker: false, maxOutput: LIMITS.container - packedTotal }) : { packed: deflateRawSync(next, { level }) };
-    const g = { files: [{ data: next }], raw: next, ...encoded };
-    next = join([byte(23), packStreams([g], headerMethod, packedTotal, budget)]); packed.push(g.packed);
+  if (encodedHeader||encryptHeaders) {
+    const codecHeaderMethod=encodedHeader?headerMethod:'copy';
+    if (!['lzma', 'lzma2', 'deflate','copy'].includes(codecHeaderMethod)) fail('unsupported header method');
+    const encoded = codecHeaderMethod === 'copy' ? {packed:next} : codecHeaderMethod === 'lzma' ? encodeLzma(next, { ...encoderOptions, endMarker: false, maxOutput: LIMITS.container - packedTotal }) : codecHeaderMethod === 'lzma2' ? encodeLzma2(next, { ...encoderOptions, endMarker: false, maxOutput: LIMITS.container - packedTotal }) : { packed: deflateRawSync(next, { level }) };
+    const rawHeaderGroup={ files: [{ data: next }], raw: next, ...encoded },g=encryptHeaders?encryptGroup(rawHeaderGroup,codecHeaderMethod):rawHeaderGroup;
+    next = join([byte(23), packStreams([g], codecHeaderMethod, packedTotal, budget)]); packed.push(g.packed);
   }
   const offset = packed.reduce((n, p) => n + p.length, 0), start = join([u64(BigInt(offset)), u64(BigInt(next.length)), u32(crc32(next, budget))]);
   if (32 + offset + next.length > LIMITS.container) fail('container exceeds bound');
   budget.check(); const archive = join([SIG, Buffer.from([0, 4]), u32(crc32(start, budget)), start, ...packed, next]); budget.check();
   if (archive.length > LIMITS.container) fail('container exceeds bound'); return archive;
+  }finally{aesContext?.close();}
 }

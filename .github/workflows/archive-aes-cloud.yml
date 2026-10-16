@@ -1,0 +1,127 @@
+name: Experimental Archive AES and timestamps
+
+# Historical overlay mode: run only from a preserved pre-installation ref.
+# Installed committed-source checks use archive-installed-cloud.yml.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: archive-aes-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  archive-aes-experiment:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable checkout of long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+
+      - name: Check out baseline and inert experimental sources
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Select pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+
+      - name: Select owned evidence directory
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-ci-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          'REA_ARCHIVE_EVIDENCE=' + $evidence | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          'ARCHIVE_AES_OBSERVATIONS=' + (Join-Path $evidence 'observations') | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Compose authenticated experimental overlay in hosted checkout
+        id: compose
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-archive-aes-cloud.mjs --phase compose --evidence "$env:REA_ARCHIVE_EVIDENCE"
+
+      - name: Acquire authenticated test-only original 7-Zip
+        id: bootstrap
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-archive-aes-cloud.mjs --phase bootstrap --evidence "$env:REA_ARCHIVE_EVIDENCE"
+
+      - name: Run thirteen experimental Archive test files with durable evidence
+        id: verification
+        shell: pwsh
+        run: |
+          $output = Join-Path $env:REA_ARCHIVE_EVIDENCE 'verification'
+          $acquisition = Join-Path $env:REA_ARCHIVE_EVIDENCE 'original-acquisition.json'
+          $composition = Join-Path $env:REA_ARCHIVE_EVIDENCE 'composition.json'
+          node products/rea-studio/scripts/verify-cloud.mjs --scope archive-aes-experiment --output "$output" --bootstrap-manifest "$acquisition" --overlay-manifest "$composition" --timeout-ms 1200000
+
+      - name: Acquire explicit paired Microsoft archive oracle for future broader tests
+        if: always() && steps.bootstrap.outcome == 'success'
+        id: bsdtar_acquisition
+        shell: pwsh
+        run: node products/rea-studio/scripts/bootstrap-cloud-bsdtar.mjs --evidence "$env:REA_ARCHIVE_EVIDENCE"
+
+      - name: Verify paired original oracle starts and reports the pinned version
+        if: always() && steps.bsdtar_acquisition.outcome == 'success'
+        id: bsdtar_smoke
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-cloud-bsdtar.mjs --evidence "$env:REA_ARCHIVE_EVIDENCE"
+
+      - name: Prepare remaining Automation Sketch and Backup original inputs
+        if: always() && steps.bsdtar_smoke.outcome == 'success'
+        id: development_prerequisites
+        shell: pwsh
+        run: node products/rea-studio/scripts/bootstrap-cloud-development.mjs --evidence "$env:REA_ARCHIVE_EVIDENCE"
+
+      - name: Check composed sources after execution and prerequisite preparation
+        if: always() && steps.compose.outcome == 'success'
+        id: postrun
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-archive-aes-cloud.mjs --phase verify-after --evidence "$env:REA_ARCHIVE_EVIDENCE"
+
+      - name: Package bounded portable experimental evidence
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-ci-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          @{ schema = 'rea-archive-aes-workflow-attempt/v1'; sourceCommit = $env:GITHUB_SHA; runId = $env:GITHUB_RUN_ID; runAttempt = $env:GITHUB_RUN_ATTEMPT; runnerEnvironment = $env:RUNNER_ENVIRONMENT; checkoutOutcome = '${{ steps.checkout.outcome }}'; composeOutcome = '${{ steps.compose.outcome }}'; acquisitionOutcome = '${{ steps.bootstrap.outcome }}'; verificationOutcome = '${{ steps.verification.outcome }}'; sourceCheckOutcome = '${{ steps.postrun.outcome }}'; pairedOracleAcquisitionOutcome = '${{ steps.bsdtar_acquisition.outcome }}'; pairedOracleSmokeOutcome = '${{ steps.bsdtar_smoke.outcome }}'; experimentalOverlay = $true; productionInstalled = $false; fullArchiveAcceptance = $false; fullParity = $false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $archive = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($evidence, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false)
+          $archiveBytes = (Get-Item -LiteralPath $archive).Length
+          if ($archiveBytes -gt 15 * 1024 * 1024) {
+            $fallback = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback | Out-Null
+            foreach ($relative in @('workflow-attempt.json', 'composition.json', 'original-acquisition.json', 'postrun-source-check.json', 'verification/attempt-validation.json', 'bsdtar-original-acquisition.json', 'bsdtar-original-smoke.json')) {
+              $candidate = Join-Path $evidence $relative
+              if ((Test-Path -LiteralPath $candidate -PathType Leaf) -and (Get-Item -LiteralPath $candidate).Length -le 1024 * 1024) {
+                Copy-Item -LiteralPath $candidate -Destination (Join-Path $fallback $relative.Replace('/', '-'))
+              }
+            }
+            @{ schema = 'rea-cloud-evidence-storage-failure/v1'; status = 'failed'; fullArchiveBytes = $archiveBytes; limitBytes = 15 * 1024 * 1024; fullEvidenceUploaded = $false; sourceSnapshotsUploaded = $false; rawLogsUploaded = $false; reason = 'The complete experimental evidence exceeded the bounded artifact budget. This diagnostic fallback is incomplete.' } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive = Join-Path $env:RUNNER_TEMP ('rea-archive-aes-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
+            [System.IO.Compression.ZipFile]::CreateFromDirectory($fallback, $archive, [System.IO.Compression.CompressionLevel]::Optimal, $false)
+            'artifact_path=' + $archive | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            throw 'Full experimental evidence exceeded 15 MiB. Only incomplete diagnostic records will be uploaded.'
+          }
+          'artifact_path=' + $archive | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Preserve experimental success or failure evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: archive-aes-experimental-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

@@ -1,0 +1,110 @@
+// File an already verified portable hosted-browser backup. No product execution.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+const work = import.meta.dirname, lab = path.resolve(work, '../outputs/rea-research-lab');
+const runRoot = path.join(work, 'cloud-verification-backups/run-38814582306');
+const backup = path.join(runRoot, 'artifact-12009787908'), source = path.join(backup, 'readable-evidence');
+const prefix = 'products/rea-studio/results/cloud-flow-vault-browser-pass-20261015', target = path.join(lab, prefix);
+const artifactSHA256 = 'd5e9e98f0924d74946167f603609bcc54baa01f8860dec449e2b2125d781900d';
+const commit = 'f138ee5aac5a45a49e52cc91400e3b005da70690';
+const head = 'dc0fce2b6c7a0701180c132029794f7a76c2303a';
+const sha = b => createHash('sha256').update(b).digest('hex');
+const identity = b => ({ bytes: b.length, sha256: sha(b) });
+function safe(name) {
+  assert(typeof name === 'string' && name && !/[\\:\x00-\x1f\x7f]/.test(name) && !name.startsWith('/') && name.split('/').every(p => p && p !== '.' && p !== '..'));
+  return name;
+}
+function read(base, name, limit = 4 * 1024 * 1024) {
+  safe(name); let filename = base;
+  for (const part of name.split('/')) { filename = path.join(filename, part); assert(!fs.lstatSync(filename).isSymbolicLink()); }
+  const stat = fs.lstatSync(filename); assert(stat.isFile() && stat.size <= limit);
+  const bytes = fs.readFileSync(filename); assert.equal(bytes.length, stat.size); return bytes;
+}
+const localBytes = read(backup, 'local-browser-backup-verification.json'), local = JSON.parse(localBytes);
+assert.equal(local.schema, 'rea-local-browser-cloud-backup/v1');
+assert.equal(local.artifactSHA256, artifactSHA256); assert.equal(local.archiveBytes, 2047951);
+for (const key of ['allCRCAndBytesReadable', 'sourceCaptureClaimedComplete', 'passedRecordedBrowserGatesConsistent']) assert.equal(local[key], true);
+assert.equal(local.sourceSnapshotFilesVerified, 326); assert.deepEqual(local.missingUncompletedSourceSnapshots, []);
+const artifact = fs.readFileSync(backup + '.zip'); assert.equal(artifact.length, local.archiveBytes); assert.equal(sha(artifact), artifactSHA256);
+const inventory = new Map();
+for (const row of local.files) { safe(row.path); assert(!inventory.has(row.path)); inventory.set(row.path, row); }
+function evidence(name) {
+  const bytes = read(source, name), row = inventory.get(name); assert(row);
+  assert.deepEqual(identity(bytes), { bytes: row.bytes, sha256: row.sha256 }); return bytes;
+}
+const attempt = JSON.parse(evidence('browser-attempt.json'));
+assert.equal(attempt.schema, 'rea-cloud-browser-attempt/v1'); assert.equal(attempt.status, 'passed');
+assert.equal(attempt.sourceCommit, commit); assert.equal(attempt.sourceFiles, 326); assert.equal(attempt.sourceStable, true);
+assert.equal(attempt.execution.GITHUB_SHA, commit); assert.equal(attempt.execution.GITHUB_RUN_ID, '38814582306'); assert.equal(attempt.execution.GITHUB_RUN_ATTEMPT, '1');
+assert.equal(attempt.execution.RUNNER_ENVIRONMENT, 'github-hosted'); assert.equal(attempt.execution.RUNNER_OS, 'Windows');
+assert.deepEqual(attempt.summary, { tests: 12, passed: 12, failed: 0, skipped: 0, flaky: 0, retries: 0, exactRealDownloads: 3 });
+assert.equal(attempt.applicationSourcesChanged, false); assert.equal(attempt.testsByteOverlay, false); assert.equal(attempt.originalProductExecutions, 0);
+assert.deepEqual(evidence('browser-source-before.json'), evidence('browser-source-after.json'));
+const workflow = JSON.parse(evidence('browser-workflow-attempt.json'));
+assert.equal(workflow.runId, '38814582306'); assert.equal(workflow.runAttempt, '1'); assert.equal(workflow.sourceCommit, commit);
+for (const key of ['checkoutOutcome', 'acquisitionOutcome', 'browserOutcome', 'statusBeforePackaging']) assert.equal(workflow[key], 'success');
+const caseNames = [...inventory.keys()].filter(name => /^case-[a-f0-9-]+\.json$/.test(name)); assert.equal(caseNames.length, 12);
+const cases = caseNames.map(name => ({ artifactPath: name, ...JSON.parse(evidence(name)) }));
+for (const row of cases) {
+  assert.equal(row.statusAtFixtureClose, 'passed'); assert.equal(row.retry, 0); assert.equal(row.serverCloseObserved, true);
+  assert.equal(row.realBrowser, true); assert.equal(row.actualHTTP, true); assert.equal(row.originalProductExecutions, 0); assert.deepEqual(row.errors, []);
+}
+const holds = cases.flatMap(row => row.faults.map(fault => ({ title: row.title, artifactPath: row.artifactPath, ...fault })));
+assert.equal(holds.length, 6); for (const row of holds) { assert.equal(row.kind, 'delay-after-actual-host-response'); assert.equal(row.handlerMocked, false); assert.equal(row.status, 200); }
+const probes = cases.flatMap(row => row.observations.filter(o => o.kind === 'adversarial-programmatic-disabled-control-bypass').map(observation => ({ title: row.title, artifactPath: row.artifactPath, ...observation })));
+assert.equal(probes.length, 2); for (const row of probes) { assert.equal(row.ordinaryUserTyping, false); assert.equal(row.actualBrowserDOM, true); }
+const downloads = cases.flatMap(row => row.observations.filter(o => o.kind === 'real-browser-file-download').map(observation => ({ title: row.title, ...observation })));
+assert.equal(downloads.length, 3); for (const row of downloads) { assert.deepEqual(row.observed, row.expected); assert.deepEqual(identity(evidence(row.path)), row.observed); }
+assert.equal(attempt.screenshots.length, 12);
+for (const row of attempt.screenshots) { assert.equal(row.width, 1440); assert.equal(row.height, 1100); assert.deepEqual(identity(evidence(row.path)), { bytes: row.bytes, sha256: row.sha256 }); }
+const omitted = [...inventory.values()].filter(row => row.path.startsWith('source/')).map(row => ({ sourcePath: row.path, bytes: row.bytes, sha256: row.sha256 })); assert.equal(omitted.length, 326);
+const retained = [...inventory.keys()].filter(name => !name.startsWith('source/')); assert.equal(retained.length, 42);
+const control = Object.fromEntries(['run', 'jobs', 'artifacts'].map(name => [name, read(runRoot, 'control-plane-evidence/' + name + '.json')]));
+const run = JSON.parse(control.run); assert.equal(run.id, 38814582306); assert.equal(run.run_attempt, 1); assert.equal(run.head_sha, head); assert.equal(run.conclusion, 'success');
+const jobs = JSON.parse(control.jobs).jobs; assert.equal(jobs.length, 1); assert.equal(jobs[0].id, 116695925609); assert.equal(jobs[0].conclusion, 'success');
+assert.equal(jobs[0].runner_group_name, 'GitHub Actions'); assert.deepEqual(jobs[0].labels, ['windows-2022']);
+const artifacts = JSON.parse(control.artifacts).artifacts; assert.equal(artifacts.length, 1); assert.equal(artifacts[0].id, 12009787908); assert.equal(artifacts[0].size_in_bytes, 2047951);
+const jobLog = read(path.join(work, 'cloud-verification-backups/job-116695925609'), 'logs.txt'); assert.equal(jobLog.length, 39897);
+const expectedAuxiliaryErrors = cases.reduce((sum, row) => sum + row.expectedAuxiliaryResourceErrors.length, 0); assert.equal(expectedAuxiliaryErrors, 12);
+assert(!fs.existsSync(target)); fs.mkdirSync(target); fs.mkdirSync(path.join(target, 'payload'));
+const records = [], objects = new Set(); let copied = 0;
+function save(sourcePath, bytes, png = false) {
+  safe(sourcePath); assert(!records.some(row => row.sourcePath === sourcePath));
+  assert(!/\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(png ? '' : bytes.toString('utf8')));
+  copied += bytes.length; assert(copied <= 16 * 1024 * 1024);
+  const row = identity(bytes), name = 'payload/' + row.sha256 + (png ? '.png' : '.snapshot');
+  if (!objects.has(name)) { fs.writeFileSync(path.join(target, name), bytes, { flag: 'wx' }); objects.add(name); }
+  assert.deepEqual(read(target, name), bytes); records.push({ sourcePath, path: name, ...row });
+}
+for (const name of retained) save(name, evidence(name), name.startsWith('screenshots/') && name.endsWith('.png'));
+save('local-browser-backup-verification.json', localBytes); save('wrapper-job-116695925609.log', jobLog);
+for (const [name, bytes] of Object.entries(control)) save('control-plane/' + name + '.json', bytes);
+save('local-collection-summary.json', read(runRoot, 'collection-summary.json'));
+save('backup-reader.py', read(work, 'unpack-browser-cloud-attempt.py'));
+save('preservation-collector.mjs', fs.readFileSync(import.meta.filename));
+const manifest = {
+  schema: 'rea-cloud-flow-vault-browser-pass-preservation/v1', at: new Date().toISOString(), status: 'passed-finite-current-flow-vault-browser-contracts',
+  runId: 38814582306, runAttempt: 1, jobId: 116695925609, runURL: 'https://github.com/Ginderlax/rea-research-lab/actions/runs/38814582306',
+  sourceCommit: commit, pullRequestHead: head, testedReference: 'refs/pull/1/merge', runnerGroup: 'GitHub Actions', runnerLabels: ['windows-2022'],
+  artifactId: 12009787908, artifactBytes: local.archiveBytes, artifactSHA256, summary: attempt.summary,
+  sourceFiles: 326, sourceStable: true, activeSourceSnapshotsInVerifiedLocalBackup: 326, applicationSourcesChanged: false, testsByteOverlay: false,
+  functionalBrowserGroups: 12, realResponseTimingHolds: 6, programmaticDisabledControlProbes: 2, probesAreOrdinaryUserTyping: false,
+  timingHolds: holds, programmaticProbes: probes, realDownloads: downloads, screenshots: attempt.screenshots,
+  screenshotEvidencePaths: attempt.screenshots.map(row => ({ sourcePath: row.path, objectPath: records.find(record => record.sourcePath === row.path).path, ...identity(evidence(row.path)) })),
+  browser: { ...attempt.browserImage, observedVersion: '156.0.8078.4', playwright: '1.64.1', independentPublisherBinaryDigestClaimed: false },
+  ownedServerCloseObservations: 12, syntheticCandidateGeneratedKDBXFixtures: true, expectedAuxiliaryFavicon404Observations: expectedAuxiliaryErrors, unexpectedBrowserErrors: 0,
+  completeReadableLocalBackupVerified: true, localBackupFiles: inventory.size, retainedArtifactFiles: retained.length, publicSourceSnapshotPayloads: 0,
+  omittedSourceSnapshotPayloads: omitted,
+  omissionScope: 'Only the 326 source/ active snapshot payloads are omitted publicly. They remain in the complete verified readable local backup. Every other artifact file, all twelve screenshot roles, three raw downloads, source identities, wrapper job log, raw control-plane metadata, backup reader and preservation collector are retained; identical bytes share an object.',
+  records, uniqueInertObjects: objects.size, allCopiesExact: true, allPayloadsInert: true,
+  completedBrowserReceipt: true, originalProductExecutions: 0, archiveOverlayApplied: false, archiveBrowserAcceptance: false,
+  fullDevelopmentSuiteAcceptance: false, fullProductAcceptance: false, browserMatrixAcceptance: false, historicalReceiptsRebound: false, fullParity: false, superiority: false,
+  localProductExecutions: 0, localBrowserExecutions: 0, localTests: 0, localBuilds: 0,
+  acceptanceScope: 'Twelve finite current Flow/Vault Chromium cases passed on the recorded unmodified merge-source epoch. Six real host response timing holds and two explicit programmatic disabled-control probes are separate observations within those cases, not extra functional cases or ordinary user typing. No original product, Archive, full-suite, browser matrix or whole-product acceptance follows.'
+};
+const bytes = Buffer.from(JSON.stringify(manifest, null, 2) + '\n'); fs.writeFileSync(path.join(target, 'preservation-manifest.json'), bytes, { flag: 'wx' });
+const result = { prefix, records: records.length, objects: objects.size, screenshotRoles: 12, uniquePNGObjects: [...objects].filter(name => name.endsWith('.png')).length, rawDownloads: 3, omittedSnapshots: 326, manifestSHA256: sha(bytes), summary: attempt.summary, sourceCommit: commit, localProductExecutions: 0 };
+fs.writeFileSync(path.join(work, 'cloud-recovery-20261015/flow-vault-browser-pass-preservation.json'), JSON.stringify(result, null, 2) + '\n', { flag: 'wx' });
+console.log(JSON.stringify(result));

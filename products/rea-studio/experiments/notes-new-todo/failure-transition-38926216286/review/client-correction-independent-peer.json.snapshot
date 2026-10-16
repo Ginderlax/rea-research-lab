@@ -1,0 +1,56 @@
+{
+  "schema": "rea-independent-Notes-NewTodo-save-organization-client-source-review/v1",
+  "status": "approved-exact-four-literal-source-proposal-only",
+  "reviewer": "/root/notes_review_1245",
+  "authority": {
+    "path": "work/notes-new-todo-save-organization-ownership-next/change-authority.json",
+    "bytes": 3828,
+    "sha256": "5e0736512f5bad634dfddb013e5c3db4edaef140566588feb19023d4d853db12"
+  },
+  "before": {
+    "bytes": 29503,
+    "sha256": "fc4f803445d216019417c752b5e86f4af4b6556350cdd95f2dd6e9934d3558a5"
+  },
+  "after": {
+    "bytes": 29531,
+    "sha256": "d6f301dcc803c4bfd12a1c03eb71896710d1b42053fa10ee13d25e76d6930daa"
+  },
+  "completeSourceRead": true,
+  "exactDeclaredReplacementAudit": {
+    "fourDistinctBeforeLiteralsOnceEach": true,
+    "noOtherByteChanges": true,
+    "old17TestSourcesUnchanged": true
+  },
+  "actualFailureBasis": {
+    "runId": "38926216286",
+    "head": "b635c33d971768682360e2c518b9b2bb0840985b",
+    "oldFiniteFailures": [
+      57,
+      59,
+      62
+    ],
+    "message": "Expected visible notebook confirmation",
+    "rawLog": "work/cloud-verification-backups/job-117058306722/logs.txt"
+  },
+  "reviewCoverage": [
+    "Read complete29,531-byte proposed client,3,828-byte authority and exact four declared replacements against preserved29,503-byte R4 source.",
+    "Read complete notebook-trash-publication-boundaries tests and the three relevant old regression bodies, their unchanged synthetic UI fixture, and adjacent save/organization/refresh ownership code.",
+    "Independently checked exact29,503\u219229,531 byte transformation and all17 historical test identities from the frozen cloud bundle. No candidate import or execution."
+  ],
+  "findings": [],
+  "reasoning": [
+    "The new global saveBusy guard blocked general run admission, including notebook-trash confirmation while an old Save/list await remained held. The three old cases deliberately require a newer notebook operation during that pending Save. Removing only saveBusy from the general gate restores that existing admission policy.",
+    "Duplicate Save remains excluded at saveNote entry and through native disabled Save. To-do mutations now check saveBusy locally, preserving their explicit boundary while ordinary navigation and notebook confirmation remain available.",
+    "Save cleanup clears only saveBusy and keeps Save disabled when organizationBusy or the current note is deleted. Organization cleanup clears only organizationBusy and preserves Save disabling while saveBusy or deletion still owns it. Existing accept() also retains saveBusy/deletion disabling.",
+    "All mounted/editor-generation/draft-revision/four-field ownership, late Save/list publication guards, new draft choice/discard rules, genuine400 handling and request revision checks remain byte-identical.",
+    "The before/after code is a proposed experimental after-image. Current installed32 Notes sources, all17 old tests, failed historical receipt and111/8 counts are not changed by this review."
+  ],
+  "approvalBoundary": "Exact four literal changes only for a fresh inert experimental epoch. This review does not claim the prior three regressions are fixed in execution, full111/8 acceptance, installation or superiority. Fresh hosted111/8 and portable raw readback remain required.",
+  "localProductExecutions": 0,
+  "localTests": 0,
+  "localBuilds": 0,
+  "localSyntaxChecks": 0,
+  "localCandidateImports": 0,
+  "activeWrites": 0,
+  "gitMutations": 0
+}

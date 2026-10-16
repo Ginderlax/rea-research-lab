@@ -12,12 +12,25 @@ const fingerprint=entries=>hash(Buffer.from(JSON.stringify(entries)));
 const join=(root,relative)=>root ? root+(relative?'/'+relative:''):relative;
 const expectedAt=(item,target)=>Object.fromEntries(['path','type','size','modifiedMs','etag','strongETag'].map(key=>[key,key==='path'?target:item[key]]));
 export function createDAVTransfer(workspace,{clock=Date.now}={}) {
-  const root=path.resolve(workspace), plans=new Map(); let cacheBytes=0,busy=false,closed=false,activeClient=null;
+  const configuredRoot=path.resolve(workspace), plans=new Map(); let root=null,cacheBytes=0,busy=false,closed=false,activeClient=null;
   const expire=()=>{ for(const [token,plan] of plans) if(clock()-plan.created>=transferLimits.expiresMilliseconds) {plans.delete(token);cacheBytes-=plan.byteLength;} };
   function budget() {const started=clock();let entries=0,bytes=0;return {check(count=0,size=0){entries+=count;bytes+=size;if(closed || entries>transferLimits.entries || bytes>transferLimits.totalBytes || clock()-started>transferLimits.operationMilliseconds) throw Error('WebDAV transfer scope is closed or exceeds its bounded inventory, byte or work budget.');}};}
+  // Caller roots may use a native DOS short name. First refuse Node-reported
+  // symlinks/junctions, then use the native canonical spelling for all DAV I/O.
+  // Descendant alias checks below remain exact and unchanged.
+  async function canonicalWorkspaceRoot() {
+    const volume=path.parse(configuredRoot).root;let current=volume;
+    for(const part of ['',...path.relative(volume,configuredRoot).split(path.sep).filter(Boolean)]) {
+      if(part)current=path.join(current,part);const stat=await fs.lstat(current);
+      if(stat.isSymbolicLink() || !stat.isDirectory())throw Error('Workspace root aliases through links or non-directories are unsupported.');
+    }
+    const canonical=await fs.realpath(configuredRoot);
+    if(root!==null && canonical!==root)throw Error('Workspace canonical root changed.');
+    root=canonical;return root;
+  }
   async function localRoot(relative) {
     remotePath(relative,false); if(relative.split('/').some(part=>part.toLowerCase().startsWith('.rea-sync'))) throw Error('Internal recovery directories cannot be transfer sources.');
-    const base=await fs.realpath(root);if(base!==root)throw Error('Workspace aliases are unsupported.');let target=root;
+    let target=await canonicalWorkspaceRoot();
     for(const part of relative.split('/')) {target=path.join(target,part);const st=await fs.lstat(target);if(st.isSymbolicLink() || !st.isDirectory() || await fs.realpath(target)!==target)throw Error('Source directory aliases are unsupported.');} return target;
   }
   async function localBytes(base,relative,guard=null) {

@@ -1,0 +1,310 @@
+{
+  "schema": "rea-flow-link-failure-ledger/v1",
+  "runs": [
+    {
+      "name": "final-focus",
+      "receipt": "runs/final-focus/run.json",
+      "receiptFingerprint": {
+        "bytes": 10456,
+        "sha256": "09df9f398ff0d95ced111a7abf1e2ec84ef910248dbc1cfc6c5fc0595812e121"
+      },
+      "counts": {
+        "tests": 57,
+        "pass": 57,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "sourceFiles": 27,
+      "classification": "Passing finite campaign; exact scope/test selection retained in its source-bound run record."
+    },
+    {
+      "name": "http-v1",
+      "receipt": "runs/http-v1/run.json",
+      "receiptFingerprint": {
+        "bytes": 9595,
+        "sha256": "40fc03d38bccf3685b72d969df413874ad8983ce60cad1c1c6bd1fe7b93f4581"
+      },
+      "counts": {
+        "tests": 3,
+        "pass": 0,
+        "fail": 3,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "sourceFiles": 25,
+      "classification": "Owned HTTP collector incorrectly assumed unwrapped result; shared host returns {result}. Three assertions failed before meaningful semantics, all three hosts closed and temps removed. Corrected collector envelope only."
+    },
+    {
+      "name": "http-v2-envelope-fixed",
+      "receipt": "runs/http-v2-envelope-fixed/run.json",
+      "receiptFingerprint": {
+        "bytes": 9609,
+        "sha256": "97c6f544b81f36ceb21efe4652ca7343f8e00d2c3c30d4b4727612c6cda0778c"
+      },
+      "counts": {
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "sourceFiles": 25,
+      "classification": "Passing finite campaign; exact scope/test selection retained in its source-bound run record."
+    },
+    {
+      "name": "link-core-v1-exact-replay",
+      "receipt": "runs/link-core-v1-exact-replay/run.json",
+      "receiptFingerprint": {
+        "bytes": 7769,
+        "sha256": "cc606ca5140df7225cc6535f08202677c5238067d81c0dd3a45e300e53ab8266"
+      },
+      "counts": {
+        "tests": 8,
+        "pass": 7,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "sourceFiles": 20,
+      "classification": "Owned negative fixture targeted a non-LinkIn configured target, so earlier correct role refusal differed from expected unsupported-node wording. Changed fixture only to unsupported node after valid Link In; runtime unchanged."
+    },
+    {
+      "name": "link-core-v2",
+      "receipt": "runs/link-core-v2/run.json",
+      "receiptFingerprint": {
+        "bytes": 7799,
+        "sha256": "6c0e85563c022a899afc9620e76756f714e4e37a9cb7e03567d32ce17c99f913"
+      },
+      "counts": {
+        "tests": 41,
+        "pass": 41,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "sourceFiles": 20,
+      "classification": "Passing finite campaign; exact scope/test selection retained in its source-bound run record."
+    },
+    {
+      "name": "original-v1",
+      "receipt": "runs/original-v1/run.json",
+      "receiptFingerprint": {
+        "bytes": 8131,
+        "sha256": "bd521289caccc29739d89031d1429d35172715e7536f0647af2b6b14676347c0"
+      },
+      "counts": {
+        "tests": 3,
+        "pass": 2,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "sourceFiles": 21,
+      "classification": "Original-host/tooling failure: Node24 native InternalCallbackScope assertion. Compiler/handler groups completed; exact full-runtime case count unavailable, never inferred."
+    },
+    {
+      "name": "original-v2",
+      "receipt": "runs/original-v2/run.json",
+      "receiptFingerprint": {
+        "bytes": 8507,
+        "sha256": "510c3fb4394d123159cd21dceb809b63f76955bddd7e531237db73eca98e4801"
+      },
+      "counts": {
+        "tests": 3,
+        "pass": 2,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "sourceFiles": 22,
+      "classification": "Owned child adapter syntax failure: extraction removed a required final brace. No original full-runtime execution in worker."
+    },
+    {
+      "name": "original-v3",
+      "receipt": "runs/original-v3/run.json",
+      "receiptFingerprint": {
+        "bytes": 8507,
+        "sha256": "244c5434c6df9206a60ff3c4d033fc67ac0b44e8af86aa478de261c2f3e36bbf"
+      },
+      "counts": {
+        "tests": 3,
+        "pass": 2,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "sourceFiles": 22,
+      "classification": "Owned fixture public-init settings disabled httpAdminRoot, leaving released helper comms settings uninitialized. Original startup failed; no candidate mismatch."
+    },
+    {
+      "name": "original-v4",
+      "receipt": "runs/original-v4/run.json",
+      "receiptFingerprint": {
+        "bytes": 8507,
+        "sha256": "249ffb9023e3d743ab1436c68d3d45573ab15c57aa3844027b1015e89ca6dbe6"
+      },
+      "counts": {
+        "tests": 3,
+        "pass": 2,
+        "fail": 1,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "sourceFiles": 22,
+      "classification": "Owned fixture disabled editor initialization, also leaving helper comms uninitialized. Original startup failed; no candidate mismatch."
+    },
+    {
+      "name": "original-v5",
+      "receipt": "runs/original-v5/run.json",
+      "receiptFingerprint": {
+        "bytes": 8506,
+        "sha256": "9981ab8d60a55a7339912b2b73f2abee422341696b51c122e46dd3ff3fc8b9c2"
+      },
+      "counts": {
+        "tests": 3,
+        "pass": 3,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "sourceFiles": 22,
+      "classification": "Passing finite campaign; exact scope/test selection retained in its source-bound run record."
+    },
+    {
+      "name": "ui-v1",
+      "receipt": "runs/ui-v1/run.json",
+      "receiptFingerprint": {
+        "bytes": 9224,
+        "sha256": "b8abecac600f88c38ad12d8cd8a01fe9c2240b870cfd365e43247f496368a100"
+      },
+      "counts": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "sourceFiles": 24,
+      "classification": "Passing finite campaign; exact scope/test selection retained in its source-bound run record."
+    },
+    {
+      "name": "ui-v2-pointer-negative",
+      "receipt": "runs/ui-v2-pointer-negative/run.json",
+      "receiptFingerprint": {
+        "bytes": 9243,
+        "sha256": "7a5b7a5215f2ce047c792936903a850d91f7289ecf09d1dcf73d42f99f848486"
+      },
+      "counts": {
+        "tests": 10,
+        "pass": 8,
+        "fail": 2,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 1,
+        "signal": null
+      },
+      "sourceFiles": 24,
+      "classification": "Two confirmed native-interface gaps: already-started SVG pointer completion changed JSON while link operation busy; detached completion attempted parsing scrubbed empty JSON. Candidate pointer guards corrected; ten bodies unchanged in passing replay."
+    },
+    {
+      "name": "ui-v3-pointer-fixed",
+      "receipt": "runs/ui-v3-pointer-fixed/run.json",
+      "receiptFingerprint": {
+        "bytes": 9239,
+        "sha256": "bb979ed49b724aa8b1b51f1bebe4e2564c5985d80790c89e0fa66023a235cf1f"
+      },
+      "counts": {
+        "tests": 10,
+        "pass": 10,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exit": {
+        "code": 0,
+        "signal": null
+      },
+      "sourceFiles": 24,
+      "classification": "Passing finite campaign; exact scope/test selection retained in its source-bound run record."
+    }
+  ],
+  "preparation": [
+    {
+      "path": "preserved-original-v1/transformation.json",
+      "scope": "Exact initial child-generator record, including the worker version with syntax error. Current accepted worker is separately fingerprinted by final run."
+    },
+    {
+      "path": "preparation-failures/provenance-v1/prepare-provenance.mjs.snapshot",
+      "scope": "Own read-only temp-parent audit asserted Windows forward-slash string against backslash normalized parent. Changed to path.resolve before parent comparison; retained exact failed collector source. Ten verification-source copies already existed and were subsequently byte-verified, never overwritten."
+    },
+    {
+      "scope": "First attempted runtime read omitted candidate prefix; failed read only. Initial-authority-check.json preserves diagnostic."
+    },
+    {
+      "scope": "Recursive removal of original fatal-attempt owned empty temp directory was rejected by automatic approval review: blocked by policy. No removal occurred; three empty directories remain explicitly pending in provenance."
+    }
+  ],
+  "originalCrashNotCandidateMismatch": true,
+  "thresholdAdjustments": [],
+  "benchmarks": 0
+}

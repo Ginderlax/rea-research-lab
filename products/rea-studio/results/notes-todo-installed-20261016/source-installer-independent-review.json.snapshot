@@ -1,0 +1,114 @@
+{
+  "schema": "rea-independent-source-copy-installer-review/v1",
+  "reviewer": "/root/archive_review_1245",
+  "reviewDateUtc": "2026-10-16",
+  "decision": "No remaining source blocker found for this exact reversible source-copy installer R2.",
+  "installer": {
+    "path": "work/install-reviewed-notes-sources-20261016.mjs",
+    "bytes": 12102,
+    "sha256": "887ff79dca428339fc1c5a35ced2deeea7ce59847eed7f7457baa5da856d14cc",
+    "completeSourceRead": true,
+    "executedByReviewer": false
+  },
+  "sourceAuthority": {
+    "path": "work/notes-installed-tooling-phase3-r4-next/change-authority.json",
+    "bytes": 13003,
+    "sha256": "a223a3e3498a83e5fd6b3f5619e6c66c6cc337b6de770849a3e62a5155fc47e4",
+    "candidateFiles": 34,
+    "candidateBytes": 1410942
+  },
+  "independentSourcePeersBoundByInstaller": [
+    {
+      "path": "work/notes-installed-phase12-independent-source-review-20261016.json",
+      "bytes": 10465,
+      "sha256": "7017848fac20b51eb951b1249655e72dc3e2296aea6f8d5a50eb7d53f67c42d7"
+    },
+    {
+      "path": "work/notes-installed-phase3-r4-independent-source-review-20261016.json",
+      "bytes": 10328,
+      "sha256": "8b42360db4671e43f87eda449640442120791ee29bb9de0673cdf5a7a396566b"
+    }
+  ],
+  "preconditions": {
+    "exactPreInstallHead": "cc7a5830b1c4e719b1f3ceb5b3aa1abe52c3cae3",
+    "branch": "codex/rea-cloud-recovery-20261015",
+    "mustBeCleanIncludingUntrackedFiles": true,
+    "authored016BaseMustBeAncestor": true,
+    "exactLocalAndOriginTagRequired": "rea-notes-before-install-cc7a583-20261016",
+    "newLocalBackupDirectoryMustBeAbsent": true,
+    "newPublicJournalPrefixMustBeAbsent": true,
+    "all34CandidateAfterPinsCheckedBeforeWrites": true,
+    "all12ReplacementBeforeBytesCheckedAgainstLiveAndExactPreInstallGit": true,
+    "all22NewPathsRequiredAbsent": true,
+    "all12PublicBeforeAliasesMatchActualBeforeBytes": true,
+    "fixed27ExistingNotesSourcesPlusFiveAdditionsProduceExact32Files": true,
+    "symlinkTraversalRejectedByReadHelper": true
+  },
+  "recoverabilityBeforeAnyActiveCopy": {
+    "localBeforeSourceFiles": 12,
+    "localAfterSourceFiles": 34,
+    "all46SourceContentsWrittenWithExclusiveCreationAndByteReadBack": true,
+    "authorityAndBothSourcePeersBackedLocally": true,
+    "headCleanStatusAndAll34ActualBeforeStatesRecheckedAfterBackupAndBeforeCopy": true,
+    "qualification": "These are source guards in the reviewed installer. This review did not run the installer or claim that the future backups already exist."
+  },
+  "copyAndReadback": {
+    "sourceTargets": 34,
+    "applicationTargets": 8,
+    "applicationReplacements": 3,
+    "applicationAdditions": 5,
+    "totalReplacements": 12,
+    "totalAdditions": 22,
+    "eachCopiedFileImmediatelyReadBack": true,
+    "allAfterPinsCheckedAgainAfterCopy": true,
+    "exactCurrent32NotesSetAndContentsCheckedAfterCopy": true,
+    "protectedRecordsCheckedAfterCopy": [
+      "products/rea-studio/requirements/INDEX.json",
+      "products/rea-studio/requirements/workspace-products.json",
+      "products/rea-studio/results/development-validation.json",
+      "products/rea-studio/experiments/notes-todo/bundle.json",
+      "products/rea-studio/results/cloud-notes-todo-first-pass-20261016/preservation-manifest.json",
+      "products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/preservation-manifest.json"
+    ],
+    "exact39ChangedPathsRequired": true,
+    "headMustRemainUnchanged": true,
+    "gitCommitOrPushPerformedByInstaller": false
+  },
+  "publicJournal": {
+    "prefix": "products/rea-studio/results/notes-todo-installed-20261016",
+    "files": 5,
+    "roles": [
+      "source-authority-r4.json.snapshot",
+      "independent-phase12-source-review.json.snapshot",
+      "independent-phase3-r4-source-review.json.snapshot",
+      "source-installer.mjs.snapshot",
+      "installation-receipt.json"
+    ],
+    "exclusiveCreationAndByteReadback": true,
+    "receiptRecordsActualPreInstallHeadTagAndExactCopyRows": true,
+    "freshHostedFinite92Browser8Publication208AndFullSuiteRemainFalse": true,
+    "requirementsAndHistoricalAcceptanceNotRebound": true,
+    "frozenProposalReadmeExplainedSeparately": true,
+    "receiptSelfIdentityNotIncludedRecursively": true
+  },
+  "resolvedR1Blocker": {
+    "preservedPath": "work/notes-installer-source-versions/r1/install-reviewed-notes-sources-20261016.mjs.snapshot",
+    "bytes": 12076,
+    "sha256": "38b9b202928c14e67893ce32e8e7b4d4c13614f9456c08e4b28ca4ae82f2116e",
+    "finding": "The text helper trims leading whitespace. Using it for the final nonempty porcelain status would remove the first tracked modification line's leading status space, and line.slice(3) would then drop the first path character. The final changed-path guard would fail after copying.",
+    "R2ExactCorrection": "Only the final status parse now uses raw git(...).toString('utf8').trimEnd() before splitting and slicing fixed porcelain columns. Initial empty-status checks retain the existing text helper.",
+    "exactOneSiteDiffRead": true,
+    "R1Executed": false,
+    "identityObservation": "The earlier commentary naming 12,102/887ff79d as R1 was a read/hash race while root corrected the file. The preserved R1 and current R2 identities above are distinct and authoritative."
+  },
+  "scope": "Source copying, exact byte readback, metadata-only Git queries, and portable local/public source journals. No product, verifier, build, browser, original application or test execution is invoked. Root must create and verify the exact pre-install tag before execution, then collect separate hosted acceptance on the new committed source.",
+  "reviewerActiveWrites": 0,
+  "reviewerGitMutations": 0,
+  "reviewerCandidateImports": 0,
+  "reviewerProductExecutions": 0,
+  "reviewerTests": 0,
+  "reviewerBuilds": 0,
+  "reviewerSyntaxChecks": 0,
+  "freshAcceptanceClaimed": false,
+  "blockers": []
+}

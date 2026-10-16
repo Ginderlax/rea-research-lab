@@ -1,0 +1,211 @@
+✔ native UI draws compiled virtual edge and suppresses overwritten physical Link Out wires (4.5465ms)
+✔ disconnect removes incoming and outgoing references; connect recreates both while retaining opaque native metadata (2.7973ms)
+✔ missing outgoing links retain physical wires after incoming-only disconnect (1.0616ms)
+✔ invalid Link Out mode is refused without changing native document (1.1069ms)
+✔ held actual link validation disables duplicate actions and guards newer programmatic draft (0.6927ms)
+✔ closing native view suppresses held validation publication and scrubs detached controls (0.597ms)
+✔ held actual saved draft commits once and closing suppresses local publication (0.8966ms)
+✔ draft link edit leaves saved deployment unchanged until Save and Deploy (3.6093ms)
+✖ a pointer drag already started cannot mutate native draft while link action is pending (3.1706ms)
+✖ a detached SVG pointer completion cannot parse or publish a scrubbed native view (1.2115ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 8
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 78.0695
+
+✖ failing tests:
+
+test at work\flow-native-link-next\candidate\products\rea-studio\apps\flow\link-ui.test.mjs:10:1
+✖ a pointer drag already started cannot mutate native draft while link action is pending (3.1706ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+    '{\n' +
+  +   '  "rev": "opaque revision",\n' +
+  +   '  "vendor": {\n' +
+  +   '    "preserved": [\n' +
+  +   '      "yes",\n' +
+  +   '      7\n' +
+  +   '    ]\n' +
+  +   '  },\n' +
+  +   '  "flows": [\n' +
+  +   '    {\n' +
+  +   '      "id": "tab",\n' +
+  +   '      "type": "tab"\n' +
+  +   '    },\n' +
+  +   '    {\n' +
+  +   '      "id": "start",\n' +
+  +   '      "type": "inject",\n' +
+  +   '      "z": "tab",\n' +
+  +   '      "props": [],\n' +
+  +   '      "wires": [\n' +
+  +   '        [\n' +
+  +   '          "out"\n' +
+  +   '        ]\n' +
+  -   '   "rev": "opaque revision",\n' +
+  -   '   "vendor": {\n' +
+  -   '      "preserved": [\n' +
+  -   '         "yes",\n' +
+  -   '         7\n' +
+      '      ]\n' +
+  +   '    },\n' +
+  +   '    {\n' +
+  +   '      "id": "out",\n' +
+  +   '      "type": "link out",\n' +
+  +   '      "z": "tab",\n' +
+  +   '      "links": [],\n' +
+  +   '      "wires": [\n' +
+  +   '        [\n' +
+  +   '          "ignored"\n' +
+  +   '        ]\n' +
+  +   '      ],\n' +
+  +   '      "x": 250,\n' +
+  +   '      "y": 100,\n' +
+  +   '      "custom": "retained"\n' +
+  +   '    },\n' +
+  +   '    {\n' +
+  +   '      "id": "in",\n' +
+  +   '      "type": "link in",\n' +
+  +   '      "z": "tab",\n' +
+  +   '      "links": [\n' +
+  +   '        "out"\n' +
+  +   '      ],\n' +
+  +   '      "wires": [\n' +
+  +   '        [\n' +
+  +   '          "debug"\n' +
+  +   '        ]\n' +
+  +   '      ],\n' +
+  +   '      "x": 400,\n' +
+  +   '      "y": 100\n' +
+  +   '    },\n' +
+  +   '    {\n' +
+  +   '      "id": "debug",\n' +
+  +   '      "type": "debug",\n' +
+  +   '      "z": "tab",\n' +
+  +   '      "complete": "true",\n' +
+  +   '      "active": true,\n' +
+  +   '      "tosidebar": true,\n' +
+  +   '      "wires": [],\n' +
+  +   '      "x": 600,\n' +
+  +   '      "y": 100\n' +
+  +   '    },\n' +
+  +   '    {\n' +
+  +   '      "id": "ignored",\n' +
+  +   '      "type": "debug",\n' +
+  +   '      "z": "tab",\n' +
+  +   '      "complete": "true",\n' +
+  +   '      "active": true,\n' +
+  +   '      "tosidebar": true,\n' +
+  +   '      "wires": [],\n' +
+  +   '      "x": 600,\n' +
+  +   '      "y": 200\n' +
+  +   '    }\n' +
+  +   '  ]\n' +
+  +   '}'
+  -   '   },\n' +
+  -   '   "flows": [\n' +
+  -   '      {\n' +
+  -   '         "id": "tab",\n' +
+  -   '         "type": "tab"\n' +
+  -   '      },\n' +
+  -   '      {\n' +
+  -   '         "id": "start",\n' +
+  -   '         "type": "inject",\n' +
+  -   '         "z": "tab",\n' +
+  -   '         "props": [],\n' +
+  -   '         "wires": [\n' +
+  -   '            [\n' +
+  -   '               "out"\n' +
+  -   '            ]\n' +
+  -   '         ]\n' +
+  -   '      },\n' +
+  -   '      {\n' +
+  -   '         "id": "out",\n' +
+  -   '         "type": "link out",\n' +
+  -   '         "z": "tab",\n' +
+  -   '         "links": [],\n' +
+  -   '         "wires": [\n' +
+  -   '            [\n' +
+  -   '               "ignored"\n' +
+  -   '            ]\n' +
+  -   '         ],\n' +
+  -   '         "x": 200,\n' +
+  -   '         "y": 100,\n' +
+  -   '         "custom": "retained"\n' +
+  -   '      },\n' +
+  -   '      {\n' +
+  -   '         "id": "in",\n' +
+  -   '         "type": "link in",\n' +
+  -   '         "z": "tab",\n' +
+  -   '         "links": [\n' +
+  -   '            "out"\n' +
+  -   '         ],\n' +
+  -   '         "wires": [\n' +
+  -   '            [\n' +
+  -   '               "debug"\n' +
+  -   '            ]\n' +
+  -   '         ],\n' +
+  -   '         "x": 400,\n' +
+  -   '         "y": 100\n' +
+  -   '      },\n' +
+  -   '      {\n' +
+  -   '         "id": "debug",\n' +
+  -   '         "type": "debug",\n' +
+  -   '         "z": "tab",\n' +
+  -   '         "complete": "true",\n' +
+  -   '         "active": true,\n' +
+  -   '         "tosidebar": true,\n' +
+  -   '         "wires": [],\n' +
+  -   '         "x": 600,\n' +
+  -   '         "y": 100\n' +
+  -   '      },\n' +
+  -   '      {\n' +
+  -   '         "id": "ignored",\n' +
+  -   '         "type": "debug",\n' +
+  -   '         "z": "tab",\n' +
+  -   '         "complete": "true",\n' +
+  -   '         "active": true,\n' +
+  -   '         "tosidebar": true,\n' +
+  -   '         "wires": [],\n' +
+  -   '         "x": 600,\n' +
+  -   '         "y": 200\n' +
+  -   '      }\n' +
+  -   '   ]\n' +
+  -   '}\n'
+  
+      at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-link-next/candidate/products/rea-studio/apps/flow/link-ui.test.mjs:10:501)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '{\n  "rev": "opaque revision",\n  "vendor": {\n    "preserved": [\n      "yes",\n      7\n    ]\n  },\n  "flows": [\n    {\n      "id": "tab",\n      "type": "tab"\n    },\n    {\n      "id": "start",\n      "type": "inject",\n      "z": "tab",\n      "props": [],\n      "wires": [\n        [\n          "out"\n        ]\n      ]\n    },\n    {\n      "id": "out",\n      "type": "link out",\n      "z": "tab",\n      "links": [],\n      "wires": [\n        [\n          "ignored"\n        ]\n      ],\n      "x": 250,\n      "y": 100,\n      "custom": "retained"\n    },\n    {\n      "id": "in",\n      "type": "link in",\n      "z": "tab",\n      "links": [\n        "out"\n      ],\n      "wires": [\n        [\n          "debug"\n        ]\n      ],\n      "x": 400,\n      "y": 100\n    },\n    {\n      "id": "debug",\n      "type": "debug",\n      "z": "tab",\n      "complete": "true",\n      "active": true,\n      "tosidebar": true,\n      "wires": [],\n      "x": 600,\n      "y": 100\n    },\n    {\n      "id": "ignored",\n      "type": "debug",\n      "z": "tab",\n      "complete": "true",\n      "active": true,\n      "tosidebar": true,\n      "wires": [],\n      "x": 600,\n      "y": 200\n    }\n  ]\n}',
+    expected: '{\n   "rev": "opaque revision",\n   "vendor": {\n      "preserved": [\n         "yes",\n         7\n      ]\n   },\n   "flows": [\n      {\n         "id": "tab",\n         "type": "tab"\n      },\n      {\n         "id": "start",\n         "type": "inject",\n         "z": "tab",\n         "props": [],\n         "wires": [\n            [\n               "out"\n            ]\n         ]\n      },\n      {\n         "id": "out",\n         "type": "link out",\n         "z": "tab",\n         "links": [],\n         "wires": [\n            [\n               "ignored"\n            ]\n         ],\n         "x": 200,\n         "y": 100,\n         "custom": "retained"\n      },\n      {\n         "id": "in",\n         "type": "link in",\n         "z": "tab",\n         "links": [\n            "out"\n         ],\n         "wires": [\n            [\n               "debug"\n            ]\n         ],\n         "x": 400,\n         "y": 100\n      },\n      {\n         "id": "debug",\n         "type": "debug",\n         "z": "tab",\n         "complete": "true",\n         "active": true,\n         "tosidebar": true,\n         "wires": [],\n         "x": 600,\n         "y": 100\n      },\n      {\n         "id": "ignored",\n         "type": "debug",\n         "z": "tab",\n         "complete": "true",\n         "active": true,\n         "tosidebar": true,\n         "wires": [],\n         "x": 600,\n         "y": 200\n      }\n   ]\n}\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at work\flow-native-link-next\candidate\products\rea-studio\apps\flow\link-ui.test.mjs:11:1
+✖ a detached SVG pointer completion cannot parse or publish a scrubbed native view (1.2115ms)
+  AssertionError [ERR_ASSERTION]: Got unwanted rejection.
+  Actual message: "Unexpected end of JSON input"
+      at async TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-link-next/candidate/products/rea-studio/apps/flow/link-ui.test.mjs:11:297)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: SyntaxError: Unexpected end of JSON input
+        at JSON.parse (<anonymous>)
+        at updateNode (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-link-next/candidate/products/rea-studio/apps/flow/client.mjs:49:27)
+        at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-link-next/candidate/products/rea-studio/apps/flow/client.mjs:79:374
+        at Element.fire (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-link-next/candidate/products/rea-studio/apps/flow/link-ui-fixture.mjs:18:264)
+        at TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-link-next/candidate/products/rea-studio/apps/flow/link-ui.test.mjs:11:329)
+        at async Test.run (node:internal/test_runner/test:1313:7)
+        at async Test.processPendingSubtests (node:internal/test_runner/test:897:7),
+    expected: undefined,
+    operator: 'doesNotReject',
+    diff: 'simple'
+  }

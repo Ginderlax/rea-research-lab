@@ -1,0 +1,157 @@
+"""Bounded portable publication-backup verification only; no product execution."""
+import sys, json, zipfile, hashlib, stat
+from pathlib import Path
+
+source = Path(sys.argv[1]).resolve()
+expected = sys.argv[2]
+base = Path(__file__).resolve().parent / 'cloud-verification-backups'
+assert source.is_relative_to(base.resolve()) and source.is_file()
+digest = lambda data: hashlib.sha256(data).hexdigest()
+raw = source.read_bytes()
+assert len(raw) <= 32 * 1024 * 1024 and digest(raw) == expected
+folder = source.parent / source.stem
+folder.mkdir(exist_ok=False)
+
+def unpack(archive, destination, limit_files, limit_bytes, limit_file):
+    destination.mkdir(parents=True, exist_ok=True)
+    rows, seen = [], set()
+    with zipfile.ZipFile(archive) as zipped:
+        assert len(zipped.infolist()) <= limit_files
+        assert sum(entry.file_size for entry in zipped.infolist()) <= limit_bytes
+        for entry in zipped.infolist():
+            name = entry.filename
+            assert name and name.casefold() not in seen
+            seen.add(name.casefold())
+            assert not name.startswith(('/', '\\')) and '\\' not in name and ':' not in name
+            assert all(part not in ('..', '.') for part in Path(name).parts)
+            assert not stat.S_ISLNK(entry.external_attr >> 16)
+            target = (destination / name).resolve()
+            assert target.is_relative_to(destination.resolve())
+            if entry.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            assert entry.file_size <= limit_file
+            data = zipped.read(entry)
+            assert len(data) == entry.file_size
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with target.open('xb') as output:
+                output.write(data)
+            assert target.read_bytes() == data
+            rows.append({'path': name, 'bytes': len(data), 'sha256': digest(data)})
+    return rows
+
+unpack(source, folder / 'downloaded-contents', 100, 32 * 1024 * 1024, 32 * 1024 * 1024)
+archives = list((folder / 'downloaded-contents').rglob('*.zip'))
+assert len(archives) == 1
+evidence = folder / 'readable-evidence'
+files = unpack(archives[0], evidence, 100, 35 * 1024 * 1024, 12 * 1024 * 1024)
+result = {'schema': 'rea-local-publication-attempt-backup/v1', 'artifact': str(source), 'artifactSHA256': expected,
+          'archiveBytes': len(raw), 'readableEvidence': str(evidence), 'files': files,
+          'allCRCAndBytesReadable': True, 'publicationAcceptance': False, 'localProductExecutions': 0,
+          'localTests': 0, 'localBuilds': 0, 'fullDevelopmentSuiteAcceptance': False}
+attempt_file = evidence / 'attempt-validation.json'
+if attempt_file.exists():
+    attempt = json.loads(attempt_file.read_text(encoding='utf-8-sig'))
+    assert attempt['schema'] == 'rea-hosted-publication-validation-attempt/v1'
+    assert attempt['status'] in ('passed', 'failed', 'interrupted', 'running')
+    result['attempt'] = attempt
+    controls_file = evidence / 'controls.json'
+    if controls_file.exists():
+        controls = json.loads(controls_file.read_text(encoding='utf-8-sig'))
+        assert controls['schema'] == 'rea-cloud-publication-controls/v1'
+        assert controls['checks'] == len(controls['rows'])
+        result['controls'] = {'status': controls['status'], 'checks': controls['checks']}
+    if attempt['status'] == 'passed':
+        assert attempt['payloadStable'] and attempt['controls']['status'] == 'passed'
+        assert len(attempt['phases']) == 2 and all(row['exitCode'] == 0 and row['status'] == 'passed' for row in attempt['phases'])
+        for row in attempt['derived']:
+            assert row['path'] in ('PUBLICATION-MANIFEST.json', 'VALIDATION.json')
+            data = (evidence / 'derived' / row['path']).read_bytes()
+            assert len(data) == row['bytes'] and digest(data) == row['sha256']
+        result['publicationAcceptance'] = True
+else:
+    result['evidenceState'] = 'No producer receipt; preserve available workflow/storage diagnostics without acceptance.'
+
+# The single new container is data only. Pin the producer before parsing its two JSON tables.
+import gzip, base64, re, io
+envelope_name = 'notes-reviewed-sources.json.gz.snapshot'
+envelope_file = evidence / envelope_name
+result['notesEnvelopeRequiredForPassed208Attempt'] = True
+if envelope_file.exists():
+    producer = (evidence / 'collector-sources/scripts/verify-cloud-publication.mjs.snapshot').read_bytes()
+    assert len(producer) == 47328 and digest(producer) == 'c67857ad167f4b9d41c1805d7d477c682db10cea77fec24d77dacdc7f64c3696'
+    producer_text = producer.decode('utf-8')
+    def table(name):
+        matches = re.findall(r'const ' + name + r'=(\{.*?\n\});', producer_text, re.S)
+        assert len(matches) == 1
+        return json.loads(matches[0])
+    proof, tooling = table('NOTES_REVIEWED'), table('NOTES_INSTALLED_TOOLING')
+    assert len(proof) == 52 and len(tooling) == 4 and not (set(proof) & set(tooling))
+    expected_sources = dict(proof, **tooling)
+    stored = envelope_file.read_bytes()
+    assert len(stored) <= 4 * 1024 * 1024
+    with gzip.GzipFile(fileobj=io.BytesIO(stored)) as stream:
+        decoded = stream.read(8 * 1024 * 1024 + 1)
+    assert len(decoded) <= 8 * 1024 * 1024
+    envelope = json.loads(decoded.decode('utf-8'))
+    assert set(envelope) == {'schema', 'sourceCommit', 'sourceFiles', 'rawSourceBytes', 'rows'}
+    assert envelope['schema'] == 'rea-closed-Notes-source-proof-envelope/v1'
+    assert re.fullmatch('[0-9a-f]{40}', envelope['sourceCommit'])
+    assert envelope['sourceCommit'] == attempt['sourceCommit'] == attempt['execution']['GITHUB_SHA']
+    assert envelope['sourceFiles'] == 56 and len(envelope['rows']) == 56
+    declared = attempt['notesSourceProofEnvelope']
+    assert declared['path'] == envelope_name and declared['sourceFiles'] == 56
+    assert declared['proofSourceFiles'] == 52 and declared['installedToolingSourceFiles'] == 4
+    assert declared['separateReadBudget'] is True
+    assert declared['stored'] == {'bytes': len(stored), 'sha256': digest(stored)}
+    assert declared['decoded'] == {'bytes': len(decoded), 'sha256': digest(decoded)}
+    recovered_root = folder / 'notes-envelope-readable'
+    recovered_root.mkdir(exist_ok=False)
+    seen, recovered, raw_total, groups = set(), [], 0, {'proof': 0, 'installed-Notes-tooling': 0}
+    for row in envelope['rows']:
+        assert set(row) in ({'path', 'bytes', 'sha256', 'base64'}, {'path', 'bytes', 'sha256', 'base64', 'group'})
+        name = row['path']
+        assert isinstance(name, str) and name and not name.startswith('/')
+        assert not re.search(r'[\\:\x00-\x1f\x7f]', name)
+        assert all(part and part not in ('.', '..') for part in name.split('/'))
+        assert name.casefold() not in seen and name in expected_sources
+        seen.add(name.casefold())
+        assert type(row['bytes']) is int and 0 <= row['bytes'] <= 256 * 1024
+        assert re.fullmatch('[0-9a-f]{64}', row['sha256'])
+        assert [row['bytes'], row['sha256']] == expected_sources[name]
+        assert isinstance(row['base64'], str) and len(row['base64']) <= 4 * ((256 * 1024 + 2) // 3)
+        content = base64.b64decode(row['base64'], validate=True)
+        assert base64.b64encode(content).decode('ascii') == row['base64']
+        assert len(content) == row['bytes'] and digest(content) == row['sha256']
+        raw_total += len(content)
+        assert raw_total <= 8 * 1024 * 1024
+        group = row.get('group', 'proof')
+        assert group == ('installed-Notes-tooling' if name in tooling else 'proof')
+        groups[group] += 1
+        payload = recovered_root / (row['sha256'] + '.snapshot')
+        if not payload.exists():
+            with payload.open('xb') as output:
+                output.write(content)
+        assert payload.read_bytes() == content
+        recovered.append({'sourcePath': name, 'bytes': len(content), 'sha256': digest(content), 'group': group,
+                          'readablePayload': str(payload)})
+    assert len(seen) == 56 and groups == {'proof': 52, 'installed-Notes-tooling': 4}
+    assert raw_total == envelope['rawSourceBytes'] == declared['rawSourceBytes']
+    result['notesEnvelope'] = {'verified': True, 'sourceCommit': envelope['sourceCommit'],
+        'sourceFiles': 56, 'proofSourceFiles': 52, 'installedToolingSourceFiles': 4,
+        'rawSourceBytes': raw_total, 'decodedEnvelope': declared['decoded'], 'storedEnvelope': declared['stored'],
+        'producerSource': {'bytes': len(producer), 'sha256': digest(producer)},
+        'allSafeDistinctPaths': True, 'allCanonicalBase64DecodedIdentitiesMatchFixedPins': True,
+        'allRecoveredPayloadsReadable': True, 'sourcePayloadsExecuted': False, 'rows': recovered}
+    (recovered_root / 'source-manifest.json').write_text(json.dumps(result['notesEnvelope'], indent=2) + '\n', encoding='utf-8')
+else:
+    result['notesEnvelopeState'] = 'Absent; a failed early attempt remains preserved without Notes-envelope acceptance.'
+if attempt_file.exists() and attempt['status'] == 'passed':
+    assert len(files) == 92 and result.get('notesEnvelope', {}).get('verified') is True
+    assert attempt['controls'] == {'status': 'passed', 'checks': 208}
+    assert controls['checks'] == 208 and len(controls['rows']) == 208
+    assert all(row['passed'] is True for row in controls['rows'])
+    assert attempt['generatedManifestValidated'] is True
+
+(folder / 'local-backup-verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+print(json.dumps({key: value for key, value in result.items() if key not in ('files', 'attempt')}))

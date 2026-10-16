@@ -1,0 +1,54 @@
+"""Inspect recorded synthetic failure media only; no browser/product execution."""
+import hashlib,json,re,stat,struct,zlib,zipfile
+from pathlib import Path
+from urllib.parse import urlsplit
+work=Path(__file__).resolve().parent
+backup=work/'cloud-verification-backups/run-38824834990/artifact-12015126323'
+verification=json.loads((backup/'local-browser-backup-verification.json').read_text())
+assert verification['artifactSHA256']=='67cd0ef7e7e6e26430c3609633b104a7e7da3933fc8091c4cf9b6e26c3ac0cfe' and verification['allCRCAndBytesReadable']
+root=backup/'readable-evidence';identities={r['path']:r for r in verification['files']}
+sha=lambda b:hashlib.sha256(b).hexdigest()
+def read(name):
+    target=(root/name).resolve();assert target.is_relative_to(root.resolve()) and target.is_file() and not target.is_symlink()
+    raw=target.read_bytes();row=identities[name];assert len(raw)==row['bytes'] and sha(raw)==row['sha256'];return raw
+def png(raw):
+    assert raw[:8]==bytes.fromhex('89504e470d0a1a0a');position=8;dimension=None;ended=False
+    while position+12<=len(raw):
+        length=int.from_bytes(raw[position:position+4],'big');kind=raw[position+4:position+8];end=position+12+length
+        assert end<=len(raw);payload=raw[position+8:position+8+length]
+        assert zlib.crc32(kind+payload)&0xffffffff==int.from_bytes(raw[position+8+length:end],'big')
+        if kind==b'IHDR':assert position==8 and length==13;dimension=struct.unpack('>II',payload[:8])
+        if kind==b'IEND':assert length==0 and end==len(raw);ended=True
+        position=end
+    assert ended and dimension==(1440,1100)
+images=[]
+for name,row in identities.items():
+    if name.endswith('.png') and not name.startswith('source/'):
+        raw=read(name);png(raw);images.append({'path':name,'bytes':len(raw),'sha256':sha(raw),'width':1440,'height':1100,'allChunkCRCsValid':True})
+pattern=re.compile(rb'\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----')
+traces=[]
+for name,row in identities.items():
+    if name.endswith('/trace.zip') and not name.startswith('source/'):
+        raw=read(name);entries=[];origins=set();count=0;ephemeral=0
+        with zipfile.ZipFile(root/name) as archive:
+            members=archive.infolist();assert len(members)<=500 and sum(r.file_size for r in members)<=16*1024*1024;seen=set()
+            for member in members:
+                relative=member.filename;assert relative and relative not in seen and '\\' not in relative and ':' not in relative and not relative.startswith('/')
+                assert all(p not in ('.','..') for p in Path(relative).parts);assert not stat.S_ISLNK(member.external_attr>>16);seen.add(relative)
+                if member.is_dir():continue
+                assert member.file_size<=2*1024*1024;data=archive.read(member);assert len(data)==member.file_size;assert not pattern.search(data),'External credential/private-key pattern in recorded media'
+                entries.append({'path':relative,'bytes':len(data),'sha256':sha(data)})
+                if relative.endswith('.network'):
+                    for line in data.decode('utf-8').splitlines():
+                        item=json.loads(line);snapshot=item.get('snapshot',{});request=snapshot.get('request')
+                        if request:
+                            url=urlsplit(request['url']);assert url.scheme=='http' and url.hostname in ('127.0.0.1','localhost');origins.add(f'{url.scheme}://{url.netloc}');count+=1
+                            for header in request.get('headers',[]):
+                                assert header['name'].lower() not in ('authorization','proxy-authorization','cookie')
+                                if header['name'].lower()=='x-rea-token':ephemeral+=1
+        traces.append({'path':name,'bytes':len(raw),'sha256':sha(raw),'entries':entries,'allInnerCRCAndBytesReadable':True,'observedNetworkOrigins':sorted(origins),'recordedNetworkRequests':count,'ownedEphemeralLoopbackTokenHeaderOccurrences':ephemeral,'externalNetworkObserved':False,'externalCredentialPatternFound':False})
+assert len(traces)==2 and len(images)==8
+result={'schema':'rea-local-synthetic-browser-failure-media-backup/v1','runId':'38824834990','sourceCommit':'7fc5cb67cc5fec5042fc5e145d658f64aa5a6d64','screenshots':images,'traces':traces,'scope':'Recorded media byte readability and synthetic loopback trace inspection only. Owned ephemeral test token headers may remain inside exact trace ZIPs; no external credential, private key, external network or non-test user data is intentionally included. This does not establish browser acceptance.','localBrowserExecutions':0,'localProductExecutions':0,'localTests':0,'localBuilds':0,'browserAcceptance':False}
+target=backup/'local-failed-media-verification.json'
+with target.open('x',encoding='utf-8') as out:out.write(json.dumps(result,indent=2)+'\n')
+print(json.dumps({'path':str(target),'bytes':target.stat().st_size,'sha256':sha(target.read_bytes()),'nativePNGRoles':len(images),'traceZIPs':len(traces),'traceEntries':sum(len(t['entries']) for t in traces),'localProductExecutions':0,'externalNetworkObserved':False}))

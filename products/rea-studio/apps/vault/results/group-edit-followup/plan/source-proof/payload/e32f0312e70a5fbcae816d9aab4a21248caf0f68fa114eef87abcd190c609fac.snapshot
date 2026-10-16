@@ -1,0 +1,27 @@
+# Finite synthetic source-composed name/notes/create comparison. No original GUI.
+param([Parameter(Mandatory=$true)][string]$Config)
+$ErrorActionPreference='Stop';[Console]::OutputEncoding=New-Object Text.UTF8Encoding -ArgumentList $false
+$cfg=Get-Content -LiteralPath $Config -Raw -Encoding UTF8|ConvertFrom-Json;$oracle=[IO.Path]::GetFullPath($cfg.oracle)
+$sha=[Security.Cryptography.SHA256]::Create();try{$digest=[BitConverter]::ToString($sha.ComputeHash([IO.File]::ReadAllBytes($oracle))).Replace('-','')}finally{$sha.Dispose()}
+if($digest -ne '04D29636C393F0C1FC99FF739295494BE3ADEFDED93271E44591E8E300225A5A'){throw 'Pinned original release mismatch.'}
+[void][Reflection.Assembly]::LoadFrom($oracle);[Console]::Error.WriteLine('REA_GROUP_EDIT_ASSEMBLY_LOADED_2_61_1')
+function Id([string]$value){$hex=$value.Replace('-','');if($hex -notmatch '^[0-9a-f]{32}$'){throw 'Canonical synthetic UUID required.'};$bytes=New-Object byte[] 16;for($i=0;$i -lt 16;$i++){$bytes[$i]=[Convert]::ToByte($hex.Substring($i*2,2),16)};return New-Object KeePassLib.PwUuid -ArgumentList (,$bytes)}
+function IdText($id){$s=[BitConverter]::ToString($id.UuidBytes).Replace('-','').ToLowerInvariant();return $s.Substring(0,8)+'-'+$s.Substring(8,4)+'-'+$s.Substring(12,4)+'-'+$s.Substring(16,4)+'-'+$s.Substring(20)}
+function Utc([string]$v){return [DateTime]::Parse($v,[Globalization.CultureInfo]::InvariantCulture,[Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()}
+function Iso($v){return $v.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ss.fffZ',[Globalization.CultureInfo]::InvariantCulture)}
+$key=New-Object KeePassLib.Keys.CompositeKey;$key.AddUserKey((New-Object KeePassLib.Keys.KcpPassword -ArgumentList ([string]$cfg.password)));$db=New-Object KeePassLib.PwDatabase;$db.Open([KeePassLib.Serialization.IOConnectionInfo]::FromPath([string]$cfg.database),$key,$null)
+$calls=[ordered]@{assemblyLoads=1;openDatabase=1;newGroupConstructor=0;addGroup=0;touchModifiedNoParents=0;nameAssignment=0;notesAssignment=0;parentExpansion=0;syntheticUuidAssignment=0;syntheticClockAssignment=0;saveDatabase=0;binaryRead=0;originalGUI=0;originalProgram=0};$operations=@()
+foreach($op in @($cfg.operations)){
+ if($null -eq $op){continue};$selected=$db.RootGroup.FindGroup((Id ([string]$op.id)),$true);if($null -eq $selected){throw 'Synthetic selected group absent.'};$stamp=Utc $op.now
+ if($op.action -eq 'create'){
+  $g=New-Object KeePassLib.PwGroup -ArgumentList $true,$true,'New Group',([KeePassLib.PwIcon]::Folder);$calls.newGroupConstructor++;$g.Uuid=Id $op.groupId;$calls.syntheticUuidAssignment++;foreach($property in @('CreationTime','LastModificationTime','LastAccessTime','LocationChanged','ExpiryTime')){$g.$property=$stamp;$calls.syntheticClockAssignment++};$selected.AddGroup($g,$true);$calls.addGroup++
+ }elseif($op.action -eq 'edit'){$g=$selected}else{throw 'Unknown finite operation.'}
+ # Exact selected GroupForm.OnBtnOK name/notes and Touch contract.
+ $g.Touch($true,$false);$calls.touchModifiedNoParents++;$g.Name=[string]$op.name;$calls.nameAssignment++;$g.Notes=[string]$op.notes;$calls.notesAssignment++;$g.LastAccessTime=$stamp;$g.LastModificationTime=$stamp;$calls.syntheticClockAssignment+=2
+ if($op.action -eq 'create'){$selected.IsExpanded=$true;$calls.parentExpansion++}
+ $operations+=@([ordered]@{action=$op.action;id=IdText $g.Uuid;parentId=if($null -eq $g.ParentGroup){$null}else{IdText $g.ParentGroup.Uuid}})
+}
+if($cfg.save -eq $true){$db.Save($null);$calls.saveDatabase++;$db.Close();$db=New-Object KeePassLib.PwDatabase;$db.Open([KeePassLib.Serialization.IOConnectionInfo]::FromPath([string]$cfg.database),$key,$null);$calls.openDatabase++}
+function GroupRows($g){$rows=@([ordered]@{id=IdText $g.Uuid;parentId=if($null -eq $g.ParentGroup){$null}else{IdText $g.ParentGroup.Uuid};name=$g.Name;notes=$g.Notes;iconId=[int]$g.IconId;customIcon=IdText $g.CustomIconUuid;expanded=$g.IsExpanded;enableAutoType=$g.EnableAutoType;enableSearching=$g.EnableSearching;defaultSequence=$g.DefaultAutoTypeSequence;lastTopVisible=IdText $g.LastTopVisibleEntry;previous=IdText $g.PreviousParentGroup;created=Iso $g.CreationTime;access=Iso $g.LastAccessTime;modified=Iso $g.LastModificationTime;location=Iso $g.LocationChanged;expiry=Iso $g.ExpiryTime;expires=$g.Expires;usage=[string]$g.UsageCount});foreach($child in $g.Groups){$rows+=@(GroupRows $child)};return $rows}
+$entries=@();foreach($e in $db.RootGroup.GetEntries($true)){$history=@();foreach($h in $e.History){$history+=@([ordered]@{title=$h.Strings.ReadSafe('Title');password=$h.Strings.ReadSafe('Password');modified=Iso $h.LastModificationTime})};$binaries=@();foreach($pair in $e.Binaries){$binaries+=@([ordered]@{name=$pair.Key;base64=[Convert]::ToBase64String($pair.Value.ReadData());protected=$pair.Value.IsProtected});$calls.binaryRead++};$entries+=@([ordered]@{id=IdText $e.Uuid;parentId=IdText $e.ParentGroup.Uuid;title=$e.Strings.ReadSafe('Title');password=$e.Strings.ReadSafe('Password');created=Iso $e.CreationTime;modified=Iso $e.LastModificationTime;history=$history;binaries=$binaries})}
+$value=[ordered]@{release='2.61.1';groups=@(GroupRows $db.RootGroup);entries=$entries;operations=$operations;calls=$calls;scope='Actual released managed PwGroup constructor/AddGroup/Touch and KDBX open/save with source-composed selected name/notes assignment. Synthetic UUID/time adapters. No GroupForm GUI or original full program.'};$db.Close();$value|ConvertTo-Json -Depth 32 -Compress

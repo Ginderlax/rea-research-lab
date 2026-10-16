@@ -1,0 +1,105 @@
+name: Cloud Notes task browser experiment
+
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: notes-todo-browser-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  eight-real-chromium-scenarios:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out exact committed browser source and inert Notes bundle
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Select pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Select owned evidence and browser cache outside source paths
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          'REA_BROWSER_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          'PLAYWRIGHT_BROWSERS_PATH='+(Join-Path $env:RUNNER_TEMP ('rea-notes-playwright-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT))|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Acquire exact locked Chromium tooling while checkout is clean
+        id: acquire
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-cloud-browser.mjs --phase acquire --evidence "$env:REA_BROWSER_EVIDENCE"
+      - name: Compose exactly eight reviewed Notes targets in the hosted checkout
+        id: compose
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-notes-todo-cloud.mjs --phase compose --evidence "$env:REA_BROWSER_EVIDENCE"
+      - name: Execute eight real-browser cases against exact Notes after-images
+        id: browser
+        shell: pwsh
+        run: |
+          $composition=Join-Path $env:REA_BROWSER_EVIDENCE 'notes-todo-composition.json'
+          node products/rea-studio/scripts/verify-cloud-browser.mjs --phase verify --evidence "$env:REA_BROWSER_EVIDENCE" --scope notes-todo-experiment --overlay-manifest "$composition"
+      - name: Independently reauthenticate every composed target after every started composition
+        id: sourcepost
+        if: always() && steps.compose.outcome != '' && steps.compose.outcome != 'skipped'
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-notes-todo-cloud.mjs --phase verify-after --evidence "$env:REA_BROWSER_EVIDENCE"
+      - name: Independently recheck full browser census and all other Git blobs
+        id: browserpost
+        if: always() && steps.compose.outcome != '' && steps.compose.outcome != 'skipped'
+        shell: pwsh
+        run: |
+          $composition=Join-Path $env:REA_BROWSER_EVIDENCE 'notes-todo-composition.json'
+          node products/rea-studio/scripts/verify-cloud-browser.mjs --phase postcheck --evidence "$env:REA_BROWSER_EVIDENCE" --scope notes-todo-experiment --overlay-manifest "$composition"
+      - name: Package bounded complete evidence after failures too
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence=$env:REA_BROWSER_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-notes-todo-browser-workflow-attempt/v1';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';compositionOutcome='${{ steps.compose.outcome }}';browserOutcome='${{ steps.browser.outcome }}';composerPostcheckOutcome='${{ steps.sourcepost.outcome }}';browserPostcheckOutcome='${{ steps.browserpost.outcome }}';productionInstalled=$false;historicalReceiptsRebound=$false;acceptancePreclaimed=$false;originalApplicationExecutions=0;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $evidence 'notes-browser-workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
+          $rawBytes=($files|Measure-Object Length -Sum).Sum
+          $bounded=$files.Count -le 2500 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-notes-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $archiveBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $archiveBytes -gt 15*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes-browser-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback|Out-Null
+            $retained=@();$omitted=@()
+            foreach($file in Get-ChildItem -LiteralPath $evidence -File){
+              if($file.Length -le 1024*1024){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name);$retained+=$file.Name}
+              else{$omitted+=@{file=$file.Name;bytes=$file.Length}}
+            }
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';rawFiles=$files.Count;rawBytes=$rawBytes;rawFileLimit=2500;rawByteLimit=96*1024*1024;individualByteLimit=8*1024*1024;fullArchiveBytes=$archiveBytes;zipLimit=15*1024*1024;completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;retainedFiles=$retained;omittedTopLevelFiles=$omitted;reason='Complete Notes browser evidence exceeded a fixed bound. This fallback cannot certify complete portable acceptance.'}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes-browser-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
+            throw 'Complete Notes browser evidence exceeded a fixed bound; the fallback is explicitly incomplete.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve complete success or failure evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes-todo-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

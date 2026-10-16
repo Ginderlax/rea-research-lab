@@ -94,19 +94,23 @@ export async function handle({ action, input = {}, store, workspace }) {
     if (s.records[input.id]) throw new Error('This internal item type is unsupported. Only local notes and attachments can be opened.');
     throw new Error('The linked note or attachment does not exist in this local collection.');
   }
-  if (action === 'save') return exclusive(async () => {
-    const s = await state(store), existing = input.id ? get(s, input.id) : null;
-    if (existing) { if (existing.deletedAt) throw new Error('Restore this note before editing.'); checkRevision(existing, input.revision); }
-    else if (input.revision !== undefined && input.revision !== 0) throw new Error('New notes start at revision zero.');
-    const inputTitle = text(input.title, 'Title', 300), title = existing?.title === inputTitle ? inputTitle : label(inputTitle, 'Title', 300).trim(); if (!title && !existing) throw new Error('Give the note a title.');
-    const inputNotebook = text(input.notebook ?? 'Notes', 'Notebook', 200), notebook = existing?.notebook === inputNotebook ? inputNotebook : label(inputNotebook, 'Notebook', 200).trim() || 'Notes';
-    const cleanTags = existing && JSON.stringify(input.tags) === JSON.stringify(existing.tags) ? existing.tags : tags(input.tags ?? []);
-    const changes = { title, body: text(input.body ?? '', 'Note', 200_000), notebook, tags: cleanTags }, now = new Date().toISOString();
-    const draft = existing ? edited(existing, changes) : { id: randomUUID(), ...changes, createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [] };
-    const selection={...input,notebook};if(existing&&input.notebook!==undefined&&input.notebookId===existing.notebookId&&input.notebook!==existing.notebook)delete selection.notebookId;
+  if (action === 'save') {
+    const request=Object.freeze({...input,tags:Array.isArray(input.tags)?Object.freeze([...input.tags]):input.tags});
+    if(request.newTodo!==undefined&&typeof request.newTodo!=='boolean')throw new Error('New to-do creation must use an explicit Boolean flag.');
+    return exclusive(async () => {
+    const s = await state(store), existing = request.id ? get(s, request.id) : null;
+    if (existing) { if(request.newTodo!==undefined)throw new Error('New to-do creation is only valid for an unsaved note. Use the saved-note controls to change its type.'); if (existing.deletedAt) throw new Error('Restore this note before editing.'); checkRevision(existing, request.revision); }
+    else if (request.revision !== undefined && request.revision !== 0) throw new Error('New notes start at revision zero.');
+    const inputTitle = text(request.title, 'Title', 300), title = existing?.title === inputTitle ? inputTitle : label(inputTitle, 'Title', 300).trim(); if (!title && !existing) throw new Error('Give the note a title.');
+    const inputNotebook = text(request.notebook ?? 'Notes', 'Notebook', 200), notebook = existing?.notebook === inputNotebook ? inputNotebook : label(inputNotebook, 'Notebook', 200).trim() || 'Notes';
+    const cleanTags = existing && JSON.stringify(request.tags) === JSON.stringify(existing.tags) ? existing.tags : tags(request.tags ?? []);
+    const changes = { title, body: text(request.body ?? '', 'Note', 200_000), notebook, tags: cleanTags }, now = new Date().toISOString();
+    const draft = existing ? edited(existing, changes) : { id: randomUUID(), ...changes, createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [], ...(request.newTodo ? {todo:{isTodo:true,due:0,completed:0}} : {}) };
+    const selection={...request,notebook};if(existing&&request.notebook!==undefined&&request.notebookId===existing.notebookId&&request.notebook!==existing.notebook)delete selection.notebookId;
     const note=bindNotebook(s,draft,selection);
     s.notes[note.id] = note; await store.set(stateKey, s); return note;
-  });
+    });
+  }
   if (action === 'delete' || action === 'restore') return exclusive(async () => {
     const s = await state(store), note = get(s, input.id); checkRevision(note, input.revision);
     const time=new Date().toISOString();if(action==='restore'){const result=restoreNoteFromTrash(s,note.id,time);await store.set(stateKey,result.state);return result.note;}const updated = { ...note, metadataEdited:true,userUpdatedAt:note.userUpdatedAt??note.joplin?.props.user_updated_time??note.updatedAt, deletedAt:time, updatedAt:time, revision: note.revision + 1 };

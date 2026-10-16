@@ -19,8 +19,8 @@ export async function followInternalLink(id, { api, sourceNoteId, mayDiscard, op
 export async function render(root, api) {
   root.replaceChildren(el('h2', 'Local Notes'), el('p', 'Write Markdown notes, organize notebooks and tags, search, export and restore versions.', 'muted'));
   const status = el('p', 'Loading…', 'status'); status.setAttribute('role', 'status');
-  const searchRow = el('div', undefined, 'row'), search = el('input'), tag = el('select'), notebookFilter = el('select'), trash = el('input'), trashLabel = el('label', 'Show trash '), searchButton = el('button', 'Search', 'button'), newButton = el('button', 'New note', 'button'), allExport = el('button', 'Export notes JSON', 'button'), jexExport = el('button', 'Export Joplin JEX', 'button');
-  search.placeholder = 'Search titles, content and tags'; search.setAttribute('aria-label', 'Search notes'); tag.setAttribute('aria-label', 'Filter tag'); notebookFilter.setAttribute('aria-label', 'Filter notebook'); trash.type = 'checkbox'; trashLabel.append(trash); searchRow.append(search, tag, notebookFilter, trashLabel, searchButton, newButton, allExport, jexExport);
+  const searchRow = el('div', undefined, 'row'), search = el('input'), tag = el('select'), notebookFilter = el('select'), trash = el('input'), trashLabel = el('label', 'Show trash '), searchButton = el('button', 'Search', 'button'), newButton = el('button', 'New note', 'button'), newTodoButton = el('button', 'New to-do', 'button'), allExport = el('button', 'Export notes JSON', 'button'), jexExport = el('button', 'Export Joplin JEX', 'button');
+  search.placeholder = 'Search titles, content and tags'; search.setAttribute('aria-label', 'Search notes'); tag.setAttribute('aria-label', 'Filter tag'); notebookFilter.setAttribute('aria-label', 'Filter notebook'); trash.type = 'checkbox'; trashLabel.append(trash); searchRow.append(search, tag, notebookFilter, trashLabel, searchButton, newButton, newTodoButton, allExport, jexExport);
   const todoFilter = el('select'); todoFilter.setAttribute('aria-label', 'Filter note type');
   for (const [value, label] of [['all', 'All notes and to-dos'], ['notes', 'Notes only'], ['todos', 'All to-dos'], ['open', 'Open to-dos'], ['completed', 'Completed to-dos']]) todoFilter.append(Object.assign(el('option', label), { value }));
   todoFilter.value = 'all'; searchRow.append(todoFilter);
@@ -28,14 +28,14 @@ export async function render(root, api) {
   const actions = el('div', undefined, 'row'), save = el('button', 'Save note', 'button'), remove = el('button', 'Move to trash', 'button'), restore = el('button', 'Restore note', 'button'), exportOne = el('button', 'Export Markdown', 'button'); actions.append(save, remove, restore, exportOne);
   const todoPanel = el('section', undefined, 'card'), todoStatus = el('p'), todoType = el('button', 'Convert to to-do', 'button'), todoCompleted = el('button', 'Mark complete', 'button'), todoDue = el('input'), setTodoDue = el('button', 'Set due date', 'button'), clearTodoDue = el('button', 'Clear due date', 'button');
   todoPanel.setAttribute('aria-label', 'Saved note to-do controls'); todoDue.type = 'datetime-local'; todoDue.step = '0.001'; todoDue.setAttribute('aria-label', 'To-do due date in local time');
-  todoPanel.append(el('h3', 'To-do'), el('p', 'Save your draft first. Converting changes note type and clears due/completion dates. Due dates are metadata; this app does not send alarms.', 'muted'), todoStatus, todoType, todoCompleted, todoDue, setTodoDue, clearTodoDue);
+  todoPanel.append(el('h3', 'To-do'), el('p', 'Save your draft first. Converting changes note type and clears due/completion dates. Due dates help you track tasks; reminders are not available yet.', 'muted'), todoStatus, todoType, todoCompleted, todoDue, setTodoDue, clearTodoDue);
   const todoControls = [todoType, todoCompleted, todoDue, setTodoDue, clearTodoDue];
   const attachments = el('div', undefined, 'card'), attachmentUpload = el('input'); attachmentUpload.type = 'file'; attachmentUpload.setAttribute('aria-label', 'Attach a file to the saved note'); attachments.append(el('h3', 'Attachments'), el('p', 'Save your draft first. Attachments are stored locally and included in JEX exports. Maximum file size: 4 MiB.', 'muted'), attachmentUpload); const attachmentList = el('div'); attachments.append(attachmentList);
   const preview = el('article'), versions = el('div'); preview.className = 'card'; preview.setAttribute('aria-label', 'Markdown preview'); draft.append(el('h3', 'Note draft'), title, notebook, tags, body, actions, todoPanel, attachments, el('h3', 'Safe Markdown preview'), preview, versions);
   const imports = el('div', undefined, 'card'), upload = el('input'); upload.type = 'file'; upload.accept = '.md,.markdown,.json,.jex,text/markdown,application/json,application/x-tar'; upload.setAttribute('aria-label', 'Import Markdown, REA notes JSON or Joplin JEX'); imports.append(el('h3', 'Import notes or Joplin JEX'), el('p', 'JEX preserves supported note IDs, notebook hierarchy, tags, metadata and attachments. Existing ID collisions reject the entire import. Maximum JEX size: 8 MiB. JSON creates note copies and excludes binaries.', 'muted'), upload);
   const organization=el('section',undefined,'card'),organizationRows=el('div'),organizationChoice=el('select'),organizationName=el('input'),organizationParent=el('select'),createNotebook=el('button','Create notebook','button'),renameNotebook=el('button','Rename notebook','button'),moveNotebook=el('button','Move notebook','button'),trashNotebook=el('button','Move notebook to trash','button'),restoreNotebook=el('button','Restore notebook','button'),noteDestination=el('select'),moveNote=el('button','Move saved note','button');organization.setAttribute('aria-label','Notebook organization');organizationChoice.setAttribute('aria-label','Manage notebook');organizationName.setAttribute('aria-label','Notebook name');organizationName.placeholder='Notebook name';organizationParent.setAttribute('aria-label','Parent notebook');noteDestination.setAttribute('aria-label','Move note to notebook');const organizationControls=[organizationChoice,organizationName,organizationParent,createNotebook,renameNotebook,moveNotebook,trashNotebook,restoreNotebook,noteDestination,moveNote];organization.append(el('h3','Notebooks'),el('p','Organize notebooks or move a notebook with its descendants to trash. Restoring also restores independently trashed descendant notes. Save your draft first.','muted'),organizationRows,...organizationControls);
   const confirmationHost=el('div');root.append(searchRow, organization, confirmationHost, list, draft, imports, status);
-  let current = null, dirty = false, organizationState={revision:0,notebooks:[]},organizationBusy=false,editorGeneration=0,draftRevision=0,refreshGeneration=0,mounted=true,confirmation=null,todoBusy=false;
+  let current = null, dirty = false, organizationState={revision:0,notebooks:[]},organizationBusy=false,editorGeneration=0,draftRevision=0,refreshGeneration=0,mounted=true,confirmation=null,todoBusy=false,saveBusy=false,draftIsTodo=false;
   async function run(operation, {readOnly=false}={}) { if(!mounted||organizationBusy||(todoBusy&&!readOnly))return;try { await operation(); } catch (error) { if(mounted)status.textContent = error.message; } }
   function clearConfirmation(){if(!confirmation)return;const active=confirmation;confirmation=null;confirmationHost.replaceChildren();for(const [node,inert]of active.background)node.inert=inert;if(mounted)active.trigger.focus();}
   function confirmNotebook({heading,scope,submitLabel,pendingLabel,trigger}){
@@ -53,18 +53,18 @@ export async function render(root, api) {
   function edited() { draftRevision++; dirty = true; updatePreview(); status.textContent = 'Unsaved draft. Save to keep this note.'; }
   for (const control of [title, notebook, tags, body]) control.oninput = edited;
   function refreshTodo(resetDue = false) {
-    const value = current ? todoState(current) : { isTodo: false, due: 0, completed: 0 }, blocked = !current || Boolean(current.deletedAt) || organizationBusy || todoBusy;
+    const value = current ? todoState(current) : { isTodo: draftIsTodo, due: 0, completed: 0 }, blocked = !current || Boolean(current.deletedAt) || organizationBusy || todoBusy || saveBusy;
     todoType.textContent = value.isTodo ? 'Convert to note' : 'Convert to to-do'; todoCompleted.textContent = value.completed ? 'Mark incomplete' : 'Mark complete';
     todoType.disabled = blocked; for (const control of [todoCompleted, todoDue, setTodoDue, clearTodoDue]) control.disabled = blocked || !value.isTodo;
     todoPanel.setAttribute('aria-busy', String(todoBusy));
-    todoStatus.textContent = !current ? 'Save a note to use to-do controls.' : !value.isTodo ? 'This saved item is a note.' : `${value.completed ? 'Completed ' + new Date(value.completed).toISOString() : 'Open to-do'}${value.due ? ' · Due ' + new Date(value.due).toISOString() : ' · No due date'}`;
+    todoStatus.textContent = !current ? (draftIsTodo ? 'New to-do draft. Save to create an open to-do with no due date. No note has been stored yet.' : 'Save a note to use to-do controls.') : !value.isTodo ? 'This saved item is a note.' : `${value.completed ? 'Completed ' + new Date(value.completed).toISOString() : 'Open to-do'}${value.due ? ' · Due ' + new Date(value.due).toISOString() : ' · No due date'}`;
     if (resetDue) {
       if (!value.due) todoDue.value = '';
       else { const date = new Date(value.due), pad = n => String(n).padStart(2, '0'); todoDue.value = `${String(date.getFullYear()).padStart(4, '0')}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${String(date.getMilliseconds()).padStart(3, '0')}`; }
     }
   }
   async function mutateTodo(action, changes) {
-    if (!mounted || todoBusy || organizationBusy) return;
+    if (!mounted || todoBusy || organizationBusy || saveBusy) return;
     if (!current) throw new Error('Save a note before changing its to-do state.');
     if (dirty) throw new Error('Save your draft before changing its to-do state.');
     const generation = editorGeneration, revision = draftRevision, values = [title.value, notebook.value, tags.value, body.value], request = { id: current.id, revision: current.revision, ...changes };
@@ -83,11 +83,11 @@ export async function render(root, api) {
   todoCompleted.onclick = () => run(() => mutateTodo('todo-completed', { completed: !todoState(current ?? {}).completed }));
   setTodoDue.onclick = () => run(() => { if (!todoDue.value) throw new Error('Choose a local due date, or use Clear due date.'); const due = new Date(todoDue.value).getTime(); if (!Number.isFinite(due) || due <= 0) throw new Error('Choose a valid due date after the Unix epoch.'); return mutateTodo('todo-due', { due }); });
   clearTodoDue.onclick = () => run(() => mutateTodo('todo-due', { due: 0 }));
-  function accept(note) {
+  function accept(note, newTodo = false) {
     if(!mounted)return;
     editorGeneration++;
-    current = note; dirty = false; title.value = note?.title ?? '';if(note?.notebookId&&!Array.from(notebook.options).some(option=>option.value===note.notebookId))notebook.append(Object.assign(el('option',note.notebook),{value:note.notebookId}));notebook.value = note?.notebookId ?? '__default__'; tags.value = note?.tags.join(', ') ?? ''; body.value = note?.body ?? ''; updatePreview();moveNote.disabled=!note||Boolean(note.deletedAt)||organizationBusy;
-    refreshTodo(true); save.disabled = Boolean(note?.deletedAt); remove.disabled = !note || Boolean(note.deletedAt); restore.disabled = !note?.deletedAt; exportOne.disabled = !note;
+    current = note; draftIsTodo = !note && newTodo; dirty = false; title.value = note?.title ?? '';if(note?.notebookId&&!Array.from(notebook.options).some(option=>option.value===note.notebookId))notebook.append(Object.assign(el('option',note.notebook),{value:note.notebookId}));notebook.value = note?.notebookId ?? '__default__'; tags.value = note?.tags.join(', ') ?? ''; body.value = note?.body ?? ''; updatePreview();moveNote.disabled=!note||Boolean(note.deletedAt)||organizationBusy;
+    refreshTodo(true); save.disabled = saveBusy || Boolean(note?.deletedAt); remove.disabled = !note || Boolean(note.deletedAt); restore.disabled = !note?.deletedAt; exportOne.disabled = !note;
     attachmentUpload.disabled = !note || Boolean(note.deletedAt); attachmentList.replaceChildren();
     if (note) run(async () => { const response = await api('attachment-list', { id: note.id }); if (current?.id !== note.id) return; for (const resource of response.attachments) { const button = el('button', `Download ${resource.filename} (${resource.bytes} bytes)`, 'button'); button.onclick = () => run(async () => download(await api('attachment-get', { noteId: note.id, id: resource.id }))); attachmentList.append(button); } if (!response.attachments.length) attachmentList.append(el('p', 'No attached files.', 'muted')); }, {readOnly:true});
     versions.replaceChildren(el('h4', 'Previous saved versions'));
@@ -108,20 +108,42 @@ export async function render(root, api) {
     for (const note of response.notes) { const button = el('button', `${note.title} · ${note.notebook} · ${note.tags.join(', ')}`, 'button'), snippet = el('p', (note.todo?.isTodo ? (note.todo.completed ? '[Completed to-do] ' : '[Open to-do] ') : '') + note.preview, 'muted'); button.onclick = () => run(async () => { if (!mayDiscard()) return; accept(await api('get', { id: note.id })); status.textContent = `Opened revision ${current.revision}.`; }); list.append(button, snippet); }
   }
   searchButton.onclick = () => run(refresh); search.onkeydown = event => { if (event.key === 'Enter') run(refresh); }; tag.onchange = notebookFilter.onchange = trash.onchange = todoFilter.onchange = () => run(refresh);
-  newButton.onclick = () => { if (!mayDiscard()) return; accept(null); title.focus(); status.textContent = 'New note draft.'; };
+  function newDraft(isTodo) {
+    if (!mounted || organizationBusy || !mayDiscard()) return;
+    accept(null, isTodo); title.focus(); status.textContent = isTodo ? 'New to-do draft. Save to create it.' : 'New note draft.';
+  }
+  newButton.onclick = () => newDraft(false);
+  newTodoButton.onclick = () => newDraft(true);
   async function saveNote() {
-    const generation=editorGeneration,revision=draftRevision,values=[title.value,notebook.value,tags.value,body.value],cleanTags = current && tags.value === current.tags.join(', ') ? current.tags : tags.value.split(',').map(value => value.trim()).filter(Boolean);
-    const note = await api('save', { id: current?.id, revision: current?.revision ?? 0, title: values[0], body: values[3], ...(values[1]==='__default__'?{notebook:'Notes'}:{notebookId:values[1]}), tags: cleanTags });
-    if(generation!==editorGeneration)return;
-    if(revision!==draftRevision||values.some((value,index)=>value!==[title.value,notebook.value,tags.value,body.value][index])){
-      current=note;dirty=true;status.textContent=`Saved revision ${note.revision}. Your newer draft is retained.`;return;
+    if (!mounted || saveBusy) return;
+    const fields=()=>[title.value,notebook.value,tags.value,body.value];
+    const ownsDraft=(generation,revision,values)=>mounted&&generation===editorGeneration&&revision===draftRevision&&values.every((value,index)=>value===fields()[index]);
+    const generation=editorGeneration,revision=draftRevision,values=fields(),cleanTags = current && tags.value === current.tags.join(', ') ? current.tags : tags.value.split(',').map(value => value.trim()).filter(Boolean);
+    const request={ id: current?.id, revision: current?.revision ?? 0, title: values[0], body: values[3], ...(values[1]==='__default__'?{notebook:'Notes'}:{notebookId:values[1]}), tags: cleanTags, ...(!current && draftIsTodo ? {newTodo:true} : {}) };
+    saveBusy=true;save.disabled=true;refreshTodo();
+    try {
+      let note;
+      try { note=await api('save',request); }
+      catch(error) { if(ownsDraft(generation,revision,values))status.textContent=error.message;return; }
+      if(!mounted||generation!==editorGeneration)return;
+      if(!ownsDraft(generation,revision,values)){
+        current=note;draftIsTodo=false;dirty=true;refreshTodo(true);status.textContent=`Saved revision ${note.revision}. Your newer draft is retained.`;return;
+      }
+      accept(note);
+      const acceptedGeneration=editorGeneration,acceptedRevision=draftRevision,acceptedValues=fields();
+      try { await refresh(); }
+      catch(error) {
+        if(ownsDraft(acceptedGeneration,acceptedRevision,acceptedValues)&&!dirty)status.textContent=`Saved revision ${note.revision}. Could not refresh the note list: ${error.message}`;
+        return;
+      }
+      if(ownsDraft(acceptedGeneration,acceptedRevision,acceptedValues)&&!dirty)status.textContent=`Saved revision ${note.revision}.`;
+    } finally {
+      saveBusy=false;if(mounted){save.disabled=organizationBusy||Boolean(current?.deletedAt);refreshTodo();}
     }
-    accept(note);const publishedGeneration=editorGeneration;await refresh();
-    if(publishedGeneration===editorGeneration&&revision===draftRevision)status.textContent = `Saved revision ${note.revision}.`;
   }
   save.onclick = () => run(saveNote);
   organizationChoice.onchange=()=>{const row=organizationState.notebooks.find(row=>row.id===organizationChoice.value);organizationName.value=row?.title??'';organizationParent.value=row?.parentId??'';};
-  async function organize(operation){if(!mounted||organizationBusy)return;if(dirty)throw new Error('Save your draft before changing notebook organization.');const controls=[...organizationControls,...todoControls,todoFilter,title,notebook,tags,body,save,search,tag,notebookFilter,trash,searchButton,newButton,remove,restore,attachmentUpload,upload],previous=controls.map(control=>control.disabled);organizationBusy=true;organization.setAttribute('aria-busy','true');for(const control of controls)control.disabled=true;let cancelled=false;try{const result=await operation();cancelled=result===false;if(!mounted||cancelled)return;if(current)accept(await api('get',{id:current.id}));if(mounted)await refresh();}finally{organizationBusy=false;if(mounted){organization.setAttribute('aria-busy','false');controls.forEach((control,index)=>control.disabled=previous[index]);save.disabled=Boolean(current?.deletedAt);moveNote.disabled=!current||Boolean(current.deletedAt);if(current&&!cancelled)accept(current);refreshTodo();}clearConfirmation();}}
+  async function organize(operation){if(!mounted||organizationBusy)return;if(dirty)throw new Error('Save your draft before changing notebook organization.');const controls=[...organizationControls,...todoControls,todoFilter,title,notebook,tags,body,save,search,tag,notebookFilter,trash,searchButton,newButton,newTodoButton,remove,restore,attachmentUpload,upload],previous=controls.map(control=>control.disabled);organizationBusy=true;organization.setAttribute('aria-busy','true');for(const control of controls)control.disabled=true;let cancelled=false;try{const result=await operation();cancelled=result===false;if(!mounted||cancelled)return;if(current)accept(await api('get',{id:current.id}));if(mounted)await refresh();}finally{organizationBusy=false;if(mounted){organization.setAttribute('aria-busy','false');controls.forEach((control,index)=>control.disabled=previous[index]);save.disabled=saveBusy||Boolean(current?.deletedAt);moveNote.disabled=!current||Boolean(current.deletedAt);if(current&&!cancelled)accept(current);refreshTodo();}clearConfirmation();}}
   createNotebook.onclick=()=>run(()=>organize(async()=>{const result=await api('notebook-create',{revision:organizationState.revision,title:organizationName.value,parentId:organizationParent.value});organizationChoice.append(Object.assign(el('option',result.notebook.path),{value:result.notebook.id}));organizationChoice.value=result.notebook.id;status.textContent='Notebook created.';}));
   renameNotebook.onclick=()=>run(()=>organize(async()=>{await api('notebook-rename',{revision:organizationState.revision,id:organizationChoice.value,title:organizationName.value});status.textContent='Notebook renamed; note identities are preserved.';}));
   moveNotebook.onclick=()=>run(()=>organize(async()=>{await api('notebook-move',{revision:organizationState.revision,id:organizationChoice.value,parentId:organizationParent.value});status.textContent='Notebook moved with its descendants.';}));

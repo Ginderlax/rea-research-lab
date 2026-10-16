@@ -38,7 +38,8 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   positive('named-migration-positive', () => { migration = createEditorVaultProofMigration(read); assert.equal(migration.summary().latestInstalledSourcesMandatory, 35); });
   const notesIndexPath='products/rea-studio/apps/notes/results/todo-followup/publication-index.json';
   const notesIndex=JSON.parse(read(notesIndexPath)),notesSources=notesIndex.currentTargets;
-  positive('notes-eight-current-three-before-and-historical-metadata',()=>{const s=migration.summary();assert.equal(s.notesCurrentSourcesMandatory,8);assert.equal(s.notesHistoricalReplacementRoutes,3);assert.equal(s.notesHistorical937RuntimeRoutes,2);assert.equal(s.notesHistoricalFiniteGroups,92);assert.equal(s.notesHistoricalOriginalHelperComparisons,20);assert.equal(s.notesHistoricalBrowserCases,8);assert.equal(s.notesAuthenticatedFiles,52);assert.equal(s.notesFixedReadFileLimit,64);assert.equal(s.notesFreshInstalledBehavioralAcceptance,false);for(const r of notesSources){assert.equal(migration.resolve(r.path,r.after),null);if(r.before)assert.equal(migration.resolve(r.path,r.before),r.beforeImage);}});
+  const notes36HistoricalAfterRoutes=JSON.parse(read('products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json')).installedTargets.filter(row=>row.before);
+  positive('notes-eight-current-three-before-and-historical-metadata',()=>{const s=migration.summary();assert.equal(s.notesCurrentSourcesMandatory,12);assert.equal(s.notesHistorical32SourcePlanMandatoryTargets,8);assert.equal(s.notesHistoricalReplacementRoutes,3);assert.equal(s.notesHistorical937RuntimeRoutes,2);assert.equal(s.notesHistoricalFiniteGroups,92);assert.equal(s.notesHistoricalOriginalHelperComparisons,20);assert.equal(s.notesHistoricalBrowserCases,8);assert.equal(s.notesAuthenticatedFiles,52);assert.equal(s.notesFixedReadFileLimit,64);assert.equal(s.notesFreshInstalledBehavioralAcceptance,false);for(const r of notesSources){const newer=notes36HistoricalAfterRoutes.find(row=>row.path===r.path);assert.equal(migration.resolve(r.path,r.after),newer?newer.beforeImage.path:null);if(r.before)assert.equal(migration.resolve(r.path,r.before),r.beforeImage);}});
   for(const r of notesSources)negative('notes-mandatory-current:'+path.posix.basename(r.path),()=>createEditorVaultProofMigration(p=>p===r.path?flip(read(p)):read(p)),'fixed current Notes afterimage');
   for(const r of notesSources.filter(r=>r.before))negative('notes-mandatory-before:'+path.posix.basename(r.path),()=>createEditorVaultProofMigration(p=>p===r.beforeImage?flip(read(p)):read(p)),'fixed Notes historical beforeimage');
   for(const r of notesSources)negative('notes-mandatory-after-alias:'+path.posix.basename(r.path),()=>createEditorVaultProofMigration(p=>p===r.afterImage?flip(read(p)):read(p)),'fixed Notes afterimage alias');
@@ -315,7 +316,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   for (const target of ["products/rea-studio/results/requirement-evidence-provenance-20261015/preservation-manifest.json","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/verify-records.mjs.snapshot","products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot"]) negative('requirement-provenance-mandatory-byte-corruption:' + target, () => createEditorVaultProofMigration(name => name === target ? flip(read(name)) : read(name)), 'new fixed requirement provenance closure identity; historical receipts and registries remain unchanged');
   // Execute only the exact producer projection, using the actual preserved failing
   // attempt outputs. No publication producer or application entry point is run here.
-  const repeatProducerBytes = read('scripts/verify-cloud-publication.mjs'); same(repeatProducerBytes, {"bytes":47328,"sha256":"b036f37acbe88690ac1b22f7538d9e0f83935a1fd1b0622224879cc76cf6cd8b"});
+  const repeatProducerBytes = read('scripts/verify-cloud-publication.mjs'); same(repeatProducerBytes, {"bytes":79976,"sha256":"7093aac7045aaea5fc31c1354ff222f530d32c1c0bd42ba6860d01ef1a083128"});
   const repeatProducer = repeatProducerBytes.toString('utf8');
   const repeatStart = '// BEGIN exact publication repeat projection (only three owned observation clocks).', repeatEnd = '// END exact publication repeat projection.';
   assert.equal(repeatProducer.split(repeatStart).length, 2); assert.equal(repeatProducer.split(repeatEnd).length, 2);
@@ -351,7 +352,177 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   negative('publication-repeat-reject:first-phase-clock-corruption', () => { const changed = structuredClone(repeatFirst); changed.followup_evidence.notesLayoutValueApiCheckpoint.sketch.finished = '2026-10-16T00:14:16.540Z'; repeatCompare(changed); }, 'both raw observations are independently bounded');
   negative('publication-repeat-reject:overlapping-owned-phases', () => { const phases = structuredClone(repeatAttempt.phases); phases[0].completedAtUtc = new Date(Date.parse(phases[1].startedAtUtc) + 1).toISOString(); repeatCompare(repeatFirst, repeatSecond, phases); }, 'phase intervals must be ordered and nonoverlapping');
   negative('publication-repeat-reject:reversed-owned-phase', () => { const phases = structuredClone(repeatAttempt.phases); [phases[1].startedAtUtc, phases[1].completedAtUtc] = [phases[1].completedAtUtc, phases[1].startedAtUtc]; repeatCompare(repeatFirst, repeatSecond, phases); }, 'owned phase timestamps must themselves be valid and ordered');
-  assert.equal(rows.length, 208); assert.ok(rows.every(row => row.passed));
+  // New source-epoch controls are additional to all208 retained old controls.
+  const notes36PlanPath='products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json',notes36Plan=JSON.parse(read(notes36PlanPath));
+  positive('notes36-current-proof-and-historical52-scopes',()=>{const s=migration.summary();assert.equal(s.notes36NamedCurrentSourcePinsOnly,true);assert.equal(s.notes36LiveDirectoryClosureEstablishedByModule,false);assert.equal(s.notes36LiveDirectoryClosureRequiresInstalledHelper,true);assert.equal(s.notes36Common85IsSeparateLegacyGroup,true);assert.equal(s.notes36CurrentSourcesMandatory,36);assert.equal(s.notes36EligibleCurrentSourcesMandatory,34);assert.equal(s.notes36InstalledTargetsMandatory,7);assert.equal(s.notes36CurrentTargetUnion,12);assert.equal(s.notesHistorical32SourcePlanMandatoryTargets,8);assert.equal(s.notes36CurrentReadObjects,60);assert.equal(s.notes36CurrentReadBytes,695900);assert.equal(s.notes36FixedReadFileLimit,64);assert.equal(s.notes36Historical32SourceProjections,3);assert.equal(s.notes36Historical52LogicalObjects,52);assert.equal(s.notes36Historical52PhysicalObjects,52);assert.equal(s.notes36FreshInstalledBehaviorAccepted,false);});
+  positive('notes36-exact-current32-and-older-route-identities',()=>{for(const row of notes36Plan.installedTargets){assert.equal(migration.resolve(row.path,row.after),null);if(row.before){assert.equal(migration.resolve(row.path,row.before),row.beforeImage.path);const older=notesSources.find(old=>old.path===row.path);assert(older&&older.before);assert.equal(migration.resolve(row.path,older.before),older.beforeImage);}}});
+  positive('notes36-independent-common-archive-and-notes-budgets',()=>{const s=migration.summary();assert.equal(s.authenticatedFiles,159);assert.equal(s.currentInstalledSourcesMandatory,85);assert.equal(s.archiveAuthenticatedFiles,94);assert.equal(s.archiveFixedReadFileLimit,96);assert.equal(s.notesAuthenticatedFiles,52);assert.equal(s.notesFixedReadFileLimit,64);assert.equal(s.notes36CurrentReadObjects,60);assert.equal(s.notes36FixedReadFileLimit,64);});
+  for(const row of [{path:notes36PlanPath},...notes36Plan.otherProofRows])negative('notes36-mandatory-proof-byte-change:'+row.path,()=>createEditorVaultProofMigration(p=>p===row.path?flip(read(p)):read(p)),'new fixed60 current-source proof object identity; declaration changes reject at its external fixed pin');
+  for(const row of notes36Plan.installedTargets){negative('notes36-unknown-source-epoch:'+row.path,()=>migration.resolve(row.path,{bytes:1,sha256:'0'.repeat(64)}),'exact current36/current32/older-only resolver');negative('notes36-missing-source-identity:'+row.path,()=>migration.resolve(row.path),'mandatory explicit current36 identity');}
+  const sourceGateStart='// BEGIN exact Notes36 fixed publication gates.',sourceGateEnd='// END exact Notes36 fixed publication gates.';assert.equal(repeatProducer.split(sourceGateStart).length,2);assert.equal(repeatProducer.split(sourceGateEnd).length,2);
+  const sourceGateBlock=repeatProducer.slice(repeatProducer.indexOf(sourceGateStart),repeatProducer.indexOf(sourceGateEnd));
+  const sourceGateScript=new vm.Script("const identity=bytes=>({bytes:bytes.length,sha256:sha(bytes)});\n"+sourceGateBlock+"\noperation==='tooling'?verifyNotes36Tooling(read,requestedJSON===null?NOTES36_TOOLING:JSON.parse(requestedJSON)):verifyNotes36ArtifactRoles(JSON.parse(pathsJSON))",{filename:'exact-reviewed-Notes36-fixed-publication-gates.mjs'});
+  const sourceGate=(operation,reader=read,paths=[],requested=null)=>sourceGateScript.runInNewContext({assert,sha:bytes=>identity(bytes).sha256,Buffer,operation,read:reader,pathsJSON:JSON.stringify(paths),requestedJSON:requested===null?null:JSON.stringify(requested)},{timeout:1000});
+  const toolingRows={
+  "products/rea-studio/scripts/verify-notes36-installed-cloud.mjs": [
+    16788,
+    "648f28c93ee6f08f93fb6d715e9208f31dd12e8af45097fef01d58161ec2cbe2"
+  ],
+  "products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json": [
+    60830,
+    "c0a488389094d898a7f6d308e9977192327f194ce3d271135dfcd2007e8a73bb"
+  ],
+  ".github/workflows/notes-new-todo-installed-cloud.yml": [
+    14822,
+    "5f495cb9279eceddafb9cfdf0ee9d39fcd6bfaba03bb536a28f4fa68a5520a99"
+  ],
+  "products/rea-studio/browser-tests/notes-new-todo.spec.mjs": [
+    42394,
+    "a737d073dc4abc9186995e796fb725e391f005cd3c5197f7d71278edb5c6f2ef"
+  ],
+  "products/rea-studio/browser-tests/playwright.notes-new-todo.config.mjs": [
+    1091,
+    "46cd136b644ad1ff8a27aac6f891737af3593f19232c03306f75098d0a1e5caa"
+  ],
+  "products/rea-studio/browser-tests/notes-new-todo-roster.json": [
+    939,
+    "9dda31a0246947563baf6a415b1c52fc75de9725ac078ed03b169259e12a5bfa"
+  ],
+  "products/rea-studio/scripts/verify-cloud-browser.mjs": [
+    48600,
+    "86dc714b3c9bb14f9a374028ab6df36c5c8e4468a18da5cac0ff83422832b3df"
+  ],
+  "products/rea-studio/browser-tests/package.json": [
+    177,
+    "337e56d786191bf1f2cf296fa96082f3d74110bca2f5c5006de2ed5a84f887b7"
+  ],
+  "products/rea-studio/browser-tests/package-lock.json": [
+    1782,
+    "9b5ff170a3981c45506aef94e4b5df3f96bf49bbf6ba194acac2a40dd0274bcf"
+  ],
+  "products/rea-studio/browser-tests/browser-metadata.json": [
+    1135,
+    "2cfd419f71ac6475d81e1301fa86c34cf2a2a6bae2a0da4b5a2b18310216b6bf"
+  ],
+  "products/rea-studio/browser-tests/playwright.config.mjs": [
+    1110,
+    "08f7fbd8c02e2120bc3b4111ba164b2c2da4d93fef0ba065b14b77c3678d0cb3"
+  ],
+  "products/rea-studio/browser-tests/flow-vault.spec.mjs": [
+    26471,
+    "dd55dc2c40db400e6181cfa06e6cd4cb0d13cc0683a841b17d03a688971fadab"
+  ]
+};
+  const collectorSelf={
+  "path": "products/rea-studio/scripts/verify-notes36-cloud.mjs",
+  "bytes": 33324,
+  "sha256": "263f47d794e785a0bd818889ce0f125febfda0f100e33f9cb70ae94347f2c7b7"
+};
+  const artifactPaths=[
+  "attempt-validation.json",
+  "collector-sources/.github/workflows/publication-integrity-cloud.yml.snapshot",
+  "collector-sources/scripts/publication-integrity-controls.mjs.snapshot",
+  "collector-sources/scripts/verify-cloud-publication.mjs.snapshot",
+  "controls.json",
+  "derived/PUBLICATION-MANIFEST.json",
+  "derived/VALIDATION.json",
+  "events.jsonl",
+  "metadata-before/PUBLICATION-MANIFEST.json.snapshot",
+  "metadata-before/VALIDATION.json.snapshot",
+  "notes-reviewed-sources.json.gz.snapshot",
+  "notes36-collector-self/products/rea-studio/scripts/verify-notes36-cloud.mjs.snapshot",
+  "notes36-current-sources.json.gz.snapshot",
+  "notes36-current-tooling.json.gz.snapshot",
+  "publication-recheck.stderr.txt",
+  "publication-recheck.stdout.txt",
+  "publication-write.stderr.txt",
+  "publication-write.stdout.txt",
+  "reviewed-sources/products/rea-studio/apps/archive/results/aes-followup/publication-index.json.snapshot",
+  "reviewed-sources/products/rea-studio/experiments/archive-aes/bundle.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/LZMA-COMPATIBILITY.md.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/README.md.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/SEVENZIP-COMPATIBILITY.md.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/client.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/server.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/sevenzip.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration-group-edit-document-route.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration-historical-carrier-policy.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration-requirement-evidence-provenance.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration-windows-observer-correction.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/verify-records-historical-carrier-policy.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/verify-records-requirement-evidence-provenance.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/verify-records.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/462e22b9b4dda4f6a3700aa8ebec671863924c6381c7fd1926d0e190bac1025a.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/4fe7b114341199fa31d5553ffb3505db0e3427337ea8c72c637a8d5a3501a042.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/6be0d1c908d5fc78cf574bca48f7d7f2b7e824e708fd9f9281f6cf1fc9b4b3fd.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/7bfc912b2f275c1569a9c1b5b83ed4dde684f79ce97d73ed8655255fa64eaffe.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/d2d167211228cb4eb201fc89aa14013d0da38e396b0a88505ebbc6eadea88fcd.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/d89c78840a1096cf6d89816c8b407a4d5dd1b41f5aebca451d0b2a61b1005d12.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/e3ff73273bfaf6ea0724b99f649dc781cc8f48c1f73b145e69f032e519ef1fac.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-publication-source-transition-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/verify-records.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/126e1a9fb2e939ab8a767b6facd723cb823505846711de4114d6c560a6861212.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/41d3a9da24ee7effedbd2af7bc6dd6952a5a59895edc92b5cff7f8a33cba72c0.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/41f2b7950a3fa24d278bd5f6b912bdf221a8f7ee7af8eaa70a5a6201ae2406f2.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/7774bfa56f708adbe35eacebc21385a9eed56175e2df6f67c8fec0350af4b7b0.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/adf03e13193e81997ee515bb0e0c4ea4f790120c35ff5bf351f5a5b19bce4ea1.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/d5b87bec1e71b8ca96821de21fa2d6c7520586cf0cef4cdfa0f28392f5504dca.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/attempt-validation.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/controls.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/events.jsonl.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/publication-write.stderr.txt.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/storage-failure.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/workflow-attempt.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/workflow-before/publication-integrity-cloud.yml.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/wrapper-job-116702343166.log.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/failed-publication-attempt.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/failed-publication-write.stderr.txt.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/passed26-controls.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/verifier-before/verify-editor-save-followup.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/failed-publication-attempt.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/failed-publication-write.stderr.txt.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/passed21-controls.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/payload/d29210777777dac0b3d12f6a656a073c9ba717cf6932dbc01b0cc6dc1e7779b8.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/verifier-before/verify-followup-records.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/after/products/rea-studio/apps/editor/git.test.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/after/products/rea-studio/apps/sync/dav-transfer.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/after/products/rea-studio/apps/sync/webdav.windows-path.test.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/before/products/rea-studio/apps/editor/git.test.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/before/products/rea-studio/apps/sync/dav-transfer.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/verifier-before/editor-vault-proof-migration-editor-save-closure.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/verifier-before/verify-records.mjs.snapshot.snapshot",
+  "reviewed-sources/scripts/editor-vault-proof-migration.mjs.snapshot",
+  "reviewed-sources/scripts/historical-carrier-policy.mjs.snapshot",
+  "reviewed-sources/scripts/verify-archive-integration-records.mjs.snapshot",
+  "reviewed-sources/scripts/verify-cloud-recovery-records.mjs.snapshot",
+  "reviewed-sources/scripts/verify-editor-save-followup.mjs.snapshot",
+  "reviewed-sources/scripts/verify-followup-records.mjs.snapshot",
+  "reviewed-sources/scripts/verify-records.mjs.snapshot",
+  "workflow-attempt.json"
+];
+  positive('notes36-exact12-tooling-plus-separate-self-source',()=>{const result=sourceGate('tooling');assert.equal(result.rows.length,12);assert.equal(result.sourceFiles,12);assert.equal(result.fileLimit,12);assert(result.rawSourceBytes<=8*1024*1024);assert.equal(result.collectorSelf.path,collectorSelf.path);assert.equal(result.collectorSelf.bytes,collectorSelf.bytes);assert.equal(result.collectorSelf.sha256,collectorSelf.sha256);});
+  for(const row of [...Object.entries(toolingRows).map(([path,[bytes,sha256]])=>({path,bytes,sha256})),collectorSelf])negative('notes36-fixed-tooling-or-self-byte-change:'+row.path,()=>sourceGate('tooling',p=>p===row.path?flip(read(p)):read(p)),'literal fixed12 tooling identity or distinct collector-self pin; no app or producer entry point executes');
+  positive('notes36-exact95-publication-artifact-roles',()=>{assert.equal(artifactPaths.length,95);assert.equal(new Set(artifactPaths).size,95);assert.equal(sourceGate('roles',read,artifactPaths),true);});
+  for(const[label,paths]of[['missing',artifactPaths.slice(1)],['duplicate',[...artifactPaths,artifactPaths[0]]],['unknown',artifactPaths.map((name,i)=>i===0?'unlisted-role.snapshot':name)],['self-role-replacement',artifactPaths.map(name=>name.startsWith('notes36-collector-self/')?'notes36-collector-self/unlisted.mjs.snapshot':name)]])negative('notes36-artifact-role-census:'+label,()=>sourceGate('roles',read,paths),'closed95 distinct outer role paths under unchanged96 storage cap');
+  negative('notes36-extra-fixed-tooling-row',()=>sourceGate('tooling',read,[],{...toolingRows,'unlisted/tooling.mjs':[1,'0'.repeat(64)]}),'exact12 fixed table, not a generic source allowlist');
+  const changedTooling=structuredClone(toolingRows),firstTooling=Object.keys(changedTooling)[0];changedTooling[firstTooling][1]='0'.repeat(64);negative('notes36-changed-fixed-tooling-definition',()=>sourceGate('tooling',read,[],changedTooling),'externally fixed literal table identities; no derived expected hash');
+
+  assert.equal(rows.length, 306); assert.ok(rows.every(row => row.passed));
   return { schema: 'rea-cloud-publication-controls/v1', status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,

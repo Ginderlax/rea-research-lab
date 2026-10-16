@@ -1,0 +1,247 @@
+// Backup-only preservation. Never imports or executes application, test or captured code.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {gzipSync,gunzipSync} from 'node:zlib';
+const workspace=path.resolve(import.meta.dirname,'..'),stage=path.join(workspace,'work/cloud-archive-native-diagnostic-public-20261016-next');
+const prefix='products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016';
+const RUN='38938239800',JOB='117099039133',HEAD='e655fd909c7bed411c5bee50ce248dd6fe0787c6',ARTIFACT='12062101383';
+const inputs=[
+  {
+    "role": "raw-run-api",
+    "sourceReference": "work/cloud-verification-backups/run-38938239800/native-diagnostic-control-plane-2026-10-16T17-20-01-588Z/run.json",
+    "bytes": 13621,
+    "sha256": "fcb45ffcb1c70a2e1afa3d7dc00fbd4bc557f35f8578bc741f1f4ef63b64d23d"
+  },
+  {
+    "role": "raw-jobs-api",
+    "sourceReference": "work/cloud-verification-backups/run-38938239800/native-diagnostic-control-plane-2026-10-16T17-20-01-588Z/jobs.json",
+    "bytes": 3314,
+    "sha256": "cc95f26565fd94e8e171c6efba4749850646c85db1fe2b709cc85bc1af769d7e"
+  },
+  {
+    "role": "raw-artifacts-api",
+    "sourceReference": "work/cloud-verification-backups/run-38938239800/native-diagnostic-control-plane-2026-10-16T17-20-01-588Z/artifacts.json",
+    "bytes": 780,
+    "sha256": "f3d57c6bb169f7736cf49b994c62d43af8fba77e19e6ba30f2b481a0dabe574a"
+  },
+  {
+    "role": "raw-commit-api",
+    "sourceReference": "work/cloud-verification-backups/run-38938239800/native-diagnostic-control-plane-2026-10-16T17-20-01-588Z/commit.json",
+    "bytes": 1231,
+    "sha256": "d2c91b97b032fb789ef8cb0efa5deaa30300041f2211079ad924a1ae37a46ccb"
+  },
+  {
+    "role": "raw-tree-api",
+    "sourceReference": "work/cloud-verification-backups/run-38938239800/native-diagnostic-control-plane-2026-10-16T17-20-01-588Z/tree.json",
+    "bytes": 12304104,
+    "sha256": "17a28cdde85565baad5ecf2c21f059d53a0bf8c8e8bfe9375b4b2d879a5486a2"
+  },
+  {
+    "role": "raw-hosted-job-log",
+    "sourceReference": "work/cloud-verification-backups/run-38938239800/native-diagnostic-control-plane-2026-10-16T17-20-01-588Z/job-117099039133-logs.txt",
+    "bytes": 28843,
+    "sha256": "bf24baa775321faec509228f60235d603e37f58e37bc55907b5eb97949923880"
+  },
+  {
+    "role": "read-only-collection-summary",
+    "sourceReference": "work/cloud-verification-backups/run-38938239800/native-diagnostic-control-plane-2026-10-16T17-20-01-588Z/collection-summary.json",
+    "bytes": 4084,
+    "sha256": "166a25b2a93298f1389f5b392a50cd50483f5811b0a614332bc10c40f7111c23"
+  },
+  {
+    "role": "data-only-readable-backup-report",
+    "sourceReference": "work/cloud-verification-backups/run-38938239800/artifact-12062101383-native-diagnostic-reader-r3-v1/local-native-diagnostic-backup-verification.json",
+    "bytes": 24238,
+    "sha256": "b9dbb760c7b751ae61c7f1fc1945edadba63deed6c31b508f46b80252a6ee729"
+  },
+  {
+    "role": "exact-original-uploaded-outer-zip",
+    "sourceReference": "work/cloud-verification-backups/run-38938239800/artifact-12062101383.zip",
+    "bytes": 276192,
+    "sha256": "c902dd084fd20ed412af248fe7161680e1a30ab1ba27caf77b724817581db44f"
+  },
+  {
+    "role": "exact-portable-inner-evidence-zip",
+    "sourceReference": "work/cloud-verification-backups/run-38938239800/artifact-12062101383-native-diagnostic-reader-r3-v1/downloaded-contents/rea-archive-native-diagnostic-38938239800-1.zip",
+    "bytes": 275984,
+    "sha256": "7a845749c06fcac6bbc173c116bbcfdf4a279e83323051e3a27be93c841d2e68"
+  },
+  {
+    "role": "actual-bound-backup-reader",
+    "sourceReference": "work/unpack-archive-native-diagnostic-38938239800-r3.py",
+    "bytes": 34361,
+    "sha256": "cf3385445bb4f75c2cd40b47552645e09dfff932fb10febaa1d6c3ed0f480fd6"
+  },
+  {
+    "role": "actual-bound-readonly-collector",
+    "sourceReference": "work/collect-archive-native-diagnostic-38938239800-r3.mjs",
+    "bytes": 9779,
+    "sha256": "fee894c64c5c8f192ea00a03c67dac221fe2035c238d14e3631737fc4407afb6"
+  },
+  {
+    "role": "approved-unbound-r3-reader",
+    "sourceReference": "work/unpack-archive-native-diagnostic-r3-PENDING.py",
+    "bytes": 34332,
+    "sha256": "82ddbd65a3b7f51368591479c107cdc1689ff0ccbe1285a291ca8a2c55555942"
+  },
+  {
+    "role": "approved-unbound-r3-collector",
+    "sourceReference": "work/collect-archive-native-diagnostic-r3-PENDING.mjs",
+    "bytes": 9746,
+    "sha256": "6d208dcf459c1850d6ae78c58db247d142a3438722342c633add0eebc4c81b09"
+  },
+  {
+    "role": "approved-unbound-r3-template-authority",
+    "sourceReference": "work/native-diagnostic-backup-template-r3-20261016-next/source-authority.json",
+    "bytes": 15258,
+    "sha256": "8d3dae5edca845bd05e6cf215605465efefc4f9f3b91779a5f14d92d106bb244"
+  },
+  {
+    "role": "preserved-unbound-r2-reader",
+    "sourceReference": "work/unpack-archive-native-diagnostic-PENDING.py",
+    "bytes": 34347,
+    "sha256": "77576f2d73db518960abb1c7d68f8867e09685cb742f50bc03985aaaf541cb99"
+  },
+  {
+    "role": "preserved-unbound-r2-collector",
+    "sourceReference": "work/collect-archive-native-diagnostic-PENDING.mjs",
+    "bytes": 9740,
+    "sha256": "95db7757f12414f8bfe03004a5892e0f7d9567cd7b4d5de0590494062a580066"
+  },
+  {
+    "role": "preserved-unbound-r2-template-authority",
+    "sourceReference": "work/native-diagnostic-backup-template-20261016-next/source-authority.json",
+    "bytes": 15056,
+    "sha256": "40dc4f677ebc3d04cef76a4da2e0e2510db08aa138e243c69459ee1b7709ccc6"
+  },
+  {
+    "role": "exact-run-binding-authority",
+    "sourceReference": "work/native-diagnostic-backup-binding-38938239800-r3-next/source-authority.json",
+    "bytes": 2356,
+    "sha256": "1f452da8a69c9a1af4ff18d60f86e87951e4e581a13c78b37955c7ff8fd53808"
+  },
+  {
+    "role": "independent-exact-run-binding-peer",
+    "sourceReference": "work/native-diagnostic-38938239800-r3-independent-binding-review-20261016.json",
+    "bytes": 4166,
+    "sha256": "debed9c66a45f44a0578c997cb4f8098267d65a0ed1ceacc77934974ad20126b"
+  },
+  {
+    "role": "independent-full-template-peer",
+    "sourceReference": "work/native-diagnostic-r3-backup-template-complete-independent-source-review-20261016.json",
+    "bytes": 3592,
+    "sha256": "1cd98a0ba03ed877bdda6798fa537eeda2ff11223be7cd8c40af8218f81b4259"
+  },
+  {
+    "role": "reviewed-diagnostic-r3-source-authority",
+    "sourceReference": "work/archive-native-diagnostic-proposal-r3-next/copy-authority.json",
+    "bytes": 15756,
+    "sha256": "475459a83f5535793d1f544ddde3b9c7bbc7e89dc52664931bea177979cd8977"
+  },
+  {
+    "role": "independent-diagnostic-r3-source-peer",
+    "sourceReference": "work/archive-native-diagnostic-r3-relocation-independent-source-review-20261016.json",
+    "bytes": 2460,
+    "sha256": "f5061fa5a434db901d966477c0a57473989626cc48a787fa67f41283a18d2228"
+  },
+  {
+    "role": "independent-diagnostic-r2-full-source-peer",
+    "sourceReference": "work/archive-native-diagnostic-r2-complete-independent-source-review-20261016.json",
+    "bytes": 4574,
+    "sha256": "4bcede222634a060dbf731da2129d87991b30c218d729e1561e4eea29e0ed3d1"
+  },
+  {
+    "role": "independent-actual78-behavior-and-backup-peer",
+    "sourceReference": "work/native-diagnostic-38938239800-independent-actual-evidence-review-20261016.json",
+    "bytes": 2015,
+    "sha256": "0b116f347c0d2b56e9a502e4d6195a75b2ce5b837821707ced2e8e3d3cf8e9e8"
+  },
+  {
+    "role": "immutable-d24-failure-manifest",
+    "sourceReference": "outputs/rea-research-lab/products/rea-studio/results/cloud-full1100-native-metadata-failure-20261016/preservation-manifest.json",
+    "bytes": 134697,
+    "sha256": "00b5b19f779a36214d839111d776b9da5a78e1120763827ed369433e69310a66"
+  },
+  {
+    "role": "independent-d24-original-failure-source-peer",
+    "sourceReference": "work/d24-full-archive-metadata-failure-independent-cause-review-20261016.json",
+    "bytes": 6914,
+    "sha256": "3a4083e4c579b36cd96306f94504746fc8a3d9a471c653b7d3152b02fc159d3c"
+  },
+  {
+    "role": "independent-d24-failure64-portable-capsule-peer",
+    "sourceReference": "work/full1100-native-metadata-failure64-complete-independent-review-20261016.json",
+    "bytes": 2746,
+    "sha256": "1c973e7cb8692f4f21ebb1565f710f00826a613d0b639732e0c3e8f26f2f560e"
+  },
+  {
+    "role": "template-r3-source-author",
+    "sourceReference": "work/author-native-diagnostic-r3-backup-template-20261016.py",
+    "bytes": 5019,
+    "sha256": "fa6920ac5515144b846f92319dfc12590b4cd2aa3b94048f87a578fcad399cc8"
+  },
+  {
+    "role": "template-r2-source-author",
+    "sourceReference": "work/freeze-native-diagnostic-backup-template-20261016.py",
+    "bytes": 6876,
+    "sha256": "0da0147616bbe5614f99b4bc0e08fda1af93397a4e0faad1756e241ce80778ab"
+  },
+  {
+    "role": "exact-run-binding-source-author",
+    "sourceReference": "work/bind-native-diagnostic-38938239800-r3-20261016.py",
+    "bytes": 4336,
+    "sha256": "0633bb73dfa88403e6489c9ea45788174fcfe2d0af45f51ad5dc25b5d77f6c33"
+  }
+];
+const identity=bytes=>({bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
+const same=(bytes,row)=>assert.deepEqual(identity(bytes),{bytes:row.bytes,sha256:row.sha256});
+function safe(name){assert(typeof name==='string'&&name&&!/[\\:\x00-\x1f\x7f]/.test(name)&&!name.startsWith('/')&&name.split('/').every(part=>part&&part!=='.'&&part!=='..'));return name;}
+function read(name,maximum=16*1024*1024){let file=workspace;for(const part of safe(name).split('/')){file=path.join(file,part);assert(!fs.lstatSync(file).isSymbolicLink());}const item=fs.lstatSync(file);assert(item.isFile()&&item.size<=maximum);const raw=fs.readFileSync(file);assert.equal(raw.length,item.size);return raw;}
+const sources=new Map();for(const row of inputs){assert(!sources.has(row.role));const raw=read(row.sourceReference);same(raw,row);sources.set(row.role,{row,raw});}
+const raw=role=>{assert(sources.has(role),role);return sources.get(role).raw;};
+const json=role=>JSON.parse(raw(role).toString('utf8').replace(/^\uFEFF/,''));
+const report=json('data-only-readable-backup-report'),run=json('raw-run-api'),jobs=json('raw-jobs-api'),artifacts=json('raw-artifacts-api'),commit=json('raw-commit-api'),tree=json('raw-tree-api');
+assert.equal(String(run.id),RUN);assert.equal(String(run.run_attempt),'1');assert.equal(run.head_sha,HEAD);assert.equal(run.head_branch,'codex/rea-cloud-recovery-20261015');assert.equal(run.event,'push');assert.equal(run.path,'.github/workflows/archive-native-metadata-diagnostic.yml');assert.equal(run.status,'completed');assert.equal(run.conclusion,'success');assert.equal(run.repository.full_name,'Ginderlax/rea-research-lab');
+assert.equal(jobs.total_count,1);assert.equal(jobs.jobs.length,1);const job=jobs.jobs[0];assert.equal(String(job.id),JOB);assert.equal(String(job.run_id),RUN);assert.equal(job.head_sha,HEAD);assert.equal(job.name,'five-unchanged-archive-checks');assert.equal(job.status,'completed');assert.equal(job.conclusion,'success');assert.equal(job.runner_group_name,'GitHub Actions');assert(job.labels.includes('windows-2022'));
+assert.equal(artifacts.total_count,1);assert.equal(artifacts.artifacts.length,1);const artifact=artifacts.artifacts[0];assert.equal(String(artifact.id),ARTIFACT);assert.equal(artifact.name,'archive-native-diagnostic-'+RUN+'-1');assert.equal(artifact.expired,false);assert.equal(String(artifact.workflow_run.id),RUN);assert.equal(artifact.workflow_run.head_sha,HEAD);assert.equal(artifact.size_in_bytes,276192);assert.equal(artifact.digest,'sha256:c902dd084fd20ed412af248fe7161680e1a30ab1ba27caf77b724817581db44f');same(raw('exact-original-uploaded-outer-zip'),{bytes:276192,sha256:artifact.digest.slice(7)});
+assert.equal(commit.sha,HEAD);assert.equal(tree.sha,commit.tree.sha);assert.equal(tree.sha,'4e7810dd96cd1137f3dffcb873c1ddb02136b131');assert.equal(tree.truncated,false);assert(tree.tree.length<=100000);
+assert.equal(report.schema,'rea-local-native-metadata-diagnostic-backup/v1');assert.equal(report.runId,RUN);assert.equal(report.jobId,JOB);assert.equal(report.headSHA,HEAD);assert.equal(report.artifactId,ARTIFACT);assert.equal(report.allCRCAndBytesReadable,true);assert.equal(report.diagnosticFiveChecksAccepted,true);assert.equal(report.nativeObservationsQualified,true);assert.equal(report.completeTwoWorkerObservations,true);assert.deepEqual(report.auditErrors,[]);assert.equal(report.files.length,78);same(raw('exact-original-uploaded-outer-zip'),report.artifactIdentity);same(raw('exact-portable-inner-evidence-zip'),report.portableEvidenceArchiveIdentity);
+assert.equal(report.historicalD24CauseProven,false);assert.equal(report.fullSuiteAcceptance,false);assert.equal(report.fullParity,false);assert.equal(report.superiority,false);for(const key of ['localCandidateExecutions','localProductExecutions','localTests','localBuilds','localSyntaxChecks'])assert.equal(report[key],0);
+for(const phase of ['actualApiAndArtifact','exactCommittedSourceAndIndependentPostcheck','nativeObservationSourceAndSchema','fiveChecksAndCompleteAttempt'])assert.equal(report.qualification[phase].valid,true);
+const binding=json('exact-run-binding-authority'),template=json('approved-unbound-r3-template-authority');assert.equal(binding.runId,RUN);assert.equal(binding.jobId,JOB);assert.equal(binding.headSHA,HEAD);assert.equal(binding.readerOrCollectorExecutions,0);assert.equal(binding.apiCollectionExecutions,0);assert.equal(binding.allByteBoundsSourceTablesAndAcceptanceGatesUnchanged,true);assert.equal(template.fixedSourceRows.length,70);assert.equal(template.sourceBytes,876654);
+const expectedRows=template.fixedSourceRows,expectedNames=new Set(expectedRows.map(row=>'source/'+safe(row.path)+'.snapshot'));assert.equal(expectedNames.size,70);
+const evidenceBase='work/cloud-verification-backups/run-'+RUN+'/artifact-'+ARTIFACT+'-native-diagnostic-reader-r3-v1/readable-evidence';
+const members=new Map();for(const row of report.files){assert(!members.has(row.path));const bytes=read(evidenceBase+'/'+safe(row.path),8*1024*1024);same(bytes,row);members.set(row.path,{row,bytes});}
+const evidence=name=>{assert(members.has(name));return members.get(name).bytes;};const observed=name=>JSON.parse(evidence(name).toString('utf8').replace(/^\uFEFF/,''));
+const gitBlobs=new Map(tree.tree.filter(row=>row.type==='blob').map(row=>[row.path,row]));
+for(const row of expectedRows){const bytes=evidence('source/'+row.path+'.snapshot');same(bytes,row);const blob=gitBlobs.get(row.path);assert(blob);assert.equal(blob.mode,'100644');assert.equal(blob.size,bytes.length);assert.equal(blob.sha,createHash('sha1').update(Buffer.from('blob '+bytes.length+'\0')).update(bytes).digest('hex'));}
+const before=observed('source-before.json'),after=observed('source-after.json'),attempt=observed('diagnostic-attempt.json'),workflow=observed('workflow-attempt.json');
+const execution={GITHUB_SHA:HEAD,GITHUB_RUN_ID:RUN,GITHUB_RUN_ATTEMPT:'1',GITHUB_JOB:'five-unchanged-archive-checks',GITHUB_REPOSITORY:'Ginderlax/rea-research-lab',RUNNER_ENVIRONMENT:'github-hosted',RUNNER_OS:'Windows',RUNNER_ARCH:'X64'};
+assert.equal(before.schema,'rea-archive-native-diagnostic-source/v1');assert.equal(before.status,'verified-unexecuted');assert.equal(after.schema,'rea-archive-native-diagnostic-postcheck/v1');assert.equal(after.status,'source-verified');
+for(const item of [before,after]){assert.deepEqual(item.execution,execution);assert.equal(item.sourceCommit,HEAD);assert.deepEqual(item.rows,expectedRows);assert.equal(item.sourceFiles,70);assert.equal(item.sourceBytes,876654);assert.equal(item.allGitBlobsAuthenticated,true);assert.equal(item.sourceOverlay,false);assert.equal(item.productExecutions,0);assert.equal(item.originalExecutions,0);}assert.deepEqual(after.beforeReceipt,identity(evidence('source-before.json')));assert.equal(after.sourceStable,true);
+assert.equal(attempt.schema,'rea-archive-native-metadata-diagnostic/v1');assert.equal(attempt.status,'passed-five-instrumented-checks');assert.deepEqual(attempt.execution,execution);assert.equal(attempt.sourceCommit,HEAD);assert.deepEqual(attempt.sourceBefore,identity(evidence('source-before.json')));assert.equal(attempt.exitCode,0);assert.equal(attempt.signal,null);assert.equal(attempt.error,null);assert.deepEqual(attempt.summary,{tests:5,pass:5,fail:0,cancelled:0,skipped:0,todo:0});assert.deepEqual(attempt.stdout,identity(evidence('stdout.txt')));assert.deepEqual(attempt.stderr,identity(evidence('stderr.txt')));
+const names=['archive HTTP file creation, ZIP validation and extraction persist through host restarts','stored and deflated ZIP files preserve binary, UTF-8, empty files and directories','ZIP parser validates CRC and headers and refuses traversal, duplicate paths, and oversized expansion','malicious archive cannot create files outside workspace and unconfirmed extraction does not write','Windows .NET independently reads generated ZIP and our parser reads independently created ZIP'];
+const stdout=evidence('stdout.txt').toString('utf8');assert.deepEqual([...stdout.matchAll(/^# Subtest: (.+)\r?$/gm)].map(row=>row[1].replace(/\r$/,'')),names);assert.deepEqual([...stdout.matchAll(/^ok (\d+) - (.+)\r?$/gm)].map(row=>[Number(row[1]),row[2].replace(/\r$/,'')]),names.map((name,index)=>[index+1,name]));
+for(const [key,value]of Object.entries(attempt.summary)){const rows=[...stdout.matchAll(new RegExp('^# '+key+'\\s+(\\d+)\\s*\\r?$','gm'))];assert.equal(rows.length,1);assert.equal(Number(rows[0][1]),value);}
+assert.equal(attempt.command.hook,'scripts/archive-native-metadata-trace.mjs');assert.equal(attempt.command.deadlineMs,300000);assert.equal(attempt.command.inheritedNodeOptions,false);assert.equal(attempt.originalDeadlineMs,15000);assert.equal(attempt.applicationSourceChanged,false);assert.equal(attempt.instrumentedDependencyObserver,true);assert.equal(attempt.productAssertionsChanged,false);assert.equal(attempt.retried,false);assert.equal(attempt.historicalD24CauseProven,false);assert.equal(attempt.traceComplete,true);
+assert.equal(workflow.schema,'rea-archive-native-diagnostic-workflow/v1');assert.equal(workflow.sourceCommit,HEAD);assert.equal(workflow.runId,RUN);assert.equal(workflow.runAttempt,'1');for(const key of ['checkout','before','execute','after'])assert.equal(workflow[key],'success');assert.equal(workflow.diagnosticOnly,true);assert.equal(workflow.applicationSourcesChanged,false);assert.equal(workflow.originalMetadataDeadlineMs,15000);assert.equal(workflow.historicalD24CauseProven,false);
+const traces=report.qualifiedNativeObservations;assert.equal(traces.length,2);assert.deepEqual(new Map(attempt.traces.map(row=>[row.path,row])),new Map(traces.map(row=>[row.path,row])));const calls=[],workers=new Set();
+for(const trace of traces){const bytes=evidence(trace.path);same(bytes,trace);assert.deepEqual(bytes.toString('utf8').trim().split('\n').map(line=>JSON.parse(line)),trace.rows);const match=/^trace\/native-events-([1-9]\d*)\.jsonl$/.exec(trace.path);assert(match);const pid=Number(match[1]);const labels=new Set();for(const[index,row]of trace.rows.entries()){assert.equal(row.schema,'rea-archive-native-exec-observation/v1');assert.equal(row.runId,RUN);assert.equal(row.runAttempt,'1');assert.equal(row.sourceCommit,HEAD);assert.equal(row.processId,pid);assert.equal(row.sequence,index+1);assert.equal(row.scriptSHA256,'76e3ac8e0aeb8b1fa42fbc84ec6956e2e2d044502f5de5e5552e8538f5f4b615');assert.equal(row.timeoutMs,15000);assert.equal(row.maxBuffer,67108864);assert.equal(row.callbackObserved,true);assert.equal(row.error,null);for(const key of ['inputRecorded','outputContentsRecorded','argumentsModified','limitsModified','retried'])assert.equal(row[key],false);labels.add(row.testFile);calls.push(row);}assert.equal(labels.size,1);workers.add([...labels][0]);}
+assert.deepEqual([...workers].sort(),['app.integration.test.mjs','app.test.mjs']);assert.equal(calls.length,6);const integration=calls.filter(row=>row.testFile==='app.integration.test.mjs'),application=calls.filter(row=>row.testFile==='app.test.mjs');assert.equal(integration.length,1);assert.equal(application.length,5);assert.equal(integration[0].elapsedMs,4419.2207);assert.deepEqual(application.map(row=>row.elapsedMs),[374.8336,366.6019,366.47789999999986,363.0905,346.3083999999999]);
+const nonSource=[...members.keys()].filter(name=>!name.startsWith('source/'));assert.equal(nonSource.length,8);assert.deepEqual(new Set([...expectedNames,...nonSource]),new Set(members.keys()));
+const historical=json('immutable-d24-failure-manifest');assert.equal(historical.runId,'38932318510');assert.equal(historical.summary.tests,1100);assert.equal(historical.summary.pass,1098);assert.equal(historical.summary.fail,2);
+assert(!fs.existsSync(stage));fs.mkdirSync(stage);const candidate=path.join(stage,'public-candidate');fs.mkdirSync(candidate);const objects=new Map(),roles=[];
+function write(name,bytes){const target=path.join(candidate,safe(name));fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,bytes,{flag:'wx'});assert.deepEqual(fs.readFileSync(target),bytes);}
+function preserve(role,bytes,sourceReference){const decoded=identity(bytes),compress=bytes.length>256*1024&&!role.includes('zip'),stored=compress?gzipSync(bytes,{level:9}):bytes,storedId=identity(stored),file=prefix+'/payload/'+storedId.sha256+(compress?'.gz.snapshot':'.snapshot');if(!objects.has(file)){write(file,stored);objects.set(file,storedId);}const reread=fs.readFileSync(path.join(candidate,file));assert.deepEqual(compress?gunzipSync(reread,{maxOutputLength:16*1024*1024}):reread,bytes);roles.push({role,sourceReference,decoded,stored:{path:file,...storedId,encoding:compress?'gzip':'identity'}});}
+for(const [role,value]of sources)preserve(role,value.raw,value.row.sourceReference);
+for(const name of nonSource)preserve('uploaded/'+name,evidence(name),'uploaded-inner-zip:'+name);
+preserve('backup-only-preservation-filer',read('work/preserve-cloud-archive-native-diagnostic-20261016.mjs'),'work/preserve-cloud-archive-native-diagnostic-20261016.mjs');
+const manifest={schema:'rea-public-native-metadata-diagnostic-preservation/v1',createdAtUtc:new Date().toISOString(),runId:RUN,jobId:JOB,sourceHead:HEAD,sourceCommit:HEAD,event:'push',runURL:run.html_url,artifactId:ARTIFACT,artifactIdentity:identity(raw('exact-original-uploaded-outer-zip')),portableInnerArchiveIdentity:identity(raw('exact-portable-inner-evidence-zip')),rawUploadedMembers:78,sourceSnapshotMembers:70,nonsourceMembers:8,everyUploadedBytePubliclyRecoverable:true,completeReadableLocalBackupVerified:true,roles,sourceAliases:expectedRows.map(row=>({role:'uploaded/source/'+row.path+'.snapshot',decoded:{bytes:row.bytes,sha256:row.sha256},retainedWithinExactPortableZip:true,innerMember:'source/'+row.path+'.snapshot'})),sourceAuthentication:{fixedArchiveFiles:64,fixedHostFiles:3,diagnosticToolingFiles:3,all70ActualGitBlobsAuthenticated:true,sourceBytes:876654,sourceOverlay:false,independentSourceBeforeAfterVerified:true},diagnostic:{tests:5,pass:5,fail:0,skipped:0,cancelled:0,todo:0,rawTestNames:names,workerTraces:2,nativeCallbacks:6,nativeErrorsObserved:0,integrationCallElapsedMs:4419.2207,appCallElapsedMs:application.map(row=>row.elapsedMs),sameOriginalNativeDeadlineMs:15000,originalArgumentsOptionsAndAssertionsChanged:false,dependencyInstrumented:true,measurementQualification:'Instrumented callback durations observed only in this attempt; hook loading/trace recording add overhead. No uninstrumented performance or reliability comparison is established.'},rawAttemptClocks:{startedAtUtc:attempt.startedAtUtc,completedAtUtc:attempt.completedAtUtc,scope:'Outer command observation clocks; native elapsedMs values use the owning worker monotonic clock and are retained without rewriting.'},historicalFailure:{record:'../cloud-full1100-native-metadata-failure-20261016/preservation-manifest.json',runId:'38932318510',tests:1100,pass:1098,fail:2,nativeErrorWasRedacted:true,causeStillUnobserved:true,reproducedByThisDiagnostic:false,erasedByThisPass:false},localCandidateExecutions:0,localProductExecutions:0,localTests:0,localBuilds:0,localSyntaxChecks:0,fullSuiteAcceptance:false,performanceComparison:false,reliabilityFixAccepted:false,fullParity:false,superiority:false};
+const manifestRaw=Buffer.from(JSON.stringify(manifest,null,2)+'\n');write(prefix+'/preservation-manifest.json',manifestRaw);
+const prose=`# Source-bound native metadata diagnostic\n\n[Hosted run ${RUN}](${run.html_url}) on committed source ${HEAD} passes the five unchanged checks in two original Archive files. All78 uploaded members, including70 source snapshots and two raw worker traces, remain recoverable from exact public outer and inner ZIPs. All70 sources match actual Git before and after execution; raw APIs/logs, the complete Git tree/commit, approved backup templates and exact run-binding lineage remain retained.\n\nSix observed native callbacks succeed with no native errors: the integration worker records4419.2207ms and five app-worker calls record346.3084–374.8336ms. The original15000ms native deadline,64MiB buffer and every test assertion remain unchanged. The dependency is instrumented, so these observations are not an uninstrumented performance comparison, a reliability fix or a full-suite rerun.\n\nThe [earlier D24 full-suite failure](../cloud-full1100-native-metadata-failure-20261016/preservation-manifest.json) remains confirmed1098/1100 with two native-metadata refusals. This diagnostic did not reproduce them. Their original child error was redacted; the historical cause remains unobserved. Neither this five-check pass nor another full-suite pass retroactively resolves that uncertainty.\n\nThe manifest separates byte retention, source authentication, native observations and five-check acceptance. Original worker elapsed values and outer command UTC clocks are preserved with their actual attribution. No runtime correction, deadline extension, retry, historical receipt rebinding, product parity or superiority is claimed. Local product/test/build/syntax executions are zero.\n`;
+write(prefix+'/README.md',Buffer.from(prose));
+const rows=[...objects].map(([file,value])=>({path:file,...value})).concat([{path:prefix+'/preservation-manifest.json',...identity(manifestRaw)},{path:prefix+'/README.md',...identity(Buffer.from(prose))}]).sort((a,b)=>a.path.localeCompare(b.path));const total=rows.reduce((sum,row)=>sum+row.bytes,0);assert(rows.length<=100&&total<=8*1024*1024);for(const row of rows)same(fs.readFileSync(path.join(candidate,row.path)),row);
+const authority={schema:'rea-work-only-native-metadata-diagnostic-copy-authority/v1',publicCandidate:candidate,targetPrefix:prefix,mode:'new-directory-only',runId:RUN,jobId:JOB,sourceHead:HEAD,artifactId:ARTIFACT,files:rows.length,bytes:total,roles:roles.length,sourceAliases:70,rows,manifest:identity(manifestRaw),localProductExecutions:0,activeRepositoryWrites:0,historicalD24CauseProven:false};
+const authorityRaw=Buffer.from(JSON.stringify(authority,null,2)+'\n');fs.writeFileSync(path.join(stage,'copy-authority.json'),authorityRaw,{flag:'wx'});assert.deepEqual(fs.readFileSync(path.join(stage,'copy-authority.json')),authorityRaw);console.log(JSON.stringify({stage,files:rows.length,bytes:total,roles:roles.length,sourceAliases:70,authority:identity(authorityRaw),manifest:identity(manifestRaw),localProductExecutions:0}));

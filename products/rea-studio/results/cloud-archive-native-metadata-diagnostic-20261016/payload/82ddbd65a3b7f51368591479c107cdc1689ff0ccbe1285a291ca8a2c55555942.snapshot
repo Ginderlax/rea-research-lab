@@ -1,0 +1,552 @@
+"""Data-only diagnostic backup reader. Never imports or executes captured code."""
+import sys, json, hashlib, zipfile, stat, re, math, io, ntpath, datetime
+from pathlib import Path, PurePosixPath
+
+RUN='PENDING_RUN'
+HEAD='PENDING_HEAD'
+JOB='PENDING_JOB'
+ATTEMPT='1'
+assert RUN.isdigit() and JOB.isdigit() and re.fullmatch(r'[0-9a-f]{40}',HEAD), 'Unbound template refuses before file or API access'
+REPOSITORY='Ginderlax/rea-research-lab'
+WORKFLOW='.github/workflows/archive-native-metadata-diagnostic.yml'
+JOB_NAME='five-unchanged-archive-checks'
+FIXED_SOURCE_ROWS=[
+  {
+    "path": "products/rea-studio/apps/archive/.gitignore",
+    "bytes": 112,
+    "sha256": "5f119de142d44a9bd04a39d4cda1f1760abbbc25db480c6802e6cf9aed302497"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/LZMA-COMPATIBILITY.md",
+    "bytes": 8325,
+    "sha256": "294b981bcc145817694e14cd5f4d85b060b81ac6d9b915f045abe39532e78109"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/LZMA-LICENSE.txt",
+    "bytes": 1806,
+    "sha256": "cd61e1fa448d138dd97cedd5fa772fb78f421fb278c953e8ff016f44746cdc5f"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/NOTICE-SOURCE-METADATA.txt",
+    "bytes": 1632,
+    "sha256": "2f633fb40d69afb10e613132f2582acc41d9721e34ac88e4faa2f2b1cbb12e12"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/README.md",
+    "bytes": 16291,
+    "sha256": "42e5f0b9a90b40e04640efcf59dd50d8344d31cd95ca2e18f49dfa22ed084d53"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/SEVENZIP-AES-COMPATIBILITY.md",
+    "bytes": 7268,
+    "sha256": "f8a2956e326ab5f7650a8b0ddb546cab9df1671806a4a2078fdeb9c26ad76077"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/SEVENZIP-AES-LGPL.txt",
+    "bytes": 27032,
+    "sha256": "1e7e6bae5a5bde32f1ae5a7c37a082d1ab03cf89354f7f936ac40be9e39a6531"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/SEVENZIP-COMPATIBILITY.md",
+    "bytes": 10585,
+    "sha256": "54e8f99fe4348b8d23941d8d9fbf54b7b2164dafd95e8ee3ee3630fb9b74cd66"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/WINDOWS-SOURCE-METADATA.md",
+    "bytes": 4025,
+    "sha256": "7b799afbdcd6713c5ab5a23954c67408f0c70aba137023109d6045b44a09a5bb"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/app.integration.test.mjs",
+    "bytes": 1729,
+    "sha256": "fbd5086faefc79dc85dd3ed0725b0396ae30d279d555de749982baea087e052d"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/app.test.mjs",
+    "bytes": 5404,
+    "sha256": "5c30d065062125f67927681f95d4d4479d40372e6916915a495acd8176487dbc"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/bootstrap-original.mjs",
+    "bytes": 3119,
+    "sha256": "da65b62b349b5f4f3f69422244d21ddf1686998bc0f6aa54df8365ca72f3c22e"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/client.mjs",
+    "bytes": 10936,
+    "sha256": "56a61b81715c7cbafb4d5c9db6a2925372d050d51a6533e4e7f7fdfd2e6fd103"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/compatibility-evidence.json",
+    "bytes": 6394,
+    "sha256": "42da73a58a9ac571cba78e05f3dd47272d2a373c48e55a4c00748babdc1beaf8"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/encode-lzma.mjs",
+    "bytes": 13556,
+    "sha256": "7715a6e3aa27439db125e9534f3e499f0727b5c95938e94873776295773beecb"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/encoder.test.mjs",
+    "bytes": 15031,
+    "sha256": "4d0bf5034fb57761f287264cee1b0a0574dda10a9dbdb41e9679a22f472b09eb"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/generate-zstd-fixtures.mjs",
+    "bytes": 4114,
+    "sha256": "de9ea3d00d5695b6509132888843c81f3e77249a234de8d2b7c0e991d5abc4ea"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/oracles/7-Zip-License.txt",
+    "bytes": 6031,
+    "sha256": "519ac0a4bded9c18ea02e0afb71f663d8c47373bd9facd3ac96a79f51d77765d"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/oracles/UPSTREAM-NOTICE.md",
+    "bytes": 1703,
+    "sha256": "89f9ab3a528d5565bb5b1b55ffaf59b94ac17089a38fe71856d1ed30fd34d9a9"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/references/7z-Methods-26.04.txt",
+    "bytes": 3413,
+    "sha256": "b16ea5fdc50345fa2cb031f06fe410cea0b089f74a4138ac8141b9e2d816ffc7"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/references/7zFormat-18.06.txt",
+    "bytes": 7577,
+    "sha256": "8ec976b73ca88710286be1e991e49dbab485d9c0bf2410a80fa87e657850f82b"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/references/lzma-sdk-26.04.txt",
+    "bytes": 15835,
+    "sha256": "b6be2de40819b3ba00b329548abaeaba97589e1a6169442ec78b062b3337247b"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/references/node-24.16.0-zlib.html",
+    "bytes": 159894,
+    "sha256": "3c7de2a1cbd599b7aac5cb63b3521bb964ecbf166589d45e04a0e8e09220a44f"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/references/zstd-format-0.4.3.md",
+    "bytes": 77279,
+    "sha256": "81d08d9af1e3011190cae694d1b775b46db4743728733522a4119a5cb7558bb5"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/zstd/native-zip93.zip",
+    "bytes": 427,
+    "sha256": "e9282f76dbd3c080d0e12ef95489458523ebbc65c2951f4b8f3cb880a16c5d8b"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/zstd/native.tar.zst",
+    "bytes": 631,
+    "sha256": "7e5b29933b77431c8481499f01176058991db7036ad18e711e043218d37458a0"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/zstd/native.zst",
+    "bytes": 311,
+    "sha256": "9c4b8c03e5eb7932d349586ecf1e0f379bc021a543792dfb95fb6b5381b3f5ab"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/zstd/payload.bin",
+    "bytes": 16416,
+    "sha256": "b5b8d051cbbf49c16c0cf7e65fe35796601d64449d70938921b9bb368510721e"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/fixtures/zstd/provenance.json",
+    "bytes": 1075,
+    "sha256": "987ee02241ceebb7fdce414f39eb3531b3cb96c51b2ca499f0eed015e46b2342"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/formats-validation.json",
+    "bytes": 6447,
+    "sha256": "ebeffa9c835ebee99cd89b954f92d22539c7118d2c1445efe8c11e20700243b6"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/formats.test.mjs",
+    "bytes": 31783,
+    "sha256": "7a7847d60b34ead39b597aac54c1612f616ffe69b9a267e193bb01fc78554c98"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/gzip.mjs",
+    "bytes": 4384,
+    "sha256": "2d76ed467dbccd9263808d3a7efa9be0dbf78225b8c4d0c0184cd2a29d0e76c6"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/interop.ps1",
+    "bytes": 2071,
+    "sha256": "353ce11d994033bca9f8e16cc0226b68db30d7cc55f7e5c8fb3b6d0f5a653558"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/lzma-provenance.json",
+    "bytes": 18786,
+    "sha256": "b7ac1020e021c4a89e9aa153f3439e8df8cbf8ed95774360f1830f31fa8aa153"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/lzma-validation.json",
+    "bytes": 27386,
+    "sha256": "50ad460a9c5e2406895af3a53f6a7bb3f00b0298d22eaee3acad4a90eed617e4"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/lzma.integration.test.mjs",
+    "bytes": 8201,
+    "sha256": "fe283fb95a4c236aff017b3789515b8171834948ddd2f5b13d54d7dc8af56dca"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/lzma.mjs",
+    "bytes": 13502,
+    "sha256": "0276e852c46cfe307c21d020eb8a13e2daafa689b1d6d4d9b53502846ab164df"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/lzma.test.mjs",
+    "bytes": 20650,
+    "sha256": "08ebfae60b02be1ca005bb950c744d3f8367488a07af321fabfc69bed6c0428c"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/operation-budget.mjs",
+    "bytes": 1526,
+    "sha256": "828abefc3db2f1d2244c319435a6881079f8494eac4bd36047b7b762f5e65539"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/original-aes-test-helper.mjs",
+    "bytes": 2966,
+    "sha256": "60505de35288e47be1fb55b6438a4db3a7ce2dc3431c1c6a989da7f0c16e6051"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/original-lzma-test-helper.mjs",
+    "bytes": 1883,
+    "sha256": "eb3d275176a8544a5a453a67ae73ff516531e0cf992c92d70bc9e80605f4f81a"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/server.mjs",
+    "bytes": 13610,
+    "sha256": "3aeb207a4a4f07d785493bba21dc299368d758dc1877703d2c5dc7c3c0174507"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs",
+    "bytes": 5255,
+    "sha256": "1bdeed45439ab2094c55973d0790866991ed3f81ab5eca505d01977dee84b303"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip-aes-container.test.mjs",
+    "bytes": 2010,
+    "sha256": "2b58b500143fb4965f4c71f0c69469709923284303cf4b00ec178828c71f23d0"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip-aes-http.test.mjs",
+    "bytes": 6069,
+    "sha256": "0269e0c5be99c4da048e99a1bfaa2767260346e9d32509d9353fcf3bbe1f268a"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip-aes-original.test.mjs",
+    "bytes": 4113,
+    "sha256": "21dee30cf10463464e21c4821574e74ff2b806b05ca659f5c34c16c22be0d1e9"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip-aes-ui-fixture.mjs",
+    "bytes": 2496,
+    "sha256": "5a1fdbc3be0f9d9e77ada96fa5b610d51b9c4df66be6bc2dba5e4e9bb527f81d"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip-aes-ui.test.mjs",
+    "bytes": 4649,
+    "sha256": "46cebe79126c4f22b392e5a1f3af193465d18accb689858b6627a4544cf2ac34"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip-aes.mjs",
+    "bytes": 5144,
+    "sha256": "6f505517c220126ba9ba7594fdc74f54bdfb570b4b94ca1a9df9ccf215cb4e27"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip-aes.test.mjs",
+    "bytes": 3209,
+    "sha256": "261fb39f84b87dcf91e03655d2bdd9bc0304fe4ebb315986f8f782d4523870a5"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip-source-references.json",
+    "bytes": 22251,
+    "sha256": "320305de5a608881b85fbb182d777887043bd1bf9d1ae5e976cc961a3e575ccc"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip-validation.json",
+    "bytes": 19686,
+    "sha256": "ff53f71c7ad81e1c9903011f3cda81ea0e3d257d1130d4a475c69b65741e5be5"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip.mjs",
+    "bytes": 30483,
+    "sha256": "4f8aa3eb4dfb6ebbfa08068b310449ea9cb1e788df8ff6dd889a04e533136782"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/sevenzip.test.mjs",
+    "bytes": 23453,
+    "sha256": "89c1c3aecb2a75c03f6c1e97186c895582f350cefb6deab2178b6f31e0575362"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/source-metadata.mjs",
+    "bytes": 8968,
+    "sha256": "79bf64f3cf9f8a25ce73faf45201aa5b9a547ff4cb3d019fe046dbf7ba4bbeed"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/source-metadata.test.mjs",
+    "bytes": 21423,
+    "sha256": "27f2d65571fa31c0db55f29c4270903dd9322dba7458ba406a017c3a4ed9469a"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/tar.mjs",
+    "bytes": 10044,
+    "sha256": "940ce0be9034b8b54813e5290f6b40af4a98b4b89f1ef4e31d07caed38585afd"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/verify-lzma.mjs",
+    "bytes": 3158,
+    "sha256": "ef2bf20c8dd0b1cfdc0eb60648781a1027c08a55b60278aae5fb42b10166aefb"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/verify-sevenzip.mjs",
+    "bytes": 1871,
+    "sha256": "5eac453d42c2c32e2ff1d4ac3e2345c5f5623b01bb08ec9b4148c13e5e937435"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/zip.mjs",
+    "bytes": 19556,
+    "sha256": "a59b2cf92a5d83638beb238a3ffcb39796ff1a59aab0d241d1161f448ddd232d"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/zip.test.mjs",
+    "bytes": 13831,
+    "sha256": "f7732808c8e734fdfd400a3af56108c0c3e1c0a6abbed3141dda3b86d56cdc66"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/zstd-validation.json",
+    "bytes": 20024,
+    "sha256": "9500028a9423e8295cefd178b049ee0033e4518e3555363292618b54384aa6e1"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/zstd.mjs",
+    "bytes": 5330,
+    "sha256": "3413aa08a4c1b21df2a4ff6b68ee3bb0c1d456031ed4d85d921883469b102ec8"
+  },
+  {
+    "path": "products/rea-studio/apps/archive/zstd.test.mjs",
+    "bytes": 19409,
+    "sha256": "b50927498b32b96dd40096618a0a412b7a9a54a9548a40cd76fe23c0fba6dbaa"
+  },
+  {
+    "path": "products/rea-studio/catalog.mjs",
+    "bytes": 1836,
+    "sha256": "a99fcd3ae135fa1533d24f2de95a712267e34289767c2df30a1e83a91dc3ae71"
+  },
+  {
+    "path": "products/rea-studio/lib/storage.mjs",
+    "bytes": 3085,
+    "sha256": "729c2f9700b1239f04294b11c42bfd2754478b227e39ab03ec49a1be9141b633"
+  },
+  {
+    "path": "products/rea-studio/server.mjs",
+    "bytes": 7840,
+    "sha256": "85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94"
+  },
+  {
+    "path": "scripts/archive-native-metadata-diagnostic.mjs",
+    "bytes": 20438,
+    "sha256": "6d2bf5421e8b623a955b6c35fb5e90149795ba88f987ae226cce3b83d5846b01"
+  },
+  {
+    "path": "scripts/archive-native-metadata-trace.mjs",
+    "bytes": 4299,
+    "sha256": "ac461ce97359cd728381ccdc4b03a7038d57d0c8be5c77e9d3b456fb17d13530"
+  },
+  {
+    "path": ".github/workflows/archive-native-metadata-diagnostic.yml",
+    "bytes": 5578,
+    "sha256": "f8e42784a09cfd51550698a17c007ec0bcbc080219f7ebe48e685feb9ac8b67e"
+  }
+]
+REQUIRED_TEST_NAMES=[
+ 'archive HTTP file creation, ZIP validation and extraction persist through host restarts',
+ 'stored and deflated ZIP files preserve binary, UTF-8, empty files and directories',
+ 'ZIP parser validates CRC and headers and refuses traversal, duplicate paths, and oversized expansion',
+ 'malicious archive cannot create files outside workspace and unconfirmed extraction does not write',
+ 'Windows .NET independently reads generated ZIP and our parser reads independently created ZIP']
+sha=lambda data:hashlib.sha256(data).hexdigest()
+identity=lambda data:{'bytes':len(data),'sha256':sha(data)}
+def require(value,label):
+ if not value: raise AssertionError(label)
+def iso(value):
+ require(isinstance(value,str) and re.fullmatch(r'\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z',value),'Exact UTC millisecond time')
+ return datetime.datetime.fromisoformat(value.replace('Z','+00:00'))
+def safe(name):
+ require(isinstance(name,str) and name and not re.search(r'[\\:\x00-\x1f\x7f]',name) and not name.startswith('/'),'Safe portable member')
+ parts=name.rstrip('/').split('/')
+ require(all(part and part not in ('.','..') for part in parts),'Safe portable components')
+ return name
+def json_bytes(data): return json.loads(data.decode('utf-8-sig'))
+require(len(sys.argv)==5,'Reader arguments: ZIP SHA256 control-folder artifact-ID')
+source=Path(sys.argv[1]).resolve();expected=sys.argv[2];control=Path(sys.argv[3]).resolve();artifact_id=sys.argv[4]
+base=Path(__file__).resolve().parent/'cloud-verification-backups'
+require(source.is_relative_to(base.resolve()) and source.is_file(),'Owned artifact backup')
+require(control.is_relative_to(base.resolve()) and control.is_dir(),'Owned raw API backup')
+require(re.fullmatch(r'[0-9a-f]{64}',expected) and artifact_id.isdigit(),'Artifact identity syntax')
+raw=source.read_bytes();require(len(raw)<=8*1024*1024 and sha(raw)==expected,'Actual outer ZIP identity/bound')
+folder=source.parent/(source.stem+'-native-diagnostic-reader-r3-v1');folder.mkdir(exist_ok=False)
+def unpack(data,destination):
+ destination.mkdir(parents=True,exist_ok=False);records=[];seen=set();folded=set()
+ with zipfile.ZipFile(io.BytesIO(data)) as archive:
+  entries=archive.infolist();require(len(entries)<=96,'Fixed ZIP member bound')
+  require(sum(e.file_size for e in entries)<=16*1024*1024,'Fixed raw-byte bound')
+  for entry in entries:
+   name=safe(entry.filename);require(name not in seen and name.casefold() not in folded,'Unique case-independent ZIP names');seen.add(name);folded.add(name.casefold())
+   require(not entry.flag_bits&1 and not stat.S_ISLNK(entry.external_attr>>16),'No encrypted or symbolic members')
+   require(entry.file_size<=8*1024*1024,'Fixed individual-byte bound')
+   target=(destination/name).resolve();require(target.is_relative_to(destination.resolve()),'Owned extraction target')
+   if entry.is_dir(): target.mkdir(parents=True,exist_ok=True);continue
+   data=archive.read(entry);require(len(data)==entry.file_size,'Complete CRC-checked member bytes')
+   target.parent.mkdir(parents=True,exist_ok=True)
+   with target.open('xb') as stream: stream.write(data)
+   require(target.read_bytes()==data,'Readable exact backup')
+   records.append({'path':name,**identity(data)})
+ return records
+outer=folder/'downloaded-contents';outer_rows=unpack(raw,outer)
+require(len(outer_rows)==1 and outer_rows[0]['path'].endswith('.zip'),'Exactly one uploaded portable ZIP')
+inner=(outer/outer_rows[0]['path']).read_bytes();require(len(inner)<=8*1024*1024,'Inner ZIP bound')
+evidence=folder/'readable-evidence';files=unpack(inner,evidence)
+members={row['path']:row for row in files}
+result={'schema':'rea-local-native-metadata-diagnostic-backup/v1','runId':RUN,'jobId':JOB,'headSHA':HEAD,'artifactId':artifact_id,
+ 'artifact':str(source),'artifactIdentity':identity(raw),'portableEvidenceArchive':str(outer/outer_rows[0]['path']),'portableEvidenceArchiveIdentity':identity(inner),
+ 'readableEvidence':str(evidence),'files':files,'allCRCAndBytesReadable':True,'rawBytesPreservedBeforeQualification':True,
+ 'qualification':{},'auditErrors':[],'diagnosticFiveChecksAccepted':False,'nativeObservationsQualified':False,'completeTwoWorkerObservations':False,
+ 'localCandidateExecutions':0,'localProductExecutions':0,'localTests':0,'localBuilds':0,'localSyntaxChecks':0,
+ 'historicalD24CauseProven':False,'fullSuiteAcceptance':False,'fullParity':False,'superiority':False,
+ 'scope':'Readable retained observations of this instrumented diagnostic only; failed checks remain failed and never identify a historical unobserved error.'}
+def read(name):
+ safe(name);require(name in members,'Required uploaded role: '+name);data=(evidence/name).read_bytes();require(identity(data)=={k:members[name][k] for k in ('bytes','sha256')},'Member identity readback');return data
+def stage(name,operation):
+ try:
+  value=operation();result['qualification'][name]={'valid':True,'value':value};return value
+ except Exception as error:
+  result['qualification'][name]={'valid':False,'errorType':type(error).__name__,'error':str(error)}
+  result['auditErrors'].append({'stage':name,'errorType':type(error).__name__,'error':str(error)})
+  return None
+def api_qualification():
+ values={name:json_bytes((control/(name+'.json')).read_bytes()) for name in ('run','jobs','artifacts','commit','tree')}
+ run=values['run'];require(str(run['id'])==RUN and str(run['run_attempt'])==ATTEMPT,'Exact actual API run/attempt')
+ require(run['head_sha']==HEAD and run['head_branch']=='codex/rea-cloud-recovery-20261015' and run['path']==WORKFLOW,'Exact actual workflow/head/branch')
+ require(run['event'] in ('push','workflow_dispatch') and run['status']=='completed','Supported completed diagnostic event')
+ require(run['repository']['full_name']==REPOSITORY,'Exact actual repository')
+ require(run['conclusion'] in ('success','failure','cancelled','timed_out'),'Honest terminal diagnostic conclusion')
+ jobs=values['jobs'];require(jobs['total_count']==1 and len(jobs['jobs'])==1,'Exactly one diagnostic job')
+ job=jobs['jobs'][0];require(str(job['id'])==JOB and str(job['run_id'])==RUN and job['head_sha']==HEAD,'Exact actual API job')
+ require(job['name']==JOB_NAME and job['status']=='completed' and job['runner_group_name']=='GitHub Actions' and 'windows-2022' in job['labels'],'Verified hosted Windows job')
+ require(job['conclusion'] in ('success','failure','cancelled','timed_out'),'Honest terminal job conclusion')
+ artifacts=values['artifacts'];require(artifacts['total_count']==1 and len(artifacts['artifacts'])==1,'Exactly one actual artifact')
+ artifact=artifacts['artifacts'][0]
+ require(str(artifact['id'])==artifact_id and artifact['name']=='archive-native-diagnostic-'+RUN+'-'+ATTEMPT,'Exact diagnostic artifact ID/name')
+ require(not artifact['expired'] and artifact['digest']=='sha256:'+expected and artifact['size_in_bytes']==len(raw),'Actual artifact digest/size')
+ require(str(artifact['workflow_run']['id'])==RUN and artifact['workflow_run']['head_sha']==HEAD,'Artifact-to-run source binding')
+ require(values['commit']['sha']==HEAD and values['tree']['sha']==values['commit']['tree']['sha'] and values['tree']['truncated'] is False,'Exact complete committed tree')
+ require(len(values['tree']['tree'])<=100000,'Bounded actual tree')
+ return {'runConclusion':run['conclusion'],'jobConclusion':job['conclusion'],'event':run['event'],'tree':values['tree']['sha']}
+api=stage('actualApiAndArtifact',api_qualification)
+def source_qualification():
+ require(api is not None,'Actual API/source binding required')
+ tree=json_bytes((control/'tree.json').read_bytes());blobs={row['path']:row for row in tree['tree'] if row['type']=='blob'}
+ require(len(blobs)==sum(row['type']=='blob' for row in tree['tree']),'Unique actual Git blob paths')
+ expected_rows=FIXED_SOURCE_ROWS;require(len(expected_rows)==70 and len({r['path'] for r in expected_rows})==70,'Exact67+3 source table')
+ require(len([r for r in expected_rows if r['path'].startswith('products/rea-studio/apps/archive/')])==64,'Exact64 current Archive census')
+ actual_archive=sorted(p for p in blobs if p.startswith('products/rea-studio/apps/archive/') and not any(x in ('results','node_modules','.local') for x in p.split('/')))
+ require(actual_archive==sorted(r['path'] for r in expected_rows if r['path'].startswith('products/rea-studio/apps/archive/')),'Exact tracked Archive closure')
+ for row in expected_rows:
+  name=row['path'];data=read('source/'+safe(name)+'.snapshot');require(identity(data)=={k:row[k] for k in ('bytes','sha256')},'Fixed captured source '+name)
+  require(name in blobs and blobs[name]['mode']=='100644' and blobs[name].get('size')==len(data),'Regular actual Git source '+name)
+  require(hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()==blobs[name]['sha'],'Captured actual Git blob '+name)
+ before_raw=read('source-before.json');before=json_bytes(before_raw);after=json_bytes(read('source-after.json'))
+ execution={'GITHUB_SHA':HEAD,'GITHUB_RUN_ID':RUN,'GITHUB_RUN_ATTEMPT':ATTEMPT,'GITHUB_JOB':JOB_NAME,'GITHUB_REPOSITORY':REPOSITORY,'RUNNER_ENVIRONMENT':'github-hosted','RUNNER_OS':'Windows','RUNNER_ARCH':'X64'}
+ require(before['schema']=='rea-archive-native-diagnostic-source/v1' and before['status']=='verified-unexecuted','Source-before unexecuted schema')
+ require(after['schema']=='rea-archive-native-diagnostic-postcheck/v1' and after['status']=='source-verified','Independent source-after schema')
+ total=sum(row['bytes'] for row in expected_rows);require(total<=16*1024*1024,'Aggregate fixed source bound')
+ for item in (before,after):
+  require(item['execution']==execution and item['sourceCommit']==HEAD,'Exact same-attempt source proof')
+  require(item['rows']==expected_rows and item['sourceFiles']==70 and item['sourceBytes']==total,'Exact70 source proof rows')
+  require(item['allGitBlobsAuthenticated'] is True and item['sourceOverlay'] is False and item['productExecutions']==0 and item['originalExecutions']==0,'No source overlays or phase execution')
+ require(after['beforeReceipt']==identity(before_raw) and after['sourceStable'] is True,'Separate postcheck binds exact before receipt')
+ return {'sourceFiles':70,'fixedArchiveSources':64,'fixedHostSources':3,'toolingSources':3,'sourceBytes':total,'actualGitBlobsVerified':70,'sourceOverlay':False,'sourceStable':True}
+sources=stage('exactCommittedSourceAndIndependentPostcheck',source_qualification)
+def trace_qualification():
+ require(sources is not None,'Authenticated committed source required for qualified observations')
+ source_text=read('source/products/rea-studio/apps/archive/source-metadata.mjs.snapshot').decode().replace('\r\n','\n').replace('\r','\n')
+ marker='export const WINDOWS_METADATA_SCRIPT = String.raw`';require(source_text.count(marker)==1,'Single original native script')
+ start=source_text.index(marker)+len(marker);end=source_text.index('\n`;',start);script=source_text[start:end+1].encode('utf-16le');script_sha=sha(script)
+ require(script_sha=='76e3ac8e0aeb8b1fa42fbc84ec6956e2e2d044502f5de5e5552e8538f5f4b615','Independent exact original UTF16 script pin')
+ names=sorted(name for name in members if name.startswith('trace/'))
+ require(len(names)<=8,'Bounded worker trace count');all_rows=[];pids=set();test_files=[];qualified=[]
+ for name in names:
+  match=re.fullmatch(r'trace/native-events-([1-9]\d*)\.jsonl',name);require(match is not None,'Exact worker trace path')
+  raw_trace=read(name);require(len(raw_trace)<=128*1024 and raw_trace.endswith(b'\n'),'Bounded complete JSONL trace')
+  rows=[json.loads(line) for line in raw_trace.decode().splitlines()];require(0<len(rows)<=64,'Bounded nonempty worker records')
+  pid=int(match.group(1));require(pid not in pids,'Distinct worker PIDs');pids.add(pid);worker_test=None
+  for index,row in enumerate(rows):
+   require(set(row)=={'schema','runId','runAttempt','sourceCommit','processId','sequence','testFile','scriptSHA256','timeoutMs','maxBuffer','elapsedMs','childPid','callbackObserved','error','stdoutBytes','stderrBytes','inputRecorded','outputContentsRecorded','argumentsModified','limitsModified','retried'},'Exact non-content native observation fields')
+   require(row['schema']=='rea-archive-native-exec-observation/v1' and row['runId']==RUN and row['runAttempt']==ATTEMPT and row['sourceCommit']==HEAD,'Same-attempt native observation')
+   require(row['processId']==pid and row['sequence']==index+1,'Owned PID and consecutive worker call sequence')
+   require(row['testFile'] in ('app.integration.test.mjs','app.test.mjs') and (worker_test is None or worker_test==row['testFile']),'Exact single original worker')
+   worker_test=row['testFile'];require(row['scriptSHA256']==script_sha and row['timeoutMs']==15000 and row['maxBuffer']==64*1024*1024,'Exact original script and options')
+   require(type(row['elapsedMs']) in (int,float) and math.isfinite(row['elapsedMs']) and 0<=row['elapsedMs']<=300000,'Bounded observed call duration')
+   require(row['childPid'] is None or type(row['childPid']) is int and row['childPid']>0,'Observed child PID or failed-spawn null')
+   require(row['callbackObserved'] is True and all(row[k] is False for k in ('inputRecorded','outputContentsRecorded','argumentsModified','limitsModified','retried')),'Transparent no-content observation')
+   require(all(type(row[k]) is int and 0<=row[k]<=64*1024*1024 for k in ('stdoutBytes','stderrBytes')),'Bounded output byte observations')
+   error=row['error']
+   if error is not None:
+    require(set(error)=={'name','code','killed','signal'} and isinstance(error['name'],str) and len(error['name'])<=128 and type(error['killed']) is bool,'Bounded sanitized error fields')
+    require(error['code'] is None or type(error['code']) is int or isinstance(error['code'],str) and len(error['code'])<=128 and not re.search(r'[\x00-\x1f]',error['code']),'Sanitized error code')
+    require(error['signal'] is None or isinstance(error['signal'],str) and re.fullmatch(r'[A-Z0-9_-]{1,64}',error['signal']),'Sanitized error signal')
+  test_files.append(worker_test);all_rows.extend(rows);qualified.append({'path':name,**identity(raw_trace),'rows':rows})
+ complete=len(names)==2 and sorted(test_files)==['app.integration.test.mjs','app.test.mjs']
+ result['nativeObservationsQualified']=bool(all_rows);result['completeTwoWorkerObservations']=complete
+ result['qualifiedNativeObservations']=qualified
+ return {'traceFiles':len(names),'observedCalls':len(all_rows),'completeTwoOriginalWorkers':complete,'scriptSHA256':script_sha,'nativeErrorsObserved':sum(r['error'] is not None for r in all_rows),'observationsProveHistoricalD24Cause':False}
+traces=stage('nativeObservationSourceAndSchema',trace_qualification)
+def attempt_qualification():
+ require(api is not None and sources is not None and traces is not None,'Actual APIs, sources, postcheck and native observations required')
+ require(result['completeTwoWorkerObservations'],'Exactly two original workers required for complete diagnostic qualification')
+ attempt=json_bytes(read('diagnostic-attempt.json'));workflow=json_bytes(read('workflow-attempt.json'))
+ require(attempt['schema']=='rea-archive-native-metadata-diagnostic/v1' and attempt['status'] in ('passed-five-instrumented-checks','failed'),'Honest distinct diagnostic status')
+ before=json_bytes(read('source-before.json'));require(attempt['execution']==before['execution'] and attempt['sourceCommit']==HEAD and attempt['sourceBefore']==identity(read('source-before.json')),'Exact attempt/source-before binding')
+ start=iso(attempt['startedAtUtc']);end=iso(attempt['completedAtUtc']);require(start<=end,'Ordered diagnostic phase clocks')
+ jobs=json_bytes((control/'jobs.json').read_bytes());job=jobs['jobs'][0]
+ job_start=datetime.datetime.fromisoformat(job['started_at'].replace('Z','+00:00'));job_end=datetime.datetime.fromisoformat(job['completed_at'].replace('Z','+00:00'))
+ require(job_start<=start<=end<=job_end,'Diagnostic clocks inside actual hosted job bounds')
+ require(all(row['elapsedMs']<=(end-start).total_seconds()*1000+1 for item in result['qualifiedNativeObservations'] for row in item['rows']),'Observed calls inside diagnostic duration')
+ require(attempt['stdout']==identity(read('stdout.txt')) and attempt['stderr']==identity(read('stderr.txt')),'Exact raw command streams')
+ command=attempt['command'];require(command['deadlineMs']==300000 and command['inheritedNodeOptions'] is False and command['hook']=='scripts/archive-native-metadata-trace.mjs' and command['cwd']=='products/rea-studio','Unchanged diagnostic command boundaries')
+ require(ntpath.isabs(command['executable']) and ntpath.basename(command['executable']).lower()=='node.exe','Actual Node command')
+ args=command['args'];require(len(args)==5 and args[:3]==['--test','--test-concurrency=1','--test-reporter=tap'],'Exact test runner options')
+ expected_suffixes=['products\\rea-studio\\apps\\archive\\app.integration.test.mjs','products\\rea-studio\\apps\\archive\\app.test.mjs']
+ prefixes=[]
+ for value,suffix in zip(args[3:],expected_suffixes):
+  require(ntpath.isabs(value) and ntpath.normpath(value).endswith('\\'+suffix),'Exact unchanged selected original test path');prefixes.append(ntpath.normpath(value)[:-len(suffix)])
+ require(prefixes[0]==prefixes[1],'Both tests use the same actual checkout')
+ text=read('stdout.txt').decode('utf-8');summary={}
+ for key in ('tests','pass','fail','cancelled','skipped','todo'):
+  values=re.findall(r'^# '+key+r'\s+(\d+)\s*\r?$',text,re.M);require(len(values)==1,'Exactly one raw TAP '+key);summary[key]=int(values[0])
+ require(summary==attempt['summary'] and summary['tests']==5 and summary['pass']+summary['fail']==5 and all(summary[k]==0 for k in ('cancelled','skipped','todo')),'Exact five unchanged TAP groups with no skips')
+ names=re.findall(r'^# Subtest: (.+)\r?$',text,re.M);require([n.rstrip('\r') for n in names]==REQUIRED_TEST_NAMES,'All five original raw TAP names')
+ result_lines=re.findall(r'^(not ok|ok) (\d+) - (.+)\r?$',text,re.M);require(len(result_lines)==5 and [int(row[1]) for row in result_lines]==list(range(1,6)) and [row[2].rstrip('\r') for row in result_lines]==REQUIRED_TEST_NAMES,'Five exact raw result rows')
+ require(sum(row[0]=='ok' for row in result_lines)==summary['pass'] and sum(row[0]=='not ok' for row in result_lines)==summary['fail'],'Raw pass/fail rows match summary')
+ require(len(attempt['traces'])==2 and len({row['path'] for row in attempt['traces']})==2 and {row['path']:row for row in attempt['traces']}=={row['path']:row for row in result['qualifiedNativeObservations']} and attempt['traceComplete'] is True,'Attempt binds both raw worker traces without rewriting; file enumeration order is immaterial')
+ for field,value in {'applicationSourceChanged':False,'originalDeadlineMs':15000,'instrumentedDependencyObserver':True,'productAssertionsChanged':False,'retried':False,'historicalD24CauseProven':False,'fullSuiteAcceptance':False,'fullParity':False,'superiority':False}.items(): require(attempt[field]==value,'Exact diagnostic qualification '+field)
+ require(workflow['schema']=='rea-archive-native-diagnostic-workflow/v1' and workflow['sourceCommit']==HEAD and workflow['runId']==RUN and workflow['runAttempt']==ATTEMPT,'Exact workflow attempt identity')
+ require(workflow['checkout']=='success' and workflow['before']=='success' and workflow['after']=='success','Independent workflow source phases passed')
+ require(workflow['applicationSourcesChanged'] is False and workflow['originalMetadataDeadlineMs']==15000 and workflow['diagnosticOnly'] is True and workflow['historicalD24CauseProven'] is False,'Workflow diagnostic-only scope')
+ expected_members={'source/'+row['path']+'.snapshot' for row in FIXED_SOURCE_ROWS}|{'source-before.json','source-after.json','stdout.txt','stderr.txt','diagnostic-attempt.json','workflow-attempt.json'}|{row['path'] for row in result['qualifiedNativeObservations']}
+ require(set(members)==expected_members and len(members)==78,'Complete exact70+8 diagnostic roles, no substituted or unbound roles')
+ passed=summary['pass']==5 and summary['fail']==0 and attempt['exitCode']==0 and attempt['signal'] is None and attempt['error'] is None
+ require((attempt['status']=='passed-five-instrumented-checks')==passed,'Honest recorded product outcome')
+ require(workflow['execute']==('success' if passed else 'failure'),'Workflow execution outcome matches raw checks')
+ accepted=passed and api['runConclusion']=='success' and api['jobConclusion']=='success'
+ result['diagnosticFiveChecksAccepted']=accepted
+ return {'status':attempt['status'],'summary':summary,'exitCode':attempt['exitCode'],'workflowExecute':workflow['execute'],'actualRunConclusion':api['runConclusion'],'actualJobConclusion':api['jobConclusion'],'fiveChecksAccepted':accepted,'nativeObservationsRemainSeparate':True}
+stage('fiveChecksAndCompleteAttempt',attempt_qualification)
+report=folder/'local-native-diagnostic-backup-verification.json'
+with report.open('x',encoding='utf-8',newline='') as stream: stream.write(json.dumps(result,indent=2,ensure_ascii=False)+'\n')
+require(json.loads(report.read_text(encoding='utf-8'))==result,'Readable final backup report')
+print(json.dumps({key:value for key,value in result.items() if key not in ('files','qualifiedNativeObservations')},ensure_ascii=False))

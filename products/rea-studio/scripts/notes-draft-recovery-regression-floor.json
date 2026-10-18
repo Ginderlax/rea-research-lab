@@ -1,5 +1,5 @@
 {
-  "schema": "rea-notes-draft-recovery-regression-floor/v1",
+  "schema": "rea-notes-draft-recovery-regression-floor/v2",
   "baselineGitCommit": "698d2e301765d1b878fb251b3d59dadb5a3c9bac",
   "sourceOnly": true,
   "priorRawTAP": {
@@ -631,5 +631,38 @@
   "historicalReceiptsRebound": false,
   "fullParity": false,
   "superiority": false,
-  "note": "Frozen source-authored new finite and real Chromium result rosters. Prior21testfile bytes and111named results retain their separate historical source epoch. This candidate is unexecuted until a new supported hosted experiment run succeeds."
+  "note": "R2 preserves all21 original test pins and111 result names. Twenty current test files retain their original bytes; one explicitly declared byte transition strengthens the existing HTTP delivery check from two modules to three and records the expanded public boundary. Historical first-run receipts remain bound to3b4cfc3d and are not accepted as R2 results.",
+  "sourceTransitionParent": "3b4cfc3d14af3254273c666ab0c919965ab93dbe",
+  "priorTestFilePolicy": {
+    "originalPinsRetained": 21,
+    "unchangedCurrentFiles": 20,
+    "explicitlyStrengthenedFiles": 1,
+    "retainedNamedResults": 111
+  },
+  "testTransitions": [
+    {
+      "path": "products/rea-studio/apps/notes/todo.integration.test.mjs",
+      "before": {
+        "gitBlob": "3b02879f1782df24f84c6454be4ce196589728f4",
+        "bytes": 5802,
+        "sha256": "442da2522755a4a0c02a6602a8a63ce367a20d2a65d940a53062a7dc08e9d05e"
+      },
+      "after": {
+        "bytes": 5864,
+        "sha256": "7252a94a7b89afba359a6efccba2cd078a520fd268ccbe82ff242fe66ec5ca40"
+      },
+      "beforeSnapshotPath": "products/rea-studio/experiments/notes-draft-recovery/transitions/todo.integration.test.mjs.before.snapshot",
+      "exactReplacements": [
+        {
+          "before": "assert.deepEqual(imports, ['./markdown.mjs', './core.mjs']);",
+          "after": "assert.deepEqual(imports, ['./markdown.mjs', './core.mjs', './draft-recovery.mjs']);"
+        },
+        {
+          "before": "unchangedPublicModuleBoundary: true, actualBrowserExecution: false",
+          "after": "unchangedPublicModuleBoundary: false, explicitlyAddedRecoveryModule: true, actualBrowserExecution: false"
+        }
+      ],
+      "policy": "Extend the exact imported-module roster and apply the existing byte/content-type checks to the third module; keep every previous assertion and named test."
+    }
+  ]
 }

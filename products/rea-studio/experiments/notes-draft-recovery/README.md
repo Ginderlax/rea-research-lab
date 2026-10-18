@@ -1,6 +1,6 @@
 # Notes browser recovery experiment
 
-Status: source-authored candidate; cloud acceptance and installation into the development branch are pending. This experiment follows the verified `698d2e301765d1b878fb251b3d59dadb5a3c9bac` checkpoint. Historical receipts continue to describe their original source versions.
+Status: first hosted attempt failed; the explicit R2 repair is awaiting its own cloud acceptance. Installation into the development branch is pending. See transitions/README.md for the preserved failures and exact test-strengthening transition. This experiment follows the verified `698d2e301765d1b878fb251b3d59dadb5a3c9bac` checkpoint. Historical receipts continue to describe their original source versions.
 
 The documented Notes gap is loss of unsaved editor text after leaving the application or reloading the page. This candidate adds browser recovery copies. It does not establish full Joplin parity, original autosave equivalence, product superiority, or a performance improvement.
 
@@ -24,7 +24,7 @@ Each editor receives its own recovery UUID and increasing versions. Removal uses
 
 ## Evaluation protocol
 
-The new hosted Windows campaign must preserve the existing twenty-one Notes test files and all 111 prior named checks, then run the new validator, UI ownership, and real HTTP delivery checks. Real Chromium scenarios must exercise reload recovery, the separate-copy boundary, uncertain Save acknowledgement, cross-tab versions, and actual IndexedDB capacity, corruption, and failure paths. Tests use owned synthetic data only. Local work is limited to authoring, source review, lightweight orchestration, and readable backup copies.
+The R2 hosted Windows campaign must preserve twenty prior Notes test files, verify the exact declared strengthening of the twenty-first HTTP delivery test, and require all 111 prior result names plus seventeen new validator, UI ownership, and real HTTP checks. Real Chromium scenarios must exercise reload recovery, the separate-copy boundary, uncertain Save acknowledgement, cross-tab versions, and actual IndexedDB capacity, corruption, and failure paths. Tests use owned synthetic data only. Local work is limited to authoring, source review, lightweight orchestration, and readable backup copies.
 
 Source and test snapshots, exact Git identities, raw output, and failure records must be retained before interpreting the results. A GitHub success badge alone does not qualify the campaign. The older eight-scenario source-pinned browser campaign remains evidence for its original source version; this new campaign does not rewrite that receipt.
 

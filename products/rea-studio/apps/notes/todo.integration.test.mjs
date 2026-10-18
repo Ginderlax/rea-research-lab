@@ -23,14 +23,14 @@ test('real HTTP cold restarts retain to-do transitions, history, due metadata an
   opened = await f.call('history-restore', { id: opened.id, revision: opened.revision, historyRevision: 3 }); assert.equal(opened.todo.completed, 0); assert.equal(opened.todo.due, 1_800_000_000_123);
   const sha = value => createHash('sha256').update(value).digest('hex'), clientResponse = await f.staticResponse('/apps/notes/client.mjs'); assert.equal(clientResponse.status, 200);
   const clientBytes = Buffer.from(await clientResponse.arrayBuffer()), expectedClient = await readFile(new URL('./client.mjs', import.meta.url)); assert.deepEqual(clientBytes, expectedClient); assert.equal(sha(clientBytes), sha(expectedClient));
-  const imports = [...clientBytes.toString('utf8').matchAll(/import\s+\{[^}]+\}\s+from\s+'(\.\/[a-z-]+\.mjs)'/g)].map(match => match[1]); assert.deepEqual(imports, ['./markdown.mjs', './core.mjs']);
+  const imports = [...clientBytes.toString('utf8').matchAll(/import\s+\{[^}]+\}\s+from\s+'(\.\/[a-z-]+\.mjs)'/g)].map(match => match[1]); assert.deepEqual(imports, ['./markdown.mjs', './core.mjs', './draft-recovery.mjs']);
   const delivered = [];
   for (const specifier of imports) {
     const url = new URL(specifier, clientResponse.url), response = await f.staticResponse(url); assert.equal(response.status, 200, specifier); assert.equal(response.headers.get('content-type'), 'text/javascript; charset=utf-8');
     const actual = Buffer.from(await response.arrayBuffer()), expected = await readFile(new URL(specifier, import.meta.url)); assert.deepEqual(actual, expected); assert.equal(sha(actual), sha(expected)); delivered.push({ path: url.pathname, bytes: actual.length, sha256: sha(actual) });
   }
   assert.equal((await f.staticResponse('/apps/notes/todo.mjs')).status, 404);
-  console.log(JSON.stringify({ notesTodoActualHttpModuleDelivery: { client: { bytes: clientBytes.length, sha256: sha(clientBytes) }, delivered, unchangedPublicModuleBoundary: true, actualBrowserExecution: false } }));
+  console.log(JSON.stringify({ notesTodoActualHttpModuleDelivery: { client: { bytes: clientBytes.length, sha256: sha(clientBytes) }, delivered, unchangedPublicModuleBoundary: false, explicitlyAddedRecoveryModule: true, actualBrowserExecution: false } }));
 });
 
 test('editing imported to-do preserves exact resource bytes, IDs, relationships and unrelated JEX metadata over restart/export', async t => {

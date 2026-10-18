@@ -1,4 +1,4 @@
-// A new, hosted-only source epoch. Historical acceptance collectors are unchanged.
+// Hosted-only R2 source epoch; one exact prior test strengthening is declared.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -83,7 +83,15 @@ function git(arguments_, maxBuffer = 32 * 1024 * 1024) {
 const floorPath = 'products/rea-studio/scripts/notes-draft-recovery-regression-floor.json';
 const workflowPath = '.github/workflows/notes-draft-recovery-experiment-cloud.yml';
 const collectorPath = 'products/rea-studio/scripts/verify-notes-draft-recovery-cloud.mjs';
+const transitionedTestPath = 'products/rea-studio/apps/notes/todo.integration.test.mjs';
+const testBeforePath = 'products/rea-studio/experiments/notes-draft-recovery/transitions/todo.integration.test.mjs.before.snapshot';
+const exactTestReplacements = [
+  { before: "assert.deepEqual(imports, ['./markdown.mjs', './core.mjs']);", after: "assert.deepEqual(imports, ['./markdown.mjs', './core.mjs', './draft-recovery.mjs']);" },
+  { before: 'unchangedPublicModuleBoundary: true, actualBrowserExecution: false', after: 'unchangedPublicModuleBoundary: false, explicitlyAddedRecoveryModule: true, actualBrowserExecution: false' },
+];
 const required = [workflowPath, collectorPath, floorPath,
+  testBeforePath,
+  'products/rea-studio/experiments/notes-draft-recovery/transitions/README.md',
   'products/rea-studio/apps/notes/draft-recovery.mjs',
   'products/rea-studio/apps/notes/draft-recovery.test.mjs',
   'products/rea-studio/apps/notes/draft-recovery.ui.test.mjs',
@@ -121,8 +129,10 @@ function committed(name, objects) {
 }
 function regressionFloor(objects) {
   const raw = committed(floorPath, objects), value = JSON.parse(raw);
-  assert.equal(value.schema, 'rea-notes-draft-recovery-regression-floor/v1');
+  assert.equal(value.schema, 'rea-notes-draft-recovery-regression-floor/v2');
   assert.equal(value.baselineGitCommit, '698d2e301765d1b878fb251b3d59dadb5a3c9bac');
+  assert.equal(value.sourceTransitionParent, '3b4cfc3d14af3254273c666ab0c919965ab93dbe');
+  assert.deepEqual(value.priorTestFilePolicy, { originalPinsRetained: 21, unchangedCurrentFiles: 20, explicitlyStrengthenedFiles: 1, retainedNamedResults: 111 });
   assert.equal(value.sourceOnly, true);
   assert.equal(value.priorTestFileCount, 21); assert.equal(value.priorNamedResultCount, 111);
   assert.equal(value.priorTests.length, 21); assert.equal(value.priorNamedResults.length, 111);
@@ -140,7 +150,28 @@ function regressionFloor(objects) {
   assert.equal(value.unchangedTooling.length, 2);
   assert.equal(value.historicalReceiptsRebound, false);
   assert.equal(value.fullParity, false); assert.equal(value.superiority, false);
-  for (const row of [...value.priorTests, ...value.originalInputs, ...value.unchangedTooling]) {
+  assert.equal(value.testTransitions.length, 1);
+  const transition = value.testTransitions[0];
+  assert.equal(transition.path, transitionedTestPath);
+  assert.equal(transition.beforeSnapshotPath, testBeforePath);
+  assert.deepEqual(transition.exactReplacements, exactTestReplacements);
+  const prior = value.priorTests.find(row => row.path === transitionedTestPath); assert(prior);
+  assert.deepEqual(transition.before, { gitBlob: prior.gitBlob, ...pin(prior) });
+  assert.deepEqual(transition.after, { bytes: 5864, sha256: '7252a94a7b89afba359a6efccba2cd078a520fd268ccbe82ff242fe66ec5ca40' });
+  const before = committed(testBeforePath, objects);
+  assert.deepEqual(identity(before), pin(prior));
+  assert.equal(createHash('sha1').update(Buffer.from('blob ' + before.length + '\0')).update(before).digest('hex'), prior.gitBlob);
+  let expectedAfter = before;
+  for (const replacement of exactTestReplacements) {
+    const oldBytes = Buffer.from(replacement.before), newBytes = Buffer.from(replacement.after);
+    const offset = expectedAfter.indexOf(oldBytes);
+    assert(offset >= 0 && expectedAfter.lastIndexOf(oldBytes) === offset, 'Exactly one occurrence of the declared test-only byte replacement is required');
+    expectedAfter = Buffer.concat([expectedAfter.subarray(0, offset), newBytes, expectedAfter.subarray(offset + oldBytes.length)]);
+  }
+  const after = committed(transitionedTestPath, objects);
+  assert.deepEqual(after, expectedAfter, 'The existing delivery test may change only by its two explicitly reviewed byte replacements');
+  assert.deepEqual(identity(after), pin(transition.after));
+  for (const row of [...value.priorTests.filter(row => row.path !== transitionedTestPath), ...value.originalInputs, ...value.unchangedTooling]) {
     const bytes = committed(safe(row.path), objects);
     assert.deepEqual(identity(bytes), pin(row), 'Frozen regression/original/tool input changed: ' + row.path);
     if (row.gitBlob) assert.equal(objects.get(row.path), row.gitBlob);
@@ -193,7 +224,8 @@ function sameAttempt(value) {
   assert.equal(value.sourceCommit, process.env.GITHUB_SHA);
   assert.equal(value.role, role);
 }
-const record = { schema: 'rea-notes-draft-recovery-experiment-cloud/v1', phase, role, status: 'running', sourceCommit: process.env.GITHUB_SHA,
+const record = { schema: 'rea-notes-draft-recovery-experiment-cloud/v2', phase, role, status: 'running', sourceCommit: process.env.GITHUB_SHA,
+  sourceEpoch: 'explicit-canonical-save-and-delivery-transition-r2', historicalFailureSourceCommit: '3b4cfc3d14af3254273c666ab0c919965ab93dbe',
   execution, startedAtUtc: new Date().toISOString(), limits, children: [], sourceOverlay: false, sourceMutationPerformed: false,
   installedAcceptance: false, historicalReceiptsRebound: false, originalFullApplicationExecutions: 0,
   originalAutosaveComparison: false, fullParity: false, superiority: false, failure: null };
@@ -278,7 +310,7 @@ function finiteResults(floor) {
     assert.equal(rows.length, 1); assert.equal(Number(rows[0][1]), count);
   }
   assert.equal([...text.matchAll(/^1\.\.128\r?$/gm)].length, 1);
-  return { tests: 128, pass: 128, fail: 0, skipped: 0, cancelled: 0, todo: 0, unchangedPriorTests: 111, newCandidateOnlyTests: 17, names,
+  return { tests: 128, pass: 128, fail: 0, skipped: 0, cancelled: 0, todo: 0, retainedPriorNamedChecks: 111, unchangedPriorTestFiles: 20, explicitlyStrengthenedPriorTestFiles: 1, newCandidateOnlyTests: 17, names,
     originalComparisonScope: 'Unchanged legacy tests execute pinned original helper slices. No original full application or database and no autosave/crash-recovery comparison.' };
 }
 async function browserPrerequisites(objects) {
@@ -376,7 +408,7 @@ try {
   if (phase === 'before') {
     const current = census('source-before');
     write('draft-recovery-' + role + '-source-before.json', current.rows);
-    record.sourceAuthentication = { files: current.rows.length, bytes: current.bytes, gitTree: current.gitTree, frozenPriorTests: 21, frozenPriorNamedResults: 111, capturedOriginalInputs: 64 };
+    record.sourceAuthentication = { files: current.rows.length, bytes: current.bytes, gitTree: current.gitTree, originalPriorPinsPreserved: 21, unchangedPriorTestFiles: 20, explicitlyStrengthenedPriorTestFiles: 1, retainedPriorNamedResults: 111, capturedOriginalInputs: 64 };
     record.sourceStable = true; record.status = 'source-verified-unexecuted';
   } else {
     const receipt = json('draft-recovery-' + role + '-before.json'); sameAttempt(receipt);

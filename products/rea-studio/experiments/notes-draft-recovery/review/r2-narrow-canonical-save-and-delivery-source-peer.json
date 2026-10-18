@@ -1,0 +1,103 @@
+{
+  "schema": "rea-independent-draft-recovery-r2-actual-failure-and-narrow-source-peer/v1",
+  "atUtc": "2026-10-18T22:52:25.246803+00:00",
+  "status": "source-approved-for-a-new-hosted-attempt-no-pass-preclaimed",
+  "firstFailedRun": "39173776352",
+  "actualFailureEvidence": [
+    {
+      "jobId": "117812131149",
+      "path": "work/cloud-verification-backups/job-117812131149/logs.txt",
+      "bytes": 104749,
+      "sha256": "4d8ce8e7412577eb5fd1a5775af897ebbcad75352e28c0188edb8505b81fcca2"
+    },
+    {
+      "jobId": "117812131036",
+      "path": "work/cloud-verification-backups/job-117812131036/logs.txt",
+      "bytes": 47666,
+      "sha256": "8f81b4b2f4f64cae52d4bece96747eea490f0715f144ac15ff79d0b70e85050e"
+    }
+  ],
+  "observedResults": {
+    "finite": {
+      "tests": 128,
+      "passed": 125,
+      "failed": 3
+    },
+    "realChromium": {
+      "tests": 12,
+      "passed": 11,
+      "failed": 1
+    }
+  },
+  "sourceCorrections": {
+    "server": {
+      "before": {
+        "path": "work/notes-draft-recovery-20261018-next/candidate/products/rea-studio/apps/notes/server.mjs",
+        "bytes": 25742,
+        "sha256": "4166bfea21ebf4c237aad41c3d5ace51eb21037db599b91a29217d52dde01569"
+      },
+      "after": {
+        "path": "work/notes-draft-recovery-20261018-next/candidate-r2/products/rea-studio/apps/notes/server.mjs",
+        "bytes": 25765,
+        "sha256": "5bad6e798157a2f7d814326d302905b1b6f8449e5f870214642eab01534ac827"
+      },
+      "exactWholeByteReconstruction": true,
+      "onlyInsertionBytes": 23,
+      "behavior": "Fresh ordinary and NewToDo Save returns/stores metadataEdited:false immediately, matching existing canonical ensureOrganization normalization on later reads."
+    },
+    "directModuleDeliveryTest": {
+      "preservedBeforeSnapshot": {
+        "path": "work/notes-draft-recovery-20261018-next/candidate-r2/products/rea-studio/experiments/notes-draft-recovery/transitions/todo.integration.test.mjs.before.snapshot",
+        "bytes": 5802,
+        "sha256": "442da2522755a4a0c02a6602a8a63ce367a20d2a65d940a53062a7dc08e9d05e"
+      },
+      "after": {
+        "path": "work/notes-draft-recovery-20261018-next/candidate-r2/products/rea-studio/apps/notes/todo.integration.test.mjs",
+        "bytes": 5864,
+        "sha256": "7252a94a7b89afba359a6efccba2cd078a520fd268ccbe82ff242fe66ec5ca40"
+      },
+      "exactWholeByteReconstruction": true,
+      "literalReplacements": 2,
+      "expectedImports": [
+        "./markdown.mjs",
+        "./core.mjs",
+        "./draft-recovery.mjs"
+      ],
+      "deliveryStatusMimeRawByteAndSHAAssertionsAllRetained": true,
+      "publicModuleBoundaryObservationNowExplicitlyExtended": true
+    }
+  },
+  "canonicalNormalizationSource": {
+    "path": "outputs/rea-research-lab/products/rea-studio/apps/notes/notebooks.mjs",
+    "bytes": 6902,
+    "sha256": "4ba3d49563b87d1a37ebb4314d4f513f84e0c8681f9404842c380bc49175edc9"
+  },
+  "strictNewEqualityAssertionFilesByteUnchanged": [
+    {
+      "path": "outputs/rea-research-lab/products/rea-studio/apps/notes/draft-recovery.http.test.mjs",
+      "bytes": 4734,
+      "sha256": "4a441f969ae2753aee0fad680cfbc2f698c11d10755d035650f809da73fa2dbc"
+    },
+    {
+      "path": "outputs/rea-research-lab/products/rea-studio/apps/notes/draft-recovery.ui.test.mjs",
+      "bytes": 14365,
+      "sha256": "2d3d00118db63882429c6a56f2b913638366b0d3a85dd19ee469a1529f7cb35d"
+    },
+    {
+      "path": "outputs/rea-research-lab/products/rea-studio/browser-tests/notes-draft-recovery.spec.mjs",
+      "bytes": 16530,
+      "sha256": "430c2e6fe65d6371d68438287ce665e564621fc6d72d09a1ec92c0dd3603dcab"
+    }
+  ],
+  "review": [
+    "Actual three equality failures add only canonical metadataEdited:false after re-read; adding the same property at initial creation fixes the product contract instead of weakening equality.",
+    "metadataEdited:false has the same existing export meaning for new local notes; existing edited-note metadataEdited:true and imported-note normalization remain unchanged.",
+    "The direct import remains visible; the strengthened literal list makes the existing delivery loop authenticate all three dependencies. There is no dynamic-import/reexport bypass or skipped delivery assertion.",
+    "The old111 result-name floor is preserved. This new source epoch has20 original Notes test files unchanged and one explicitly strengthened delivery test; the original21-file source bytes remain historical.",
+    "First failed source/results/ZIPs remain separate and must not be rebound to any subsequent successful attempt."
+  ],
+  "scopeLimits": [
+    "Read-only source/actual log/byte comparison and work-only peer authoring. No qualification reader, product, browser, original, tests, build or syntax execution.",
+    "No claim that these repairs pass until a distinct exact-head hosted run is completed and independently qualified."
+  ]
+}

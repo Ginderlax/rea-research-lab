@@ -111,7 +111,7 @@ export async function handle({ action, input = {}, store, workspace }) {
     const inputNotebook = text(request.notebook ?? 'Notes', 'Notebook', 200), notebook = existing?.notebook === inputNotebook ? inputNotebook : label(inputNotebook, 'Notebook', 200).trim() || 'Notes';
     const cleanTags = existing && JSON.stringify(request.tags) === JSON.stringify(existing.tags) ? existing.tags : tags(request.tags ?? []);
     const changes = { title, body: text(request.body ?? '', 'Note', 200_000), notebook, tags: cleanTags }, now = new Date().toISOString();
-    const draft = existing ? edited(existing, changes) : { id: randomUUID(), ...changes, createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [], ...(request.newTodo ? {todo:{isTodo:true,due:0,completed:0}} : {}) };
+    const draft = existing ? edited(existing, changes) : { id: randomUUID(), ...changes, createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [], metadataEdited: false, ...(request.newTodo ? {todo:{isTodo:true,due:0,completed:0}} : {}) };
     const selection={...request,notebook};if(existing&&request.notebook!==undefined&&request.notebookId===existing.notebookId&&request.notebook!==existing.notebook)delete selection.notebookId;
     const note=bindNotebook(s,draft,selection);
     s.notes[note.id] = note; await store.set(stateKey, s); return note;

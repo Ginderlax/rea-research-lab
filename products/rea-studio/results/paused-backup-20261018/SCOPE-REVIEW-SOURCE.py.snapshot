@@ -1,0 +1,49 @@
+"""Final compact backup coverage/privacy continuity review only; no product/reader/CRC execution."""
+from pathlib import Path
+import hashlib,json,datetime,subprocess
+BASE=Path(__file__).resolve().parents[2];OWN=Path(__file__).resolve().parent;B=BASE/'work/resume-20261018-backup';LAB=BASE/'outputs/rea-research-lab'
+pin=lambda data:{'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}
+def fp(p):return {'path':p.relative_to(BASE).as_posix(),**pin(p.read_bytes())}
+ap=B/'pack-inputs-r2.json';pp=B/'final-privacy-screen-r2.json';araw=ap.read_bytes();praw=pp.read_bytes()
+assert pin(araw)=={'bytes':30298815,'sha256':'b5076fc31fa368e12119bfd519ba63e9a4e0807a71949fea4d92ffc03a0d00c2'}
+assert pin(praw)=={'bytes':84198,'sha256':'5bce17ec254442343239ed0793a3a9533e35839dda7c0ee5502c02e3f3bdfd64'}
+a=json.loads(araw);p=json.loads(praw);prior_path=OWN/'comprehensive-backup-scope-independent-peer.json';prior=json.loads(prior_path.read_bytes())
+assert pin(prior_path.read_bytes())=={'bytes':11267,'sha256':'c186d53f6a454de7e0c6f1b4b5fa8a22bf9fe6073c417e9fc717025f978501b0'}
+assert a['checkpointCommit']=='3c710a31e438af7f1682fc5cf497be4264db35ff'
+files=a['files'];aliases=a['contentAndCommittedAliases'];logical={r['path']:r for r in files+aliases};unique={r['path']:r for r in files}
+assert len(logical)==len(files)+len(aliases)==a['logicalFileCount']==69473
+assert len(files)==6494 and len(aliases)==62979 and sum(r['bytes']for r in files)==a['storedUniqueBytes']==818941589
+for row in aliases:
+ if'contentAlias'in row:
+  assert row['contentAlias']in unique and {k:row[k]for k in('bytes','sha256')}=={k:unique[row['contentAlias']][k]for k in('bytes','sha256')}
+ else:assert row.get('recoverableAtCommittedPaths')and'currentGitBlob'in row
+for row in prior['requiredKeyChecks']:
+ assert row['path']in logical and {k:row[k]for k in('bytes','sha256')}=={k:logical[row['path']][k]for k in('bytes','sha256')}
+prior_raw=[q.relative_to(BASE).as_posix()for q in(BASE/'work/cloud-verification-backups').glob('run-*/artifact-*.zip')if q.is_file()]
+assert len(prior_raw)==189 and all(name in logical for name in prior_raw)
+install=BASE/'work/cloud-recovery-20261015/notes36-source-installation-e655-20261016'
+before=[q.relative_to(BASE).as_posix()for q in(install/'before').rglob('*')if q.is_file()];after=[q.relative_to(BASE).as_posix()for q in(install/'after').rglob('*')if q.is_file()]
+assert len(before)==11 and len(after)==31 and all(name in logical for name in before+after)
+fresh_prefix='work/resume-20261018-evidence/fresh-full-39162757907-2026-10-18T20-26-02.640Z/readable-evidence/'
+assert len([name for name in logical if name.startswith(fresh_prefix)])==437
+assert p['unresolvedCount']==0 and p['unresolvedLiteralFindings']==[]and p['remainingSelectedUnreadableArchiveCount']==0
+assert a['literalCredentialScreen']['count']==0 and a['literalCredentialScreen']['findings']==[]
+resolved=p['resolvedPublicDocumentationExamples'];assert len(resolved)==9
+registry_name='products/rea-studio/requirements/workspace-products.json';registry_raw=subprocess.check_output(['git','-C',str(LAB),'show',a['checkpointCommit']+':'+registry_name]);registry=json.loads(registry_raw)
+catalogue=next(row for row in registry['documentCatalogues']if row['id']=='grafana-documents');assert catalogue['commit']=='6193dc03311b631b9727b560d24369e683dc396e'and len(catalogue['files'])==772
+catalogue_rows={r['path']:r for r in catalogue['files']};observations=[]
+for row in resolved:
+ name=row['path'];assert name.startswith('work/grafana-inventory/corpus/');docname=name.removeprefix('work/grafana-inventory/corpus/');raw=(BASE/name).read_bytes();oid=hashlib.sha1(b'blob '+str(len(raw)).encode()+b'\0'+raw).hexdigest()
+ assert pin(raw)==row['sourceIdentity']and oid==row['upstreamGitBlob']==catalogue_rows[docname]['gitBlobSha']and len(raw)==catalogue_rows[docname]['bytes']
+ assert row['upstreamCommit']==catalogue['commit']and row['publicUpstream']=='https://raw.githubusercontent.com/grafana/grafana/'+catalogue['commit']+'/'+docname
+ assert row['publicCatalogue']['commit']==a['checkpointCommit']and row['publicCatalogue']['path']==registry_name and {k:row['publicCatalogue'][k]for k in('bytes','sha256')}==pin(registry_raw)
+ assert row['credentialValuesRepublishedByThisResolutionRecord']is False
+ observations.append({'path':name,'upstreamGitBlob':oid,'publicCommit':catalogue['commit'],'sourceIdentity':pin(raw)})
+removed=p['approvedCacheExclusions'];assert len(removed)==3 and len({(row['bytes'],row['sha256'])for row in removed})==2
+assert all(row['rootApprovedExclusion']and row['retainedLocally']and row['path']not in logical for row in removed)
+assert all('restic_0.19.1_windows_amd64.zip'in row['path']or row['path']=='work/zstd-browser-workspace-20261012/archive/workspace/archive/browser-zip93.zip'for row in removed)
+assert len([row for row in removed if'restic_0.19.1_windows_amd64.zip'in row['path']])==2
+result={'schema':'rea-final-normalized-backup-independent-continuity-and-privacy-peer/v1','at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'reviewer':'/root/resume_evidence_1018','status':'passed-scope-and-recorded-privacy-resolution','normalizedInputs':fp(ap),'normalizedPrivacy':fp(pp),'priorRawScopePeer':fp(prior_path),'priorRawFindingHistoryUnchanged':True,'requiredKeySourceAndReceiptPinsUnchanged':len(prior['requiredKeyChecks']),'priorRawOuterZIPsIncluded':189,'installationBeforeFiles':11,'installationAfterFiles':31,'freshCancelledRunReadableMembersIncluded':437,'allContentAliasTargetsClosed':True,'logicalFiles':69473,'storedUniqueFiles':6494,'storedUniqueBytes':818941589,'contentAndGitAliases':62979,'resolvedUpstreamExamples':observations,'approvedCacheExclusions':removed,'unresolvedRecordedPrivacyFindings':0,'remainingSelectedUnreadableArchives':0,'noUniversalCredentialAbsenceClaim':True,'historicalMissingArtifactGapRetained':a['pending'],'sourceCandidateAndQualifiersUnexecuted':True,'privacyScope':'Recorded literal findings are resolved by pinned public upstream documentation provenance or exact root-approved vendor/generated cache exclusions. No secret value is copied into this review. This is not a universal secret detector.','finalPackAndRestoreValidationNotEstablishedByThisPeer':True,'peerSource':fp(Path(__file__)),'productExecutions':0,'readerExecutions':0,'tests':0,'builds':0,'syntaxChecks':0,'repeatedZIPCRCScans':0,'GitMutations':0}
+out=OWN/'final-normalized-backup-r2-independent-peer.json';assert not out.exists()
+with out.open('xb')as f:f.write((json.dumps(result,indent=2)+'\n').encode())
+print(json.dumps({'peer':fp(out),'status':result['status'],'logicalFiles':69473,'priorOuterZIPs':189,'freshReadableMembers':437,'resolvedPublicExamples':9,'unresolvedFindings':0}))

@@ -1,0 +1,171 @@
+"""Backup-only streaming copier. Never imports or runs a saved product or test."""
+from pathlib import Path, PurePosixPath
+import argparse, datetime, hashlib, json, os, re, stat, subprocess
+
+BASE = Path(__file__).resolve().parent.parent
+LAB = BASE / 'outputs/rea-research-lab'
+HEAD = '3c710a31e438af7f1682fc5cf497be4264db35ff'
+DEST = LAB / 'products/rea-studio/results/paused-backup-20261018'
+PART = 8 * 1024 * 1024
+CHUNK = 1024 * 1024
+
+MAX_UNIQUE = 2 * 1024**3
+MAX_LOGICAL = 100000
+def check_name(name):
+    if not isinstance(name,str) or not 0 < len(name) <= 4096 or any(ord(c)<32 or ord(c)==127 for c in name):
+        raise ValueError('Invalid path text')
+    if any(c in name for c in '\\:*?"<>|') or name.startswith('/'):
+        raise ValueError('Unsafe path characters')
+    pieces=name.split('/')
+    for component in pieces:
+        if component in ('','.','..') or component.casefold()=='.git' or component.rstrip(' .')!=component:
+            raise ValueError('Noncanonical path component')
+        stem=component.split('.')[0].upper()
+        if stem in {'CON','PRN','AUX','NUL','CLOCK$'} or re.fullmatch(r'(?:COM|LPT)[1-9]',stem):
+            raise ValueError('Reserved Windows path component')
+    return PurePosixPath(name)
+def no_reparse(path):
+    # Check all existing ancestors as well as the leaf. resolve() alone can hide
+    # a junction inside the workspace. Nonexistent new output leaves are allowed.
+    for item in [path.absolute(),*path.absolute().parents]:
+        try: info=item.lstat()
+        except FileNotFoundError: continue
+        if stat.S_ISLNK(info.st_mode) or getattr(info,'st_file_attributes',0)&0x400:
+            raise ValueError('Link or reparse point refused: '+str(item))
+def checked_identity(row):
+    if type(row.get('bytes')) is not int or not 0 <= row['bytes'] <= MAX_UNIQUE or not isinstance(row.get('sha256'),str) or not re.fullmatch('[0-9a-f]{64}',row['sha256']):
+        raise ValueError('Invalid bounded file identity')
+    return row['bytes'],row['sha256']
+
+RESTORER = BASE/'work/restore-paused-backup-20261018-r3.py'
+RESTORER_ID = (9279, 'd3b420c10a83a2d76c41195f8f3b54ca0afcad08c475c071fa8bd05e83aaea62')
+
+def digest_file(p):
+    h = hashlib.sha256(); size = 0
+    with p.open('rb') as f:
+        for b in iter(lambda: f.read(CHUNK), b''):
+            size += len(b); h.update(b)
+    return size, h.hexdigest()
+
+def logical(name):
+    p=check_name(name)
+    if not (name.startswith('work/') or name.startswith('outputs/rea-backup-2026-10-12/')):
+        raise ValueError('Unapproved backup root: '+name)
+    return p
+
+def source(row):
+    checked_identity(row)
+    p = BASE.joinpath(*logical(row['path']).parts)
+    no_reparse(p)
+    if p.is_symlink() or not p.is_file(): raise ValueError('Missing or linked input: ' + row['path'])
+    p.resolve().relative_to(BASE.resolve())
+    if digest_file(p) != (row['bytes'], row['sha256']): raise ValueError('Input changed: ' + row['path'])
+    return p
+
+ap = argparse.ArgumentParser()
+ap.add_argument('manifest'); ap.add_argument('manifest_sha256')
+args = ap.parse_args()
+manifest_path = Path(args.manifest).absolute()
+no_reparse(manifest_path)
+manifest_path.resolve().relative_to(BASE.resolve())
+if manifest_path.stat().st_size > 256*1024*1024 or not re.fullmatch('[0-9a-f]{64}',args.manifest_sha256): raise SystemExit('Invalid bounded manifest')
+if digest_file(manifest_path)[1] != args.manifest_sha256: raise SystemExit('Manifest identity changed')
+m = json.loads(manifest_path.read_text(encoding='utf-8-sig'))
+if m['checkpointCommit'] != HEAD: raise SystemExit('Wrong checkpoint')
+if m['literalCredentialScreen']['count'] != 0 or m['literalCredentialScreen'].get('findings'): raise SystemExit('Unresolved privacy findings')
+no_reparse(RESTORER)
+if digest_file(RESTORER)!=RESTORER_ID: raise SystemExit('Frozen restorer source identity changed')
+if subprocess.check_output(['git','-C',str(LAB),'rev-parse','HEAD'],text=True).strip() != HEAD:
+    raise SystemExit('Source HEAD changed')
+if subprocess.check_output(['git','-C',str(LAB),'status','--porcelain=v1'],text=True):
+    raise SystemExit('Checkout must be clean')
+rows = m['files']; aliases = m['contentAndCommittedAliases']
+names = [r['path'] for r in rows + aliases]
+if len(names) != len({n.casefold() for n in names}): raise SystemExit('Duplicate logical paths')
+for r in rows + aliases: logical(r['path']);checked_identity(r)
+if len(rows + aliases) > 100000 or sum(r['bytes'] for r in rows) > 2*1024**3:
+    raise SystemExit('Unreviewed backup bounds')
+# Revalidate every direct file before creating the exclusively new destination.
+for r in rows + aliases: source(r)
+tree = {}
+for raw in subprocess.check_output(['git','-C',str(LAB),'ls-tree','-rz',HEAD]).split(b'\0'):
+    if raw:
+        props, name = raw.split(b'\t',1); mode, typ, oid = props.decode().split()
+        tree[name.decode()] = (mode, typ, oid)
+unique_names = set(x['path'] for x in rows)
+for r in aliases:
+    if 'currentGitBlob' in r:
+        gp = r['recoverableAtCommittedPaths'][0]
+        if tree.get(gp) not in [('100644','blob',r['currentGitBlob']),('100755','blob',r['currentGitBlob'])]:
+            raise SystemExit('Committed alias path mismatch: ' + r['path'])
+        check_name(gp)
+        if not re.fullmatch('[0-9a-f]{40}',r['currentGitBlob']): raise SystemExit('Invalid Git blob')
+        if 'contentAlias' in r: raise SystemExit('Ambiguous alias storage')
+    elif r.get('contentAlias') not in unique_names:
+        raise SystemExit('Unknown content alias')
+    else:
+        target=next(x for x in rows if x['path']==r['contentAlias'])
+        if checked_identity(r)!=checked_identity(target):raise SystemExit('Content alias identity mismatch')
+no_reparse(DEST)
+DEST.mkdir(exist_ok=False)
+no_reparse(DEST)
+(DEST/'payload').mkdir()
+parts = []; entries = []; f = None; part_size = 0; part_hash = None; part_name = None
+
+def finish_part():
+    global f
+    if f is not None:
+        f.flush(); os.fsync(f.fileno()); f.close(); f = None
+        parts.append({'path':part_name,'bytes':part_size,'sha256':part_hash.hexdigest()})
+
+try:
+    for r in rows:
+        segments = []; seen = hashlib.sha256(); size = 0
+        src=BASE.joinpath(*logical(r['path']).parts);no_reparse(src)
+        with src.open('rb') as inp:
+            while True:
+                if f is None:
+                    part_name = 'payload/part-%04d.snapshot' % (len(parts)+1)
+                    no_reparse(DEST/part_name)
+                    f = (DEST/part_name).open('xb'); part_size = 0; part_hash = hashlib.sha256()
+                b = inp.read(min(CHUNK, PART-part_size))
+                if not b: break
+                start = part_size; f.write(b); part_hash.update(b); seen.update(b)
+                part_size += len(b); size += len(b)
+                if segments and segments[-1]['part'] == part_name:
+                    segments[-1]['bytes'] += len(b)
+                else: segments.append({'part':part_name,'offset':start,'bytes':len(b)})
+                if part_size == PART: finish_part()
+        if (size, seen.hexdigest()) != (r['bytes'],r['sha256']):
+            raise ValueError('Input changed during copy: '+r['path'])
+        entries.append({'path':r['path'],'bytes':size,'sha256':seen.hexdigest(),'segments':segments})
+    finish_part()
+    ae = []
+    for r in aliases:
+        row = {k:r[k] for k in ('path','bytes','sha256')}
+        if 'currentGitBlob' in r:
+            row['git'] = {'commit':HEAD,'path':r['recoverableAtCommittedPaths'][0],'blob':r['currentGitBlob']}
+        else: row['contentAlias'] = r['contentAlias']
+        ae.append(row)
+    index = {'schema':'rea-paused-portable-backup/v1',
+      'createdAtUtc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
+      'state':'PAUSED by direct human instruction; backup-only checkpoint; unfinished work remains unfinished',
+      'baseCommit':HEAD,'inputManifestSHA256':args.manifest_sha256,
+      'partBytesMaximum':PART,'parts':parts,'files':entries,'aliases':ae,
+      'logicalFileCount':len(entries)+len(ae),'storedUniqueBytes':sum(p['bytes'] for p in parts),
+      'excluded':m.get('excludedFromThisProposal',[]),'pending':m.get('pending',[]),
+      'privacyScreen':m['literalCredentialScreen'],
+      'restoreSource':{'path':'restore.py','bytes':RESTORER_ID[0],'sha256':RESTORER_ID[1]},
+      'productTestsOrBuildsExecuted':False,'qualificationOrSuperiorityClaim':False}
+    with (DEST/'BACKUP-INDEX.json').open('x',encoding='utf-8',newline='\n') as out:
+        json.dump(index,out,indent=2); out.write('\n')
+    no_reparse(RESTORER);no_reparse(DEST/'restore.py')
+    if digest_file(RESTORER)!=RESTORER_ID:raise ValueError('Frozen restorer changed during pack')
+    with RESTORER.open('rb') as inp,(DEST/'restore.py').open('xb') as out:
+        for b in iter(lambda:inp.read(CHUNK),b''):out.write(b)
+        out.flush();os.fsync(out.fileno())
+    if digest_file(DEST/'restore.py')!=RESTORER_ID:raise ValueError('Stored restorer mismatch')
+    print(json.dumps({'destination':str(DEST),'files':len(entries),'aliases':len(ae),
+       'parts':len(parts),'bytes':index['storedUniqueBytes'],'state':'copied; independent full readback required'}))
+finally:
+    if f is not None: f.close()

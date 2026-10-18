@@ -1,0 +1,296 @@
+--- qualify-draft-recovery-39173776352-r2.py
++++ qualify-draft-recovery-39174429979-r1.py
+@@ -2,7 +2,8 @@
+ 
+ Required metadata: run.json, jobs.json, artifacts.json, commit.json (Git database
+ commit endpoint), tree.json (recursive Git tree endpoint, truncated=false).
+-The original failing 3b4 campaign stays pinned to its own source and receipts.
++This separate R2 reader accepts only the fresh f0ca90d2 hosted campaign. The
++original failing 3b4 campaign retains its separate immutable reader/receipts.
+ """
+ import argparse
+ import datetime
+@@ -15,51 +16,54 @@
+ import zipfile
+ import zlib
+ 
+-RUN = '39173776352'
++RUN = '39174429979'
+ ATTEMPT = 1
+-COMMIT = '3b4cfc3d14af3254273c666ab0c919965ab93dbe'
+-PARENT = '698d2e301765d1b878fb251b3d59dadb5a3c9bac'
++COMMIT = 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269'
++PARENT = '3b4cfc3d14af3254273c666ab0c919965ab93dbe'
++ORIGINAL_PIN_EPOCH = '698d2e301765d1b878fb251b3d59dadb5a3c9bac'
+ BRANCH = 'experiment/notes-draft-recovery-20261018'
+ WORKFLOW = '.github/workflows/notes-draft-recovery-experiment-cloud.yml'
+ STUDIO = 'products/rea-studio/'
+ COLLECTOR = STUDIO + 'scripts/verify-notes-draft-recovery-cloud.mjs'
+ FLOOR = STUDIO + 'scripts/notes-draft-recovery-regression-floor.json'
+ FIXED_SOURCE = {
+-    WORKFLOW: (13270, '7221be1ddf20d3f2b3b63f506c22a4e7cddce95c3fb9eef211843fe6c47768f1'),
+-    COLLECTOR: (28963, '258af6c02a7e512c50b3136e5ff63ad448c49f3b60809470a62c79686b9cc652'),
+-    FLOOR: (38458, '7364c1fa85ec79e6fb6a997fc51a3dd9a8709737aeb3fbc1b125f147c63d33ea'),
++    WORKFLOW: (13298, 'e46b0b4ff32e995078a833e0c6697f2e1411aa38ed5f30f302beb9bfb3df07fe'),
++    COLLECTOR: (31899, '430c6645029a7537806fcd040a155e24ebf2b00981e199cac38910b48c44e59a'),
++    FLOOR: (40089, 'd02b32326cd9b2e448fea996d0a616c24c7287f47b34cb77c0c575fd1bfcc7d7'),
+ }
+-JOBS = {'finite': '117812131149', 'browser': '117812131036'}
++JOBS = {'finite': '117814071978', 'browser': '117814072085'}
+ JOB_NAMES = {'finite': 'draft-recovery-finite', 'browser': 'draft-recovery-real-chromium'}
+ MAX_OUTER = 16 * 1024 * 1024
+ MAX_INNER = 15 * 1024 * 1024
+ MAX_FILE = 8 * 1024 * 1024
+ MAX_TOTAL = 96 * 1024 * 1024
+ MAX_FILES = 5000
+-ARTIFACTS = {'finite': '12153069488', 'browser': '12152559882'}
++ARTIFACTS = {'finite': '12153014132', 'browser': '12154155261'}
+ FIXED_OUTERS = {
+-    'finite': (3698358, 'f694b7b1b651c3ab224ea1652cc59c79b39ea9b640642f50aae2bf254940fc3d'),
+-    'browser': (3895756, '873b0a33c6278942ad1cf55c05ed75d15d8edb082489c2b20d29ff864368a630'),
++    'finite': (3715035, 'badd041e5ac214c4b5583ff2fec77a5634a7a870431181e2dbdcc1d2074972df'),
++    'browser': (3714132, 'af6762113d5ae640f445ba7cc74d7e544019bfd17dc0652c7ad6c9243f17a5b3'),
+ }
+-METADATA_FOLDER = 'metadata-2026-10-18T22-50-53.620Z'
++METADATA_FOLDER = 'metadata-2026-10-18T23-00-09.624Z'
+ FIXED_METADATA = {
+-    'run': (13126, '405d2089f99b832375a16a8539f782bc9e0c8d99d80eb06fef1b85cf83c2fd1d'),
+-    'jobs': (7072, 'e4ed8103611210457ba5278c60e8f6899c82335674a7b766aefc5503f85f6409'),
+-    'artifacts': (1550, 'b944dfd41609553ed9d5a261e0121353bed935babc80a428ae144f0be52be0b0'),
+-    'commit': (1230, 'f96e62a16caaf005287a6395d212745500e97c2127a2b01381439701a6096f72'),
+-    'tree': (12342376, 'a2354be8522e1a15f5474ad09a2d1a3ce1c5f7f96e1cf57a721cf8ffefdc61e9'),
++    'run': (13132, 'b872ac47522095e39850560b3fc1c254466bdb20ffdf9dd86c3c09c487d92d90'),
++    'jobs': (7100, '1cc203a1ee8c7c6611d1dc0d63c2220726010693b36309301cc16bc530ac465f'),
++    'artifacts': (1550, 'dde91d4b4e8191b4e467f02512341ddfc0c59de09eb476e35d3bfa4443b5a70e'),
++    'commit': (1233, 'bc36845fbcaa65ff5539800742461d2a98c45105c0a2e7b0e73e79751c2223ec'),
++    'tree': (12343891, 'd498591127ce9928b4b3986aae7b7d13e1047d2e1dd4aba6f48d08eab2e5c479'),
+ }
+-FAILED_FINITE_NAMES = {
+-    'draft recovery scope persists for the same workspace, differs at the same origin for another workspace, and never edits saved notes',
+-    'an unacknowledged committed first Save recovers only as an explicitly chosen separate copy after reload',
+-    'real HTTP cold restarts retain to-do transitions, history, due metadata and static browser module delivery',
+-}
+-FAILED_BROWSER_NAME = 'Draft recovery after an unacknowledged committed Save requires separate-copy consent and never automatically replays'
++TRANSITION_TEST = STUDIO + 'apps/notes/todo.integration.test.mjs'
++TRANSITION_BEFORE = STUDIO + 'experiments/notes-draft-recovery/transitions/todo.integration.test.mjs.before.snapshot'
++EXACT_REPLACEMENTS = [
++    {'before': "assert.deepEqual(imports, ['./markdown.mjs', './core.mjs']);", 'after': "assert.deepEqual(imports, ['./markdown.mjs', './core.mjs', './draft-recovery.mjs']);"},
++    {'before': 'unchangedPublicModuleBoundary: true, actualBrowserExecution: false', 'after': 'unchangedPublicModuleBoundary: false, explicitlyAddedRecoveryModule: true, actualBrowserExecution: false'},
++]
++FIXED_TRANSITION_AFTER = {'bytes': 5864, 'sha256': '7252a94a7b89afba359a6efccba2cd078a520fd268ccbe82ff242fe66ec5ca40'}
+ STORAGE_FILES = ['storage-01-persistence.json', 'storage-02-atomic-versions.json',
+                  'storage-03-capacity-utf8.json', 'storage-04-corrupt-preservation.json',
+                  'storage-05-injected-abort.json', 'storage-06-blocked-open-control.json',
+                  'storage-07-versionchange-close.json', 'storage-08-workspace-isolation.json']
+ REQUIRED_SOURCE = {WORKFLOW, COLLECTOR, FLOOR,
++    TRANSITION_BEFORE, STUDIO + 'experiments/notes-draft-recovery/transitions/README.md',
+     STUDIO + 'apps/notes/draft-recovery.mjs', STUDIO + 'apps/notes/draft-recovery.test.mjs',
+     STUDIO + 'apps/notes/draft-recovery.ui.test.mjs', STUDIO + 'apps/notes/draft-recovery.http.test.mjs',
+     STUDIO + 'browser-tests/notes-draft-recovery.spec.mjs', STUDIO + 'browser-tests/notes-draft-recovery.storage.spec.mjs',
+@@ -176,7 +180,7 @@
+ def archive_readback(path, role, output):
+     outer = read_bounded(path, MAX_OUTER)
+     size, digest = FIXED_OUTERS[role]
+-    require(identity(outer) == {'bytes': size, 'sha256': digest}, 'Original first-failure outer ZIP differs')
++    require(identity(outer) == {'bytes': size, 'sha256': digest}, 'Fixed fresh R2 outer ZIP differs')
+     outer_members = unzip(outer, 1, MAX_INNER, MAX_INNER)
+     expected = f'rea-draft-recovery-{role}-{RUN}-{ATTEMPT}.zip'
+     require(set(outer_members) == {expected}, 'Expected exactly the original campaign ZIP inside the Actions artifact')
+@@ -221,7 +225,7 @@
+     require(str(run['id']) == RUN and run['head_sha'] == COMMIT and run['run_attempt'] == ATTEMPT, 'Run/source/attempt mismatch')
+     require(run['head_branch'] == BRANCH and run['event'] == 'push' and run['path'] == WORKFLOW, 'Wrong workflow/event/branch')
+     require(run['status'] == 'completed' and run['repository']['full_name'] == 'Ginderlax/rea-research-lab', 'Run is not completed in the intended repository')
+-    require(run['conclusion'] == 'failure', 'The original failed run conclusion changed')
++    require(run['conclusion'] == 'success', 'The fresh R2 run did not conclude successfully')
+     require(commit['sha'] == COMMIT and [row['sha'] for row in commit['parents']] == [PARENT], 'Immutable commit/parent mismatch')
+     require(tree['sha'] == commit['tree']['sha'] and tree['truncated'] is False, 'Missing complete immutable Git tree')
+     objects = {}
+@@ -242,7 +246,7 @@
+         require(str(job['run_id']) == RUN and job['run_attempt'] == ATTEMPT and job['head_sha'] == COMMIT, 'Job source/attempt mismatch')
+         require(job['name'] == JOB_NAMES[role] and job['status'] == 'completed', 'Job name/status mismatch')
+         require(job['runner_group_name'] == 'GitHub Actions' and 'windows-2022' in job['labels'], 'Hosted Windows runner is not verified')
+-        require(job['conclusion'] == 'failure', 'The original failed job conclusion changed')
++        require(job['conclusion'] == 'success', 'The fresh R2 job did not conclude successfully')
+         artifact = by_artifact[artifact_ids[role]]
+         require(artifact['name'] == f'notes-draft-recovery-{role}-{RUN}-{ATTEMPT}' and artifact['expired'] is False, 'Artifact name/retention mismatch')
+         require(str(artifact['workflow_run']['id']) == RUN and artifact['workflow_run']['head_sha'] == COMMIT, 'Artifact source binding mismatch')
+@@ -259,7 +263,9 @@
+     after = value(f'draft-recovery-{role}-after.json')
+     attempt = value(f'draft-recovery-{role}-{role}.json')
+     for record, phase in ((before, 'before'), (after, 'after'), (attempt, role)):
+-        require(record['schema'] == 'rea-notes-draft-recovery-experiment-cloud/v1' and record['phase'] == phase and record['role'] == role, 'Record role/schema mismatch')
++        require(record['schema'] == 'rea-notes-draft-recovery-experiment-cloud/v2' and record['phase'] == phase and record['role'] == role, 'Record role/schema mismatch')
++        require(record['sourceEpoch'] == 'explicit-canonical-save-and-delivery-transition-r2'
++                and record['historicalFailureSourceCommit'] == PARENT, 'R2 source transition epoch mismatch')
+         require(record['execution'] == execution(role) and record['sourceCommit'] == COMMIT, 'Record belongs to another attempt/source')
+         for flag in ('sourceOverlay', 'sourceMutationPerformed', 'installedAcceptance', 'historicalReceiptsRebound', 'originalAutosaveComparison', 'fullParity', 'superiority'):
+             require(record[flag] is False, 'Unexpected acceptance/mutation declaration')
+@@ -270,7 +276,7 @@
+             require(identity(members[safe(row['path'])]) == pin(row), 'Declared evidence bytes differ: ' + row['path'])
+         require(retained['bytes'] == sum(row['bytes'] for row in retained['rows']) and retained['excludesOwnTerminalRecord'] is True, 'Evidence declaration byte/count mismatch')
+     require(before['status'] == 'source-verified-unexecuted' and after['status'] == 'source-verified', 'Source checks did not independently succeed')
+-    require(attempt['status'] in ('passed', 'failed') and after['executionStatus'] == attempt['status'], 'Actual attempt status was not preserved')
++    require(attempt['status'] == after['executionStatus'] == 'passed', 'Fresh R2 source has no successful owned execution')
+     before_raw = members[f'draft-recovery-{role}-before.json']
+     require(after['beforeReceipt'] == identity(before_raw) and attempt['beforeReceipt'] == identity(before_raw), 'Before receipt binding failed')
+     require(after['executionAttempt'] == identity(members[f'draft-recovery-{role}-{role}.json']), 'After receipt binds another test attempt')
+@@ -279,7 +285,10 @@
+     require(rows == sorted(rows, key=lambda row: row['path']) and len({row['path'] for row in rows}) == len(rows), 'Source rows are not a unique sorted closure')
+     floor_raw = members['source-before/' + FLOOR + '.snapshot']
+     floor = decode(floor_raw)
+-    require(floor['schema'] == 'rea-notes-draft-recovery-regression-floor/v1' and floor['baselineGitCommit'] == PARENT, 'Wrong regression floor epoch')
++    require(floor['schema'] == 'rea-notes-draft-recovery-regression-floor/v2'
++            and floor['baselineGitCommit'] == ORIGINAL_PIN_EPOCH and floor['sourceTransitionParent'] == PARENT, 'Wrong regression floor epoch')
++    require(floor['priorTestFilePolicy'] == {'originalPinsRetained': 21, 'unchangedCurrentFiles': 20,
++                                            'explicitlyStrengthenedFiles': 1, 'retainedNamedResults': 111}, 'Wrong explicit prior test transition policy')
+     require(len(floor['priorTests']) == 21 and len(floor['priorNamedResults']) == 111 and len(set(floor['priorNamedResults'])) == 111, 'Wrong prior floor')
+     require(len(floor['newNamedResults']) == 17 and len(set(floor['newNamedResults'])) == 17, 'Wrong new finite roster')
+     require(len(floor['browserUITitles']) == 4 and len(floor['browserStorageTitles']) == 8, 'Wrong browser roster')
+@@ -295,9 +304,35 @@
+         require(objects[name]['size'] == len(left), 'Git API source size differs')
+         expected_tree.extend(f"{objects[name]['mode']} blob {objects[name]['sha']}\t{name}\0".encode('utf-8'))
+     require(bytes(expected_tree) == members['source-before/GIT-TREE.selected.raw'] == members['source-after/GIT-TREE.selected.raw'], 'Raw selected Git rows differ')
++    expected_authentication = {'files': len(rows), 'bytes': sum(row['bytes'] for row in rows),
++                               'gitTree': {**identity(bytes(expected_tree)), 'scope': 'Exact raw Git rows for the complete selected active source closure and fixed original inputs'},
++                               'originalPriorPinsPreserved': 21, 'unchangedPriorTestFiles': 20,
++                               'explicitlyStrengthenedPriorTestFiles': 1, 'retainedPriorNamedResults': 111, 'capturedOriginalInputs': 64}
++    require(before['sourceAuthentication'] == after['sourceAuthentication'] == expected_authentication,
++            'R2 source authentication summaries differ from the independent actual byte closure')
+     for name, (size, digest) in FIXED_SOURCE.items():
+         require(identity(members['source-before/' + name + '.snapshot']) == {'bytes': size, 'sha256': digest}, 'Reviewed workflow/collector/floor changed')
+-    for row in floor['priorTests'] + floor['originalInputs'] + floor['unchangedTooling']:
++    transitions = floor['testTransitions']
++    require(type(transitions) is list and len(transitions) == 1, 'Expected one explicit prior test strengthening')
++    transition = transitions[0]
++    require(transition['path'] == TRANSITION_TEST and transition['beforeSnapshotPath'] == TRANSITION_BEFORE
++            and transition['exactReplacements'] == EXACT_REPLACEMENTS and transition['after'] == FIXED_TRANSITION_AFTER,
++            'Prior delivery test transition differs from its reviewed two byte replacements')
++    prior_rows = [row for row in floor['priorTests'] if row['path'] == TRANSITION_TEST]
++    require(len(prior_rows) == 1, 'Missing unique original prior delivery test pin')
++    prior = prior_rows[0]
++    require(transition['before'] == {'gitBlob': prior['gitBlob'], **pin(prior)}, 'Transition changed the retained original test pin')
++    before_test = members['source-before/' + TRANSITION_BEFORE + '.snapshot']
++    require(identity(before_test) == pin(prior) and blob_oid(before_test) == prior['gitBlob'], 'Preserved original delivery test snapshot differs')
++    expected_after = before_test
++    for edit in EXACT_REPLACEMENTS:
++        old_bytes, new_bytes = edit['before'].encode(), edit['after'].encode()
++        require(expected_after.count(old_bytes) == 1, 'Prior test byte replacement is not unique')
++        expected_after = expected_after.replace(old_bytes, new_bytes)
++    actual_after = members['source-before/' + TRANSITION_TEST + '.snapshot']
++    require(actual_after == expected_after and identity(actual_after) == FIXED_TRANSITION_AFTER,
++            'Strengthened test differs beyond its exact two declared replacements')
++    for row in [row for row in floor['priorTests'] if row['path'] != TRANSITION_TEST] + floor['originalInputs'] + floor['unchangedTooling']:
+         require(identity(members['source-before/' + row['path'] + '.snapshot']) == pin(row), 'Frozen prior/original/tool input changed')
+         if 'gitBlob' in row:
+             require(objects[row['path']]['sha'] == row['gitBlob'], 'Frozen prior Git blob changed')
+@@ -326,7 +361,15 @@
+     require(workflow['verificationOutcome'] == ('success' if attempt['status'] == 'passed' else 'failure'), 'Workflow did not preserve actual test failure status')
+     for flag in ('sourceOverlay', 'installedAcceptance', 'historicalReceiptsRebound', 'originalAutosaveComparison', 'fullParity', 'superiority'):
+         require(workflow[flag] is False, 'Unexpected workflow claim')
+-    return floor, attempt, {'sourceFiles': len(rows), 'sourceBytes': sum(row['bytes'] for row in rows), 'allCapturedGitBlobsMatchIndependentTree': True, 'unchangedPriorTestFiles': 21, 'retainedPriorNamedChecks': 111, 'retainedOriginalInputs': 64, 'sourceStable': True}
++    require(before['sourceAuthentication']['originalPriorPinsPreserved'] == 21
++            and before['sourceAuthentication']['unchangedPriorTestFiles'] == 20
++            and before['sourceAuthentication']['explicitlyStrengthenedPriorTestFiles'] == 1
++            and before['sourceAuthentication']['retainedPriorNamedResults'] == 111, 'R2 source receipt mislabels prior test preservation')
++    return floor, attempt, {'sourceFiles': len(rows), 'sourceBytes': sum(row['bytes'] for row in rows), 'allCapturedGitBlobsMatchIndependentTree': True,
++                            'originalPriorPinsPreserved': 21, 'unchangedPriorTestFiles': 20, 'explicitlyStrengthenedPriorTestFiles': 1,
++                            'retainedPriorNamedChecks': 111, 'retainedOriginalInputs': 64, 'sourceStable': True,
++                            'priorTestTransition': {'path': TRANSITION_TEST, 'before': pin(prior), 'beforeOriginalGitBlob': prior['gitBlob'],
++                                                    'after': FIXED_TRANSITION_AFTER, 'twoExactByteReplacementsVerified': True}}
+ 
+ 
+ def finite_observation(members, floor, attempt):
+@@ -350,12 +393,17 @@
+     require(child[0]['exitCode'] == (0 if summary['fail'] == 0 else 1), 'TAP/process status contradiction')
+     require(attempt['status'] == ('passed' if summary['fail'] == 0 else 'failed'), 'Collector discarded a real finite failure')
+     failed_names = [row[2] for row in results if row[0] == 'not ok']
+-    require(summary['pass'] == 125 and summary['fail'] == 3 and set(failed_names) == FAILED_FINITE_NAMES,
+-            'The fixed first-failure125/128 result or its three failure names changed')
++    require(summary['pass'] == 128 and summary['fail'] == 0 and failed_names == [],
++            'Fresh R2 did not pass every one of its exact128 named checks')
+     require(child[0]['stdout'] == 'finite-stdout.txt' and child[0]['stderr'] == 'finite-stderr.txt'
+             and child[0]['outputBytes'] == [len(members['finite-stdout.txt']), len(members['finite-stderr.txt'])]
+             and not child[0].get('spawnError'), 'Finite raw output closure differs')
+-    return {'summary': summary, 'failedNames': failed_names, 'all128NamesRetained': True, 'acceptance': False}
++    require(child[0]['stdoutIdentity'] == identity(members['finite-stdout.txt'])
++            and child[0]['stderrIdentity'] == identity(members['finite-stderr.txt']), 'Finite successful child raw log hashes differ')
++    require(attempt['finite']['retainedPriorNamedChecks'] == 111 and attempt['finite']['unchangedPriorTestFiles'] == 20
++            and attempt['finite']['explicitlyStrengthenedPriorTestFiles'] == 1 and attempt['finite']['newCandidateOnlyTests'] == 17,
++            'R2 finite receipt mislabels prior test/name preservation')
++    return {'summary': summary, 'failedNames': failed_names, 'all128NamesRetained': True, 'acceptance': True}
+ 
+ 
+ def exact_keys(value, names, label):
+@@ -514,15 +562,17 @@
+         require(case['errors'] == [] and case['originalProductExecutions'] == 0 and case['fullParity'] is False and case['superiority'] is False, 'Unexpected UI error or claim')
+         require(case['statusAtFixtureClose'] == ('failed' if title in failed else 'passed'), 'UI failure status was not retained')
+         ui_cases.append({'title': title, 'status': case['statusAtFixtureClose'], 'path': name, **identity(members[name])})
+-    require(failed == [FAILED_BROWSER_NAME] and stats['expected'] == 11 and stats['unexpected'] == 1,
+-            'The fixed first-failure11/12 browser result or its failed title changed')
++    require(failed == [] and stats['expected'] == 12 and stats['unexpected'] == 0,
++            'Fresh R2 did not pass all twelve real Chromium scenarios')
+     child = attempt['children']
+     require(len(child) == 1 and child[0]['label'] == 'real-chromium' and child[0]['closeObserved'] is True
+             and child[0]['signal'] is None and child[0]['stopReason'] is None and child[0]['rawLogsComplete'] is True
+-            and child[0]['exitCode'] == 1 and not child[0].get('spawnError'), 'Browser child did not close with complete failed-attempt logs')
++            and child[0]['exitCode'] == 0 and not child[0].get('spawnError'), 'Browser child did not close with complete successful-attempt logs')
+     require(child[0]['stdout'] == 'real-chromium-stdout.txt' and child[0]['stderr'] == 'real-chromium-stderr.txt'
+             and child[0]['outputBytes'] == [len(members['real-chromium-stdout.txt']), len(members['real-chromium-stderr.txt'])],
+             'Browser child raw output closure differs')
++    require(child[0]['stdoutIdentity'] == identity(members['real-chromium-stdout.txt'])
++            and child[0]['stderrIdentity'] == identity(members['real-chromium-stderr.txt']), 'Browser successful child raw log hashes differ')
+     storage_checks = storage_observations(members)
+     acquisition = decode(members['browser-tooling-acquisition.json'])
+     require(acquisition['status'] == 'acquired' and acquisition['sourceCommit'] == COMMIT and acquisition['productTests'] == 0 and acquisition['applicationSourcesChanged'] is False, 'Browser acquisition failed or changed sources')
+@@ -536,7 +586,7 @@
+     require(len(acquisition['children']) == 2, 'Unexpected acquisition process count')
+     for field, name in (('package', 'package.json'), ('lock', 'package-lock.json'), ('browserMetadata', 'browser-metadata.json')):
+         require(acquisition['toolingSource'][field] == identity(members['source-before/' + STUDIO + 'browser-tests/' + name + '.snapshot']), 'Locked browser source mismatch')
+-    return {'summary': stats, 'failedNames': failed, 'all12NamesRetained': True, 'UIObservations': ui_cases, 'nativeStorageObservations': storage_checks, 'acceptance': False}
++    return {'summary': stats, 'failedNames': failed, 'all12NamesRetained': True, 'UIObservations': ui_cases, 'nativeStorageObservations': storage_checks, 'acceptance': True}
+ 
+ 
+ def main():
+@@ -551,18 +601,18 @@
+     work = no_link(pathlib.Path(__file__).absolute().parents[1])
+     run_root = no_link(work / 'cloud-verification-backups' / ('run-' + RUN))
+     metadata_root = no_link(args.metadata)
+-    require(metadata_root == run_root / METADATA_FOLDER, 'Use the exact first-failure metadata directory')
++    require(metadata_root == run_root / METADATA_FOLDER, 'Use the exact fresh R2 metadata directory')
+     for role in ('finite', 'browser'):
+-        require(getattr(args, role + '_artifact_id') == ARTIFACTS[role], 'Use the fixed original artifact ID')
++        require(getattr(args, role + '_artifact_id') == ARTIFACTS[role], 'Use the fixed fresh R2 artifact ID')
+         require(no_link(getattr(args, role + '_zip')) == run_root / ('artifact-' + ARTIFACTS[role] + '.zip'),
+-                'Use the fixed original artifact path')
++                'Use the fixed fresh R2 artifact path')
+     output = no_link(args.output)
+-    require(output.parent == run_root and output.name.startswith('portable-readback-r2-'),
+-            'Output must be a fresh portable-readback-r2- directory directly inside this run backup')
++    require(output.parent == run_root and output.name.startswith('portable-readback-source-r2-'),
++            'Output must be a fresh portable-readback-source-r2- directory directly inside this run backup')
+     safe(output.name)
+     require(not output.exists(), 'Use a new output directory; previous readbacks must be preserved')
+     output.mkdir()
+-    receipt = {'schema': 'rea-notes-draft-recovery-portable-evidence-qualification/v1',
++    receipt = {'schema': 'rea-notes-draft-recovery-portable-evidence-qualification/v2',
+                'createdAtUtc': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'runId': RUN, 'sourceCommit': COMMIT,
+                'status': 'running', 'acceptance': False, 'readability': {}, 'sourceQualifications': {}, 'actualResults': {}, 'failures': [],
+                'readerExecution': 'Data-only standard-library JSON, ZIP CRC, file readback and Git-blob hash processing. Captured code is never imported or executed.',
+@@ -577,7 +627,7 @@
+         for name in ('run', 'jobs', 'artifacts', 'commit', 'tree'):
+             raw = read_bounded(pathlib.Path(args.metadata) / (name + '.json'), 32 * 1024 * 1024)
+             size, digest = FIXED_METADATA[name]
+-            require(identity(raw) == {'bytes': size, 'sha256': digest}, 'Original raw API metadata differs: ' + name)
++            require(identity(raw) == {'bytes': size, 'sha256': digest}, 'Fresh R2 raw API metadata differs: ' + name)
+             write_new(output, 'metadata/' + name + '.json', raw)
+             metadata[name] = decode(raw)
+         ids = {'finite': args.finite_artifact_id, 'browser': args.browser_artifact_id}
+@@ -593,7 +643,7 @@
+         receipt['acceptance'] = (not receipt['failures'] and receipt['apiProvenance']['runConclusion'] == 'success'
+                                   and all(value == 'success' for value in receipt['apiProvenance']['jobConclusions'].values())
+                                   and all(receipt['actualResults'].get(role, {}).get('acceptance') is True for role in ('finite', 'browser')))
+-        require(receipt['acceptance'] is False, 'This first failed campaign can never be accepted as a product pass')
++        require(receipt['acceptance'] is True, 'Fresh R2 product acceptance requires both source-qualified exact successful campaigns')
+         receipt['status'] = 'qualified-source-and-readback-with-actual-test-results' if not receipt['failures'] else 'incomplete-qualification-preserved'
+     except Exception as error:
+         receipt['failures'].append({'stage': 'readback-or-API-provenance', 'type': type(error).__name__, 'message': str(error)[:4000]})

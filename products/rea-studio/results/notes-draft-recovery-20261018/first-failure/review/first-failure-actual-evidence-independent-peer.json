@@ -1,0 +1,249 @@
+{
+  "schema": "rea-notes-draft-recovery-first-failure-actual-evidence-independent-peer/v1",
+  "reviewer": "backup_resume_1018",
+  "report": {
+    "path": "work/cloud-verification-backups/run-39173776352/portable-readback-r2-20261018T225950Z/QUALIFICATION.json",
+    "bytes": 603349,
+    "sha256": "4ad17fb1d34f1db3ea61044dac9f5940824f6f7d81a286f524b2421027e8bc2d"
+  },
+  "rootSingleExecutionReceipt": {
+    "path": "work/notes-draft-recovery-20261018-cloud/first-failure-reader-execution-20261018T230007Z.json",
+    "bytes": 1317,
+    "sha256": "209283a1ecae250c8f0000887c5f8002ee3bbff0c7c1b13cd2a789f6c756b41d"
+  },
+  "status": "PASSED bounded actual evidence readback; PRODUCT TESTS FAILED as originally observed",
+  "sourceCommit": "3b4cfc3d14af3254273c666ab0c919965ab93dbe",
+  "runId": "39173776352",
+  "readerNotRerun": true,
+  "archivesNotReextracted": true,
+  "reviewMethod": "Bounded actual qualification report, six source/attempt receipts, twelve small browser observation bodies, and raw log length metadata. All-member CRC status and immutable source proof are preserved from the once-executed independently reviewed reader; no repeated broad archive qualification.",
+  "roles": {
+    "finite": {
+      "outer": {
+        "bytes": 3698358,
+        "sha256": "f694b7b1b651c3ab224ea1652cc59c79b39ea9b640642f50aae2bf254940fc3d"
+      },
+      "inner": {
+        "bytes": 3698158,
+        "sha256": "0f2ea331b49ed06d2feac261e9846af06190e02beadc4bd5d8ba01822664e595"
+      },
+      "innerName": "rea-draft-recovery-finite-39173776352-1.zip",
+      "memberCount": 963,
+      "rawBytes": 12254585,
+      "allUploadedMembersReadable": true,
+      "sourceQualification": {
+        "sourceFiles": 474,
+        "sourceBytes": 5637617,
+        "allCapturedGitBlobsMatchIndependentTree": true,
+        "unchangedPriorTestFiles": 21,
+        "retainedPriorNamedChecks": 111,
+        "retainedOriginalInputs": 64,
+        "sourceStable": true
+      },
+      "actualChildExitCode": 1,
+      "childRawByteCounts": [
+        45579,
+        0
+      ]
+    },
+    "browser": {
+      "outer": {
+        "bytes": 3895756,
+        "sha256": "873b0a33c6278942ad1cf55c05ed75d15d8edb082489c2b20d29ff864368a630"
+      },
+      "inner": {
+        "bytes": 3895554,
+        "sha256": "acb5a831167b072c5b9670d0951c646cb12bdd8c36687785b5247b3126b0e3c9"
+      },
+      "innerName": "rea-draft-recovery-browser-39173776352-1.zip",
+      "memberCount": 980,
+      "rawBytes": 12498654,
+      "allUploadedMembersReadable": true,
+      "sourceQualification": {
+        "sourceFiles": 474,
+        "sourceBytes": 5637617,
+        "allCapturedGitBlobsMatchIndependentTree": true,
+        "unchangedPriorTestFiles": 21,
+        "retainedPriorNamedChecks": 111,
+        "retainedOriginalInputs": 64,
+        "sourceStable": true
+      },
+      "actualChildExitCode": 1,
+      "childRawByteCounts": [
+        4543,
+        0
+      ]
+    }
+  },
+  "actualResults": {
+    "finite": {
+      "summary": {
+        "tests": 128,
+        "suites": 0,
+        "pass": 125,
+        "fail": 3,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "failedNames": [
+        "draft recovery scope persists for the same workspace, differs at the same origin for another workspace, and never edits saved notes",
+        "an unacknowledged committed first Save recovers only as an explicitly chosen separate copy after reload",
+        "real HTTP cold restarts retain to-do transitions, history, due metadata and static browser module delivery"
+      ],
+      "all128NamesRetained": true,
+      "acceptance": false
+    },
+    "browser": {
+      "summary": {
+        "startTime": "2026-10-18T22:48:34.025Z",
+        "duration": 12121.517,
+        "expected": 11,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "failedNames": [
+        "Draft recovery after an unacknowledged committed Save requires separate-copy consent and never automatically replays"
+      ],
+      "all12NamesRetained": true,
+      "UIObservations": [
+        {
+          "title": "Draft recovery real navigation and reload preserve raw new to-do fields without implicit Save",
+          "status": "passed",
+          "path": "notes-draft-case-f68c12de07a0a4ae08a6.json",
+          "bytes": 3334,
+          "sha256": "b5f587e2fad8a305b939f959a3354d7806fdced332e5b7fc424bffaeb67b12af"
+        },
+        {
+          "title": "Draft recovery of saved-note edits always creates an acknowledged separate note and preserves newer original revision",
+          "status": "passed",
+          "path": "notes-draft-case-8784ca29f7bdd2a6fa57.json",
+          "bytes": 3258,
+          "sha256": "ce8b11ab57bafb8c69b147c084a24991afbf37e94bff2ce7cfd9e61c6efce698"
+        },
+        {
+          "title": "Draft recovery after an unacknowledged committed Save requires separate-copy consent and never automatically replays",
+          "status": "failed",
+          "path": "notes-draft-case-52427251c0e71d9dd16e.json",
+          "bytes": 3361,
+          "sha256": "811a1c759eca909077e4762ac4009614ce9090d5e9661a6e308fa56eec791e38"
+        },
+        {
+          "title": "Draft recovery cross-tab version discard and recovered-parent cleanup preserve newer owner text",
+          "status": "passed",
+          "path": "notes-draft-case-9b2d087ae7b9e6e0d44b.json",
+          "bytes": 3264,
+          "sha256": "a1e6d8395c10e51f4b32f065ebeff390c3969883a11528e5dfa850f8e4f759da"
+        }
+      ],
+      "nativeStorageObservations": [
+        {
+          "path": "storage-01-persistence.json",
+          "bytes": 2509,
+          "sha256": "b66745be58c1d8c609b8cadb5dbfd57e184d10fda4389424dd2ddd6b0cf5fae4",
+          "rawNativeInvariantsVerified": true
+        },
+        {
+          "path": "storage-02-atomic-versions.json",
+          "bytes": 584,
+          "sha256": "ff50fc19a6f63be80f7201cbb3548775c10b8e0a0cb028e5857f172c83088ebc",
+          "rawNativeInvariantsVerified": true
+        },
+        {
+          "path": "storage-03-capacity-utf8.json",
+          "bytes": 4969,
+          "sha256": "5eefec0b9ca70bfceb923646ae4d9739f2e25bb0c1ad485a693585a5bb973919",
+          "rawNativeInvariantsVerified": true
+        },
+        {
+          "path": "storage-04-corrupt-preservation.json",
+          "bytes": 4185,
+          "sha256": "234542bfbcfe28d044b0471a3480663a3181ca77bb35e65d3433f99e4101493d",
+          "rawNativeInvariantsVerified": true
+        },
+        {
+          "path": "storage-05-injected-abort.json",
+          "bytes": 1342,
+          "sha256": "3ae03c8b00d143080f6136935ad70e31bda111588b6a1072c4595d4a445b9ce0",
+          "rawNativeInvariantsVerified": true
+        },
+        {
+          "path": "storage-06-blocked-open-control.json",
+          "bytes": 900,
+          "sha256": "ef6bc57530ecaac56d62d61d9f00a7b1bd84d4fdd02fbe1598404899ffa7faa6",
+          "rawNativeInvariantsVerified": true
+        },
+        {
+          "path": "storage-07-versionchange-close.json",
+          "bytes": 815,
+          "sha256": "f9022828fa3a07a6366c98e6995d39245d8bfc5b0bfe5c58d1bdfcd1b4e093a3",
+          "rawNativeInvariantsVerified": true
+        },
+        {
+          "path": "storage-08-workspace-isolation.json",
+          "bytes": 1358,
+          "sha256": "ea409c08e30885004456ace875c7b8422173035effc6eae42e7e8562b5257e47",
+          "rawNativeInvariantsVerified": true
+        }
+      ],
+      "acceptance": false
+    }
+  },
+  "sixActualSourceReceipts": [
+    {
+      "path": "work/cloud-verification-backups/run-39173776352/portable-readback-r2-20261018T225950Z/finite/readable/draft-recovery-finite-before.json",
+      "bytes": 111885,
+      "sha256": "9003f28afb5c4289b28e676afa64e733be585d06f2bb447705c48b80306cec75"
+    },
+    {
+      "path": "work/cloud-verification-backups/run-39173776352/portable-readback-r2-20261018T225950Z/finite/readable/draft-recovery-finite-finite.json",
+      "bytes": 116649,
+      "sha256": "d1dc8b059cb6bb166993369b0c28154893f82037a21b421d08983e9d3a197c86"
+    },
+    {
+      "path": "work/cloud-verification-backups/run-39173776352/portable-readback-r2-20261018T225950Z/finite/readable/draft-recovery-finite-after.json",
+      "bytes": 223521,
+      "sha256": "fb6517f26f60da4426b00b6e036f9378293d0bb0016dfdb361ec6920cd757704"
+    },
+    {
+      "path": "work/cloud-verification-backups/run-39173776352/portable-readback-r2-20261018T225950Z/browser/readable/draft-recovery-browser-before.json",
+      "bytes": 111894,
+      "sha256": "2213b4a548822c88209e7316aac593d5b761afd0c6a6715f904fceee3952b1f6"
+    },
+    {
+      "path": "work/cloud-verification-backups/run-39173776352/portable-readback-r2-20261018T225950Z/browser/readable/draft-recovery-browser-browser.json",
+      "bytes": 118502,
+      "sha256": "751833b3ebd5ddfda7459d529c4b02be942821d71953c4a2d84d9dd80421c2f7"
+    },
+    {
+      "path": "work/cloud-verification-backups/run-39173776352/portable-readback-r2-20261018T225950Z/browser/readable/draft-recovery-browser-after.json",
+      "bytes": 226681,
+      "sha256": "b9da552851016c4678696dbec3a2b8c51e932cb5e9187aded50626548c73f231"
+    }
+  ],
+  "counts": {
+    "uploadedMembers": 1943,
+    "rawBytes": 24753239,
+    "sourceFilesPerRole": 474,
+    "sourceBytesPerRole": 5637617,
+    "unchangedHistoricalTestFiles": 21,
+    "retainedHistoricalNames": 111,
+    "retainedOriginalInputs": 64,
+    "UIObservations": 4,
+    "nativeStorageObservations": 8
+  },
+  "productAcceptance": false,
+  "qualificationFailures": [],
+  "installedAcceptance": false,
+  "historicalReceiptsRebound": false,
+  "originalAutosaveComparison": false,
+  "fullParity": false,
+  "superiority": false,
+  "localProductExecutions": 0,
+  "localReaderReruns": 0,
+  "localTests": 0,
+  "syntaxChecks": 0,
+  "builds": 0,
+  "gitMutations": 0
+}

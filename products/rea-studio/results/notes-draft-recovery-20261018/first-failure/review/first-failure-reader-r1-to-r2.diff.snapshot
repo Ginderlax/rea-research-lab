@@ -1,0 +1,328 @@
+--- qualify-draft-recovery-39173776352-r1.py
++++ qualify-draft-recovery-39173776352-r2.py
+@@ -36,6 +36,25 @@
+ MAX_FILE = 8 * 1024 * 1024
+ MAX_TOTAL = 96 * 1024 * 1024
+ MAX_FILES = 5000
++ARTIFACTS = {'finite': '12153069488', 'browser': '12152559882'}
++FIXED_OUTERS = {
++    'finite': (3698358, 'f694b7b1b651c3ab224ea1652cc59c79b39ea9b640642f50aae2bf254940fc3d'),
++    'browser': (3895756, '873b0a33c6278942ad1cf55c05ed75d15d8edb082489c2b20d29ff864368a630'),
++}
++METADATA_FOLDER = 'metadata-2026-10-18T22-50-53.620Z'
++FIXED_METADATA = {
++    'run': (13126, '405d2089f99b832375a16a8539f782bc9e0c8d99d80eb06fef1b85cf83c2fd1d'),
++    'jobs': (7072, 'e4ed8103611210457ba5278c60e8f6899c82335674a7b766aefc5503f85f6409'),
++    'artifacts': (1550, 'b944dfd41609553ed9d5a261e0121353bed935babc80a428ae144f0be52be0b0'),
++    'commit': (1230, 'f96e62a16caaf005287a6395d212745500e97c2127a2b01381439701a6096f72'),
++    'tree': (12342376, 'a2354be8522e1a15f5474ad09a2d1a3ce1c5f7f96e1cf57a721cf8ffefdc61e9'),
++}
++FAILED_FINITE_NAMES = {
++    'draft recovery scope persists for the same workspace, differs at the same origin for another workspace, and never edits saved notes',
++    'an unacknowledged committed first Save recovers only as an explicitly chosen separate copy after reload',
++    'real HTTP cold restarts retain to-do transitions, history, due metadata and static browser module delivery',
++}
++FAILED_BROWSER_NAME = 'Draft recovery after an unacknowledged committed Save requires separate-copy consent and never automatically replays'
+ STORAGE_FILES = ['storage-01-persistence.json', 'storage-02-atomic-versions.json',
+                  'storage-03-capacity-utf8.json', 'storage-04-corrupt-preservation.json',
+                  'storage-05-injected-abort.json', 'storage-06-blocked-open-control.json',
+@@ -66,31 +85,60 @@
+ 
+ 
+ def decode(raw):
+-    return json.loads(raw.decode('utf-8-sig'))
++    def pairs(rows):
++        result = {}
++        for key, value in rows:
++            require(key not in result, 'Duplicate JSON object key')
++            result[key] = value
++        return result
++    def invalid_constant(value):
++        raise ValueError('Nonfinite JSON number: ' + value)
++    return json.loads(raw.decode('utf-8-sig'), object_pairs_hook=pairs, parse_constant=invalid_constant)
+ 
+ 
+ def safe(name):
+     require(isinstance(name, str) and name and len(name) <= 4096, 'Invalid member path')
+-    require(not any(char in name for char in ('\\', ':', '\0')) and not name.startswith('/'), 'Unsafe member path')
+-    require(all(part and part not in ('.', '..') for part in name.split('/')), 'Unsafe path components')
++    require(not any(ord(char) < 32 or ord(char) == 127 or char in '\\:*?"<>|' for char in name)
++            and not name.startswith('/'), 'Unsafe member path')
++    for part in name.split('/'):
++        require(part and part not in ('.', '..') and not part.endswith((' ', '.')), 'Unsafe path component')
++        require(not re.fullmatch(r'(CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\..*)?', part, re.I), 'Reserved Windows path component')
+     return name
+ 
+ 
++def no_link(path):
++    item = pathlib.Path(path).absolute()
++    require('..' not in item.parts, 'Parent traversal is not allowed')
++    for ancestor in reversed((item, *item.parents)):
++        try:
++            value = ancestor.lstat()
++        except FileNotFoundError:
++            continue
++        require(not stat.S_ISLNK(value.st_mode) and not (getattr(value, 'st_file_attributes', 0) & 1024),
++                'Symlink or Windows reparse point is not allowed')
++    return item
++
++
+ def read_bounded(path, limit):
+-    item = pathlib.Path(path)
+-    require(item.is_file() and not item.is_symlink(), 'Expected an ordinary input file')
+-    require(item.stat().st_size <= limit, 'Input exceeds its fixed byte bound')
++    item = no_link(path)
++    before = item.stat()
++    require(stat.S_ISREG(before.st_mode) and 0 <= before.st_size <= limit, 'Input is not an ordinary bounded file')
+     raw = item.read_bytes()
+-    require(len(raw) == item.stat().st_size, 'Input changed during read')
++    after = item.stat()
++    require(len(raw) == before.st_size == after.st_size and before.st_mtime_ns == after.st_mtime_ns,
++            'Input changed during read')
+     return raw
+ 
+ 
+ def write_new(root, name, raw):
+-    target = root.joinpath(*safe(name).split('/'))
++    root = no_link(root)
++    target = no_link(root.joinpath(*safe(name).split('/')))
++    require(target.is_relative_to(root) and target != root, 'Output escapes its fresh recovery directory')
+     target.parent.mkdir(parents=True, exist_ok=True)
++    no_link(target)
+     with target.open('xb') as handle:
+         handle.write(raw)
+-    require(target.read_bytes() == raw, 'Local file readback differs: ' + name)
++    require(read_bounded(target, len(raw)) == raw, 'Local file readback differs: ' + name)
+ 
+ 
+ def unzip(raw, count_limit, total_limit, individual_limit):
+@@ -127,6 +175,8 @@
+ 
+ def archive_readback(path, role, output):
+     outer = read_bounded(path, MAX_OUTER)
++    size, digest = FIXED_OUTERS[role]
++    require(identity(outer) == {'bytes': size, 'sha256': digest}, 'Original first-failure outer ZIP differs')
+     outer_members = unzip(outer, 1, MAX_INNER, MAX_INNER)
+     expected = f'rea-draft-recovery-{role}-{RUN}-{ATTEMPT}.zip'
+     require(set(outer_members) == {expected}, 'Expected exactly the original campaign ZIP inside the Actions artifact')
+@@ -171,7 +221,7 @@
+     require(str(run['id']) == RUN and run['head_sha'] == COMMIT and run['run_attempt'] == ATTEMPT, 'Run/source/attempt mismatch')
+     require(run['head_branch'] == BRANCH and run['event'] == 'push' and run['path'] == WORKFLOW, 'Wrong workflow/event/branch')
+     require(run['status'] == 'completed' and run['repository']['full_name'] == 'Ginderlax/rea-research-lab', 'Run is not completed in the intended repository')
+-    require(run['conclusion'] in ('success', 'failure'), 'Unexpected run conclusion')
++    require(run['conclusion'] == 'failure', 'The original failed run conclusion changed')
+     require(commit['sha'] == COMMIT and [row['sha'] for row in commit['parents']] == [PARENT], 'Immutable commit/parent mismatch')
+     require(tree['sha'] == commit['tree']['sha'] and tree['truncated'] is False, 'Missing complete immutable Git tree')
+     objects = {}
+@@ -192,7 +242,7 @@
+         require(str(job['run_id']) == RUN and job['run_attempt'] == ATTEMPT and job['head_sha'] == COMMIT, 'Job source/attempt mismatch')
+         require(job['name'] == JOB_NAMES[role] and job['status'] == 'completed', 'Job name/status mismatch')
+         require(job['runner_group_name'] == 'GitHub Actions' and 'windows-2022' in job['labels'], 'Hosted Windows runner is not verified')
+-        require(job['conclusion'] in ('success', 'failure'), 'Unexpected job conclusion')
++        require(job['conclusion'] == 'failure', 'The original failed job conclusion changed')
+         artifact = by_artifact[artifact_ids[role]]
+         require(artifact['name'] == f'notes-draft-recovery-{role}-{RUN}-{ATTEMPT}' and artifact['expired'] is False, 'Artifact name/retention mismatch')
+         require(str(artifact['workflow_run']['id']) == RUN and artifact['workflow_run']['head_sha'] == COMMIT, 'Artifact source binding mismatch')
+@@ -299,7 +349,133 @@
+     require(len(child) == 1 and child[0]['label'] == 'finite' and child[0]['closeObserved'] is True and child[0]['signal'] is None and child[0]['stopReason'] is None and child[0]['rawLogsComplete'] is True, 'Finite process did not close with complete raw logs')
+     require(child[0]['exitCode'] == (0 if summary['fail'] == 0 else 1), 'TAP/process status contradiction')
+     require(attempt['status'] == ('passed' if summary['fail'] == 0 else 'failed'), 'Collector discarded a real finite failure')
+-    return {'summary': summary, 'failedNames': [row[2] for row in results if row[0] == 'not ok'], 'all128NamesRetained': True, 'acceptance': summary['pass'] == 128}
++    failed_names = [row[2] for row in results if row[0] == 'not ok']
++    require(summary['pass'] == 125 and summary['fail'] == 3 and set(failed_names) == FAILED_FINITE_NAMES,
++            'The fixed first-failure125/128 result or its three failure names changed')
++    require(child[0]['stdout'] == 'finite-stdout.txt' and child[0]['stderr'] == 'finite-stderr.txt'
++            and child[0]['outputBytes'] == [len(members['finite-stdout.txt']), len(members['finite-stderr.txt'])]
++            and not child[0].get('spawnError'), 'Finite raw output closure differs')
++    return {'summary': summary, 'failedNames': failed_names, 'all128NamesRetained': True, 'acceptance': False}
++
++
++def exact_keys(value, names, label):
++    require(type(value) is dict and set(value) == set(names), 'Unexpected raw observation fields: ' + label)
++
++
++def uuid(value):
++    return type(value) is str and re.fullmatch(r'[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}', value, re.I) is not None
++
++
++def integer(value, minimum=0):
++    return type(value) is int and minimum <= value <= 9007199254740991
++
++
++def normalized_record(row):
++    exact_keys(row, ('schema', 'scope', 'id', 'version', 'title', 'body', 'tags', 'notebookId', 'isTodo',
++                     'sourceNoteId', 'sourceRevision', 'pendingSave', 'updatedAt'), 'normalized record')
++    require(type(row['schema']) is int and row['schema'] == 1 and uuid(row['scope']) and uuid(row['id']), 'Invalid raw schema/scope/ID')
++    require(integer(row['version'], 1) and integer(row['updatedAt']), 'Invalid raw record version/time')
++    require(type(row['isTodo']) is bool and type(row['pendingSave']) is bool, 'Invalid raw boolean')
++    for key, limit in (('title', 4096), ('body', 2000000), ('tags', 16384), ('notebookId', 200)):
++        require(type(row[key]) is str and len(row[key].encode('utf-16-le', 'surrogatepass')) // 2 <= limit, 'Invalid raw text field')
++    source = row['sourceNoteId']
++    require((source is None and type(row['sourceRevision']) is int and row['sourceRevision'] == 0)
++            or ((uuid(source) or (type(source) is str and re.fullmatch(r'[0-9a-f]{32}', source, re.I)))
++                and integer(row['sourceRevision'], 1)), 'Invalid raw provenance')
++    require(len(json.dumps(row, ensure_ascii=False, separators=(',', ':')).encode('utf-8')) <= 2 * 1024 * 1024,
++            'Oversized normalized raw observation')
++    return row
++
++
++def stored_input(value, scope):
++    exact_keys(value, ('id', 'version', 'title', 'body', 'tags', 'notebookId', 'isTodo',
++                       'sourceNoteId', 'sourceRevision', 'pendingSave', 'updatedAt'), 'raw input')
++    return normalized_record({'schema': 1, 'scope': scope, **value})
++
++
++def synthetic(row, **changes):
++    normalized_record(row)
++    expected = {'schema': 1, 'scope': row['scope'], 'id': row['id'], 'version': 1, 'title': 'Synthetic draft',
++                'body': 'Synthetic body', 'tags': 'one, two', 'notebookId': '__default__', 'isTodo': False,
++                'sourceNoteId': None, 'sourceRevision': 0, 'pendingSave': False, 'updatedAt': 1, **changes}
++    require(row == expected, 'Synthetic raw record content differs from the committed storage scenario')
++    return expected
++
++
++def storage_observations(members):
++    observations = [decode(members[name]) for name in STORAGE_FILES]
++    one, two, three, four, five, six, seven, eight = observations
++    exact_keys(one, ('scope', 'input', 'listed', 'stored', 'savedCount'), STORAGE_FILES[0])
++    expected = stored_input(one['input'], one['scope'])
++    synthetic(expected, title='x' * 400, body='<img src=x onerror=alert(1)>\n\0raw text',
++              tags=' , duplicate, duplicate, ', isTodo=True, pendingSave=True)
++    require(type(one['savedCount']) is int and one['savedCount'] == 0 and one['listed'] == [expected]
++            and one['stored'] == expected, 'Native persistence lost raw text or implicitly saved a note')
++
++    exact_keys(two, ('oldPut', 'equalPut', 'oldRemove', 'afterStale', 'removed', 'afterRemove', 'retiredPut'), STORAGE_FILES[1])
++    require(two['oldPut'] == two['equalPut'] == two['retiredPut'] == 'STALE' and two['oldRemove'] is False
++            and two['removed'] is True and two['afterRemove'] == [], 'Native atomic stale/remove controls differ')
++    require(type(two['afterStale']) is list and len(two['afterStale']) == 1, 'Missing atomic retained record')
++    synthetic(two['afterStale'][0], version=2, body='newer from another connection', updatedAt=2)
++
++    exact_keys(three, ('originals', 'fifth', 'oversized', 'unchanged', 'updated'), STORAGE_FILES[2])
++    originals = three['originals']
++    require(type(originals) is list and len(originals) == 4 and len({row['id'] for row in originals}) == 4,
++            'Capacity control is missing four distinct original copies')
++    for index, row in enumerate(originals):
++        synthetic(row, title='kept ' + str(index), updatedAt=index + 1)
++    require(len({row['scope'] for row in originals}) == 1 and three['fifth'] == three['oversized'] == 'LIMIT'
++            and three['unchanged'] == list(reversed(originals)), 'Capacity refusal evicted or changed original copies')
++    expected_update = {**originals[0], 'version': 2, 'title': 'updated while full', 'updatedAt': 10}
++    require(three['updated'] == [expected_update, originals[3], originals[2], originals[1]], 'Update while full lost or reordered retained copies')
++
++    exact_keys(four, ('controls',), STORAGE_FILES[3])
++    controls = four['controls']
++    require(type(controls) is list and len(controls) == 4, 'Missing four native corrupt-data controls')
++    good = {**controls[0]['malformed'], 'schema': 1}
++    synthetic(good)
++    wrong_scope = controls[3]['malformed']['scope']
++    require(uuid(wrong_scope) and wrong_scope != good['scope'], 'Wrong-workspace corruption control is not distinct')
++    corruptions = [{**good, 'schema': 99}, {**good, 'sourceRevision': -1},
++                   {**good, 'unexpected': 'preserve this unsupported field'}, {**good, 'scope': wrong_scope}]
++    for control, malformed in zip(controls, corruptions):
++        exact_keys(control, ('malformed', 'retained', 'listCode', 'putCode', 'removeCode'), 'corruption control')
++        require(control['malformed'] == malformed and control['retained'] == malformed
++                and control['listCode'] == control['putCode'] == control['removeCode'] == 'CORRUPT',
++                'Native corrupt control was not preserved exactly on all three refused operations')
++
++    exact_keys(five, ('control', 'original', 'aborted', 'after', 'retried'), STORAGE_FILES[4])
++    require(five['control'] == 'Test-injected transaction.abort() after real IDB put; not native disk quota exhaustion.'
++            and five['aborted'] == 'UNAVAILABLE' and type(five['after']) is list and len(five['after']) == 1,
++            'Injected native abort evidence/control wording differs')
++    abort_original = stored_input(five['original'], five['after'][0]['scope'])
++    synthetic(abort_original)
++    require(five['after'] == [abort_original] and five['retried'] == [{**abort_original, 'version': 3, 'body': 'later genuine transaction succeeds'}],
++            'Injected aborted transaction lost the last commit or later retry content')
++
++    exact_keys(six, ('control', 'blocked', 'version', 'retained', 'input'), STORAGE_FILES[5])
++    blocked_original = stored_input(six['input'], six['retained']['scope'])
++    synthetic(blocked_original)
++    require(six['control'] == 'Adapter asks real IDB for version 2 while a raw version-1 connection stays open; no synthetic blocked event or quota claim.'
++            and six['blocked'] == 'BLOCKED' and type(six['version']) is int and six['version'] == 1
++            and six['retained'] == blocked_original, 'Native blocked-upgrade control changed version or retained bytes')
++
++    exact_keys(seven, ('input', 'version', 'retained', 'closedList', 'closedPut', 'closedRemove'), STORAGE_FILES[6])
++    closed_original = stored_input(seven['input'], seven['retained']['scope'])
++    synthetic(closed_original)
++    require(type(seven['version']) is int and seven['version'] == 2 and seven['retained'] == closed_original
++            and seven['closedList'] == seven['closedPut'] == seven['closedRemove'] == 'CLOSED',
++            'Native versionchange failed to close all operations or preserve the raw copy')
++
++    exact_keys(eight, ('scopeA', 'scopeB', 'input', 'before', 'wrongScope', 'recordsA', 'recordsB'), STORAGE_FILES[7])
++    require(uuid(eight['scopeA']) and uuid(eight['scopeB']) and eight['scopeA'] != eight['scopeB']
++            and eight['before'] == [] and eight['wrongScope'] == 'INVALID', 'Native workspace isolation controls differ')
++    isolation_original = stored_input(eight['input'], eight['scopeA'])
++    synthetic(isolation_original)
++    require(eight['recordsA'] == [isolation_original]
++            and eight['recordsB'] == [{**isolation_original, 'scope': eight['scopeB'], 'body': 'separate workspace, same record ID'}],
++            'Same-origin native workspaces leaked or altered each other\'s same-ID copy')
++    return [{'path': name, **identity(members[name]), 'rawNativeInvariantsVerified': True} for name in STORAGE_FILES]
+ 
+ 
+ def browser_observation(members, floor, attempt):
+@@ -338,8 +514,16 @@
+         require(case['errors'] == [] and case['originalProductExecutions'] == 0 and case['fullParity'] is False and case['superiority'] is False, 'Unexpected UI error or claim')
+         require(case['statusAtFixtureClose'] == ('failed' if title in failed else 'passed'), 'UI failure status was not retained')
+         ui_cases.append({'title': title, 'status': case['statusAtFixtureClose'], 'path': name, **identity(members[name])})
+-    for name in STORAGE_FILES:
+-        require(isinstance(decode(members[name]), dict), 'Missing raw native IndexedDB observation')
++    require(failed == [FAILED_BROWSER_NAME] and stats['expected'] == 11 and stats['unexpected'] == 1,
++            'The fixed first-failure11/12 browser result or its failed title changed')
++    child = attempt['children']
++    require(len(child) == 1 and child[0]['label'] == 'real-chromium' and child[0]['closeObserved'] is True
++            and child[0]['signal'] is None and child[0]['stopReason'] is None and child[0]['rawLogsComplete'] is True
++            and child[0]['exitCode'] == 1 and not child[0].get('spawnError'), 'Browser child did not close with complete failed-attempt logs')
++    require(child[0]['stdout'] == 'real-chromium-stdout.txt' and child[0]['stderr'] == 'real-chromium-stderr.txt'
++            and child[0]['outputBytes'] == [len(members['real-chromium-stdout.txt']), len(members['real-chromium-stderr.txt'])],
++            'Browser child raw output closure differs')
++    storage_checks = storage_observations(members)
+     acquisition = decode(members['browser-tooling-acquisition.json'])
+     require(acquisition['status'] == 'acquired' and acquisition['sourceCommit'] == COMMIT and acquisition['productTests'] == 0 and acquisition['applicationSourcesChanged'] is False, 'Browser acquisition failed or changed sources')
+     expected_execution = execution('browser')
+@@ -352,7 +536,7 @@
+     require(len(acquisition['children']) == 2, 'Unexpected acquisition process count')
+     for field, name in (('package', 'package.json'), ('lock', 'package-lock.json'), ('browserMetadata', 'browser-metadata.json')):
+         require(acquisition['toolingSource'][field] == identity(members['source-before/' + STUDIO + 'browser-tests/' + name + '.snapshot']), 'Locked browser source mismatch')
+-    return {'summary': stats, 'failedNames': failed, 'all12NamesRetained': True, 'UIObservations': ui_cases, 'nativeStorageObservations': STORAGE_FILES, 'acceptance': not failed}
++    return {'summary': stats, 'failedNames': failed, 'all12NamesRetained': True, 'UIObservations': ui_cases, 'nativeStorageObservations': storage_checks, 'acceptance': False}
+ 
+ 
+ def main():
+@@ -364,9 +548,20 @@
+     parser.add_argument('--metadata', required=True)
+     parser.add_argument('--output', required=True)
+     args = parser.parse_args()
+-    output = pathlib.Path(args.output).resolve()
++    work = no_link(pathlib.Path(__file__).absolute().parents[1])
++    run_root = no_link(work / 'cloud-verification-backups' / ('run-' + RUN))
++    metadata_root = no_link(args.metadata)
++    require(metadata_root == run_root / METADATA_FOLDER, 'Use the exact first-failure metadata directory')
++    for role in ('finite', 'browser'):
++        require(getattr(args, role + '_artifact_id') == ARTIFACTS[role], 'Use the fixed original artifact ID')
++        require(no_link(getattr(args, role + '_zip')) == run_root / ('artifact-' + ARTIFACTS[role] + '.zip'),
++                'Use the fixed original artifact path')
++    output = no_link(args.output)
++    require(output.parent == run_root and output.name.startswith('portable-readback-r2-'),
++            'Output must be a fresh portable-readback-r2- directory directly inside this run backup')
++    safe(output.name)
+     require(not output.exists(), 'Use a new output directory; previous readbacks must be preserved')
+-    output.mkdir(parents=True)
++    output.mkdir()
+     receipt = {'schema': 'rea-notes-draft-recovery-portable-evidence-qualification/v1',
+                'createdAtUtc': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'runId': RUN, 'sourceCommit': COMMIT,
+                'status': 'running', 'acceptance': False, 'readability': {}, 'sourceQualifications': {}, 'actualResults': {}, 'failures': [],
+@@ -381,6 +576,8 @@
+         metadata = {}
+         for name in ('run', 'jobs', 'artifacts', 'commit', 'tree'):
+             raw = read_bounded(pathlib.Path(args.metadata) / (name + '.json'), 32 * 1024 * 1024)
++            size, digest = FIXED_METADATA[name]
++            require(identity(raw) == {'bytes': size, 'sha256': digest}, 'Original raw API metadata differs: ' + name)
+             write_new(output, 'metadata/' + name + '.json', raw)
+             metadata[name] = decode(raw)
+         ids = {'finite': args.finite_artifact_id, 'browser': args.browser_artifact_id}
+@@ -396,6 +593,7 @@
+         receipt['acceptance'] = (not receipt['failures'] and receipt['apiProvenance']['runConclusion'] == 'success'
+                                   and all(value == 'success' for value in receipt['apiProvenance']['jobConclusions'].values())
+                                   and all(receipt['actualResults'].get(role, {}).get('acceptance') is True for role in ('finite', 'browser')))
++        require(receipt['acceptance'] is False, 'This first failed campaign can never be accepted as a product pass')
+         receipt['status'] = 'qualified-source-and-readback-with-actual-test-results' if not receipt['failures'] else 'incomplete-qualification-preserved'
+     except Exception as error:
+         receipt['failures'].append({'stage': 'readback-or-API-provenance', 'type': type(error).__name__, 'message': str(error)[:4000]})

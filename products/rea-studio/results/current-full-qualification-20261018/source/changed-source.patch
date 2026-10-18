@@ -1,0 +1,51 @@
+--- historical-unbound-r2.py
++++ unpack-current-698d-full-39169540384-r1.py
+@@ -8,16 +8,18 @@
+ from pathlib import Path, PurePosixPath
+ from collections import Counter
+ import datetime,hashlib,io,json,math,re,stat,sys,traceback,zipfile,zlib
+-RUN='PENDING_RUN_ID'
+-HEAD='PENDING_BRANCH_HEAD'
+-JOB='PENDING_JOB_ID'
+-ARTIFACT='PENDING_ARTIFACT_ID'
+-ATTEMPT=1
++RUN='39169540384'
++HEAD='698d2e301765d1b878fb251b3d59dadb5a3c9bac'
++JOB='117799536959'
++ARTIFACT='12151309685'
++ATTEMPT=1
++TESTED_MERGE='3b475afc89498e74cca946d3901b5b36e2c79a4f'
++OUTER_IDENTITY={'bytes': 1754859, 'sha256': 'af16c74d9971d513110618d5ccc28a5a35d7b2636919137fcd6bc9c32c4d31ff'}
+ REPOSITORY='Ginderlax/rea-research-lab'
+ if not __debug__:raise RuntimeError('Backup reader refuses optimized assertions')
+ if not all(re.fullmatch(r'\d+',s)for s in [RUN,JOB,ARTIFACT])or not re.fullmatch(r'[0-9a-f]{40}',HEAD):
+  raise RuntimeError('Unbound source template refuses all file reads and writes')
+-FROZEN={'sourceEpochBranch': '3c710a31e438af7f1682fc5cf497be4264db35ff',
++FROZEN={'sourceEpochBranch': '698d2e301765d1b878fb251b3d59dadb5a3c9bac',
+  'source25Authority': {'path': 'work/notes36-installed-implementation-next/complete-r1-next/copy-authority.json',
+                        'bytes': 36571,
+                        'sha256': 'd250c64d54dbd4638b35d715e123aa48a399d51a2a91a38ced51e8dfcfff1f47'},
+@@ -1641,19 +1643,19 @@
+ artifacts=control['artifacts'];assert artifacts['total_count']==len(artifacts['artifacts'])==1
+ artifact=artifacts['artifacts'][0];assert str(artifact['id'])==ARTIFACT and artifact['expired']is False and artifact['name']=='development-oracle-windows-'+RUN+'-'+str(ATTEMPT)
+ assert str(artifact['workflow_run']['id'])==RUN and artifact['workflow_run']['head_sha']==HEAD
+-outer=read(source,MAX_ARCHIVE);assert len(outer)==artifact['size_in_bytes']and artifact['digest']=='sha256:'+pin(outer)['sha256']
+-folder=source.parent/('artifact-'+ARTIFACT+'-notes36-full-superset-reader-v2');assert not folder.exists();folder.mkdir()
++outer=read(source,MAX_ARCHIVE);assert pin(outer)==OUTER_IDENTITY and len(outer)==artifact['size_in_bytes']and artifact['digest']=='sha256:'+pin(outer)['sha256']
++folder=source.parent/('artifact-'+ARTIFACT+'-current-698d-full-reader-v1');assert not folder.exists();folder.mkdir()
+ outer_files=unpack(outer,folder/'downloaded-contents');assert len(outer_files)==1 and outer_files[0]['path'].endswith('.zip')
+ inner=read(folder/'downloaded-contents'/outer_files[0]['path'],MAX_ARCHIVE);assert len(inner)<=15*1024*1024,'Unchanged portable inner ZIP limit'
+ files=unpack(inner,folder/'readable-evidence');evidence=folder/'readable-evidence';by_name=rows_map(files)
+-report={'schema':'rea-notes36-full-superset-portable-backup/v2','runId':RUN,'jobId':JOB,'artifactId':ARTIFACT,'branchHead':HEAD,'artifact':pin(outer),'innerArchive':pin(inner),'allCRCAndBytesReadable':True,'readableEvidence':str(evidence),'files':files,'fileCountObserved':len(files),'fixedProposal':FROZEN,'qualificationStage':'readable-backup-complete','recordedContractPassed':False,'qualificationErrors':[],'productExecutions':0,'originalExecutions':0,'tests':0,'builds':0,'syntaxChecks':0,'activeSourceWrites':0,'fullParity':False,'superiority':False,'historicalD24Cause':'unresolved; a later full pass cannot diagnose historical redacted failures','acceptanceScope':'This is a readback of separately hosted current implemented checks on one exact source epoch. Full original-product feature parity, universal superiority, performance, security and real-browser acceptance are not established here.'}
++report={'schema':'rea-current-698d-full-superset-portable-backup/v1','runId':RUN,'jobId':JOB,'artifactId':ARTIFACT,'branchHead':HEAD,'artifact':pin(outer),'innerArchive':pin(inner),'allCRCAndBytesReadable':True,'readableEvidence':str(evidence),'files':files,'fileCountObserved':len(files),'fixedProposal':FROZEN,'qualificationStage':'readable-backup-complete','recordedContractPassed':False,'qualificationErrors':[],'productExecutions':0,'originalExecutions':0,'tests':0,'builds':0,'syntaxChecks':0,'activeSourceWrites':0,'fullParity':False,'superiority':False,'historicalD24Cause':'unresolved; a later full pass cannot diagnose historical redacted failures','acceptanceScope':'This is a readback of separately hosted current implemented checks on one exact source epoch. Full original-product feature parity, universal superiority, performance, security and real-browser acceptance are not established here.'}
+ def evidence_bytes(name):
+  safe(name);assert name in by_name;raw=read(evidence/name);same_pin(raw,by_name[name]);return raw
+ def evidence_json(name):return json_bytes(evidence_bytes(name))
+ def phase(value):report['qualificationStage']=value
+ try:
+  phase('source-proof')
+- a=evidence_json('attempt-validation.json');tested=a['repositoryCommit'];assert re.fullmatch(r'[0-9a-f]{40}',tested)
++ a=evidence_json('attempt-validation.json');tested=a['repositoryCommit'];assert tested==TESTED_MERGE and re.fullmatch(r'[0-9a-f]{40}',tested)
+  assert a['schema']=='rea-cloud-development-attempt/v1'and a['scope']=='full-oracle-experiment'and a['phase']=='terminal'and a['snapshotScope']=='active'and a['sourceOnly']is False
+  assert a['executionEnvironment']=='github-hosted'and a['runtime']['version']=='v24.16.0'and a['runtime']['platform']=='win32'
+  same_attempt(a['environment'],tested);assert a['environment']['RUNNER_ENVIRONMENT']=='github-hosted'and a['environment']['RUNNER_OS']=='Windows'

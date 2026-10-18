@@ -1,0 +1,352 @@
+"""Portable ZIP/source evidence reader only. Never imports or executes product code.
+This pending-identity template MUST be versioned to an exact completed run first.
+"""
+import hashlib,io,json,re,stat,struct,sys,tarfile,traceback,zipfile,zlib
+if not __debug__:raise RuntimeError("All backup assertions are mandatory; optimization refused")
+from pathlib import Path
+RUN='38942435133'
+HEAD='3c710a31e438af7f1682fc5cf497be4264db35ff'
+JOBS={'finite':'117113157150','browser':'117113156759'}
+assert re.fullmatch(r'[0-9]+',RUN) and re.fullmatch(r'[0-9a-f]{40}',HEAD) and all(re.fullmatch(r'[0-9]+',value)for value in JOBS.values())and len(set(JOBS.values()))==2,'Unbound template refuses before files or API access'
+WORK=Path(__file__).resolve().parent;LAB=WORK.parent/'outputs/rea-research-lab'
+source=Path(sys.argv[1]).resolve();expected=sys.argv[2];ROLE=sys.argv[3]
+assert ROLE in ('finite','browser') and len(sys.argv)==7 and sys.argv[4:6]==[RUN,HEAD]
+CONTROL=Path(sys.argv[6]).resolve();assert CONTROL.is_relative_to(source.parent)and CONTROL.parent==source.parent and CONTROL.name.startswith('notes36-installed-control-plane-')
+assert source.is_relative_to((WORK/'cloud-verification-backups').resolve()) and source.parent.name=='run-'+RUN
+assert re.fullmatch(r'[0-9a-f]{64}',expected)
+sha=lambda b:hashlib.sha256(b).hexdigest()
+identity=lambda b:{'bytes':len(b),'sha256':sha(b)}
+pin=lambda r:{k:r[k]for k in ('bytes','sha256')}
+PREFIX='products/rea-studio/'
+BUNDLE=PREFIX+'experiments/notes-new-todo/bundle.json'
+HELPER='products/rea-studio/scripts/verify-notes36-installed-cloud.mjs'
+DECLARATION='products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json'
+COLLECTOR='products/rea-studio/scripts/verify-notes36-cloud.mjs'
+WORKFLOW='.github/workflows/notes-new-todo-installed-cloud.yml'
+SPEC='products/rea-studio/browser-tests/notes-new-todo.spec.mjs'
+R5_AUTHORITY='products/rea-studio/experiments/notes-new-todo/review/source-authority-r5.json.snapshot'
+R5_PEER='products/rea-studio/experiments/notes-new-todo/review/independent-peer-r5.json.snapshot'
+PINS={'products/rea-studio/scripts/verify-notes36-installed-cloud.mjs': {'bytes': 16788,
+                                                                    'sha256': '648f28c93ee6f08f93fb6d715e9208f31dd12e8af45097fef01d58161ec2cbe2'},
+ 'products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json': {'bytes': 60830,
+                                                                                                    'sha256': 'c0a488389094d898a7f6d308e9977192327f194ce3d271135dfcd2007e8a73bb'},
+ 'products/rea-studio/scripts/verify-notes36-cloud.mjs': {'bytes': 33324,
+                                                          'sha256': '263f47d794e785a0bd818889ce0f125febfda0f100e33f9cb70ae94347f2c7b7'},
+ '.github/workflows/notes-new-todo-installed-cloud.yml': {'bytes': 14822,
+                                                          'sha256': '5f495cb9279eceddafb9cfdf0ee9d39fcd6bfaba03bb536a28f4fa68a5520a99'},
+ 'products/rea-studio/browser-tests/notes-new-todo.spec.mjs': {'bytes': 42394,
+                                                               'sha256': 'a737d073dc4abc9186995e796fb725e391f005cd3c5197f7d71278edb5c6f2ef'},
+ 'products/rea-studio/experiments/notes-new-todo/bundle.json': {'bytes': 31483,
+                                                                'sha256': '37f8d9780bf1d12b0963c3ee8765df93885ac53f2d2601856dd68822b44a8d74'},
+ 'products/rea-studio/experiments/notes-new-todo/review/source-authority-r5.json.snapshot': {'bytes': 12444,
+                                                                                             'sha256': '3761f2727dc549992c6a0e56c601d0f7c674fba10cfd770d5de039b82c93d310'},
+ 'products/rea-studio/experiments/notes-new-todo/review/independent-peer-r5.json.snapshot': {'bytes': 6520,
+                                                                                             'sha256': 'f1fe470de0346126b69920f7b321b197d549800dce519fc3fafab33c114625bc'}}
+TOOLING=[{'path': 'products/rea-studio/scripts/verify-notes36-installed-cloud.mjs',
+  'bytes': 16788,
+  'sha256': '648f28c93ee6f08f93fb6d715e9208f31dd12e8af45097fef01d58161ec2cbe2'},
+ {'path': 'products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json',
+  'bytes': 60830,
+  'sha256': 'c0a488389094d898a7f6d308e9977192327f194ce3d271135dfcd2007e8a73bb'},
+ {'path': '.github/workflows/notes-new-todo-installed-cloud.yml',
+  'bytes': 14822,
+  'sha256': '5f495cb9279eceddafb9cfdf0ee9d39fcd6bfaba03bb536a28f4fa68a5520a99'},
+ {'path': 'products/rea-studio/browser-tests/notes-new-todo.spec.mjs',
+  'bytes': 42394,
+  'sha256': 'a737d073dc4abc9186995e796fb725e391f005cd3c5197f7d71278edb5c6f2ef'},
+ {'path': 'products/rea-studio/browser-tests/playwright.notes-new-todo.config.mjs',
+  'bytes': 1091,
+  'sha256': '46cd136b644ad1ff8a27aac6f891737af3593f19232c03306f75098d0a1e5caa'},
+ {'path': 'products/rea-studio/browser-tests/notes-new-todo-roster.json',
+  'bytes': 939,
+  'sha256': '9dda31a0246947563baf6a415b1c52fc75de9725ac078ed03b169259e12a5bfa'},
+ {'path': 'products/rea-studio/scripts/verify-cloud-browser.mjs',
+  'bytes': 48600,
+  'sha256': '86dc714b3c9bb14f9a374028ab6df36c5c8e4468a18da5cac0ff83422832b3df'},
+ {'path': 'products/rea-studio/browser-tests/package.json',
+  'bytes': 177,
+  'sha256': '337e56d786191bf1f2cf296fa96082f3d74110bca2f5c5006de2ed5a84f887b7'},
+ {'path': 'products/rea-studio/browser-tests/package-lock.json',
+  'bytes': 1782,
+  'sha256': '9b5ff170a3981c45506aef94e4b5df3f96bf49bbf6ba194acac2a40dd0274bcf'},
+ {'path': 'products/rea-studio/browser-tests/browser-metadata.json',
+  'bytes': 1135,
+  'sha256': '2cfd419f71ac6475d81e1301fa86c34cf2a2a6bae2a0da4b5a2b18310216b6bf'},
+ {'path': 'products/rea-studio/browser-tests/playwright.config.mjs',
+  'bytes': 1110,
+  'sha256': '08f7fbd8c02e2120bc3b4111ba164b2c2da4d93fef0ba065b14b77c3678d0cb3'},
+ {'path': 'products/rea-studio/browser-tests/flow-vault.spec.mjs',
+  'bytes': 26471,
+  'sha256': 'dd55dc2c40db400e6181cfa06e6cd4cb0d13cc0683a841b17d03a688971fadab'}]
+raw=source.read_bytes();assert len(raw)<=16*1024*1024 and sha(raw)==expected
+folder=source.parent/(source.stem+'-notes36-installed-reader-v1');folder.mkdir(exist_ok=False)
+def safe(root,name):
+ assert isinstance(name,str)and name and not re.search(r'[\\:\x00-\x1f\x7f]',name)and not name.startswith('/')and all(p not in ('','.','..')for p in name.split('/'))
+ result=root/name;assert result.resolve().is_relative_to(root.resolve());at=root
+ for part in name.split('/'):
+  at=at/part
+  if at.exists()or at.is_symlink():assert not at.is_symlink()
+ return result
+def unpack(archive,destination,file_limit,byte_limit,individual_limit):
+ destination.mkdir(parents=True,exist_ok=False);rows=[];names=set()
+ with zipfile.ZipFile(archive)as z:
+  entries=z.infolist();assert len(entries)<=file_limit and sum(r.file_size for r in entries)<=byte_limit
+  for row in entries:
+   assert not row.flag_bits&1 and row.filename.rstrip('/').casefold()not in names;names.add(row.filename.rstrip('/').casefold());assert not stat.S_ISLNK(row.external_attr>>16)
+   target=safe(destination,row.filename.rstrip('/'))
+   if row.is_dir():target.mkdir(parents=True,exist_ok=True);continue
+   assert row.file_size<=individual_limit;data=z.read(row);assert len(data)==row.file_size
+   target.parent.mkdir(parents=True,exist_ok=True)
+   with target.open('xb')as out:out.write(data)
+   assert target.read_bytes()==data;rows.append({'path':row.filename,**identity(data),'zipCRC32':format(row.CRC,'08x')})
+ return rows
+outer=unpack(source,folder/'downloaded-contents',4,16*1024*1024,15*1024*1024)
+assert len(outer)==1 and outer[0]['path']in('rea-notes36-'+ROLE+'-'+RUN+'-1.zip','rea-notes36-incomplete-'+ROLE+'-'+RUN+'-1.zip')
+archive=folder/'downloaded-contents'/outer[0]['path'];evidence=folder/'readable-evidence'
+files=unpack(archive,evidence,2500,96*1024*1024,8*1024*1024)
+def content(name):
+ p=safe(evidence,name);assert p.is_file()and p.stat().st_size<=8*1024*1024;return p.read_bytes()
+def load(name):return json.loads(content(name).decode('utf-8-sig'))
+def png(data):
+ assert data[:8]==bytes.fromhex('89504e470d0a1a0a');at=8;dimensions=None;ended=False
+ while at+12<=len(data):
+  size=int.from_bytes(data[at:at+4],'big');kind=data[at+4:at+8];end=at+size+12;assert end<=len(data);payload=data[at+8:at+8+size];assert(zlib.crc32(kind+payload)&0xffffffff)==int.from_bytes(data[at+8+size:end],'big')
+  if kind==b'IHDR':assert at==8 and size==13;dimensions=struct.unpack('>II',payload[:8])
+  at=end
+  if kind==b'IEND':assert size==0 and at==len(data);ended=True;break
+ assert ended and dimensions==(1440,1100)
+execution={'CI':'true','GITHUB_ACTIONS':'true','RUNNER_ENVIRONMENT':'github-hosted','RUNNER_OS':'Windows','RUNNER_ARCH':'X64','GITHUB_SHA':HEAD,'GITHUB_RUN_ID':RUN,'GITHUB_RUN_ATTEMPT':'1','GITHUB_REPOSITORY':'Ginderlax/rea-research-lab','GITHUB_JOB':'finite-twenty-one-file-selection'if ROLE=='finite'else'eight-real-chromium-scenarios'}
+result={'schema':'rea-local-Notes36-installed-backup/v1','runId':RUN,'jobId':JOBS[ROLE],'sourceCommit':HEAD,'role':ROLE,'artifact':str(source),'artifactSHA256':expected,'archiveBytes':len(raw),'portableEvidenceArchive':str(archive),'readableEvidence':str(evidence),'files':files,'allCRCAndBytesReadable':True,'recordedContractPassed':False,'evidenceConsistencyErrors':[],'localProductExecutions':0,'localTests':0,'localBuilds':0,'localBrowserExecutions':0,'fullParity':False,'superiority':False,'attempt':None}
+tree={};modes={}
+
+def gitbound(name,data):assert name in tree and modes[name]in(b'100644',b'100755')and hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()==tree[name],name
+def mapping(rows):
+ assert isinstance(rows,list);d={r['path']:pin(r)for r in rows};assert len(d)==len(rows);return d
+def context_proof():
+ global tree,modes
+ def context(name,maximum):
+  p=safe(CONTROL,name);assert p.is_file()and p.stat().st_size<=maximum;raw=p.read_bytes();return json.loads(raw.decode('utf-8-sig')),identity(raw)
+ run,run_pin=context('run.json',1048576);jobs,jobs_pin=context('jobs.json',1048576);artifacts,artifacts_pin=context('artifacts.json',1048576)
+ commit,commit_pin=context('commit.json',1048576);tree_api,tree_pin=context('tree.json',16*1024*1024)
+ assert str(run['id'])==RUN and run['head_sha']==HEAD and run['run_attempt']==1 and run['event']=='push'and run['head_branch']=='codex/rea-cloud-recovery-20261015'and run['path']==WORKFLOW and run['repository']['full_name']=='Ginderlax/rea-research-lab'
+ assert jobs['total_count']==len(jobs['jobs'])==2 and len({str(r['id'])for r in jobs['jobs']})==2
+ for role,job_id in JOBS.items():
+  selected=[r for r in jobs['jobs']if str(r['id'])==job_id];assert len(selected)==1;job=selected[0]
+  assert str(job['run_id'])==RUN and job['head_sha']==HEAD and job['name']==('finite-twenty-one-file-selection'if role=='finite'else'eight-real-chromium-scenarios')and 'windows-2022'in job['labels']and job['runner_group_name']=='GitHub Actions'
+ assert artifacts['total_count']==len(artifacts['artifacts'])and len(artifacts['artifacts'])<=2
+ roles={}
+ for row in artifacts['artifacts']:
+  matching=[role for role in JOBS if row['name']=='notes36-installed-'+role+'-'+RUN+'-1'];assert len(matching)==1 and matching[0]not in roles;roles[matching[0]]=row
+ assert ROLE in roles;artifact=roles[ROLE];assert source.name=='artifact-'+str(artifact['id'])+'.zip'and artifact['expired']is False and str(artifact['workflow_run']['id'])==RUN and artifact['workflow_run']['head_sha']==HEAD and artifact['size_in_bytes']==len(raw)and artifact['digest']=='sha256:'+expected
+ assert commit['sha']==HEAD and tree_api['sha']==commit['tree']['sha']and tree_api['truncated']is False and len(tree_api['tree'])<=100000
+ tree={};modes={}
+ for row in tree_api['tree']:
+  if row['type']=='blob':
+   assert row['path']not in tree and re.fullmatch(r'[0-9a-f]{40}',row['sha']);tree[row['path']]=row['sha'];modes[row['path']]=row['mode'].encode()
+ result['rawControlContext']={'run':run_pin,'jobs':jobs_pin,'artifacts':artifacts_pin,'commit':commit_pin,'tree':tree_pin,'runStatus':run['status'],'runConclusion':run['conclusion'],'jobStatus':next(r for r in jobs['jobs']if str(r['id'])==JOBS[ROLE])['status'],'jobConclusion':next(r for r in jobs['jobs']if str(r['id'])==JOBS[ROLE])['conclusion'],'actualTreeSHA':tree_api['sha'],'portableRawGitContext':True}
+
+def source_proof():
+ context_proof()
+ receipt=load('notes36-source-check.json');assert receipt['schema']=='rea-Notes36-committed-source-check/v1'and receipt['status']=='verified-unexecuted-committed-sources'and receipt['phase']=='before'and receipt['execution']==execution and receipt['sourceCommit']==HEAD
+ assert receipt['sourceOnly']is True and receipt['sourceOverlay']is False and receipt['sourceMutationPerformed']is False and receipt['sourceInstallationPerformedByHelper']is False and receipt['historicalReceiptsRebound']is False and receipt['applicationExecutions']+receipt['originalExecutions']+receipt['browserExecutions']==0
+ proof_dir='notes36-proof-source/';raw_declaration=content(proof_dir+DECLARATION+'.snapshot');assert identity(raw_declaration)==PINS[DECLARATION];gitbound(DECLARATION,raw_declaration);declaration=json.loads(raw_declaration)
+ assert declaration['schema']=='rea-Notes36-current-source-declaration/v1'and declaration['sourceOnly']is True and declaration['sourceInstallationPerformedByDeclaration']is False and declaration['actualInstalledBehaviorAccepted']is False and declaration['historicalReceiptsRebound']is False
+ assert declaration['externalDeclarationPinRequired']is True and declaration['selfIdentityContained']is False and declaration['otherProofRowCount']==59 and declaration['combinedProofRowCount']==60 and declaration['proofFileLimit']==64 and declaration['proofByteLimit']==8388608 and declaration['proofIndividualByteLimit']==262144
+ assert len(declaration['otherProofRows'])==59 and all(row['path']!=DECLARATION for row in declaration['otherProofRows'])
+ inputs=[{'path':DECLARATION,**PINS[DECLARATION]},*[{k:row[k]for k in('path','bytes','sha256')}for row in declaration['otherProofRows']]];assert len(mapping(inputs))==60 and sum(row['bytes']for row in inputs)==695900
+ assert {row['path']for row in files if row['path'].startswith(proof_dir)}=={proof_dir+row['path']+'.snapshot'for row in inputs}
+ for row in inputs:
+  data=content(proof_dir+row['path']+'.snapshot');assert len(data)<=262144 and identity(data)==pin(row);gitbound(row['path'],data)
+ raw_bundle=content(proof_dir+BUNDLE+'.snapshot');assert identity(raw_bundle)==PINS[BUNDLE];bundle=json.loads(raw_bundle)
+ assert bundle['schema']=='rea-Notes-new-to-do-cloud-source-bundle/v1'and bundle['productionInstalled']is False and bundle['historicalReceiptsRebound']is False
+ assert len(bundle['transitions'])==7 and len(bundle['payloads'])==17 and len(bundle['baselineNotesSources'])==32 and len(bundle['composedNotesSources'])==36 and len(bundle['fixedTests'])==21
+ assert bundle['composedNotesSources']==declaration['currentNotesSources']and bundle['transitions']==declaration['installedTargets']and bundle['fixedTests']==declaration['fixedTests']
+ assert bundle['featureAuthority']=={'bytes':12444,'sha256':'3761f2727dc549992c6a0e56c601d0f7c674fba10cfd770d5de039b82c93d310'}and bundle['featureIndependentPeer']=={'bytes':6520,'sha256':'f1fe470de0346126b69920f7b321b197d549800dce519fc3fafab33c114625bc'}
+ assert {r['path']for r in bundle['payloads']if r['kind']=='review'}=={R5_AUTHORITY,R5_PEER}
+ for name in(R5_AUTHORITY,R5_PEER):assert identity(content(proof_dir+name+'.snapshot'))==PINS[name]
+ feature=load(proof_dir+R5_AUTHORITY+'.snapshot');composite=load(proof_dir+R5_PEER+'.snapshot');assert feature['candidateFiles']==12 and feature['sourceEpoch']=='R5'and feature['authorityRevision']==2 and composite['authority']['sha256']==PINS[R5_AUTHORITY]['sha256']and composite['findings']==[]
+ targets={row['path']:row for row in bundle['transitions']};assert len(targets)==7 and len([row for row in targets.values()if row['before']])==3 and len([row for row in targets.values()if row['before']is None])==4 and len([name for name in targets if re.search(r'\.(mjs|json|html|css|ps1)$',name)])==6
+ for row in bundle['transitions']:
+  assert identity(content(proof_dir+row['path']+'.snapshot'))==identity(content(proof_dir+row['afterImage']['path']+'.snapshot'))==row['after']
+  if row['before']:assert identity(content(proof_dir+row['beforeImage']['path']+'.snapshot'))==row['before']
+  else:assert row['beforeImage']is None
+ for row in bundle['payloads']:assert identity(content(proof_dir+row['path']+'.snapshot'))==pin(row)
+ current=mapping(declaration['currentNotesSources']);assert len(current)==36
+ actual_notes={name for name in tree if name.startswith(PREFIX+'apps/notes/')and'results'not in name.removeprefix(PREFIX+'apps/notes/').split('/')};assert actual_notes==set(current)
+ for row in declaration['currentNotesSources']:assert identity(content(proof_dir+row['path']+'.snapshot'))==pin(row)
+ oldtests={row['path']:pin(row)for row in bundle['baselineNotesSources']if row['path'].endswith('.test.mjs')};assert len(oldtests)==17 and all(current[name]==row for name,row in oldtests.items())
+ assert sorted(bundle['fixedTests'])==sorted(name.removeprefix(PREFIX)for name in current if name.endswith('.test.mjs'))
+ assert len(bundle['oldNamedGroupsRequired'])==23 and len(bundle['newNamedGroupsRequired'])==19 and bundle['plannedGroups']==declaration['finiteGroups']==111
+ assert bundle['oldNamedGroupsRequired']==declaration['oldNamedGroupsRequired']and bundle['newNamedGroupsRequired']==declaration['newNamedGroupsRequired']
+ assert bundle['separateComparisonCounts']==declaration['separateComparisonCounts']=={'existingConversionAndCompletion':20,'newParentAndType':4,'newDesktopCommandArguments':2,'addedToTestGroupCounts':False}
+ before=load('notes36-source-before.json');after=load('notes36-source-after.json');bm=mapping(before);am=mapping(after);assert before==after and len(before)<=2000 and sum(row['bytes']for row in before)<=67108864 and all(row['bytes']<=8388608 for row in before)
+ roots={'apps','lib','public','browser-tests','scripts','tests'};excluded={'node_modules','.local','results'};top={'server.mjs','catalog.mjs','package.json'}
+ expected_eligible=set()
+ for full in tree:
+  if not full.startswith(PREFIX):continue
+  relative=full.removeprefix(PREFIX);parts=relative.split('/')
+  if relative in top or(len(parts)>=2 and parts[0]in roots and not excluded.intersection(parts)and re.search(r'\.(mjs|json|html|css|ps1)$',relative)):expected_eligible.add(relative)
+ assert set(bm)==expected_eligible and set(am)==expected_eligible,'Exact whole committed six-directory census; no source overlay/exclusion/addition epoch'
+ assert {row['path']for row in files if row['path'].startswith('active-source/')}=={'active-source/'+name+'.snapshot'for name in am}
+ for name,row in am.items():
+  data=content('active-source/'+name+'.snapshot');assert identity(data)==row;gitbound(PREFIX+name,data)
+  if name.startswith('apps/notes/'):assert current[PREFIX+name]==row
+ assert len([name for name in am if name.startswith('apps/notes/')])==34
+ auth={'activeSixDirectorySources':len(after),'eligibleNotesSources':34,'allNotesFiles':36,'exactInstalledTargets':7,'eligibleInstalledTargets':6,'allEligibleGitBlobs':len(after),'excludedGitTargets':[],'sourceOverlay':False,'allOtherGitBlobsAuthenticated':True}
+ authentication={'allNotesFiles':36,'eligibleNotesSources':34,'installedTargets':7,'eligibleInstalledTargets':6,'sourceOverlay':False,'all36NotesGitBlobsAuthenticated':True,'sourceInputs':inputs,'proofReadFiles':60,'proofReadBytes':695900,'proofFileLimit':64,'proofByteLimit':8388608,'sourceAuthentication':auth}
+ assert receipt['declaration']=={'path':DECLARATION,**PINS[DECLARATION]}and receipt['currentSources']==declaration['currentNotesSources']and receipt['authentication']==authentication and receipt['census']==identity(content('notes36-source-before.json'))
+ proof=load('notes36-postrun-source-check.json');assert proof['schema']=='rea-Notes36-committed-postrun-source-check/v1'and proof['status']=='source-verified'and proof['phase']=='after'and proof['execution']==execution and proof['sourceCommit']==HEAD
+ for key in('sourceOnly',):assert proof[key]is True
+ for key in('sourceOverlay','sourceMutationPerformed','sourceInstallationPerformedByHelper','historicalReceiptsRebound'):assert proof[key]is False
+ assert proof['applicationExecutions']+proof['originalExecutions']+proof['browserExecutions']==0 and proof['sourceStable']is True and proof['beforeReceipt']==identity(content('notes36-source-check.json'))and proof['currentSources']==declaration['currentNotesSources']and proof['declaration']==receipt['declaration']and proof['authentication']==authentication
+ for name in(COLLECTOR,HELPER,SPEC):assert identity(content('active-source/'+name.removeprefix(PREFIX)+'.snapshot'))==PINS[name]
+ return bundle,receipt,proof,after,auth
+
+def common_attempt(bundle,receipt,after,expected_auth):
+ assert result['rawControlContext']['jobStatus']=='completed'and result['rawControlContext']['jobConclusion']=='success'
+ attempt=load('notes36-'+ROLE+'-attempt.json');assert attempt['schema']=='rea-Notes36-installed-'+ROLE+'-attempt/v1'and attempt['status']=='passed'and attempt['phase']==ROLE and attempt['role']==ROLE and attempt['execution']==execution and attempt['sourceCommit']==HEAD
+ for key in('sourceOverlay','sourceInstallationPerformedByCollector','installationJournalAuthenticated','historicalReceiptsRebound','applicationSourcesChanged'):assert attempt[key]is False
+ assert attempt['currentNotesSourcesCommitted']is True and attempt['sourceStable']is True and attempt['exactTargets']==7 and attempt['eligibleTargets']==6 and attempt['currentNotesFiles']==36 and attempt['installedSourceCheck']==identity(content('notes36-source-check.json'))
+ for key in('originalFullApplicationExecutions','originalDatabaseExecutions','originalGuiExecutions'):assert attempt[key]==0
+ assert attempt['sourceFiles']==len(after)and attempt['sourceCapturedBeforeExecution']is True and attempt['notesSourceAuthentication']==expected_auth and attempt['sourceAuthentication']==expected_auth
+ assert load('notes36-'+ROLE+'-source-before.json')==load('notes36-'+ROLE+'-source-after.json')==after
+ tooling=attempt['tooling'];assert tooling['paths']==TOOLING and tooling['readFiles']==tooling['fileLimit']==12 and tooling['byteLimit']==8388608 and tooling['readBytes']==sum(row['bytes']for row in TOOLING)<=8388608
+ assert {row['path']for row in files if row['path'].startswith('tooling-source/')}=={'tooling-source/'+row['path']+'.snapshot'for row in TOOLING}
+ for row in TOOLING:
+  data=content('tooling-source/'+row['path']+'.snapshot');assert len(data)<=262144 and identity(data)==pin(row);gitbound(row['path'],data)
+ assert tooling['selfSource']=={'path':COLLECTOR,**PINS[COLLECTOR],'GitBound':True}and COLLECTOR not in {row['path']for row in TOOLING}
+ assert len(attempt['children'])==1;child=attempt['children'][0];assert child['exitCode']==0 and child['signal']is None and child['closeObserved']is True and child['spawnError']is None and child['stopReason']is None and child['droppedOutputBytes']==0
+ assert child['stdoutBytes']==len(content(ROLE+'-stdout.txt'))and child['stderrBytes']==len(content(ROLE+'-stderr.txt'))
+ events=[json.loads(line)for line in content(ROLE+'-events.jsonl').decode().splitlines()];assert events and [row['sequence']for row in events]==list(range(1,len(events)+1))and events[0]['kind']=='child-started'and events[-1]['kind']=='child-closed'
+ workflow=load('notes36-workflow-attempt.json');assert workflow['schema']=='rea-Notes36-installed-workflow-attempt/v1'and workflow['role']==ROLE and workflow['sourceCommit']==HEAD and workflow['runId']==RUN and workflow['runAttempt']=='1'and workflow['runnerEnvironment']=='github-hosted'
+ for key in('checkoutOutcome','sourceBeforeOutcome','verificationOutcome','sourceAfterOutcome'):assert workflow[key]=='success'
+ for key in('sourceOverlay','sourceInstallationPerformedByWorkflow','installationJournalAuthenticated','historicalReceiptsRebound','fullParity','superiority'):assert workflow[key]is False
+ assert workflow['exactInstalledTargets']==7 and workflow['eligibleInstalledTargets']==6 and workflow['currentNotesFiles']==36 and workflow['historicalR5DeclarationRemainsProposalEpoch']is True
+ if ROLE=='browser':assert workflow['acquisitionOutcome']=='success'and workflow['browserPostcheckOutcome']=='success'
+ return attempt
+
+
+def finite_results(bundle,attempt):
+ raw=content('finite-stdout.txt').decode();summary={}
+ for key in('tests','pass','fail','cancelled','skipped','todo'):
+  rows=re.findall(r'^# '+key+r' (\d+)\r?$',raw,re.M);assert len(rows)==1;summary[key]=int(rows[0])
+ assert summary=={'tests':111,'pass':111,'fail':0,'cancelled':0,'skipped':0,'todo':0}and attempt['productTests']==111
+ assert attempt['fixedTestFiles']==bundle['fixedTests']and attempt['command'][1:]==['--test','--test-reporter=tap','--test-concurrency=1',*bundle['fixedTests']]
+ assert attempt['children'][0]['command']==attempt['command'],'Observed child invocation must equal exact fixed attempt command'
+ for name in bundle['oldNamedGroupsRequired']+bundle['newNamedGroupsRequired']:assert raw.splitlines().count('# Subtest: '+name)==1
+ observations=[]
+ for line in raw.splitlines():
+  if line.startswith('# {'):
+   try:observations.append(json.loads(line[2:]))
+   except json.JSONDecodeError:pass
+ def one(key):
+  values=[r[key]for r in observations if key in r];assert len(values)==1;return values[0]
+ old=one('notesTodoOriginalComparisons');parent=one('notesNewTodoOriginalHelperComparisons');command=one('notesNewTodoOriginalCommandComparisons');delivery=one('notesTodoActualHttpModuleDelivery')
+ assert old['sourceSha256']==bundle['historicalOriginalDependencies'][0]['sha256']and old['conversionComparisons']==16 and old['completionComparisons']==4 and old['clock']==1790000000123
+ assert parent['comparisons']==4 and parent['comparedFields']==['parent_id','is_todo']and parent['fieldsAdapter']==['parent_id','is_todo','adapterSentinel']and parent['dueAndCompletionZerosAreCandidateOnlyChecks']is True
+ assert parent['sourcePins']=={'note':[45302,'5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647'],'base':[26960,'c0a19f6d2d689cc75de99e4ba57058ec02f9171c5b5b3c739aa45d11d5920fde']}
+ assert [[r['owner'],r['name']]for r in parent['bindings']]==[['BaseModel','new'],['Note','new'],['Note','newTodo']]
+ assert parent['sourceCommit']==command['sourceCommit']=='7e2765a3857754d12dbadea442b60ceaf9d4b23d'and command['comparisons']==2 and command['comparedArguments']==['body','isTodo']and command['delegatedCommand']=='newNote'and command['actualNewNoteCommandExecuted']is False and command['originalProvisionalSaveExecuted']is False
+ for row in(parent,command):
+  assert row['countsAddedToTestGroups']is False
+  for k in('originalDatabaseExecutions','originalGuiExecutions','originalFullApplicationExecutions'):assert row[k]==0
+ for k in('originalFullApplicationExecutions','originalDatabaseExecutions','originalGuiSessions'):assert old[k]==0
+ assert delivery['unchangedPublicModuleBoundary']is True and delivery['actualBrowserExecution']is False and delivery['client']==identity(content('active-source/apps/notes/client.mjs.snapshot'))
+ assert[r['path']for r in delivery['delivered']]==['/apps/notes/markdown.mjs','/apps/notes/core.mjs']
+ for row in delivery['delivered']:assert pin(row)==identity(content('active-source'+row['path']+'.snapshot'))
+ stored=load('notes36-finite-observations.json');assert stored==attempt['finite']and stored['summary']==summary and stored['execution']==execution and stored['sourceCommit']==HEAD and stored['fixedFiles']==bundle['fixedTests']and stored['oldNamedGroupsObserved']==23 and stored['newNamedGroupsObserved']==19 and stored['separateComparisonCounts']==bundle['separateComparisonCounts']
+ assert stored['existingOriginalHelper']==old and stored['newParentAndTypeOriginalHelpers']==parent and stored['newDesktopCommandArguments']==command and stored['actualHttpModuleDelivery']==delivery
+ return {'fixedFiles':21,'passedGroups':111,'oldNames':23,'newNames':19,'separateOriginalComparisons':bundle['separateComparisonCounts'],'actualHTTPModuleDelivery':True,'stderrBytes':len(content('finite-stderr.txt'))}
+def browser_results(bundle,attempt,receipt,proof,after,auth):
+ report=load('playwright-results.json');specs=[]
+ def visit(suite):
+  specs.extend(suite.get('specs',[]))
+  for child in suite.get('suites',[]):visit(child)
+ for suite in report['suites']:visit(suite)
+ roster=load('tooling-source/'+PREFIX+'browser-tests/notes-new-todo-roster.json.snapshot');assert len(roster)==8 and len(set(roster))==8 and len(specs)==8 and sorted(r['title']for r in specs)==sorted(roster)and report['errors']==[]
+ assert [report['stats'][k]for k in('expected','unexpected','skipped','flaky')]==[8,0,0,0]
+ for spec in specs:
+  assert spec['ok']is True and len(spec['tests'])==1;test=spec['tests'][0];assert test['status']=='expected'and len(test['results'])==1 and test['results'][0]['status']=='passed'and test['results'][0]['retry']==0
+ observation=load('browser-observation.json');assert observation=={'schema':'rea-cloud-real-browser-observation/v1','browser':'chromium','channel':'chromium','version':'156.0.8078.4','realBrowserFixtureCreated':True,'retries':0}
+ workers=[r['path']for r in files if re.fullmatch(r'browser-observation-process-[0-9]+\.json',r['path'])];assert len(workers)==1;worker=load(workers[0]);assert worker['schema']=='rea-cloud-notes-new-todo-browser-worker-observation/v1'and worker['execution']==execution and worker['observation']==observation and workers[0]=='browser-observation-process-'+str(worker['pid'])+'.json'
+ assert worker['sourcePins']==[{'path':r['path'].removeprefix(PREFIX),**pin(r)}for r in bundle['composedNotesSources']]
+ kinds=['new-task-unsaved-validation-and-explicit-retry','native-discard-cancel-and-new-note-kind-reset','new-task-commit-held-native-duplicate-and-newer-draft','new-task-editor-ownership-after-actual-commit','new-task-disposal-after-actual-first-commit','new-task-postcommit-genuine-list400-newer-draft','new-task-committed-save-refresh-failure-explicit-recovery','new-task-actual-jex-native-tar-and-resource-download']
+ case_names=[r['path']for r in files if re.fullmatch(r'case-[A-Za-z0-9-]+\.json',r['path'])];assert len(case_names)==8;values=[load(p)for p in case_names];assert sorted(v['title']for v in values)==sorted(roster)
+ holds=[];faults=[];downloads=[];screenshots=[];records=[];summaries=[]
+ for value in values:
+  index=roster.index(value['title']);tid=value['testId'];assert re.fullmatch(r'[A-Za-z0-9-]+',tid)and value['schema']=='rea-notes-new-todo-real-browser-case/v1'and value['statusAtFixtureClose']=='passed'and value['retry']==0 and value['realBrowser']is True and value['actualHTTP']is True and value['serverCloseObserved']is True and value['errors']==[]
+  for k in('originalProductExecutions','originalFullApplicationExecutions','originalHelperExecutions','programmaticDisabledControlProbes'):assert value[k]==0
+  cleanup=value['teardown'];assert cleanup['stage']=='completed'and cleanup['pendingOwnedRequests']==0 and cleanup['activeOwnedIOFault']is False and cleanup['requestCounts']['failed']==0 and cleanup['requestCounts']['started']==cleanup['requestCounts']['finished']
+  for k in('heldRoutesFinished','drained','contextClosed','serverClosed','screenshotSaved'):assert cleanup[k]is True
+  assert[r['name']for r in cleanup['steps']]==['release-held-routes','screenshot','drain-owned-page-requests','capture-synthetic-final-record','close-owned-context','close-owned-server']and all(r['status']=='passed'for r in cleanup['steps'])
+  image='screenshots/'+tid+'.png';png(content(image));screenshots.append({'path':image,**identity(content(image))})
+  disk=[r for r in value['observations']if r['kind']=='owned-synthetic-disk-record'];assert len(disk)==1 and disk[0]['path']=='notes-records/'+tid+'.json';stored_bytes=content(disk[0]['path']);assert identity(stored_bytes)==pin(disk[0]);stored=json.loads(stored_bytes);assert stored['schema']==2;records.append({'path':disk[0]['path'],**identity(stored_bytes)})
+  actual=[r for r in value['observations']if r['kind']==kinds[index]];assert len(actual)==1;observed=actual[0];expected=1 if index in(0,5,6)else 0;assert len(value['expectedHttpFailures'])==expected and len([r for r in value['responses']if r['status']>=400])==expected
+  for failure in value['expectedHttpFailures']:
+   assert failure['status']==400 and failure['observed']is True and failure['path']==('/api/notes/save'if index==0 else'/api/notes/list')
+   if index==0:assert failure['errorMessage']=='Give the note a title.'
+   else:assert re.match(r'^(EISDIR|EPERM|EACCES): ',failure['errorMessage'])
+   assert len([r for r in value['responses']if r['status']==400 and r.get('expectedActualHostFailure')is True and r['error']==failure['errorMessage']and r['path']==failure['path']])==1
+  assert len(value['expectedConsole'])<=expected and len(value['faults'])==(1 if index in(2,3,4,5,6)else 0)
+  for fault in value['faults']:
+   assert fault['handlerMocked']is False and fault['responseRewritten']is False
+   if index in(2,3,4):assert fault['kind']=='delay-after-actual-host-response'and fault['action']=='save'and fault['status']==200;holds.append(fault)
+   else:
+    assert fault['kind']=='actual-host-list400-after-owned-filesystem-read-fault'and fault['actualStatus']==400 and fault['restoreCompletedBeforeResponseDelivery']is True and fault['heldAfterRestore']==(index==5)and fault['originalCommittedState']==fault['restoredState']
+    assert[r['name']for r in fault['steps']]==['all-other-owned-requests-and-attachment-response-drained','fault-ownership-entered','committed-state-renamed-to-owned-sibling','empty-directory-installed-at-owned-state-file','unchanged-host-returned-real-filesystem400','owned-empty-directory-removed-without-recursion','original-state-restored','restored-exact-original-bytes-verified','actual-response-release-requested','unchanged-actual400-delivered-after-restoration']
+    assert fault['actualError']==value['expectedHttpFailures'][0]['errorMessage'];faults.append(fault)
+    if fault['heldAfterRestore']:holds.append(fault)
+  if index==0:assert observed['ordinaryDraftMutationRequests']==0 and observed['actualEmptyTitleStatus']==400 and observed['explicitNewTodo']is True and stored['notes'][observed['noteId']]['revision']==1
+  if index==0:
+   assert observed['canonicalBaselineRevision']==2 and observed['canonicalBaselineMetadataEdited']is True and observed['unrelatedRawNoteBefore']==observed['unrelatedRawNoteAfter']
+   baseline=[note for note in stored['notes'].values()if note['title']=='Unrelated saved baseline'];assert len(baseline)==1 and baseline[0]['revision']==2 and baseline[0]['metadataEdited']is True and len(baseline[0]['history'])==1
+   assert identity(json.dumps(baseline[0],ensure_ascii=False,separators=(',',':')).encode())==observed['unrelatedRawNoteBefore']
+  if index==1:assert observed['nativeDialogs']==3 and observed['cancellationRetainedAllFields']is True and observed['savedAsTask']is False
+  if index==2:assert observed['nativeDuplicatePointerClicks']==2 and observed['firstSaveRequests']==1 and observed['nextSubmittedRevision']==1 and observed['finalRevision']==2 and observed['ordinaryEnabledFieldTyping']is True and observed['programmaticDisabledControlProbe']is False and stored['notes'][observed['noteId']]['revision']==2
+  if index==3:assert observed['oldId']!=observed['newId']and stored['notes'][observed['oldId']]['revision']==stored['notes'][observed['newId']]['revision']==1
+  if index==4:assert observed['lateNotesRequests']==0 and observed['detachedControlObserved']is True and observed['detachedControlScrubbingClaimed']is False
+  if index==5:assert observed['nextSubmittedRevision']==1 and observed['finalRevision']==2 and observed['ordinaryEnabledFieldTyping']is True
+  if index==6:assert observed['explicitRefreshStatus']==200 and observed['stateBefore']==observed['stateAfter']==identity(stored_bytes)
+  assert len(value['downloads'])==(2 if index==7 else 0)
+  for download in value['downloads']:
+   suffix='-new-task-notes.jex'if download['suggestedFilename']=='rea-notes.jex'else'-resource-sample.bin'if download['suggestedFilename']=='sample.bin'else None;assert suffix and download['path']=='downloads/'+tid+suffix;data=content(download['path']);assert identity(data)==download['observed'];assert[r for r in value['observations']if r['kind']=='real-browser-file-download'and r['path']==download['path']]==[download]
+   if suffix.endswith('.bin'):assert data==bytes([0,1,127,128,255])
+   downloads.append({'path':download['path'],**identity(data)})
+  if index==7:
+   original=content('notes36-proof-source/'+PREFIX+'apps/notes/fixtures/pinned-joplin.jex.snapshot');archive_data=content(next(r['path']for r in value['downloads']if r['suggestedFilename']=='rea-notes.jex'))
+   def tar(data):
+    with tarfile.open(fileobj=io.BytesIO(data),mode='r:')as t:
+     members=t.getmembers();assert len(members)<=2000 and len({m.name for m in members})==len(members)and all(m.isfile()and m.size<=8388608 for m in members);return{m.name:t.extractfile(m).read()for m in members}
+   prior=tar(original);exported=tar(archive_data);assert len(prior)==8 and len(exported)==9
+   for name,data in prior.items():assert exported[name]==data,name
+   note=stored['notes'][observed['noteId']];new_raw=exported[observed['noteId'].replace('-','')+'.md'].decode();assert new_raw.startswith(note['title']+'\n\n'+note['body']+'\n\n')
+   for prop in('is_todo: 1','todo_due: 0','todo_completed: 0','parent_id: '+'1'*32):assert prop in new_raw.splitlines()
+   assert observed['independentNativeTar']['unchangedRawRecordComparisons']==7 and observed['independentNativeTar']['archive']==identity(archive_data)and observed['resourceDownload']=={'bytes':5,'sha256':'0150a92bb1212cd00516b65fde0704614760000963874fcbb11eaa734ee87809'}
+   listing=content('notes-native-tar-list-'+tid+'.txt');assert identity(listing)==observed['independentNativeTar']['listing']and len(listing.decode().strip().splitlines())==9
+  summaries.append({'title':value['title'],'testId':tid,'finalRecord':identity(stored_bytes)})
+ assert len(holds)==4 and len(faults)==2 and len(downloads)==2 and len(screenshots)==8 and len(records)==8
+ assert len([r for r in files if r['path'].startswith('screenshots/')and r['path'].endswith('.png')])==8 and len([r for r in files if r['path'].startswith('downloads/')])==2 and len([r for r in files if r['path'].startswith('notes-records/')])==8
+ observed=attempt['browser'];assert observed['allOwnedCleanupVerified']is True and len(observed['cases'])==8 and len(observed['screenshots'])==8 and len(observed['downloads'])==2 and len(observed['ownedSyntheticRecords'])==8 and len(observed['realResponseHolds'])==4 and len(observed['genuineOwnedIOFailures'])==2
+ assert observed['summary']=={'tests':8,'passed':8,'failed':0,'skipped':0,'flaky':0,'retries':0,'successfulActualResponseHolds':3,'failedActualResponseHolds':1,'genuineEmptyTitle400':1,'genuineOwnedHostList400':2,'downloads':2,'PNGs':8,'completeOwnedCleanups':8,'programmaticDisabledControlProbes':0,'originalFullApplicationExecutions':0}and attempt['productTests']==8
+ acquisition=load('browser-tooling-acquisition.json');expected_execution=dict(execution);del expected_execution['GITHUB_JOB'];assert acquisition['execution']==expected_execution and acquisition['sourceCommit']==HEAD and acquisition['schema']=='rea-cloud-browser-tooling-acquisition/v1'and acquisition['status']=='acquired'and acquisition['productTests']==0 and acquisition['applicationSourcesChanged']is False and attempt['acquisition']==identity(content('browser-tooling-acquisition.json'))and attempt['browserImage']==acquisition['browserImage']
+ post=load('notes36-browser-postrun-source-check.json');assert post['schema']=='rea-Notes36-installed-browser-postcheck/v1'and post['status']=='source-verified'and post['execution']==execution and post['sourceCommit']==HEAD and post['priorStatus']=='passed'and post['priorAttempt']==identity(content('notes36-browser-attempt.json'))and post['installedPostcheck']==identity(content('notes36-postrun-source-check.json'))and post['sourceAuthentication']==auth and post['notesSourceAuthentication']==auth and post['sourceStable']is True and post['applicationSourcesChanged']is False and post['productTests']==0 and post['installedSourceCheck']==identity(content('notes36-source-check.json'))and post['tooling']==attempt['tooling']
+ for key in('sourceOverlay','sourceInstallationPerformedByCollector','installationJournalAuthenticated','historicalReceiptsRebound'):assert post[key]is False
+ assert post['currentNotesSourcesCommitted']is True and post['currentNotesFiles']==36 and post['exactTargets']==7 and post['eligibleTargets']==6
+ return {'cases':summaries,'passedCases':8,'successfulHolds':3,'failedHolds':1,'ownedIOFaultsRestored':2,'genuineTitle400':1,'genuineList400':2,'downloads':downloads,'screenshots':screenshots,'records':records,'allOwnedCleanupVerified':True,'nativePriorRawRecords':7,'exactResourceBytes':5,'independentAlwaysPostchecks':2}
+try:
+ assert not outer[0]['path'].startswith('rea-notes36-incomplete-'),'Explicit incomplete evidence cannot certify acceptance'
+ result['readbackStage']='source-proof'
+ bundle,receipt,proof,after,auth=source_proof()
+ result['sourceProof']={'NotesCurrentGitFiles':36,'exactInstalledTargets':7,'eligibleInstalledTargets':6,'proofPaths':60,'toolingPaths':12,'collectorSelfSeparate':True,'activeCensusFiles':len(after),'allEligibleGitBlobs':len(after),'activeSnapshotFiles':len(after),'proofSnapshotFiles':60,'toolingSnapshotFiles':12,'allSourcesAuthenticated':True,'sourceOverlay':False,'independentAlwaysHelperPostcheck':True,'installationJournalAuthenticated':False}
+ result['readbackStage']='required-passed-attempt'
+ attempt=common_attempt(bundle,receipt,after,auth);result['attempt']=attempt
+ result['readbackStage']='required-passed-'+ROLE+'-observations'
+ result['verifiedObservations']=finite_results(bundle,attempt)if ROLE=='finite'else browser_results(bundle,attempt,receipt,proof,after,auth)
+ result['recordedContractPassed']=True
+except Exception as error:
+ result['evidenceConsistencyErrors'].append({'type':type(error).__name__,'message':str(error),'stage':result.get('readbackStage','complete-evidence-required'),'traceback':traceback.format_exc()})
+ for candidate in('notes36-'+ROLE+'-attempt.json','notes36-workflow-attempt.json'):
+  try:result.setdefault('availableFailureRecords',{})[candidate]=load(candidate)
+  except Exception:pass
+report=folder/'local-notes36-installed-backup-verification.json';report.write_bytes((json.dumps(result,indent=2)+'\n').encode());assert json.loads(report.read_bytes())==result
+print(json.dumps({'schema':result['schema'],'role':ROLE,'readableFiles':len(files),'allCRCAndBytesReadable':True,'recordedContractPassed':result['recordedContractPassed'],'evidenceConsistencyErrors':result['evidenceConsistencyErrors'],'report':str(report)}))

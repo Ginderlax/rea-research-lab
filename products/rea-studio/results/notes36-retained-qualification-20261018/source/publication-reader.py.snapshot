@@ -1,0 +1,680 @@
+"""Data-only current36 publication backup qualification; captured code is never executed."""
+import sys,json,zipfile,hashlib,stat,re,io,gzip,base64,ast,copy,datetime
+from pathlib import Path
+RUN='38942449331'
+HEAD='3c710a31e438af7f1682fc5cf497be4264db35ff'
+JOB='117113204884'
+if not (RUN.isdigit() and JOB.isdigit() and re.fullmatch(r'[0-9a-f]{40}',HEAD)):
+ raise RuntimeError('UNBOUND template refuses before filesystem, credentials or API access')
+ATTEMPT='1';REPOSITORY='Ginderlax/rea-research-lab';WORKFLOW='.github/workflows/publication-integrity-cloud.yml'
+PRODUCER={'bytes':79976,'sha256':'7093aac7045aaea5fc31c1354ff222f530d32c1c0bd42ba6860d01ef1a083128'}
+CONTROLS={'bytes':74921,'sha256':'6178c7eedc355b2f5e9ba9be009d6558b0fcf99158803437268289682ee1b51d'}
+DECLARATION='products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json'
+DECLARATION_PIN={'bytes':60830,'sha256':'c0a488389094d898a7f6d308e9977192327f194ce3d271135dfcd2007e8a73bb'}
+EXPECTED_MEMBERS=[
+  "attempt-validation.json",
+  "collector-sources/.github/workflows/publication-integrity-cloud.yml.snapshot",
+  "collector-sources/scripts/publication-integrity-controls.mjs.snapshot",
+  "collector-sources/scripts/verify-cloud-publication.mjs.snapshot",
+  "controls.json",
+  "derived/PUBLICATION-MANIFEST.json",
+  "derived/VALIDATION.json",
+  "events.jsonl",
+  "metadata-before/PUBLICATION-MANIFEST.json.snapshot",
+  "metadata-before/VALIDATION.json.snapshot",
+  "notes-reviewed-sources.json.gz.snapshot",
+  "notes36-collector-self/products/rea-studio/scripts/verify-notes36-cloud.mjs.snapshot",
+  "notes36-current-sources.json.gz.snapshot",
+  "notes36-current-tooling.json.gz.snapshot",
+  "publication-recheck.stderr.txt",
+  "publication-recheck.stdout.txt",
+  "publication-write.stderr.txt",
+  "publication-write.stdout.txt",
+  "reviewed-sources/products/rea-studio/apps/archive/results/aes-followup/publication-index.json.snapshot",
+  "reviewed-sources/products/rea-studio/experiments/archive-aes/bundle.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/LZMA-COMPATIBILITY.md.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/README.md.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/SEVENZIP-COMPATIBILITY.md.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/client.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/server.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/before/products/rea-studio/apps/archive/sevenzip.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration-group-edit-document-route.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration-historical-carrier-policy.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration-requirement-evidence-provenance.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration-windows-observer-correction.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/verify-records-historical-carrier-policy.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/verify-records-requirement-evidence-provenance.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/archive-aes-source-transition-20261015/verifier-before/verify-records.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/462e22b9b4dda4f6a3700aa8ebec671863924c6381c7fd1926d0e190bac1025a.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/4fe7b114341199fa31d5553ffb3505db0e3427337ea8c72c637a8d5a3501a042.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/6be0d1c908d5fc78cf574bca48f7d7f2b7e824e708fd9f9281f6cf1fc9b4b3fd.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/7bfc912b2f275c1569a9c1b5b83ed4dde684f79ce97d73ed8655255fa64eaffe.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/d2d167211228cb4eb201fc89aa14013d0da38e396b0a88505ebbc6eadea88fcd.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/d89c78840a1096cf6d89816c8b407a4d5dd1b41f5aebca451d0b2a61b1005d12.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/payload/e3ff73273bfaf6ea0724b99f649dc781cc8f48c1f73b145e69f032e519ef1fac.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-archive-aes-finite-pass-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-publication-source-transition-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-publication-source-transition-20261015/verifier-middle/verify-records.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/126e1a9fb2e939ab8a767b6facd723cb823505846711de4114d6c560a6861212.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/41d3a9da24ee7effedbd2af7bc6dd6952a5a59895edc92b5cff7f8a33cba72c0.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/41f2b7950a3fa24d278bd5f6b912bdf221a8f7ee7af8eaa70a5a6201ae2406f2.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/7774bfa56f708adbe35eacebc21385a9eed56175e2df6f67c8fec0350af4b7b0.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/adf03e13193e81997ee515bb0e0c4ea4f790120c35ff5bf351f5a5b19bce4ea1.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/d5b87bec1e71b8ca96821de21fa2d6c7520586cf0cef4cdfa0f28392f5504dca.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/payload/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/cloud-windows-path-finite-pass-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/attempt-validation.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/controls.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/events.jsonl.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/publication-write.stderr.txt.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/storage-failure.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/workflow-attempt.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/workflow-before/publication-integrity-cloud.yml.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-git-observer-20261015/wrapper-job-116702343166.log.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/failed-publication-attempt.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/failed-publication-write.stderr.txt.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/passed26-controls.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-editor-save-git-closure-20261015/verifier-before/verify-editor-save-followup.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/failed-publication-attempt.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/failed-publication-write.stderr.txt.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/passed21-controls.json.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/payload/d29210777777dac0b3d12f6a656a073c9ba717cf6932dbc01b0cc6dc1e7779b8.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/publication-git-directory-closure-20261015/verifier-before/verify-followup-records.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/after/products/rea-studio/apps/editor/git.test.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/after/products/rea-studio/apps/sync/dav-transfer.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/after/products/rea-studio/apps/sync/webdav.windows-path.test.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/before/products/rea-studio/apps/editor/git.test.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/before/products/rea-studio/apps/sync/dav-transfer.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/preservation-manifest.json.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/verifier-before/editor-vault-proof-migration-editor-save-closure.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot.snapshot",
+  "reviewed-sources/products/rea-studio/results/windows-path-source-transition-20261015/verifier-before/verify-records.mjs.snapshot.snapshot",
+  "reviewed-sources/scripts/editor-vault-proof-migration.mjs.snapshot",
+  "reviewed-sources/scripts/historical-carrier-policy.mjs.snapshot",
+  "reviewed-sources/scripts/verify-archive-integration-records.mjs.snapshot",
+  "reviewed-sources/scripts/verify-cloud-recovery-records.mjs.snapshot",
+  "reviewed-sources/scripts/verify-editor-save-followup.mjs.snapshot",
+  "reviewed-sources/scripts/verify-followup-records.mjs.snapshot",
+  "reviewed-sources/scripts/verify-records.mjs.snapshot",
+  "workflow-attempt.json"
+]
+sha=lambda b:hashlib.sha256(b).hexdigest()
+identity=lambda b:{'bytes':len(b),'sha256':sha(b)}
+def need(condition,label):
+ if not condition: raise AssertionError(label)
+def safe(name):
+ need(isinstance(name,str) and name and len(name)<=4096 and not name.startswith('/') and not re.search(r'[\\:\x00-\x1f\x7f]',name),'Safe portable path')
+ need(all(p and p not in ('.','..') for p in name.split('/')),'Safe portable components');return name
+def parsed(data): return json.loads(data.decode('utf-8-sig'))
+def utc(value):
+ need(isinstance(value,str) and re.fullmatch(r'\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z',value),'Exact millisecond UTC')
+ result=datetime.datetime.fromisoformat(value.replace('Z','+00:00'));need(result.isoformat(timespec='milliseconds').replace('+00:00','Z')==value,'Round-trip UTC');return result
+if len(sys.argv)==4 and sys.argv[1]=='--peek':
+ source=Path(sys.argv[2]).resolve();expected=sys.argv[3];base=Path(__file__).resolve().parent/'cloud-verification-backups'
+ need(source.is_relative_to(base.resolve()) and re.fullmatch(r'[0-9a-f]{64}',expected),'Owned bounded header discovery')
+ content=source.read_bytes();need(len(content)<=32*1024*1024 and sha(content)==expected,'Exact API-bound header ZIP')
+ with zipfile.ZipFile(io.BytesIO(content)) as outer:
+  entries=outer.infolist();need(len(entries)<=4 and sum(e.file_size for e in entries)<=32*1024*1024,'Bounded outer header container')
+  leaves=[e for e in entries if not e.is_dir()];need(len(leaves)==1 and leaves[0].filename.endswith('.zip') and leaves[0].file_size<=15*1024*1024,'One bounded inner header ZIP')
+  for entry in entries: safe(entry.filename.rstrip('/'));need(not stat.S_ISLNK(entry.external_attr>>16) and not entry.flag_bits&1,'Regular header carrier')
+  inner=outer.read(leaves[0])
+ with zipfile.ZipFile(io.BytesIO(inner)) as archive:
+  entries=archive.infolist();need(len(entries)<=96 and sum(e.file_size for e in entries)<=35*1024*1024 and all(e.file_size<=12*1024*1024 for e in entries),'Fixed inner header boundaries')
+  names=[e.filename for e in entries];need(len({n.casefold() for n in names})==len(names),'Unique header members')
+  for entry in entries: safe(entry.filename.rstrip('/'));need(not stat.S_ISLNK(entry.external_attr>>16) and not entry.flag_bits&1,'Regular header member')
+  found=[e for e in entries if e.filename=='attempt-validation.json'];need(len(found)<=1,'One producer receipt header')
+  if found: need(found[0].file_size<=256*1024,'Bounded receipt header')
+  receipt=parsed(archive.read(found[0])) if found else None
+ candidate=receipt.get('sourceCommit') if isinstance(receipt,dict) else None
+ need(candidate is None or isinstance(candidate,str) and re.fullmatch(r'[0-9a-f]{40}',candidate),'Discovered source SHA syntax')
+ print(json.dumps({'schema':'rea-data-only-publication-header-discovery/v1','sourceCommit':candidate,'receiptPresent':receipt is not None,'scope':'Unqualified sourceCommit discovery for read-only actual Git API retrieval; no source/product/publication acceptance.'}));sys.exit(0)
+need(len(sys.argv)==5,'ZIP SHA256 raw-control-folder artifact-ID')
+source=Path(sys.argv[1]).resolve();expected=sys.argv[2];control=Path(sys.argv[3]).resolve();artifact_id=sys.argv[4]
+base=Path(__file__).resolve().parent/'cloud-verification-backups'
+need(source.is_relative_to(base.resolve()) and source.is_file() and control.is_relative_to(base.resolve()) and control.is_dir(),'Owned backup/API directories')
+need(re.fullmatch(r'[0-9a-f]{64}',expected) and artifact_id.isdigit(),'Artifact identity syntax')
+raw=source.read_bytes();need(len(raw)<=32*1024*1024 and sha(raw)==expected,'Bounded exact uploaded ZIP')
+folder=source.parent/(source.stem+'-notes36-publication-reader-v1');folder.mkdir(exist_ok=False)
+def unpack(data,directory,entries_limit,raw_limit,file_limit):
+ directory.mkdir(parents=True,exist_ok=False);rows=[];seen=set()
+ with zipfile.ZipFile(io.BytesIO(data)) as zipped:
+  entries=zipped.infolist();need(len(entries)<=entries_limit and sum(x.file_size for x in entries)<=raw_limit,'Fixed ZIP count/raw bound')
+  for entry in entries:
+   name=entry.filename;normal=name[:-1] if entry.is_dir() else name;safe(normal)
+   need(normal.casefold() not in seen,'Unique case-independent ZIP path');seen.add(normal.casefold())
+   need(not entry.flag_bits&1 and not stat.S_ISLNK(entry.external_attr>>16) and entry.file_size<=file_limit,'Regular unencrypted bounded member')
+   file=(directory/name).resolve();need(file.is_relative_to(directory.resolve()),'Owned recovery path')
+   if entry.is_dir(): file.mkdir(parents=True,exist_ok=True);continue
+   content=zipped.read(entry);need(len(content)==entry.file_size,'Complete CRC-checked bytes');file.parent.mkdir(parents=True,exist_ok=True)
+   with file.open('xb') as stream: stream.write(content)
+   need(file.read_bytes()==content,'Readable exact member');rows.append({'path':name,**identity(content)})
+ return rows
+outer=folder/'downloaded-contents';outer_rows=unpack(raw,outer,4,32*1024*1024,16*1024*1024)
+need(len(outer_rows)==1 and outer_rows[0]['path'].endswith('.zip'),'Exactly one portable inner ZIP')
+inner=(outer/outer_rows[0]['path']).read_bytes();need(len(inner)<=15*1024*1024,'Unchanged15MiB portable ZIP boundary')
+evidence=folder/'readable-evidence';files=unpack(inner,evidence,96,35*1024*1024,12*1024*1024);members={r['path']:r for r in files}
+result={'schema':'rea-local-current36-publication-backup/v1','runId':RUN,'headSHA':HEAD,'jobId':JOB,'artifactId':artifact_id,'artifact':str(source),'artifactIdentity':identity(raw),
+ 'portableEvidenceArchive':str(outer/outer_rows[0]['path']),'portableEvidenceArchiveIdentity':identity(inner),'readableEvidence':str(evidence),'files':files,'allCRCAndBytesReadable':True,
+ 'rawBytesPreservedBeforeQualification':True,'publicationAcceptance':False,'qualification':{},'auditErrors':[],
+ 'localCandidateExecutions':0,'localProductExecutions':0,'localTests':0,'localBuilds':0,'localSyntaxChecks':0,'applicationBehaviorAccepted':False,'installationJournalAuthenticated':False,'fullDevelopmentSuiteAcceptance':False,'fullParity':False,'superiority':False,
+ 'scope':'This data-only reader authenticates preserved publication evidence. Source-byte qualification, historical32 view, current36 view and306-control/two-phase publication acceptance are separate; no application or original product is executed.'}
+def data(name):
+ safe(name);need(name in members,'Missing uploaded role '+name);content=(evidence/name).read_bytes();need(identity(content)=={k:members[name][k] for k in ('bytes','sha256')},'Member readback identity');return content
+def item(name): return parsed(data(name))
+def stage(name,operation):
+ try:
+  value=operation();result['qualification'][name]={'valid':True,'value':value};return value
+ except Exception as error:
+  result['qualification'][name]={'valid':False,'errorType':type(error).__name__,'error':str(error)};result['auditErrors'].append({'stage':name,'errorType':type(error).__name__,'error':str(error)});return None
+attempt=None
+if 'attempt-validation.json' in members:
+ try: attempt=item('attempt-validation.json')
+ except Exception as error: result['auditErrors'].append({'stage':'producerReceiptParse','errorType':type(error).__name__,'error':str(error)})
+if attempt is not None: result['attempt']=attempt
+def actual_api():
+ run=parsed((control/'run.json').read_bytes());jobs=parsed((control/'jobs.json').read_bytes());artifacts=parsed((control/'artifacts.json').read_bytes())
+ need(str(run['id'])==RUN and str(run['run_attempt'])==ATTEMPT and run['head_sha']==HEAD and run['head_branch']=='codex/rea-cloud-recovery-20261015','Exact actual run/head')
+ need(run['repository']['full_name']==REPOSITORY and run['path']==WORKFLOW and run['event'] in ('pull_request','workflow_dispatch') and run['status']=='completed','Supported completed publication event')
+ need(jobs['total_count']==len(jobs['jobs'])==1,'One actual publication job');job=jobs['jobs'][0]
+ need(str(job['id'])==JOB and str(job['run_id'])==RUN and job['head_sha']==HEAD and job['name']=='publication-integrity','Exact actual job')
+ need(job['status']=='completed' and job['runner_group_name']=='GitHub Actions' and 'windows-2022' in job['labels'],'Verified hosted Windows job')
+ need(artifacts['total_count']==len(artifacts['artifacts'])==1,'One actual artifact');artifact=artifacts['artifacts'][0]
+ need(str(artifact['id'])==artifact_id and artifact['name']=='publication-integrity-'+RUN+'-'+ATTEMPT and not artifact['expired'],'Exact artifact ID/name')
+ need(artifact['digest']=='sha256:'+expected and artifact['size_in_bytes']==len(raw) and str(artifact['workflow_run']['id'])==RUN and artifact['workflow_run']['head_sha']==HEAD,'Actual artifact digest/run binding')
+ return {'event':run['event'],'runConclusion':run['conclusion'],'jobConclusion':job['conclusion'],'jobStartedAtUtc':job['started_at'],'jobCompletedAtUtc':job['completed_at']}
+api=stage('actualRunJobArtifactApi',actual_api)
+git_blobs={}
+def tested_git():
+ need(api is not None and attempt is not None,'Actual API and producer receipt required')
+ need(attempt['schema']=='rea-hosted-publication-validation-attempt/v1' and attempt['status'] in ('passed','failed','interrupted','running'),'Producer receipt schema/state')
+ source_commit=attempt['sourceCommit'];need(re.fullmatch(r'[0-9a-f]{40}',source_commit),'Exact tested commit syntax')
+ execution=attempt['execution'];need(execution['GITHUB_SHA']==source_commit and execution['GITHUB_RUN_ID']==RUN and execution['GITHUB_RUN_ATTEMPT']==ATTEMPT and execution['GITHUB_REPOSITORY']==REPOSITORY,'Same-attempt receipt execution')
+ for key,value in {'CI':'true','GITHUB_ACTIONS':'true','RUNNER_ENVIRONMENT':'github-hosted','RUNNER_OS':'Windows','RUNNER_ARCH':'X64'}.items(): need(execution[key]==value,'Hosted execution '+key)
+ need(attempt['runtime']=='v24.16.0' and attempt['candidateOverlay'] is False,'Exact runtime/no overlay')
+ commit=parsed((control/'tested-commit.json').read_bytes());tree=parsed((control/'tested-tree.json').read_bytes());head=parsed((control/'head-commit.json').read_bytes())
+ need(commit['sha']==source_commit and tree['sha']==commit['tree']['sha'] and tree['truncated'] is False and head['sha']==HEAD,'Actual tested Git objects/head')
+ if api['event']=='pull_request':
+  need(execution['GITHUB_REF']=='refs/pull/1/merge' and len(commit['parents'])==2 and commit['parents'][1]['sha']==HEAD and source_commit!=HEAD,'Exact PR merge/head-parent bridge')
+ else: need(execution['GITHUB_REF']=='refs/heads/codex/rea-cloud-recovery-20261015' and source_commit==HEAD,'Exact manual branch/source bridge')
+ need(head['tree']['sha']==tree['sha'],'Tested merge and requested branch have identical source tree')
+ blobs={r['path']:r for r in tree['tree'] if r['type']=='blob'};need(24000<len(blobs)<=30000 and len(blobs)==sum(r['type']=='blob' for r in tree['tree']) and len({r['path'] for r in tree['tree']})==len(tree['tree']),'Complete unique Git blob closure; recursive API directory entries are separate')
+ for name,row in blobs.items(): safe(name);need(row['mode'] in ('100644','100755'),'Regular Git mode')
+ need(attempt['gitTree']==tree['sha'],'Producer tree identity matches actual tree');result['sourceCommit']=source_commit
+ git_blobs.update(blobs)
+ return {'sourceCommit':source_commit,'tree':tree['sha'],'actualGitBlobRows':len(blobs),'allPayloadBytesDownloadedLocally':False}
+git=stage('testedCommitAndExactHeadTreeBridge',tested_git)
+def git_content(name,content):
+ need(git is not None and name in git_blobs,'Actual captured Git source '+name);row=git_blobs[name]
+ need(row['size']==len(content) and hashlib.sha1(b'blob '+str(len(content)).encode()+b'\0'+content).hexdigest()==row['sha'],'Exact captured Git bytes '+name);return row['sha']
+def source_tables():
+ producer=data('collector-sources/scripts/verify-cloud-publication.mjs.snapshot');need(identity(producer)==PRODUCER,'Exact new producer pin');git_content('scripts/verify-cloud-publication.mjs',producer)
+ controls=data('collector-sources/scripts/publication-integrity-controls.mjs.snapshot');need(identity(controls)==CONTROLS,'Exact new306 controls source pin');git_content('scripts/publication-integrity-controls.mjs',controls)
+ text=producer.decode()
+ def table(name,literal=False,array=False):
+  braces=r'(\[.*?\n\])' if array else r'(\{.*?\n\})';matches=re.findall(r'const '+re.escape(name)+r'\s*=\s*'+braces+r';',text,re.S);need(len(matches)==1,'One fixed data table '+name)
+  return ast.literal_eval(matches[0]) if literal else json.loads(matches[0])
+ values={name:table(name) for name in ('NOTES_REVIEWED','NOTES_INSTALLED_TOOLING','NOTES36_CURRENT','NOTES36_TOOLING','NOTES36_COLLECTOR_SOURCE')};values['REVIEWED']=table('REVIEWED',literal=True);values['NAMES']=table('NOTES36_ARTIFACT_PATHS',array=True)
+ need(len(values['NOTES_REVIEWED'])==52 and len(values['NOTES_INSTALLED_TOOLING'])==4 and not set(values['NOTES_REVIEWED'])&set(values['NOTES_INSTALLED_TOOLING']),'Exact old52+4 tables')
+ need(len(values['NOTES36_CURRENT'])==60 and len(values['NOTES36_TOOLING'])==12 and values['NOTES36_CURRENT'][DECLARATION]==DECLARATION_PIN,'Exact current60/12 and external declaration pin')
+ need(values['NAMES']==EXPECTED_MEMBERS and len(EXPECTED_MEMBERS)==len(set(EXPECTED_MEMBERS))==95,'Exact frozen95 artifact role names')
+ for name,expected_pin in values['REVIEWED'].items():
+  content=data('reviewed-sources/'+safe(name)+'.snapshot');need(identity(content)=={'bytes':expected_pin[0],'sha256':expected_pin[1]},'Fixed reviewed source '+name);git_content(name,content)
+ workflow=data('collector-sources/.github/workflows/publication-integrity-cloud.yml.snapshot');git_content(WORKFLOW,workflow)
+ result['capturedProducerSource']=identity(producer);result['capturedControlsSource']=identity(controls)
+ return values
+tables=stage('PinnedProducerTablesAndAllReviewedGitSources',source_tables)
+recovered_cache={}
+def recover_envelope(filename,receipt_key,schema,expected_sources,details,groups=False,physical=None):
+ need(tables is not None and git is not None,'Pinned source tables and actual Git required')
+ stored=data(filename);need(len(stored)<=4*1024*1024,'Fixed gzip stored boundary')
+ with gzip.GzipFile(fileobj=io.BytesIO(stored)) as stream: decoded=stream.read(8*1024*1024+1)
+ need(len(decoded)<=8*1024*1024,'Fixed gzip decoded boundary');envelope=parsed(decoded);declared=attempt[receipt_key]
+ need(set(envelope)=={'schema','sourceCommit','sourceFiles','rawSourceBytes','rows'}|set(details),'Exact envelope fields')
+ need(envelope['schema']==schema and envelope['sourceCommit']==git['sourceCommit'] and envelope['sourceFiles']==len(expected_sources)==len(envelope['rows']),'Exact envelope scope/count')
+ need(declared['path']==filename and declared['sourceFiles']==len(expected_sources) and declared['separateReadBudget'] is True and declared['stored']==identity(stored) and declared['decoded']==identity(decoded),'Exact receipt-to-gzip binding')
+ for key,value in details.items(): need(envelope[key]==value and declared[key]==value,'Exact envelope detail '+key)
+ rows={};logical_folded=set();physical_folded=set();total=0;output=folder/(filename.split('.')[0]+'-readable');output.mkdir(exist_ok=False)
+ for row in envelope['rows']:
+  required={'path','bytes','sha256','base64'}|({'readPath','group','sourceEpoch','historicalView'} if groups else set());need(set(row)==required,'Exact source row fields')
+  name=safe(row['path']);need(name in expected_sources and name.casefold() not in logical_folded,'Exact distinct logical source');logical_folded.add(name.casefold())
+  expected_pin=expected_sources[name];expected_pin={'bytes':expected_pin[0],'sha256':expected_pin[1]} if isinstance(expected_pin,list) else expected_pin
+  need(type(row['bytes']) is int and 0<=row['bytes']<=256*1024 and re.fullmatch(r'[0-9a-f]{64}',row['sha256']) and {k:row[k] for k in ('bytes','sha256')}==expected_pin,'Fixed source byte/SHA256 pin')
+  need(isinstance(row['base64'],str) and len(row['base64'])<=4*((256*1024+2)//3),'Bounded base64')
+  content=base64.b64decode(row['base64'],validate=True);need(base64.b64encode(content).decode()==row['base64'] and identity(content)==expected_pin,'Canonical base64 and exact decoded identity')
+  read_path=name
+  if groups:
+   expected_row=physical[name];read_path=safe(row['readPath']);need(read_path==expected_row['readPath'] and row['sourceEpoch']==details['historicalSourceEpoch'] and row['historicalView'] is True,'Historical logical-to-physical mapping/epoch')
+   need(row['group']==('historical52-proof' if name in tables['NOTES_REVIEWED'] else 'historical4-installed-tooling'),'Historical group is not current behavior')
+  need(read_path.casefold() not in physical_folded,'Distinct physical source carrier');physical_folded.add(read_path.casefold());oid=git_content(read_path,content)
+  total+=len(content);need(total<=8*1024*1024,'Bounded aggregate decoded sources')
+  payload=output/(row['sha256']+'.snapshot')
+  if not payload.exists():
+   with payload.open('xb') as stream: stream.write(content)
+  need(payload.read_bytes()==content,'Readable exact recovered source');recovered_cache[(filename,name)]=content
+  rows[name]={'sourcePath':name,'readPath':read_path,'bytes':len(content),'sha256':sha(content),'actualGitBlob':oid,'readablePayload':str(payload),'historicalView':groups,'executed':False}
+ need(set(rows)==set(expected_sources) and total==envelope['rawSourceBytes']==declared['rawSourceBytes'],'Complete exact envelope source set/aggregate')
+ summary={'verified':True,'schema':schema,'sourceCommit':git['sourceCommit'],'sourceFiles':len(rows),'rawSourceBytes':total,'stored':identity(stored),'decoded':identity(decoded),'allCapturedPhysicalGitBlobsVerified':True,'historicalView':groups,'rows':list(rows.values()),'sourcePayloadsExecuted':False}
+ (output/'source-manifest.json').write_text(json.dumps(summary,indent=2)+'\n',encoding='utf-8',newline='');return summary
+def current_sources():
+ need(tables is not None,'Current source tables required')
+ detail={'currentNotesSources':36,'installedTargets':7,'sourceOverlay':False,'allCurrentGitBlobsAuthenticated':True,'readFileLimit':64,'readByteLimit':8388608,'externalDeclarationPinRequired':True}
+ summary=recover_envelope('notes36-current-sources.json.gz.snapshot','notes36CurrentSourceProofEnvelope','rea-closed-current-Notes36-source-proof-envelope/v1',tables['NOTES36_CURRENT'],detail)
+ need(summary['rawSourceBytes']==695900,'Exact current60 raw source count');declaration=parsed(recovered_cache[('notes36-current-sources.json.gz.snapshot',DECLARATION)])
+ need(identity(recovered_cache[('notes36-current-sources.json.gz.snapshot',DECLARATION)])==DECLARATION_PIN and declaration['schema']=='rea-Notes36-current-source-declaration/v1','Pinned current declaration')
+ need(declaration['externalDeclarationPinRequired'] is True and declaration['selfIdentityContained'] is False and len(declaration['otherProofRows'])==59 and set([DECLARATION]+[r['path'] for r in declaration['otherProofRows']])==set(tables['NOTES36_CURRENT']),'External own pin plus other59')
+ for row in declaration['otherProofRows']: need({k:row[k] for k in ('bytes','sha256')}==tables['NOTES36_CURRENT'][row['path']],'Declaration proof row pin')
+ need(len(declaration['currentNotesSources'])==36 and len({r['path'] for r in declaration['currentNotesSources']})==36,'Exact36 current app sources')
+ actual_names={name for name in git_blobs if name.startswith('products/rea-studio/apps/notes/') and 'results' not in name[len('products/rea-studio/apps/notes/'):].split('/')}
+ need(actual_names=={r['path'] for r in declaration['currentNotesSources']},'Exact committed36 app name closure')
+ for row in declaration['currentNotesSources']: need({k:row[k] for k in ('bytes','sha256')}==tables['NOTES36_CURRENT'][row['path']],'Current36 pin matches closed60')
+ tests=[r['path'][len('products/rea-studio/'):] for r in declaration['currentNotesSources'] if r['path'].endswith('.test.mjs')]
+ need(len(tests)==21 and sorted(tests)==sorted(declaration['fixedTests']) and declaration['finiteGroups']==111 and len(declaration['oldNamedGroupsRequired'])==23 and len(declaration['newNamedGroupsRequired'])==19,'Current source roster is21, not executed product acceptance')
+ targets=declaration['installedTargets'];need(len(targets)==7 and len({r['path'] for r in targets})==7 and sum(r['before'] is not None for r in targets)==3,'Exact7 source transitions')
+ for row in targets: need(row['after']==tables['NOTES36_CURRENT'][row['path']],'Current target after pin')
+ need(declaration['sourceOnly'] is True and declaration['actualInstalledBehaviorAccepted'] is False and declaration['sourceInstallationPerformedByDeclaration'] is False,'Historical source proposal is not rewritten as behavioral receipt')
+ result['currentNotes36Envelope']=summary;return declaration
+declaration=stage('Current60EnvelopeAndExactCurrent36GitClosure',current_sources)
+def historical_sources():
+ need(declaration is not None and tables is not None,'Authenticated current declaration needed for historical physical mapping')
+ rows=declaration['legacy52LogicalToPhysicalRows']+declaration['legacyInstalledToolingRows'];need(len(declaration['legacy52LogicalToPhysicalRows'])==52 and len(declaration['legacyInstalledToolingRows'])==4 and len({r['sourcePath'] for r in rows})==56 and len({r['readPath'] for r in rows})==56,'Historical52+4 unique routes')
+ expected={**tables['NOTES_REVIEWED'],**tables['NOTES_INSTALLED_TOOLING']};physical={r['sourcePath']:r for r in rows}
+ need(set(physical)==set(expected),'Exact historical56 logical routes')
+ for row in rows:
+  need([row['bytes'],row['sha256']]==expected[row['sourcePath']],'Historical source pins')
+  target=next((t for t in declaration['installedTargets'] if t['path']==row['sourcePath']),None)
+  desired=target['beforeImage']['path'] if target is not None and target['before'] is not None else 'products/rea-studio/results/notes36-source-transition-20261016/historical-workflows/notes-installed-cloud.yml.snapshot' if row['sourcePath']=='.github/workflows/notes-installed-cloud.yml' else row['sourcePath']
+  need(row['readPath']==desired,'Closed physical carrier route, no arbitrary historical fallback')
+ detail={'proofSourceFiles':52,'installedToolingSourceFiles':4,'historicalView':True,'historicalSourceEpoch':declaration['sourceBaselineCommit'],'uniqueLogicalPaths':56,'uniquePhysicalPaths':56,'readFileLimit':64,'readByteLimit':8388608}
+ summary=recover_envelope('notes-reviewed-sources.json.gz.snapshot','notesSourceProofEnvelope','rea-closed-historical-Notes32-source-proof-envelope/v2',expected,detail,True,physical)
+ need(summary['rawSourceBytes']==1243634,'Exact legacy56 rawbytes');result['historicalNotes32Envelope']=summary;return {'sourceFiles':56,'proofFiles':52,'oldInstalledTooling':4,'historicalSourceEpoch':declaration['sourceBaselineCommit'],'logicalSourcePathsAreNotCurrent36Claims':True}
+historical=stage('Historical52Plus4LogicalPhysicalEnvelope',historical_sources)
+def current_tooling():
+ need(tables is not None,'Tooling tables required')
+ summary=recover_envelope('notes36-current-tooling.json.gz.snapshot','notes36CurrentToolingEnvelope','rea-closed-current-Notes36-tooling-envelope/v1',tables['NOTES36_TOOLING'],{'fixedToolingRows':12,'readFileLimit':12,'readByteLimit':8388608,'collectorSelfIncluded':False})
+ collector=tables['NOTES36_COLLECTOR_SOURCE'];need(collector['path'] not in tables['NOTES36_TOOLING'] and collector=={'path':'products/rea-studio/scripts/verify-notes36-cloud.mjs','bytes':33324,'sha256':'263f47d794e785a0bd818889ce0f125febfda0f100e33f9cb70ae94347f2c7b7'},'Separate fixed collector self')
+ name='notes36-collector-self/'+collector['path']+'.snapshot';content=data(name);need(identity(content)=={k:collector[k] for k in ('bytes','sha256')} and len(content)<=262144,'Bounded exact self snapshot');oid=git_content(collector['path'],content)
+ need(attempt['notes36CollectorSelf']=={'path':name,'sourcePath':collector['path'],'bytes':len(content),'sha256':sha(content),'separateFixedArtifactRole':True,'actualGitBlobAuthenticated':True,'individualByteLimit':262144},'Exact self role receipt')
+ result['currentTooling12Envelope']=summary;result['separateCollectorSelf']={'verified':True,'sourcePath':collector['path'],'artifactPath':name,**identity(content),'actualGitBlob':oid,'isThirteenthToolingRow':False};return {'fixedToolingRows':12,'collectorSelfSeparate':True}
+tooling=stage('Current12ToolingPlusSeparateSelfGitSnapshot',current_tooling)
+def projected(value,phase):
+ need(value['status']=='passed' and phase['status']=='passed' and phase['exitCode']==0 and phase['signal'] is None and phase['closeObserved'] is True and phase['failure'] is None and phase['droppedBytes']==0,'Passed complete original root phase')
+ start=utc(phase['startedAtUtc']);end=utc(phase['completedAtUtc']);checked=utc(value['checked_at_utc']);sketch=value['followup_evidence']['notesLayoutValueApiCheckpoint']['sketch']
+ need(sketch['schema']=='rea-sketch-layout-installed-source-proof/v1' and sketch['sourceOnly'] is True,'Exact source-only nested receipt')
+ began=utc(sketch['started']);finished=utc(sketch['finished']);need(start<=began<=finished<=checked<=end,'Exactly three observation clocks inside their owning phase')
+ stable=copy.deepcopy(value);del stable['checked_at_utc'];del stable['followup_evidence']['notesLayoutValueApiCheckpoint']['sketch']['started'];del stable['followup_evidence']['notesLayoutValueApiCheckpoint']['sketch']['finished']
+ return stable,{'checked_at_utc':value['checked_at_utc'],'sketchStarted':sketch['started'],'sketchFinished':sketch['finished'],'phaseStartedAtUtc':phase['startedAtUtc'],'phaseCompletedAtUtc':phase['completedAtUtc']}
+def exact_json(left,right):
+ if type(left) is bool or type(right) is bool: return type(left) is type(right) and left==right
+ if type(left) in (int,float) and type(right) in (int,float): return left==right
+ if type(left) is not type(right): return False
+ if isinstance(left,dict): return set(left)==set(right) and all(exact_json(left[k],right[k]) for k in left)
+ if isinstance(left,list): return len(left)==len(right) and all(exact_json(a,b) for a,b in zip(left,right))
+ return left==right
+EXPECTED_CONTROL_NAMES=[
+  "named-migration-positive",
+  "notes-eight-current-three-before-and-historical-metadata",
+  "notes-mandatory-current:server.mjs",
+  "notes-mandatory-current:client.mjs",
+  "notes-mandatory-current:README.md",
+  "notes-mandatory-current:core.mjs",
+  "notes-mandatory-current:todo.test.mjs",
+  "notes-mandatory-current:todo.ui.test.mjs",
+  "notes-mandatory-current:todo.integration.test.mjs",
+  "notes-mandatory-current:todo-original.test.mjs",
+  "notes-mandatory-before:server.mjs",
+  "notes-mandatory-before:client.mjs",
+  "notes-mandatory-before:README.md",
+  "notes-mandatory-after-alias:server.mjs",
+  "notes-mandatory-after-alias:client.mjs",
+  "notes-mandatory-after-alias:README.md",
+  "notes-mandatory-after-alias:core.mjs",
+  "notes-mandatory-after-alias:todo.test.mjs",
+  "notes-mandatory-after-alias:todo.ui.test.mjs",
+  "notes-mandatory-after-alias:todo.integration.test.mjs",
+  "notes-mandatory-after-alias:todo-original.test.mjs",
+  "notes-unknown-epoch:server.mjs",
+  "notes-unknown-epoch:client.mjs",
+  "notes-unknown-epoch:README.md",
+  "notes-unknown-epoch:core.mjs",
+  "notes-unknown-epoch:todo.test.mjs",
+  "notes-unknown-epoch:todo.ui.test.mjs",
+  "notes-unknown-epoch:todo.integration.test.mjs",
+  "notes-unknown-epoch:todo-original.test.mjs",
+  "notes-missing-identity:server.mjs",
+  "notes-missing-identity:client.mjs",
+  "notes-missing-identity:README.md",
+  "notes-missing-identity:core.mjs",
+  "notes-missing-identity:todo.test.mjs",
+  "notes-missing-identity:todo.ui.test.mjs",
+  "notes-missing-identity:todo.integration.test.mjs",
+  "notes-missing-identity:todo-original.test.mjs",
+  "notes-declaration-byte-change:publication-index.json",
+  "notes-declaration-byte-change:preservation-manifest.json",
+  "notes-historical-attempt-byte-change:finite92",
+  "notes-historical-attempt-byte-change:browser8",
+  "notes-exact-reader-intermediate-epochs",
+  "notes-unlisted-reader-epoch:verify-records.mjs",
+  "notes-unlisted-reader-epoch:verify-followup-records.mjs",
+  "notes-three-unchanged-requirement-identities",
+  "archive-fixed21-after-and-six-before-routes",
+  "archive-corrected-test-two-exact-epochs",
+  "archive-corrected-test-unlisted-SHA",
+  "archive-corrected-test-unlisted-size",
+  "archive-corrected-test-missing-identity",
+  "archive-corrected-test-mandatory-manifest",
+  "archive-corrected-test-mandatory-before",
+  "archive-corrected-test-mandatory-after",
+  "archive-corrected-test-mandatory-old-after-alias",
+  "archive-unknown-epoch-client.mjs",
+  "archive-unknown-epoch-LZMA-COMPATIBILITY.md",
+  "archive-unknown-epoch-README.md",
+  "archive-unknown-epoch-server.mjs",
+  "archive-unknown-epoch-SEVENZIP-COMPATIBILITY.md",
+  "archive-unknown-epoch-sevenzip.mjs",
+  "archive-unknown-added-source-epoch",
+  "archive-missing-expected-identity-client.mjs",
+  "archive-missing-expected-identity-source-metadata.mjs",
+  "archive-missing-expected-identity-NOTICE-SOURCE-METADATA.txt",
+  "archive-mandatory-current-client.mjs",
+  "archive-mandatory-current-LZMA-COMPATIBILITY.md",
+  "archive-mandatory-current-NOTICE-SOURCE-METADATA.txt",
+  "archive-mandatory-current-original-aes-test-helper.mjs",
+  "archive-mandatory-current-README.md",
+  "archive-mandatory-current-server.mjs",
+  "archive-mandatory-current-sevenzip-aes-bounds.test.mjs",
+  "archive-mandatory-current-SEVENZIP-AES-COMPATIBILITY.md",
+  "archive-mandatory-current-sevenzip-aes-container.test.mjs",
+  "archive-mandatory-current-sevenzip-aes-http.test.mjs",
+  "archive-mandatory-current-SEVENZIP-AES-LGPL.txt",
+  "archive-mandatory-current-sevenzip-aes-original.test.mjs",
+  "archive-mandatory-current-sevenzip-aes-ui-fixture.mjs",
+  "archive-mandatory-current-sevenzip-aes-ui.test.mjs",
+  "archive-mandatory-current-sevenzip-aes.mjs",
+  "archive-mandatory-current-sevenzip-aes.test.mjs",
+  "archive-mandatory-current-SEVENZIP-COMPATIBILITY.md",
+  "archive-mandatory-current-sevenzip.mjs",
+  "archive-mandatory-current-source-metadata.mjs",
+  "archive-mandatory-current-source-metadata.test.mjs",
+  "archive-mandatory-current-WINDOWS-SOURCE-METADATA.md",
+  "archive-mandatory-before-client.mjs",
+  "archive-mandatory-before-LZMA-COMPATIBILITY.md",
+  "archive-mandatory-before-README.md",
+  "archive-mandatory-before-server.mjs",
+  "archive-mandatory-before-SEVENZIP-COMPATIBILITY.md",
+  "archive-mandatory-before-sevenzip.mjs",
+  "archive-mandatory-index",
+  "archive-mandatory-transition-manifest",
+  "archive-mandatory-unchanged-bundle",
+  "archive-mandatory-new-integrity-reader",
+  "archive-finite161-manifest-byte-change",
+  "archive-finite161-attempt-byte-change",
+  "archive-finite161-before-inventory-byte-change",
+  "archive-historical-lzma124-integrity-reader",
+  "historical-editor31-exact-six-live-mismatch-projection",
+  "unknown-editor-git-mismatch-SHA",
+  "unknown-editor-git-mismatch-size",
+  "missing-exact-editor-git-mismatch-route",
+  "duplicate-editor31-source-row",
+  "seven-fixed-root-epochs",
+  "three-fixed-windows-path-source-identities",
+  "unknown-windows-path-source-epoch:products/rea-studio/apps/editor/git.test.mjs",
+  "missing-windows-path-explicit-identity:products/rea-studio/apps/editor/git.test.mjs",
+  "unknown-windows-path-source-epoch:products/rea-studio/apps/sync/dav-transfer.mjs",
+  "missing-windows-path-explicit-identity:products/rea-studio/apps/sync/dav-transfer.mjs",
+  "unknown-windows-path-source-epoch:products/rea-studio/apps/sync/webdav.windows-path.test.mjs",
+  "missing-windows-path-explicit-identity:products/rea-studio/apps/sync/webdav.windows-path.test.mjs",
+  "actual-finite47-immutable-metadata-binding",
+  "finite47-manifest-byte-change",
+  "finite47-attempt-byte-change",
+  "finite47-composition-byte-change",
+  "finite47-postcheck-byte-change",
+  "finite47-stable-source-inventory-byte-change",
+  "finite47-raw-tap-byte-change",
+  "unknown-root-epoch",
+  "unknown-flow-source-epoch",
+  "four-fixed-followup-verifier-epochs",
+  "unknown-followup-verifier-epoch",
+  "three-fixed-editor-save-verifier-epochs",
+  "unknown-editor-save-verifier-epoch",
+  "mandatory-current-editor-git-after",
+  "mandatory-current-sync-transfer-after",
+  "mandatory-current-windows-path-regression",
+  "mandatory-windows-path-manifest",
+  "mandatory-windows-path-editor-before",
+  "mandatory-windows-path-sync-before",
+  "mandatory-windows-path-editor-after-snapshot",
+  "mandatory-windows-path-sync-after-snapshot",
+  "mandatory-windows-path-new-regression-snapshot",
+  "mandatory-prior-147529-root-source",
+  "mandatory-prior-50750-migration-source",
+  "mandatory-prior-52393-closure-migration-source",
+  "mandatory-current-flow-after",
+  "mandatory-current-vault-after",
+  "mandatory-middle-root-snapshot",
+  "mandatory-git-closure-payload",
+  "mandatory-git-closure-manifest",
+  "mandatory-middle-followup-snapshot",
+  "mandatory-current-editor-save-verifier",
+  "mandatory-editor-save-closure-manifest",
+  "mandatory-middle-editor-save-snapshot",
+  "mandatory-editor-save-prior-migration",
+  "editor-save-absent-alias-and-no-generic-route",
+  "editor-save-exact-optional-shadow",
+  "editor-save-corrupt-optional-shadow",
+  "editor-save-reported-shadow-link",
+  "historical937-exact-block-positive",
+  "historical937-frozen-source-byte-change",
+  "historical937-unchanged-current-byte-change",
+  "historical937-receipt-byte-change",
+  "historical937-unlisted-resolver-route",
+  "historical-webdav-exact-source-loop-positive",
+  "historical-webdav-transfer-before-byte-change",
+  "historical-webdav-unchanged-source-byte-change",
+  "finite282-committed-positive",
+  "finite282-owned-fixture-positive",
+  "finite282-object-byte-change",
+  "finite282-duplicate-alias-manifest-change",
+  "finite282-false-full-suite-flag",
+  "finite282-selected-tests-change",
+  "finite282-false-pass-summary",
+  "finite282-false-full-parity-flag",
+  "finite282-extra-prefix-file",
+  "eleven-fixed-historical-carrier-exceptions",
+  "unlisted-historical-carrier-path-refused",
+  "historical-carrier-wrong-declared-identity",
+  "historical-carrier-mandatory-payload-corruption",
+  "historical-carrier-original-manifest-corruption",
+  "historical-carrier-closure-authority-corruption",
+  "group-edit-document-exact-before-after-identities",
+  "group-edit-document-unlisted-identity",
+  "group-edit-document-missing-identity",
+  "group-edit-document-mandatory-current-byte-change",
+  "requirement-evidence-actual-loop-all-declared-rows",
+  "requirement-evidence-known-editor-historical-before",
+  "requirement-evidence-unlisted-path-remains-current",
+  "requirement-evidence-historical-byte-corruption",
+  "requirement-evidence-unknown-named-SHA",
+  "requirement-evidence-unknown-named-size",
+  "requirement-evidence-unchanged-current-byte-corruption",
+  "requirement-evidence-unchanged-current-size-declaration",
+  "requirement-evidence-unsafe-record-path",
+  "requirement-provenance-mandatory-byte-corruption:products/rea-studio/results/requirement-evidence-provenance-20261015/preservation-manifest.json",
+  "requirement-provenance-mandatory-byte-corruption:products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/verify-records.mjs.snapshot",
+  "requirement-provenance-mandatory-byte-corruption:products/rea-studio/results/requirement-evidence-provenance-20261015/verifier-before/editor-vault-proof-migration.mjs.snapshot",
+  "publication-repeat-actual-preserved-clock-only-difference",
+  "publication-repeat-reject:identity-change",
+  "publication-repeat-reject:source-count-change",
+  "publication-repeat-reject:unrelated-top-field",
+  "publication-repeat-reject:unlisted-nested-clock",
+  "publication-repeat-reject:out-of-scope-same-named-clock",
+  "publication-repeat-reject:wrong-schema",
+  "publication-repeat-reject:false-source-only",
+  "publication-repeat-reject:missing-start",
+  "publication-repeat-reject:non-utc-clock",
+  "publication-repeat-reject:invalid-calendar-clock",
+  "publication-repeat-reject:reversed-observation-clocks",
+  "publication-repeat-reject:before-own-phase",
+  "publication-repeat-reject:after-own-phase",
+  "publication-repeat-reject:root-check-before-proof-finishes",
+  "publication-repeat-reject:first-phase-clock-corruption",
+  "publication-repeat-reject:overlapping-owned-phases",
+  "publication-repeat-reject:reversed-owned-phase",
+  "notes36-current-proof-and-historical52-scopes",
+  "notes36-exact-current32-and-older-route-identities",
+  "notes36-independent-common-archive-and-notes-budgets",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/README.md",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/app.integration.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/app.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/client.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/core.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/fixtures/oracle-verification.json",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/fixtures/pinned-joplin.jex",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/fixtures/pinned-joplin.json",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/interop-fixture-tool.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/jex.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/jex.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/markdown.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/new-todo-original.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/new-todo.integration.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/new-todo.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/new-todo.ui.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-confirmation-cancel-open-note.ui.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-confirmation.ui.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-original-oracle.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-trash-fresh-boundaries.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-trash-original-oracle.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-trash-publication-boundaries.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-trash-review-fixture.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-trash-review.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-trash.integration.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-trash.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-trash.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebook-trash.ui.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebooks.integration.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebooks.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/notebooks.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/results/notebooks-followup/stage/original/packages/lib/BaseModel.ts.snapshot.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/results/notebooks-followup/stage/original/packages/lib/models/Note.ts.snapshot.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/server.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/todo-original.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/todo.integration.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/todo.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/apps/notes/todo.ui.test.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/catalog.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/after/products/rea-studio/apps/notes/README.md.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/after/products/rea-studio/apps/notes/client.mjs.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/after/products/rea-studio/apps/notes/new-todo-original.test.mjs.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/after/products/rea-studio/apps/notes/new-todo.integration.test.mjs.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/after/products/rea-studio/apps/notes/new-todo.test.mjs.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/after/products/rea-studio/apps/notes/new-todo.ui.test.mjs.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/after/products/rea-studio/apps/notes/server.mjs.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/before/products/rea-studio/apps/notes/README.md.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/before/products/rea-studio/apps/notes/client.mjs.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/before/products/rea-studio/apps/notes/server.mjs.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/bundle.json",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/contract.json",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/original/LICENSE.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/original/packages/app-desktop/gui/WindowCommandsAndDialogs/commands/newNote.ts.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/original/packages/app-desktop/gui/WindowCommandsAndDialogs/commands/newTodo.ts.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/original/readme/apps/to-dos.md.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/review/independent-peer-r5.json.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/experiments/notes-new-todo/review/source-authority-r5.json.snapshot",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/lib/storage.mjs",
+  "notes36-mandatory-proof-byte-change:products/rea-studio/server.mjs",
+  "notes36-unknown-source-epoch:products/rea-studio/apps/notes/client.mjs",
+  "notes36-missing-source-identity:products/rea-studio/apps/notes/client.mjs",
+  "notes36-unknown-source-epoch:products/rea-studio/apps/notes/new-todo-original.test.mjs",
+  "notes36-missing-source-identity:products/rea-studio/apps/notes/new-todo-original.test.mjs",
+  "notes36-unknown-source-epoch:products/rea-studio/apps/notes/new-todo.integration.test.mjs",
+  "notes36-missing-source-identity:products/rea-studio/apps/notes/new-todo.integration.test.mjs",
+  "notes36-unknown-source-epoch:products/rea-studio/apps/notes/new-todo.test.mjs",
+  "notes36-missing-source-identity:products/rea-studio/apps/notes/new-todo.test.mjs",
+  "notes36-unknown-source-epoch:products/rea-studio/apps/notes/new-todo.ui.test.mjs",
+  "notes36-missing-source-identity:products/rea-studio/apps/notes/new-todo.ui.test.mjs",
+  "notes36-unknown-source-epoch:products/rea-studio/apps/notes/README.md",
+  "notes36-missing-source-identity:products/rea-studio/apps/notes/README.md",
+  "notes36-unknown-source-epoch:products/rea-studio/apps/notes/server.mjs",
+  "notes36-missing-source-identity:products/rea-studio/apps/notes/server.mjs",
+  "notes36-exact12-tooling-plus-separate-self-source",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/scripts/verify-notes36-installed-cloud.mjs",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json",
+  "notes36-fixed-tooling-or-self-byte-change:.github/workflows/notes-new-todo-installed-cloud.yml",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/browser-tests/notes-new-todo.spec.mjs",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/browser-tests/playwright.notes-new-todo.config.mjs",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/browser-tests/notes-new-todo-roster.json",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/scripts/verify-cloud-browser.mjs",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/browser-tests/package.json",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/browser-tests/package-lock.json",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/browser-tests/browser-metadata.json",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/browser-tests/playwright.config.mjs",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/browser-tests/flow-vault.spec.mjs",
+  "notes36-fixed-tooling-or-self-byte-change:products/rea-studio/scripts/verify-notes36-cloud.mjs",
+  "notes36-exact95-publication-artifact-roles",
+  "notes36-artifact-role-census:missing",
+  "notes36-artifact-role-census:duplicate",
+  "notes36-artifact-role-census:unknown",
+  "notes36-artifact-role-census:self-role-replacement",
+  "notes36-extra-fixed-tooling-row",
+  "notes36-changed-fixed-tooling-definition"
+]
+
+def publication_pass():
+ need(api is not None and git is not None and tables is not None and declaration is not None and historical is not None and tooling is not None,'All independent source/Git/envelope gates required')
+ need(attempt['status']=='passed' and api['runConclusion']==api['jobConclusion']=='success','Failed attempts cannot receive publication acceptance')
+ need(len(members)==95 and set(members)==set(EXPECTED_MEMBERS),'Exact95 roles for a passed attempt')
+ contract=attempt['artifactRoleContract'];need(contract=={'schema':'rea-Notes36-publication-artifact-roles/v1','expectedFiles':95,'unchangedFileLimit':96,'paths':EXPECTED_MEMBERS,'workflowAttemptWrittenAfterProducer':True,'expectedProducerFiles':94,'producerFilesVerified':94,'exactRoleSetVerifiedBeforeWorkflow':True},'Exact95/94/96 role contract')
+ controls=item('controls.json');need(controls['schema']=='rea-cloud-publication-controls/v1' and controls['status']=='passed' and controls['sourceOnly'] is True and controls['checks']==len(controls['rows'])==306 and all(r['passed'] is True for r in controls['rows']),'All306 actual control rows passed')
+ names=[r['name'] for r in controls['rows']];need(names==EXPECTED_CONTROL_NAMES and len(set(names))==306 and attempt['controls']=={'status':'passed','checks':306},'Exact preserved208 plus additional98 control names and order')
+ event_raw=data('events.jsonl');need(event_raw.endswith(b'\n'),'Complete JSONL events');events=[json.loads(x) for x in event_raw.decode().splitlines()];need(0<len(events)<=5000,'Bounded raw event count')
+ previous=None
+ for index,row in enumerate(events):
+  need(row['sequence']==index+1,'Consecutive raw event sequence');at=utc(row['at']);need(previous is None or previous<=at,'Ordered event clocks');previous=at
+ need([r['name'] for r in events if r['type']=='control-started']==names and [r['name'] for r in events if r['type']=='control-passed']==names and all(r['passed'] is True for r in events if r['type']=='control-passed'),'Raw306 event names/order match all control rows')
+ need(events[-1]['type']=='terminal' and events[-1]['status']=='passed','Successful raw terminal event')
+ phases=attempt['phases'];need(len(phases)==2 and [p['name'] for p in phases]==['publication-write','publication-recheck'],'Exactly two original root phases')
+ start=utc(attempt['startedAtUtc']);end=utc(attempt['completedAtUtc']);need(start<=utc(phases[0]['startedAtUtc'])<=utc(phases[0]['completedAtUtc'])<=utc(phases[1]['startedAtUtc'])<=utc(phases[1]['completedAtUtc'])<=end,'Sequential outer phase bounds')
+ job_start=datetime.datetime.fromisoformat(api['jobStartedAtUtc'].replace('Z','+00:00'));job_end=datetime.datetime.fromisoformat(api['jobCompletedAtUtc'].replace('Z','+00:00'));need(job_start<=start<=end<=job_end,'Owning job clock bounds')
+ outputs=[];clocks=[]
+ for phase in phases:
+  name=phase['name'];out=data(name+'.stdout.txt');err=data(name+'.stderr.txt');need(phase['stdoutBytes']==len(out) and phase['stderrBytes']==len(err) and len(out)<=2097152 and len(err)<=1048576,'Exact retained phase stream sizes/bounds')
+  need(phase['timeoutMs']==1200000 and len(phase['command']) in (2,3) and phase['command'][1]=='scripts/verify-records.mjs' and phase['command'][2:]==(['--write'] if name=='publication-write' else []),'Exact original root command/deadline')
+  value=json.loads(out.decode().strip().splitlines()[-1]);stable,clock=projected(value,phase);outputs.append((value,stable));clocks.append(clock)
+ need(exact_json(outputs[0][1],outputs[1][1]),'All fields except exactly three validated owned clocks deeply equal, including boolean/null/array types')
+ comparison=attempt['repeatComparison'];need(comparison['status']=='passed' and comparison['onlyNamedObservationClocksProjected'] is True and comparison['allOtherFieldsDeepEqual'] is True,'Recorded strict repeat comparator')
+ for key,index in [('first',0),('second',1)]: need(comparison[key]=={'clocks':clocks[index],'rawStdout':identity(data(phases[index]['name']+'.stdout.txt'))},'Exact raw clock/stream receipt '+key)
+ derived=attempt['derived'];need(len(derived)==2 and {r['path'] for r in derived}=={'PUBLICATION-MANIFEST.json','VALIDATION.json'},'Exactly two derived records')
+ for row in derived: need(identity(data('derived/'+row['path']))=={k:row[k] for k in ('bytes','sha256')},'Derived byte identity '+row['path'])
+ need(item('derived/VALIDATION.json')==outputs[0][0],'Original first root output equals actual derived validation JSON')
+ manifest=item('derived/PUBLICATION-MANIFEST.json');need(manifest['schema']=='rea-publication-manifest/v1' and manifest['algorithm']=='sha256' and manifest['derived_records_excluded']==['PUBLICATION-MANIFEST.json','VALIDATION.json'],'Manifest schema/derivative exclusions')
+ payload=manifest['files'];need(24000<len(payload)<=30000 and len({r['path'] for r in payload})==len(payload),'Manifest unique bounded payload rows')
+ for row in payload: safe(row['path']);need(type(row['bytes']) is int and row['bytes']>=0 and re.fullmatch(r'[0-9a-f]{64}',row['sha256']),'Manifest row shape')
+ need({r['path'] for r in payload}==set(git_blobs)-{'PUBLICATION-MANIFEST.json','VALIDATION.json'},'Manifest path closure equals actual tested Git tree')
+ compact=json.dumps(payload,ensure_ascii=False,separators=(',',':')).encode();payload_id={'files':len(payload),'bytes':sum(r['bytes'] for r in payload),'rowsIdentity':identity(compact)}
+ need(payload_id==attempt['payloadBefore']==attempt['payloadAfter'] and attempt['payloadStable'] is True,'Exact stable payload identity and canonical ordered manifest rows')
+ need(attempt['generatedManifest']==identity(data('derived/PUBLICATION-MANIFEST.json')) and attempt['generatedManifestValidated'] is True and attempt['firstRootWritePassed'] is True,'Final generated manifest validation')
+ need(attempt['derivedWorktreePaths']==sorted(set(attempt['derivedWorktreePaths'])) and set(attempt['derivedWorktreePaths'])<=set(['PUBLICATION-MANIFEST.json','VALIDATION.json']),'Only two permitted derived worktree paths')
+ workflow=item('workflow-attempt.json');need(workflow['schema']=='rea-hosted-publication-workflow-attempt/v1' and workflow['sourceCommit']==git['sourceCommit'] and workflow['runId']==RUN and workflow['runAttempt']==ATTEMPT and workflow['runnerEnvironment']=='github-hosted' and workflow['checkoutOutcome']==workflow['verificationOutcome']=='success','Actual workflow outcome/identity')
+ need(workflow['published'] is False and workflow['historicalReceiptsRewritten'] is False and workflow['fullDevelopmentSuiteAcceptance'] is False and workflow['fullParity'] is False,'Workflow does not publish/claim behavioral acceptance')
+ need(attempt['applicationTestsExecuted']==0 and attempt['originalExecutions']==0 and attempt['historicalReceiptsRewritten'] is False and attempt['fullDevelopmentSuiteAcceptance'] is False and attempt['fullParity'] is False and attempt['superiority'] is False,'Publication scope only')
+ publication=attempt['publicationResult'];need(publication['status']=='passed' and publication['payloadFiles']==len(payload) and publication['syntaxChecks']==outputs[0][0]['javascript_syntax_checks'] and type(publication['syntaxChecks']) is int and publication['syntaxChecks']>0 and publication['credentialPatternScan'] is True and publication['rootLinksResolve'] is True and publication['historical937Tests']==937 and publication['finiteHosted282Tests']==282,'Observed syntax count and original publication gates; no forecasted count')
+ result['publicationAcceptance']=True;result['controls']={'status':'passed','checks':306};result['payloadIdentity']=payload_id;result['rawOwnedPhaseClocks']=clocks
+ return {'publicationAccepted':True,'controlsPassed':306,'rootPhasesPassed':2,'actualSyntaxChecks':publication['syntaxChecks'],'artifactRoles':95,'legacyHistoricalSources':56,'currentProofSources':60,'fixedCurrentTooling':12,'separateCollectorSelf':1,'allCapturedSourcesGitAuthenticated':True,'fullPayloadBytesRehashedLocally':False,'applicationBehaviorAccepted':False}
+stage('Exact95All306TwoRootPhasesAndPayloadPublication',publication_pass)
+if attempt is None: result['evidenceState']='No producer receipt; complete uploaded bytes retained without source or publication acceptance.'
+elif attempt['status']!='passed': result['evidenceState']='Actual '+attempt['status']+' producer attempt preserved. Partial source qualification does not promote it to a publication pass.'
+if len(members)!=95: result['artifactCompleteness']='Not the exact95-role passed contract; all actual uploaded bytes are still retained.'
+report=folder/'local-notes36-publication-backup-verification.json'
+with report.open('x',encoding='utf-8',newline='') as stream: stream.write(json.dumps(result,indent=2,ensure_ascii=False)+'\n')
+need(parsed(report.read_bytes())==result,'Readable terminal report')
+print(json.dumps({k:v for k,v in result.items() if k not in ('files','attempt','currentNotes36Envelope','historicalNotes32Envelope','currentTooling12Envelope')},ensure_ascii=False))

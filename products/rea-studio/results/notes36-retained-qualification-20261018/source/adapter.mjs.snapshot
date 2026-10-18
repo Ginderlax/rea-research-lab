@@ -1,0 +1,115 @@
+// Offline bounded backup qualification only; no application, original, browser, build or test is executed.
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+const own = import.meta.dirname, base = path.resolve(own, '../..'), work = path.join(base, 'work');
+const expectedSpec = { bytes: 9550, sha256: '85dd30dc72fafd147c28349dde8f282157860b61c98bfe7d66bc91ab992d895e' };
+const python = 'C:/Users/evanh/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe';
+const identity = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+const rel = file => path.relative(base, file).split(path.sep).join('/');
+async function exists(file) { try { await fs.lstat(file); return true; } catch (error) { if (error.code === 'ENOENT') return false; throw error; } }
+function owned(name) {
+  assert(typeof name === 'string' && name.startsWith('work/') && !name.includes('\\') && !name.split('/').some(part => ['', '.', '..'].includes(part)));
+  const file = path.resolve(base, name); assert(file.startsWith(work + path.sep)); return file;
+}
+async function regular(file, maximum = 32 * 1024 * 1024) {
+  const suffix = path.relative(base, file); assert(!suffix.startsWith('..') && !path.isAbsolute(suffix));
+  let cursor = base;
+  for (const part of suffix.split(path.sep)) { cursor = path.join(cursor, part); const row = await fs.lstat(cursor); assert(!row.isSymbolicLink()); }
+  const stat = await fs.lstat(file); assert(stat.isFile() && stat.size <= maximum);
+  const bytes = await fs.readFile(file); assert.equal(bytes.length, stat.size); return bytes;
+}
+const specBytes = await regular(path.join(own, 'offline-qualification-spec-r2.json'));
+assert.deepEqual(identity(specBytes), expectedSpec);
+const spec = JSON.parse(specBytes);
+assert.equal(spec.schema, 'rea-offline-retained-artifact-qualification-spec/v1');
+assert.equal(spec.frozenHead, '3c710a31e438af7f1682fc5cf497be4264db35ff');
+assert.equal(spec.contexts.length, 2); assert.equal(spec.artifacts.length, 3);
+const inputs = new Map();
+for (const [name, expected] of Object.entries(spec.inputs)) { const bytes = await regular(owned(name)); assert.deepEqual(identity(bytes), expected); inputs.set(name, bytes); }
+const notesSource = inputs.get(spec.notesReaderSource), pubSource = inputs.get(spec.publicationReader);
+assert(notesSource && pubSource); assert.deepEqual(identity(notesSource), { bytes: 43503, sha256: '055881efc210cd81e3dc3d4be4c451d3ec4aae76a3ff743b454546c522da97dc' });
+assert.deepEqual(identity(pubSource), { bytes: 68266, sha256: 'a478eb241e72c3537cfb6f38c463dd67703fdf66833c1da42bff35ac5e791a67' });
+const notesTarget = owned(spec.notesReaderTarget);
+assert.equal(path.dirname(notesTarget), work);
+if (await exists(notesTarget)) assert.deepEqual(await regular(notesTarget), notesSource);
+for (const context of spec.contexts) {
+  const expectedPrefix = 'work/cloud-verification-backups/run-' + context.runId + '/notes36-' + (context.kind === 'publication' ? 'publication-' : 'installed-') + 'control-plane-resume-20261018-original-20261016';
+  assert.equal(context.contextTarget, expectedPrefix); assert(!(await exists(owned(context.contextTarget))));
+  for (const [name, source] of Object.entries(context.mapping)) { assert(/^[a-zA-Z0-9.-]+$/.test(name)); assert(inputs.has(source)); }
+  const run = JSON.parse(inputs.get(context.mapping['run.json'])); assert.equal(String(run.id), context.runId); assert.equal(run.head_sha, spec.frozenHead); assert.equal(run.status, 'completed'); assert.equal(run.conclusion, 'success');
+}
+for (const artifact of spec.artifacts) {
+  const source = owned(artifact.source); assert.equal(path.basename(source), 'artifact-' + artifact.artifactId + '.zip'); assert.equal(path.basename(path.dirname(source)), 'run-' + artifact.runId);
+  assert.equal(identity(inputs.get(artifact.source)).sha256, artifact.expectedSHA256);
+  assert(!(await exists(path.dirname(owned(artifact.report)))));
+}
+const execution = path.join(own, 'offline-qualification-execution'); assert(!(await exists(execution)));
+await fs.mkdir(execution);
+await fs.writeFile(path.join(execution, 'frozen-spec.json'), specBytes, { flag: 'wx' });
+if (!(await exists(notesTarget))) await fs.writeFile(notesTarget, notesSource, { flag: 'wx' });
+assert.deepEqual(await regular(notesTarget), notesSource);
+const contexts = [];
+for (const context of spec.contexts) {
+  const target = owned(context.contextTarget); await fs.mkdir(target);
+  const rows = [];
+  for (const [name, source] of Object.entries(context.mapping)) {
+    const bytes = inputs.get(source), destination = path.join(target, name);
+    await fs.writeFile(destination, bytes, { flag: 'wx' }); assert.deepEqual(await regular(destination), bytes);
+    rows.push({ target: rel(destination), source, ...identity(bytes) });
+  }
+  const provenance = { schema: 'rea-preserved-original-control-context-copy/v1', copiedAt: new Date().toISOString(),
+    originalControlCapturedAt: context.originalControlCapturedAt, originalRunJobsArtifactsAndLogBytesUnchanged: true,
+    currentExpiryObservation: spec.expiryObservationSeparate, currentAPIWasNotSubstitutedForOriginalSnapshot: true,
+    historicalArtifactExpiredFalseIsOriginalObservationOnly: true, sourceRows: rows };
+  await fs.writeFile(path.join(target, 'copy-provenance.json'), JSON.stringify(provenance, null, 2) + '\n', { flag: 'wx' });
+  contexts.push({ target: context.contextTarget, sourceRows: rows });
+}
+const observations = [];
+for (const artifact of spec.artifacts) {
+  const source = owned(artifact.source), reader = artifact.kind === 'publication' ? owned(spec.publicationReader) : notesTarget;
+  const expectedReader = artifact.kind === 'publication' ? identity(pubSource) : identity(notesSource);
+  assert.deepEqual(identity(await regular(reader, 256 * 1024)), expectedReader);
+  const args = artifact.kind === 'publication' ? [source, artifact.expectedSHA256, owned(artifact.contextTarget), artifact.artifactId]
+    : [source, artifact.expectedSHA256, artifact.role, artifact.runId, spec.frozenHead, owned(artifact.contextTarget)];
+  const child = spawnSync(python, [reader, ...args], { encoding: 'utf8', windowsHide: true, timeout: 90000, maxBuffer: 4 * 1024 * 1024 });
+  const stdout = Buffer.from(child.stdout ?? ''), stderr = Buffer.from(child.stderr ?? '');
+  const stem = artifact.kind + '-' + (artifact.role ?? artifact.artifactId);
+  await fs.writeFile(path.join(execution, stem + '-reader-stdout.txt'), stdout, { flag: 'wx' });
+  await fs.writeFile(path.join(execution, stem + '-reader-stderr.txt'), stderr, { flag: 'wx' });
+  const row = { kind: artifact.kind, role: artifact.role, runId: artifact.runId, artifactId: artifact.artifactId,
+    reader: rel(reader), readerIdentity: expectedReader, source: artifact.source, artifactIdentity: identity(inputs.get(artifact.source)),
+    context: artifact.contextTarget, exitCode: child.status, signal: child.signal ?? null,
+    error: child.error ? { name: child.error.name, code: child.error.code ?? null } : null,
+    stdout: identity(stdout), stderr: identity(stderr), report: artifact.report, reportPresent: false, accepted: false };
+  if (await exists(owned(artifact.report))) {
+    const report = await regular(owned(artifact.report), 4 * 1024 * 1024), value = JSON.parse(report);
+    row.reportPresent = true; row.reportIdentity = identity(report); assert.equal(value.runId, artifact.runId);
+    assert.equal(value.allCRCAndBytesReadable, true);
+    if (artifact.kind === 'publication') {
+      assert.equal(value.schema, 'rea-local-current36-publication-backup/v1'); assert.equal(value.headSHA, spec.frozenHead);
+      assert.deepEqual(value.artifactIdentity, row.artifactIdentity); assert.equal(String(value.artifactId), artifact.artifactId);
+      row.accepted = child.status === 0 && value.publicationAcceptance === true && Array.isArray(value.auditErrors) && value.auditErrors.length === 0;
+      row.auditErrors = value.auditErrors; row.qualification = value.qualification;
+    } else {
+      assert.equal(value.schema, 'rea-local-Notes36-installed-backup/v1'); assert.equal(value.sourceCommit, spec.frozenHead);
+      assert.equal(value.role, artifact.role); assert.equal(value.artifactSHA256, artifact.expectedSHA256);
+      row.accepted = child.status === 0 && value.recordedContractPassed === true && Array.isArray(value.evidenceConsistencyErrors) && value.evidenceConsistencyErrors.length === 0;
+      row.evidenceConsistencyErrors = value.evidenceConsistencyErrors; row.actualProductTests = value.attempt?.productTests ?? null;
+    }
+    row.readableFiles = value.files.length;
+  }
+  observations.push(row);
+}
+const result = { schema: 'rea-offline-retained-artifact-qualification-observation/v1', at: new Date().toISOString(),
+  originalHostedSourceHead: spec.frozenHead, originalCompletedAPIObservationDate: '2026-10-16',
+  currentExpiryObservation: spec.expiryObservationSeparate, currentArtifactAPIZeroNeverRewritten: true,
+  contexts, observations, allThreeAccepted: observations.length === 3 && observations.every(row => row.accepted),
+  missingFullArtifactQualified: false, installationJournalRewritten: false, productExecutions: 0, originalExecutions: 0,
+  tests: 0, builds: 0, syntaxChecks: 0, browserExecutions: 0, GitMutations: 0, metadataImports: 0,
+  fullParity: false, superiority: false };
+await fs.writeFile(path.join(execution, 'observation.json'), JSON.stringify(result, null, 2) + '\n', { flag: 'wx' });
+console.log(JSON.stringify({ output: rel(execution), allThreeAccepted: result.allThreeAccepted,
+  observations: observations.map(row => ({ kind: row.kind, role: row.role, accepted: row.accepted, readableFiles: row.readableFiles, exitCode: row.exitCode })) }));

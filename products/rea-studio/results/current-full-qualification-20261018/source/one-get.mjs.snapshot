@@ -1,0 +1,53 @@
+// One fixed Git-object GET; preserve existing immutable context as explicit aliases.
+// No Actions dispatch, ZIP download, reader/candidate execution or Git mutation.
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+const base=path.resolve(import.meta.dirname,'../..'),lab=path.join(base,'outputs/rea-research-lab');
+const RUN='39169540384',HEAD='698d2e301765d1b878fb251b3d59dadb5a3c9bac';
+const TESTED='3b475afc89498e74cca946d3901b5b36e2c79a4f',TREE='268378f6c52617375681c2bd0f4f5cf853739045';
+const branchContext='work/audit-six-projection-evidence-20261018-next/run-39169535767-observation-2026-10-18T21-51-56-303Z/';
+const fullContext='work/cloud-verification-backups/run-39169540384/raw-api-698d-2026-10-18T22-04-33.734Z/';
+const sources=[
+ {source:fullContext+'run.json',roles:['run.json'],bytes:13582,sha256:'79259bca22bcdf49a1205661dd10931be4306ed54b76247b904fa5f13678c9ea'},
+ {source:fullContext+'jobs.json',roles:['jobs.json'],bytes:4513,sha256:'97dfd5d9544ba1ede4e68309091f841c6cbb67a196808e21a8d6c46f0d19ee49'},
+ {source:fullContext+'artifacts.json',roles:['artifacts.json'],bytes:782,sha256:'e7ee752520c282467482697f5257ae5f4440a23bddb9400a776804b0f8fd5af9'},
+ {source:branchContext+'commit.json',roles:['branch-commit.json'],bytes:1219,sha256:'48868249b0052cbab76d916845d9f0fe398a2f0ca05b2e7efbbb9af3656ed2a3'},
+ {source:branchContext+'tree.json',roles:['branch-tree.json','tested-tree.json'],bytes:12336980,sha256:'057ee3223462edc317fdf271e58635a467ae29ce41e654f1b7816dd931ede455'},
+];
+const sha=b=>createHash('sha256').update(b).digest('hex'),loaded=[];
+for(const row of sources){
+ const file=path.join(base,row.source);let at=base;
+ for(const part of row.source.split('/')){at=path.join(at,part);assert(!(await fs.lstat(at)).isSymbolicLink(),'Linked retained context refused');}
+ const st=await fs.stat(file);assert(st.isFile()&&st.size===row.bytes&&st.size<=24*1024*1024);
+ const b=await fs.readFile(file);assert.equal(sha(b),row.sha256);loaded.push({row,b,value:JSON.parse(b)});
+}
+const run=loaded[0].value,branch=loaded[3].value,tree=loaded[4].value;
+assert.equal(String(run.id),RUN);assert.equal(run.head_sha,HEAD);assert.equal(run.run_attempt,1);assert.equal(run.status,'completed');
+assert.equal(branch.sha,HEAD);assert.equal(branch.tree.sha,TREE);assert.equal(tree.sha,TREE);assert.equal(tree.truncated,false);assert(Array.isArray(tree.tree));
+const root=path.join(base,'work/cloud-verification-backups/run-'+RUN);await fs.mkdir(root,{recursive:true});
+const folder=path.join(root,'current-698d-full-metadata-r1-'+new Date().toISOString().replaceAll(':','-'));await fs.mkdir(folder);
+const credential=spawnSync('git',['credential','fill'],{cwd:lab,env:{...process.env,GIT_TERMINAL_PROMPT:'0',GCM_INTERACTIVE:'Never'},input:'protocol=https\nhost=github.com\n\n',encoding:'utf8',windowsHide:true,timeout:20000});
+assert.equal(credential.status,0,'Saved GitHub authentication unavailable');
+const fields=Object.fromEntries(credential.stdout.split('\n').filter(s=>s.includes('=')).map(s=>{const at=s.indexOf('=');return[s.slice(0,at),s.slice(at+1)];}));assert(fields.password);
+const endpoint='https://api.github.com/repos/Ginderlax/rea-research-lab/git/commits/'+TESTED;
+const response=await fetch(endpoint,{method:'GET',redirect:'error',headers:{Accept:'application/vnd.github+json','User-Agent':'REA-fixed-tested-merge-context','X-GitHub-Api-Version':'2022-11-28',Authorization:'Bearer '+fields.password},signal:AbortSignal.timeout(60000)});
+const chunks=[];let size=0;for await(const chunk of response.body){size+=chunk.length;assert(size<=2*1024*1024,'Commit body exceeds2MiB');chunks.push(chunk);}
+const raw=Buffer.concat(chunks);await fs.writeFile(path.join(folder,'tested-commit.json'),raw,{flag:'wx'});
+let result,aliases=[];
+try{
+ assert.equal(response.status,200,'Exact tested commit GET did not return200; raw body retained');
+ const tested=JSON.parse(raw);assert.equal(tested.sha,TESTED);assert.equal(tested.parents.length,2);assert.equal(tested.parents[1].sha,HEAD);
+ assert.equal(tested.tree.sha,TREE,'Tested tree differs; no extra tree GET or qualification allowed');
+ for(const {row,b}of loaded)for(const role of row.roles){
+  await fs.writeFile(path.join(folder,role),b,{flag:'wx'});
+  const written=await fs.readFile(path.join(folder,role));assert.equal(written.length,row.bytes);assert.equal(sha(written),row.sha256);
+  aliases.push({role,source:row.source,bytes:row.bytes,sha256:row.sha256,kind:role.endsWith('tree.json')?'shared-immutable-Git-tree-response':'exact-existing-raw-body-copy'});
+ }
+ result={status:'exact-immutable-object-bridge-retained',rawObjectBridgePassed:true,treeSHA:TREE};
+}catch(error){result={status:'context-unqualified',rawObjectBridgePassed:false,error:String(error.message).slice(0,1000)};process.exitCode=1;}
+const summary={schema:'rea-current-full-exact-tested-merge-context-retention/v1',atUtc:new Date().toISOString(),runId:RUN,branchHead:HEAD,testedMerge:TESTED,...result,fetched:{endpoint,status:response.status,role:'tested-commit.json',bytes:raw.length,sha256:sha(raw)},aliases,newRequests:1,methods:['GET'],additionalTreeGETs:0,zipDownloads:0,qualificationReaderExecutions:0,productExecutions:0,tests:0,builds:0,syntaxChecks:0,gitMutations:0,historicalReceiptsRewritten:false,behavioralAcceptance:false,sourceContractAcceptance:false,contextReuseScope:'Prior raw commit/tree bodies identify immutable Git objects only. Reuse does not relabel the earlier audit run as this full run or assert a new observation time. Two equal tree roles share the exact same retained response bytes.'};
+await fs.writeFile(path.join(folder,'context-summary.json'),JSON.stringify(summary,null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({folder,status:summary.status,branchHead:HEAD,testedMerge:TESTED,tree:TREE,newRequests:1,qualificationReaderExecutions:0}));

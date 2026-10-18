@@ -1,0 +1,11 @@
+# Retained Notes36 qualification — source3c710
+
+The preserved October16 hosted artifacts now have completed, separately recorded offline data qualification. Installed Notes records111 finite checks across21 files and8 real Chromium scenarios. Publication records306 integrity controls, both root phases and95 uploaded roles. The three exact portable artifacts provide95,484 and516 readable members (1,095 total).
+
+Every result here belongs to source `3c710a31e438af7f1682fc5cf497be4264db35ff`. Publication tested merge `dabd556c85b2018e72945d4f639689d5b6744e86` is bridged to that source's exact tree. These results are distinct from later698d evidence. Root ran the reviewed three data readers once on October18; the saved stdout/stderr, observation, frozen specification, qualified reports, source bindings and earlier independent source reviews are retained verbatim. No product, browser, build or test was rerun locally.
+
+`RESTORE.json` lists all20 exact original inputs, including the three original ZIPs. It authenticates their logical membership and storage references in the existing69,473-file backup at commit `30b8104a0b98d08cc11f287742e364065cd118d0`. The fixed backup index and its required part identities are recorded; large raw Git trees, existing ZIPs and1,095 expanded members are reused there rather than duplicated here. Follow the pinned backup's restore instructions to recover ordinary original file contents offline. The old backup's dated paused-state label is historical provenance, not a new operating instruction.
+
+These are finite supported-workflow and publication checks. They do not establish every documented feature of the ten originals or universal superiority. The missing older full artifact12065020872 remains unavailable; its console evidence is separate. Current698d source/full acceptance is not supplied by this historical capsule. The older D24 Archive failure cause and986 proof-delivery observations remain unresolved.
+
+Backup: [fixed recovery subtree](https://github.com/Ginderlax/rea-research-lab/tree/30b8104a0b98d08cc11f287742e364065cd118d0/products/rea-studio/results/paused-backup-20261018). Each direct new file and reused original input is size/SHA-bound in `CONTENT.json` or `RESTORE.json`; the raw historical receipts are not rebound.

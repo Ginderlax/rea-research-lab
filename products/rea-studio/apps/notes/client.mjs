@@ -1,5 +1,6 @@
 import { renderMarkdown } from './markdown.mjs';
 import { todoState } from './core.mjs';
+import { openDraftRecovery } from './draft-recovery.mjs';
 function el(tag, text, className) { const node = document.createElement(tag); if (text !== undefined) node.textContent = text; if (className) node.className = className; return node; }
 function download(value) { const content = value.base64 === undefined ? value.content : Uint8Array.from(atob(value.base64), char => char.charCodeAt(0)); const url = URL.createObjectURL(new Blob([content], { type: value.mime })); const link = el('a', 'Download'); link.href = url; link.download = value.filename; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); }
 async function fileBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onerror = () => reject(new Error('Could not read the file.')); reader.onload = () => resolve(String(reader.result).split(',')[1]); reader.readAsDataURL(file); }); }
@@ -16,7 +17,7 @@ export async function followInternalLink(id, { api, sourceNoteId, mayDiscard, op
   }
   throw new Error('This local link target is unsupported.');
 }
-export async function render(root, api) {
+export async function render(root, api, options = {}) {
   root.replaceChildren(el('h2', 'Local Notes'), el('p', 'Write Markdown notes, organize notebooks and tags, search, export and restore versions.', 'muted'));
   const status = el('p', 'Loading…', 'status'); status.setAttribute('role', 'status');
   const searchRow = el('div', undefined, 'row'), search = el('input'), tag = el('select'), notebookFilter = el('select'), trash = el('input'), trashLabel = el('label', 'Show trash '), searchButton = el('button', 'Search', 'button'), newButton = el('button', 'New note', 'button'), newTodoButton = el('button', 'New to-do', 'button'), allExport = el('button', 'Export notes JSON', 'button'), jexExport = el('button', 'Export Joplin JEX', 'button');
@@ -34,8 +35,111 @@ export async function render(root, api) {
   const preview = el('article'), versions = el('div'); preview.className = 'card'; preview.setAttribute('aria-label', 'Markdown preview'); draft.append(el('h3', 'Note draft'), title, notebook, tags, body, actions, todoPanel, attachments, el('h3', 'Safe Markdown preview'), preview, versions);
   const imports = el('div', undefined, 'card'), upload = el('input'); upload.type = 'file'; upload.accept = '.md,.markdown,.json,.jex,text/markdown,application/json,application/x-tar'; upload.setAttribute('aria-label', 'Import Markdown, REA notes JSON or Joplin JEX'); imports.append(el('h3', 'Import notes or Joplin JEX'), el('p', 'JEX preserves supported note IDs, notebook hierarchy, tags, metadata and attachments. Existing ID collisions reject the entire import. Maximum JEX size: 8 MiB. JSON creates note copies and excludes binaries.', 'muted'), upload);
   const organization=el('section',undefined,'card'),organizationRows=el('div'),organizationChoice=el('select'),organizationName=el('input'),organizationParent=el('select'),createNotebook=el('button','Create notebook','button'),renameNotebook=el('button','Rename notebook','button'),moveNotebook=el('button','Move notebook','button'),trashNotebook=el('button','Move notebook to trash','button'),restoreNotebook=el('button','Restore notebook','button'),noteDestination=el('select'),moveNote=el('button','Move saved note','button');organization.setAttribute('aria-label','Notebook organization');organizationChoice.setAttribute('aria-label','Manage notebook');organizationName.setAttribute('aria-label','Notebook name');organizationName.placeholder='Notebook name';organizationParent.setAttribute('aria-label','Parent notebook');noteDestination.setAttribute('aria-label','Move note to notebook');const organizationControls=[organizationChoice,organizationName,organizationParent,createNotebook,renameNotebook,moveNotebook,trashNotebook,restoreNotebook,noteDestination,moveNote];organization.append(el('h3','Notebooks'),el('p','Organize notebooks or move a notebook with its descendants to trash. Restoring also restores independently trashed descendant notes. Save your draft first.','muted'),organizationRows,...organizationControls);
-  const confirmationHost=el('div');root.append(searchRow, organization, confirmationHost, list, draft, imports, status);
+  const recoveryPanel=el('section',undefined,'card'),recoveryStatus=el('p','Opening browser recovery…'),recoveryRows=el('div'),recoveryRefresh=el('button','Refresh recovery copies','button');
+  recoveryPanel.setAttribute('aria-label','Draft recovery');recoveryStatus.setAttribute('aria-label','Draft recovery status');recoveryStatus.setAttribute('aria-live','polite');recoveryRefresh.disabled=true;
+  recoveryPanel.append(el('h3','Draft recovery'),el('p','Recovery copies are plain text in this browser for this workspace. They contain text and note type, not attachment files, and are not included in note exports. Recovering always opens a separate unsaved copy; saved notes stay unchanged.','muted'),recoveryStatus,recoveryRefresh,recoveryRows);
+  const confirmationHost=el('div');root.append(searchRow, organization, confirmationHost, recoveryPanel, list, draft, imports, status);
   let current = null, dirty = false, organizationState={revision:0,notebooks:[]},organizationBusy=false,editorGeneration=0,draftRevision=0,refreshGeneration=0,mounted=true,confirmation=null,todoBusy=false,saveBusy=false,draftIsTodo=false;
+  let recoveryStore=null,recoveryScope=null,recoveryOwner=null,recoveryParent=null,recoverySource=null,recoverySavePending=false,recoveryQueue=Promise.resolve(),recoveryListGeneration=0,recoveryBusy=false,recoveryPending=null,recoveryPump=false;
+  function recoveryError(error){return String(error?.message??error).slice(0,180);}
+  function recoveryTask(operation,onSuccess,onFailure){
+    recoveryQueue=recoveryQueue.then(operation).then(value=>onSuccess?onSuccess(value):value,error=>{if(onFailure)return onFailure(error);});
+    // A storage/display failure must never block subsequent editor actions.
+    recoveryQueue=recoveryQueue.catch(error=>{if(mounted)recoveryStatus.textContent='Browser recovery is unavailable: '+recoveryError(error);});
+    return recoveryQueue;
+  }
+  function consumeRecoveryParent(){
+    const parent=recoveryParent;recoveryParent=null;
+    if(recoveryStore&&parent)recoveryTask(()=>recoveryStore.remove(parent.id,parent.version));
+  }
+  function resetRecovery(saved=false){
+    const owner=recoveryOwner;recoveryOwner=null;recoverySavePending=false;recoverySource=null;
+    if(recoveryPending?.owner===owner)recoveryPending=null;
+    if(recoveryStore&&owner)recoveryTask(()=>owner.storedVersion?recoveryStore.remove(owner.id,owner.storedVersion):false);
+    if(saved)consumeRecoveryParent();else recoveryParent=null;
+  }
+  function persistRecovery(){
+    if(!mounted||!dirty||!recoveryStore)return;
+    const owner=recoveryOwner??(recoveryOwner={id:globalThis.crypto.randomUUID(),version:0,storedVersion:0});
+    const provenance=current?{id:current.id,revision:current.revision}:recoverySource;
+    const snapshot={id:owner.id,version:++owner.version,title:title.value,body:body.value,tags:tags.value,notebookId:notebook.value,isTodo:current?todoState(current).isTodo:draftIsTodo,sourceNoteId:provenance?.id??null,sourceRevision:provenance?.revision??0,pendingSave:recoverySavePending,updatedAt:Date.now()};
+    recoveryStatus.textContent='Saving a recovery copy in this browser…';
+    // Bound retained text to one active write and the latest pending snapshot.
+    // Every cleanup is appended after this pump; intermediate input is coalesced.
+    recoveryPending={owner,snapshot};
+    if(recoveryPump)return;recoveryPump=true;
+    recoveryTask(async()=>{
+      try{while(recoveryPending){
+        const next=recoveryPending;recoveryPending=null;
+        try{await recoveryStore.put(next.snapshot);next.owner.storedVersion=next.snapshot.version;
+          if(mounted&&recoveryOwner===next.owner&&next.owner.version===next.snapshot.version)recoveryStatus.textContent='Recovery copy saved in this browser.';
+        }catch(error){if(mounted&&recoveryOwner===next.owner&&next.owner.version===next.snapshot.version)recoveryStatus.textContent='Recovery copy could not be saved. Your draft is still open: '+recoveryError(error);}
+      }}finally{recoveryPump=false;}
+    });
+  }
+  async function refreshRecovery(){
+    if(!mounted||!recoveryStore)return;
+    const generation=++recoveryListGeneration;
+    try{
+      const records=await recoveryStore.list();if(!mounted||generation!==recoveryListGeneration)return;
+      recoveryRows.replaceChildren();
+      const visible=records.filter(record=>record.id!==recoveryParent?.id);
+      if(!visible.length)recoveryRows.append(el('p','No recovery copies in this workspace.','muted'));
+      for(const record of visible){
+        const row=el('section',undefined,'card'),name=record.title||'Untitled draft',ack=el('input'),label=el('label','I want a separate note from this recovery copy'),recover=el('button',record.isTodo?'Recover as new to-do':'Recover as new note','button'),discard=el('button','Discard recovery copy','button');
+        row.setAttribute('aria-label','Recovery copy: '+name);ack.type='checkbox';ack.setAttribute('aria-label','I want a separate note from this recovery copy');label.append(ack);recover.disabled=true;ack.onchange=()=>{recover.disabled=!ack.checked;};
+        row.append(el('h4',name),el('p','An earlier Save may already have completed. Check saved notes first. Saving a recovered copy creates another note.','muted'),label,recover,discard);
+        recover.onclick=()=>run(async()=>{
+          if(!ack.checked||organizationBusy||saveBusy||todoBusy||recoveryBusy)return;
+          const generation=editorGeneration,revision=draftRevision,values=[title.value,notebook.value,tags.value,body.value];
+          recoveryBusy=true;recover.disabled=discard.disabled=true;
+          try{
+            const latest=(await recoveryStore.list()).find(value=>value.id===record.id);
+            if(!mounted||generation!==editorGeneration||revision!==draftRevision||values.some((value,index)=>value!==[title.value,notebook.value,tags.value,body.value][index])||organizationBusy||saveBusy||todoBusy)return;
+            if(!latest||latest.version!==record.version){recoveryStatus.textContent='This recovery copy changed. Refresh recovery copies before opening it.';await refreshRecovery();return;}
+            if(!mayDiscard())return;
+            accept(null,latest.isTodo);recoveryParent={id:latest.id,version:latest.version};recoverySource=latest.sourceNoteId?{id:latest.sourceNoteId,revision:latest.sourceRevision}:null;
+            title.value=latest.title;tags.value=latest.tags;body.value=latest.body;
+            const choice=Array.from(notebook.options).find(option=>option.value===latest.notebookId&&!option.disabled);
+            if(!choice&&!Array.from(notebook.options).some(option=>option.value==='__default__'))notebook.append(Object.assign(el('option','Notes (created when saved)'),{value:'__default__'}));
+            notebook.value=choice?latest.notebookId:'__default__';edited();title.focus();status.textContent=choice?'Recovery copy opened. Saving creates a separate note.':'Recovery copy opened. Its earlier notebook is unavailable. This separate copy will be saved to Notes unless you choose another notebook.';await refreshRecovery();
+          }finally{recoveryBusy=false;if(mounted){recover.disabled=!ack.checked;discard.disabled=false;}}
+        });
+        discard.onclick=()=>run(async()=>{
+          if(recoveryBusy)return;
+          if(recoveryOwner?.id===record.id){
+            if(recoveryOwner.version!==record.version){recoveryStatus.textContent='This recovery copy changed and was retained. Refresh before discarding it.';await refreshRecovery();return;}
+            // Retire this editor owner before waiting. Later typing gets a new ID;
+            // earlier queued puts finish before the exact-version removal.
+            recoveryOwner=null;
+            if(recoveryPending?.owner.id===record.id)recoveryPending=null;
+          }
+          recoveryBusy=true;recover.disabled=discard.disabled=true;
+          try{let removalError;const removed=await recoveryTask(()=>recoveryStore.remove(record.id,record.version),null,error=>{removalError=error;});if(!mounted)return;
+            if(removalError){recoveryStatus.textContent='Recovery copy could not be discarded. Existing data was retained: '+recoveryError(removalError);return;}
+            recoveryStatus.textContent=removed?'Recovery copy discarded.':'This recovery copy changed and was retained. Refresh before discarding it.';await refreshRecovery();
+          }finally{recoveryBusy=false;if(mounted){recover.disabled=!ack.checked;discard.disabled=false;}}
+        });
+        recoveryRows.append(row);
+      }
+    }catch(error){if(mounted&&generation===recoveryListGeneration)recoveryStatus.textContent='Recovery copies could not be read. Your open draft is unchanged: '+recoveryError(error);}
+  }
+  recoveryRefresh.onclick=()=>run(refreshRecovery,{readOnly:true});
+  async function initializeRecovery(){
+    let opened;
+    try{
+      if(options.recovery){recoveryScope=options.recovery.scope;opened=options.recovery.store;}
+      else{
+        const factory=globalThis.window?.indexedDB;
+        if(!factory){recoveryStatus.textContent='Browser recovery is unavailable. Choose Save note to keep your work.';return;}
+        const value=await api('draft-recovery-scope');recoveryScope=value.scope;
+        opened=await openDraftRecovery(recoveryScope,{indexedDB:factory});
+      }
+      if(!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(recoveryScope)||!opened||!['list','put','remove','close'].every(name=>typeof opened[name]==='function'))throw new Error('Recovery storage identity is invalid.');
+      if(!mounted){opened.close();return;}
+      recoveryStore=opened;recoveryRefresh.disabled=false;recoveryStatus.textContent='Recovery copies ready.';await refreshRecovery();if(dirty)persistRecovery();
+    }catch(error){if(opened&&!recoveryStore&&typeof opened.close==='function'){try{opened.close();}catch{}}if(mounted)recoveryStatus.textContent='Browser recovery is unavailable. Your open draft is unchanged: '+recoveryError(error);}
+  }
   async function run(operation, {readOnly=false}={}) { if(!mounted||organizationBusy||(todoBusy&&!readOnly))return;try { await operation(); } catch (error) { if(mounted)status.textContent = error.message; } }
   function clearConfirmation(){if(!confirmation)return;const active=confirmation;confirmation=null;confirmationHost.replaceChildren();for(const [node,inert]of active.background)node.inert=inert;if(mounted)active.trigger.focus();}
   function confirmNotebook({heading,scope,submitLabel,pendingLabel,trigger}){
@@ -50,7 +154,7 @@ export async function render(root, api) {
     confirmationHost.replaceChildren(dialog);cancel.focus();return promise;
   }
   function updatePreview() { renderMarkdown(preview, body.value, { onInternalLink: id => run(async () => { const result = await followInternalLink(id, { api, sourceNoteId: current?.id, mayDiscard, openNote: accept, downloadResource: download }); status.textContent = result.kind === 'resource' ? `Downloaded ${result.filename}. Your draft is unchanged.` : result.opened ? `Opened linked note: ${result.title}.` : result.reason === 'already-open' ? 'This linked note is already open. Your draft is unchanged.' : 'Unsaved draft retained.'; }) }); }
-  function edited() { draftRevision++; dirty = true; updatePreview(); status.textContent = 'Unsaved draft. Save to keep this note.'; }
+  function edited() { draftRevision++; dirty = true; updatePreview(); status.textContent = 'Unsaved draft. Save to keep this note.'; persistRecovery(); }
   for (const control of [title, notebook, tags, body]) control.oninput = edited;
   function refreshTodo(resetDue = false) {
     const value = current ? todoState(current) : { isTodo: draftIsTodo, due: 0, completed: 0 }, blocked = !current || Boolean(current.deletedAt) || organizationBusy || todoBusy || saveBusy;
@@ -74,7 +178,7 @@ export async function render(root, api) {
       const result = await api(action, request);
       if (!mounted || generation !== editorGeneration) return;
       const newerDraft = revision !== draftRevision || values.some((value, index) => value !== [title.value, notebook.value, tags.value, body.value][index]);
-      if (newerDraft) { current = result.note; dirty = true; refreshTodo(true); status.textContent = 'Saved to-do state. Your newer note draft is retained.'; }
+      if (newerDraft) { current = result.note; dirty = true; refreshTodo(true); persistRecovery(); status.textContent = 'Saved to-do state. Your newer note draft is retained.'; }
       else { accept(result.note); const accepted = editorGeneration; ownedGeneration = accepted; await refresh(); if (mounted && accepted === editorGeneration && revision === draftRevision && !dirty) status.textContent = result.changed ? 'Saved to-do state.' : 'To-do state was already current.'; }
     } catch (error) { if (mounted && ownedGeneration === editorGeneration) status.textContent = error.message; }
     finally { todoBusy = false; if (mounted) refreshTodo(); }
@@ -83,8 +187,9 @@ export async function render(root, api) {
   todoCompleted.onclick = () => run(() => mutateTodo('todo-completed', { completed: !todoState(current ?? {}).completed }));
   setTodoDue.onclick = () => run(() => { if (!todoDue.value) throw new Error('Choose a local due date, or use Clear due date.'); const due = new Date(todoDue.value).getTime(); if (!Number.isFinite(due) || due <= 0) throw new Error('Choose a valid due date after the Unix epoch.'); return mutateTodo('todo-due', { due }); });
   clearTodoDue.onclick = () => run(() => mutateTodo('todo-due', { due: 0 }));
-  function accept(note, newTodo = false) {
+  function accept(note, newTodo = false, saved = false) {
     if(!mounted)return;
+    resetRecovery(saved);
     editorGeneration++;
     current = note; draftIsTodo = !note && newTodo; dirty = false; title.value = note?.title ?? '';if(note?.notebookId&&!Array.from(notebook.options).some(option=>option.value===note.notebookId))notebook.append(Object.assign(el('option',note.notebook),{value:note.notebookId}));notebook.value = note?.notebookId ?? '__default__'; tags.value = note?.tags.join(', ') ?? ''; body.value = note?.body ?? ''; updatePreview();moveNote.disabled=!note||Boolean(note.deletedAt)||organizationBusy;
     refreshTodo(true); save.disabled = saveBusy || Boolean(note?.deletedAt); remove.disabled = !note || Boolean(note.deletedAt); restore.disabled = !note?.deletedAt; exportOne.disabled = !note;
@@ -120,16 +225,17 @@ export async function render(root, api) {
     const ownsDraft=(generation,revision,values)=>mounted&&generation===editorGeneration&&revision===draftRevision&&values.every((value,index)=>value===fields()[index]);
     const generation=editorGeneration,revision=draftRevision,values=fields(),cleanTags = current && tags.value === current.tags.join(', ') ? current.tags : tags.value.split(',').map(value => value.trim()).filter(Boolean);
     const request={ id: current?.id, revision: current?.revision ?? 0, title: values[0], body: values[3], ...(values[1]==='__default__'?{notebook:'Notes'}:{notebookId:values[1]}), tags: cleanTags, ...(!current && draftIsTodo ? {newTodo:true} : {}) };
-    saveBusy=true;save.disabled=true;refreshTodo();
+    saveBusy=true;save.disabled=true;recoverySavePending=true;persistRecovery();refreshTodo();
     try {
       let note;
       try { note=await api('save',request); }
-      catch(error) { if(ownsDraft(generation,revision,values))status.textContent=error.message;return; }
+      catch(error) { if(mounted&&generation===editorGeneration){recoverySavePending=false;persistRecovery();}if(ownsDraft(generation,revision,values))status.textContent=error.message;return; }
       if(!mounted||generation!==editorGeneration)return;
+      recoverySavePending=false;consumeRecoveryParent();
       if(!ownsDraft(generation,revision,values)){
-        current=note;draftIsTodo=false;dirty=true;refreshTodo(true);status.textContent=`Saved revision ${note.revision}. Your newer draft is retained.`;return;
+        current=note;draftIsTodo=false;dirty=true;refreshTodo(true);persistRecovery();status.textContent=`Saved revision ${note.revision}. Your newer draft is retained.`;return;
       }
-      accept(note);
+      accept(note,false,true);
       const acceptedGeneration=editorGeneration,acceptedRevision=draftRevision,acceptedValues=fields();
       try { await refresh(); }
       catch(error) {
@@ -166,6 +272,6 @@ export async function render(root, api) {
     else { if (!mayDiscard()) return; const note = await api('import-markdown', { title: file.name.replace(/\.(?:md|markdown)$/i, ''), content }); accept(note); await refresh(); status.textContent = 'Markdown imported.'; }
     upload.value = '';
   });
-  accept(null); await run(refresh); status.textContent = 'Notes are saved locally when you choose Save.';
-  return()=>{if(!mounted)return;mounted=false;editorGeneration++;refreshGeneration++;const pending=confirmation;if(pending&&!pending.settled){pending.settled=true;pending.resolve(false);}clearConfirmation();};
+  accept(null); await run(refresh); status.textContent = 'Notes are saved locally when you choose Save.';await initializeRecovery();
+  return()=>{if(!mounted)return;mounted=false;editorGeneration++;refreshGeneration++;recoveryListGeneration++;const pending=confirmation;if(pending&&!pending.settled){pending.settled=true;pending.resolve(false);}clearConfirmation();if(recoveryStore)recoveryQueue.then(()=>recoveryStore.close()).catch(()=>{});};
 }

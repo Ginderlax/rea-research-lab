@@ -52,6 +52,12 @@ async function commitWithResources(store, workspace, s, resources) {
 }
 
 export async function handle({ action, input = {}, store, workspace }) {
+  if(action==='draft-recovery-scope')return exclusive(async()=>{
+    const key='notes-draft-recovery-scope-v1';let scope=await store.get(key,null);
+    if(scope===null){scope=randomUUID();await store.set(key,scope);}
+    if(typeof scope!=='string'||!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(scope))throw new Error('Stored recovery identity is invalid; it was not replaced.');
+    return{scope};
+  });
   if (action === 'list') {
     const s = await state(store), search = text(input.search ?? '', 'Search', 500).trim().toLowerCase(), tokens = search.split(/\s+/).filter(Boolean), notes = Object.values(s.notes);
     todoMatches({}, input.todoFilter);

@@ -1,0 +1,17 @@
+"""Literal-only authoring; no collector, candidate, reader, syntax check or product is executed."""
+from pathlib import Path
+import json,hashlib
+OWN=Path(__file__).resolve().parent;BASE=OWN.parents[1]
+pin=lambda b:{'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+source=OWN/'collect-six-projection-audit-PENDING.mjs';raw=source.read_bytes()
+assert pin(raw)=={'bytes':7941,'sha256':'7ddbb90cf50c19b5ecac506ef709b2e0ff86683edd112713a90eb2636763a790'}
+changes=[('PENDING_RUN_ID','39169535767'),('PENDING_COMMITTED_HEAD','698d2e301765d1b878fb251b3d59dadb5a3c9bac'),('PENDING_JOB_ID','117799523471')]
+bound=raw
+for old,new in changes:
+ assert bound.count(old.encode())==1;bound=bound.replace(old.encode(),new.encode())
+target=OWN/'collect-six-projection-audit-39169535767.mjs'
+with target.open('xb')as f:f.write(bound)
+authority={'schema':'rea-six-projection-audit-actual-raw-collector-literal-binding/v1','status':'unexecuted-independent-complete-source-and-binding-peer-required','runId':'39169535767','headSHA':'698d2e301765d1b878fb251b3d59dadb5a3c9bac','jobId':'117799523471','template':{'path':source.relative_to(BASE).as_posix(),**pin(raw)},'boundCollector':{'path':target.relative_to(BASE).as_posix(),**pin(bound)},'changes':changes,'allOtherBytesUnchanged':True,'sourceAuthority':{'path':(OWN/'source-authority.json').relative_to(BASE).as_posix(),**pin((OWN/'source-authority.json').read_bytes())},'actualHostedJobDiscovery':'Read-only GitHub actions run39169535767/jobs: exact audit job117799523471, GitHub Actions group, Windows2022 label, attempt1, push branch codex/rea-cloud-recovery-20261015 at requested698d2e3 source. Raw API is fetched and retained by the collector before any later qualification.','collectorExecutions':0,'readerExecutions':0,'productExecutions':0,'tests':0,'builds':0,'syntaxChecks':0,'GitMutations':0}
+out=OWN/'actual-audit-39169535767-binding-authority.json'
+with out.open('xb')as f:f.write((json.dumps(authority,indent=2)+'\n').encode())
+print(json.dumps({'authority':{'path':out.relative_to(BASE).as_posix(),**pin(out.read_bytes())},'collector':{'path':target.relative_to(BASE).as_posix(),**pin(bound)}}))

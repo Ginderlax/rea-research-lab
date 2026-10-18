@@ -1,0 +1,165 @@
+"""Fixed-run portable data readback. Never imports or executes captured audit/product code."""
+from pathlib import Path
+import base64,datetime,hashlib,io,json,re,stat,sys,traceback,zipfile,zlib
+if not __debug__:raise RuntimeError('Mandatory data assertions cannot be optimized away')
+assert len(sys.argv)==1,'This fixed-run reader accepts no alternate epoch or source path'
+OWN=Path(__file__).resolve().parent;BASE=OWN.parents[1]
+RUN='39169535767';HEAD='698d2e301765d1b878fb251b3d59dadb5a3c9bac';JOB='117799523471';ARTIFACT='12151917408'
+REPO='Ginderlax/rea-research-lab';WORKFLOW='.github/workflows/proof-delivery-audit-cloud.yml'
+SPEC_PIN={'bytes':5387,'sha256':'8784076fe62568b99ee1d8f65afb13e8e3a07c47fb39b34435fc236e0a30ca81'}
+pin=lambda raw:{'bytes':len(raw),'sha256':hashlib.sha256(raw).hexdigest()}
+def no_links(p):
+ for node in [p,*p.parents]:
+  if node.exists()or node.is_symlink():
+   s=node.lstat();assert not stat.S_ISLNK(s.st_mode)and not getattr(s,'st_file_attributes',0)&0x400,str(node)
+ return p
+def read(p,maximum=32*1024*1024):
+ no_links(p);s=p.stat();assert stat.S_ISREG(s.st_mode)and s.st_size<=maximum
+ raw=p.read_bytes();assert len(raw)==s.st_size;return raw
+def parsed(raw):
+ def pairs(rows):
+  found={}
+  for key,value in rows:assert key not in found,'Duplicate JSON key';found[key]=value
+  return found
+ return json.loads(raw.decode('utf-8-sig'),object_pairs_hook=pairs,parse_constant=lambda v:(_ for _ in()).throw(ValueError(v)))
+def rooted(name):
+ assert isinstance(name,str)and name.startswith('work/')and not re.search(r'[\\:\x00-\x1f\x7f]',name)and all(p not in('','.','..')for p in name.split('/'))
+ p=BASE/name;assert p.resolve().is_relative_to((BASE/'work').resolve());return p
+def exact(raw,expected):assert pin(raw)=={k:expected[k]for k in('bytes','sha256')}
+def jsonl(raw):
+ assert raw.endswith(b'\n');return[parsed(line)for line in raw.splitlines()if line]
+def timestamp(value):return datetime.datetime.fromisoformat(value.replace('Z','+00:00'))
+spec_raw=read(OWN/'strict-reader-fixed-inputs-39169535767.json');exact(spec_raw,SPEC_PIN);spec=parsed(spec_raw)
+assert spec['schema']=='rea-six-projection-strict-fixed-actual-reader-inputs/v1'
+assert(spec['runId'],spec['headSHA'],spec['jobId'],spec['artifactId'])==(RUN,HEAD,JOB,ARTIFACT)
+control=rooted(spec['rawFolder']);assert control.parent==OWN and control.name=='run-'+RUN+'-observation-2026-10-18T21-51-56-303Z'
+raw_inputs={}
+for row in spec['rawFiles']:
+ name=row['name'];assert re.fullmatch(r'[a-zA-Z0-9._-]+',name)and name not in raw_inputs
+ raw=read(control/name);exact(raw,row);raw_inputs[name]=raw
+assert set(raw_inputs)=={'run.json','jobs.json','artifacts.json','job-'+JOB+'-logs.txt','artifact-'+ARTIFACT+'.zip','commit.json','tree.json','source-0-blob.json','source-1-blob.json'}
+outer=raw_inputs['artifact-'+ARTIFACT+'.zip'];assert len(outer)<=32*1024*1024
+folder=control/('artifact-'+ARTIFACT+'-strict-six-projection-reader-v2');assert not folder.exists();folder.mkdir()
+def unpack(raw,destination,count,total,individual):
+ destination.mkdir();rows=[];seen=set()
+ with zipfile.ZipFile(io.BytesIO(raw))as archive:
+  entries=archive.infolist();assert len(entries)<=count and sum(e.file_size for e in entries)<=total
+  for e in entries:
+   name=e.filename;assert re.fullmatch(r'[a-zA-Z0-9._-]+',name)and name not in('.','..')and name.casefold()not in seen
+   seen.add(name.casefold());assert not e.is_dir()and not e.flag_bits&1 and not stat.S_ISLNK(e.external_attr>>16)and e.file_size<=individual
+   data=archive.read(e);assert len(data)==e.file_size and zlib.crc32(data)&0xffffffff==e.CRC
+   p=destination/name
+   with p.open('xb')as stream:stream.write(data)
+   assert read(p)==data;rows.append({'path':name,**pin(data),'crc32':format(e.CRC,'08x')})
+ return rows
+outer_rows=unpack(outer,folder/'downloaded-contents',1,16*1024*1024,16*1024*1024)
+assert len(outer_rows)==1 and outer_rows[0]['path'].endswith('.zip')
+inner=read(folder/'downloaded-contents'/outer_rows[0]['path']);assert len(inner)<=15*1024*1024
+files=unpack(inner,folder/'readable-evidence',12,24*1024*1024,4*1024*1024)
+evidence=folder/'readable-evidence';members={r['path']:r for r in files}
+result={'schema':'rea-six-projection-fixed-run-strict-portable-readback/v1','runId':RUN,'headSHA':HEAD,'jobId':JOB,'artifactId':ARTIFACT,
+ 'artifactIdentity':pin(outer),'innerIdentity':pin(inner),'outerMembers':outer_rows,'files':files,'allUploadedBytesAndCRCReadable':True,
+ 'sourceAndFiniteProjectionEvidenceAccepted':False,'qualificationStage':'uploaded-bytes-readable','qualificationErrors':[],
+ 'globalProofDeliveryAccepted':False,'globalAuditPassed':False,'allRemaining986IssuesResolved':False,'fullFeatureParity':False,'superiority':False,
+ 'auditExecutionsLocally':0,'candidateImports':0,'productExecutions':0,'originalExecutions':0,'tests':0,'builds':0,'syntaxChecks':0,'GitMutations':0}
+def phase(name):result['qualificationStage']=name
+def data(name):
+ assert name in members;raw=read(evidence/name,4*1024*1024);exact(raw,members[name]);return raw
+def item(name):return parsed(data(name))
+try:
+ phase('exact-run-and-Git-source')
+ expected_members={'attempt-running.json','audit-report.json','audit-script.mjs.snapshot','audit-workflow.yml.snapshot','closed-aliases.jsonl','events.jsonl','manifests.jsonl','unresolved.jsonl','workflow-attempt.json','projection-controls.json'}
+ assert set(members)==expected_members and len(files)==10,'All ten complete reviewed roles, no incomplete-storage fallback'
+ run=parsed(raw_inputs['run.json']);jobs=parsed(raw_inputs['jobs.json']);artifacts=parsed(raw_inputs['artifacts.json'])
+ assert str(run['id'])==RUN and run['head_sha']==HEAD and run['run_attempt']==1 and run['status']=='completed'and run['conclusion']=='failure'
+ assert run['path']==WORKFLOW and run['head_branch']=='codex/rea-cloud-recovery-20261015'and run['event']=='push'
+ assert run['repository']['full_name']==run['head_repository']['full_name']==REPO
+ assert jobs['total_count']==len(jobs['jobs'])==1;job=jobs['jobs'][0]
+ assert str(job['id'])==JOB and str(job['run_id'])==RUN and job['head_sha']==HEAD and job['name']=='audit'and job['status']=='completed'and job['conclusion']=='failure'
+ assert job['runner_group_name']=='GitHub Actions'and job['runner_name'].startswith('GitHub Actions ')and'windows-2022'in job['labels']
+ steps={r['name']:r['conclusion']for r in job['steps']}
+ assert steps['Read committed proof declarations']=='failure'and steps['Preserve bounded audit evidence']==steps['Upload diagnostic evidence']=='success'
+ assert artifacts['total_count']==len(artifacts['artifacts'])==1;a=artifacts['artifacts'][0]
+ assert str(a['id'])==ARTIFACT and a['name']=='proof-delivery-audit-'+RUN+'-1'and a['expired']is False
+ assert str(a['workflow_run']['id'])==RUN and a['workflow_run']['head_sha']==HEAD and a['size_in_bytes']==len(outer)and a['digest']=='sha256:'+pin(outer)['sha256']
+ commit=parsed(raw_inputs['commit.json']);tree=parsed(raw_inputs['tree.json'])
+ assert commit['sha']==HEAD and tree['sha']==commit['tree']['sha']and tree['truncated']is False
+ rows={r['path']:r for r in tree['tree']};assert len(rows)==len(tree['tree'])
+ assert len([r for r in tree['tree']if r['type']=='blob'])==28964
+ source_definitions=[('scripts/audit-proof-delivery.mjs',52515,'2ae56eda012a6783f7661ec4381e320e39e83057a5506dbee59a926ab929a1f3','audit-script.mjs.snapshot'),(WORKFLOW,5110,'d97e03fbf1e962751db45cd2705cba9f9bf0358b7c1d5310fb59b83a639615ec','audit-workflow.yml.snapshot')]
+ source_proof=[]
+ for index,(name,size,digest,member)in enumerate(source_definitions):
+  blob=parsed(raw_inputs['source-'+str(index)+'-blob.json']);git=rows[name]
+  assert git['type']=='blob'and git['mode']in('100644','100755')and git['size']==size and blob['encoding']=='base64'and blob['size']==size and blob['sha']==git['sha']
+  content=base64.b64decode(''.join(blob['content'].split()),validate=True);assert pin(content)=={'bytes':size,'sha256':digest}
+  assert hashlib.sha1(b'blob '+str(len(content)).encode()+b'\0'+content).hexdigest()==git['sha']and content==data(member)
+  source_proof.append({'path':name,'bytes':size,'sha256':digest,'gitBlob':git['sha'],'rawAPIAndUploadedSnapshotIdentical':True})
+ result['sourceProof']=source_proof
+ report=item('audit-report.json');running=item('attempt-running.json');workflow=item('workflow-attempt.json')
+ provenance={'repository':REPO,'sourceCommit':HEAD,'runId':RUN,'runAttempt':'1','runnerEnvironment':'github-hosted','runnerOS':'Windows','node':'v24.16.0','platform':'win32','architecture':'x64'}
+ for value in(report,running):
+  assert value['schema']=='rea-hosted-proof-delivery-audit/v1'and value['provenance']==provenance
+  assert value['productExecutions']==value['proofVerifierExecutions']==value['checkoutWrites']==0
+  assert value['historicalReceiptsRewritten']is False and value['fullDevelopmentSuiteAcceptance']is False and value['payloadSHA256AuthenticationClaimed']is False
+ assert running['status']=='running'and report['status']=='completed'and report['errors']==[]
+ assert workflow['schema']=='rea-hosted-proof-delivery-workflow/v1'and workflow['sourceCommit']==HEAD and str(workflow['runId'])==RUN and str(workflow['runAttempt'])=='1'
+ assert workflow['auditOutcome']=='failure'and workflow['productExecutions']==0 and workflow['publicationAccepted']is False and workflow['historicalReceiptsRewritten']is False
+ assert timestamp(job['started_at'])<=timestamp(report['startedAt'])<=timestamp(report['finishedAt'])<=timestamp(job['completed_at'])
+ assert report['startedAt']==running['startedAt']and report['durationMs']>=0
+ baseline={}
+ for row in spec['baselineFiles']:
+  raw=read(rooted(spec['baselineFolder'])/row['name'],4*1024*1024);exact(raw,row);baseline[row['name']]=raw
+ prior=parsed(baseline['audit-report.json']);assert prior['counts']['unresolved']==992 and prior['provenance']['runId']=='38942435071'
+ assert report['bounds']==running['bounds']==prior['bounds'],'Numerical source/runtime caps are unchanged'
+ assert report['sourceFiles']==[{'path':r['path'],'bytes':r['bytes'],'sha256':r['sha256'],'gitBlob':r['gitBlob']}for r in source_proof]
+ phase('exact-six-positive-twenty-one-negative-controls')
+ controls=item('projection-controls.json')
+ assert controls['schema']=='rea-hosted-six-closed-delivery-projection-controls/v1'and controls['status']=='passed'
+ assert controls['positive']==6 and controls['negative']==21
+ for key in('executedOnlyWithinVerifiedHostedAudit','semanticMutationControlsExerciseBodySeparatelyFromWholeDocumentPin'):assert controls[key]is True
+ for key in('legacyHandlersChanged','limitsChanged','globalDeliveryOrBehavioralSuccessClaimed'):assert controls[key]is False
+ assert controls['checkoutWrites']==controls['productExecutions']==0
+ positive=['positive-exact-'+r['kind']for r in spec['exactDocuments']]
+ negative=['reject-unknown-path','reject-changed-whole-document-hash','reject-changed-whole-document-bytes','reject-wrong-schema','reject-decoded-hash-as-stored-pointer','reject-unknown-transport','reject-identity-decoded-mismatch','reject-stored-bytes-mutation','reject-portable-alias-traversal','reject-duplicate-portable-alias','reject-false-full-gate','reject-filer-source-authority-rebinding','reject-decision-as-installation-receipt','reject-current-source-count-loss','reject-plan-local-after-pointer','reject-before32-current-identity-conflation','reject-journal-current-after-mutation','reject-journal-local-after-identity-mutation','reject-journal-local-recovery-path-rebinding','reject-journal-new-behavioral-acceptance','reject-authenticated-transport-content-mutation']
+ assert controls['observations']==[{'name':name,'expected':'acceptance'if index<6 else'rejection','passed':True}for index,name in enumerate(positive+negative)]
+ assert report['closedEpochProjectionControls']=={'status':'passed','positive':6,'negative':21}
+ result['controls']={'positive':6,'negative':21,'observations':controls['observations'],'countsAreDataControlsNotProductTests':True}
+ phase('six-projections-and-ordered-unresolved-delta')
+ source_authority=spec['sourceAuthority'];authority_raw=read(rooted(source_authority['path']));exact(authority_raw,source_authority);authority=parsed(authority_raw)
+ assert authority['exactDocuments']==spec['exactDocuments']and len(authority['exactDocuments'])==6
+ actual_manifests=jsonl(data('manifests.jsonl'));old_manifests=jsonl(baseline['manifests.jsonl'])
+ projected=[r for r in actual_manifests if r.get('classification')=='exact-source-epoch-projection']
+ assert len(projected)==6 and [r for r in actual_manifests if r.get('classification')!='exact-source-epoch-projection']==old_manifests,'All prior legacy/embedded manifest rows and order remain exact'
+ assert b''.join(line for line in data('manifests.jsonl').splitlines(keepends=True)if not line.strip()or parsed(line).get('classification')!='exact-source-epoch-projection')==baseline['manifests.jsonl'],'All prior manifest raw bytes, line endings, blanks and key order remain exact'
+ by_path={r['manifest']:r for r in projected};assert len(by_path)==6
+ notes_checks=[('decodedGzipPayloadAuthenticatedByThisAudit',False),('referencedHostedArtifactGitDeliveryClaimed',False),('filerExecutedByThisAudit',False),('sourceInstalledOrBehaviorAcceptedByThisRecord',False),('plannedControlsAreNotActualResults',True),('freshBehavioralAcceptanceClaimed',False)]
+ for index,definition in enumerate(authority['exactDocuments']):
+  row=by_path[definition['path']];assert row['schema']==definition['schema']and row['bytes']==definition['bytes']and row['sha256']==definition['sha256']and row['projectionKind']==definition['kind']
+  assert row['publicRows']==spec['expectedProjectionPublicRows'][index]and row['scopedPublicRowsSHA256Authenticated']is True and row['globalPayloadAuthenticationClaimed']is False
+  git=rows[definition['path']];assert git['type']=='blob'and git['mode']in('100644','100755')and git['size']==definition['bytes']
+  assert len(row['notes'])==1 and row['notes'][0][notes_checks[index][0]]is notes_checks[index][1]
+ assert sum(row['publicRows']for row in projected)==152
+ old=jsonl(baseline['unresolved.jsonl']);actual=jsonl(data('unresolved.jsonl'));paths={r['path']for r in authority['exactDocuments']}
+ resolved=[r for r in old if r['manifest']in paths];expected=[r for r in old if r['manifest']not in paths]
+ assert len(old)==992 and len(resolved)==6 and{r['manifest']for r in resolved}==paths
+ assert len(expected)==len(actual)==986 and actual==expected,'All old986 unresolved rows, complete values and ordered multiplicity must remain exact'
+ assert data('unresolved.jsonl')==b''.join(line for line in baseline['unresolved.jsonl'].splitlines(keepends=True)if not line.strip()or parsed(line)['manifest']not in paths),'Actual unresolved raw bytes must equal old bytes with only the six exact document lines removed'
+ assert data('closed-aliases.jsonl')==baseline['closed-aliases.jsonl'],'Old six aliases remain byte-identical'
+ counts=report['counts'];expected_counts={'gitBlobs':28964,'candidateManifests':1113,'recognizedManifests':105,'embeddedLogicalManifests':32,'declarations':22069,'gitPresent':22034,'missingGit':0,'wrongGitMode':0,'declaredSizeMismatch':0,'existingClosedAliases':6,'unresolved':986,'excludedLogicalRows':44}
+ for key,value in expected_counts.items():assert counts[key]==value,(key,counts[key],value)
+ assert report['coverageComplete']is False and report['declaredDeliveryComplete']is False and report['declaredSizesMatch']is False
+ events=jsonl(data('events.jsonl'));assert len(events)==2 and events[0]['kind']=='started'and events[1]['kind']=='terminal'and events[1]['status']=='completed'and events[1]['coverageComplete']is False
+ assert timestamp(report['startedAt'])<=timestamp(events[0]['at'])<=timestamp(report['finishedAt'])<=timestamp(events[1]['at'])<=timestamp(job['completed_at'])
+ result['sourceAndFiniteProjectionEvidenceAccepted']=True;result['qualificationStage']='complete'
+ result['actualCounts']=counts;result['sixResolvedProjections']=[by_path[r['path']]for r in authority['exactDocuments']]
+ result['remainingOrderedUnresolvedRows']=986;result['old992MinusOnlySixEqualsActual986']=True
+ result['globalAuditRemainsFailed']=True;result['all986OlderIssuesRemainOpen']=True
+ result['scope']='Source-bound hosted finite projection regression only. All986 old observations remain open; no global delivery, product behavior, full feature parity, superiority, new full-suite acceptance or historical native failure resolution.'
+except Exception as error:
+ result['qualificationErrors'].append({'stage':result['qualificationStage'],'type':type(error).__name__,'message':str(error),'traceback':traceback.format_exc()})
+result['inputSpec']={'path':str(OWN/'strict-reader-fixed-inputs-39169535767.json'),**SPEC_PIN}
+result['rawInputIdentities']=spec['rawFiles'];result['completedAtUtc']=datetime.datetime.now(datetime.timezone.utc).isoformat()
+output=folder/'strict-six-projection-readback.json'
+with output.open('x',encoding='utf-8')as stream:stream.write(json.dumps(result,indent=2)+'\n')
+print(json.dumps({'report':str(output),**pin(output.read_bytes()),'uploadedMembers':len(files),'sourceAndFiniteProjectionEvidenceAccepted':result['sourceAndFiniteProjectionEvidenceAccepted'],'errors':result['qualificationErrors'],'globalAuditPassed':False}))
+sys.exit(0 if result['sourceAndFiniteProjectionEvidenceAccepted']else 1)

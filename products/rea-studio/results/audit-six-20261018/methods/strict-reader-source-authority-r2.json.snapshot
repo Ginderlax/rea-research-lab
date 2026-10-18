@@ -1,0 +1,51 @@
+{
+  "schema": "rea-six-projection-fixed-strict-reader-r2-raw-byte-continuity-authority/v1",
+  "status": "unexecuted-narrow-root-and-independent-peer-required",
+  "reader": {
+    "path": "work/audit-six-projection-evidence-20261018-next/read-six-projection-audit-39169535767-r2.py",
+    "bytes": 17342,
+    "sha256": "9002937967b261f24c601734551e882771fa702077f2c72dc349fa4bd1ddd025"
+  },
+  "immutablePriorReader": {
+    "path": "work/audit-six-projection-evidence-20261018-next/read-six-projection-audit-39169535767.py",
+    "bytes": 16787,
+    "sha256": "52e2eca41f0a021c3a9fe95446d45fc845e4a5dc6cecdef991b1c311c8506049"
+  },
+  "immutablePriorAuthority": {
+    "path": "work/audit-six-projection-evidence-20261018-next/strict-reader-source-authority.json",
+    "bytes": 3353,
+    "sha256": "6351304a0bfd01d9bf5832f210c62e42732f2f55ba7e7ee5d80753eb47f2c7ad"
+  },
+  "fixedInputsUnchanged": {
+    "path": "work/audit-six-projection-evidence-20261018-next/strict-reader-fixed-inputs-39169535767.json",
+    "bytes": 5387,
+    "sha256": "8784076fe62568b99ee1d8f65afb13e8e3a07c47fb39b34435fc236e0a30ca81"
+  },
+  "changes": [
+    {
+      "before": "artifact-'+ARTIFACT+'-strict-six-projection-reader-v1'",
+      "after": "artifact-'+ARTIFACT+'-strict-six-projection-reader-v2'"
+    },
+    {
+      "before": " assert len(projected)==6 and [r for r in actual_manifests if r.get('classification')!='exact-source-epoch-projection']==old_manifests,'All prior legacy/embedded manifest rows and order remain exact'",
+      "after": " assert len(projected)==6 and [r for r in actual_manifests if r.get('classification')!='exact-source-epoch-projection']==old_manifests,'All prior legacy/embedded manifest rows and order remain exact'\n assert b''.join(line for line in data('manifests.jsonl').splitlines(keepends=True)if not line.strip()or parsed(line).get('classification')!='exact-source-epoch-projection')==baseline['manifests.jsonl'],'All prior manifest raw bytes, line endings, blanks and key order remain exact'"
+    },
+    {
+      "before": " assert len(expected)==len(actual)==986 and actual==expected,'All old986 unresolved rows, complete values and ordered multiplicity must remain exact'",
+      "after": " assert len(expected)==len(actual)==986 and actual==expected,'All old986 unresolved rows, complete values and ordered multiplicity must remain exact'\n assert data('unresolved.jsonl')==b''.join(line for line in baseline['unresolved.jsonl'].splitlines(keepends=True)if not line.strip()or parsed(line)['manifest']not in paths),'Actual unresolved raw bytes must equal old bytes with only the six exact document lines removed'"
+    }
+  ],
+  "allOtherBytesUnchanged": true,
+  "exactOrderedRawRetention": true,
+  "blankLinesAndOriginalLineEndingsPreserved": true,
+  "semanticCountSourceAndControlChecksRetained": true,
+  "distinctV2OutputFolder": true,
+  "noSourceEpochOrInputRebinding": true,
+  "readerExecutions": 0,
+  "candidateImports": 0,
+  "productExecutions": 0,
+  "tests": 0,
+  "builds": 0,
+  "syntaxChecks": 0,
+  "GitMutations": 0
+}

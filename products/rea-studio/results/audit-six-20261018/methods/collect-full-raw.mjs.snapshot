@@ -1,0 +1,54 @@
+// Three fixed GETs only. Preserve raw terminal metadata; never download a ZIP or run a product.
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+const base=path.resolve(import.meta.dirname,'../..'),lab=path.join(base,'outputs/rea-research-lab');
+const RUN='39169540384',JOB='117799536959',ARTIFACT='12151309685';
+const HEAD='698d2e301765d1b878fb251b3d59dadb5a3c9bac';
+const PREFIX='/repos/Ginderlax/rea-research-lab';
+const root=path.join(base,'work/cloud-verification-backups/run-'+RUN);
+await fs.mkdir(root,{recursive:true});
+const folder=path.join(root,'raw-api-698d-'+new Date().toISOString().replaceAll(':','-'));
+await fs.mkdir(folder);
+const credential=spawnSync('git',['credential','fill'],{cwd:lab,env:{...process.env,GIT_TERMINAL_PROMPT:'0',GCM_INTERACTIVE:'Never'},input:'protocol=https\nhost=github.com\n\n',encoding:'utf8',windowsHide:true,timeout:20000});
+assert.equal(credential.status,0,'Saved GitHub authentication unavailable');
+const fields=Object.fromEntries(credential.stdout.split('\n').filter(s=>s.includes('=')).map(s=>{const at=s.indexOf('=');return[s.slice(0,at),s.slice(at+1)];}));
+assert(fields.password,'Saved GitHub authentication unavailable');
+const headers={Accept:'application/vnd.github+json','User-Agent':'REA-fixed-full-raw-api-retention','X-GitHub-Api-Version':'2022-11-28',Authorization:'Bearer '+fields.password};
+const sha=b=>createHash('sha256').update(b).digest('hex'),saved=[];
+async function get(suffix,name){
+  const response=await fetch('https://api.github.com'+PREFIX+suffix,{method:'GET',headers,redirect:'error',signal:AbortSignal.timeout(60000)});
+  const chunks=[];let size=0;
+  for await(const chunk of response.body){size+=chunk.length;assert(size<=2*1024*1024,'Raw API body exceeds reviewed2MiB cap');chunks.push(chunk);}
+  const bytes=Buffer.concat(chunks);await fs.writeFile(path.join(folder,name),bytes,{flag:'wx'});
+  saved.push({endpoint:PREFIX+suffix,name,status:response.status,bytes:bytes.length,sha256:sha(bytes)});
+  assert.equal(response.status,200,'Fixed read-only API did not return200; raw response retained');
+  return JSON.parse(bytes);
+}
+const attempts=await Promise.allSettled([
+  get('/actions/runs/'+RUN,'run.json'),
+  get('/actions/runs/'+RUN+'/jobs?per_page=100','jobs.json'),
+  get('/actions/runs/'+RUN+'/artifacts?per_page=100','artifacts.json'),
+]);
+let result;
+try{
+  for(const item of attempts)if(item.status!=='fulfilled')throw item.reason;
+  const [run,jobs,artifacts]=attempts.map(item=>item.value);
+  assert.equal(String(run.id),RUN);assert.equal(run.run_attempt,1);assert.equal(run.head_sha,HEAD);
+  assert.equal(run.repository.full_name,'Ginderlax/rea-research-lab');assert.equal(run.path,'.github/workflows/development-cloud.yml');
+  assert.equal(run.head_branch,'codex/rea-cloud-recovery-20261015');assert.equal(run.event,'pull_request');
+  assert.equal(jobs.total_count,1);assert.equal(jobs.jobs.length,1);
+  const job=jobs.jobs[0];assert.equal(String(job.id),JOB);assert.equal(String(job.run_id),RUN);assert.equal(job.head_sha,HEAD);
+  assert.equal(job.name,'full-oracle-experiment');assert(job.labels.includes('windows-2022'));assert.equal(job.runner_group_name,'GitHub Actions');
+  assert.equal(run.status,'completed','Raw snapshot is nonterminal; do not infer acceptance');assert.equal(job.status,'completed');
+  assert.equal(artifacts.total_count,1);assert.equal(artifacts.artifacts.length,1);
+  const artifact=artifacts.artifacts[0];assert.equal(String(artifact.id),ARTIFACT);assert.equal(artifact.name,'development-oracle-windows-'+RUN+'-1');
+  assert.equal(String(artifact.workflow_run.id),RUN);assert.equal(artifact.workflow_run.head_sha,HEAD);assert.equal(artifact.expired,false);
+  assert.equal(artifact.size_in_bytes,1754859);assert.equal(artifact.digest,'sha256:af16c74d9971d513110618d5ccc28a5a35d7b2636919137fcd6bc9c32c4d31ff');
+  result={status:'terminal-raw-metadata-retained',runStatus:run.status,runConclusion:run.conclusion,jobStatus:job.status,jobConclusion:job.conclusion,artifact:{id:ARTIFACT,bytes:artifact.size_in_bytes,sha256:artifact.digest.slice(7)},rawIdentityChecksPassed:true};
+}catch(error){result={status:'raw-snapshot-not-qualified',error:String(error.message).slice(0,1000),rawIdentityChecksPassed:false};process.exitCode=1;}
+const summary={schema:'rea-exact-full-three-api-raw-retention/v1',atUtc:new Date().toISOString(),runId:RUN,jobId:JOB,branchHead:HEAD,...result,rows:saved.sort((a,b)=>a.name.localeCompare(b.name)),zipDownloads:0,jobLogDownloads:0,existingOriginalZIPAndLogAreSeparateRootRetention:true,actualTestedMergeNotInferredFromBranchHead:true,behavioralAcceptance:false,fullSourceQualification:false,historicalMissingArtifactsReplaced:false,productExecutions:0,tests:0,builds:0,syntaxChecks:0,cloudDispatches:0,GitMutations:0};
+await fs.writeFile(path.join(folder,'collection-summary.json'),JSON.stringify(summary,null,2)+'\n',{flag:'wx'});
+console.log(JSON.stringify({folder,runId:RUN,jobId:JOB,status:summary.status,zipDownloads:0,behavioralAcceptance:false}));

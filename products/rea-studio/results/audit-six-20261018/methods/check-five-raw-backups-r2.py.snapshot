@@ -1,0 +1,54 @@
+"""Bounded backup readability only; imports/executes no captured source."""
+import hashlib, io, json, pathlib, stat, zipfile
+
+BASE = pathlib.Path(__file__).resolve().parents[2]
+OUT = pathlib.Path(__file__).with_name('five-current-raw-backups-readability-r2.json')
+if not __debug__: raise RuntimeError('Optimized execution would disable required identity and bounds checks')
+def safe_ancestors(file):
+ for part in (file, *file.parents):
+  if part.exists():
+   info = part.lstat()
+   assert not stat.S_ISLNK(info.st_mode) and not getattr(info, 'st_file_attributes', 0) & 0x400
+safe_ancestors(OUT)
+assert not OUT.exists()
+INPUTS = [
+ ('39169540396', '12151713355', 1615321, '39e354ef2b2a9853f23c62ac9b0ab7d68623054e8b155053d602713c3b8b190c'),
+ ('39169540415', '12151802799', 2119809, '326f1039504156276d1b7aba7dd62535ee2869eb73a5c9f8e5d9dabd7472e8ce'),
+ ('39169540357', '12151174431', 1757202, '5ea13b5bbf8ae29609e2558ea8ea392f6c93f3db94dcaf6bb7c01708d384cda3'),
+ ('39169540404', '12152027301', 3770511, 'e533d2a5566d8fafb5cd3df72b1985e5216915c64afc4356d71f59faa6e5336a'),
+ ('39169540384', '12151309685', 1754859, 'af16c74d9971d513110618d5ccc28a5a35d7b2636919137fcd6bc9c32c4d31ff'),
+]
+def digest(data): return hashlib.sha256(data).hexdigest()
+def members(archive, maximum_count, maximum_total):
+ infos = archive.infolist()
+ assert 0 < len(infos) <= maximum_count
+ assert sum(i.file_size for i in infos) <= maximum_total
+ names = set()
+ for entry in infos:
+  name = entry.filename
+  assert name and name.isascii() and '\\' not in name and ':' not in name
+  assert not name.startswith('/') and all(p not in ('', '.', '..') for p in name.split('/'))
+  assert name.casefold() not in names and not entry.is_dir() and not entry.flag_bits & 1
+  assert not stat.S_ISLNK(entry.external_attr >> 16) and entry.file_size <= 16*1024*1024
+  names.add(name.casefold())
+ return infos
+rows = []
+for run, artifact, size, sha in INPUTS:
+ file = BASE/'work'/'cloud-verification-backups'/('run-'+run)/('artifact-'+artifact+'.zip')
+ safe_ancestors(file)
+ assert file.is_file() and not file.is_symlink() and file.stat().st_size == size
+ raw = file.read_bytes(); assert digest(raw) == sha
+ with zipfile.ZipFile(io.BytesIO(raw)) as outer:
+  infos = members(outer, 1, 16*1024*1024)
+  inner = outer.read(infos[0]); assert len(inner) == infos[0].file_size
+  with zipfile.ZipFile(io.BytesIO(inner)) as archive:
+   uploaded = members(archive, 1200, 128*1024*1024)
+   records = []
+   for entry in uploaded:
+    data = archive.read(entry) # zipfile validates the original CRC while reading.
+    assert len(data) == entry.file_size
+    records.append({'path':entry.filename,'bytes':len(data),'sha256':digest(data),'crc32':format(entry.CRC,'08x')})
+ rows.append({'run':run,'artifact':artifact,'path':str(file.relative_to(BASE)).replace('\\','/'),'bytes':size,'sha256':sha,'innerBytes':len(inner),'innerSHA256':digest(inner),'members':records,'allUploadedBytesCRCReadable':True,'sourceAndBehaviorQualificationPending':True})
+report = {'schema':'rea-five-current-raw-backups-readability/v1','sourceHead':'698d2e301765d1b878fb251b3d59dadb5a3c9bac','scope':'Backup byte readability only; no source-contract, product, test, feature-parity or superiority acceptance. No captured code imported or executed.','qualifiedProductAcceptance':False,'rows':rows}
+with OUT.open('x', encoding='utf-8') as stream: stream.write(json.dumps(report, indent=2)+'\n')
+print(json.dumps({'report':str(OUT),'artifacts':len(rows),'readableMembers':sum(len(r['members']) for r in rows),'qualifiedProductAcceptance':False}))

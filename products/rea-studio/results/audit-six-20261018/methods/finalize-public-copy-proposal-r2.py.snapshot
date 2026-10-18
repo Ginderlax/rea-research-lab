@@ -1,0 +1,47 @@
+"""Finalize exact fixed-copy data plan after actual independent evidence review; no public/Git writes."""
+from pathlib import Path
+import hashlib,json,re
+OWN=Path(__file__).resolve().parent;BASE=OWN.parents[1];OUT=OWN/'public-copy-proposal'
+pin=lambda b:{'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+old=json.loads((OUT/'copy-plan.json').read_bytes());rows=old['files']
+peer=OWN/'independent-actual-six-projection-39169535767-evidence-peer.json';peer_raw=peer.read_bytes()
+assert pin(peer_raw)=={'bytes':2841,'sha256':'e145cfa599da1a6e002bcc571a0ef92fa6c45ef865a77330322085d2c14a36a7'}
+actual=json.loads(peer_raw);assert actual['actualControls']['all27Passed']is True and actual['all986OlderObservationsRemainOpen']is True
+def add(source,target,role):
+ source=source.resolve();assert source.is_relative_to(BASE)and source.is_file()and not source.is_symlink()
+ raw=source.read_bytes();assert len(raw)<=32*1024*1024
+ assert target not in{r['target']for r in rows}and not target.endswith('.zip')
+ assert not re.search(r'(?:manifest|freeze|preservation|inventory|copy-list|publication-index|selected-file-map|public-existing-reuse|installation|records|source-proof|proof-dataset|file-map|public-[^/]*map)(?:[^/]*)\.json(?:\.snapshot)*$',target,re.I),target
+ rows.append({'source':source.relative_to(BASE).as_posix(),'target':target,'role':role,**pin(raw)})
+add(peer,'checks/ACTUAL.json','independent-actual-source-controls-and-raw-continuity-review')
+add(BASE/'work/resume-20261018-backup/closed-projections-complete-independent-source-peer.json','checks/SOURCE.json','independent-complete-candidate-source-review')
+raw_campaigns=json.loads((OWN/'three-generic-raw-backups.json').read_bytes())['rows']
+raw_campaigns.append(json.loads((OWN/'publication-raw-backup.json').read_bytes()))
+raw_campaigns.append({'run':'39169540384','artifact':'12151309685','path':'work/cloud-verification-backups/run-39169540384/artifact-12151309685.zip','bytes':1754859,'sha256':'af16c74d9971d513110618d5ccc28a5a35d7b2636919137fcd6bc9c32c4d31ff','sourceAndBehaviorQualificationPending':True})
+assert len(raw_campaigns)==5
+for row in raw_campaigns:
+ source=BASE/row['path'];raw=source.read_bytes();assert pin(raw)=={k:row[k]for k in('bytes','sha256')}
+ add(source,'PENDING-QUALIFICATION/artifact-'+row['artifact']+'.zip.snapshot','unqualified-raw-campaign-outer-ZIP-retained-before-expiry')
+add(BASE/'work/cloud-verification-backups/job-117799536959/logs.txt','PENDING-QUALIFICATION/full-job-117799536959.log','full-console-observation-only-source-qualification-pending')
+add(OWN/'three-generic-raw-backups.json','PENDING-QUALIFICATION/THREE.json','raw-only-generic-index')
+add(OWN/'publication-raw-backup.json','PENDING-QUALIFICATION/PUBLICATION.json','raw-only-publication-index')
+pending={'schema':'rea-five-additional-campaigns-raw-backup-only/v1','sourceHead':old['testedSourceCommit'],'campaigns':raw_campaigns,'allFiveRawOuterDigestChecksMatchCapturedAPI':True,'uploadedMemberReadbackPerformedByThisPlan':False,'sourceAndProductQualificationPending':True,'qualifiedProductAcceptance':False,'fullConsoleObservation':{'runId':'39169540384','jobId':'117799536959','reportedTests':1119,'reportedPass':1119,'reportedFail':0,'reportedSkip':0,'reportedStableSourceCensus':804,'strictSourceAcceptanceClaimed':False},'olderMissingArtifactOrCancelledRunRebound':False,'globalAuditPassClaimed':False}
+with(OUT/'PENDING.json').open('x',encoding='utf-8')as f:f.write(json.dumps(pending,indent=2)+'\n')
+add(OUT/'PENDING.json','PENDING-QUALIFICATION/RAW.json','explicit-pending-scopes-and-raw-observations')
+observations=json.loads((OUT/'OBSERVATIONS.json').read_bytes());observations['independentActualEvidencePeerRequiredBeforePublicCopy']=False;observations['independentActualPeer']={'path':'checks/ACTUAL.json',**pin(peer_raw)};observations['fiveAdditionalCampaignsAreRawBackupsOnly']=True
+with(OUT/'OBSERVATIONS-r2.json').open('x',encoding='utf-8')as f:f.write(json.dumps(observations,indent=2)+'\n')
+readme=(OUT/'README.md').read_text()
+for before,after in [('audit39169535767','audit 39169535767'),('and21','and 21'),('contributed152','contributed 152'),('actual986','actual 986'),('old992','old 992'),('all986','all 986')]:readme=readme.replace(before,after)
+readme+='\nFive additional campaigns are preserved under `PENDING-QUALIFICATION/` as original outer ZIP bytes. These raw backups prevent retention loss; member/source/product qualification remains pending. The full-run console reports 1,119 passing checks and804 stable source entries, which is not strict source acceptance.\n'
+readme=readme.replace('and804','and 804')
+with(OUT/'README-r2.md').open('x',encoding='utf-8')as f:f.write(readme)
+for row in rows:
+ if row['target']=='OBSERVATIONS.json':p=OUT/'OBSERVATIONS-r2.json';row.update(source=p.relative_to(BASE).as_posix(),**pin(p.read_bytes()))
+ if row['target']=='README.md':p=OUT/'README-r2.md';row.update(source=p.relative_to(BASE).as_posix(),**pin(p.read_bytes()))
+for name in ['prepare-public-copy-proposal.py','finalize-public-copy-proposal-r2.py']:add(OWN/name,'tooling/'+name+'.snapshot','fixed-copy-proposal-authoring-source-only')
+for row in rows:
+ source=BASE/row['source'];assert pin(source.read_bytes())=={k:row[k]for k in('bytes','sha256')}
+proposal={**{k:v for k,v in old.items()if k not in('files','fileCount','bytes','status','actualPeerNotYetIncluded')},'status':'work-only-ready-for-independent-copy-plan-peer-and-root-filing','files':rows,'fileCount':len(rows),'bytes':sum(r['bytes']for r in rows),'actualPeerNotYetIncluded':False,'actualPeerIdentity':pin(peer_raw),'additionalRawCampaignBackupsPendingQualification':5,'publicMetadataTarget':'DATA.json','metadataSelfHashExcludedToAvoidCycle':True,'oldProposalPreserved':'copy-plan.json','activeWrites':0,'GitMutations':0,'copiedIntoPublicRepository':False}
+out=OUT/'copy-plan-r2.json'
+with out.open('x',encoding='utf-8')as f:f.write(json.dumps(proposal,indent=2)+'\n')
+print(json.dumps({'plan':{'path':out.relative_to(BASE).as_posix(),**pin(out.read_bytes())},'files':len(rows),'bytes':proposal['bytes'],'plusSelfMetadataDATA':True,'actualPeerIncluded':True,'rawUnqualifiedCampaigns':5}))

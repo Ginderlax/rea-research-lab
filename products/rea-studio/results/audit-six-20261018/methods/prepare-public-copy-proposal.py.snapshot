@@ -1,0 +1,61 @@
+"""Author a fixed file-copy data plan/docs only. Does not copy into Git or execute any audit/reader."""
+from pathlib import Path
+import datetime,hashlib,json,re
+OWN=Path(__file__).resolve().parent;BASE=OWN.parents[1];OUT=OWN/'public-copy-proposal';OUT.mkdir()
+pin=lambda b:{'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+RAW=OWN/'run-39169535767-observation-2026-10-18T21-51-56-303Z'
+READABLE=RAW/'artifact-12151917408-strict-six-projection-reader-v2'
+report_path=READABLE/'strict-six-projection-readback.json';report_raw=report_path.read_bytes();report=json.loads(report_raw)
+assert pin(report_raw)=={'bytes':17870,'sha256':'2648a9a1dc92a5df31cce3d97b52775ce9d79d075aa27b0108a2c0878df9dad2'}
+assert report['sourceAndFiniteProjectionEvidenceAccepted']is True and report['qualificationErrors']==[]and report['globalAuditPassed']is False
+at=datetime.datetime.now(datetime.timezone.utc).isoformat()
+operating=BASE/'work/CURRENT-OPERATING-AUTHORIZATION.json';operating_raw=operating.read_bytes();authority=json.loads(operating_raw)
+assert authority['status']=='RESUME_AUTHORIZED'and authority['rootIndependentVerification']['laterHumanStopFound']is False
+chronology={'schema':'rea-public-operating-chronology-correction/v1','recordedAtUtc':at,'initiative':'REA research lab',
+ 'actualHumanStopAtUtc':'2026-10-16T18:00:44.072Z','actualHumanRestartAtUtc':'2026-10-18T20:09:32Z','currentState':'Development authorized from the saved checkpoint',
+ 'correction':'An earlier October18 pause replayed the historical October16 instruction after compaction. Root verified that no later actual human stop followed the October18 restart. Dated mistaken pause and cancellation records remain preserved as orchestration history.',
+ 'replayCancellation':{'runId':'39162757907','conclusion':'cancelled','artifactId':'12149885708','all437UploadedMembersPreserved':True,'acceptanceClaimed':False},
+ 'historicalMissingArtifact':{'runId':'38942449315','artifactId':'12065020872','observedMetadataHTTP':404,'observedDownloadHTTP':410,'fullPortableBackupAccepted':False},
+ 'backupsPreserved':{'branch':'backup/rea-paused-20261018','tag':'rea-paused-backup-20261018'},
+ 'verification':'Root independently read the actual human message chronology. No private chat export, raw human quote or cross-initiative transcript is included.',
+ 'localOperatingRecordIdentity':pin(operating_raw),'existingAccountSpendCloudPublishingAndAccessBoundariesPreserved':True}
+observations={'schema':'rea-six-projection-actual-hosted-observations/v1','atUtc':at,'testedSourceCommit':report['headSHA'],'runId':report['runId'],'jobId':report['jobId'],'artifactId':report['artifactId'],
+ 'sourceProof':report['sourceProof'],'artifactIdentity':report['artifactIdentity'],'innerIdentity':report['innerIdentity'],'uploadedMembers':len(report['files']),
+ 'finiteProjectionEvidenceAccepted':True,'controls':report['controls'],'projectionPublicRows':[{'path':r['manifest'],'kind':r['projectionKind'],'rows':r['publicRows']}for r in report['sixResolvedProjections']],
+ 'totalProjectedRows':sum(r['publicRows']for r in report['sixResolvedProjections']),'actualAuditCounts':report['actualCounts'],
+ 'remainingUnresolved':986,'old992MinusOnlySixRawLinesEqualsActual986':report['old992MinusOnlySixEqualsActual986'],
+ 'legacyManifestRawBytesAndSixAliasBytesPreserved':True,'globalAuditRunConclusion':'failure','globalProofDeliveryAccepted':False,
+ 'all986OlderIssuesRemainOpen':True,'productBehaviorComparisonPerformed':False,'nativeArchiveFailureResolved':False,'fullFeatureParity':False,'superiority':False,
+ 'qualificationReportIdentity':pin(report_raw),'independentActualEvidencePeerRequiredBeforePublicCopy':True}
+readme='''# Six closed proof-delivery projections — actual hosted evidence\n\nSource `698d2e301765d1b878fb251b3d59dadb5a3c9bac` ran on GitHub-hosted Windows in [audit39169535767](https://github.com/Ginderlax/rea-research-lab/actions/runs/39169535767). All six positive and21 negative data controls passed. Six exact document projections contributed152 checked public declarations. The ten uploaded members, original outer/inner ZIP bytes, immutable Git source context and raw API/log evidence are retained here.\n\nThe actual986 remaining unresolved rows match the old992 raw JSONL bytes with only the six reviewed document lines removed, preserving order, multiplicity, key order, blanks and line endings. Existing legacy manifest rows and six alias bytes remain unchanged. **The aggregate audit still failed; all986 older observations remain open.** This milestone establishes finite source/data regression evidence. Product behavior, complete replacements, full feature parity, superiority and the historical Archive native-metadata failure are not established by it.\n\n`OBSERVATIONS.json` records every control and the actual scope. `QUALIFIED.json` preserves the complete data-reader result; `checks/ACTUAL.json` records independent actual-evidence review. `AUTHORIZATION.json` corrects the earlier pause replay without publishing a private conversation. Readable uploaded files are in `readable/`; original ZIP bytes use `.zip.snapshot` filenames. Their contents are unchanged. The old four baseline inputs and old original artifact are retained for the exact delta comparison.\n\n`DATA.json` maps every stored file to its original relative path, length and SHA256. For portable replay, restore those original paths under a workspace, place the fixed collector/reader/spec at their original paths, and keep the raw evidence folders intact. The Python reader performs bounded data-only readback; captured audit/product code is never imported or executed. Original source installation/provenance is already committed under `products/rea-studio/results/audit-projections-20261018` at the tested commit.\n'''
+for name,value in [('AUTHORIZATION.json',chronology),('OBSERVATIONS.json',observations)]:
+ with(OUT/name).open('x',encoding='utf-8')as f:f.write(json.dumps(value,indent=2)+'\n')
+with(OUT/'README.md').open('x',encoding='utf-8')as f:f.write(readme)
+rows=[]
+def add(source,target,role):
+ source=source.resolve();assert source.is_relative_to(BASE)and source.is_file()and not source.is_symlink()
+ content=source.read_bytes();assert len(content)<=32*1024*1024
+ assert target not in{r['target']for r in rows};assert not re.search(r'(?:manifest|freeze|preservation|inventory|copy-list|publication-index|selected-file-map|public-existing-reuse|installation|records|source-proof|proof-dataset|file-map|public-[^/]*map)(?:[^/]*)\.json(?:\.snapshot)*$',target,re.I),target
+ assert not target.endswith('.zip')
+ rows.append({'source':source.relative_to(BASE).as_posix(),'target':target,'role':role,**pin(content)})
+for row in json.loads((RAW/'collection-summary.json').read_bytes())['rows']:
+ name=row['name'];target='raw/'+(name+'.snapshot'if name.endswith('.zip')else name)
+ add(RAW/name,target,'exact-current-raw-API-log-source-or-outer-ZIP')
+add(RAW/'collection-summary.json','raw/COLLECTION.json','original-raw-collection-result')
+for row in report['files']:add(READABLE/'readable-evidence'/row['path'],'readable/'+row['path'],'exact-uploaded-member')
+inner=next((READABLE/'downloaded-contents').glob('*.zip'));add(inner,'raw/'+inner.name+'.snapshot','exact-portable-inner-ZIP')
+add(report_path,'QUALIFIED.json','actual-fixed-data-reader-result')
+baseline=BASE/'work/cloud-verification-backups/run-38942435071/artifact-12063123985'
+for name in ['audit-report.json','unresolved.jsonl','manifests.jsonl','closed-aliases.jsonl']:add(baseline/'readable-evidence'/name,'baseline/'+('legacy-lines.jsonl'if name=='manifests.jsonl'else name),'exact-old-delta-input')
+add(baseline.parent/'artifact-12063123985.zip','baseline/artifact-12063123985.zip.snapshot','original-old-audit-outer-ZIP')
+tools=['collect-six-projection-audit-PENDING.mjs','collect-six-projection-audit-39169535767.mjs','read-six-projection-audit-39169535767-r1-unexecuted.py.snapshot','read-six-projection-audit-39169535767.py','read-six-projection-audit-39169535767-r2.py','strict-reader-fixed-inputs-39169535767.json','source-authority.json','actual-audit-39169535767-binding-authority.json','strict-reader-source-authority.json','strict-reader-source-authority-r2.json','independent-complete-source-and-actual-binding-peer.json','independent-strict-reader-r2-complete-source-peer.json','bind-actual-audit-39169535767.py','author-strict-reader-r2-raw-line-continuity.py']
+for name in tools:add(OWN/name,'tooling/'+name+(''if name.endswith('.snapshot')else'.snapshot'),'preserved-tooling-input-or-source-review')
+add(BASE/'work/resume-20261018-audit/source-authority.json','tooling/projection-context.json.snapshot','exact-source-context-needed-by-fixed-reader')
+add(BASE/'work/resume-20261018-audit/actual-698d2e3-source-copy-independent-readback.json','checks/COPY.json','actual-source-installation-readback')
+for name in ['AUTHORIZATION.json','OBSERVATIONS.json','README.md']:add(OUT/name,name,'new-public-scope-or-chronology-document')
+proposal={'schema':'rea-simple-six-projection-evidence-public-copy-plan/v1','status':'work-only-await-independent-actual-peer-and-root-copy','testedSourceCommit':report['headSHA'],'publicationBranch':'evidence/audit-six-698d-20261018',
+ 'publicPrefix':'products/rea-studio/results/audit-six-20261018','files':rows,'fileCount':len(rows),'bytes':sum(r['bytes']for r in rows),
+ 'requiredLateActualPeerTarget':'checks/ACTUAL.json','actualPeerNotYetIncluded':True,'rootOnlyGitWriter':True,'privateChatExportsIncluded':False,'sourceOrHistoricalReceiptsRebound':False,
+ 'candidateNamePatternMatches':0,'activeWrites':0,'GitMutations':0,'copiedIntoPublicRepository':False}
+with(OUT/'copy-plan.json').open('x',encoding='utf-8')as f:f.write(json.dumps(proposal,indent=2)+'\n')
+print(json.dumps({'plan':{'path':(OUT/'copy-plan.json').relative_to(BASE).as_posix(),**pin((OUT/'copy-plan.json').read_bytes())},'files':len(rows),'bytes':proposal['bytes'],'actualPeerPending':True}))

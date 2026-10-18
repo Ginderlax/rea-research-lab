@@ -1,0 +1,37 @@
+"""Fixed supplementary copy-plan authoring only; no public writes or extra ZIP/reader execution."""
+from pathlib import Path
+import hashlib,json,re
+OWN=Path(__file__).resolve().parent;BASE=OWN.parents[1];OUT=OWN/'public-copy-proposal'
+pin=lambda b:{'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+main=OUT/'copy-plan-r3.json';assert pin(main.read_bytes())=={'bytes':26626,'sha256':'02239a4ad3739019ca413e30bb6b1f783f2c836a8dc2b74cfa00cbbabefc6b81'}
+report=OWN/'five-current-raw-backups-readability-r2.json';raw=report.read_bytes()
+assert pin(raw)=={'bytes':455287,'sha256':'6e1ee1f168945c26f13f954166475a7cd83bc5b3e7c30e4513221e9748619dc5'}
+value=json.loads(raw);assert value['qualifiedProductAcceptance']is False and len(value['rows'])==5
+counts=[len(row['members'])for row in value['rows']];assert counts==[408,399,501,95,437]and sum(counts)==1840
+status={'schema':'rea-additional-five-campaign-current-backup-status/v1','sourceHead':'698d2e301765d1b878fb251b3d59dadb5a3c9bac','currentScope':'Readability supplement to the initial raw retention observations, not product/source-contract acceptance.',
+ 'fiveOuterArchivesRetained':True,'all1840UploadedMembersCRCAndHashesReadBack':True,'memberCountsInOriginalCampaignOrder':counts,'readabilityReportIdentity':pin(raw),
+ 'priorRawOnlyIndexesRetainedAsEarlierObservationHistory':True,'fullRunRawAPIIdentityPreserved':True,'sourceAndProductQualificationStillPending':True,
+ 'qualifiedProductAcceptance':False,'globalProofDeliveryAccepted':False,'historicalMissingArtifactReplaced':False,'cancelledRunAccepted':False,'fullFeatureParity':False,'superiority':False}
+with(OUT/'BACKUP-STATUS.json').open('x',encoding='utf-8')as f:f.write(json.dumps(status,indent=2)+'\n')
+rows=[];forbidden=r'(^|/)(artifacts|node_modules|tooling|__pycache__|work|\.local)(/|$)|\.(exe|dll|zip|tgz|bundle|tar|7z|pyc)$'
+candidate=r'(?:manifest|freeze|preservation|inventory|copy-list|publication-index|selected-file-map|public-existing-reuse|installation|records|source-proof|proof-dataset|file-map|public-[^/]*map)(?:[^/]*)\.json(?:\.snapshot)*$'
+def add(source,target,role):
+ assert source.is_file()and source.resolve().is_relative_to(BASE)and not source.is_symlink()
+ assert not re.search(forbidden,target,re.I)and not re.search(candidate,target,re.I)and target not in{r['target']for r in rows}
+ raw=source.read_bytes();assert len(raw)<=32*1024*1024
+ rows.append({'source':source.relative_to(BASE).as_posix(),'target':target,'role':role,**pin(raw)})
+full=BASE/'work/cloud-verification-backups/run-39169540384/raw-api-698d-2026-10-18T22-04-33.734Z'
+for name in ['run.json','jobs.json','artifacts.json','collection-summary.json']:add(full/name,'PENDING-QUALIFICATION/full-'+name,'exact-full-terminal-raw-control-context')
+add(BASE/'work/resume-20261018-audit/collect-full-39169540384-raw-api.mjs','methods/collect-full-raw.mjs.snapshot','peered-three-GET-retention-source')
+add(BASE/'work/resume-20261018-audit/full-39169540384-raw-api-source-authority.json','methods/full-raw-context.json.snapshot','fixed-three-GET-source-authority')
+add(report,'READABILITY.json','actual-readability-only-result-no-source-contract-acceptance')
+add(OWN/'check-five-raw-backups.py','methods/check-five-raw-backups-r1-unexecuted.py.snapshot','preserved-unexecuted-prior-backup-helper')
+add(OWN/'check-five-raw-backups-r2.py','methods/check-five-raw-backups-r2.py.snapshot','approved-bounded-data-only-CRC-helper')
+add(OWN/'independent-three-GET-and-five-ZIP-r2-source-peer.json','checks/RAW-SOURCE.json','independent-both-backup-helpers-source-peer')
+add(OUT/'BACKUP-STATUS.json','BACKUP-STATUS.json','current-readability-status-preserving-initial-index-history')
+add(Path(__file__),'methods/prepare-public-readability-supplement.py.snapshot','fixed-supplement-authoring-source-only')
+targets={r['target']for r in json.loads(main.read_bytes())['files']};assert all(r['target']not in targets for r in rows)
+plan={'schema':'rea-fixed-public-readability-supplement-copy-plan/v1','status':'work-only-root-and-independent-copy-peer-before-filing','publicPrefix':'products/rea-studio/results/audit-six-20261018','mainPlan':{'path':main.relative_to(BASE).as_posix(),**pin(main.read_bytes())},'files':rows,'fileCount':len(rows),'bytes':sum(r['bytes']for r in rows),'publicMetadataTarget':'MORE.json','candidatePatternMatches':0,'publicForbiddenMatches':0,'noPriorEvidenceRewritten':True,'sourceOrBehaviorAcceptanceClaimed':False,'rootOnlyGitWriter':True,'activeWrites':0,'GitMutations':0}
+out=OUT/'supplement-plan.json'
+with out.open('x',encoding='utf-8')as f:f.write(json.dumps(plan,indent=2)+'\n')
+print(json.dumps({'plan':{'path':out.relative_to(BASE).as_posix(),**pin(out.read_bytes())},'files':len(rows),'bytes':plan['bytes'],'plusSelfMetadataMORE':True}))

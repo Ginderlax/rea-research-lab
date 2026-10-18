@@ -1,0 +1,23 @@
+"""Source-only narrow correction. Do not execute either reader or captured code."""
+from pathlib import Path
+import hashlib,json
+OWN=Path(__file__).resolve().parent;BASE=OWN.parents[1]
+pin=lambda b:{'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+old=OWN/'read-six-projection-audit-39169535767.py';raw=old.read_bytes()
+assert pin(raw)=={'bytes':16787,'sha256':'52e2eca41f0a021c3a9fe95446d45fc845e4a5dc6cecdef991b1c311c8506049'}
+changes=[
+ ("artifact-'+ARTIFACT+'-strict-six-projection-reader-v1'","artifact-'+ARTIFACT+'-strict-six-projection-reader-v2'"),
+ (" assert len(projected)==6 and [r for r in actual_manifests if r.get('classification')!='exact-source-epoch-projection']==old_manifests,'All prior legacy/embedded manifest rows and order remain exact'",
+  " assert len(projected)==6 and [r for r in actual_manifests if r.get('classification')!='exact-source-epoch-projection']==old_manifests,'All prior legacy/embedded manifest rows and order remain exact'\n assert b''.join(line for line in data('manifests.jsonl').splitlines(keepends=True)if not line.strip()or parsed(line).get('classification')!='exact-source-epoch-projection')==baseline['manifests.jsonl'],'All prior manifest raw bytes, line endings, blanks and key order remain exact'"),
+ (" assert len(expected)==len(actual)==986 and actual==expected,'All old986 unresolved rows, complete values and ordered multiplicity must remain exact'",
+  " assert len(expected)==len(actual)==986 and actual==expected,'All old986 unresolved rows, complete values and ordered multiplicity must remain exact'\n assert data('unresolved.jsonl')==b''.join(line for line in baseline['unresolved.jsonl'].splitlines(keepends=True)if not line.strip()or parsed(line)['manifest']not in paths),'Actual unresolved raw bytes must equal old bytes with only the six exact document lines removed'"),
+]
+new=raw
+for before,after in changes:
+ assert new.count(before.encode())==1;new=new.replace(before.encode(),after.encode())
+target=OWN/'read-six-projection-audit-39169535767-r2.py'
+with target.open('xb')as f:f.write(new)
+prior_authority=OWN/'strict-reader-source-authority.json';authority={'schema':'rea-six-projection-fixed-strict-reader-r2-raw-byte-continuity-authority/v1','status':'unexecuted-narrow-root-and-independent-peer-required','reader':{'path':target.relative_to(BASE).as_posix(),**pin(new)},'immutablePriorReader':{'path':old.relative_to(BASE).as_posix(),**pin(raw)},'immutablePriorAuthority':{'path':prior_authority.relative_to(BASE).as_posix(),**pin(prior_authority.read_bytes())},'fixedInputsUnchanged':{'path':(OWN/'strict-reader-fixed-inputs-39169535767.json').relative_to(BASE).as_posix(),**pin((OWN/'strict-reader-fixed-inputs-39169535767.json').read_bytes())},'changes':[{'before':before,'after':after}for before,after in changes],'allOtherBytesUnchanged':True,'exactOrderedRawRetention':True,'blankLinesAndOriginalLineEndingsPreserved':True,'semanticCountSourceAndControlChecksRetained':True,'distinctV2OutputFolder':True,'noSourceEpochOrInputRebinding':True,'readerExecutions':0,'candidateImports':0,'productExecutions':0,'tests':0,'builds':0,'syntaxChecks':0,'GitMutations':0}
+out=OWN/'strict-reader-source-authority-r2.json'
+with out.open('xb')as f:f.write((json.dumps(authority,indent=2)+'\n').encode())
+print(json.dumps({'reader':{'path':target.relative_to(BASE).as_posix(),**pin(new)},'authority':{'path':out.relative_to(BASE).as_posix(),**pin(out.read_bytes())},'lines':len(new.splitlines())}))

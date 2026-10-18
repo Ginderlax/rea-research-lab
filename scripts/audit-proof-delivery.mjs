@@ -51,7 +51,7 @@ function unresolved(manifest, schema, reason, extra={}) { report.counts.unresolv
 function manifest(p) {
   if(manifestCache.has(p))return manifestCache.get(p);
   assert(manifestCache.size < LIMIT.manifests,'Manifest count bound exceeded'); const b=trackedBytes(p);
-  report.counts.manifestBytes+=b.length; assert(report.counts.manifestBytes <= LIMIT.manifestBytes,'Manifest aggregate bound exceeded');
+  report.counts.manifestBytes+=b.length; assert(report.counts.manifestBytes+closedProjectionReadBytes <= LIMIT.manifestBytes,'Manifest aggregate bound exceeded');
   const m=JSON.parse(b.toString('utf8').replace(/^\uFEFF/,'')); assert(m && typeof m==='object' && !Array.isArray(m),'Manifest must be an object');
   const result={name:p,bytes:b.length,sha256:sha(b),data:m}; manifestCache.set(p,result); return result;
 }
@@ -90,6 +90,358 @@ schemas('rea-notes-inline-browser-publication-addendum-freeze/v1',[spec('records
 schemas('rea-notes-browser-qualification-correction-strict-freeze/v1',[spec('records','path','prefix',{suffix:'.snapshot',inventoryAlternative:true,inertManifest:'products/rea-studio/apps/notes/results/inline-confirmation-followup/browser-qualification-correction/frozen/freeze-manifest.json.snapshot'})]);
 schemas(`rea-cloud-flow-vault-finite-preservation/v1 rea-cloud-flow-vault-controls-preservation/v1 rea-cloud-archive-composition-failure-preservation/v1 rea-cloud-archive-metadata-failure-preservation/v1 rea-cloud-archive-prerequisites-failure-preservation/v1 rea-cloud-archive-aes-finite-pass-preservation/v1 rea-cloud-windows-path-finite-pass-preservation/v1 rea-cloud-windows-path-installed-pass-preservation/v1 rea-cloud-flow-vault-browser-pass-preservation/v1`,[spec('records')]);
 handlers.set('rea-vault-history-docs-preservation/v1',[spec('snapshots'),spec('previousReadme','path','root',{single:true})]);
+
+// Closed source-epoch projections added on 2026-10-18. These six exact documents
+// do not create a schema-wide exception. Work paths remain provenance, never Git
+// delivery pointers. Stored gzip bytes are distinct from decoded identities.
+const DIAGNOSTIC_PREFIX = 'products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016';
+const NOTES36_PREFIX = 'products/rea-studio/results/notes36-source-transition-20261016';
+const RECOVERY_PREFIX = 'work/cloud-recovery-20261015/notes36-source-installation-e655-20261016';
+const CLOSED_EPOCH_HEAD = 'e655fd909c7bed411c5bee50ce248dd6fe0787c6';
+const CLOSED_EPOCH_DOCUMENTS=new Map([
+  [
+    "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/preservation-manifest.json",
+    {
+      "path": "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/preservation-manifest.json",
+      "bytes": 56274,
+      "sha256": "7716b2d12995f4314af2e46aba73eccab731a05825e0db3525d7381792bc902a",
+      "schema": "rea-public-native-metadata-diagnostic-preservation/v1",
+      "kind": "diagnostic-stored"
+    }
+  ],
+  [
+    "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/e655-full1100-installation-gate-independent-review-20261016.json.snapshot",
+    {
+      "path": "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/e655-full1100-installation-gate-independent-review-20261016.json.snapshot",
+      "bytes": 1601,
+      "sha256": "c7c80ad846648ca7175f9ff0773f7b228dd5e860a7a2e33af37c4e1c3526f163",
+      "schema": "rea-e655-full1100-pre-notes36-installation-gate-independent-review/v1",
+      "kind": "review-full-gate"
+    }
+  ],
+  [
+    "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/native-diagnostic-preservation-filer-complete-independent-source-review-20261016.json.snapshot",
+    {
+      "path": "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/native-diagnostic-preservation-filer-complete-independent-source-review-20261016.json.snapshot",
+      "bytes": 4828,
+      "sha256": "44534413a5275af5bc06bc4d92108cf6e9315c93e02692ea3faacfd0fde159d4",
+      "schema": "rea-native-diagnostic-preservation-filer-complete-independent-source-review/v1",
+      "kind": "review-filer"
+    }
+  ],
+  [
+    "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/root-notes36-source-installation-decision-20261016.json.snapshot",
+    {
+      "path": "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/root-notes36-source-installation-decision-20261016.json.snapshot",
+      "bytes": 4068,
+      "sha256": "9c808fc8c0874babfdd122c0dd1e006a96275e718e412a2527b0ede401da62e1",
+      "schema": "rea-root-notes36-source-installation-decision/v1",
+      "kind": "review-install-decision"
+    }
+  ],
+  [
+    "products/rea-studio/results/notes36-source-transition-20261016/installation-plan.json",
+    {
+      "path": "products/rea-studio/results/notes36-source-transition-20261016/installation-plan.json",
+      "bytes": 26842,
+      "sha256": "489728f55869696952ef23649fedb163e637c507d0cddd09edc268ec47986c43",
+      "schema": "rea-Notes36-source-installation-plan/v1",
+      "kind": "notes-plan"
+    }
+  ],
+  [
+    "products/rea-studio/results/notes36-source-transition-20261016/installation-receipt.json",
+    {
+      "path": "products/rea-studio/results/notes36-source-transition-20261016/installation-receipt.json",
+      "bytes": 36636,
+      "sha256": "e8ed915fdac88873f5905e53ab0b798b73eddef84a85a2db704f0dbe686853a6",
+      "schema": "rea-notes36-actual-source-installation/v1",
+      "kind": "notes-journal"
+    }
+  ]
+]);
+const CLOSED_EPOCH_DEPENDENCIES=new Map([
+  [
+    "filerAuthority",
+    {
+      "key": "filerAuthority",
+      "path": "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/native-diagnostic-preservation-filer-source-20261016-next/source-authority.json.snapshot",
+      "bytes": 9834,
+      "sha256": "4accfd0de07a5a94368814382c97965eccc3596f8c28ef19170e50b7e470a50a"
+    }
+  ],
+  [
+    "completeAuthority",
+    {
+      "key": "completeAuthority",
+      "path": "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/notes36-installed-implementation-next/complete-r1-next/copy-authority.json.snapshot",
+      "bytes": 36571,
+      "sha256": "d250c64d54dbd4638b35d715e123aa48a399d51a2a91a38ced51e8dfcfff1f47"
+    }
+  ],
+  [
+    "docsAuthority",
+    {
+      "key": "docsAuthority",
+      "path": "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/notes36-installed-implementation-next/pending-install-index-docs-r1-next/copy-authority.json.snapshot",
+      "bytes": 3273,
+      "sha256": "4676f2ac53ef9f7e62be314433de255e0bd80453cd4bf9a21ba354b6a066f0f0"
+    }
+  ],
+  [
+    "integratedPeer",
+    {
+      "key": "integratedPeer",
+      "path": "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/notes36-complete25-producer-controls-r3-complete-independent-source-review-20261016.json.snapshot",
+      "bytes": 8067,
+      "sha256": "54c508bf0f31c59f4e68b76c7c2301bde4c887b5922a9dac18ca363d71c9a921"
+    }
+  ],
+  [
+    "bytePeer",
+    {
+      "key": "bytePeer",
+      "path": "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/notes36-complete25-independent-byte-data-audit-1245-20261016.json.snapshot",
+      "bytes": 1735,
+      "sha256": "c5b4b99880b74b71129d4a5669aab119b9d27c51984aad2d5daa4e7a10ce7fcd"
+    }
+  ],
+  [
+    "docsPeer",
+    {
+      "key": "docsPeer",
+      "path": "products/rea-studio/results/cloud-archive-native-metadata-diagnostic-20261016/review-records/notes36-conditional-index-docs-independent-source-review-20261016.json.snapshot",
+      "bytes": 2242,
+      "sha256": "0bcea94027a347dc5a24b317e773c27620272ffe7678a636a8209c6ac47877e1"
+    }
+  ],
+  [
+    "declaration",
+    {
+      "key": "declaration",
+      "path": "products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json",
+      "bytes": 60830,
+      "sha256": "c0a488389094d898a7f6d308e9977192327f194ce3d271135dfcd2007e8a73bb"
+    }
+  ],
+  [
+    "rolePlan",
+    {
+      "key": "rolePlan",
+      "path": "products/rea-studio/results/notes36-source-transition-20261016/publication-artifact-role-plan.json",
+      "bytes": 26659,
+      "sha256": "384ea1e7f5f50a1ca14eb46e31bf2decdd0966ebbbe2c7f58171944dda775154"
+    }
+  ]
+]);
+const CLOSED_EPOCH_BEFORE_IMAGES=new Map([
+  [
+    ".github/workflows/notes-installed-cloud.yml",
+    "products/rea-studio/results/notes36-source-transition-20261016/historical-workflows/notes-installed-cloud.yml.snapshot"
+  ],
+  [
+    ".github/workflows/notes-new-todo-experiment-cloud.yml",
+    "products/rea-studio/results/notes36-source-transition-20261016/historical-workflows/notes-new-todo-experiment-cloud.yml.snapshot"
+  ],
+  [
+    "products/rea-studio/apps/notes/README.md",
+    "products/rea-studio/experiments/notes-new-todo/before/products/rea-studio/apps/notes/README.md.snapshot"
+  ],
+  [
+    "products/rea-studio/apps/notes/client.mjs",
+    "products/rea-studio/experiments/notes-new-todo/before/products/rea-studio/apps/notes/client.mjs.snapshot"
+  ],
+  [
+    "products/rea-studio/apps/notes/server.mjs",
+    "products/rea-studio/experiments/notes-new-todo/before/products/rea-studio/apps/notes/server.mjs.snapshot"
+  ],
+  [
+    "scripts/editor-vault-proof-migration.mjs",
+    "products/rea-studio/results/notes36-source-transition-20261016/before-source/scripts/editor-vault-proof-migration.mjs.snapshot"
+  ],
+  [
+    "scripts/publication-integrity-controls.mjs",
+    "products/rea-studio/results/notes36-source-transition-20261016/before-source/scripts/publication-integrity-controls.mjs.snapshot"
+  ],
+  [
+    "scripts/verify-cloud-publication.mjs",
+    "products/rea-studio/results/notes36-source-transition-20261016/before-source/scripts/verify-cloud-publication.mjs.snapshot"
+  ],
+  [
+    "README.md",
+    "products/rea-studio/results/notes36-source-transition-20261016/index-before/README.md.snapshot"
+  ],
+  [
+    "CLOUD-VERIFICATION.md",
+    "products/rea-studio/results/notes36-source-transition-20261016/index-before/CLOUD-VERIFICATION.md.snapshot"
+  ],
+  [
+    "products/rea-studio/STATUS.json",
+    "products/rea-studio/results/notes36-source-transition-20261016/index-before/products/rea-studio/STATUS.json.snapshot"
+  ]
+]);
+let closedProjectionReadBytes=0;
+const closedProjectionReadCache=new Map();
+function projectionRead(path, cap=LIMIT.singleManifestBytes) {
+  if(closedProjectionReadCache.has(path)){const b=closedProjectionReadCache.get(path);assert(b.length<=cap);return b;}
+  const b=trackedBytes(path,cap);closedProjectionReadBytes+=b.length;
+  assert(closedProjectionReadBytes+report.counts.manifestBytes<=LIMIT.manifestBytes,'Combined manifest/projection read bound exceeded');
+  closedProjectionReadCache.set(path,b);return b;
+}
+function exactContext(ctx, expected) {
+  assert(expected, 'No reviewed exact source-epoch projection');
+  assert.equal(ctx.name, expected.path, 'Closed projection path differs');
+  assert.equal(ctx.data.schema, expected.schema, 'Closed projection schema differs');
+  assert.deepEqual({bytes:ctx.bytes,sha256:ctx.sha256}, identity(expected), 'Closed projection source identity differs');
+}
+function projectionBody(ctx, read = projectionRead) {
+  const definition = CLOSED_EPOCH_DOCUMENTS.get(ctx.name);
+  assert(definition, 'No reviewed exact source-epoch projection');
+  assert.equal(ctx.data.schema, definition.schema, 'Closed projection schema differs');
+  const m = ctx.data, rows = [], notes = [], dependencies = [];
+  const add = (path, id, role) => {
+    safe(path); assert(!path.startsWith('work/'), 'Local recovery path is not a public delivery pointer');
+    rows.push({path,...identity(id),projectionRole:role});
+  };
+  const dependency = key => {
+    const pin = CLOSED_EPOCH_DEPENDENCIES.get(key); assert(pin,'Unknown closed dependency');
+    const b = read(pin.path, LIMIT.singleManifestBytes); assert.equal(b.length,pin.bytes,'Closed dependency size differs');
+    assert.equal(sha(b),pin.sha256,'Closed dependency SHA differs');
+    add(pin.path,pin,'exact-public-source-context'); dependencies.push(pin.path);
+    return JSON.parse(b.toString('utf8').replace(/^\uFEFF/,''));
+  };
+  const doc = index => {
+    const pin = [...CLOSED_EPOCH_DOCUMENTS.values()][index], b = read(pin.path,LIMIT.singleManifestBytes);
+    const c = {name:pin.path,bytes:b.length,sha256:sha(b),data:JSON.parse(b.toString('utf8').replace(/^\uFEFF/,''))};
+    exactContext(c,pin); return c.data;
+  };
+  const ref = (value, expected) => { assert.equal(value.path,expected.path); assert.deepEqual(identity(value),identity(expected)); };
+  const beforeImage = path => {
+    const target = CLOSED_EPOCH_BEFORE_IMAGES.get(path); assert(target,'No reviewed historical before-image alias'); return target;
+  };
+  const uniqueRows = (values, count, key='path') => {
+    assert(Array.isArray(values)); assert.equal(values.length,count,'Closed row count differs');
+    const seen = new Set(); for(const r of values){safe(r[key]);assert(!seen.has(r[key]),'Duplicate closed row');seen.add(r[key]);} return seen;
+  };
+  if (definition.kind === 'diagnostic-stored') {
+    assert.equal(m.sourceCommit,CLOSED_EPOCH_HEAD);assert.equal(m.sourceHead,CLOSED_EPOCH_HEAD);
+    assert.equal(m.runId,'38938239800');assert.equal(m.jobId,'117099039133');assert.equal(m.artifactId,'12062101383');
+    uniqueRows(m.roles,40,'role');uniqueRows(m.sourceAliases,70,'innerMember');
+    const roleNames = new Set();
+    for(const r of m.roles){
+      assert(!roleNames.has(r.role));roleNames.add(r.role);const stored=identity(r.stored),decoded=identity(r.decoded);
+      assert(['identity','gzip'].includes(r.stored.encoding),'Unknown stored transport encoding');
+      const suffix = r.stored.encoding==='gzip'?'.gz.snapshot':'.snapshot';
+      assert.equal(r.stored.path,DIAGNOSTIC_PREFIX+'/payload/'+stored.sha256+suffix,'Stored content-addressed public path differs');
+      if(r.stored.encoding==='identity')assert.deepEqual(stored,decoded,'Identity transport differs from decoded identity');
+      else { assert.equal(r.role,'raw-tree-api','Unexpected gzip role');assert.notEqual(stored.sha256,decoded.sha256); }
+      add(r.stored.path,stored,'stored-'+r.stored.encoding+'-transport');
+    }
+    for(const a of m.sourceAliases){identity(a.decoded);assert.equal(a.retainedWithinExactPortableZip,true);assert.equal(a.role,'uploaded/'+a.innerMember);assert(a.innerMember.startsWith('source/')&&a.innerMember.endsWith('.snapshot'),'Invalid portable source member');}
+    const outer=m.roles.find(r=>r.role==='exact-original-uploaded-outer-zip'),inner=m.roles.find(r=>r.role==='exact-portable-inner-evidence-zip');
+    assert(outer&&inner);assert.deepEqual(identity(outer.decoded),identity(m.artifactIdentity));assert.deepEqual(identity(inner.decoded),identity(m.portableInnerArchiveIdentity));
+    const uploaded=m.roles.filter(r=>r.role.startsWith('uploaded/'));assert.equal(uploaded.length,8);
+    assert.equal(m.rawUploadedMembers,78);assert.equal(m.sourceSnapshotMembers,70);assert.equal(m.nonsourceMembers,8);
+    const memberNames=new Set(m.sourceAliases.map(r=>r.innerMember));for(const r of uploaded){const name=r.role.slice(9);safe(name);assert(!memberNames.has(name));memberNames.add(name);}assert.equal(memberNames.size,78);
+    assert.equal(m.fullSuiteAcceptance,false);assert.equal(m.reliabilityFixAccepted,false);assert.equal(m.performanceComparison,false);assert.equal(m.fullParity,false);assert.equal(m.superiority,false);
+    notes.push({classification:'stored-transport-only',storedRoles:40,portableSourceAliases:70,portableNonsourceRoles:8,decodedGzipPayloadAuthenticatedByThisAudit:false,portableZipMembersInspectedByThisAudit:false,localSourceReferencesGitDeliveryClaimed:false,earlierD24CauseRemainsUnresolved:true});
+  } else if (definition.kind === 'review-full-gate') {
+    const decision=doc(3),journal=doc(5),gate=decision.currentPreInstallationGate;
+    assert.equal(m.branchHead,CLOSED_EPOCH_HEAD);assert.equal(m.runId,gate.runId);assert.equal(m.jobId,gate.jobId);assert.equal(m.actualTestedMerge,gate.testedMerge);
+    assert.deepEqual(identity(m.artifact),{bytes:gate.artifactBytes,sha256:gate.artifactSHA256});
+    assert.equal(m.artifactId,gate.artifactId);assert.equal(journal.preInstallCurrentFullGate.runId,m.runId);assert.equal(journal.preInstallCurrentFullGate.testedMerge,m.actualTestedMerge);
+    assert.equal(m.rawSummary.tests,1100);assert.equal(m.rawSummary.pass,1100);for(const key of ['fail','cancelled','skipped','todo'])assert.equal(m.rawSummary[key],0);
+    assert.equal(gate.independentPeer.path,'work/e655-full1100-installation-gate-independent-review-20261016.json');assert.deepEqual(identity(gate.independentPeer),identity(definition));
+    notes.push({classification:'inert-review-provenance-only',publicReviewBytesAuthenticated:true,crossBoundDecisionAndJournal:true,referencedHostedArtifactGitDeliveryClaimed:false,behavioralObservationReexecuted:false});
+  } else if (definition.kind === 'review-filer') {
+    const authority=dependency('filerAuthority'),diagnostic=doc(0),filer=diagnostic.roles.find(r=>r.role==='backup-only-preservation-filer');
+    assert(filer);ref(m.sourceAuthority,{path:'work/native-diagnostic-preservation-filer-source-20261016-next/source-authority.json',...identity(CLOSED_EPOCH_DEPENDENCIES.get('filerAuthority'))});
+    assert.deepEqual(identity(m.filer),identity(authority.filer));assert.deepEqual(identity(m.filer),identity(filer.decoded));
+    add(filer.stored.path,filer.stored,'preserved-reviewed-filer-source');
+    assert.equal(m.fullFilerBodyAndAuthorityRead,true);assert.equal(m.filerExecutions,0);assert.equal(m.readerExecutions,0);assert.equal(m.collectorExecutions,0);
+    assert(m.independentDataAudit.path.startsWith('work/'));identity(m.independentDataAudit);
+    notes.push({classification:'inert-review-provenance-only',publicReviewAndTwoSourceContextsAuthenticated:true,localIndependentDataAuditGitDeliveryClaimed:false,filerExecutedByThisAudit:false});
+  } else if (definition.kind === 'review-install-decision') {
+    const authority=dependency('completeAuthority'),docs=dependency('docsAuthority');
+    assert.equal(m.beforeHead,CLOSED_EPOCH_HEAD);assert.equal(m.sourceOnly,true);assert.equal(m.installedByThisRecord,false);assert.equal(m.historicalReceiptsRebound,false);assert.equal(m.fullParity,false);assert.equal(m.superiority,false);
+    ref(m.sourceAuthority,{path:'work/notes36-installed-implementation-next/complete-r1-next/copy-authority.json',...identity(CLOSED_EPOCH_DEPENDENCIES.get('completeAuthority'))});
+    ref(m.conditionalDocsAuthority,{path:'work/notes36-installed-implementation-next/pending-install-index-docs-r1-next/copy-authority.json',...identity(CLOSED_EPOCH_DEPENDENCIES.get('docsAuthority'))});
+    assert.equal(authority.literalBeforeGitHEAD,CLOSED_EPOCH_HEAD);assert.equal(authority.files.length,25);assert.equal(docs.files.length,6);
+    for(const [field,key]of [['independentIntegratedSourcePeer','integratedPeer'],['independentByteDataPeer','bytePeer'],['independentConditionalDocsPeer','docsPeer']]){const pin=CLOSED_EPOCH_DEPENDENCIES.get(key);dependency(key);assert.deepEqual(identity(m[field]),identity(pin));assert(m[field].path.startsWith('work/'));}
+    const gate=doc(1);assert.equal(m.currentPreInstallationGate.runId,gate.runId);assert.deepEqual(identity(m.currentPreInstallationGate.independentPeer),identity([...CLOSED_EPOCH_DOCUMENTS.values()][1]));
+    notes.push({classification:'inert-review-provenance-only',exactPublicAuthorities:2,exactPublicSourceReviews:3,sourceInstalledOrBehaviorAcceptedByThisRecord:false,localOriginPathsGitDeliveryClaimed:false});
+  } else if (definition.kind === 'notes-plan') {
+    assert.equal(m.literalBeforeCommit,CLOSED_EPOCH_HEAD);assert.equal(m.sourceOnly,true);assert.equal(m.actualSourceInstallationJournal,null);
+    uniqueRows(m.applicationTargets,7);uniqueRows(m.currentNotesSources,36);uniqueRows(m.beforeCurrent32,32);
+    const current=new Map(m.currentNotesSources.map(r=>[r.path,r])),targets=new Map(m.applicationTargets.map(r=>[r.path,r]));
+    for(const r of m.currentNotesSources){assert(r.path.startsWith('products/rea-studio/apps/notes/'));add(r.path,r,'current36-source');}
+    for(const r of m.applicationTargets){assert.deepEqual(identity(r.after),identity(current.get(r.path)));assert.equal(r.afterImage.path,'products/rea-studio/experiments/notes-new-todo/after/'+r.path+'.snapshot');assert.deepEqual(identity(r.afterImage),identity(r.after));add(r.afterImage.path,r.afterImage,'frozen-application-after');
+      if(r.before===null){assert.equal(r.beforeImage,null);}else{assert.equal(r.beforeImage.path,beforeImage(r.path));assert.deepEqual(identity(r.beforeImage),identity(r.before));add(r.beforeImage.path,r.beforeImage,'frozen-application-before');}}
+    for(const r of m.beforeCurrent32){const changed=targets.get(r.path);if(r.changedInProposal){assert(changed&&changed.before);assert.deepEqual(identity(changed.before),identity(r));}else assert.deepEqual(identity(current.get(r.path)),identity(r));}
+    uniqueRows(m.tooling.fixedRows,12);for(const r of m.tooling.fixedRows)add(r.path,r,'fixed-current-tooling');add(m.tooling.collectorSelf.path,m.tooling.collectorSelf,'separate-collector-self');
+    assert.equal(m.tooling.collectorSelfSeparateFrom12,true);assert.equal(m.tooling.collectorSelf.isThirteenthToolingRow,false);
+    const declaration=dependency('declaration');assert.deepEqual(m.currentNotesSources,declaration.currentNotesSources);assert.equal(declaration.combinedProofRowCount,60);
+    dependency('rolePlan');assert.equal(m.publication.artifactTable,CLOSED_EPOCH_DEPENDENCIES.get('rolePlan').path);assert.equal(m.publication.finalRoles,95);assert.equal(m.publication.fileLimit,96);assert.equal(m.publication.actualControlsExecuted,null);
+    notes.push({classification:'closed-current-and-frozen-source-plan',currentSources:36,applicationTargets:7,frozenBeforeImages:3,frozenAfterImages:7,fixedTooling:12,separateCollectorSelf:true,before32IsHistoricalAndNotCurrentTargetIdentity:true,plannedControlsAreNotActualResults:true});
+  } else if (definition.kind === 'notes-journal') {
+    assert.equal(m.actualBeforeGitHEAD,CLOSED_EPOCH_HEAD);assert.equal(m.actualReadableRecoveryDirectory,RECOVERY_PREFIX);assert.equal(m.sourceCommitAfterCopy,null);assert.equal(m.sourceCommitAssignedByLaterRootCommit,true);
+    assert.equal(m.status,'source-installed-fresh-hosted-acceptance-pending');assert.equal(m.historicalReceiptsRebound,false);assert.equal(m.fullParity,false);assert.equal(m.superiority,false);
+    uniqueRows(m.installedFiles,31);assert.equal(m.sourceFilePathsCopied,31);assert.equal(m.existingFilesChanged,11);assert.equal(m.newFilesAdded,20);
+    const authority=dependency('completeAuthority'),docs=dependency('docsAuthority');
+    const planned=new Map([...authority.files,...docs.files].map(r=>[r.path,r]));assert.equal(planned.size,31);
+    let historical=0,localRecoveryPaths=0;
+    for(const r of m.installedFiles){const source=planned.get(r.path);assert(source,'Unreviewed current installation target');assert.deepEqual(identity(r.after),identity(source.after));assert.deepEqual(r.before===null?null:identity(r.before),source.before===null?null:identity(source.before));
+      add(r.path,r.after,'actual-installed-after-target');assert.equal(r.afterSnapshot.path,RECOVERY_PREFIX+'/after/'+r.path+'.snapshot');assert.deepEqual(identity(r.afterSnapshot),identity(r.after));localRecoveryPaths++;
+      if(r.before===null){assert.equal(r.beforeSnapshot,null);}else{assert.equal(r.beforeSnapshot.path,RECOVERY_PREFIX+'/before/'+r.path+'.snapshot');assert.deepEqual(identity(r.beforeSnapshot),identity(r.before));localRecoveryPaths++;historical++;add(beforeImage(r.path),r.before,'separately-delivered-historical-before');}}
+    assert.equal(historical,11);assert.equal(localRecoveryPaths,42);assert.equal(m.finalPublicJournalPath,ctx.name);
+    assert.equal(m.freshInstalledAcceptance.allRequireActualHostedResultsForLaterCommittedSource,true);for(const key of ['finite111Across21Files','browser8','fullImplementedSuiteSuperset','publication306ControlsAnd95Roles'])assert.equal(m.freshInstalledAcceptance[key],null);
+    notes.push({classification:'actual-source-copy-journal-with-bounded-public-target-projection',afterTargets:31,separatelyPublicBeforeImages:11,localRecoveryPathReferences:42,localRecoveryPathsGitDeliveryClaimed:false,localAuthoritiesAndReviewsAreOriginProvenanceOnly:true,sourceInstallationReexecuted:false,freshBehavioralAcceptanceClaimed:false});
+  } else assert.fail('Unknown closed projection kind');
+  return {rows,notes,dependencies};
+}
+function authenticateProjectionRows(projection, read=projectionRead) {
+  for(const r of projection.rows){const b=read(r.path,LIMIT.singleManifestBytes);assert.equal(b.length,r.bytes,'Projected stored/current public size differs: '+r.path);assert.equal(sha(b),r.sha256,'Projected stored/current public SHA differs: '+r.path);}
+  return projection;
+}
+function exactProjection(ctx, read=projectionRead) {
+  exactContext(ctx,CLOSED_EPOCH_DOCUMENTS.get(ctx.name));
+  return authenticateProjectionRows(projectionBody(ctx,read),read);
+}
+function closedEpochControls() {
+  const observations=[], contexts=[...CLOSED_EPOCH_DOCUMENTS.values()].map(pin=>manifest(pin.path));
+  const check=(name,fn,reject=false)=>{let error=null;try{fn();}catch(e){error=e;}assert(reject?error:!error,'Closed projection control failed: '+name+(error?': '+error.message:''));observations.push({name,expected:reject?'rejection':'acceptance',passed:true});};
+  for(const ctx of contexts)check('positive-exact-'+CLOSED_EPOCH_DOCUMENTS.get(ctx.name).kind,()=>exactProjection(ctx));
+  const mutate=(index,name,edit)=>check(name,()=>{const ctx={...contexts[index],data:structuredClone(contexts[index].data)};edit(ctx.data);authenticateProjectionRows(projectionBody(ctx));},true);
+  check('reject-unknown-path',()=>exactProjection({...contexts[0],name:DIAGNOSTIC_PREFIX+'/other-preservation-manifest.json'}),true);
+  check('reject-changed-whole-document-hash',()=>exactProjection({...contexts[0],sha256:'0'.repeat(64)}),true);
+  check('reject-changed-whole-document-bytes',()=>exactProjection({...contexts[0],bytes:contexts[0].bytes+1}),true);
+  mutate(0,'reject-wrong-schema',m=>{m.schema+='-unknown';});
+  mutate(0,'reject-decoded-hash-as-stored-pointer',m=>{const r=m.roles.find(r=>r.stored.encoding==='gzip');r.stored.path=DIAGNOSTIC_PREFIX+'/payload/'+r.decoded.sha256+'.gz.snapshot';});
+  mutate(0,'reject-unknown-transport',m=>{m.roles[0].stored.encoding='br';});
+  mutate(0,'reject-identity-decoded-mismatch',m=>{m.roles[0].decoded.bytes++;});
+  mutate(0,'reject-stored-bytes-mutation',m=>{m.roles[0].stored.bytes++;});
+  mutate(0,'reject-portable-alias-traversal',m=>{m.sourceAliases[0].innerMember='source/../escape.snapshot';m.sourceAliases[0].role='uploaded/'+m.sourceAliases[0].innerMember;});
+  mutate(0,'reject-duplicate-portable-alias',m=>{m.sourceAliases[1]=structuredClone(m.sourceAliases[0]);});
+  mutate(1,'reject-false-full-gate',m=>{m.rawSummary.pass--;});
+  mutate(2,'reject-filer-source-authority-rebinding',m=>{m.sourceAuthority.sha256='0'.repeat(64);});
+  mutate(3,'reject-decision-as-installation-receipt',m=>{m.installedByThisRecord=true;});
+  mutate(4,'reject-current-source-count-loss',m=>{m.currentNotesSources.pop();});
+  mutate(4,'reject-plan-local-after-pointer',m=>{m.applicationTargets[0].afterImage.path='work/local-after.snapshot';});
+  mutate(4,'reject-before32-current-identity-conflation',m=>{m.beforeCurrent32.find(r=>r.changedInProposal).bytes++;});
+  mutate(5,'reject-journal-current-after-mutation',m=>{m.installedFiles[0].after.sha256='0'.repeat(64);});
+  mutate(5,'reject-journal-local-after-identity-mutation',m=>{m.installedFiles[0].afterSnapshot.bytes++;});
+  mutate(5,'reject-journal-local-recovery-path-rebinding',m=>{m.installedFiles[0].beforeSnapshot.path='work/other.snapshot';});
+  mutate(5,'reject-journal-new-behavioral-acceptance',m=>{m.freshInstalledAcceptance.browser8=true;});
+  check('reject-authenticated-transport-content-mutation',()=>exactProjection(contexts[0],(p,cap)=>{const b=projectionRead(p,cap);if(p===contexts[0].data.roles[0].stored.path){const changed=Buffer.from(b);changed[0]^=1;return changed;}return b;}),true);
+  persist('projection-controls.json',{schema:'rea-hosted-six-closed-delivery-projection-controls/v1',status:'passed',observations,positive:6,negative:observations.length-6,executedOnlyWithinVerifiedHostedAudit:true,checkoutWrites:0,productExecutions:0,legacyHandlersChanged:false,limitsChanged:false,semanticMutationControlsExerciseBodySeparatelyFromWholeDocumentPin:true,globalDeliveryOrBehavioralSuccessClaimed:false});
+  report.closedEpochProjectionControls={status:'passed',positive:6,negative:observations.length-6};
+}
+function applyClosedEpochProjection(ctx) {
+  const projected=exactProjection(ctx);
+  for(let i=0;i<projected.rows.length;i++)declare(ctx,'reviewed-closed-projection',i,projected.rows[i],{pointer:'path',base:'root'});
+  report.counts.recognizedManifests++;
+  detail('manifests.jsonl',{manifest:ctx.name,schema:ctx.data.schema,sha256:ctx.sha256,bytes:ctx.bytes,classification:'exact-source-epoch-projection',projectionKind:CLOSED_EPOCH_DOCUMENTS.get(ctx.name).kind,publicRows:projected.rows.length,scopedPublicRowsSHA256Authenticated:true,globalPayloadAuthenticationClaimed:false,notes:projected.notes,dependencies:projected.dependencies});
+}
 
 const closure={path:'products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json',bytes:7382,sha256:'37b34ad5324719094e9842343d7649af4ffbd5606f47488137e04a6ee380e49b'};
 const aliases=new Map(), embedded=new Map(), seenTargets=new Map();
@@ -163,11 +515,12 @@ try {
   const tree=git(['ls-tree','-r','-l','-z','--full-tree','HEAD']);for(const raw of tree.toString('utf8').split('\0').filter(Boolean)){const match=/^(\d{6}) (blob|commit) ([0-9a-f]{40}) +([0-9]+|-)\t(.+)$/.exec(raw);assert(match,'Unexpected Git tree record');if(match[2]!=='blob')continue;const name=safe(match[5]);assert(!trees.has(name));trees.set(name,{mode:match[1],oid:match[3],bytes:Number(match[4])});assert(trees.size<=LIMIT.gitBlobs);}
   report.counts.gitBlobs=trees.size;for(const [p,b]of trees){const match=/\/([0-9a-f]{64})\.snapshot$/.exec(p);if(match&&['100644','100755'].includes(b.mode)){const key=match[1]+':'+b.bytes,rows=contentCandidates.get(key)??[];if(rows.length<12)rows.push({path:p,gitBlob:b.oid,bytes:b.bytes,sha256Authenticated:false});contentCandidates.set(key,rows);}}
   report.sourceFiles=[];for(const p of [SCRIPT,WORKFLOW]){const b=trackedBytes(p);report.sourceFiles.push({path:p,bytes:b.length,sha256:sha(b),gitBlob:trees.get(p).oid});writeFileSync(join(output,p===SCRIPT?'audit-script.mjs.snapshot':'audit-workflow.yml.snapshot'),b,{flag:'wx'});}
-  closedAliases();const candidates=[...trees.keys()].filter(p=>CANDIDATE_NAME.test(p)).sort();report.counts.candidateManifests=candidates.length;assert(candidates.length<=LIMIT.manifests);
+  closedAliases();closedEpochControls();const candidates=[...trees.keys()].filter(p=>CANDIDATE_NAME.test(p)).sort();report.counts.candidateManifests=candidates.length;assert(candidates.length<=LIMIT.manifests);
   // Register all parent logical maps before interpreting their inert originals.
   for(const p of candidates){timed();try{registerEmbedded(manifest(p));}catch(e){unresolved(p,null,'Cannot parse/register manifest',{error:String(e.message).slice(0,1000)});}}
   for(const p of candidates){timed();let ctx;try{ctx=manifest(p);const schema=ctx.data.schema??null;report.schemaCounts[String(schema)]=(report.schemaCounts[String(schema)]??0)+1;
     if(embedded.has(p)){embeddedManifest(ctx,embedded.get(p));continue;}
+    if(CLOSED_EPOCH_DOCUMENTS.has(p)){applyClosedEpochProjection(ctx);continue;}
     // An unbound inert historical manifest has no implied current path base.
     const fields=handlers.get(schema);if(p.endsWith('.snapshot')&&!fields?.every(r=>r.inertManifest===p)){unresolved(p,schema,'Inert manifest has no reviewed delivery projection',pinHints(ctx.data));continue;}
     if(!fields){unresolved(p,schema,'Schema has no closed public-pointer handler',pinHints(ctx.data));continue;}

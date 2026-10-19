@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import vm from 'node:vm';
+import { assertNotes41AwareProofMigration, createNotes41AwareProofMigration, createNotes41AwareProofMigrationFromRoot, createNotes41PublicationSourceView, notes41PublicationTransitionPin, verifyNotes41PublicationArtifactRoles, verifyNotes41PublicationHelperRow } from './notes41-publication-source-view.mjs';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
 const ROOT_ID = { bytes: 149123, sha256: 'b5d48417f94e9464c071610ffc2720451cebae126b94b674e67c8f6fe16967d8' };
@@ -33,7 +34,10 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const { createEditorVaultProofMigration } = await import(pathToFileURL(path.join(root, 'scripts/editor-vault-proof-migration.mjs')).href);
   const { verifyCloudRecoveryRecords } = await import(pathToFileURL(path.join(root, 'scripts/verify-cloud-recovery-records.mjs')).href);
   const { verifyGitDirectoryClosure } = await import(pathToFileURL(path.join(root, 'scripts/verify-followup-records.mjs')).href);
-  const read = name => fs.readFileSync(path.join(root, name));
+  const actualRead = name => fs.readFileSync(path.join(root, name));
+  const notes41Initial = createNotes41AwareProofMigrationFromRoot(root), notes41View = notes41Initial.notes41SourceView;
+  const actualLiveNotesPaths = notes41View.plan.currentNotesSources.map(row => row.path);
+  const read = name => notes41View.legacyRead(name);
   let migration;
   positive('named-migration-positive', () => { migration = createEditorVaultProofMigration(read); assert.equal(migration.summary().latestInstalledSourcesMandatory, 35); });
   const notesIndexPath='products/rea-studio/apps/notes/results/todo-followup/publication-index.json';
@@ -523,8 +527,94 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const changedTooling=structuredClone(toolingRows),firstTooling=Object.keys(changedTooling)[0];changedTooling[firstTooling][1]='0'.repeat(64);negative('notes36-changed-fixed-tooling-definition',()=>sourceGate('tooling',read,[],changedTooling),'externally fixed literal table identities; no derived expected hash');
 
   assert.equal(rows.length, 306); assert.ok(rows.every(row => row.passed));
-  return { schema: 'rea-cloud-publication-controls/v1', status: 'passed', sourceOnly: true, rows, checks: rows.length,
+  // All306 previous control bodies and their count assertion remain above.
+  // Exact129 mandatory source-data rows plus one separately pinned helper are
+  // a new source protocol. Legacy 60/64/256KiB/306/95/96 bounds stay unchanged.
+  const retainedControlCount = rows.length, notes41Pin = notes41PublicationTransitionPin();
+  const allHistoricalRoutes=[...notes41View.plan.historical36Routes,...notes41View.plan.historicalRecordReaderRoutes];
+  positive('notes41-current-source-and-historical36-scopes',()=>{
+    const s=notes41View.summary();assert.equal(s.currentNotesSources,41);assert.equal(s.currentRows,113);
+    assert.equal(s.supportingSources,60);assert.equal(s.historical36CarrierRows,6);assert.equal(s.historicalRecordReaderRows,8);assert.equal(s.historicalProducerCarrierRows,1);
+    assert.equal(s.authenticatedDataRows,129);assert.equal(s.fileLimit,129);assert.equal(s.individualByteLimit,512*1024);assert.equal(s.byteLimit,8*1024*1024);
+    assert.equal(s.combinedEnvelopeRowsWithSeparateHelper,130);assert.equal(s.separateHelperIndividualByteLimit,256*1024);
+    assert.equal(s.currentDirectoryClosureRequired,true);assert.equal(s.oldNotes36ProofRemainsHistorical,true);assert.equal(s.old36BudgetsUnchanged,true);
+    assert.equal(s.currentSourceChannelSeparateFromLegacyProofReads,true);assert.equal(s.actualDirectoryCensusKind,'live-rechecked-acquisition');assert.equal(s.actualDirectoryCensusRechecked,true);assert.equal(s.historicalReceiptsRebound,false);assert.equal(s.installedBehaviorAccepted,false);
+  });
+  for(const row of notes41View.plan.currentSourceRows)negative('notes41-current-source-byte-change:'+row.path,()=>createNotes41PublicationSourceView(p=>p===row.path?flip(actualRead(p)):actualRead(p),notes41Pin,actualLiveNotesPaths),'separate externally pinned actual current source group; no old source identity is substituted');
+  for(const row of [...allHistoricalRoutes,notes41View.plan.historicalPublicationProducer])negative('notes41-historical-carrier-byte-change:'+row.carrier.path,()=>createNotes41PublicationSourceView(p=>p===row.carrier.path?flip(actualRead(p)):actualRead(p),notes41Pin,actualLiveNotesPaths),'exact physical historical carrier under a distinct source epoch');
+  negative('notes41-external-transition-byte-change',()=>createNotes41PublicationSourceView(p=>p===notes41Pin.path?flip(actualRead(p)):actualRead(p),notes41Pin,actualLiveNotesPaths),'external fixed transition pin; an altered declaration cannot redefine its own expected identities');
+  for(const[label,names]of[['missing',actualLiveNotesPaths.slice(1)],['duplicate',[...actualLiveNotesPaths,actualLiveNotesPaths[0]]],['unknown',actualLiveNotesPaths.map((name,i)=>i===0?'products/rea-studio/apps/notes/unlisted-source.mjs':name)]])negative('notes41-live-directory-closure:'+label,()=>createNotes41PublicationSourceView(actualRead,notes41Pin,names),'exact41 live app names remain independent from historical36 proof names');
+  for(const row of allHistoricalRoutes)negative('notes41-unknown-source-epoch:'+row.logicalPath,()=>notes41View.resolve(row.logicalPath,{bytes:1,sha256:'0'.repeat(64)},migration.resolve),'only exact externally pinned current/historical36 or previously named older source epochs are allowed');
+  positive('notes41-excluded-results-and-unrelated-SHA-only-resolver-contract',()=>{
+    for(const name of ['products/rea-studio/apps/notes/results/unlisted-old-proof.json',notes41View.plan.supportingSources[0].path]){
+      const expected={sha256:'0'.repeat(64)};let delegated=0;
+      assert.equal(notes41View.resolve(name,expected,(actualName,actualExpected)=>{delegated++;assert.equal(actualName,name);assert.equal(actualExpected,expected);return null;}),null);assert.equal(delegated,1);
+    }
+  });
+  const notes41ArtifactPaths=[...artifactPaths,'notes41-current-sources.json.gz.snapshot'];
+  const oldRoleValidator=paths=>sourceGate('roles',read,paths);
+  positive('notes41-exact96-roles-retain-all95-historical-roles',()=>{assert.equal(verifyNotes41PublicationArtifactRoles(notes41ArtifactPaths,oldRoleValidator),true);});
+  for(const[label,paths]of[['missing-new',artifactPaths],['duplicate-new',[...notes41ArtifactPaths,'notes41-current-sources.json.gz.snapshot']],['unknown-new',notes41ArtifactPaths.map(name=>name==='notes41-current-sources.json.gz.snapshot'?'unlisted-current-source-envelope.snapshot':name)],['old-role-replacement',notes41ArtifactPaths.map((name,i)=>i===0?'unlisted-old-source-envelope.snapshot':name)]])negative('notes41-artifact-role-census:'+label,()=>verifyNotes41PublicationArtifactRoles(paths,oldRoleValidator),'exact96-role union; immutable old95-role verifier independently checks the complete historical subset');
+  // Eight reader source transitions are actual current input rows and exact
+  // historical physical paths, not an unchecked optional migration override.
+  for(const row of notes41View.plan.historicalRecordReaderRoutes){
+    positive('notes41-reader-exact-current-and-before:'+row.logicalPath,()=>{
+      const bound=assertNotes41AwareProofMigration(notes41Initial,actualRead,actualRead);
+      assert.equal(bound.resolve(row.logicalPath,row.current),null);same(actualRead(row.logicalPath),row.current);
+      assert.equal(bound.resolve(row.logicalPath,row.before),row.carrier.path);same(actualRead(row.carrier.path),row.before);
+    });
+    negative('notes41-reader-current-channel-mutation:'+row.logicalPath,()=>assertNotes41AwareProofMigration(notes41Initial,p=>p===row.logicalPath?flip(actualRead(p)):actualRead(p),actualRead),'brand plus independently reauthenticated actual current-source channel');
+    negative('notes41-reader-physical-carrier-mutation:'+row.logicalPath,()=>{
+      const bound=assertNotes41AwareProofMigration(notes41Initial,actualRead,actualRead),target=bound.resolve(row.logicalPath,row.before);
+      const proofRead=p=>p===row.carrier.path?flip(actualRead(p)):actualRead(p);same(proofRead(target),row.before);
+    },'resolved physical carrier still crosses the unchanged exact proof-byte assertion');
+  }
+  negative('notes41-context-forged-object',()=>assertNotes41AwareProofMigration(Object.freeze({...notes41Initial}),actualRead,actualRead),'WeakMap brand cannot be supplied by a caller-created stub');
+  negative('notes41-context-missing-current-channel',()=>assertNotes41AwareProofMigration(notes41Initial),'an explicit source-read channel is mandatory');
+  negative('notes41-context-stale-after-authentication',()=>{
+    let stale=false;const target=notes41View.plan.currentNotesSources[0].path;
+    const context=createNotes41AwareProofMigration(p=>stale&&p===target?flip(actualRead(p)):actualRead(p),notes41Pin,actualLiveNotesPaths);
+    stale=true;assertNotes41AwareProofMigration(context,actualRead,actualRead);
+  },'the originally branded source context is rechecked before creating a new channel binding');
+  const {verifyEditorValueApiProofBytes}=await import(pathToFileURL(path.join(root,'scripts/verify-editor-value-api-followups.mjs')).href);
+  const pureCurrentTarget='products/rea-studio/apps/notes/client.mjs';
+  let pureSourceMutationHits=0;
+  negative('notes41-editor-pure-current-source-channel-mutation',()=>verifyEditorValueApiProofBytes({read:actualRead,list:proofList,sourceRead:p=>{if(p===pureCurrentTarget){pureSourceMutationHits++;return flip(actualRead(p));}return actualRead(p);}},{sourceMigration:notes41Initial}),'actual pure validator reauthenticates sourceRead before accepting proof metadata');
+  assert(pureSourceMutationHits>0,'The exact pure current-source mutation must be read');assert(rows.at(-1).rejected.message.includes(pureCurrentTarget),'Rejection must identify the mutated current source');
+  negative('notes41-editor-pure-forged-context',()=>verifyEditorValueApiProofBytes({read:actualRead,list:proofList,sourceRead:actualRead},{sourceMigration:Object.freeze({...notes41Initial})}),'actual pure validator rejects an unbranded context before source/proof reads');
+  assert(rows.at(-1).rejected.message.includes('A real frozen current-source context is required'),'Forged context must reject at the actual brand guard');
+  function proofList(prefix){assert(typeof prefix==='string'&&prefix.endsWith('/'));const names=[];function visit(directory,relative,depth){assert(depth<=32);const entries=fs.readdirSync(directory,{withFileTypes:true});assert(entries.length<=1200);for(const item of entries){assert(!item.isSymbolicLink());const name=relative+item.name;if(item.isDirectory())visit(path.join(directory,item.name),name+'/',depth+1);else{assert(item.isFile());names.push(name);assert(names.length<=1200);}}}visit(path.join(root,prefix),prefix,0);return names;}
+  const pureHost=notes41View.plan.historical36Routes.find(row=>row.logicalPath==='products/rea-studio/server.mjs');assert(pureHost);
+  positive('notes41-editor-pure-valid-two-channel-context',()=>{const result=verifyEditorValueApiProofBytes({read:actualRead,list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial});assert.equal(result.sourceMigration.notes41PublicationSourceProof.authenticatedDataRows,129);assert.equal(result.newApplicationExecutions,0);});
+  negative('notes41-editor-pure-physical-proof-carrier-mutation',()=>verifyEditorValueApiProofBytes({read:p=>p===pureHost.carrier.path?flip(actualRead(p)):actualRead(p),list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial}),'actual pure validator retains exact historical carrier identity checks on io.read independently of current-source authentication');
+  positive('notes41-old-publication-producer-is-explicit-carrier',()=>{const old=notes41View.plan.historicalPublicationProducer;same(notes41View.legacyRead(old.logicalPath),old.before);same(actualRead(old.carrier.path),old.before);assert.equal(notes41View.envelopeRows().filter(row=>row.historicalPublicationProducer).length,1);});
+  negative('notes41-context-extra-eligible-source-after-authentication',()=>{
+    let names=[...actualLiveNotesPaths];const context=createNotes41AwareProofMigration(actualRead,notes41Pin,()=>names);
+    names=[...names,'products/rea-studio/apps/notes/owned-unlisted-source.mjs'];assertNotes41AwareProofMigration(context,actualRead,actualRead);
+  },'the retained acquisition provider is re-enumerated; a declaration list cannot replace actual names');
+  const actualProducerSource=actualRead('scripts/verify-cloud-publication.mjs').toString('utf8');
+  const helperLiteral=[...actualProducerSource.matchAll(/^const NOTES41_PUBLICATION_HELPER = \{ path: 'scripts\/notes41-publication-source-view\.mjs', bytes: ([1-9][0-9]*), sha256: '([0-9a-f]{64})' \};$/gm)];
+  assert.equal(helperLiteral.length,1,'One exact current producer helper pin literal');
+  const helperPin={path:'scripts/notes41-publication-source-view.mjs',bytes:Number(helperLiteral[0][1]),sha256:helperLiteral[0][2]};
+  const helperBytes=actualRead(helperPin.path),helperDataRows=notes41View.envelopeRows();
+  positive('notes41-fixed-helper-real-shared-guard',()=>{const row=verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows);assert.equal(row.separateFixedHelperSource,true);same(Buffer.from(row.base64,'base64'),helperPin);});
+  negative('notes41-fixed-helper-byte-change',()=>verifyNotes41PublicationHelperRow(flip(helperBytes),helperPin,helperDataRows),'same actual producer helper-row guard; expected identity comes from fixed current producer literal');
+  negative('notes41-fixed-helper-wrong-path',()=>verifyNotes41PublicationHelperRow(helperBytes,{...helperPin,path:'scripts/unlisted-helper.mjs'},helperDataRows),'one fixed helper source path');
+  negative('notes41-fixed-helper-wrong-SHA',()=>verifyNotes41PublicationHelperRow(helperBytes,{...helperPin,sha256:'0'.repeat(64)},helperDataRows),'exact externally fixed helper SHA');
+  negative('notes41-fixed-helper-wrong-size',()=>verifyNotes41PublicationHelperRow(helperBytes,{...helperPin,bytes:helperPin.bytes+1},helperDataRows),'exact externally fixed helper byte count');
+  negative('notes41-fixed-helper-data-overlap',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.map((row,i)=>i===0?{...helperPin}:row)),'helper is separately counted and cannot replace a mandatory data row');
+  negative('notes41-fixed-helper-individual-cap',()=>verifyNotes41PublicationHelperRow(Buffer.alloc(256*1024+1),helperPin,helperDataRows),'fixed helper256KiB individual cap precedes acceptance');
+  negative('notes41-fixed-helper-combined-raw-cap',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.map(row=>({...row,bytes:512*1024}))),'combined129 data rows plus helper remain below8MiB');
+  negative('notes41-fixed-helper-missing-data-row',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.slice(1)),'all129 data rows are mandatory before the130th helper row');
+  const legacyOnlyDeclaration='products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json';
+  assert(!notes41View.plan.currentSourceRows.some(row=>row.path===legacyOnlyDeclaration));
+  let pureLegacyMutationHits=0;
+  negative('notes41-editor-pure-legacy-only-proof-channel-mutation',()=>verifyEditorValueApiProofBytes({read:p=>{if(p===legacyOnlyDeclaration){pureLegacyMutationHits++;return flip(actualRead(p));}return actualRead(p);},list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial}),'fresh legacy constructor authenticates supplied io.read even for mandatory declarations outside the129 current-source data group');
+  assert(pureLegacyMutationHits>0,'The exact mandatory legacy-only declaration mutation must be read');assert(rows.at(-1).rejected.message.includes(legacyOnlyDeclaration),'Legacy rejection must identify the actually mutated declaration');
+  assert.equal(retainedControlCount,306);
+  assert.equal(rows.length,306+196);assert.ok(rows.every(row=>row.passed));
+  return { schema: 'rea-cloud-publication-controls/v3', sourceEpoch: 'notes41-installed-recovery-r2-publication-eight-readers', retainedHistoricalControls:306, current41AdditionalControls:196, status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,
-    limits: ['Finite manifest/attempt mutations are rejected at their immutable identity layer; deeper semantic branches are not separately bypassed or claimed tested.', 'The937 block executes only publication assertions/readers in a bounded VM; it does not execute the historical937 behavioral tests.'] };
+    limits: ['Finite manifest/attempt mutations are rejected at their immutable identity layer; deeper semantic branches are not separately bypassed or claimed tested.', 'The937 block executes only publication assertions/readers in a bounded VM; it does not execute the historical937 behavioral tests.', 'Current-source io.sourceRead and historical proof-carrier io.read are distinct explicit channels; both are checked and no optional unbranded migration is accepted.'] };
 }

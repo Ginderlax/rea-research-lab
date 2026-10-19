@@ -1,4 +1,4 @@
-import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';
+import {createNotes41AwareProofMigrationFromRoot as createEditorVaultProofMigrationFromRoot} from './notes41-publication-source-view.mjs';
 import assert from'node:assert/strict';import{readFileSync,readdirSync}from'node:fs';import{join,resolve}from'node:path';import{createHash}from'node:crypto';import{spawnSync}from'node:child_process';import{verifyEditorValueApiFollowups}from'./verify-editor-value-api-followups.mjs';
 const sha=b=>createHash('sha256').update(b).digest('hex'),safe=n=>assert.ok(typeof n==='string'&&n&&!n.startsWith('/')&&!/[\\:\x00-\x1f]/.test(n)&&n.split('/').every(s=>s&&s!=='.'&&s!=='..'));
 function files(root,rel=''){return readdirSync(join(root,rel),{withFileTypes:true}).flatMap(e=>{assert.ok(!e.isSymbolicLink());const n=rel?rel+'/'+e.name:e.name;safe(n);return e.isDirectory()?files(root,n):[n];}).sort();}

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, lstatSync, realpathSync } from 'node:fs';
 import { resolve, join } from 'node:path';
 import { createHash } from 'node:crypto';
-import { createEditorVaultProofMigrationFromRoot } from './editor-vault-proof-migration.mjs';
+import {createNotes41AwareProofMigrationFromRoot as createEditorVaultProofMigrationFromRoot} from './notes41-publication-source-view.mjs';
 const APP = 'products/rea-studio/apps/archive/';
 const BEFORE = 'products/rea-studio/results/archive-aes-source-transition-20261015/before/';
 const SIX = new Map([
@@ -69,6 +69,7 @@ export function verifyArchiveIntegrationRecords(root) {
     for (const reference of source.line_refs) assert.equal(lines[reference.line - 1], reference.text, source.public_path + ':' + reference.line);
   }
   for (const [name, expected] of seen) read(name, expected);
+  migration.notes41SourceView.recheck();
   return { status: 'pass', fingerprints: verified, historical_focused_archive_tests: 169, historicalLzmaNotCurrentAcceptance: true,
     archiveCurrentSourcesMandatory: 21, exactHistoricalReplacementRoutes: routed.size, source_assisted: true, original_runtime_wrapper: false,
     originalAppVerifierUnchanged: true, receiptUnchanged: true, applicationExecutions: 0, behavioralTestsExecuted: 0, originalExecutions: 0,

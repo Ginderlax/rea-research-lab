@@ -1,4 +1,4 @@
-import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';
+import {createNotes41AwareProofMigrationFromRoot as createEditorVaultProofMigrationFromRoot} from './notes41-publication-source-view.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync, readdirSync, lstatSync, realpathSync} from 'node:fs';
 import {resolve, relative, sep} from 'node:path';
@@ -91,7 +91,7 @@ export function verifyNotesVaultFollowups(root, {onFile, resolveHistorical} = {}
   if (nativeCheck) noNative(b, p);
   return b;
  }
- const migration=createEditorVaultProofMigration(rawRead);function read(p,expected,nativeCheck=false){return rawRead(migration.resolve(p,expected)??p,expected,nativeCheck);}const json = (p, expected) => JSON.parse(read(p, expected).toString('utf8'));
+ const migration=createEditorVaultProofMigrationFromRoot(base);function read(p,expected,nativeCheck=false){return rawRead(migration.resolve(p,expected)??p,expected,nativeCheck);}const json = (p, expected) => JSON.parse(read(p, expected).toString('utf8'));
  function tree(prefix, rel = '', found = []) {
   assert.ok(rel.split('/').length < 40 && found.length < 20000, 'Proof inventory bound');
   const dir = location(prefix + (rel ? '/' + rel : ''));
@@ -289,6 +289,7 @@ export function verifyNotesVaultFollowups(root, {onFile, resolveHistorical} = {}
  assert.deepEqual(sort(noteSources), sort(binding.originalSources)); assert.deepEqual(sort(noteCaps), sort(binding.capabilityIds));
  // Re-read every byte identity to detect source changes over the finite verification interval.
  for (const [p, r] of readRows) read(p, r);
+ migration.notes41SourceView.recheck();
  return {schema: 'rea-notes-vault-public-proof-verification/v1', notesOriginalPaths: 935, notesPublishedPaths: 920, notesExcludedJEXCopies: 15, vaultOriginalPaths: 858, vaultPublishedPathRecords: 857, vaultUniquePublicPaths: 471, vaultNewPublicPaths: 444, vaultReusedPublicPaths: 27, vaultExcludedKDBXCopies: 1, intentionalJPEGAliases: 4, strictNotesFinalPlan: 26, strictNotesHistoricalPlan: 25, strictVaultPlan: 45, installedFiles: 34, separatelyRecordedCurrentDocumentationAliases: 1, notesPathOnlyAdapterReconstructions: noteAdapterReconstructions, vaultPathOnlyAdapterReconstructions: vaultAdapterReconstructions, immutable455BeforeImages: beforeImages, vault455BaselineFiles: vault455Baseline, vaultPlanOnlyBaselineFiles: vaultPlanOnlyBaseline, originalSourceIdentities: 159, originalCapabilityIDs: 232, authenticatedFiles: readRows.size, authenticatedBytes: total, allSourceBytesStable: true, localCarrierBytesRequired: false, newBehaviorTests: 0, newOriginalExecutions: 0, notesNativeConfirmationBrowserAcceptance: false, fullProductParity: false, universalSuperiority: false};
 }
 if (process.argv.includes('--standalone')) console.log(JSON.stringify(verifyNotesVaultFollowups(resolve(import.meta.dirname, '..'))));

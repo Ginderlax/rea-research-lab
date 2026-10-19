@@ -1,0 +1,76 @@
+{
+  "schema": "rea-search-observed-original-comparison-work-source-authority/v2",
+  "status": "WORK_ONLY_SOURCE_AUTHORED_INDEPENDENT_REVIEW_AND_HOSTED_EXECUTION_PENDING",
+  "candidateRoot": "work/notes-search-browser-experiment-20261019/observation-candidate-v2",
+  "file": {
+    "path": "products/rea-studio/experiments/notes-structured-search-browser-cloud-20261019/tests/search-original-observations.test.mjs",
+    "bytes": 10489,
+    "sha256": "ac8bbb72fa88675584720642ee227757b304dea5007903196738564e56eaf6f4"
+  },
+  "unchangedReviewedSource": {
+    "path": "work/notes-search-grammar-20261019/candidate/products/rea-studio/apps/notes/search-query-original.test.mjs",
+    "bytes": 7129,
+    "sha256": "d670df9a690e8f05231719fdd282b4832adee49e9c651db8c1a048fddc87cf79"
+  },
+  "exactSourceEdits": [
+    {
+      "before": "import { readFile } from 'node:fs/promises';",
+      "after": "import { readFile } from 'node:fs/promises';\nimport fs from 'node:fs';\nimport path from 'node:path';",
+      "occurrences": 1
+    },
+    {
+      "before": "from './search-query.mjs';",
+      "after": "from '../../../apps/notes/search-query.mjs';",
+      "occurrences": 1
+    },
+    {
+      "before": "const originalRoot = new URL('../../experiments/notes-search-grammar/original/', import.meta.url);",
+      "after": "const originalRoot = new URL('../../notes-search-grammar/original/', import.meta.url);\n// This NEW diagnostic derivative preserves the released functions and all80\n// fixtures. It records actual results before the same strict assertions.\nassert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');\nfor (const [key, value] of Object.entries({ CI:'true', GITHUB_ACTIONS:'true', RUNNER_ENVIRONMENT:'github-hosted', RUNNER_OS:'Windows', RUNNER_ARCH:'X64', GITHUB_REPOSITORY:'Ginderlax/rea-research-lab', GITHUB_REF:'refs/heads/experiment/notes-structured-search-browser-20261019', GITHUB_EVENT_NAME:'push', GITHUB_JOB:'notes-search-observed-values' })) assert.equal(process.env[key], value, key);\nassert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));\nfor (const key of ['GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT']) assert(/^[1-9][0-9]*$/.test(process.env[key]));\nconst outputRoot = path.resolve(process.env.REA_SEARCH_VALUE_EVIDENCE ?? '');\nassert(path.isAbsolute(process.env.REA_SEARCH_VALUE_EVIDENCE ?? ''));\nfor (let at=outputRoot;;) { assert(!fs.lstatSync(at).isSymbolicLink()); const parent=path.dirname(at); if(parent===at)break; at=parent; }\nassert.equal(fs.realpathSync(outputRoot).toLowerCase(), outputRoot.toLowerCase());\nconst relativeOutput=path.relative(fs.realpathSync(process.env.RUNNER_TEMP),outputRoot);\nassert(relativeOutput&&!path.isAbsolute(relativeOutput)&&relativeOutput!=='..'&&!relativeOutput.startsWith('..'+path.sep));\nconst outputFile=path.join(outputRoot,'original-search-values.jsonl');\nconst descriptor=fs.openSync(outputFile,'wx');\nlet observedBytes=0;\nconst observedCounts={parser:0,'metadata-sql':0};\nconst writeObserved=value=>{const bytes=Buffer.from(JSON.stringify(value)+'\n');assert(bytes.length<=64*1024);observedBytes+=bytes.length;assert(observedBytes<=1024*1024);assert.equal(fs.writeSync(descriptor,bytes),bytes.length);};\nconst observedAttempt={sourceCommit:process.env.GITHUB_SHA,runId:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,job:process.env.GITHUB_JOB};\nwriteObserved({schema:'rea-search-original-observed-values-header/v1',...observedAttempt,expectedParserCases:48,expectedMetadataSQLCases:32,originalFullApplicationExecuted:false,originalPersistedSearchDatabaseExecuted:false,FTSOrRankCompared:false});\nfunction observeValue(kind,query,value){assert(Object.hasOwn(observedCounts,kind));const caseIndex=observedCounts[kind]++;writeObserved({schema:'rea-search-original-observed-case/v1',...observedAttempt,kind,caseIndex,query,...value,originalSourcePins:pins,recordedBeforeStrictAssertion:true});}\ntest.after(()=>{const complete=observedCounts.parser===48&&observedCounts['metadata-sql']===32;try{writeObserved({schema:'rea-search-original-observed-values-footer/v1',...observedAttempt,observedCounts,complete,records:observedCounts.parser+observedCounts['metadata-sql'],assertionOutcomeMustBeReadFromActualTAP:true,compatibilityCoverageCases:80,TAPParentAndChildResultsExpected:82,fullParity:false,superiority:false});}finally{fs.closeSync(descriptor);}assert.equal(complete,true,'Every actual comparison value must be recorded');});\n",
+      "occurrences": 1
+    },
+    {
+      "before": "    assert.deepEqual(actual, expected);\n  });\n});",
+      "after": "    observeValue('metadata-sql', query, { SQL: sql, params, originalResultIds: expected, replacementResultIds: actual });\n    assert.deepEqual(actual, expected);\n  });\n});",
+      "occurrences": 1
+    },
+    {
+      "before": "for (const query of parserCases) await t.test(JSON.stringify(query), () => assert.deepEqual(capture(parseSearchQuery, query), capture(parseOriginal, query)));",
+      "after": "for (const query of parserCases) await t.test(JSON.stringify(query), () => {\n    const actual = capture(parseSearchQuery, query), expected = capture(parseOriginal, query);\n    observeValue('parser', query, { original: expected, replacement: actual });\n    assert.deepEqual(actual, expected);\n  });",
+      "occurrences": 1
+    }
+  ],
+  "exactInverseRestoresAll7129ReviewedSourceBytes": true,
+  "scope": "The18 featurepayloads and historical0ae10comparison source remain unchanged. This separatelypinned derivative caches the same parser capture calls once, records actual values before assert.deepEqual, and inserts SQL/params/ID observation immediately before the unchanged SQL strict assertion. Exact48/32 fixtures, actualreleased filterParser/queryBuilder function sources and their runtimeauthentication/denied-date adapter remain unchanged.",
+  "expected": {
+    "parserCases": 48,
+    "metadataSQLCases": 32,
+    "realComparisonCoverage": 80,
+    "NodeParentAndChildResults": 82,
+    "observedValueRecords": 80,
+    "extraComparisonCoverageClaimed": 0
+  },
+  "output": "OwnedRUNNER_TEMP child / original-search-values.jsonl, header+80actualcase records+footer;64KiB/record,1MiBtotal,wx; savedbeforestrict assertions andcheckedfor48/32complete inafterhook. ActualTAP remainsauthoritative forassertionpass/fail.",
+  "execution": {
+    "originalProductOrTestExecutions": 0,
+    "importsOrVMs": 0,
+    "syntaxChecks": 0,
+    "tests": 0,
+    "builds": 0,
+    "GitMutations": 0,
+    "activeSourceEdits": 0
+  },
+  "nextAction": "Independent source review including exact48/32fixture/assertion semantics and runtimeURL bindings; integrate only into a new separate hosted browser/study epoch sourceplan, then run cloudonly andqualify actualJSONL/TAP independently.",
+  "priorUnexecutedSourceProposal": {
+    "path": "work/notes-search-browser-experiment-20261019/OBSERVED-ORIGINAL-COMPARISON-SOURCE-AUTHORITY-V1.json",
+    "bytes": 6752,
+    "sha256": "b5c6402b854b4233c276bf64ba67b2351571ba16c00e9c5d5770e383d61e0a99",
+    "sourceOnlyFinding": "An authoring escape replacement accidentally put a literal linebreak inside one JS quoted JSONL separator. Found by reading the generated text, before review or execution. V1 remains preserved and must not be integrated."
+  },
+  "V2ExactTextCorrection": {
+    "beforeHex": "4a534f4e2e737472696e676966792876616c7565292b270a27",
+    "afterHex": "4a534f4e2e737472696e676966792876616c7565292b275c6e27",
+    "occurrences": 1,
+    "allOtherV1BytesExact": true,
+    "sourceExecutionWasNotUsedToFindOrFixThis": true
+  }
+}

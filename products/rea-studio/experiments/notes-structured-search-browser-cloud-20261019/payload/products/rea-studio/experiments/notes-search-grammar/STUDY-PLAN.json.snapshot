@@ -1,0 +1,50 @@
+{
+  "schema": "rea-notes-search-study-plan/v1",
+  "status": "SOURCE-ONLY-PROPOSAL-NOT-INSTALLED-OR-EXECUTED",
+  "baselineCommit": "a6f63c8da23b418a1d6efd655b39233be11f939f",
+  "question": "Can a separate explicit Filters mode provide useful field and metadata queries while preserving the current default search and every saved note/draft lifecycle contract?",
+  "original": {
+    "product": "Joplin Desktop",
+    "version": "3.6.14",
+    "tag": "v3.6.14",
+    "commit": "7e2765a3857754d12dbadea442b60ceaf9d4b23d",
+    "repository": "laurent22/joplin",
+    "acquisition": "Four narrowly selected primary UTF-8 files fetched through the authorized GitHub connector at the exact commit; local bytes authenticated by both SHA-256 and Git blob identities. Existing release provenance and license remain preserved.",
+    "newPrimaryFiles": ["readme/apps/search.md", "packages/lib/services/search/SearchEngine.ts", "packages/lib/services/search/filterParser.ts", "packages/lib/services/search/queryBuilder.ts"],
+    "fullApplicationExecuted": false
+  },
+  "currentGap": {
+    "baseline": "server.mjs list splits a 500-character lowercased query on whitespace, AND-matches substrings across title/body/tags/notebook, then sorts updated time descending.",
+    "documentedGap": "The active README explicitly says this differs from original full-text term matching and search grammar.",
+    "valuableTarget": "Find saved notes and tasks by title/body fields, exact metadata labels or wildcard labels, notebook descendant scopes, tags, type and completion, with explicit exclusions."
+  },
+  "contracts": [
+    "Legacy default Text mode remains AND substring over title/body/tag/notebook text. Existing selectors remain independent AND restrictions.",
+    "Explicit Filters mode supports text/title/body/tag/notebook/type/iscompleted clauses and implicit AND. Multiple positive notebook clauses form OR over matching base-title trees; negative notebook scopes exclude descendants.",
+    "The standalone grammar preserves quoted field splitting, partial/unclosed quotes, known-filter colon handling, unknown-filter text fallback, type/completion validation and original wildcard term representation within 500 UTF-16 characters and 64 terms.",
+    "Tag/notebook patterns preserve SQL LIKE percent/underscore semantics and original star-to-percent conversion; ASCII case folds, non-ASCII case does not. No query-controlled regular expressions are created.",
+    "Text/title/body evaluation is literal case-insensitive substring matching, intentionally different from FTS tokenization, original normalization and relevance ranking. Free Filters text searches title/body only.",
+    "Nonempty parsed any/date/resource/sourceurl/id/location clauses and text/title/body wildcard clauses fail explicitly. Dropped empty raw fields add no condition. Empty substring clauses match all corresponding text fields as an explicit local policy.",
+    "Search performs no saved-state mutation, save, recovery replay, draft replacement, notebook operation or export. New query errors must preserve every persisted byte and unsaved field."
+  ],
+  "prospectiveHostedComparisons": {
+    "parserCases": 48,
+    "parserMethod": "Authenticate exact original standalone filterParser.ts bytes, strip TypeScript only in hosted Node24+, execute its pure exported parser, compare every returned field or thrown error to the candidate on the fixed corpus. Original parser behavior is observed at runtime, not precomputed from a copied table.",
+    "metadataCases": 32,
+    "metadataMethod": "Authenticate exact original queryBuilder.ts, retain every function body, replace exactly one unused date-service import with a deny-on-access adapter, strip TypeScript in hosted Node24+, run original metadata-only SQL with useFts=false against an in-memory synthetic node:sqlite database. Compare candidate note-ID sets for duplicate notebook names, descendants, exclusions, tag wildcards/Unicode and type/completion.",
+    "adapterLimits": "No original FTS, database schema migrations, original application, GUI, date service, synchronization, OCR, ranking or accessibility behavior executes in these narrow original adapters. A denied adapter access must fail; there is no fallback oracle.",
+    "additionalAuthoredGroups": { "matcher": 6, "serverIntegration": 3, "domModel": 3 },
+    "localCandidateOrOriginalExecutions": 0,
+    "observedRuntimePasses": 0
+  },
+  "cloudOnlyNextSteps": [
+    "Freeze all source, baseline beforeimages, exact four originals, license notices, corpus and authority; obtain independent complete candidate review before any execution or active install.",
+    "Use only a supported verified hosted Node24+ environment. Run the authored exact-parser and metadata-SQL comparisons without weakening source/hash/error assertions; preserve raw output and failing cases.",
+    "Run all existing Notes product tests unchanged plus the new matcher/server/DOM tests. Compare omitted searchMode with explicit simple mode for exact output equality and confirm no storage writes for successful/failed searches.",
+    "Author and independently review real Chromium acceptance for selecting modes, metadata queries, duplicate notebook descendant results, invalid query messaging, unsaved-draft preservation and held older search responses. Run only on the exact future source pins and retained earlier browser assertions.",
+    "Measure legacy-search latency/resource use on identical synthetic bounded collections and repeat unchanged-source baselines; report distributions, source pins, environment and limitations. No performance or superiority claim follows from added syntax alone.",
+    "Only after reviewed hosted acceptance, let root author a separate future installation/source-epoch transition. Keep Notes41 and every historical receipt immutable; update explicit source rosters and recoverable local backups through their normal protocol."
+  ],
+  "outOfScope": ["Any OR semantics", "FTS word/prefix/phrase semantics", "Diacritic or HTML-entity normalization parity", "BM25 or original ordering", "Non-Latin search modes", "Dates and relative time", "Resource/OCR/source-URL/ID/location filters", "Full original database/application/GUI", "Universal compatibility or superiority"],
+  "separation": "This work folder is independent of the immediate publication/Sketch historical-source repair and must not modify current Notes41 sources or the active publication source pins."
+}

@@ -1,0 +1,75 @@
+{
+  "schema": "rea-notes-search-complete-independent-source-peer/v1",
+  "reviewer": "/root/pub_protocol_0110/joplin_search_contract_peer",
+  "status": "COMPLETE-BOUNDED-SOURCE-PROPOSAL-REVIEWED-NO-BLOCKERS-HOSTED-VALIDATION-PENDING",
+  "baselineCommit": "a6f63c8da23b418a1d6efd655b39233be11f939f",
+  "candidateRoot": "C:/Users/evanh/Documents/Codex/2026-10-12/go/work/notes-search-grammar-20261019/candidate",
+  "candidateFileCount": 18,
+  "files": [
+    { "path": "products/rea-studio/apps/notes/client.mjs", "bytes": 41238, "sha256": "9b5e4fbb82b2213d8b537c2629b9ff4e18682b87b2627f8cfb90fe351617e12e" },
+    { "path": "products/rea-studio/apps/notes/README.md", "bytes": 26685, "sha256": "9567a32b8de57bf0f1c6cc882228ab4cdca92609eabe65a28d1f180395fc3d4c" },
+    { "path": "products/rea-studio/apps/notes/search-query-original.test.mjs", "bytes": 7129, "sha256": "d670df9a690e8f05231719fdd282b4832adee49e9c651db8c1a048fddc87cf79" },
+    { "path": "products/rea-studio/apps/notes/search-query.integration.test.mjs", "bytes": 3648, "sha256": "ca5d578b5c080e6994ff3b17d9d03c7d2cdf68398314a91cfcba43c41f2cf975" },
+    { "path": "products/rea-studio/apps/notes/search-query.mjs", "bytes": 7557, "sha256": "8ff7de2badbaf3726bc03ffd848a4b68a6c05c6c8ad94bc0d7b70f403690064d" },
+    { "path": "products/rea-studio/apps/notes/search-query.test.mjs", "bytes": 4836, "sha256": "b674309b52a4191751178049b5b878f1f9ed806d4d1b74d4c4c8caef311ca97b" },
+    { "path": "products/rea-studio/apps/notes/search-query.ui.test.mjs", "bytes": 2722, "sha256": "8b2475bd16f2760d548084f01230fa7b9cacdd57709d636b6d677b7f88dca3bf" },
+    { "path": "products/rea-studio/apps/notes/server.mjs", "bytes": 26210, "sha256": "6607972a00e2254dd5c799a80c122375b28f12ceeb5eef0c59b26cc12de30d24" },
+    { "path": "products/rea-studio/experiments/notes-search-grammar/COPYING", "bytes": 34020, "sha256": "d8a6cc31abc16b6748c7a21f21611f5a1ec33f67d22ca23d7da1c19b95496bee" },
+    { "path": "products/rea-studio/experiments/notes-search-grammar/NOTICE.txt", "bytes": 1667, "sha256": "f8943ce717f7edc40e1e1f8b130ddac517d9c9f243484cf9f5a566ee47827e22" },
+    { "path": "products/rea-studio/experiments/notes-search-grammar/SOURCE-PROVENANCE.json", "bytes": 14391, "sha256": "57f5e22832700084ff45ec1ac14a9714123d2ea30fa270580ed4d6a67c42c6bf" },
+    { "path": "products/rea-studio/experiments/notes-search-grammar/STUDY-PLAN.json", "bytes": 6454, "sha256": "31cf6cec3e34758153b98e3f3622996205db0f0a7f802527249f0b60a8cc35d1" },
+    { "path": "products/rea-studio/experiments/notes-search-grammar/original/LICENSE", "bytes": 998, "sha256": "f6b29267fe2c4251ed95cf9c846b47774a970c5960be9eb8a409f21ffd98425e" },
+    { "path": "products/rea-studio/experiments/notes-search-grammar/original/retained-notebook-release-provenance.json", "bytes": 6281, "sha256": "4d4c59f87eb5c8bfecbc2e6ffadd305d744cf3333cbc2cabbf3bbc112ecc840f" },
+    { "path": "products/rea-studio/experiments/notes-search-grammar/original/packages/lib/services/search/filterParser.ts", "bytes": 4501, "sha256": "e0e0d0690664748c563fabac620ac74839312dcb17cd351f16130f1918d17653" },
+    { "path": "products/rea-studio/experiments/notes-search-grammar/original/packages/lib/services/search/queryBuilder.ts", "bytes": 16896, "sha256": "fd6a671fa6b305116c10163f417e35474764005f73e39ffd5ab24521db6acfcb" },
+    { "path": "products/rea-studio/experiments/notes-search-grammar/original/packages/lib/services/search/SearchEngine.ts", "bytes": 30613, "sha256": "b4e11358155e1df2222eba4ce8772ea986e1ccff45235b375ad8ab226f4d47e9" },
+    { "path": "products/rea-studio/experiments/notes-search-grammar/original/readme/apps/search.md", "bytes": 8359, "sha256": "52032ad42ab813d3c3604896da176a1f61b22e054322ae9e3195c9e0789eddb1" }
+  ],
+  "reviewPerformed": [
+    "Read the full new runtime matcher and all four new test modules as source text.",
+    "Independently inspected actual three-file before/candidate diffs for server, client and README. Changes outside those scoped diffs were not inferred from the authoring script.",
+    "Read the pinned original standalone parser, relevant full query-builder functions and SearchEngine normalization/search call paths; preserved corrected exact upstream SHA-256 values.",
+    "Read the synthetic DOM fixture to verify its hook runs after the genuine server handler result and its held-response control discriminates earlier matching versus newer empty results.",
+    "Read the complete study plan and notice, inspect source provenance, and independently check all 18 final file byte/SHA identities.",
+    "Independently compare all 41 baseline Notes source byte counts and SHA-256 values against the provenance roster: zero mismatches."
+  ],
+  "integrationFindings": [
+    "Omitted mode still selects simple. Its lowercasing, whitespace tokens, AND substring haystack over title/body/tag/notebook, selectors, updated-time ordering and preview token remain equivalent in the inspected diff.",
+    "Filters requires explicit mode selection, validates mode and query, uses a separate predicate, and leaves persistence/edit/export code untouched. Existing selectors remain AND restrictions.",
+    "Client adds one labeled select, passes its value to list, invokes the existing read-only refresh path, and includes the new select in notebook-operation disabling/restoration.",
+    "The existing two refresh-generation guards remain in place. The held-positive-response DOM case tests earlier A-note results against a newer zero-note type filter, so stale result publication would fail its assertions.",
+    "Integration cases inspect exact persisted snapshots and write counts for successful and rejected searches, simple-mode equality, independent selectors and trash boundaries.",
+    "Previously raised empty-field and empty-substring policies are now explicitly described in README and plan and covered by candidate test source. They are disclosed local behavior, not FTS parity."
+  ],
+  "originalComparisonFindings": [
+    "Original parser and builder bytes are checked against exact byte counts, SHA-256 and Git blob identities before TypeScript-only transformation and module import in the future hosted test.",
+    "All original builder function bodies are retained. Exactly one known date-service import is replaced with a deny-on-access Proxy; metadata-only cases must not use this adapter. There is no fallback oracle.",
+    "The metadata comparison creates a separate in-memory SQLite database and executes original generated SQL with useFts=false. Candidate note-ID sets are independently computed on the corresponding records.",
+    "The 32-case metadata corpus discriminates duplicate notebook titles, recursive descendants, exclusions, absent scopes, independent type/completion, tag presence/absence, percent/underscore/star wildcards and distinct non-ASCII case.",
+    "The 48-case parser corpus includes successful syntax and thrown errors, partial quotes, unsupported parsed filters, unknown filter fallback, negation, empty fields, tabs, colon retention and wildcard representation.",
+    "These are authored comparisons, not observed passing results. Their adapters do not execute the complete original database lifecycle, FTS, application or GUI."
+  ],
+  "prospectiveBuckets": {
+    "originalParserCases": 48,
+    "originalMetadataSQLCases": 32,
+    "matcherTopLevelGroups": 6,
+    "serverTopLevelGroups": 3,
+    "domModelTopLevelGroups": 3,
+    "allObservedRuntimePasses": 0
+  },
+  "blockers": [],
+  "pendingAcceptance": [
+    "Freeze exact source authority and beforeimages, then run only in a supported verified hosted Node24+ environment.",
+    "Run original comparisons and all unchanged Notes tests with exact source binding and preserve every failure.",
+    "Author/review real Chromium acceptance with retained earlier browser assertions before browser acceptance is claimed. DOM-model cases are not browser acceptance.",
+    "Measure performance on identical source-bound collections before making speed or resource claims.",
+    "Root owns any future installation/source-epoch transition; current Notes41 and historical receipts remain unchanged."
+  ],
+  "limitations": [
+    "Literal lowercase substring content matching omits original normalization, FTS tokenization/phrases, relevance and multilingual behavior.",
+    "No any/date/resource/sourceurl/id/location evaluation is implemented, except that original parser-dropped empty fields contribute no clause.",
+    "No candidate or original source was executed, imported, compiled, syntax-checked, built or tested by the reviewer.",
+    "No active source or Git state was changed. This JSON is a source-review work receipt.",
+    "No complete-product parity, performance improvement, universal compatibility, accessibility acceptance or superiority claim is supported."
+  ]
+}

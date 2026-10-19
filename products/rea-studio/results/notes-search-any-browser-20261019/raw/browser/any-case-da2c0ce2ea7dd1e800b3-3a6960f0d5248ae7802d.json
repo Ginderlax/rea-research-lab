@@ -1,0 +1,486 @@
+{
+  "schema": "rea-notes-any-real-browser-case/v1",
+  "sourceEpoch": "notes46-any-real-browser-v1",
+  "sourceCommit": "abb20f4705a7c474957520a1c05ca398a418f46b",
+  "runId": "39227750397",
+  "runAttempt": "1",
+  "title": "ANY type and completion alternatives union only matching active note IDs",
+  "testId": "da2c0ce2ea7dd1e800b3-3a6960f0d5248ae7802d",
+  "retry": 0,
+  "statusAtFixtureClose": "passed",
+  "realBrowser": true,
+  "actualHTTP": true,
+  "browserName": "chromium",
+  "browserVersion": "156.0.8078.4",
+  "requests": [
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:1 type:note iscompleted:1",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:0 type:note iscompleted:1",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:1 iscompleted:0 iscompleted:1",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:0 iscompleted:0 iscompleted:1",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 2072,
+        "sha256": "0de04a123b0bcc9432cee4e10d6f46818ca01f297ceb4b5ee2d968686e80bb76"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "36a6e7904d94ede8ae31416dcef737617bbc09b5637bea7d69bc702f9f5bf9f8"
+      }
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 59,
+        "sha256": "8eb98f248ab7d09bc09d9ec2fe24f21833ea7eb87f26d6895a959ba1773f41ef"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:1 type:note iscompleted:1",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 1696,
+        "sha256": "223d42d0965a511c1526cc1a8decdeced0f08459cf70495d8ca0faae49c764f7"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "36a6e7904d94ede8ae31416dcef737617bbc09b5637bea7d69bc702f9f5bf9f8"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:0 type:note iscompleted:1",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 102,
+        "sha256": "5440197016fe05ce64a462d7b19dac397549cc0f59504859706902b8bf7e0b4f"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "36a6e7904d94ede8ae31416dcef737617bbc09b5637bea7d69bc702f9f5bf9f8"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:1 iscompleted:0 iscompleted:1",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 908,
+        "sha256": "f08b58b3d11b6b6986788dc579e44297e1df752a53ed0d6f2d95998dc14ffe0e"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "36a6e7904d94ede8ae31416dcef737617bbc09b5637bea7d69bc702f9f5bf9f8"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:0 iscompleted:0 iscompleted:1",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 102,
+        "sha256": "5440197016fe05ce64a462d7b19dac397549cc0f59504859706902b8bf7e0b4f"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "36a6e7904d94ede8ae31416dcef737617bbc09b5637bea7d69bc702f9f5bf9f8"
+      }
+    }
+  ],
+  "fixtureRequests": [
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Lab",
+        "revision": 0
+      },
+      "status": 200
+    },
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Child",
+        "parentId": "a4c5d3b451f7e59f2d7ed6050f8f6674",
+        "revision": 1
+      },
+      "status": 200
+    },
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Elsewhere",
+        "revision": 2
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Release plan",
+        "body": "ready for review",
+        "notebookId": "a4c5d3b451f7e59f2d7ed6050f8f6674",
+        "tags": [
+          "work"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Other",
+        "body": "Release plan archived",
+        "notebookId": "0158f7973a5424c19a87d637f1e5db1e",
+        "tags": [
+          "spam"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Task",
+        "body": "ready",
+        "notebookId": "0158f7973a5424c19a87d637f1e5db1e",
+        "tags": [
+          "work"
+        ],
+        "newTodo": true
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Done",
+        "body": "archived",
+        "notebookId": "a9242321440c37cd0c59c93f5e8029b1",
+        "tags": [
+          "work"
+        ],
+        "newTodo": true
+      },
+      "status": 200
+    },
+    {
+      "action": "todo-completed",
+      "input": {
+        "id": "3ac62e60-fe14-4805-8adc-b13bc82ab4b4",
+        "revision": 1,
+        "completed": true
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Archived trash",
+        "body": "ready",
+        "notebookId": "a4c5d3b451f7e59f2d7ed6050f8f6674",
+        "tags": [
+          "work"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "delete",
+      "input": {
+        "id": "bfa127f3-d6ba-4fd4-8ac8-163309880b9f",
+        "revision": 1
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Untagged memo",
+        "body": "neutral",
+        "notebookId": "a9242321440c37cd0c59c93f5e8029b1",
+        "tags": []
+      },
+      "status": 200
+    },
+    {
+      "action": "draft-recovery-scope",
+      "input": {},
+      "status": 200
+    }
+  ],
+  "expectedHttpFailures": [],
+  "observations": [
+    {
+      "kind": "actual-any-owned-synthetic-seed",
+      "ids": {
+        "lab": "a4c5d3b451f7e59f2d7ed6050f8f6674",
+        "child": "0158f7973a5424c19a87d637f1e5db1e",
+        "elsewhere": "a9242321440c37cd0c59c93f5e8029b1",
+        "plan": "88dbdc31-48d2-47e2-9f13-27e08df6edb5",
+        "archived": "0d8a9681-a1e2-4f5b-8153-5f64e675ae65",
+        "task": "d4fdd0eb-aaf5-406e-a2f1-f36baddabc7b",
+        "complete": "3ac62e60-fe14-4805-8adc-b13bc82ab4b4",
+        "trash": "bfa127f3-d6ba-4fd4-8ac8-163309880b9f",
+        "untagged": "0b33646d-bdc0-44d4-8977-a4821beaf5b3"
+      },
+      "untaggedId": "0b33646d-bdc0-44d4-8977-a4821beaf5b3",
+      "untaggedInputTags": [],
+      "fixtureSetupOnly": true
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [
+        "0b33646d-bdc0-44d4-8977-a4821beaf5b3",
+        "0d8a9681-a1e2-4f5b-8153-5f64e675ae65",
+        "3ac62e60-fe14-4805-8adc-b13bc82ab4b4",
+        "88dbdc31-48d2-47e2-9f13-27e08df6edb5"
+      ],
+      "rows": [
+        {
+          "id": "0b33646d-bdc0-44d4-8977-a4821beaf5b3",
+          "title": "Untagged memo",
+          "notebook": "Elsewhere",
+          "tags": []
+        },
+        {
+          "id": "3ac62e60-fe14-4805-8adc-b13bc82ab4b4",
+          "title": "Done",
+          "notebook": "Elsewhere",
+          "tags": [
+            "work"
+          ]
+        },
+        {
+          "id": "0d8a9681-a1e2-4f5b-8153-5f64e675ae65",
+          "title": "Other",
+          "notebook": "Lab / Child",
+          "tags": [
+            "spam"
+          ]
+        },
+        {
+          "id": "88dbdc31-48d2-47e2-9f13-27e08df6edb5",
+          "title": "Release plan",
+          "notebook": "Lab",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [],
+      "rows": []
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [
+        "3ac62e60-fe14-4805-8adc-b13bc82ab4b4",
+        "d4fdd0eb-aaf5-406e-a2f1-f36baddabc7b"
+      ],
+      "rows": [
+        {
+          "id": "3ac62e60-fe14-4805-8adc-b13bc82ab4b4",
+          "title": "Done",
+          "notebook": "Elsewhere",
+          "tags": [
+            "work"
+          ]
+        },
+        {
+          "id": "d4fdd0eb-aaf5-406e-a2f1-f36baddabc7b",
+          "title": "Task",
+          "notebook": "Lab / Child",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [],
+      "rows": []
+    },
+    {
+      "kind": "actual-any-type-completion-union-versus-conjunction",
+      "trashedNoteExcluded": "bfa127f3-d6ba-4fd4-8ac8-163309880b9f"
+    }
+  ],
+  "errors": [],
+  "cleanup": {
+    "heldRoutesFinished": true,
+    "requestsDrained": true,
+    "screenshotSaved": true,
+    "contextClosed": true,
+    "hostClosed": true,
+    "dataRemoved": true
+  },
+  "pendingOwnedRequests": 0,
+  "screenshot": "screenshots/any-da2c0ce2ea7dd1e800b3-3a6960f0d5248ae7802d.png",
+  "finalDisk": {
+    "bytes": 3771,
+    "sha256": "62398ce73450198af1595c156cb1a41d552e356bdc805ce3350998fa4682cf19"
+  },
+  "NotesUISaveRequests": 0,
+  "originalProductExecutions": 0,
+  "handlerResponsesRewritten": false,
+  "fullParity": false,
+  "superiority": false,
+  "installedANYAcceptancePreclaimed": false,
+  "originalNotebookCompatibilityClaimed": false
+}

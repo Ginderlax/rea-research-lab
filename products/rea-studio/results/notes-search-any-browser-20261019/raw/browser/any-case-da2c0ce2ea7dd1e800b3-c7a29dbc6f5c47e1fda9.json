@@ -1,0 +1,410 @@
+{
+  "schema": "rea-notes-any-real-browser-case/v1",
+  "sourceEpoch": "notes46-any-real-browser-v1",
+  "sourceCommit": "abb20f4705a7c474957520a1c05ca398a418f46b",
+  "runId": "39227750397",
+  "runAttempt": "1",
+  "title": "Newer conjunction results and dirty fields survive an older unchanged actual ANY response",
+  "testId": "da2c0ce2ea7dd1e800b3-c7a29dbc6f5c47e1fda9",
+  "retry": 0,
+  "statusAtFixtureClose": "passed",
+  "realBrowser": true,
+  "actualHTTP": true,
+  "browserName": "chromium",
+  "browserVersion": "156.0.8078.4",
+  "requests": [
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "title:\"Release plan\"",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:1 title:Release body:archived",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:0 title:Release body:archived",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 2072,
+        "sha256": "1927e3d3c3650ea0d59961be857d01c08fa017496ebb28655786fe82051a3cff"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "c9085dcd5ed4acf055210842bf6fbfd428894d78248cc19008c96cda763b779a"
+      }
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 59,
+        "sha256": "23b1fbf4a471aa4629e268af5ad9c158a696f183e45d787d9a9dd1abbe44eaab"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "title:\"Release plan\"",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 490,
+        "sha256": "a147b022c0934aa5534333f0a18f5998c08e05f9781408a6eeed5bc9fa4bc283"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "c9085dcd5ed4acf055210842bf6fbfd428894d78248cc19008c96cda763b779a"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:0 title:Release body:archived",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 102,
+        "sha256": "5440197016fe05ce64a462d7b19dac397549cc0f59504859706902b8bf7e0b4f"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "c9085dcd5ed4acf055210842bf6fbfd428894d78248cc19008c96cda763b779a"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:1 title:Release body:archived",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 1316,
+        "sha256": "a10c5ea495876666eeaf0a0c211c9dcedd75dbb24c1e392852a27faa17a3d859"
+      }
+    }
+  ],
+  "fixtureRequests": [
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Lab",
+        "revision": 0
+      },
+      "status": 200
+    },
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Child",
+        "parentId": "454a6154f6ed2797a562e49a17e8b326",
+        "revision": 1
+      },
+      "status": 200
+    },
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Elsewhere",
+        "revision": 2
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Release plan",
+        "body": "ready for review",
+        "notebookId": "454a6154f6ed2797a562e49a17e8b326",
+        "tags": [
+          "work"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Other",
+        "body": "Release plan archived",
+        "notebookId": "dcfdce0963a39fe40e76d0a841813128",
+        "tags": [
+          "spam"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Task",
+        "body": "ready",
+        "notebookId": "dcfdce0963a39fe40e76d0a841813128",
+        "tags": [
+          "work"
+        ],
+        "newTodo": true
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Done",
+        "body": "archived",
+        "notebookId": "c283b17bd1e179498d7fc15b3aa60c0d",
+        "tags": [
+          "work"
+        ],
+        "newTodo": true
+      },
+      "status": 200
+    },
+    {
+      "action": "todo-completed",
+      "input": {
+        "id": "1a4cea48-dedd-48c3-85e3-354254186c7b",
+        "revision": 1,
+        "completed": true
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Archived trash",
+        "body": "ready",
+        "notebookId": "454a6154f6ed2797a562e49a17e8b326",
+        "tags": [
+          "work"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "delete",
+      "input": {
+        "id": "1e9d94ee-367e-4d06-8f46-3f02fd5b3a58",
+        "revision": 1
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Untagged memo",
+        "body": "neutral",
+        "notebookId": "c283b17bd1e179498d7fc15b3aa60c0d",
+        "tags": []
+      },
+      "status": 200
+    },
+    {
+      "action": "draft-recovery-scope",
+      "input": {},
+      "status": 200
+    }
+  ],
+  "expectedHttpFailures": [],
+  "observations": [
+    {
+      "kind": "actual-any-owned-synthetic-seed",
+      "ids": {
+        "lab": "454a6154f6ed2797a562e49a17e8b326",
+        "child": "dcfdce0963a39fe40e76d0a841813128",
+        "elsewhere": "c283b17bd1e179498d7fc15b3aa60c0d",
+        "plan": "fd5bd709-d849-448e-882c-93231b37eded",
+        "archived": "55fc13bc-e39a-4c51-9493-ac8370f6fee8",
+        "task": "feb3f3e6-61be-4947-8df3-b2f3e5965642",
+        "complete": "1a4cea48-dedd-48c3-85e3-354254186c7b",
+        "trash": "1e9d94ee-367e-4d06-8f46-3f02fd5b3a58",
+        "untagged": "655d230c-a681-490c-81f4-dfee358e0013"
+      },
+      "untaggedId": "655d230c-a681-490c-81f4-dfee358e0013",
+      "untaggedInputTags": [],
+      "fixtureSetupOnly": true
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [
+        "fd5bd709-d849-448e-882c-93231b37eded"
+      ],
+      "rows": [
+        {
+          "id": "fd5bd709-d849-448e-882c-93231b37eded",
+          "title": "Release plan",
+          "notebook": "Lab",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "unchanged-actual-list-response-held-after-route-fetch",
+      "input": {
+        "search": "any:1 title:Release body:archived",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "status": 200,
+      "body": {
+        "bytes": 1316,
+        "sha256": "a10c5ea495876666eeaf0a0c211c9dcedd75dbb24c1e392852a27faa17a3d859"
+      },
+      "ids": [
+        "1a4cea48-dedd-48c3-85e3-354254186c7b",
+        "55fc13bc-e39a-4c51-9493-ac8370f6fee8",
+        "fd5bd709-d849-448e-882c-93231b37eded"
+      ],
+      "handlerMocked": false,
+      "responseRewritten": false
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [],
+      "rows": []
+    },
+    {
+      "kind": "actual-any-older-response-suppressed-after-newer-conjunction",
+      "oldActualBody": {
+        "bytes": 1316,
+        "sha256": "a10c5ea495876666eeaf0a0c211c9dcedd75dbb24c1e392852a27faa17a3d859"
+      },
+      "oldIds": [
+        "1a4cea48-dedd-48c3-85e3-354254186c7b",
+        "55fc13bc-e39a-4c51-9493-ac8370f6fee8",
+        "fd5bd709-d849-448e-882c-93231b37eded"
+      ],
+      "latestIds": [],
+      "handlerMocked": false,
+      "responseRewritten": false,
+      "dirtyFieldsRetained": true
+    }
+  ],
+  "errors": [],
+  "cleanup": {
+    "heldRoutesFinished": true,
+    "requestsDrained": true,
+    "screenshotSaved": true,
+    "contextClosed": true,
+    "hostClosed": true,
+    "dataRemoved": true
+  },
+  "pendingOwnedRequests": 0,
+  "screenshot": "screenshots/any-da2c0ce2ea7dd1e800b3-c7a29dbc6f5c47e1fda9.png",
+  "finalDisk": {
+    "bytes": 3771,
+    "sha256": "b7249d14be48853fbf0190b27cef061aa2423bc548654036b75f5c7b633e8c07"
+  },
+  "NotesUISaveRequests": 0,
+  "originalProductExecutions": 0,
+  "handlerResponsesRewritten": false,
+  "fullParity": false,
+  "superiority": false,
+  "installedANYAcceptancePreclaimed": false,
+  "originalNotebookCompatibilityClaimed": false
+}

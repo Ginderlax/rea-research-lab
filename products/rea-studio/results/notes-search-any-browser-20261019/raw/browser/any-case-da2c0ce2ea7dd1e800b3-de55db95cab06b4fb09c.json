@@ -1,0 +1,627 @@
+{
+  "schema": "rea-notes-any-real-browser-case/v1",
+  "sourceEpoch": "notes46-any-real-browser-v1",
+  "sourceCommit": "abb20f4705a7c474957520a1c05ca398a418f46b",
+  "runId": "39227750397",
+  "runAttempt": "1",
+  "title": "ANY search preserves all dirty fields and native recovery copies without implicit Save",
+  "testId": "da2c0ce2ea7dd1e800b3-de55db95cab06b4fb09c",
+  "retry": 0,
+  "statusAtFixtureClose": "passed",
+  "realBrowser": true,
+  "actualHTTP": true,
+  "browserName": "chromium",
+  "browserVersion": "156.0.8078.4",
+  "requests": [
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:1 title:Release tag:spam",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:0 title:Release tag:spam",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:\"1\" title:Release body:archived",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:1 tag:work tag:spam",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "any:1 tag:work tag:spam",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "898ef2ce3996f9e58040524d8cd561e2",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 2072,
+        "sha256": "5c333189d07e92411a19b6f84a1793b8255e0717911e4623f11a0f6634c30c5b"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "816605e7d52f4734e035e965276fb2f7252910c3d77c1f45f999d3c500e48703"
+      }
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 59,
+        "sha256": "3cfa9cf16a52426f3af53f9384251a2250459afd9d85275bfcac3b6d3df8d530"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:1 title:Release tag:spam",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 885,
+        "sha256": "91f80b9212552c7de9fc4351c29d38d4657074d02eed38f67122d362f29116f0"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "816605e7d52f4734e035e965276fb2f7252910c3d77c1f45f999d3c500e48703"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:0 title:Release tag:spam",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 102,
+        "sha256": "5440197016fe05ce64a462d7b19dac397549cc0f59504859706902b8bf7e0b4f"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "816605e7d52f4734e035e965276fb2f7252910c3d77c1f45f999d3c500e48703"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:\"1\" title:Release body:archived",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 102,
+        "sha256": "5440197016fe05ce64a462d7b19dac397549cc0f59504859706902b8bf7e0b4f"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "816605e7d52f4734e035e965276fb2f7252910c3d77c1f45f999d3c500e48703"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:1 tag:work tag:spam",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 1692,
+        "sha256": "1933cac59a293d291ebf923b8a164c8620e529ba50336effacf0667b070f9234"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "816605e7d52f4734e035e965276fb2f7252910c3d77c1f45f999d3c500e48703"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "any:1 tag:work tag:spam",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "898ef2ce3996f9e58040524d8cd561e2",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 872,
+        "sha256": "2b89e22a05b1a1e441ff3b99d2f426925b08e4099850fb44e3c5e38a5d0e7768"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "816605e7d52f4734e035e965276fb2f7252910c3d77c1f45f999d3c500e48703"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 2072,
+        "sha256": "5c333189d07e92411a19b6f84a1793b8255e0717911e4623f11a0f6634c30c5b"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "816605e7d52f4734e035e965276fb2f7252910c3d77c1f45f999d3c500e48703"
+      }
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 59,
+        "sha256": "3cfa9cf16a52426f3af53f9384251a2250459afd9d85275bfcac3b6d3df8d530"
+      }
+    }
+  ],
+  "fixtureRequests": [
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Lab",
+        "revision": 0
+      },
+      "status": 200
+    },
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Child",
+        "parentId": "5fc001103ba8d64692f70386398e25b0",
+        "revision": 1
+      },
+      "status": 200
+    },
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Elsewhere",
+        "revision": 2
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Release plan",
+        "body": "ready for review",
+        "notebookId": "5fc001103ba8d64692f70386398e25b0",
+        "tags": [
+          "work"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Other",
+        "body": "Release plan archived",
+        "notebookId": "898ef2ce3996f9e58040524d8cd561e2",
+        "tags": [
+          "spam"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Task",
+        "body": "ready",
+        "notebookId": "898ef2ce3996f9e58040524d8cd561e2",
+        "tags": [
+          "work"
+        ],
+        "newTodo": true
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Done",
+        "body": "archived",
+        "notebookId": "d4fc7637c742866bbb41bc30228f4bd9",
+        "tags": [
+          "work"
+        ],
+        "newTodo": true
+      },
+      "status": 200
+    },
+    {
+      "action": "todo-completed",
+      "input": {
+        "id": "ac133ac3-16db-4b41-b9be-a0737028a94d",
+        "revision": 1,
+        "completed": true
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Archived trash",
+        "body": "ready",
+        "notebookId": "5fc001103ba8d64692f70386398e25b0",
+        "tags": [
+          "work"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "delete",
+      "input": {
+        "id": "bf3e1a0b-5fdf-4826-9e87-819c74b403a4",
+        "revision": 1
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Untagged memo",
+        "body": "neutral",
+        "notebookId": "d4fc7637c742866bbb41bc30228f4bd9",
+        "tags": []
+      },
+      "status": 200
+    },
+    {
+      "action": "draft-recovery-scope",
+      "input": {},
+      "status": 200
+    }
+  ],
+  "expectedHttpFailures": [],
+  "observations": [
+    {
+      "kind": "actual-any-owned-synthetic-seed",
+      "ids": {
+        "lab": "5fc001103ba8d64692f70386398e25b0",
+        "child": "898ef2ce3996f9e58040524d8cd561e2",
+        "elsewhere": "d4fc7637c742866bbb41bc30228f4bd9",
+        "plan": "423f0f83-f938-4240-93e7-80cb950bdeed",
+        "archived": "5e489391-eac9-4cdc-973d-66f60bb8b551",
+        "task": "6cda9d8c-3b5e-4536-8a47-91736a7a7778",
+        "complete": "ac133ac3-16db-4b41-b9be-a0737028a94d",
+        "trash": "bf3e1a0b-5fdf-4826-9e87-819c74b403a4",
+        "untagged": "be5a44ec-ad54-43a6-b5d6-a99679e63b69"
+      },
+      "untaggedId": "be5a44ec-ad54-43a6-b5d6-a99679e63b69",
+      "untaggedInputTags": [],
+      "fixtureSetupOnly": true
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [
+        "423f0f83-f938-4240-93e7-80cb950bdeed",
+        "5e489391-eac9-4cdc-973d-66f60bb8b551"
+      ],
+      "rows": [
+        {
+          "id": "5e489391-eac9-4cdc-973d-66f60bb8b551",
+          "title": "Other",
+          "notebook": "Lab / Child",
+          "tags": [
+            "spam"
+          ]
+        },
+        {
+          "id": "423f0f83-f938-4240-93e7-80cb950bdeed",
+          "title": "Release plan",
+          "notebook": "Lab",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [],
+      "rows": []
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [],
+      "rows": []
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [
+        "423f0f83-f938-4240-93e7-80cb950bdeed",
+        "5e489391-eac9-4cdc-973d-66f60bb8b551",
+        "6cda9d8c-3b5e-4536-8a47-91736a7a7778",
+        "ac133ac3-16db-4b41-b9be-a0737028a94d"
+      ],
+      "rows": [
+        {
+          "id": "ac133ac3-16db-4b41-b9be-a0737028a94d",
+          "title": "Done",
+          "notebook": "Elsewhere",
+          "tags": [
+            "work"
+          ]
+        },
+        {
+          "id": "6cda9d8c-3b5e-4536-8a47-91736a7a7778",
+          "title": "Task",
+          "notebook": "Lab / Child",
+          "tags": [
+            "work"
+          ]
+        },
+        {
+          "id": "5e489391-eac9-4cdc-973d-66f60bb8b551",
+          "title": "Other",
+          "notebook": "Lab / Child",
+          "tags": [
+            "spam"
+          ]
+        },
+        {
+          "id": "423f0f83-f938-4240-93e7-80cb950bdeed",
+          "title": "Release plan",
+          "notebook": "Lab",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [
+        "5e489391-eac9-4cdc-973d-66f60bb8b551",
+        "6cda9d8c-3b5e-4536-8a47-91736a7a7778"
+      ],
+      "rows": [
+        {
+          "id": "6cda9d8c-3b5e-4536-8a47-91736a7a7778",
+          "title": "Task",
+          "notebook": "Lab / Child",
+          "tags": [
+            "work"
+          ]
+        },
+        {
+          "id": "5e489391-eac9-4cdc-973d-66f60bb8b551",
+          "title": "Other",
+          "notebook": "Lab / Child",
+          "tags": [
+            "spam"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "actual-any-native-IndexedDB-raw-unsaved-copy-and-reload",
+      "copyBefore": {
+        "schema": 1,
+        "scope": "cd2e757e-b8f5-4c83-84d1-124e19eb3dfc",
+        "id": "8bfe7f54-b8e1-4a2a-82eb-3f75f007f13e",
+        "version": 6,
+        "title": "  Owned unsaved search task  ",
+        "body": "# Raw unsaved 🧪 body\nsecond line",
+        "tags": " work,  research,work ",
+        "notebookId": "898ef2ce3996f9e58040524d8cd561e2",
+        "isTodo": true,
+        "sourceNoteId": null,
+        "sourceRevision": 0,
+        "pendingSave": false,
+        "updatedAt": 1792400957350
+      },
+      "explicitSeparateCopyConsentStillRequired": true,
+      "sourceStateUnchanged": true
+    }
+  ],
+  "errors": [],
+  "cleanup": {
+    "heldRoutesFinished": true,
+    "requestsDrained": true,
+    "screenshotSaved": true,
+    "contextClosed": true,
+    "hostClosed": true,
+    "dataRemoved": true
+  },
+  "pendingOwnedRequests": 0,
+  "screenshot": "screenshots/any-da2c0ce2ea7dd1e800b3-de55db95cab06b4fb09c.png",
+  "finalDisk": {
+    "bytes": 3771,
+    "sha256": "0d49ad920486fd53fda29f3d1ea4328bb62a3a13fb6c985e6a0a1f7d1a2f4462"
+  },
+  "NotesUISaveRequests": 0,
+  "originalProductExecutions": 0,
+  "handlerResponsesRewritten": false,
+  "fullParity": false,
+  "superiority": false,
+  "installedANYAcceptancePreclaimed": false,
+  "originalNotebookCompatibilityClaimed": false
+}

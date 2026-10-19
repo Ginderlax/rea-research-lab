@@ -1,0 +1,150 @@
+{
+  "schema": "rea-notes-draft-recovery-real-browser-case/v1",
+  "title": "Draft recovery real navigation and reload preserve raw new to-do fields without implicit Save",
+  "testId": "b2d44ac57cd14ccfc77b-7decd4f7265dd0044cae",
+  "sourceCommit": "abb20f4705a7c474957520a1c05ca398a418f46b",
+  "runId": "39227750397",
+  "attempt": "1",
+  "sourceScope": "168f819d-ae10-4682-a708-b50d21448841",
+  "browserName": "chromium",
+  "browserVersion": "156.0.8078.4",
+  "realBrowser": true,
+  "actualHTTP": true,
+  "retry": 0,
+  "statusAtFixtureClose": "passed",
+  "delivery": {
+    "bytes": 9814,
+    "sha256": "10d4c3fa2ec7047b9732f6a83aa8cdd76dec48f490a612c18502487058529608"
+  },
+  "requestCounts": {
+    "NotesUIRequests": 13,
+    "NotesUISaveRequests": 1
+  },
+  "requests": [
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/save",
+      "method": "POST",
+      "input": {
+        "revision": 0,
+        "title": "Raw recovery task",
+        "body": "Exact unsaved 🧪 body\nsecond line",
+        "notebookId": "a2c0af771483a96d0b0fdca75e8cf03a",
+        "tags": [
+          "work",
+          "research"
+        ],
+        "newTodo": true
+      }
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "method": "POST",
+      "input": {
+        "id": "4a626b24-651c-4cfd-8bde-33c39418d6aa"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    }
+  ],
+  "expectedAborts": [],
+  "observations": [
+    {
+      "type": "acknowledged-new-task-copy-created",
+      "id": "4a626b24-651c-4cfd-8bde-33c39418d6aa",
+      "revision": 1,
+      "beforeExplicitSaveNotes": 0,
+      "UISaveRequestsBeforeSave": 0
+    }
+  ],
+  "errors": [],
+  "cleanup": {
+    "contextClosed": true,
+    "hostClosed": true,
+    "dataRemoved": true,
+    "heldRoutesFinished": true
+  },
+  "originalProductExecutions": 0,
+  "fullParity": false,
+  "superiority": false
+}

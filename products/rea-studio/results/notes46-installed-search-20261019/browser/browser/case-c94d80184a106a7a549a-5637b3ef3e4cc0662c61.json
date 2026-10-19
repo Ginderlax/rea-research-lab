@@ -1,0 +1,217 @@
+{
+  "schema": "rea-notes-search-retained-new-todo-browser-case/v1",
+  "sourceEpoch": "notes46-installed-structured-search-v1",
+  "sourceCommit": "40c7df91936aaf9574801aa38c5a635f299e6e39",
+  "runId": "39207561583",
+  "runAttempt": "1",
+  "historicalRecoverySourceContextOnly": "f0ca90d2cfafcc10f102c88b7dce3ef3c895d269",
+  "priorRuntimeAcceptanceReused": false,
+  "installedAcceptancePreclaimed": false,
+  "testId": "c94d80184a106a7a549a-5637b3ef3e4cc0662c61",
+  "title": "New To-do real committed Save response blocks native duplicate clicks and retains newer ordinary typing at returned revision",
+  "statusAtFixtureClose": "passed",
+  "retry": 0,
+  "url": "http://127.0.0.1:58714",
+  "ownedDataDirectory": "D:\\a\\_temp\\rea-notes-search-browser-data-xaWLCv\\notes-new-todo-case-KqNcts",
+  "serverCloseObserved": true,
+  "realBrowser": true,
+  "actualHTTP": true,
+  "originalProductExecutions": 0,
+  "originalFullApplicationExecutions": 0,
+  "originalHelperExecutions": 0,
+  "programmaticDisabledControlProbes": 0,
+  "teardown": {
+    "stage": "completed",
+    "heldRoutesFinished": true,
+    "drained": true,
+    "contextClosed": true,
+    "serverClosed": true,
+    "screenshotSaved": true,
+    "requestCounts": {
+      "started": 16,
+      "finished": 16,
+      "failed": 0
+    },
+    "steps": [
+      {
+        "name": "release-held-routes",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T06:02:23.543Z",
+        "completedAtUtc": "2026-10-19T06:02:23.543Z"
+      },
+      {
+        "name": "screenshot",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T06:02:23.543Z",
+        "completedAtUtc": "2026-10-19T06:02:23.583Z"
+      },
+      {
+        "name": "drain-owned-page-requests",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T06:02:23.583Z",
+        "completedAtUtc": "2026-10-19T06:02:23.583Z"
+      },
+      {
+        "name": "capture-synthetic-final-record",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T06:02:23.583Z",
+        "completedAtUtc": "2026-10-19T06:02:23.584Z"
+      },
+      {
+        "name": "close-owned-context",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T06:02:23.584Z",
+        "completedAtUtc": "2026-10-19T06:02:23.622Z"
+      },
+      {
+        "name": "close-owned-server",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T06:02:23.622Z",
+        "completedAtUtc": "2026-10-19T06:02:23.622Z"
+      }
+    ],
+    "pendingOwnedRequests": 0,
+    "activeOwnedIOFault": false
+  },
+  "observations": [
+    {
+      "kind": "new-task-commit-held-native-duplicate-and-newer-draft",
+      "noteId": "2864d62f-f346-4433-b4f2-2966097e9ffa",
+      "committedRevision": 1,
+      "nativeDuplicatePointerClicks": 2,
+      "firstSaveRequests": 1,
+      "nextSubmittedRevision": 1,
+      "finalRevision": 2,
+      "ordinaryEnabledFieldTyping": true,
+      "programmaticDisabledControlProbe": false
+    },
+    {
+      "kind": "owned-synthetic-disk-record",
+      "path": "notes-records/c94d80184a106a7a549a-5637b3ef3e4cc0662c61.json",
+      "bytes": 1184,
+      "sha256": "af7903b43f1840f6bcf566e545d9b08b0856581cd7375968145ca58a241041dc"
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"searchMode\":\"simple\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/draft-recovery-scope",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"revision\":0,\"title\":\"Held newly created task\",\"body\":\"Synthetic new-task body\",\"notebook\":\"Notes\",\"tags\":[\"study\"],\"newTodo\":true}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"id\":\"2864d62f-f346-4433-b4f2-2966097e9ffa\",\"revision\":1,\"title\":\"Held newly created task\",\"body\":\"Newer body typed after actual first commit\",\"notebook\":\"Notes\",\"tags\":[\"study\"]}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"2864d62f-f346-4433-b4f2-2966097e9ffa\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"searchMode\":\"simple\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"search\":\"\",\"searchMode\":\"simple\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"revision\":0,\"title\":\"Held newly created task\",\"body\":\"Synthetic new-task body\",\"notebook\":\"Notes\",\"tags\":[\"study\"],\"newTodo\":true}"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"id\":\"2864d62f-f346-4433-b4f2-2966097e9ffa\",\"revision\":1,\"title\":\"Held newly created task\",\"body\":\"Newer body typed after actual first commit\",\"notebook\":\"Notes\",\"tags\":[\"study\"]}"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"id\":\"2864d62f-f346-4433-b4f2-2966097e9ffa\"}"
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"search\":\"\",\"searchMode\":\"simple\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    }
+  ],
+  "faults": [
+    {
+      "kind": "delay-after-actual-host-response",
+      "action": "save",
+      "status": 200,
+      "body": {
+        "bytes": 396,
+        "sha256": "4d68dd79e7111e4ef38e9e25549ec887df0262271269ab84928f817accf19400"
+      },
+      "handlerMocked": false,
+      "responseRewritten": false
+    }
+  ],
+  "expectedHttpFailures": [],
+  "expectedConsole": [],
+  "auxiliaryErrors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:58714/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "errors": [],
+  "downloads": []
+}

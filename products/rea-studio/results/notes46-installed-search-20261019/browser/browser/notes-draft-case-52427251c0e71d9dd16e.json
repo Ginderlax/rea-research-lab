@@ -1,0 +1,151 @@
+{
+  "schema": "rea-notes-draft-recovery-real-browser-case/v1",
+  "title": "Draft recovery after an unacknowledged committed Save requires separate-copy consent and never automatically replays",
+  "testId": "b2d44ac57cd14ccfc77b-dce67b8958a1d4c332f6",
+  "sourceCommit": "40c7df91936aaf9574801aa38c5a635f299e6e39",
+  "runId": "39207561583",
+  "attempt": "1",
+  "sourceScope": "781d1f06-232e-4bcf-bf2a-8eba0a0ef63a",
+  "browserName": "chromium",
+  "browserVersion": "156.0.8078.4",
+  "realBrowser": true,
+  "actualHTTP": true,
+  "retry": 0,
+  "statusAtFixtureClose": "passed",
+  "delivery": {
+    "bytes": 9814,
+    "sha256": "10d4c3fa2ec7047b9732f6a83aa8cdd76dec48f490a612c18502487058529608"
+  },
+  "requestCounts": {
+    "NotesUIRequests": 11,
+    "NotesUISaveRequests": 2
+  },
+  "requests": [
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/save",
+      "method": "POST",
+      "input": {
+        "revision": 0,
+        "title": "Ambiguous browser Save",
+        "body": "First actual committed body",
+        "notebook": "Notes",
+        "tags": [],
+        "newTodo": true
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/save",
+      "method": "POST",
+      "input": {
+        "revision": 0,
+        "title": "Ambiguous browser Save",
+        "body": "Newer recovery body before reload",
+        "notebook": "Notes",
+        "tags": [],
+        "newTodo": true
+      }
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "method": "POST",
+      "input": {
+        "id": "a5def31e-0c53-4cc6-b8e1-b31dc26608d7"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    }
+  ],
+  "expectedAborts": [],
+  "observations": [
+    {
+      "type": "unchanged-actual-committed-save-response-held",
+      "response": {
+        "bytes": 392,
+        "sha256": "a72ff20ac2fd0b3e34b18e0dcebe42c6541fc8b7f658a9fb358fc7b1479338e6"
+      },
+      "input": {
+        "revision": 0,
+        "title": "Ambiguous browser Save",
+        "body": "First actual committed body",
+        "notebook": "Notes",
+        "tags": [],
+        "newTodo": true
+      }
+    },
+    {
+      "type": "deliberate-separate-creation-after-pending-save-warning",
+      "previouslyCommittedId": "b121ad8a-df47-4246-b951-2c8cf9ed66c3",
+      "acknowledgedCopyId": "a5def31e-0c53-4cc6-b8e1-b31dc26608d7",
+      "automaticSaveRequests": 0
+    }
+  ],
+  "errors": [],
+  "cleanup": {
+    "contextClosed": true,
+    "hostClosed": true,
+    "dataRemoved": true,
+    "heldRoutesFinished": true
+  },
+  "originalProductExecutions": 0,
+  "fullParity": false,
+  "superiority": false
+}

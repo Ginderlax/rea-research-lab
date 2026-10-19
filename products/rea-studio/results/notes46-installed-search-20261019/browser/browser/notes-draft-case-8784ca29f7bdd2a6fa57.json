@@ -1,0 +1,144 @@
+{
+  "schema": "rea-notes-draft-recovery-real-browser-case/v1",
+  "title": "Draft recovery of saved-note edits always creates an acknowledged separate note and preserves newer original revision",
+  "testId": "b2d44ac57cd14ccfc77b-399d2a3692f82055805a",
+  "sourceCommit": "40c7df91936aaf9574801aa38c5a635f299e6e39",
+  "runId": "39207561583",
+  "attempt": "1",
+  "sourceScope": "60757739-fea2-4fb5-a9ec-c340653ea970",
+  "browserName": "chromium",
+  "browserVersion": "156.0.8078.4",
+  "realBrowser": true,
+  "actualHTTP": true,
+  "retry": 0,
+  "statusAtFixtureClose": "passed",
+  "delivery": {
+    "bytes": 9814,
+    "sha256": "10d4c3fa2ec7047b9732f6a83aa8cdd76dec48f490a612c18502487058529608"
+  },
+  "requestCounts": {
+    "NotesUIRequests": 12,
+    "NotesUISaveRequests": 1
+  },
+  "requests": [
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/get",
+      "method": "POST",
+      "input": {
+        "id": "526161ef-9b05-4398-bc4b-3eddfdc2cef8"
+      }
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "method": "POST",
+      "input": {
+        "id": "526161ef-9b05-4398-bc4b-3eddfdc2cef8"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/save",
+      "method": "POST",
+      "input": {
+        "revision": 0,
+        "title": "Original browser note",
+        "body": "Unsubmitted recovered editing",
+        "notebookId": "4cdd6db14da7bf859108ed2dd938a26e",
+        "tags": [
+          "kept"
+        ]
+      }
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "method": "POST",
+      "input": {
+        "id": "604f5eed-8b4d-4a24-a429-260409239279"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    }
+  ],
+  "expectedAborts": [],
+  "observations": [
+    {
+      "type": "saved-provenance-remains-separate",
+      "original": {
+        "id": "526161ef-9b05-4398-bc4b-3eddfdc2cef8",
+        "revision": 2
+      },
+      "copy": {
+        "id": "604f5eed-8b4d-4a24-a429-260409239279",
+        "revision": 1
+      }
+    }
+  ],
+  "errors": [],
+  "cleanup": {
+    "contextClosed": true,
+    "hostClosed": true,
+    "dataRemoved": true,
+    "heldRoutesFinished": true
+  },
+  "originalProductExecutions": 0,
+  "fullParity": false,
+  "superiority": false
+}

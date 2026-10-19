@@ -10,9 +10,10 @@ import { createEditorVaultProofMigration } from './editor-vault-proof-migration.
 const prefix = 'products/rea-studio/experiments/notes41-publication-source-transition-20261019';
 const manifestPath = prefix + '/SOURCE-TRANSITION.json';
 // The final source-reviewed transition pin is set only after all source rows freeze.
-const FROM_ROOT_MANIFEST = { path: manifestPath, bytes: 115875, sha256: '225e5765582e6f57ab49c50df64ff5714d121bdbf921f1d40efeddded7934856' };
+const FROM_ROOT_MANIFEST = { path: manifestPath, bytes: 128781, sha256: 'ef44b5e1c5b7d6f4578d3574b2eab34d5b8f8f24a0886dff7279b22bcf37ced3' };
 const awareContexts = new WeakMap();
 const sourceViewCensus = new WeakMap();
+const sourceViews = new WeakSet();
 function deepFreeze(value) { if (value && typeof value === 'object' && !Object.isFrozen(value)) { for (const item of Object.values(value)) deepFreeze(item); Object.freeze(value); } return value; }
 const readerNames = [
   'scripts/verify-records.mjs',
@@ -24,6 +25,20 @@ const readerNames = [
   'scripts/verify-notes-vault-followups.mjs',
   'scripts/verify-editor-value-api-followups.mjs',
   'scripts/audit-proof-delivery.mjs',
+  'scripts/verify-sketch-layout-followups.mjs',
+].sort();
+const sketchSupportingNames = [
+  "products/rea-studio/apps/sketch/README.md",
+  "products/rea-studio/apps/sketch/client.mjs",
+  "products/rea-studio/apps/sketch/layout-original-oracle.mjs",
+  "products/rea-studio/apps/sketch/layout-ui-fixture.mjs",
+  "products/rea-studio/apps/sketch/layout-ui.test.mjs",
+  "products/rea-studio/apps/sketch/layout.mjs",
+  "products/rea-studio/apps/sketch/layout.test.mjs",
+  "products/rea-studio/apps/sketch/precision.test.mjs",
+  "products/rea-studio/tests/sketch-layout-static-route.test.mjs",
+  "scripts/sketch-layout-proof/proof-verifier.mjs",
+  "scripts/sketch-layout-proof/public-proof-loader.mjs"
 ].sort();
 const producerName = 'scripts/verify-cloud-publication.mjs';
 const controlsName = 'scripts/publication-integrity-controls.mjs';
@@ -64,27 +79,29 @@ export function createNotes41PublicationSourceView(rawRead, externallyPinnedMani
     if (observed.has(row.path)) assert.deepEqual(identity(bytes), observed.get(row.path), 'Source changed during proof reads');
     else {
       observed.set(row.path, identity(bytes)); rawBytes += bytes.length;
-      assert(observed.size <= 132 && rawBytes <= 8 * 1024 * 1024, 'Separate Notes41 publication source budget');
+      assert(observed.size <= 145 && rawBytes <= 8 * 1024 * 1024, 'Separate Notes41 publication source budget');
     }
     return bytes;
   }
   const planBytes = authenticated(externallyPinnedManifest), plan = JSON.parse(planBytes);
-  assert.equal(plan.schema, 'rea-notes41-publication-source-transition/v3');
+  assert.equal(plan.schema, 'rea-notes41-publication-source-transition/v4');
   assert.equal(plan.status, 'reviewed-frozen-source-transition', 'An authoring plan is not an accepted frozen source binding');
   assert.equal(plan.sourceOnly, true); assert.equal(plan.actualInstalledBehaviorAccepted, false);
   assert.equal(plan.publicationAcceptancePreclaimed, false); assert.equal(plan.historicalReceiptsRebound, false);
-  assert.equal(plan.sourceEpoch, 'notes41-installed-recovery-r2-publication-nine-readers');
+  assert.equal(plan.sourceEpoch, 'notes41-installed-recovery-r2-publication-ten-readers-sketch-source-projection');
   assert.equal(plan.oldNotes36Source, '698d2e301765d1b878fb251b3d59dadb5a3c9bac');
-  assert.equal(plan.currentSourceRowsRequired, 114);
+  assert.equal(plan.currentSourceRowsRequired, 126);
   assert.equal(plan.currentSourceRows.length, plan.currentSourceRowsRequired);
   assert.equal(plan.currentNotesSources.length, 41);
   assert.equal(plan.supportingSourceRowsRequired, 60);
   assert.equal(plan.supportingSources.length, plan.supportingSourceRowsRequired);
-  assert.equal(plan.currentRecordReaders.length, 9);
+  assert.equal(plan.sketchSupportingSourceRowsRequired,11);assert.equal(plan.sketchSupportingSources.length,11);
+  assert.deepEqual(plan.sketchSupportingSources.map(row=>row.path).sort(),sketchSupportingNames);
+  assert.equal(plan.currentRecordReaders.length, 10);
   assert.deepEqual(plan.currentRecordReaders.map(row => row.path).sort(), readerNames);
   assert.deepEqual(plan.currentSourceRows, [
     ...plan.currentNotesSources, ...plan.supportingSources, plan.commonHost,
-    plan.currentDeclaration, plan.installedCollector, plan.installedWorkflow, ...plan.currentRecordReaders,
+    plan.currentDeclaration, plan.installedCollector, plan.installedWorkflow, ...plan.currentRecordReaders, ...plan.sketchSupportingSources,
   ]);
   assert.equal(plan.currentDeclaration.path, 'products/rea-studio/experiments/notes-draft-recovery-installed/NOTES41-SOURCE-R2.json');
   assert.equal(plan.commonHost.path, 'products/rea-studio/server.mjs');
@@ -96,10 +113,10 @@ export function createNotes41PublicationSourceView(rawRead, externallyPinnedMani
     currentNotes36ByteLimit: 8388608, toolingObjects: 12, oldArtifactRoles: 95,
   });
   assert.deepEqual(plan.separateNewSourceBudget, {
-    currentSourceRows: 114, historicalRuntimeCarrierRows: 6, historicalReaderCarrierRows: 9,
-    historicalProducerCarrierRows: 1, historicalControlsCarrierRows: 1, externalManifestRows: 1, authenticatedDataRows: 132,
-    dataFileLimit: 132, individualByteLimit: 524288, helperSelfRows: 1,
-    helperIndividualByteLimit: 262144, combinedEnvelopeRows: 133, rawByteLimit: 8388608,
+    currentSourceRows: 126, sketchSupportingSourceRows: 11, historicalRuntimeCarrierRows: 6, historicalReaderCarrierRows: 10,
+    historicalProducerCarrierRows: 1, historicalControlsCarrierRows: 1, externalManifestRows: 1, authenticatedDataRows: 145,
+    dataFileLimit: 145, individualByteLimit: 524288, helperSelfRows: 1,
+    helperIndividualByteLimit: 262144, combinedEnvelopeRows: 146, rawByteLimit: 8388608,
   });
   assert.equal(plan.oldArtifactRoleSetPreserved, true);
   assert.equal(plan.newArtifactRole, 'notes41-current-sources.json.gz.snapshot');
@@ -135,7 +152,7 @@ export function createNotes41PublicationSourceView(rawRead, externallyPinnedMani
   assert.deepEqual(currentDeclaration.commonServer, plan.commonHost);
   const routes = new Map();
   assert.equal(plan.historical36RoutesRequired, 6); assert.equal(plan.historical36Routes.length, 6);
-  assert.equal(plan.historicalRecordReaderRoutes.length, 9);
+  assert.equal(plan.historicalRecordReaderRoutes.length, 10);
   assert.deepEqual(plan.historicalRecordReaderRoutes.map(row => row.logicalPath).sort(), readerNames);
   assert.deepEqual(plan.historical36Routes.map(row => row.logicalPath).sort(), historicalNames);
   for (const row of [...plan.historical36Routes, ...plan.historicalRecordReaderRoutes]) {
@@ -166,9 +183,9 @@ export function createNotes41PublicationSourceView(rawRead, externallyPinnedMani
   assert(!current.has(controlsRoute.carrier.path) && !routes.has(controlsName));
   authenticated(controlsRoute.carrier);
   const dataRows = new Map([[manifestPath, externallyPinnedManifest], ...current, ...[...routes.values()].map(row => [row.carrier.path, row.carrier]), [producerRoute.carrier.path, producerRoute.carrier], [controlsRoute.carrier.path, controlsRoute.carrier]]);
-  assert.equal(dataRows.size, 132, '114 current +15 named runtime/reader carriers +one producer carrier +one controls carrier +one manifest');
-  assert.equal(new Set([...dataRows.keys()].map(name => name.toLowerCase())).size, 132, 'No case-insensitive source aliases');
-  assert.equal(observed.size, 132);
+  assert.equal(dataRows.size, 145, '126 current +16 named runtime/reader carriers +one producer carrier +one controls carrier +one manifest');
+  assert.equal(new Set([...dataRows.keys()].map(name => name.toLowerCase())).size, 145, 'No case-insensitive source aliases');
+  assert.equal(observed.size, 145);
   deepFreeze(plan);
   function recheck() {
     if (liveCensus) checkActualNames(liveCensus());
@@ -177,7 +194,7 @@ export function createNotes41PublicationSourceView(rawRead, externallyPinnedMani
     for (const row of routes.values()) authenticated(row.carrier);
     authenticated(producerRoute.carrier);
     authenticated(controlsRoute.carrier);
-    assert.equal(observed.size, 132);
+    assert.equal(observed.size, 145);
   }
   function legacyRead(name) {
     safe(name); if (name === producerName) return authenticated(producerRoute.carrier);
@@ -212,11 +229,12 @@ export function createNotes41PublicationSourceView(rawRead, externallyPinnedMani
   function summary() {
     recheck();
     return {
-      schema: 'rea-notes41-publication-source-proof/v2', sourceOnly: true,
+      schema: 'rea-notes41-publication-source-proof/v3', sourceOnly: true,
       sourceEpoch: plan.sourceEpoch, currentNotesSources: 41, supportingSources: plan.supportingSourceRowsRequired,
-      currentRows: 114, historical36CarrierRows: 6, historicalRecordReaderRows: 9, historicalProducerCarrierRows: 1, historicalControlsCarrierRows: 1, authenticatedDataRows: observed.size,
-      authenticatedDataBytes: rawBytes, fileLimit: 132, individualByteLimit: 524288, byteLimit: 8388608,
-      combinedEnvelopeRowsWithSeparateHelper: 133, separateHelperIndividualByteLimit: 262144,
+      sketchSupportingSources:plan.sketchSupportingSourceRowsRequired,totalSupportingSources:plan.supportingSourceRowsRequired+plan.sketchSupportingSourceRowsRequired,sketchSelectedSourceRows:10,sketchAppDirectoryClosureClaimed:false,
+      currentRows: 126, historical36CarrierRows: 6, historicalRecordReaderRows: 10, historicalProducerCarrierRows: 1, historicalControlsCarrierRows: 1, authenticatedDataRows: observed.size,
+      authenticatedDataBytes: rawBytes, fileLimit: 145, individualByteLimit: 524288, byteLimit: 8388608,
+      combinedEnvelopeRowsWithSeparateHelper: 146, separateHelperIndividualByteLimit: 262144,
       currentSourceChannelSeparateFromLegacyProofReads: true,
       actualDirectoryCensusKind: liveCensus ? 'live-rechecked-acquisition' : 'fixed-caller-snapshot',
       actualDirectoryCensusRechecked: liveCensus !== null,
@@ -239,7 +257,7 @@ export function createNotes41PublicationSourceView(rawRead, externallyPinnedMani
   }
   const view = Object.freeze({ plan, legacyRead, resolve, recheck, summary, envelopeRows,
     // Actual source bytes only. This channel never projects a historical logical
-    // name and has its own fixed132-object source-data budget.
+    // name and has its own fixed145-object source-data budget.
     sourceRead(name) { safe(name); const row = dataRows.get(name); assert(row, 'Unlisted separate source-data read: ' + name); return authenticated(row); },
     legacyPhysicalReadPath(name) {
       safe(name);
@@ -255,7 +273,7 @@ export function createNotes41PublicationSourceView(rawRead, externallyPinnedMani
       authenticated(route.carrier); return route.carrier.path;
     },
   });
-  sourceViewCensus.set(view, { liveCensus, actualCensusSnapshot });
+  sourceViewCensus.set(view, { liveCensus, actualCensusSnapshot });sourceViews.add(view);
   return view;
 }
 
@@ -334,6 +352,45 @@ export function createNotes41AwareProofMigrationFromRoot(root) {
   const legacy = createEditorVaultProofMigration(view.legacyRead);
   return awareMigration(legacy, view);
 }
+// CURRENT-v2 only. Historical v1 receipts keep their immutable clock routine.
+// Actual producer and owned guards share this function; no old receipt is edited.
+export function projectNotes41CurrentSketchRepeat(value,phase,sourceView,legacyClockProjection) {
+  assert(sourceView&&sourceViews.has(sourceView)&&Object.isFrozen(sourceView),'CURRENT-v2 requires a real constructor-branded current-source view');
+  assert.equal(typeof legacyClockProjection,'function');sourceView.recheck();
+  const producerProof=sourceView.summary(),sketch=value?.followup_evidence?.notesLayoutValueApiCheckpoint?.sketch;
+  assert(sketch);assert.equal(sketch.schema,'rea-sketch-layout-installed-source-proof/v2','CURRENT-v2 Sketch schema is mandatory');
+  for(const [key,wanted]of Object.entries({sourceOnly:true,actualInstalledByteVerification:false,current10HistoricalDatasetMandatory:true,actualCurrentSourcesAuthenticatedSeparately:true,sourceBeforeAfterStable:true,separateReviewPrefixStrict:true,privateBrowserHostNotRelabeledRootHost:true,actualDownloadFileAcceptance:false,fullParity:false,superiority:false,newApplicationCalls:0,newHTTPCalls:0,newBrowserCalls:0,newOriginalCalls:0,newBehaviorTests:0,coreAliases832:832,separateIndependentReview45:45,totalHistoricalAliases877:877,current10Mandatory:10,strictCorePrefixes7:7}))assert.equal(sketch[key],wanted,'CURRENT-v2 scope field '+key);
+  assert.equal(producerProof.currentRows,126);assert.equal(producerProof.supportingSources,60);assert.equal(producerProof.sketchSupportingSources,11);assert.equal(producerProof.totalSupportingSources,71);assert.equal(producerProof.authenticatedDataRows,145);assert.equal(producerProof.combinedEnvelopeRowsWithSeparateHelper,146);
+  assert(['fixed-caller-snapshot','live-rechecked-acquisition'].includes(producerProof.actualDirectoryCensusKind));assert.equal(producerProof.actualDirectoryCensusRechecked,producerProof.actualDirectoryCensusKind==='live-rechecked-acquisition');
+  // Child FromRoot acquires a physical census. Producer separately pins the Git
+  // path snapshot; neither provenance is silently relabeled as the other.
+  assert.equal(sketch.currentSourceProof?.actualDirectoryCensusKind,'live-rechecked-acquisition','CURRENT-v2 child physical census');assert.equal(sketch.currentSourceProof.actualDirectoryCensusRechecked,true,'CURRENT-v2 child physical census recheck');
+  const expectedChildProof={...producerProof,actualDirectoryCensusKind:'live-rechecked-acquisition',actualDirectoryCensusRechecked:true};
+  assert.deepEqual(sketch.currentSourceProof,expectedChildProof,'CURRENT-v2 child current-source proof');
+  const selectedNames=[...sketchSupportingNames.filter(name=>!name.startsWith('scripts/')),'products/rea-studio/server.mjs'].sort();assert.equal(selectedNames.length,10);
+  const selected=selectedNames.map(name=>{const row=sourceView.plan.currentSourceRows.find(row=>row.path===name);assert(row);return {path:row.path,...metadata(row)};});
+  const host=sourceView.plan.historical36Routes.find(row=>row.logicalPath==='products/rea-studio/server.mjs');assert(host);
+  assert.deepEqual(host.before,{bytes:7840,sha256:'85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94'});
+  const p=sketch.historicalSourceProjection;assert(p&&Array.isArray(p.actualCurrentRows));
+  assert.equal(p.actualCurrentRows.length,10);assert.equal(new Set(p.actualCurrentRows.map(row=>row.path)).size,10);
+  assert.deepEqual([...p.actualCurrentRows].sort((a,b)=>a.path<b.path?-1:a.path>b.path?1:0),selected,'CURRENT-v2 selected actual current source pins');
+  assert.deepEqual(p.declaredHistoricalIdentity,host.before,'CURRENT-v2 historical host identity');
+  const carrier=sourceView.historicalReadPath(host.logicalPath,host.before);
+  const expectedProjection={schema:'rea-sketch-fixed-dataset-historical-host-projection/v1',datasetSHA256:sourceView.plan.sketchSourceBoundary.fixedDataset.sha256,logicalPath:host.logicalPath,declaredHistoricalIdentity:host.before,physicalCarrier:carrier,physicalCarrierSourceEpoch:sourceView.plan.oldNotes36Source,actualCurrentRows:p.actualCurrentRows,actualCurrentSelectedSourceRows:10,historicalDatasetSourceRows:10,historicalHostRows:1,otherSelectedSourceRowsUnchanged:9,actualCurrentSourcesAuthenticatedSeparately:true,actualInstalledAtHistoricalIdentityClaimed:false,sourceOverlay:false,historicalReceiptRebound:false,currentBehaviorAcceptanceClaimed:false};
+  assert.deepEqual(p,expectedProjection,'CURRENT-v2 exact historical/current source qualification');
+  assert.deepEqual(sketch.identities,{dataset:sourceView.plan.sketchSourceBoundary.fixedDataset.sha256,verifier:sourceView.plan.sketchSupportingSources.find(row=>row.path==='scripts/sketch-layout-proof/proof-verifier.mjs').sha256,loader:sourceView.plan.sketchSupportingSources.find(row=>row.path==='scripts/sketch-layout-proof/public-proof-loader.mjs').sha256,reviewManifest:'dd196558e07a7568d0424dff0a610a1b18627d0bee0b56c0cbbaad90f6f080c7'},'CURRENT-v2 immutable proof identities');
+  assert.deepEqual(sketch.negativeMetadataControls8,['path traversal','duplicate alias','wrong source digest','wrong current digest','download scope promotion','prefix omission','unmapped extra alias','missing/truncated alias'].map(name=>({name,rejected:true})),'CURRENT-v2 retained eight metadata controls');
+  assert.deepEqual(sketch.sourceProjectionControls,{positive:1,negative:2,observations:[{name:'positive-fixed-dataset-host-and-real-current-source-channels',expected:'acceptance',passed:true},{name:'reject-actual-current-host-byte-mutation',expected:'rejection',passed:true,target:host.logicalPath},{name:'reject-historical-physical-host-carrier-byte-mutation',expected:'rejection',passed:true,target:carrier}]},'CURRENT-v2 named source projection observations');
+  const own=structuredClone(value),legacyInput=structuredClone(value);legacyInput.followup_evidence.notesLayoutValueApiCheckpoint.sketch.schema='rea-sketch-layout-installed-source-proof/v1';
+  const projection=legacyClockProjection(legacyInput,phase);assert(projection&&projection.stable&&projection.clocks);
+  projection.stable.followup_evidence.notesLayoutValueApiCheckpoint.sketch.schema='rea-sketch-layout-installed-source-proof/v2';
+  delete own.checked_at_utc;delete own.followup_evidence.notesLayoutValueApiCheckpoint.sketch.started;delete own.followup_evidence.notesLayoutValueApiCheckpoint.sketch.finished;
+  assert.deepEqual(projection.stable,own,'CURRENT-v2 repeat must retain every non-clock field');
+  const ownClocks={...projection.clocks};assert.deepEqual(ownClocks,{checked_at_utc:value.checked_at_utc,sketchStarted:sketch.started,sketchFinished:sketch.finished,phaseStartedAtUtc:phase.startedAtUtc,phaseCompletedAtUtc:phase.completedAtUtc},'CURRENT-v2 exact own observation clock keys and values');
+  sourceView.recheck();
+  return {...projection,clocks:ownClocks,sourceQualification:{schema:'rea-current-Sketch-v2-repeat-qualification/v1',childPhysicalCensus:'live-rechecked-acquisition',currentViewCensus:producerProof.actualDirectoryCensusKind,currentSourceRows:126,sourceDataRows:145,publicationEnvelopeRows:146,rawCurrentV2InputRequired:true,oldReceiptRebound:false,onlyThreeOwnClocksRemoved:true}};
+}
+
 export function notes41PublicationTransitionPin() { return { ...FROM_ROOT_MANIFEST }; }
 
 export function verifyNotes41PublicationArtifactRoles(names, verifyExactOldRoles) {
@@ -348,21 +405,21 @@ export function verifyNotes41PublicationArtifactRoles(names, verifyExactOldRoles
 
 // Actual producer and controls share this guard. Its expected helper identity
 // comes from the producer's fixed literal, never from hashing an untrusted helper
-// to redefine its own expected SHA. The helper is separate from all132 data rows.
+// to redefine its own expected SHA. The helper is separate from all145 data rows.
 export function verifyNotes41PublicationHelperRow(bytes, externallyPinnedHelper, authenticatedDataRows) {
   assert(externallyPinnedHelper && externallyPinnedHelper.path === 'scripts/notes41-publication-source-view.mjs');
   pin(externallyPinnedHelper, 256 * 1024);
   assert(Buffer.isBuffer(bytes) && bytes.length <= 256 * 1024, 'Fixed helper individual byte limit');
   assert.deepEqual(identity(bytes), metadata(externallyPinnedHelper), 'Externally pinned helper bytes');
-  assert(Array.isArray(authenticatedDataRows)); assert.equal(authenticatedDataRows.length, 132);
+  assert(Array.isArray(authenticatedDataRows)); assert.equal(authenticatedDataRows.length, 145);
   const names = new Set(); let total = bytes.length;
   for (const row of authenticatedDataRows) {
     pin(row); const folded = row.path.toLowerCase();
     assert(!names.has(folded), 'Duplicate source-data path'); names.add(folded);
-    assert.notEqual(folded, externallyPinnedHelper.path.toLowerCase(), 'Helper cannot overlap the132 data rows');
+    assert.notEqual(folded, externallyPinnedHelper.path.toLowerCase(), 'Helper cannot overlap the145 data rows');
     total += row.bytes; assert(total <= 8 * 1024 * 1024, 'Combined data and helper raw byte limit');
   }
-  assert.equal(names.size + 1, 133, 'Exact132 mandatory data rows plus one fixed helper');
+  assert.equal(names.size + 1, 146, 'Exact145 mandatory data rows plus one fixed helper');
   return { path: externallyPinnedHelper.path, ...metadata(externallyPinnedHelper), base64: bytes.toString('base64'), separateFixedHelperSource: true };
 }
 

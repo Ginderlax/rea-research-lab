@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import nativeVm from 'node:vm';
-import { assertNotes41AwareProofMigration, createNotes41AwareProofMigration, createNotes41AwareProofMigrationFromRoot, createNotes41PublicationSourceViewFromRoot, createNotes41PublicationSourceView, notes41PublicationTransitionPin, verifyNotes41PublicationArtifactRoles, verifyNotes41PublicationHelperRow, createNotes41Historical937VmFacade, createNotes41Historical937ReadContext } from './notes41-publication-source-view.mjs';
+import { assertNotes41AwareProofMigration, createNotes41AwareProofMigration, createNotes41AwareProofMigrationFromRoot, createNotes41PublicationSourceViewFromRoot, createNotes41PublicationSourceView, notes41PublicationTransitionPin, verifyNotes41PublicationArtifactRoles, verifyNotes41PublicationHelperRow, createNotes41Historical937VmFacade, createNotes41Historical937ReadContext, projectNotes41CurrentSketchRepeat } from './notes41-publication-source-view.mjs';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
 const ROOT_ID = { bytes: 149123, sha256: 'b5d48417f94e9464c071610ffc2720451cebae126b94b674e67c8f6fe16967d8' };
@@ -529,15 +529,15 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
 
   assert.equal(rows.length, 306); assert.ok(rows.every(row => row.passed));
   // All306 previous control bodies and their count assertion remain above.
-  // Exact132 mandatory source-data rows plus one separately pinned helper are
+  // Exact145 mandatory source-data rows plus one separately pinned helper are
   // a new source protocol. Legacy 60/64/256KiB/306/95/96 bounds stay unchanged.
   const retainedControlCount = rows.length, notes41Pin = notes41PublicationTransitionPin();
   const allHistoricalRoutes=[...notes41View.plan.historical36Routes,...notes41View.plan.historicalRecordReaderRoutes];
   positive('notes41-current-source-and-historical36-scopes',()=>{
-    const s=notes41View.summary();assert.equal(s.currentNotesSources,41);assert.equal(s.currentRows,114);
-    assert.equal(s.supportingSources,60);assert.equal(s.historical36CarrierRows,6);assert.equal(s.historicalRecordReaderRows,9);assert.equal(s.historicalProducerCarrierRows,1);assert.equal(s.historicalControlsCarrierRows,1);
-    assert.equal(s.authenticatedDataRows,132);assert.equal(s.fileLimit,132);assert.equal(s.individualByteLimit,512*1024);assert.equal(s.byteLimit,8*1024*1024);
-    assert.equal(s.combinedEnvelopeRowsWithSeparateHelper,133);assert.equal(s.separateHelperIndividualByteLimit,256*1024);
+    const s=notes41View.summary();assert.equal(s.currentNotesSources,41);assert.equal(s.currentRows,126);
+    assert.equal(s.supportingSources,60);assert.equal(s.sketchSupportingSources,11);assert.equal(s.totalSupportingSources,71);assert.equal(s.historical36CarrierRows,6);assert.equal(s.historicalRecordReaderRows,10);assert.equal(s.historicalProducerCarrierRows,1);assert.equal(s.historicalControlsCarrierRows,1);
+    assert.equal(s.authenticatedDataRows,145);assert.equal(s.fileLimit,145);assert.equal(s.individualByteLimit,512*1024);assert.equal(s.byteLimit,8*1024*1024);
+    assert.equal(s.combinedEnvelopeRowsWithSeparateHelper,146);assert.equal(s.separateHelperIndividualByteLimit,256*1024);
     assert.equal(s.currentDirectoryClosureRequired,true);assert.equal(s.oldNotes36ProofRemainsHistorical,true);assert.equal(s.old36BudgetsUnchanged,true);
     assert.equal(s.currentSourceChannelSeparateFromLegacyProofReads,true);assert.equal(s.actualDirectoryCensusKind,'live-rechecked-acquisition');assert.equal(s.actualDirectoryCensusRechecked,true);assert.equal(s.historicalReceiptsRebound,false);assert.equal(s.installedBehaviorAccepted,false);
   });
@@ -556,7 +556,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const oldRoleValidator=paths=>sourceGate('roles',read,paths);
   positive('notes41-exact96-roles-retain-all95-historical-roles',()=>{assert.equal(verifyNotes41PublicationArtifactRoles(notes41ArtifactPaths,oldRoleValidator),true);});
   for(const[label,paths]of[['missing-new',artifactPaths],['duplicate-new',[...notes41ArtifactPaths,'notes41-current-sources.json.gz.snapshot']],['unknown-new',notes41ArtifactPaths.map(name=>name==='notes41-current-sources.json.gz.snapshot'?'unlisted-current-source-envelope.snapshot':name)],['old-role-replacement',notes41ArtifactPaths.map((name,i)=>i===0?'unlisted-old-source-envelope.snapshot':name)]])negative('notes41-artifact-role-census:'+label,()=>verifyNotes41PublicationArtifactRoles(paths,oldRoleValidator),'exact96-role union; immutable old95-role verifier independently checks the complete historical subset');
-  // Nine reader source transitions are actual current input rows and exact
+  // Ten reader source transitions are actual current input rows and exact
   // historical physical paths, not an unchecked optional migration override.
   for(const row of notes41View.plan.historicalRecordReaderRoutes){
     positive('notes41-reader-exact-current-and-before:'+row.logicalPath,()=>{
@@ -586,7 +586,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   assert(rows.at(-1).rejected.message.includes('A real frozen current-source context is required'),'Forged context must reject at the actual brand guard');
   function proofList(prefix){assert(typeof prefix==='string'&&prefix.endsWith('/'));const names=[];function visit(directory,relative,depth){assert(depth<=32);const entries=fs.readdirSync(directory,{withFileTypes:true});assert(entries.length<=1200);for(const item of entries){assert(!item.isSymbolicLink());const name=relative+item.name;if(item.isDirectory())visit(path.join(directory,item.name),name+'/',depth+1);else{assert(item.isFile());names.push(name);assert(names.length<=1200);}}}visit(path.join(root,prefix),prefix,0);return names;}
   const pureHost=notes41View.plan.historical36Routes.find(row=>row.logicalPath==='products/rea-studio/server.mjs');assert(pureHost);
-  positive('notes41-editor-pure-valid-two-channel-context',()=>{const result=verifyEditorValueApiProofBytes({read:actualRead,list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial});assert.equal(result.sourceMigration.notes41PublicationSourceProof.authenticatedDataRows,132);assert.equal(result.newApplicationExecutions,0);});
+  positive('notes41-editor-pure-valid-two-channel-context',()=>{const result=verifyEditorValueApiProofBytes({read:actualRead,list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial});assert.equal(result.sourceMigration.notes41PublicationSourceProof.authenticatedDataRows,145);assert.equal(result.newApplicationExecutions,0);});
   negative('notes41-editor-pure-physical-proof-carrier-mutation',()=>verifyEditorValueApiProofBytes({read:p=>p===pureHost.carrier.path?flip(actualRead(p)):actualRead(p),list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial}),'actual pure validator retains exact historical carrier identity checks on io.read independently of current-source authentication');
   positive('notes41-old-publication-producer-is-explicit-carrier',()=>{const old=notes41View.plan.historicalPublicationProducer;same(notes41View.legacyRead(old.logicalPath),old.before);same(actualRead(old.carrier.path),old.before);assert.equal(notes41View.envelopeRows().filter(row=>row.historicalPublicationProducer).length,1);});
   negative('notes41-context-extra-eligible-source-after-authentication',()=>{
@@ -605,12 +605,12 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   negative('notes41-fixed-helper-wrong-size',()=>verifyNotes41PublicationHelperRow(helperBytes,{...helperPin,bytes:helperPin.bytes+1},helperDataRows),'exact externally fixed helper byte count');
   negative('notes41-fixed-helper-data-overlap',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.map((row,i)=>i===0?{...helperPin}:row)),'helper is separately counted and cannot replace a mandatory data row');
   negative('notes41-fixed-helper-individual-cap',()=>verifyNotes41PublicationHelperRow(Buffer.alloc(256*1024+1),helperPin,helperDataRows),'fixed helper256KiB individual cap precedes acceptance');
-  negative('notes41-fixed-helper-combined-raw-cap',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.map(row=>({...row,bytes:512*1024}))),'combined132 data rows plus helper remain below8MiB');
-  negative('notes41-fixed-helper-missing-data-row',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.slice(1)),'all132 data rows are mandatory before the133rd helper row');
+  negative('notes41-fixed-helper-combined-raw-cap',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.map(row=>({...row,bytes:512*1024}))),'combined145 data rows plus helper remain below8MiB');
+  negative('notes41-fixed-helper-missing-data-row',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.slice(1)),'all145 data rows are mandatory before the146th helper row');
   const legacyOnlyDeclaration='products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json';
   assert(!notes41View.plan.currentSourceRows.some(row=>row.path===legacyOnlyDeclaration));
   let pureLegacyMutationHits=0;
-  negative('notes41-editor-pure-legacy-only-proof-channel-mutation',()=>verifyEditorValueApiProofBytes({read:p=>{if(p===legacyOnlyDeclaration){pureLegacyMutationHits++;return flip(actualRead(p));}return actualRead(p);},list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial}),'fresh legacy constructor authenticates supplied io.read even for mandatory declarations outside the132 current-source data group');
+  negative('notes41-editor-pure-legacy-only-proof-channel-mutation',()=>verifyEditorValueApiProofBytes({read:p=>{if(p===legacyOnlyDeclaration){pureLegacyMutationHits++;return flip(actualRead(p));}return actualRead(p);},list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial}),'fresh legacy constructor authenticates supplied io.read even for mandatory declarations outside the145 current-source data group');
   assert(pureLegacyMutationHits>0,'The exact mandatory legacy-only declaration mutation must be read');assert(rows.at(-1).rejected.message.includes(legacyOnlyDeclaration),'Legacy rejection must identify the actually mutated declaration');
   // Additional controls for one named old937 context. Actual new source bytes
   // remain separately mandatory; no old row is relabeled current acceptance.
@@ -652,16 +652,48 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
     assert(rows.at(-1).rejected.message.includes('Only exact named Notes36 predecessor identities can be projected'));
   }
   const sourceOnlyAuditView=createNotes41PublicationSourceViewFromRoot(root);
-  positive('notes41-source-only-factory-has-real-rechecked-census',()=>{const s=sourceOnlyAuditView.summary();assert.equal(s.authenticatedDataRows,132);assert.equal(s.currentRows,114);assert.equal(s.historicalRecordReaderRows,9);assert.equal(s.actualDirectoryCensusKind,'live-rechecked-acquisition');assert.equal(s.sourceOnly,true);});
+  positive('notes41-source-only-factory-has-real-rechecked-census',()=>{const s=sourceOnlyAuditView.summary();assert.equal(s.authenticatedDataRows,145);assert.equal(s.currentRows,126);assert.equal(s.historicalRecordReaderRows,10);assert.equal(s.actualDirectoryCensusKind,'live-rechecked-acquisition');assert.equal(s.sourceOnly,true);});
   negative('notes41-source-only-view-cannot-stand-in-for-proof-context',()=>assertNotes41AwareProofMigration(sourceOnlyAuditView,actualRead,actualRead),'a source-only view cannot bypass historical proof validation by masquerading as a branded proof context');
   assert(rows.at(-1).rejected.message.includes('A real frozen current-source context is required'));
+  // Synthetic current-v2 guard inputs only: immutable historical receipts are
+  // cloned in memory, never relabeled as observed current child executions.
+  const currentSketchRepeatPhase=repeatAttempt.phases.find(row=>row.name==='publication-write');assert(currentSketchRepeatPhase);
+  const currentSketchSelectedNames=[...notes41View.plan.sketchSupportingSources.filter(row=>!row.path.startsWith('scripts/')).map(row=>row.path),'products/rea-studio/server.mjs'].sort();
+  const currentSketchSelected=currentSketchSelectedNames.map(name=>{const row=notes41View.plan.currentSourceRows.find(row=>row.path===name);assert(row);return {path:row.path,bytes:row.bytes,sha256:row.sha256};});
+  const currentSketchHost=notes41View.plan.historical36Routes.find(row=>row.logicalPath==='products/rea-studio/server.mjs'),currentSketchCarrier=notes41View.historicalReadPath(currentSketchHost.logicalPath,currentSketchHost.before);
+  const currentSketchGuard=structuredClone(repeatFirst),currentSketchGuardBody=currentSketchGuard.followup_evidence.notesLayoutValueApiCheckpoint.sketch;
+  Object.assign(currentSketchGuardBody,{schema:'rea-sketch-layout-installed-source-proof/v2',actualInstalledByteVerification:false,current10HistoricalDatasetMandatory:true,actualCurrentSourcesAuthenticatedSeparately:true,currentSourceProof:{...notes41View.summary(),actualDirectoryCensusKind:'live-rechecked-acquisition',actualDirectoryCensusRechecked:true},historicalSourceProjection:{schema:'rea-sketch-fixed-dataset-historical-host-projection/v1',datasetSHA256:notes41View.plan.sketchSourceBoundary.fixedDataset.sha256,logicalPath:currentSketchHost.logicalPath,declaredHistoricalIdentity:currentSketchHost.before,physicalCarrier:currentSketchCarrier,physicalCarrierSourceEpoch:notes41View.plan.oldNotes36Source,actualCurrentRows:currentSketchSelected,actualCurrentSelectedSourceRows:10,historicalDatasetSourceRows:10,historicalHostRows:1,otherSelectedSourceRowsUnchanged:9,actualCurrentSourcesAuthenticatedSeparately:true,actualInstalledAtHistoricalIdentityClaimed:false,sourceOverlay:false,historicalReceiptRebound:false,currentBehaviorAcceptanceClaimed:false},sourceProjectionControls:{positive:1,negative:2,observations:[{name:'positive-fixed-dataset-host-and-real-current-source-channels',expected:'acceptance',passed:true},{name:'reject-actual-current-host-byte-mutation',expected:'rejection',passed:true,target:currentSketchHost.logicalPath},{name:'reject-historical-physical-host-carrier-byte-mutation',expected:'rejection',passed:true,target:currentSketchCarrier}]}});
+  positive('notes41-sketch-repeat-v2-valid-live-current-view',()=>{const result=projectNotes41CurrentSketchRepeat(currentSketchGuard,currentSketchRepeatPhase,notes41View,repeatProject);assert.equal(result.stable.followup_evidence.notesLayoutValueApiCheckpoint.sketch.schema,'rea-sketch-layout-installed-source-proof/v2');assert.equal(result.sourceQualification.currentViewCensus,'live-rechecked-acquisition');assert.equal(result.sourceQualification.onlyThreeOwnClocksRemoved,true);},{syntheticGuardInput:true,historicalReceiptsRewritten:false});
+  positive('notes41-sketch-repeat-v2-valid-fixed-Git-current-view',()=>{const view=createNotes41PublicationSourceView(actualRead,notes41Pin,actualLiveNotesPaths),result=projectNotes41CurrentSketchRepeat(currentSketchGuard,currentSketchRepeatPhase,view,repeatProject);assert.equal(result.sourceQualification.currentViewCensus,'fixed-caller-snapshot');assert.equal(result.sourceQualification.childPhysicalCensus,'live-rechecked-acquisition');},{syntheticGuardInput:true,historicalReceiptsRewritten:false});
+  function currentSketchMutation(name,mutate,guard){const input=structuredClone(currentSketchGuard);mutate(input.followup_evidence.notesLayoutValueApiCheckpoint.sketch);negative(name,()=>projectNotes41CurrentSketchRepeat(input,currentSketchRepeatPhase,notes41View,repeatProject),'synthetic current-v2 guard; exact qualification retained independently from legacy clock routine');assert(rows.at(-1).rejected.message.includes(guard),'Current-v2 mutation rejected at unexpected guard: '+name+': '+rows.at(-1).rejected.message);}
+  currentSketchMutation('notes41-sketch-repeat-v2-wrong-historical-identity',sketch=>{sketch.historicalSourceProjection.declaredHistoricalIdentity.sha256='0'.repeat(64);},'CURRENT-v2 historical host identity');
+  currentSketchMutation('notes41-sketch-repeat-v2-wrong-current-identity',sketch=>{sketch.historicalSourceProjection.actualCurrentRows.find(row=>row.path===currentSketchHost.logicalPath).sha256='0'.repeat(64);},'CURRENT-v2 selected actual current source pins');
+  currentSketchMutation('notes41-sketch-repeat-v2-missing-qualification',sketch=>{delete sketch.actualCurrentSourcesAuthenticatedSeparately;},'CURRENT-v2 scope field actualCurrentSourcesAuthenticatedSeparately');
+  currentSketchMutation('notes41-sketch-repeat-v2-missing-control-observation',sketch=>{sketch.sourceProjectionControls.observations.pop();},'CURRENT-v2 named source projection observations');
+  currentSketchMutation('notes41-sketch-repeat-v2-reject-legacy-v1-substitution',sketch=>{sketch.schema='rea-sketch-layout-installed-source-proof/v1';},'CURRENT-v2 Sketch schema is mandatory');
+  let currentSketchSourceStale=false,currentSketchSourceMutationHits=0;
+  const currentSketchStaleView=createNotes41PublicationSourceView(name=>{const content=actualRead(name);if(currentSketchSourceStale&&name===currentSketchHost.logicalPath){currentSketchSourceMutationHits++;return flip(content);}return content;},notes41Pin,actualLiveNotesPaths);
+  currentSketchSourceStale=true;
+  negative('notes41-sketch-repeat-v2-post-auth-current-source-mutation',()=>projectNotes41CurrentSketchRepeat(currentSketchGuard,currentSketchRepeatPhase,currentSketchStaleView,repeatProject),'genuine branded view rechecks actual post-auth source bytes before qualifying synthetic metadata');
+  assert(currentSketchSourceMutationHits>0,'The current-v2 repeat source mutation must be consumed');assert(rows.at(-1).rejected.message.includes(currentSketchHost.logicalPath));
+  let currentSketchCallbackMutationHits=0;
+  negative('notes41-sketch-repeat-v2-nonclock-callback-mutation',()=>projectNotes41CurrentSketchRepeat(currentSketchGuard,currentSketchRepeatPhase,notes41View,(value,phase)=>{currentSketchCallbackMutationHits++;const result=repeatProject(value,phase);result.stable.followup_evidence.notesLayoutValueApiCheckpoint.sketch.sourceOnly=false;return result;}),'only the same three owned clocks may disappear; the actual injected callback mutation must be consumed');
+  assert(currentSketchCallbackMutationHits>0,'The non-clock callback mutation must be consumed');assert(rows.at(-1).rejected.message.includes('CURRENT-v2 repeat must retain every non-clock field'));
+  currentSketchMutation('notes41-sketch-repeat-v2-wrong-child-census',sketch=>{sketch.currentSourceProof.actualDirectoryCensusKind='fixed-caller-snapshot';},'CURRENT-v2 child physical census');
+  currentSketchMutation('notes41-sketch-repeat-v2-wrong-current-source-count',sketch=>{sketch.currentSourceProof.currentRows--;},'CURRENT-v2 child current-source proof');
+  // A caller-created frozen view cannot replace actual source acquisition.
+  let forgedCurrentViewMethodHits=0,forgedCurrentViewCallbackHits=0;
+  const plausibleCurrentSourceProof=notes41View.summary();
+  const forgedCurrentSourceView=Object.freeze({plan:notes41View.plan,summary(){forgedCurrentViewMethodHits++;return plausibleCurrentSourceProof;},recheck(){forgedCurrentViewMethodHits++;},sourceRead(name){forgedCurrentViewMethodHits++;return actualRead(name);},historicalReadPath(){forgedCurrentViewMethodHits++;return currentSketchCarrier;},envelopeRows(){forgedCurrentViewMethodHits++;return [];}});
+  negative('notes41-sketch-repeat-v2-reject-frozen-unbranded-source-view',()=>projectNotes41CurrentSketchRepeat(currentSketchGuard,currentSketchRepeatPhase,forgedCurrentSourceView,()=>{forgedCurrentViewCallbackHits++;return {stable:structuredClone(currentSketchGuard),clocks:{}};}),'a plausible frozen stub must reject before any source method or legacy callback can mask actual source acquisition');
+  assert.equal(forgedCurrentViewMethodHits,0,'An unbranded current source view must not reach any fake source method');assert.equal(forgedCurrentViewCallbackHits,0,'An unbranded current source view must not reach the fake legacy callback');assert.equal(rows.at(-1).rejected.message,'CURRENT-v2 requires a real constructor-branded current-source view');
   assert.equal(retainedControlCount,306);
   const actualAdditional=rows.slice(retainedControlCount).map(row=>({name:row.name,expected:row.rejected?'rejection':'acceptance'}));
   const frozenAdditional=notes41View.plan.publicationAdditionalControlRoster.map(row=>({name:row.name,expected:row.expected}));
-  assert.equal(frozenAdditional.length,216);assert.equal(new Set(frozenAdditional.map(row=>row.name)).size,216);
+  assert.equal(frozenAdditional.length,245);assert.equal(new Set(frozenAdditional.map(row=>row.name)).size,245);
   assert.deepEqual(actualAdditional,frozenAdditional,'Every new control name, order and expected outcome must match its externally pinned closed roster');
-  assert.equal(rows.length,306+216);assert.ok(rows.every(row=>row.passed));
-  return { schema: 'rea-cloud-publication-controls/v4', sourceEpoch: 'notes41-installed-recovery-r2-publication-nine-readers', retainedHistoricalControls:306, current41AdditionalControls:216, historical937AdditionalControls:8, sourceOnlyAuditAndSpecialCarrierAdditionalControls:5, status: 'passed', sourceOnly: true, rows, checks: rows.length,
+  assert.equal(rows.length,306+245);assert.ok(rows.every(row=>row.passed));
+  return { schema: 'rea-cloud-publication-controls/v5', sourceEpoch: 'notes41-installed-recovery-r2-publication-ten-readers-sketch-source-projection', retainedHistoricalControls:306, current41AdditionalControls:245, historical937AdditionalControls:8, sourceOnlyAuditAndSpecialCarrierAdditionalControls:5, status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,
     limits: ['Finite manifest/attempt mutations are rejected at their immutable identity layer; deeper semantic branches are not separately bypassed or claimed tested.', 'The937 block executes only publication assertions/readers in a bounded VM; it does not execute the historical937 behavioral tests.', 'Current-source io.sourceRead and historical proof-carrier io.read are distinct explicit channels; both are checked and no optional unbranded migration is accepted.'] };

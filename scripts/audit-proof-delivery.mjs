@@ -307,15 +307,15 @@ const NOTES36_HISTORICAL_PROJECTION_NAMES = new Set([
 let notes41ProjectionBinding;
 function currentSourceEpochBinding() {
   if (notes41ProjectionBinding) return notes41ProjectionBinding;
-  // Proposed next-protocol interface: source view only, with nine actual reader
-  // rows, nine reader carriers and the additional exact old-controls carrier.
+  // Proposed next-protocol interface: source view only, with ten actual reader
+  // rows, ten reader carriers and the additional exact old-controls carrier.
   const view = createNotes41PublicationSourceViewFromRoot(ROOT);
   const rows = view.envelopeRows();
-  assert.equal(rows.length,132,'Complete audit consumer/source-carrier dependency group');
-  assert.equal(view.plan.currentRecordReaders.length,9);
+  assert.equal(rows.length,145,'Complete audit consumer/source-carrier dependency group');
+  assert.equal(view.plan.currentRecordReaders.length,10);
   assert.equal(view.plan.oldNotes36Source,'698d2e301765d1b878fb251b3d59dadb5a3c9bac');
   const current = new Map(view.plan.currentSourceRows.map(row=>[row.path,identity(row)]));
-  assert.equal(current.size,114);
+  assert.equal(current.size,126);
   const authenticated = [];
   for (const row of rows) {
     const b=projectionRead(row.path);
@@ -345,10 +345,10 @@ function currentSourceEpochBinding() {
   assert.deepEqual({bytes:importedBytes.length,sha256:sha(importedBytes)},identity(importedModule),'Imported immutable source module identity differs');
   const currentSelf=[...excludedCurrent].map(([path,id])=>({path,...id,gitBlob:trees.get(path).oid}));
   report.sourceEpochAuthentication={
-    schema:'rea-audit-separate-current-source-authentication/v1',
-    sourceView:view.summary(),dataRows:132,separateFixedHelperRows:1,flatSourceRows:133,
+    schema:'rea-audit-separate-current-source-authentication/v2',
+    sourceView:view.summary(),dataRows:145,separateFixedHelperRows:1,flatSourceRows:146,
     combinedRawSourceBytes:rawBytes,helper:{...helper,gitBlob:trees.get(helper.path).oid},
-    actualGitAuthenticatedData:authenticated,actualExcludedCurrentProducerAndControls:currentSelf,actualImportedImmutableSourceModule:{...importedModule,gitBlob:trees.get(importedModule.path).oid},sourceContextCaptureRows:136,
+    actualGitAuthenticatedData:authenticated,actualExcludedCurrentProducerAndControls:currentSelf,actualImportedImmutableSourceModule:{...importedModule,gitBlob:trees.get(importedModule.path).oid},sourceContextCaptureRows:149,
     historicalLogicalEpoch:view.plan.oldNotes36Source,logicalPathsSubstitutedInCurrentGroup:false,
     oldManifestBytesRewritten:false,proofVerifierExecutions:0,
     sourceDependencyContentsUploadedByAudit:false,sourceContextEnvelopeCapturedAndReadbackPrepared:false,
@@ -391,7 +391,7 @@ function recheckCurrentSourceEpochBinding() {
 }
 // Bounded source bytes only. This validator decodes inert source payloads; it
 // never imports, evaluates or invokes the contents carried by the envelope.
-const SOURCE_CONTEXT_LIMIT = Object.freeze({dataRows:132,helperRows:1,currentSelfRows:2,importedModuleRows:1,rows:136,singleSourceBytes:512*1024,rawBytes:8*1024*1024,decodedBytes:12*1024*1024,storedBytes:4*1024*1024});
+const SOURCE_CONTEXT_LIMIT = Object.freeze({dataRows:145,helperRows:1,currentSelfRows:2,importedModuleRows:1,rows:149,singleSourceBytes:512*1024,rawBytes:8*1024*1024,decodedBytes:12*1024*1024,storedBytes:4*1024*1024});
 const SOURCE_CONTEXT_ROLE = 'source-context.json.gz.snapshot';
 function contextExpectedRows(binding) {
   const rows=[
@@ -400,21 +400,21 @@ function contextExpectedRows(binding) {
     ...[...binding.excludedCurrent].map(([path,id])=>({path,...id,gitBlob:trees.get(path).oid,sourceGroup:'actual-current-producer-controls'})),
     {...binding.importedModule,gitBlob:trees.get(binding.importedModule.path).oid,sourceGroup:'immutable-imported-source-module'},
   ];
-  assert.equal(binding.rows.length,132);assert.equal(binding.excludedCurrent.size,2);assert.equal(rows.length,136);
-  assert.equal(new Set(rows.map(row=>row.path.toLowerCase())).size,136,'Disjoint complete source-context roster');
+  assert.equal(binding.rows.length,145);assert.equal(binding.excludedCurrent.size,2);assert.equal(rows.length,149);
+  assert.equal(new Set(rows.map(row=>row.path.toLowerCase())).size,149,'Disjoint complete source-context roster');
   return rows;
 }
 function verifySourceContextEnvelope(envelope,expectedRows) {
   assert(envelope&&typeof envelope==='object'&&!Array.isArray(envelope));
-  assert.equal(envelope.schema,'rea-proof-delivery-audit-complete-source-context/v1');
+  assert.equal(envelope.schema,'rea-proof-delivery-audit-complete-source-context/v2');
   assert.equal(envelope.repository,'Ginderlax/rea-research-lab');assert.equal(envelope.sourceCommit,report.provenance.sourceCommit);
-  assert.deepEqual(envelope.groups,{mandatorySourceData:132,fixedHelper:1,actualCurrentProducerControls:2,immutableImportedSourceModule:1});
-  assert.equal(envelope.sourceRows,136);assert(Array.isArray(envelope.rows));assert.equal(envelope.rows.length,136);
+  assert.deepEqual(envelope.groups,{mandatorySourceData:145,fixedHelper:1,actualCurrentProducerControls:2,immutableImportedSourceModule:1});
+  assert.equal(envelope.sourceRows,149);assert(Array.isArray(envelope.rows));assert.equal(envelope.rows.length,149);
   assert(Number.isSafeInteger(envelope.rawSourceBytes)&&envelope.rawSourceBytes>=0&&envelope.rawSourceBytes<=SOURCE_CONTEXT_LIMIT.rawBytes,'Source-context aggregate raw byte cap');
   assert.equal(envelope.sourceCodeExecutedFromEnvelope,false);assert.equal(envelope.uploadAcceptanceClaimed,false);
-  assert(Array.isArray(expectedRows));assert.equal(expectedRows.length,136);
-  const expected=new Map(expectedRows.map(row=>[safe(row.path),row]));assert.equal(expected.size,136);
-  assert.equal(new Set(expectedRows.map(row=>row.path.toLowerCase())).size,136);
+  assert(Array.isArray(expectedRows));assert.equal(expectedRows.length,149);
+  const expected=new Map(expectedRows.map(row=>[safe(row.path),row]));assert.equal(expected.size,149);
+  assert.equal(new Set(expectedRows.map(row=>row.path.toLowerCase())).size,149);
   const seen=new Set();let total=0;
   for(const row of envelope.rows){
     safe(row.path);const folded=row.path.toLowerCase();assert(!seen.has(folded),'Duplicate source-context path: '+row.path);seen.add(folded);
@@ -430,14 +430,14 @@ function verifySourceContextEnvelope(envelope,expectedRows) {
     const oid=createHash('sha1').update(Buffer.from('blob '+b.length+'\0')).update(b).digest('hex');assert.equal(oid,row.gitBlob,'Decoded source-context Git blob differs: '+row.path);
     total+=b.length;assert(total<=SOURCE_CONTEXT_LIMIT.rawBytes,'Source-context aggregate raw byte cap');
   }
-  assert.equal(seen.size,136);assert.equal(total,envelope.rawSourceBytes,'Source-context raw byte accounting differs');
-  return {rows:136,rawSourceBytes:total,allExpectedPathsExact:true,allDecodedBytesSHAAndGitAuthenticated:true};
+  assert.equal(seen.size,149);assert.equal(total,envelope.rawSourceBytes,'Source-context raw byte accounting differs');
+  return {rows:149,rawSourceBytes:total,allExpectedPathsExact:true,allDecodedBytesSHAAndGitAuthenticated:true};
 }
 function prepareSourceContextEnvelope(binding) {
   assert(output);assert(!binding.sourceContext,'Source context may be prepared only once');
   const expectedRows=contextExpectedRows(binding),rows=[];
   for(const expected of expectedRows){const b=projectionRead(expected.path,SOURCE_CONTEXT_LIMIT.singleSourceBytes);assert.deepEqual({bytes:b.length,sha256:sha(b)},identity(expected),'Captured source-context bytes differ: '+expected.path);rows.push({...expected,base64:b.toString('base64')});}
-  const envelope={schema:'rea-proof-delivery-audit-complete-source-context/v1',repository:'Ginderlax/rea-research-lab',sourceCommit:report.provenance.sourceCommit,sourceRows:136,groups:{mandatorySourceData:132,fixedHelper:1,actualCurrentProducerControls:2,immutableImportedSourceModule:1},rawSourceBytes:rows.reduce((sum,row)=>sum+row.bytes,0),sourceCodeExecutedFromEnvelope:false,uploadAcceptanceClaimed:false,workflowSourceCapturedSeparately:true,rows};
+  const envelope={schema:'rea-proof-delivery-audit-complete-source-context/v2',repository:'Ginderlax/rea-research-lab',sourceCommit:report.provenance.sourceCommit,sourceRows:149,groups:{mandatorySourceData:145,fixedHelper:1,actualCurrentProducerControls:2,immutableImportedSourceModule:1},rawSourceBytes:rows.reduce((sum,row)=>sum+row.bytes,0),sourceCodeExecutedFromEnvelope:false,uploadAcceptanceClaimed:false,workflowSourceCapturedSeparately:true,rows};
   const verified=verifySourceContextEnvelope(envelope,expectedRows),decoded=Buffer.from(JSON.stringify(envelope));
   assert(decoded.length<=SOURCE_CONTEXT_LIMIT.decodedBytes,'Source-context decoded JSON byte cap');
   const stored=gzipSync(decoded,{mtime:0});assert(stored.length<=SOURCE_CONTEXT_LIMIT.storedBytes,'Source-context stored gzip byte cap');
@@ -447,7 +447,7 @@ function prepareSourceContextEnvelope(binding) {
   verifySourceContextEnvelope(JSON.parse(unpacked),expectedRows);
   binding.sourceContext={envelope,expectedRows};
   report.sourceEpochAuthentication.sourceContextEnvelopeCapturedAndReadbackPrepared=true;
-  report.sourceEpochAuthentication.sourceContextEnvelope={path:SOURCE_CONTEXT_ROLE,sourceRows:136,groups:envelope.groups,...verified,decoded:{bytes:decoded.length,sha256:sha(decoded)},stored:{bytes:observed.length,sha256:sha(observed)},limits:SOURCE_CONTEXT_LIMIT,capturedAndReadbackPrepared:true,sourceContentsCaptured:true,artifactPackagingComplete:false,contentsUploadedAccepted:false,artifactQualificationPending:true,workflowCapturedSeparately:true};
+  report.sourceEpochAuthentication.sourceContextEnvelope={path:SOURCE_CONTEXT_ROLE,sourceRows:149,groups:envelope.groups,...verified,decoded:{bytes:decoded.length,sha256:sha(decoded)},stored:{bytes:observed.length,sha256:sha(observed)},limits:SOURCE_CONTEXT_LIMIT,capturedAndReadbackPrepared:true,sourceContentsCaptured:true,artifactPackagingComplete:false,contentsUploadedAccepted:false,artifactQualificationPending:true,workflowCapturedSeparately:true};
 }
 function sourceContextControls() {
   const binding=currentSourceEpochBinding();assert(binding.sourceContext);
@@ -457,9 +457,9 @@ function sourceContextControls() {
     assert(error,'Source-context mutation accepted: '+name);assert(String(error.message).includes(expectedMessage),'Source-context rejected at unexpected guard: '+name+': '+error.message);
     observations.push({name,expected:'rejection',passed:true,targetedGuard:expectedMessage});
   }
-  const valid=verifySourceContextEnvelope(envelope,expectedRows);assert.equal(valid.rows,136);
-  observations.push({name:'positive-exact136-source-context-bytes-and-rosters',expected:'acceptance',passed:true});
-  check('reject-missing-context-row',m=>{m.rows.pop();},'136');
+  const valid=verifySourceContextEnvelope(envelope,expectedRows);assert.equal(valid.rows,149);
+  observations.push({name:'positive-exact149-source-context-bytes-and-rosters',expected:'acceptance',passed:true});
+  check('reject-missing-context-row',m=>{m.rows.pop();},'149');
   check('reject-duplicate-context-path',m=>{m.rows[1]=structuredClone(m.rows[0]);},'Duplicate source-context path');
   check('reject-unknown-context-path',m=>{m.rows[0].path='scripts/unlisted-audit-context-source.mjs';},'Unknown source-context path');
   check('reject-context-SHA-rebinding',m=>{m.rows[0].sha256='0'.repeat(64);},'Pinned source-context identity differs');

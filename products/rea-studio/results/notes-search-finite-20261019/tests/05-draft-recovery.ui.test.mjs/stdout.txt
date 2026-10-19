@@ -1,0 +1,112 @@
+TAP version 13
+# Subtest: draft recovery preserves unsaved fields and parent/type across a remount and creates no note until an acknowledged explicit Save
+ok 1 - draft recovery preserves unsaved fields and parent/type across a remount and creates no note until an acknowledged explicit Save
+  ---
+  duration_ms: 24.9696
+  type: 'test'
+  ...
+# Subtest: recovery provenance never becomes an in-place update even when the original note advanced to a newer revision
+ok 2 - recovery provenance never becomes an in-place update even when the original note advanced to a newer revision
+  ---
+  duration_ms: 3.3912
+  type: 'test'
+  ...
+# Subtest: an unacknowledged committed first Save recovers only as an explicitly chosen separate copy after reload
+ok 3 - an unacknowledged committed first Save recovers only as an explicitly chosen separate copy after reload
+  ---
+  duration_ms: 5.6203
+  type: 'test'
+  ...
+# Subtest: an old held Save cannot clear or rewrite a newer editor recovery owner
+ok 4 - an old held Save cannot clear or rewrite a newer editor recovery owner
+  ---
+  duration_ms: 2.3533
+  type: 'test'
+  ...
+# Subtest: quota and corrupt-list failures preserve the active draft and do not prevent explicit server Save
+ok 5 - quota and corrupt-list failures preserve the active draft and do not prevent explicit server Save
+  ---
+  duration_ms: 2.7881
+  type: 'test'
+  ...
+# Subtest: discarding an older displayed version cannot delete another tab newer recovery record
+ok 6 - discarding an older displayed version cannot delete another tab newer recovery record
+  ---
+  duration_ms: 2.071
+  type: 'test'
+  ...
+# Subtest: explicit recovery discard leaves the active editor intact and later typing starts a fresh recoverable identity
+ok 7 - explicit recovery discard leaves the active editor intact and later typing starts a fresh recoverable identity
+  ---
+  duration_ms: 1.2409
+  type: 'test'
+  ...
+# Subtest: discard cancellation and exports preserve the unsaved recovery boundary without treating a copy as a saved item
+ok 8 - discard cancellation and exports preserve the unsaved recovery boundary without treating a copy as a saved item
+  ---
+  duration_ms: 5.3928
+  type: 'test'
+  ...
+# Subtest: rapid input retains at most one active storage write and one latest pending snapshot while preserving the final complete text
+ok 9 - rapid input retains at most one active storage write and one latest pending snapshot while preserving the final complete text
+  ---
+  duration_ms: 24.8854
+  type: 'test'
+  ...
+# Subtest: a delayed recovery-open read cannot replace later typing or a newly selected editor
+ok 10 - a delayed recovery-open read cannot replace later typing or a newly selected editor
+  ---
+  duration_ms: 2.0676
+  type: 'test'
+  ...
+# Subtest: a missing recovered notebook has an explicit default-Notes warning before a separate copy can be saved
+ok 11 - a missing recovered notebook has an explicit default-Notes warning before a separate copy can be saved
+  ---
+  duration_ms: 2.6889
+  type: 'test'
+  ...
+# Subtest: pending saved-note opening disables only draft input and Save until the selected source owns later recovery text
+ok 12 - pending saved-note opening disables only draft input and Save until the selected source owns later recovery text
+  ---
+  duration_ms: 2.8714
+  type: 'test'
+  ...
+# Subtest: a held saved-note read cannot replace newer New to-do or New note editor recovery ownership
+ok 13 - a held saved-note read cannot replace newer New to-do or New note editor recovery ownership
+  ---
+  duration_ms: 1.2837
+  type: 'test'
+  ...
+# Subtest: a later saved-note selection owns its fields and recovery after an earlier real read resolves out of order
+ok 14 - a later saved-note selection owns its fields and recovery after an earlier real read resolves out of order
+  ---
+  duration_ms: 1.8425
+  type: 'test'
+  ...
+# Subtest: a failed owned saved-note read restores editable draft fields without deleting the earlier recovery copy
+ok 15 - a failed owned saved-note read restores editable draft fields without deleting the earlier recovery copy
+  ---
+  duration_ms: 1.2378
+  type: 'test'
+  ...
+# Subtest: a saved-note read finishing after disposal publishes no old editor or recovery cleanup
+ok 16 - a saved-note read finishing after disposal publishes no old editor or recovery cleanup
+  ---
+  duration_ms: 1.7819
+  type: 'test'
+  ...
+# Subtest: a newer pending saved-note opening keeps input and Save locked when an older committed Save response finishes
+ok 17 - a newer pending saved-note opening keeps input and Save locked when an older committed Save response finishes
+  ---
+  duration_ms: 2.3775
+  type: 'test'
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 17
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 184.9334

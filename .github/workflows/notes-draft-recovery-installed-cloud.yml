@@ -1,4 +1,4 @@
-name: Committed Notes41 draft recovery acceptance
+name: Committed Notes41 owned-open recovery R2 acceptance
 
 on:
   workflow_dispatch:
@@ -10,9 +10,11 @@ on:
       - '.github/workflows/development-cloud.yml'
       - 'products/rea-studio/apps/notes/**'
       - 'products/rea-studio/experiments/notes-draft-recovery-installed/**'
+      - 'products/rea-studio/experiments/notes-draft-recovery-installed-r2/**'
       - 'products/rea-studio/scripts/verify-notes41-*.mjs'
       - 'products/rea-studio/scripts/notes-draft-recovery-regression-floor.json'
       - 'products/rea-studio/scripts/verify-notes-draft-recovery-installed-full.mjs'
+      - 'products/rea-studio/scripts/verify-notes-draft-recovery-installed-full-r2.mjs'
       - 'products/rea-studio/scripts/verify-cloud-browser.mjs'
       - 'products/rea-studio/browser-tests/notes-draft-recovery*.mjs'
       - 'products/rea-studio/browser-tests/notes-draft-recovery*.json'
@@ -64,16 +66,16 @@ jobs:
       - name: Authenticate all41 Notes sources and preserve complete Git-bound input bytes
         id: before
         shell: pwsh
-        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase before --role finite --evidence "$env:REA_NOTES41_EVIDENCE"
-      - name: Execute all128 finite checks with20 unchanged and one explicitly strengthened prior file
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud-r2.mjs --phase before --role finite --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Execute all134 finite checks retaining111 legacy and17 recovery names plus6 owned-open cases
         id: verify
         shell: pwsh
-        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase finite --role finite --evidence "$env:REA_NOTES41_EVIDENCE"
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud-r2.mjs --phase finite --role finite --evidence "$env:REA_NOTES41_EVIDENCE"
       - name: Independently authenticate source after acquisition and failures too
         id: after
         if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
         shell: pwsh
-        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase after --role finite --evidence "$env:REA_NOTES41_EVIDENCE"
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud-r2.mjs --phase after --role finite --evidence "$env:REA_NOTES41_EVIDENCE"
       - name: Package complete bounded success or failure evidence
         id: evidence
         if: always()
@@ -83,7 +85,7 @@ jobs:
           $evidence=$env:REA_NOTES41_EVIDENCE
           if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes41-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
           New-Item -ItemType Directory -Path $evidence -Force|Out-Null
-          @{schema='rea-notes41-installed-workflow-attempt/v1';role='finite';sourceEpoch='notes41-installed-recovery';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';currentNotesFiles=41;sourceOverlay=$false;sourceInstallationPerformedByWorkflow=$false;installedAcceptancePreclaimed=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          @{schema='rea-notes41-installed-workflow-attempt/v2';role='finite';sourceEpoch='notes41-installed-recovery-r2-owned-open';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';currentNotesFiles=41;sourceOverlay=$false;sourceInstallationPerformedByWorkflow=$false;installedAcceptancePreclaimed=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
           $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
           $rawBytes=($files|Measure-Object Length -Sum).Sum
           $bounded=$files.Count -le 5000 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
@@ -149,7 +151,7 @@ jobs:
       - name: Authenticate all41 Notes sources and preserve complete Git-bound input bytes
         id: before
         shell: pwsh
-        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase before --role browser --evidence "$env:REA_NOTES41_EVIDENCE"
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud-r2.mjs --phase before --role browser --evidence "$env:REA_NOTES41_EVIDENCE"
       - name: Acquire unchanged locked Playwright packages and Chromium
         id: acquire
         shell: pwsh
@@ -157,12 +159,12 @@ jobs:
       - name: Execute unchanged12 accepted recovery Chromium scenarios
         id: verify
         shell: pwsh
-        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase browser --role browser --evidence "$env:REA_NOTES41_EVIDENCE"
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud-r2.mjs --phase browser --role browser --evidence "$env:REA_NOTES41_EVIDENCE"
       - name: Independently authenticate source after acquisition and failures too
         id: after
         if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
         shell: pwsh
-        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase after --role browser --evidence "$env:REA_NOTES41_EVIDENCE"
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud-r2.mjs --phase after --role browser --evidence "$env:REA_NOTES41_EVIDENCE"
       - name: Package complete bounded success or failure evidence
         id: evidence
         if: always()
@@ -172,7 +174,7 @@ jobs:
           $evidence=$env:REA_NOTES41_EVIDENCE
           if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes41-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
           New-Item -ItemType Directory -Path $evidence -Force|Out-Null
-          @{schema='rea-notes41-installed-workflow-attempt/v1';role='browser';sourceEpoch='notes41-installed-recovery';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';currentNotesFiles=41;sourceOverlay=$false;sourceInstallationPerformedByWorkflow=$false;installedAcceptancePreclaimed=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          @{schema='rea-notes41-installed-workflow-attempt/v2';role='browser';sourceEpoch='notes41-installed-recovery-r2-owned-open';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';currentNotesFiles=41;sourceOverlay=$false;sourceInstallationPerformedByWorkflow=$false;installedAcceptancePreclaimed=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
           $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
           $rawBytes=($files|Measure-Object Length -Sum).Sum
           $bounded=$files.Count -le 5000 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
@@ -238,7 +240,7 @@ jobs:
       - name: Authenticate all41 Notes sources and preserve complete Git-bound input bytes
         id: before
         shell: pwsh
-        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase before --role legacy-browser --evidence "$env:REA_NOTES41_EVIDENCE"
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud-r2.mjs --phase before --role legacy-browser --evidence "$env:REA_NOTES41_EVIDENCE"
       - name: Acquire unchanged locked Playwright packages and Chromium
         id: acquire
         shell: pwsh
@@ -246,12 +248,12 @@ jobs:
       - name: Execute all8 retained behavior bodies on the explicit Notes41 source epoch
         id: verify
         shell: pwsh
-        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase legacy-browser --role legacy-browser --evidence "$env:REA_NOTES41_EVIDENCE"
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud-r2.mjs --phase legacy-browser --role legacy-browser --evidence "$env:REA_NOTES41_EVIDENCE"
       - name: Independently authenticate source after acquisition and failures too
         id: after
         if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
         shell: pwsh
-        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase after --role legacy-browser --evidence "$env:REA_NOTES41_EVIDENCE"
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud-r2.mjs --phase after --role legacy-browser --evidence "$env:REA_NOTES41_EVIDENCE"
       - name: Package complete bounded success or failure evidence
         id: evidence
         if: always()
@@ -261,7 +263,7 @@ jobs:
           $evidence=$env:REA_NOTES41_EVIDENCE
           if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes41-legacy-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
           New-Item -ItemType Directory -Path $evidence -Force|Out-Null
-          @{schema='rea-notes41-installed-workflow-attempt/v1';role='legacy-browser';sourceEpoch='notes41-installed-recovery';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';currentNotesFiles=41;sourceOverlay=$false;sourceInstallationPerformedByWorkflow=$false;installedAcceptancePreclaimed=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          @{schema='rea-notes41-installed-workflow-attempt/v2';role='legacy-browser';sourceEpoch='notes41-installed-recovery-r2-owned-open';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';currentNotesFiles=41;sourceOverlay=$false;sourceInstallationPerformedByWorkflow=$false;installedAcceptancePreclaimed=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
           $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
           $rawBytes=($files|Measure-Object Length -Sum).Sum
           $bounded=$files.Count -le 5000 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0

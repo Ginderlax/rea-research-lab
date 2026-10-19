@@ -1,0 +1,88 @@
+{
+  "schema": "rea-notes41-owned-open-root-r4-independent-source-peer/v1",
+  "status": "APPROVED-source-only-with-hosted-behavior-validation-pending",
+  "reviewer": "draft_cloud_harness_1018",
+  "authority": {
+    "path": "work/notes-draft-recovery-installed-20261018-r2/OWNED-OPEN-ROOT-SOURCE-AUTHORITY-R4.json",
+    "bytes": 6366,
+    "sha256": "3f6f804b7a852a22268a6d755477e3fa36dd51d03f5bf0335bd241d77d0f38ed"
+  },
+  "files": [
+    {
+      "path": "products/rea-studio/apps/notes/client.mjs",
+      "before": {
+        "bytes": 39629,
+        "sha256": "7591daddfc64657b0bdb93f6fea4aa16858757f700a3a6adab5d704772deea85"
+      },
+      "after": {
+        "bytes": 40635,
+        "sha256": "b9a54e719bf54d1bfdccaabb2ff966b8c3dd2ae8f203178fb38f6e0752b296ec"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/notes/draft-recovery.ui.test.mjs",
+      "before": {
+        "bytes": 14365,
+        "sha256": "2d3d00118db63882429c6a56f2b913638366b0d3a85dd19ee469a1529f7cb35d"
+      },
+      "after": {
+        "bytes": 24638,
+        "sha256": "ca149b92cbd61bc5d276470da075aa5432740e596f15dbf990df7ab79a642d8d"
+      }
+    }
+  ],
+  "scope": "Full ff3-to-root-R4 product diff, complete six appended finite UI-model case bodies, fixture hook/ownership semantics, and literal retained-prefix/name checks. No original test assertion or named case is removed.",
+  "sourceChecks": {
+    "commonAdmissionBlocksDefaultMutationDuringOpen": true,
+    "replacementOpenExplicitlyAdmitted": true,
+    "acknowledgedRecoverExplicitlyAdmitted": true,
+    "readOnlySearchAndFiltersExplicit": true,
+    "openOwnsMountedSequenceGenerationAndRevision": true,
+    "editorAcceptanceRetiresOpenSequence": true,
+    "organizationAdmissionRefusesOpening": true,
+    "openFieldsComposeWithOrganization": true,
+    "openSaveComposesWithOrganizationAndSave": true,
+    "acceptedSaveControlComposesWithOrganization": true,
+    "lateSaveFinallyRetainsOpeningLock": true,
+    "explicitSaveRefusesOpening": true
+  },
+  "oldUIPrefix": {
+    "bytes": 14365,
+    "sha256": "2d3d00118db63882429c6a56f2b913638366b0d3a85dd19ee469a1529f7cb35d",
+    "exact": true,
+    "retainedCases": 11
+  },
+  "newUIAppend": {
+    "bytes": 10273,
+    "sha256": "c1a1176b1c8b545a2c6bb313b72721ec36b782537788cf1555b0f08ecaf60c7c",
+    "namedCases": [
+      "pending saved-note opening disables only draft input and Save until the selected source owns later recovery text",
+      "a held saved-note read cannot replace newer New to-do or New note editor recovery ownership",
+      "a later saved-note selection owns its fields and recovery after an earlier real read resolves out of order",
+      "a failed owned saved-note read restores editable draft fields without deleting the earlier recovery copy",
+      "a saved-note read finishing after disposal publishes no old editor or recovery cleanup",
+      "a newer pending saved-note opening keeps input and Save locked when an older committed Save response finishes"
+    ]
+  },
+  "caseReview": [
+    "The opening gate retains four disabled fields and disabled Save while allowing New; no notebook-create request is admitted during the held domain get. A later organization operation is held after accepting the selected note, and fields/Save remain disabled until its domain refresh completes. Recovery text is then bound to the selected note ID/revision without a Save.",
+    "New to-do and then New note retire the old open owner; a later old get cannot replace fields, status, type or the independent recovery record.",
+    "Two saved-note selections resolve out of order; the newer selected saved note retains its fields and recovery source ID/revision.",
+    "An owned read error restores field/Save availability and preserves the earlier exact recovery record and unsaved fields.",
+    "A read completing after disposal cannot publish fields/status, issue later API calls or delete recovery records.",
+    "Ordinary typing during an earlier Save remains enabled; starting a newer Open locks input and Save, and the older committed Save response cannot unlock or retire that selection. The selected newer revision owns subsequent recovery text."
+  ],
+  "fixtureBoundary": "Finite cases call the in-memory domain implementation through the retained DOM model and controlled hooks after actual domain calls. These are not real Chromium or HTTP execution claims. The unchanged hosted recovery12 and retained8 browser campaigns remain required.",
+  "findings": [],
+  "prospectiveFocusedCount": 134,
+  "prospectiveFullCount": 1142,
+  "productExecutions": 0,
+  "browserExecutions": 0,
+  "testExecutions": 0,
+  "builds": 0,
+  "syntaxChecks": 0,
+  "installedAcceptancePreclaimed": false,
+  "originalAutosaveComparison": false,
+  "fullParity": false,
+  "superiority": false
+}

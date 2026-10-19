@@ -1,0 +1,104 @@
+{
+  "schema": "rea-notes41-installed-owned-open-source-transition/v1",
+  "sourceOnly": true,
+  "sourceEpoch": "notes41-installed-recovery-r2-owned-open",
+  "parentSourceCommit": "ff3c67a55176dc96fda6273b4d56c68b055a48e6",
+  "firstFailedInstalledRun": "39179793988",
+  "historicalReceiptsRebound": false,
+  "client": {
+    "path": "products/rea-studio/apps/notes/client.mjs",
+    "before": {
+      "bytes": 39629,
+      "sha256": "7591daddfc64657b0bdb93f6fea4aa16858757f700a3a6adab5d704772deea85",
+      "gitBlob": "c54b149d89006b26e6224c38be4c722d59e137ba"
+    },
+    "after": {
+      "bytes": 40635,
+      "sha256": "b9a54e719bf54d1bfdccaabb2ff966b8c3dd2ae8f203178fb38f6e0752b296ec",
+      "gitBlob": "213f1fd1ee7246a8441ff322e1eb4fffcef4aea2"
+    },
+    "beforeSnapshotPath": "products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/client.mjs.ff3.before.snapshot",
+    "exactReplacements": [
+      {
+        "before": "  let current = null, dirty = false, organizationState={revision:0,notebooks:[]},organizationBusy=false,editorGeneration=0,draftRevision=0,refreshGeneration=0,mounted=true,confirmation=null,todoBusy=false,saveBusy=false,draftIsTodo=false;\n",
+        "after": "  let current = null, dirty = false, organizationState={revision:0,notebooks:[]},organizationBusy=false,editorGeneration=0,draftRevision=0,refreshGeneration=0,mounted=true,confirmation=null,todoBusy=false,saveBusy=false,draftIsTodo=false,openBusy=false,openSequence=0;\n"
+      },
+      {
+        "before": "        });\n        discard.onclick=()=>run(async()=>{\n",
+        "after": "        },{allowOpening:true});\n        discard.onclick=()=>run(async()=>{\n"
+      },
+      {
+        "before": "  async function run(operation, {readOnly=false}={}) { if(!mounted||organizationBusy||(todoBusy&&!readOnly))return;try { await operation(); } catch (error) { if(mounted)status.textContent = error.message; } }\n",
+        "after": "  async function run(operation, {readOnly=false,allowOpening=false}={}) { if(!mounted||organizationBusy||(todoBusy&&!readOnly)||(openBusy&&!readOnly&&!allowOpening))return;try { await operation(); } catch (error) { if(mounted)status.textContent = error.message; } }\n"
+      },
+      {
+        "before": "    resetRecovery(saved);\n",
+        "after": "    openSequence++;setOpenBusy(false);\n    resetRecovery(saved);\n"
+      },
+      {
+        "before": "    refreshTodo(true); save.disabled = saveBusy || Boolean(note?.deletedAt); remove.disabled = !note || Boolean(note.deletedAt); restore.disabled = !note?.deletedAt; exportOne.disabled = !note;\n",
+        "after": "    refreshTodo(true); save.disabled = openBusy || organizationBusy || saveBusy || Boolean(note?.deletedAt); remove.disabled = !note || Boolean(note.deletedAt); restore.disabled = !note?.deletedAt; exportOne.disabled = !note;\n"
+      },
+      {
+        "before": "  }\n  function mayDiscard() { return !dirty || window.confirm('Discard this unsaved draft?'); }\n",
+        "after": "  }\n  function setOpenBusy(value) {\n    openBusy=value;for(const control of [title,notebook,tags,body])control.disabled=value||organizationBusy;\n    save.disabled=value||organizationBusy||saveBusy||Boolean(current?.deletedAt);\n  }\n  async function openSavedNote(id) {\n    if(!mounted||!mayDiscard())return;\n    const sequence=++openSequence,generation=++editorGeneration,revision=draftRevision;\n    const owns=()=>mounted&&sequence===openSequence&&generation===editorGeneration&&revision===draftRevision;\n    setOpenBusy(true);status.textContent='Opening saved note…';\n    try {\n      const note=await api('get',{id});if(!owns())return;\n      accept(note);status.textContent=`Opened revision ${note.revision}.`;\n    }catch(error){if(owns())status.textContent=error.message;}\n    finally{if(mounted&&sequence===openSequence)setOpenBusy(false);}\n  }\n  function mayDiscard() { return !dirty || window.confirm('Discard this unsaved draft?'); }\n"
+      },
+      {
+        "before": "    for (const note of response.notes) { const button = el('button', `${note.title} · ${note.notebook} · ${note.tags.join(', ')}`, 'button'), snippet = el('p', (note.todo?.isTodo ? (note.todo.completed ? '[Completed to-do] ' : '[Open to-do] ') : '') + note.preview, 'muted'); button.onclick = () => run(async () => { if (!mayDiscard()) return; accept(await api('get', { id: note.id })); status.textContent = `Opened revision ${current.revision}.`; }); list.append(button, snippet); }\n",
+        "after": "    for (const note of response.notes) { const button = el('button', `${note.title} · ${note.notebook} · ${note.tags.join(', ')}`, 'button'), snippet = el('p', (note.todo?.isTodo ? (note.todo.completed ? '[Completed to-do] ' : '[Open to-do] ') : '') + note.preview, 'muted'); button.onclick = () => run(() => openSavedNote(note.id),{allowOpening:true}); list.append(button, snippet); }\n"
+      },
+      {
+        "before": "  searchButton.onclick = () => run(refresh); search.onkeydown = event => { if (event.key === 'Enter') run(refresh); }; tag.onchange = notebookFilter.onchange = trash.onchange = todoFilter.onchange = () => run(refresh);\n",
+        "after": "  searchButton.onclick = () => run(refresh,{readOnly:true}); search.onkeydown = event => { if (event.key === 'Enter') run(refresh,{readOnly:true}); }; tag.onchange = notebookFilter.onchange = trash.onchange = todoFilter.onchange = () => run(refresh,{readOnly:true});\n"
+      },
+      {
+        "before": "    if (!mounted || saveBusy) return;\r\n",
+        "after": "    if (!mounted || saveBusy || openBusy) return;\r\n"
+      },
+      {
+        "before": "      saveBusy=false;if(mounted){save.disabled=organizationBusy||Boolean(current?.deletedAt);refreshTodo();}\r\n",
+        "after": "      saveBusy=false;if(mounted){save.disabled=openBusy||organizationBusy||Boolean(current?.deletedAt);refreshTodo();}\r\n"
+      },
+      {
+        "before": "  async function organize(operation){if(!mounted||organizationBusy)return;if(dirty)throw new Error('Save your draft before changing notebook organization.');const controls=[...organizationControls,...todoControls,todoFilter,title,notebook,tags,body,save,search,tag,notebookFilter,trash,searchButton,newButton,newTodoButton,remove,restore,attachmentUpload,upload],previous=controls.map(control=>control.disabled);organizationBusy=true;organization.setAttribute('aria-busy','true');for(const control of controls)control.disabled=true;let cancelled=false;try{const result=await operation();cancelled=result===false;if(!mounted||cancelled)return;if(current)accept(await api('get',{id:current.id}));if(mounted)await refresh();}finally{organizationBusy=false;if(mounted){organization.setAttribute('aria-busy','false');controls.forEach((control,index)=>control.disabled=previous[index]);save.disabled=saveBusy||Boolean(current?.deletedAt);moveNote.disabled=!current||Boolean(current.deletedAt);if(current&&!cancelled)accept(current);refreshTodo();}clearConfirmation();}}\n",
+        "after": "  async function organize(operation){if(!mounted||organizationBusy||openBusy)return;if(dirty)throw new Error('Save your draft before changing notebook organization.');const controls=[...organizationControls,...todoControls,todoFilter,title,notebook,tags,body,save,search,tag,notebookFilter,trash,searchButton,newButton,newTodoButton,remove,restore,attachmentUpload,upload],previous=controls.map(control=>control.disabled);organizationBusy=true;organization.setAttribute('aria-busy','true');for(const control of controls)control.disabled=true;let cancelled=false;try{const result=await operation();cancelled=result===false;if(!mounted||cancelled)return;if(current)accept(await api('get',{id:current.id}));if(mounted)await refresh();}finally{organizationBusy=false;if(mounted){organization.setAttribute('aria-busy','false');controls.forEach((control,index)=>control.disabled=previous[index]);save.disabled=saveBusy||Boolean(current?.deletedAt);moveNote.disabled=!current||Boolean(current.deletedAt);if(current&&!cancelled)accept(current);refreshTodo();}clearConfirmation();}}\n"
+      }
+    ]
+  },
+  "uiAppend": {
+    "path": "products/rea-studio/apps/notes/draft-recovery.ui.test.mjs",
+    "before": {
+      "bytes": 14365,
+      "sha256": "2d3d00118db63882429c6a56f2b913638366b0d3a85dd19ee469a1529f7cb35d",
+      "gitBlob": "27be531350734ddb5bf417b8a454c928b9ef846c"
+    },
+    "after": {
+      "bytes": 24638,
+      "sha256": "ca149b92cbd61bc5d276470da075aa5432740e596f15dbf990df7ab79a642d8d",
+      "gitBlob": "ec92fe6faf7877a11255f12ddc1b6cb04d3f876f"
+    },
+    "beforeSnapshotPath": "products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/draft-recovery.ui.test.mjs.ff3.before.snapshot",
+    "appendSnapshotPath": "products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/draft-recovery.ui.test.mjs.r2.append.snapshot",
+    "append": {
+      "bytes": 10273,
+      "sha256": "c1a1176b1c8b545a2c6bb313b72721ec36b782537788cf1555b0f08ecaf60c7c"
+    },
+    "all14365OriginalBytesRetainedAsExactPrefix": true,
+    "addedNamedChecks": [
+      "pending saved-note opening disables only draft input and Save until the selected source owns later recovery text",
+      "a held saved-note read cannot replace newer New to-do or New note editor recovery ownership",
+      "a later saved-note selection owns its fields and recovery after an earlier real read resolves out of order",
+      "a failed owned saved-note read restores editable draft fields without deleting the earlier recovery copy",
+      "a saved-note read finishing after disposal publishes no old editor or recovery cleanup",
+      "a newer pending saved-note opening keeps input and Save locked when an older committed Save response finishes"
+    ]
+  },
+  "unchangedRecoveryBrowserBodies": 12,
+  "unchangedLegacyBrowserBodies": 8,
+  "prospectiveFocusedNamedResults": 134,
+  "prospectiveFullNamedResults": 1142,
+  "installedAcceptancePreclaimed": false,
+  "originalAutosaveComparison": false,
+  "fullParity": false,
+  "superiority": false
+}

@@ -1,0 +1,113 @@
+{
+  "schema": "rea-notes41-owned-open-root-proposal/v4",
+  "status": "AUTHORED; independent source review and hosted execution pending",
+  "failureRun": "39179793988",
+  "failure": "Existing unchanged real-browser saved-note edit scenario timed out waiting for recovery sourceNoteId; late unowned get can overwrite premature typed text and remove its recovery owner.",
+  "diagnosis": "Saved-row click accepted await api(get) without read ownership or input readiness; click completes before asynchronous handler, enabling a fill before the selected saved note has been accepted.",
+  "files": [
+    {
+      "path": "products/rea-studio/apps/notes/client.mjs",
+      "before": {
+        "bytes": 39629,
+        "sha256": "7591daddfc64657b0bdb93f6fea4aa16858757f700a3a6adab5d704772deea85"
+      },
+      "after": {
+        "bytes": 40635,
+        "sha256": "b9a54e719bf54d1bfdccaabb2ff966b8c3dd2ae8f203178fb38f6e0752b296ec"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/notes/draft-recovery.ui.test.mjs",
+      "before": {
+        "bytes": 14365,
+        "sha256": "2d3d00118db63882429c6a56f2b913638366b0d3a85dd19ee469a1529f7cb35d"
+      },
+      "after": {
+        "bytes": 24638,
+        "sha256": "ca149b92cbd61bc5d276470da075aa5432740e596f15dbf990df7ab79a642d8d"
+      },
+      "original14365BytePrefixExact": true
+    }
+  ],
+  "clientChanges": [
+    "separate pending saved-note-read ownership state",
+    "every accepted editor retires earlier pending reads and restores editor availability",
+    "bounded read state blocks premature typing/Save and rejects stale success/error",
+    "saved-row opening uses the owned read transition",
+    "explicit and keyboard Save cannot persist a still-opening editor",
+    "beginning a newer OPEN advances editor generation, preventing older pending Save publication from retiring that selection",
+    "an older Save finally cannot re-enable Save while a newer OPEN remains pending"
+  ],
+  "newFiniteNames": [
+    "pending saved-note opening disables only draft input and Save until the selected source owns later recovery text",
+    "a held saved-note read cannot replace newer New to-do or New note editor recovery ownership",
+    "a later saved-note selection owns its fields and recovery after an earlier real read resolves out of order",
+    "a failed owned saved-note read restores editable draft fields without deleting the earlier recovery copy",
+    "a saved-note read finishing after disposal publishes no old editor or recovery cleanup",
+    "a newer pending saved-note opening keeps input and Save locked when an older committed Save response finishes"
+  ],
+  "old111PriorNamesRetained": true,
+  "existing17RecoveryNamesRetained": true,
+  "prospectiveFocusedCount": 134,
+  "prospectiveFullCount": 1142,
+  "NotesFileClosureRemains": 41,
+  "recovery12BrowserSpecChanged": false,
+  "legacy8BrowserAssertionsChanged": false,
+  "pendingSaveTypingPolicyChanged": false,
+  "rootMustReviseNewSourceBindings": "Old installed41 declaration and existing gates remain historical before-images; all affected fixed pins/rosters must change under explicit R2 before any new run.",
+  "localProductExecutions": 0,
+  "browserExecutions": 0,
+  "tests": 0,
+  "builds": 0,
+  "syntaxChecks": 0,
+  "GitMutations": 0,
+  "installedAcceptancePreclaimed": false,
+  "fullParity": false,
+  "superiority": false,
+  "candidateDirectory": "candidate-r4",
+  "preservedUnexecutedFirstDraft": "candidate",
+  "preservedUnexecutedProposals": [
+    "candidate",
+    "candidate-r2",
+    "candidate-r3"
+  ],
+  "additionalOwnershipChanges": [
+    "Common run admission blocks mutations during pending OPEN; replacement OPEN and acknowledged Recover have explicit admission, read-only refresh remains allowed.",
+    "Pending-OPEN disabled state composes with organization ownership, and organization admission refuses a pending OPEN.",
+    "First of six new named cases now holds a real organization refresh after accepting the selected note to verify editor and Save remain locked until that organization operation ends."
+  ],
+  "sourceOnly": true,
+  "rootCommonRunChangesFromR3": [
+    {
+      "before": "async function run(operation, {readOnly=false}={}) { if(!mounted||organizationBusy||(todoBusy&&!readOnly))return;",
+      "after": "async function run(operation, {readOnly=false,allowOpening=false}={}) { if(!mounted||organizationBusy||(todoBusy&&!readOnly)||(openBusy&&!readOnly&&!allowOpening))return;"
+    },
+    {
+      "before": "button.onclick = () => run(() => openSavedNote(note.id));",
+      "after": "button.onclick = () => run(() => openSavedNote(note.id),{allowOpening:true});"
+    },
+    {
+      "before": "searchButton.onclick = () => run(refresh); search.onkeydown = event => { if (event.key === 'Enter') run(refresh); }; tag.onchange = notebookFilter.onchange = trash.onchange = todoFilter.onchange = () => run(refresh);",
+      "after": "searchButton.onclick = () => run(refresh,{readOnly:true}); search.onkeydown = event => { if (event.key === 'Enter') run(refresh,{readOnly:true}); }; tag.onchange = notebookFilter.onchange = trash.onchange = todoFilter.onchange = () => run(refresh,{readOnly:true});"
+    },
+    {
+      "before": "openBusy=value;for(const control of [title,notebook,tags,body])control.disabled=value;",
+      "after": "openBusy=value;for(const control of [title,notebook,tags,body])control.disabled=value||organizationBusy;"
+    },
+    {
+      "before": "save.disabled=value||saveBusy||Boolean(current?.deletedAt);",
+      "after": "save.disabled=value||organizationBusy||saveBusy||Boolean(current?.deletedAt);"
+    },
+    {
+      "before": "refreshTodo(true); save.disabled = saveBusy || Boolean(note?.deletedAt);",
+      "after": "refreshTodo(true); save.disabled = openBusy || organizationBusy || saveBusy || Boolean(note?.deletedAt);"
+    },
+    {
+      "before": "}finally{recoveryBusy=false;if(mounted){recover.disabled=!ack.checked;discard.disabled=false;}}\n        });\n        discard.onclick",
+      "after": "}finally{recoveryBusy=false;if(mounted){recover.disabled=!ack.checked;discard.disabled=false;}}\n        },{allowOpening:true});\n        discard.onclick"
+    }
+  ],
+  "authoringFailures": [
+    "An initial root test edit expected CRLF in the LF appended section and stopped before editing that test; the subsequent byte edit retained the original mixed line endings."
+  ]
+}

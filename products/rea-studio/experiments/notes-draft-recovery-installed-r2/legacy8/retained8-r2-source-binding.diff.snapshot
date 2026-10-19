@@ -1,0 +1,42 @@
+--- retained8@ff3
++++ retained8@root-r4-owned-open-r2
+@@ -35,8 +35,8 @@
+   ],
+   [
+     "apps/notes/client.mjs",
+-    39629,
+-    "7591daddfc64657b0bdb93f6fea4aa16858757f700a3a6adab5d704772deea85"
++    40635,
++    "b9a54e719bf54d1bfdccaabb2ff966b8c3dd2ae8f203178fb38f6e0752b296ec"
+   ],
+   [
+     "apps/notes/core.mjs",
+@@ -65,8 +65,8 @@
+   ],
+   [
+     "apps/notes/draft-recovery.ui.test.mjs",
+-    14365,
+-    "2d3d00118db63882429c6a56f2b913638366b0d3a85dd19ee469a1529f7cb35d"
++    24638,
++    "ca149b92cbd61bc5d276470da075aa5432740e596f15dbf990df7ab79a642d8d"
+   ],
+   [
+     "apps/notes/fixtures/oracle-verification.json",
+@@ -399,7 +399,7 @@
+       if (expectedConsole.length > expectedHttpFailures.length) errors.push({ type: 'extra-expected-path-console-errors', count: expectedConsole.length });
+       const savedEvents = new Set(savedDownloads.map(row => row.download));
+       if (downloads.some(row => !savedEvents.has(row.download))) errors.push({ type: 'unclaimed-download', count: downloads.length - savedDownloads.length });
+-      await write('case-' + info.testId + '.json', { schema: 'rea-notes-draft-recovery-installed-legacy-browser-case/v1', sourceEpoch: 'notes41-installed-recovery', sourceCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT, acceptedRecoverySource: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', installedAcceptancePreclaimed: false, testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry,
++      await write('case-' + info.testId + '.json', { schema: 'rea-notes-draft-recovery-installed-legacy-browser-case/v1', sourceEpoch: 'notes41-installed-recovery-r2-owned-open', sourceCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT, acceptedRecoverySource: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', installedAcceptancePreclaimed: false, testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry,
+         url: instance.url, ownedDataDirectory: dataDir, serverCloseObserved: teardown.serverClosed, realBrowser: true, actualHTTP: true, originalProductExecutions: 0, originalFullApplicationExecutions: 0, originalHelperExecutions: 0, programmaticDisabledControlProbes: 0,
+         teardown, observations, requests, responses, faults, expectedHttpFailures, expectedConsole, auxiliaryErrors, errors, downloads: savedDownloads.map(({ download, ...row }) => row) });
+       expect(errors).toEqual([]); expect(expectedHttpFailures.every(row => row.observed)).toBe(true);
+@@ -413,7 +413,7 @@
+   expect(browser.version()).toBe('156.0.8078.4');
+   const observation = { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 };
+   const execution = Object.fromEntries(['CI', 'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY', 'GITHUB_JOB'].map(name => [name, process.env[name] ?? null]));
+-  await write('browser-observation-process-' + process.pid + '.json', { schema: 'rea-notes-draft-recovery-installed-legacy-browser-worker-observation/v1', sourceEpoch: 'notes41-installed-recovery', sourceCommit: process.env.GITHUB_SHA, acceptedRecoverySource: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', installedAcceptancePreclaimed: false, observation, execution, pid: process.pid, sourcePins: sourcePins.map(([path, bytes, sha256]) => ({ path, bytes, sha256 })) });
++  await write('browser-observation-process-' + process.pid + '.json', { schema: 'rea-notes-draft-recovery-installed-legacy-browser-worker-observation/v1', sourceEpoch: 'notes41-installed-recovery-r2-owned-open', sourceCommit: process.env.GITHUB_SHA, acceptedRecoverySource: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', installedAcceptancePreclaimed: false, observation, execution, pid: process.pid, sourcePins: sourcePins.map(([path, bytes, sha256]) => ({ path, bytes, sha256 })) });
+   try { await write('browser-observation.json', observation); } catch (error) { if (error.code !== 'EEXIST') throw error; assert.deepEqual(JSON.parse(await fs.readFile(path.join(evidence, 'browser-observation.json'), 'utf8')), observation); }
+ });
+ async function openNotes(s) { await s.page.goto(s.url + '/#notes'); await expect(view(s.page).getByRole('heading', { name: 'Local Notes', exact: true })).toBeVisible(); await expect(status(s.page)).toHaveText('Notes are saved locally when you choose Save.'); }

@@ -39,7 +39,7 @@ export async function render(root, api, options = {}) {
   recoveryPanel.setAttribute('aria-label','Draft recovery');recoveryStatus.setAttribute('aria-label','Draft recovery status');recoveryStatus.setAttribute('aria-live','polite');recoveryRefresh.disabled=true;
   recoveryPanel.append(el('h3','Draft recovery'),el('p','Recovery copies are plain text in this browser for this workspace. They contain text and note type, not attachment files, and are not included in note exports. Recovering always opens a separate unsaved copy; saved notes stay unchanged.','muted'),recoveryStatus,recoveryRefresh,recoveryRows);
   const confirmationHost=el('div');root.append(searchRow, organization, confirmationHost, recoveryPanel, list, draft, imports, status);
-  let current = null, dirty = false, organizationState={revision:0,notebooks:[]},organizationBusy=false,editorGeneration=0,draftRevision=0,refreshGeneration=0,mounted=true,confirmation=null,todoBusy=false,saveBusy=false,draftIsTodo=false;
+  let current = null, dirty = false, organizationState={revision:0,notebooks:[]},organizationBusy=false,editorGeneration=0,draftRevision=0,refreshGeneration=0,mounted=true,confirmation=null,todoBusy=false,saveBusy=false,draftIsTodo=false,openBusy=false,openSequence=0;
   let recoveryStore=null,recoveryScope=null,recoveryOwner=null,recoveryParent=null,recoverySource=null,recoverySavePending=false,recoveryQueue=Promise.resolve(),recoveryListGeneration=0,recoveryBusy=false,recoveryPending=null,recoveryPump=false;
   function recoveryError(error){return String(error?.message??error).slice(0,180);}
   function recoveryTask(operation,onSuccess,onFailure){
@@ -104,7 +104,7 @@ export async function render(root, api, options = {}) {
             if(!choice&&!Array.from(notebook.options).some(option=>option.value==='__default__'))notebook.append(Object.assign(el('option','Notes (created when saved)'),{value:'__default__'}));
             notebook.value=choice?latest.notebookId:'__default__';edited();title.focus();status.textContent=choice?'Recovery copy opened. Saving creates a separate note.':'Recovery copy opened. Its earlier notebook is unavailable. This separate copy will be saved to Notes unless you choose another notebook.';await refreshRecovery();
           }finally{recoveryBusy=false;if(mounted){recover.disabled=!ack.checked;discard.disabled=false;}}
-        });
+        },{allowOpening:true});
         discard.onclick=()=>run(async()=>{
           if(recoveryBusy)return;
           if(recoveryOwner?.id===record.id){
@@ -140,7 +140,7 @@ export async function render(root, api, options = {}) {
       recoveryStore=opened;recoveryRefresh.disabled=false;recoveryStatus.textContent='Recovery copies ready.';await refreshRecovery();if(dirty)persistRecovery();
     }catch(error){if(opened&&!recoveryStore&&typeof opened.close==='function'){try{opened.close();}catch{}}if(mounted)recoveryStatus.textContent='Browser recovery is unavailable. Your open draft is unchanged: '+recoveryError(error);}
   }
-  async function run(operation, {readOnly=false}={}) { if(!mounted||organizationBusy||(todoBusy&&!readOnly))return;try { await operation(); } catch (error) { if(mounted)status.textContent = error.message; } }
+  async function run(operation, {readOnly=false,allowOpening=false}={}) { if(!mounted||organizationBusy||(todoBusy&&!readOnly)||(openBusy&&!readOnly&&!allowOpening))return;try { await operation(); } catch (error) { if(mounted)status.textContent = error.message; } }
   function clearConfirmation(){if(!confirmation)return;const active=confirmation;confirmation=null;confirmationHost.replaceChildren();for(const [node,inert]of active.background)node.inert=inert;if(mounted)active.trigger.focus();}
   function confirmNotebook({heading,scope,submitLabel,pendingLabel,trigger}){
     if(!mounted||confirmation)return Promise.resolve(false);
@@ -189,14 +189,30 @@ export async function render(root, api, options = {}) {
   clearTodoDue.onclick = () => run(() => mutateTodo('todo-due', { due: 0 }));
   function accept(note, newTodo = false, saved = false) {
     if(!mounted)return;
+    openSequence++;setOpenBusy(false);
     resetRecovery(saved);
     editorGeneration++;
     current = note; draftIsTodo = !note && newTodo; dirty = false; title.value = note?.title ?? '';if(note?.notebookId&&!Array.from(notebook.options).some(option=>option.value===note.notebookId))notebook.append(Object.assign(el('option',note.notebook),{value:note.notebookId}));notebook.value = note?.notebookId ?? '__default__'; tags.value = note?.tags.join(', ') ?? ''; body.value = note?.body ?? ''; updatePreview();moveNote.disabled=!note||Boolean(note.deletedAt)||organizationBusy;
-    refreshTodo(true); save.disabled = saveBusy || Boolean(note?.deletedAt); remove.disabled = !note || Boolean(note.deletedAt); restore.disabled = !note?.deletedAt; exportOne.disabled = !note;
+    refreshTodo(true); save.disabled = openBusy || organizationBusy || saveBusy || Boolean(note?.deletedAt); remove.disabled = !note || Boolean(note.deletedAt); restore.disabled = !note?.deletedAt; exportOne.disabled = !note;
     attachmentUpload.disabled = !note || Boolean(note.deletedAt); attachmentList.replaceChildren();
     if (note) run(async () => { const response = await api('attachment-list', { id: note.id }); if (current?.id !== note.id) return; for (const resource of response.attachments) { const button = el('button', `Download ${resource.filename} (${resource.bytes} bytes)`, 'button'); button.onclick = () => run(async () => download(await api('attachment-get', { noteId: note.id, id: resource.id }))); attachmentList.append(button); } if (!response.attachments.length) attachmentList.append(el('p', 'No attached files.', 'muted')); }, {readOnly:true});
     versions.replaceChildren(el('h4', 'Previous saved versions'));
     for (const version of [...(note?.history ?? [])].reverse()) { const button = el('button', `Restore revision ${version.revision} (${version.updatedAt})`, 'button'); button.disabled = Boolean(note.deletedAt); button.onclick = () => run(async () => { if (dirty && !window.confirm('Discard the draft and restore this version?')) return; accept(await api('history-restore', { id: current.id, revision: current.revision, historyRevision: version.revision })); await refresh(); status.textContent = 'Historical version restored as a new revision.'; }); versions.append(button); }
+  }
+  function setOpenBusy(value) {
+    openBusy=value;for(const control of [title,notebook,tags,body])control.disabled=value||organizationBusy;
+    save.disabled=value||organizationBusy||saveBusy||Boolean(current?.deletedAt);
+  }
+  async function openSavedNote(id) {
+    if(!mounted||!mayDiscard())return;
+    const sequence=++openSequence,generation=++editorGeneration,revision=draftRevision;
+    const owns=()=>mounted&&sequence===openSequence&&generation===editorGeneration&&revision===draftRevision;
+    setOpenBusy(true);status.textContent='Opening saved note…';
+    try {
+      const note=await api('get',{id});if(!owns())return;
+      accept(note);status.textContent=`Opened revision ${note.revision}.`;
+    }catch(error){if(owns())status.textContent=error.message;}
+    finally{if(mounted&&sequence===openSequence)setOpenBusy(false);}
   }
   function mayDiscard() { return !dirty || window.confirm('Discard this unsaved draft?'); }
   async function refresh() {
@@ -210,9 +226,9 @@ export async function render(root, api, options = {}) {
     for (const value of response.tags) tag.append(Object.assign(el('option', value), { value })); for (const row of organizationState.notebooks) notebookFilter.append(Object.assign(el('option',row.path+' · '+row.id.slice(0,6)),{value:row.id})); tag.value = oldTag; notebookFilter.value = oldNotebook;
     list.replaceChildren(el('h3', `${response.total} notes`));
     if (!response.notes.length) list.append(el('p', 'No matching notes.', 'muted'));
-    for (const note of response.notes) { const button = el('button', `${note.title} · ${note.notebook} · ${note.tags.join(', ')}`, 'button'), snippet = el('p', (note.todo?.isTodo ? (note.todo.completed ? '[Completed to-do] ' : '[Open to-do] ') : '') + note.preview, 'muted'); button.onclick = () => run(async () => { if (!mayDiscard()) return; accept(await api('get', { id: note.id })); status.textContent = `Opened revision ${current.revision}.`; }); list.append(button, snippet); }
+    for (const note of response.notes) { const button = el('button', `${note.title} · ${note.notebook} · ${note.tags.join(', ')}`, 'button'), snippet = el('p', (note.todo?.isTodo ? (note.todo.completed ? '[Completed to-do] ' : '[Open to-do] ') : '') + note.preview, 'muted'); button.onclick = () => run(() => openSavedNote(note.id),{allowOpening:true}); list.append(button, snippet); }
   }
-  searchButton.onclick = () => run(refresh); search.onkeydown = event => { if (event.key === 'Enter') run(refresh); }; tag.onchange = notebookFilter.onchange = trash.onchange = todoFilter.onchange = () => run(refresh);
+  searchButton.onclick = () => run(refresh,{readOnly:true}); search.onkeydown = event => { if (event.key === 'Enter') run(refresh,{readOnly:true}); }; tag.onchange = notebookFilter.onchange = trash.onchange = todoFilter.onchange = () => run(refresh,{readOnly:true});
   function newDraft(isTodo) {
     if (!mounted || organizationBusy || !mayDiscard()) return;
     accept(null, isTodo); title.focus(); status.textContent = isTodo ? 'New to-do draft. Save to create it.' : 'New note draft.';
@@ -220,7 +236,7 @@ export async function render(root, api, options = {}) {
   newButton.onclick = () => newDraft(false);
   newTodoButton.onclick = () => newDraft(true);
   async function saveNote() {
-    if (!mounted || saveBusy) return;
+    if (!mounted || saveBusy || openBusy) return;
     const fields=()=>[title.value,notebook.value,tags.value,body.value];
     const ownsDraft=(generation,revision,values)=>mounted&&generation===editorGeneration&&revision===draftRevision&&values.every((value,index)=>value===fields()[index]);
     const generation=editorGeneration,revision=draftRevision,values=fields(),cleanTags = current && tags.value === current.tags.join(', ') ? current.tags : tags.value.split(',').map(value => value.trim()).filter(Boolean);
@@ -244,12 +260,12 @@ export async function render(root, api, options = {}) {
       }
       if(ownsDraft(acceptedGeneration,acceptedRevision,acceptedValues)&&!dirty)status.textContent=`Saved revision ${note.revision}.`;
     } finally {
-      saveBusy=false;if(mounted){save.disabled=organizationBusy||Boolean(current?.deletedAt);refreshTodo();}
+      saveBusy=false;if(mounted){save.disabled=openBusy||organizationBusy||Boolean(current?.deletedAt);refreshTodo();}
     }
   }
   save.onclick = () => run(saveNote);
   organizationChoice.onchange=()=>{const row=organizationState.notebooks.find(row=>row.id===organizationChoice.value);organizationName.value=row?.title??'';organizationParent.value=row?.parentId??'';};
-  async function organize(operation){if(!mounted||organizationBusy)return;if(dirty)throw new Error('Save your draft before changing notebook organization.');const controls=[...organizationControls,...todoControls,todoFilter,title,notebook,tags,body,save,search,tag,notebookFilter,trash,searchButton,newButton,newTodoButton,remove,restore,attachmentUpload,upload],previous=controls.map(control=>control.disabled);organizationBusy=true;organization.setAttribute('aria-busy','true');for(const control of controls)control.disabled=true;let cancelled=false;try{const result=await operation();cancelled=result===false;if(!mounted||cancelled)return;if(current)accept(await api('get',{id:current.id}));if(mounted)await refresh();}finally{organizationBusy=false;if(mounted){organization.setAttribute('aria-busy','false');controls.forEach((control,index)=>control.disabled=previous[index]);save.disabled=saveBusy||Boolean(current?.deletedAt);moveNote.disabled=!current||Boolean(current.deletedAt);if(current&&!cancelled)accept(current);refreshTodo();}clearConfirmation();}}
+  async function organize(operation){if(!mounted||organizationBusy||openBusy)return;if(dirty)throw new Error('Save your draft before changing notebook organization.');const controls=[...organizationControls,...todoControls,todoFilter,title,notebook,tags,body,save,search,tag,notebookFilter,trash,searchButton,newButton,newTodoButton,remove,restore,attachmentUpload,upload],previous=controls.map(control=>control.disabled);organizationBusy=true;organization.setAttribute('aria-busy','true');for(const control of controls)control.disabled=true;let cancelled=false;try{const result=await operation();cancelled=result===false;if(!mounted||cancelled)return;if(current)accept(await api('get',{id:current.id}));if(mounted)await refresh();}finally{organizationBusy=false;if(mounted){organization.setAttribute('aria-busy','false');controls.forEach((control,index)=>control.disabled=previous[index]);save.disabled=saveBusy||Boolean(current?.deletedAt);moveNote.disabled=!current||Boolean(current.deletedAt);if(current&&!cancelled)accept(current);refreshTodo();}clearConfirmation();}}
   createNotebook.onclick=()=>run(()=>organize(async()=>{const result=await api('notebook-create',{revision:organizationState.revision,title:organizationName.value,parentId:organizationParent.value});organizationChoice.append(Object.assign(el('option',result.notebook.path),{value:result.notebook.id}));organizationChoice.value=result.notebook.id;status.textContent='Notebook created.';}));
   renameNotebook.onclick=()=>run(()=>organize(async()=>{await api('notebook-rename',{revision:organizationState.revision,id:organizationChoice.value,title:organizationName.value});status.textContent='Notebook renamed; note identities are preserved.';}));
   moveNotebook.onclick=()=>run(()=>organize(async()=>{await api('notebook-move',{revision:organizationState.revision,id:organizationChoice.value,parentId:organizationParent.value});status.textContent='Notebook moved with its descendants.';}));

@@ -1,0 +1,386 @@
+{
+  "schema": "rea-notes-structured-search-real-browser-case/v1",
+  "sourceEpoch": "notes46-structured-search-browser-experiment",
+  "sourceCommit": "0e2b6d70c31e1534e61c203e8fa78c2fc6c19da5",
+  "runId": "39197426068",
+  "runAttempt": "1",
+  "title": "Filters real browser exact module delivery reload and explicit recovery consent preserve saved records",
+  "testId": "6e062a864957f4acde33-798f0434195369a8a71d",
+  "retry": 0,
+  "statusAtFixtureClose": "passed",
+  "realBrowser": true,
+  "actualHTTP": true,
+  "browserName": "chromium",
+  "browserVersion": "156.0.8078.4",
+  "requests": [
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "tag:work",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/list",
+      "method": "POST",
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "method": "POST",
+      "input": {}
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "method": "POST",
+      "input": {}
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 1692,
+        "sha256": "0f2085f544e00732f505f2f67ed2a93aa58fcffbf7eba0b111f569288d426a9f"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "a719fdd2dfa0cad5eee98fdbe5fd0039cea9443833e7f5a2ecee909917140ba0"
+      }
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 59,
+        "sha256": "3d21a27da87dc7099f5d6908f648e8f5c9d7161e3d39ef58bfe698f062d6ed65"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "tag:work",
+        "searchMode": "filters",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 1297,
+        "sha256": "32c42e3276d502154b56c0be5c1b5ec1e174b93092fe0bca39b10f34f80fbe70"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "a719fdd2dfa0cad5eee98fdbe5fd0039cea9443833e7f5a2ecee909917140ba0"
+      }
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "input": {
+        "search": "",
+        "searchMode": "simple",
+        "tag": "",
+        "notebookId": "",
+        "trash": false,
+        "todoFilter": "all"
+      },
+      "body": {
+        "bytes": 1692,
+        "sha256": "0f2085f544e00732f505f2f67ed2a93aa58fcffbf7eba0b111f569288d426a9f"
+      }
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 776,
+        "sha256": "a719fdd2dfa0cad5eee98fdbe5fd0039cea9443833e7f5a2ecee909917140ba0"
+      }
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "status": 200,
+      "input": {},
+      "body": {
+        "bytes": 59,
+        "sha256": "3d21a27da87dc7099f5d6908f648e8f5c9d7161e3d39ef58bfe698f062d6ed65"
+      }
+    }
+  ],
+  "fixtureRequests": [
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Lab",
+        "revision": 0
+      },
+      "status": 200
+    },
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Child",
+        "parentId": "24e3ce9a96e961e8f9e3e01bfb014185",
+        "revision": 1
+      },
+      "status": 200
+    },
+    {
+      "action": "notebook-create",
+      "input": {
+        "title": "Elsewhere",
+        "revision": 2
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Release plan",
+        "body": "ready for review",
+        "notebookId": "24e3ce9a96e961e8f9e3e01bfb014185",
+        "tags": [
+          "work"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Other",
+        "body": "Release plan archived",
+        "notebookId": "6beeb21748fd16143c9c35c475e585b6",
+        "tags": [
+          "spam"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Task",
+        "body": "ready",
+        "notebookId": "6beeb21748fd16143c9c35c475e585b6",
+        "tags": [
+          "work"
+        ],
+        "newTodo": true
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Done",
+        "body": "archived",
+        "notebookId": "28d99098711e26e0b1af47611049b336",
+        "tags": [
+          "work"
+        ],
+        "newTodo": true
+      },
+      "status": 200
+    },
+    {
+      "action": "todo-completed",
+      "input": {
+        "id": "9d91985d-3856-4faa-9589-8cb960610edd",
+        "revision": 1,
+        "completed": true
+      },
+      "status": 200
+    },
+    {
+      "action": "save",
+      "input": {
+        "title": "Archived trash",
+        "body": "ready",
+        "notebookId": "24e3ce9a96e961e8f9e3e01bfb014185",
+        "tags": [
+          "work"
+        ]
+      },
+      "status": 200
+    },
+    {
+      "action": "delete",
+      "input": {
+        "id": "7d64d5ef-a485-4fe1-b6ab-d3d00e5281c8",
+        "revision": 1
+      },
+      "status": 200
+    },
+    {
+      "action": "draft-recovery-scope",
+      "input": {},
+      "status": 200
+    }
+  ],
+  "expectedHttpFailures": [],
+  "observations": [
+    {
+      "kind": "actual-http-result-to-visible-row-binding",
+      "ids": [
+        "45f48212-9e69-4779-a2e4-dd8a88fd1b1c",
+        "9d91985d-3856-4faa-9589-8cb960610edd",
+        "da2a094f-a6f1-4b3a-9b1e-6fe90944b535"
+      ],
+      "rows": [
+        {
+          "id": "9d91985d-3856-4faa-9589-8cb960610edd",
+          "title": "Done",
+          "notebook": "Elsewhere",
+          "tags": [
+            "work"
+          ]
+        },
+        {
+          "id": "da2a094f-a6f1-4b3a-9b1e-6fe90944b535",
+          "title": "Task",
+          "notebook": "Lab / Child",
+          "tags": [
+            "work"
+          ]
+        },
+        {
+          "id": "45f48212-9e69-4779-a2e4-dd8a88fd1b1c",
+          "title": "Release plan",
+          "notebook": "Lab",
+          "tags": [
+            "work"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "exact-actual-shipped-module-delivery",
+      "name": "client",
+      "bytes": 41238,
+      "sha256": "9b5e4fbb82b2213d8b537c2629b9ff4e18682b87b2627f8cfb90fe351617e12e"
+    },
+    {
+      "kind": "exact-actual-shipped-module-delivery",
+      "name": "markdown",
+      "bytes": 5135,
+      "sha256": "409b2bcc489c785e725d3257f21af1c6a3cd4f1f78fa0d0ca74d538876f24915"
+    },
+    {
+      "kind": "exact-actual-shipped-module-delivery",
+      "name": "core",
+      "bytes": 2657,
+      "sha256": "06bf9ad2485e39d6c7dea51a3be9a232fefe9d1a2ed1e46482b0459d605aa44c"
+    },
+    {
+      "kind": "exact-actual-shipped-module-delivery",
+      "name": "draft-recovery",
+      "bytes": 9814,
+      "sha256": "10d4c3fa2ec7047b9732f6a83aa8cdd76dec48f490a612c18502487058529608"
+    },
+    {
+      "kind": "native-reload-retained-recovery-and-transient-search-reset",
+      "copyBefore": {
+        "schema": 1,
+        "scope": "18722c87-0f3b-4598-af58-48df8294ee58",
+        "id": "6526599d-0e3f-4557-a85f-b8afb5c21505",
+        "version": 6,
+        "title": "  Owned unsaved search task  ",
+        "body": "# Raw unsaved 🧪 body\nsecond line",
+        "tags": " work,  research,work ",
+        "notebookId": "6beeb21748fd16143c9c35c475e585b6",
+        "isTodo": true,
+        "sourceNoteId": null,
+        "sourceRevision": 0,
+        "pendingSave": false,
+        "updatedAt": 1792382562279
+      },
+      "modeAfterReload": "simple",
+      "queryAfterReload": "",
+      "explicitSeparateCopyConsentStillRequired": true
+    }
+  ],
+  "errors": [],
+  "cleanup": {
+    "heldRoutesFinished": true,
+    "requestsDrained": true,
+    "screenshotSaved": true,
+    "contextClosed": true,
+    "hostClosed": true,
+    "dataRemoved": true
+  },
+  "pendingOwnedRequests": 0,
+  "screenshot": "screenshots/search-6e062a864957f4acde33-798f0434195369a8a71d.png",
+  "finalDisk": {
+    "bytes": 3420,
+    "sha256": "a572d143cb90050b3f0593856a508a78194396070fc11f810e4a56fb58e04338"
+  },
+  "NotesUISaveRequests": 0,
+  "originalProductExecutions": 0,
+  "handlerResponsesRewritten": false,
+  "fullParity": false,
+  "superiority": false
+}

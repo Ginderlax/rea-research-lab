@@ -1,0 +1,213 @@
+{
+  "schema": "rea-notes-search-retained-new-todo-browser-case/v1",
+  "sourceEpoch": "notes46-structured-search-browser-experiment",
+  "sourceCommit": "0e2b6d70c31e1534e61c203e8fa78c2fc6c19da5",
+  "runId": "39197426068",
+  "runAttempt": "1",
+  "historicalRecoverySourceContextOnly": "f0ca90d2cfafcc10f102c88b7dce3ef3c895d269",
+  "priorRuntimeAcceptanceReused": false,
+  "installedAcceptancePreclaimed": false,
+  "testId": "c94d80184a106a7a549a-0faa74befbb698b3ef8c",
+  "title": "New To-do new editor owns a separate unsaved task while older actual creation response is held after commit",
+  "statusAtFixtureClose": "passed",
+  "retry": 0,
+  "url": "http://127.0.0.1:61075",
+  "ownedDataDirectory": "D:\\a\\_temp\\rea-notes-search-browser-data-7dUNG4\\notes-new-todo-case-JtbfCL",
+  "serverCloseObserved": true,
+  "realBrowser": true,
+  "actualHTTP": true,
+  "originalProductExecutions": 0,
+  "originalFullApplicationExecutions": 0,
+  "originalHelperExecutions": 0,
+  "programmaticDisabledControlProbes": 0,
+  "teardown": {
+    "stage": "completed",
+    "heldRoutesFinished": true,
+    "drained": true,
+    "contextClosed": true,
+    "serverClosed": true,
+    "screenshotSaved": true,
+    "requestCounts": {
+      "started": 16,
+      "finished": 16,
+      "failed": 0
+    },
+    "steps": [
+      {
+        "name": "release-held-routes",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T04:02:31.909Z",
+        "completedAtUtc": "2026-10-19T04:02:31.909Z"
+      },
+      {
+        "name": "screenshot",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T04:02:31.909Z",
+        "completedAtUtc": "2026-10-19T04:02:31.961Z"
+      },
+      {
+        "name": "drain-owned-page-requests",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T04:02:31.961Z",
+        "completedAtUtc": "2026-10-19T04:02:31.961Z"
+      },
+      {
+        "name": "capture-synthetic-final-record",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T04:02:31.961Z",
+        "completedAtUtc": "2026-10-19T04:02:31.962Z"
+      },
+      {
+        "name": "close-owned-context",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T04:02:31.962Z",
+        "completedAtUtc": "2026-10-19T04:02:32.018Z"
+      },
+      {
+        "name": "close-owned-server",
+        "status": "passed",
+        "startedAtUtc": "2026-10-19T04:02:32.018Z",
+        "completedAtUtc": "2026-10-19T04:02:32.019Z"
+      }
+    ],
+    "pendingOwnedRequests": 0,
+    "activeOwnedIOFault": false
+  },
+  "observations": [
+    {
+      "kind": "new-task-editor-ownership-after-actual-commit",
+      "oldId": "8e226bf0-8221-4f2e-8f94-337a241d5784",
+      "newId": "fb3645d7-6919-4f17-839f-e189420a542e",
+      "oldRevision": 1,
+      "newRevision": 1
+    },
+    {
+      "kind": "owned-synthetic-disk-record",
+      "path": "notes-records/c94d80184a106a7a549a-0faa74befbb698b3ef8c.json",
+      "bytes": 1287,
+      "sha256": "10ec1775cf93e7816aa3738a51ca7d435f5e751f6b99578221f4c937e8f9f2ee"
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"searchMode\":\"simple\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/draft-recovery-scope",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"revision\":0,\"title\":\"Old held creation\",\"body\":\"Synthetic new-task body\",\"notebook\":\"Notes\",\"tags\":[\"study\"],\"newTodo\":true}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"revision\":0,\"title\":\"Independent newer task\",\"body\":\"New editor owns this body\",\"notebook\":\"Notes\",\"tags\":[],\"newTodo\":true}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"fb3645d7-6919-4f17-839f-e189420a542e\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"searchMode\":\"simple\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"search\":\"\",\"searchMode\":\"simple\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    },
+    {
+      "path": "/api/notes/draft-recovery-scope",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"revision\":0,\"title\":\"Old held creation\",\"body\":\"Synthetic new-task body\",\"notebook\":\"Notes\",\"tags\":[\"study\"],\"newTodo\":true}"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"revision\":0,\"title\":\"Independent newer task\",\"body\":\"New editor owns this body\",\"notebook\":\"Notes\",\"tags\":[],\"newTodo\":true}"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"id\":\"fb3645d7-6919-4f17-839f-e189420a542e\"}"
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{\"search\":\"\",\"searchMode\":\"simple\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST",
+      "postData": "{}"
+    }
+  ],
+  "faults": [
+    {
+      "kind": "delay-after-actual-host-response",
+      "action": "save",
+      "status": 200,
+      "body": {
+        "bytes": 390,
+        "sha256": "a0962cc7c944d3fdb23dc985fe655c3c2860491f99890aa2d248a4f9ddfb928c"
+      },
+      "handlerMocked": false,
+      "responseRewritten": false
+    }
+  ],
+  "expectedHttpFailures": [],
+  "expectedConsole": [],
+  "auxiliaryErrors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:61075/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "errors": [],
+  "downloads": []
+}

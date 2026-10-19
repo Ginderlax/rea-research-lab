@@ -1,0 +1,106 @@
+{
+  "schema": "rea-notes-search-independent-hosted-experiment-requirements/v1",
+  "reviewer": "/root/pub_protocol_0110/joplin_search_contract_peer",
+  "decision": "The proposed bounded capture superset closes the inspected retained and new test source dependencies. Hosted execution and its new workflow, collector and HTTP harness remain pending independent review.",
+  "method": "Source text, JSON data and ordinary file metadata/SHA256 only; no candidate or original execution, import, VM, compilation, syntax check, test, build, decoder, archive opening or network acquisition.",
+  "frozenSearchProposal": {
+    "authorityPath": "work/notes-search-grammar-20261019/COMPLETE-SEARCH-SOURCE-AUTHORITY-V1.json",
+    "authorityBytes": 6373,
+    "authoritySha256": "cfb36caeca4b3a75d8eb94b28a021d379e75762ccc87dd1cdd70aef9b9ad3eed",
+    "priorCompletePeerPath": "work/notes-search-grammar-20261019/INDEPENDENT-COMPLETE-INTEGRATION-SOURCE-PEER-V1.json",
+    "priorCompletePeerBytes": 8804,
+    "priorCompletePeerSha256": "628f6382abc70035bdd2745ebf394a1be5b15dcaf0eaffd8aa4195184beb1fe7",
+    "handoffPath": "work/notes-search-grammar-20261019/SOURCE-HANDOFF-V1.json",
+    "scope": "18 frozen files; 8 app files consist of 3 replacements and 5 new files. The other 10 preserve primary source, license, provenance and study scope. The current active Notes source and publication manifest must not be changed for this hosted experiment."
+  },
+  "payloadClosure": {
+    "notesSource": "41 baseline Notes non-results source/fixture files plus the 5 newly introduced files, with the 3 explicitly declared bytes replaced only in an isolated hosted payload: 46 files.",
+    "sharedFiles": [
+      "products/rea-studio/server.mjs",
+      "products/rea-studio/catalog.mjs",
+      "products/rea-studio/lib/storage.mjs",
+      "products/rea-studio/public/index.html",
+      "products/rea-studio/public/studio.mjs",
+      "products/rea-studio/public/style.css",
+      "products/rea-studio/package.json"
+    ],
+    "originalInputFloor": {
+      "path": "products/rea-studio/scripts/notes-draft-recovery-regression-floor.json",
+      "bytes": 40089,
+      "sha256": "d02b32326cd9b2e448fea996d0a616c24c7287f47b34cb77c0c575fd1bfcc7d7",
+      "originalInputs": 64,
+      "originalInputBytes": 659813,
+      "independentOrdinarySourcePinCheck": "All 64 local files exist and match their floor byte counts and SHA256 values. They include the exact double-.snapshot paths consumed by the released Folder/Note/BaseModel/conflict/trash helper adapters and the newTodo/newNote command originals."
+    },
+    "otherCapture": "All 18 proposal payloads; packaged proposal authority, prior complete peer, handoff and retained before-images as declared; the exact new experiment workflow, collector, plan and HTTP test; resulting stdout/stderr and observation files. Source identities must be rechecked before and after hosted execution.",
+    "importantRelativePath": "search-query-original.test.mjs resolves ../../experiments/notes-search-grammar/original/ from apps/notes. Preserve that inner products/rea-studio tree even when the outer experimental package is named notes-structured-search-cloud-20261019.",
+    "dynamicImportClosure": "The shared host dynamically imports only apps/notes/server.mjs for the selected Notes requests. Catalog initialization makes contexts for all catalog apps without importing their runtime modules. The retained fresh import of ./server.mjs?independent-reopen targets the same captured Notes server."
+  },
+  "retainedLiteralRegistrations": {
+    "app.integration.test.mjs": 2,
+    "app.test.mjs": 8,
+    "draft-recovery.http.test.mjs": 2,
+    "draft-recovery.test.mjs": 4,
+    "draft-recovery.ui.test.mjs": 17,
+    "jex.test.mjs": 9,
+    "new-todo-original.test.mjs": 2,
+    "new-todo.integration.test.mjs": 3,
+    "new-todo.test.mjs": 6,
+    "new-todo.ui.test.mjs": 8,
+    "notebook-confirmation-cancel-open-note.ui.test.mjs": 1,
+    "notebook-confirmation.ui.test.mjs": 9,
+    "notebook-trash-fresh-boundaries.test.mjs": 4,
+    "notebook-trash-publication-boundaries.test.mjs": 7,
+    "notebook-trash-review.test.mjs": 7,
+    "notebook-trash.integration.test.mjs": 1,
+    "notebook-trash.test.mjs": 10,
+    "notebook-trash.ui.test.mjs": 2,
+    "notebooks.integration.test.mjs": 1,
+    "notebooks.test.mjs": 8,
+    "todo-original.test.mjs": 1,
+    "todo.integration.test.mjs": 2,
+    "todo.test.mjs": 11,
+    "todo.ui.test.mjs": 9
+  },
+  "newSearchRegistrations": {
+    "search-query-original.test.mjs": {
+      "parents": 2,
+      "parserSubcases": 48,
+      "metadataSqlSubcases": 32,
+      "expectedNodeResults": 82
+    },
+    "search-query.test.mjs": 6,
+    "search-query.integration.test.mjs": 3,
+    "search-query.ui.test.mjs": 3,
+    "retainedFiles": 24,
+    "retainedExpectedResults": 134,
+    "newFiles": 4,
+    "newExpectedResults": 94,
+    "combinedFilesBeforeNewHttpHarness": 28,
+    "combinedExpectedResultsBeforeNewHttpHarness": 228,
+    "countBoundary": "These are static literal registration counts and fixed parser/metadata loops, not executed passes. draft-recovery.ui uses its check(name, body) wrapper which directly registers test(name, {timeout:20000}, body). The separate new experiment-owned real HTTP module must add its own independently reviewed roster and runtime results."
+  },
+  "recommendedHostedCommands": {
+    "environment": "Verified hosted windows-2022 with exactly Node 24.16.0; no npm installation is required for these built-in-only test modules.",
+    "childProgram": "process.execPath",
+    "childArguments": ["--test", "--test-concurrency=1", "--test-reporter=tap", "each exact selected test path as a separate argument"],
+    "invocation": "Use shell:false with an explicit frozen path array, captured cwd, environment allowlist, timeout and output caps. Run all 24 unchanged retained tests plus the 4 new search tests and the separately reviewed actual HTTP module. Do not replace retained assertions or suppress failures.",
+    "requiredTools": "Retained jex.test.mjs invokes native tar -tf and tar -xOf to independently inspect produced TAR bytes. Missing tar must fail; do not substitute the product parser or skip. Original tests require node:module stripTypeScriptTypes transform and node:sqlite DatabaseSync. Missing support must fail rather than switch to a different oracle.",
+    "tapAcceptance": "Check raw exit status, complete expected module/title/subcase roster, no failures/cancellations/skips/todos, and expected result counts. Preserve raw stdout and stderr. Report actual execution evidence separately from source-derived expectations."
+  },
+  "observationCapture": {
+    "environmentOutput": "Use an isolated trailing-slash file URL for NOTES_REVIEW_OUTPUT. notebook-confirmation.ui, notebook-trash-fresh-boundaries, notebook-trash-publication-boundaries and notebook-trash-review write inline-confirmation.json, fresh-boundaries.json, publication-boundaries.json and review.json there.",
+    "hardCodedOutput": "notebook-trash.test.mjs does not honor that environment variable. It writes products/rea-studio/.local/notes-notebook-trash-observations/trash-original.json relative to the isolated payload.",
+    "stdout": "notebooks.test.mjs prints original helper observations; notebook-trash.test.mjs prints original comparison counters. Preserve these as child stdout, not newly invented evidence."
+  },
+  "originalComparisonAssessment": {
+    "sourceAuthentication": "The new original suite checks exact byte counts, SHA256 and Git blob SHA1 for the full pinned filterParser.ts and queryBuilder.ts before hosted TypeScript transformation. Original functions are used at runtime rather than a mirror expected-result table.",
+    "parserCoverage": "48 cases include negation, quoted/hyphen/underscore/unclosed fields, empty fields, invalid type/completion values, tab splitting, unsupported grammar and text wildcards. It compares complete return values or exact error messages.",
+    "metadataCoverage": "32 cases execute original generated non-FTS SQL in synthetic SQLite and compare candidate ID sets. Fixtures distinguish duplicate notebook titles, descendants and exclusions, no-match scopes, tag presence/absence, SQL-LIKE percent/underscore/star, ASCII versus Unicode case and note/to-do completion states.",
+    "adapterBoundary": "Only one exact unused date-service import is replaced by a deny-on-access Proxy; all original queryBuilder function bodies remain. Any date access must fail. No original database, FTS/ranking, application, desktop UI or full grammar execution is claimed.",
+    "sourceDefectConclusion": "No new concrete source defect was found that invalidates the bounded 48+32 comparisons. Hosted execution may still reveal failures and is mandatory before acceptance.",
+    "acceptanceGaps": "The existing search-query.integration suite is in-memory handle integration, not HTTP. The existing UI suite is a synthetic DOM fixture, not browser acceptance. The parent is authoring a separate real HTTP experiment module; real browser execution, performance, complete grammar, parity and superiority remain outside this experiment."
+  },
+  "writes": "Only this independent requirements receipt was authored. No active repository, source proposal, parent experiment candidate, workflow, source authority, Git state or historical receipt was changed.",
+  "nextAction": "Independently source-review the parent-authored frozen workflow, collector, source plan and HTTP harness; root remains the sole cloud dispatcher and Git owner."
+}

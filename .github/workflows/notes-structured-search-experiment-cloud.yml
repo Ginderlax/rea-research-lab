@@ -1,0 +1,106 @@
+name: Notes structured search isolated experiment
+
+on:
+  push:
+    branches: [experiment/notes-structured-search-20261019]
+
+permissions:
+  contents: read
+concurrency:
+  group: notes-structured-search-experiment-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  structured-search-finite:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact experiment commit and its required baseline parent
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select the exact supported hosted runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Allocate fresh owned evidence and authenticate the collector bootstrap
+        id: bootstrap
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes-search-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          if(Test-Path -LiteralPath $evidence){throw 'Evidence directory already exists'}
+          New-Item -ItemType Directory -Path $evidence|Out-Null
+          'REA_NOTES_SEARCH_EVIDENCE='+$evidence|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
+          $collector='products/rea-studio/experiments/notes-structured-search-cloud-20261019/run-experiment.mjs'
+          $plan='products/rea-studio/experiments/notes-structured-search-cloud-20261019/SOURCE-PLAN.json'
+          if((Get-Item -LiteralPath $collector).Length -ne 20224 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $collector).Hash.ToLowerInvariant() -ne '0c44617f658d29a4e52aee7781ba17bc263f1c99a3914eca19efd72354229658'){throw 'Frozen collector identity differs'}
+          if((Get-Item -LiteralPath $plan).Length -ne 76743 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $plan).Hash.ToLowerInvariant() -ne '4387144781e0a2c7417115bb55c41ad191b3508f962b3175a6341e6c453a6731'){throw 'Frozen source plan identity differs'}
+      - name: Authenticate and preserve the baseline then compose exactly eighteen reviewed targets
+        id: compose
+        shell: pwsh
+        run: |
+          & node products/rea-studio/experiments/notes-structured-search-cloud-20261019/run-experiment.mjs --phase compose --evidence "$env:REA_NOTES_SEARCH_EVIDENCE" 1> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-compose-stdout.txt') 2> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-compose-stderr.txt')
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+      - name: Execute all retained Notes tests and the bounded original and HTTP search comparisons
+        id: finite
+        shell: pwsh
+        run: |
+          & node products/rea-studio/experiments/notes-structured-search-cloud-20261019/run-experiment.mjs --phase finite --evidence "$env:REA_NOTES_SEARCH_EVIDENCE" 1> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-finite-stdout.txt') 2> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-finite-stderr.txt')
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+      - name: Preserve and authenticate the same composed source after failures too
+        id: postcheck
+        if: always() && steps.compose.outcome != '' && steps.compose.outcome != 'skipped'
+        shell: pwsh
+        run: |
+          & node products/rea-studio/experiments/notes-structured-search-cloud-20261019/run-experiment.mjs --phase postcheck --evidence "$env:REA_NOTES_SEARCH_EVIDENCE" 1> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-postcheck-stdout.txt') 2> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-postcheck-stderr.txt')
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+      - name: Package bounded complete evidence or an explicitly incomplete failure record
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $evidence=$env:REA_NOTES_SEARCH_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes-search-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-notes-search-workflow-attempt/v1';sourceCommit=$env:GITHUB_SHA;baselineCommit='2a8482b42784eb262d6d5b82e62d8d1220dc4821';runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;job=$env:GITHUB_JOB;runnerEnvironment=$env:RUNNER_ENVIRONMENT;runnerOS=$env:RUNNER_OS;imageOS=$env:ImageOS;imageVersion=$env:ImageVersion;checkoutOutcome='${{ steps.checkout.outcome }}';bootstrapOutcome='${{ steps.bootstrap.outcome }}';compositionOutcome='${{ steps.compose.outcome }}';finiteOutcome='${{ steps.finite.outcome }}';postcheckOutcome='${{ steps.postcheck.outcome }}';sourceOverlay=$true;exactOverlayTargets=18;productionInstallation=$false;historicalReceiptsRebound=$false;realBrowserAcceptance=$false;performanceMeasured=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
+          $rawBytes=($files|Measure-Object Length -Sum).Sum
+          $links=@(Get-ChildItem -LiteralPath $evidence -Recurse -Force|Where-Object {$_.Attributes -band [IO.FileAttributes]::ReparsePoint})
+          $bounded=$files.Count -le 1024 -and $rawBytes -le 64*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0 -and $links.Count -eq 0
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-notes-search-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          if(Test-Path -LiteralPath $archive){throw 'Archive already exists'}
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $archiveBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $archiveBytes -gt 15*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes-search-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback|Out-Null
+            foreach($file in Get-ChildItem -LiteralPath $evidence -File){if($file.Length -le 1024*1024){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name)}}
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$rawBytes;archiveBytes=$archiveBytes;reparsePoints=$links.Count;fileLimit=1024;rawByteLimit=64*1024*1024;individualByteLimit=8*1024*1024;zipLimit=15*1024*1024;reason='A fixed bound or link guard rejected complete evidence; fallback cannot qualify the experiment.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes-search-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
+            throw 'Complete evidence rejected; preserved fallback is explicitly incomplete'
+          }
+          'artifact_path='+$archive|Out-File -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve this attempt success or failure evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes-structured-search-finite-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

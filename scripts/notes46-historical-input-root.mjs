@@ -8,7 +8,8 @@ import { spawnSync } from 'node:child_process';
 
 const COMMIT = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
 // Actual current source parent is distinct from the immutable historical input.
-const CURRENT_SOURCE_PARENT = '40c7df91936aaf9574801aa38c5a635f299e6e39';
+const CURRENT_SOURCE_PARENT = 'cee2da08f7ebe81a003a6cc9828655794be48cb0';
+const REVIEWED_SOURCE_GRANDPARENT = '40c7df91936aaf9574801aa38c5a635f299e6e39';
 const TREE = '34e8de6f0c447edd2bc1a6389ed5dfb727705025';
 const SELF = 'scripts/notes46-historical-input-root.mjs';
 const DESCRIPTOR = Object.freeze({ path: 'products/rea-studio/experiments/notes46-installed-search-20261019/historical-input/TREE-DESCRIPTOR.json', bytes: 1919, sha256: '1d575abb7699f61299ecfb51de274a208cf9e9562013062eb1f41027d0682ba3' });
@@ -130,7 +131,8 @@ export function prepareNotes46HistoricalInputRoot(repoRoot) {
   const ownBytes = readRegular(repoRoot, SELF, 512 * 1024); assert.deepEqual(git(repoRoot, ['show', 'HEAD:' + SELF], 512 * 1024), ownBytes);
   assert.equal(git(repoRoot, ['rev-parse', 'HEAD'], 4096).toString('utf8').trim(), process.env.GITHUB_SHA);
   assert.equal(git(repoRoot, ['rev-list', '--parents', '-n', '1', 'HEAD'], 4096).toString('utf8').trim(), process.env.GITHUB_SHA + ' ' + CURRENT_SOURCE_PARENT, 'Reviewed immediate current source parent');
-  assert.equal(git(repoRoot, ['rev-list', '--parents', '-n', '1', CURRENT_SOURCE_PARENT], 4096).toString('utf8').trim(), CURRENT_SOURCE_PARENT + ' ' + COMMIT, 'Reviewed fixed historical grandparent');
+  assert.equal(git(repoRoot, ['rev-list', '--parents', '-n', '1', CURRENT_SOURCE_PARENT], 4096).toString('utf8').trim(), CURRENT_SOURCE_PARENT + ' ' + REVIEWED_SOURCE_GRANDPARENT, 'Reviewed source grandparent');
+  assert.equal(git(repoRoot, ['rev-list', '--parents', '-n', '1', REVIEWED_SOURCE_GRANDPARENT], 4096).toString('utf8').trim(), REVIEWED_SOURCE_GRANDPARENT + ' ' + COMMIT, 'Reviewed fixed historical great-grandparent');
   const temporary = fs.realpathSync(process.env.RUNNER_TEMP); noLinks(temporary); assert(fs.lstatSync(temporary).isDirectory()); assert(!within(repoRoot, temporary));
   const cacheKey = repoIdentity.realpath;
   if (cached.has(cacheKey)) { const context = cached.get(cacheKey); assertNotes46HistoricalInputRoot(context); return context; }

@@ -9,7 +9,7 @@ import { spawn, spawnSync } from 'node:child_process';
 const PREFIX = 'products/rea-studio/experiments/notes46-installed-search-browser-20261019';
 const SELF = PREFIX + '/run-installed-study.mjs';
 const WORKFLOW = '.github/workflows/notes46-installed-search-browser-cloud.yml';
-const PLAN = { path: PREFIX + '/SOURCE-PLAN.json', bytes: 84449, sha256: '597eefb5d7055b58e9d252fb8c2b3e2dfa6e0b0b1a2f283bc817db591a2ee149' };
+const PLAN = { path: PREFIX + '/SOURCE-PLAN.json', bytes: 85371, sha256: 'c3c3daa16c2b62636b19558621de856e9ed9561f895e8be1d63be22df8408f6e' };
 const BASELINE = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
 const BRANCH = 'refs/heads/experiment/notes46-installed-search-20261019';
 const root = path.resolve(fileURLToPath(new URL('../../../../', import.meta.url)));
@@ -42,7 +42,8 @@ function hosted() {
   assert(['draft-recovery-real-chromium', 'notes46-observed-values'].includes(process.env.GITHUB_JOB));
   for (const key of ['GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT']) assert(/^[1-9][0-9]*$/.test(process.env[key]));
   assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA)); assert.equal(git(['rev-parse', 'HEAD']).toString().trim(), process.env.GITHUB_SHA);
-  assert.deepEqual(git(['rev-list', '--parents', '-n', '1', 'HEAD']).toString().trim().split(' '), [process.env.GITHUB_SHA, '40c7df91936aaf9574801aa38c5a635f299e6e39']);
+  assert.deepEqual(git(['rev-list', '--parents', '-n', '1', 'HEAD']).toString().trim().split(' '), [process.env.GITHUB_SHA, 'cee2da08f7ebe81a003a6cc9828655794be48cb0']);
+  assert.deepEqual(git(['rev-list', '--parents', '-n', '1', 'cee2da08f7ebe81a003a6cc9828655794be48cb0']).toString().trim().split(' '), ['cee2da08f7ebe81a003a6cc9828655794be48cb0', '40c7df91936aaf9574801aa38c5a635f299e6e39']);
   assert.deepEqual(git(['rev-list', '--parents', '-n', '1', '40c7df91936aaf9574801aa38c5a635f299e6e39']).toString().trim().split(' '), ['40c7df91936aaf9574801aa38c5a635f299e6e39', BASELINE]);
   assert.equal(git(['rev-parse', '--show-object-format']).toString().trim(), 'sha1');
   assert.equal(path.resolve(fileURLToPath(import.meta.url)).toLowerCase(), path.join(root, SELF).toLowerCase()); noLinks(root);
@@ -57,12 +58,25 @@ function committed(name, bytes) { const row = currentTree.get(name); assert(row 
 const planBytes = read(root, PLAN.path); assert.deepEqual(id(planBytes), pin(PLAN)); committed(PLAN.path, planBytes);
 const plan = JSON.parse(planBytes);
 assert.equal(plan.schema, 'rea-notes46-installed-search-browser-source-plan/v1'); assert.equal(plan.baselineCommit, BASELINE); assert.equal(plan.branch, BRANCH); assert.equal(plan.sourceEpoch, 'notes46-installed-structured-search-v1'); assert.equal(plan.installedNotesSources.length, 46); assert.equal(plan.historicalBeforeNotesSources.length, 41);
+assert.equal(plan.reviewedFixtureLifecycleTransitions.length, 1);
+const fixtureTransition = plan.reviewedFixtureLifecycleTransitions[0];
+assert.equal(fixtureTransition.path, 'products/rea-studio/browser-tests/notes-draft-recovery.storage.spec.mjs'); assert.equal(fixtureTransition.beforeCommit, 'cee2da08f7ebe81a003a6cc9828655794be48cb0'); assert.equal(fixtureTransition.historicalComparisonCommit, BASELINE);
+assert.equal(fixtureTransition.behaviorAcceptancePreclaimed, false); assert.equal(fixtureTransition.historicalReceiptsRebound, false);
+assert.equal(baseTree.get(fixtureTransition.path)?.mode, '100644'); assert.equal(baseTree.get(fixtureTransition.path)?.kind, 'blob'); assert.equal(baseTree.get(fixtureTransition.path)?.gitBlob, fixtureTransition.before.gitBlob);
+assert.equal(git(['rev-parse', fixtureTransition.beforeCommit + ':' + fixtureTransition.path]).toString().trim(), fixtureTransition.before.gitBlob);
 assert.deepEqual(plan.limits.source, sourceLimits); assert.equal(plan.sourceOverlay, false); assert.equal(plan.actualProductPathsCommitted, true); assert.equal(plan.productionInstallation, false); assert.equal(plan.historicalReceiptsRebound, false);
 const packageNames = [...plan.packagedFiles.map(row => row.path), PLAN.path, SELF, WORKFLOW].sort();
 assert.equal(new Set(packageNames.map(name => name.toLowerCase())).size, packageNames.length);
 for (const name of packageNames) { safe(name); assert(name === WORKFLOW || name.startsWith(PREFIX + '/') || plan.additionalCommittedBrowserPaths.includes(name)); assert(!baseTree.has(name)); }
 const transitions = plan.installedProductTransitions; assert.equal(transitions.length, 18); assert.equal(new Set(transitions.map(row => row.path)).size, 18);
 for (const row of transitions) { safe(row.path); assert(!packageNames.includes(row.path)); assert(currentTree.has(row.path)); if (row.before) { assert(baseTree.has(row.path)); assert.equal(baseTree.get(row.path).gitBlob, row.before.gitBlob); } else assert(!baseTree.has(row.path)); }
+function fixtureBeforeImages() {
+  const bytes = git(['show', fixtureTransition.beforeCommit + ':' + fixtureTransition.path]); assert(bytes.length <= sourceLimits.individualBytes); assert.deepEqual(id(bytes), pin(fixtureTransition.before)); assert.equal(blob(bytes), fixtureTransition.before.gitBlob);
+  assert.deepEqual(git(['show', BASELINE + ':' + fixtureTransition.path]), bytes);
+  write('fixture-before/' + fixtureTransition.path + '.snapshot', bytes);
+  const result = { schema: 'rea-notes46-reviewed-fixture-beforeimage/v1', execution: execution(), sourceCommit: process.env.GITHUB_SHA, role, files: 1, beforeCommit: fixtureTransition.beforeCommit, historicalComparisonCommit: BASELINE, sameHistoricalBlobVerified: true, row: { path: fixtureTransition.path, ...id(bytes), gitBlob: blob(bytes) }, replacementSource: fixtureTransition.after, behaviorAcceptancePreclaimed: false, historicalReceiptsRebound: false };
+  json('fixture-before-image.json', result); return result;
+}
 function parentBeforeImages() {
   const rows = []; let rawBytes = 0;
   for (const row of transitions.filter(item => item.before)) {
@@ -78,7 +92,7 @@ function capture(kind, save = true) {
   const check = (name, body) => { try { body(); } catch (error) { authenticationErrors.push({ path: name, name: error.name, message: String(error.message).slice(0, 4000) }); } };
   check('Git worktree status', () => assert.deepEqual(actualStatus, []));
   check('Actual physical Notes census', () => assert.deepEqual(actualNotes, plan.installedNotesSources.map(row => row.path).sort()));
-  const definitions = [...plan.installedNotesSources, ...plan.studySources, ...plan.baselineDependencies, ...plan.browserBaselineSources, ...plan.packagedFiles];
+  const definitions = [...plan.installedNotesSources, ...plan.studySources, ...plan.baselineDependencies, ...plan.browserBaselineSources.map(row => row.path === fixtureTransition.path ? { path: row.path, ...fixtureTransition.after } : row), ...plan.packagedFiles];
   const expected = new Map(definitions.map(row => [row.path, row])); assert.equal(expected.size, definitions.length);
   for (const name of [PLAN.path, SELF, WORKFLOW]) { assert(!expected.has(name)); expected.set(name, { path: name }); }
   assert.equal(expected.size, plan.captureCount);
@@ -90,8 +104,8 @@ function capture(kind, save = true) {
     const bytes = read(root, name); total += bytes.length; assert(total <= sourceLimits.rawBytes);
     if (save) write('source-' + kind + '/' + name + '.snapshot', bytes);
     if (row.sha256) check(name, () => assert.deepEqual(id(bytes), pin(row), name));
-    check(name, () => { const metadata = committed(name, bytes); const changed = transitions.find(item => item.path === name); if (changed) assert.deepEqual(id(bytes), pin(changed.after)); else if (!packageNames.includes(name)) { assert(baseTree.has(name)); assert.deepEqual(metadata, baseTree.get(name)); } if (row.gitBlob) assert.equal(blob(bytes), row.gitBlob); });
-    rows.push({ path: name, ...id(bytes), gitBlob: blob(bytes), intendedEpoch: transitions.some(row => row.path === name) ? 'committed-qualified-product-target' : packageNames.includes(name) ? 'committed-installed-study-support' : 'unchanged-parent-input' });
+    check(name, () => { const metadata = committed(name, bytes); const changed = transitions.find(item => item.path === name); if (changed) assert.deepEqual(id(bytes), pin(changed.after)); else if (name === fixtureTransition.path) { assert.deepEqual(id(bytes), pin(fixtureTransition.after)); assert.equal(baseTree.get(name)?.gitBlob, fixtureTransition.before.gitBlob); } else if (!packageNames.includes(name)) { assert(baseTree.has(name)); assert.deepEqual(metadata, baseTree.get(name)); } if (row.gitBlob) assert.equal(blob(bytes), row.gitBlob); });
+    rows.push({ path: name, ...id(bytes), gitBlob: blob(bytes), intendedEpoch: transitions.some(row => row.path === name) ? 'committed-qualified-product-target' : name === fixtureTransition.path ? 'committed-reviewed-fixture-lifecycle-repair' : packageNames.includes(name) ? 'committed-installed-study-support' : 'unchanged-parent-input' });
   }
   check('Exact selected source count', () => assert.equal(rows.length, plan.captureCount));
   const result = { schema: 'rea-notes46-installed-source-capture/v1', execution: execution(), role, phase: kind, sourceCommit: process.env.GITHUB_SHA, baselineCommit: BASELINE, sourcePlan: id(planBytes), installedCommittedSource: true, sourceOverlay: false, actualProductPathsCommitted: true, appSourceWritesByCollector: 0, productionInstallation: false, historicalReceiptsRebound: false, files: rows.length, rawBytes: total, limits: sourceLimits, actualNotes, actualStatus, rows, contentsPreserved: save, sourceAuthenticated: authenticationErrors.length === 0, authenticationErrors };
@@ -270,7 +284,7 @@ let record = { schema: 'rea-notes46-installed-search-' + phase + '/v1', executio
 try {
   if (phase === 'before') {
     assert(!fs.existsSync(path.join(root, legacyObservation)), 'Fresh owned runner must have no legacy output');
-    const current = capture('before'), historicalBefore = parentBeforeImages();
+    const current = capture('before'), historicalBefore = parentBeforeImages(); fixtureBeforeImages();
     record = { ...record, status: 'installed-source-verified', current, historicalBefore, productOrOriginalExecutions: 0 };
   } else if (phase === 'ready') {
     const before = JSON.parse(read(evidence, 'before.json')); sameAttempt(before); assert.equal(before.status, 'installed-source-verified'); assert.equal(before.sourceOverlay, false);

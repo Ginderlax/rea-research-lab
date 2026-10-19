@@ -12,11 +12,33 @@ assert.equal(process.env.GITHUB_JOB, 'draft-recovery-real-chromium');
 for (const key of ['GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT']) assert(process.env[key]);
 const evidence = await fs.realpath(process.env.REA_BROWSER_EVIDENCE);
 const dataRoot = await fs.realpath(process.env.REA_BROWSER_DATA_ROOT);
+async function boundedCleanup(operation, label) {
+  let timer;
+  try { return await Promise.race([operation, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(label + ' exceeded its cleanup deadline')), 7000); })]); }
+  finally { clearTimeout(timer); }
+}
 const test = base.extend({
-  host: async ({}, use, info) => {
+  host: async ({ page }, use, info) => {
     const dataDir = path.join(dataRoot, 'storage-' + info.testId.replace(/[^a-zA-Z0-9_-]/g, '_'));
     await fs.mkdir(dataDir); const host = await start({ port: 0, dataDir });
-    try { await use(host); } finally { await host.close(); }
+    // This page/context belongs to this Playwright test. Close its HTTP clients
+    // before the owned host, following the retained draft browser fixture.
+    const ownedContext = page.context();
+    const cleanup = { contextClosed: false, hostClosed: false }, stages = [], errors = [];
+    async function step(label, operation, key) {
+      const started = Date.now();
+      try { await boundedCleanup(operation(), label); cleanup[key] = true; }
+      catch (error) { errors.push({ stage: label, message: String(error).slice(0, 1000) }); }
+      finally { stages.push({ stage: label, elapsedMs: Date.now() - started, completed: cleanup[key] }); }
+    }
+    try { await use(host); }
+    finally {
+      try { await step('close-owned-context', () => ownedContext.close(), 'contextClosed'); }
+      finally { await step('close-owned-host', () => host.close(), 'hostClosed'); }
+      const report = { schema: 'rea-notes-storage-host-cleanup/v1', title: info.title, testId: info.testId, sourceCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, attempt: process.env.GITHUB_RUN_ATTEMPT, retry: info.retry, statusAtFixtureClose: info.status ?? null, ownership: 'Only this Playwright test context and its separately started host.', order: ['close-owned-context', 'close-owned-host'], stageDeadlineMs: 7000, cleanup, stages, errors, productBehaviorAssertionsChanged: false, fullParity: false, superiority: false };
+      await record('storage-host-cleanup-' + info.testId.replace(/[^a-zA-Z0-9_-]/g, '_'), report);
+      assert.deepEqual(errors, []); assert.equal(cleanup.contextClosed, true); assert.equal(cleanup.hostClosed, true);
+    }
   },
 });
 async function record(name, value) { await fs.writeFile(path.join(evidence, name + '.json'), JSON.stringify(value, null, 2) + '\n', { flag: 'wx' }); }

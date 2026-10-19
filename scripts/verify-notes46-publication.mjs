@@ -16,9 +16,10 @@ import { createHistoricalCarrierPolicyFromRoot } from './historical-carrier-poli
 
 // Fixed external helper identity. This producer is an
 // external captured role, so its helper pin cannot form a manifest hash cycle.
-const CURRENT_SOURCE_PARENT = '40c7df91936aaf9574801aa38c5a635f299e6e39';
+const CURRENT_SOURCE_PARENT = 'cee2da08f7ebe81a003a6cc9828655794be48cb0';
+const REVIEWED_SOURCE_GRANDPARENT = '40c7df91936aaf9574801aa38c5a635f299e6e39';
 const HISTORICAL_COMMIT = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
-const HELPER_PIN = Object.freeze({ path: 'scripts/notes46-installed-source-view.mjs', bytes: 22964, sha256: '1ff5079f5a7b0373f47d3af808c3398da4ff5e128c9d14f22ed1526dc65ee6da' });
+const HELPER_PIN = Object.freeze({ path: 'scripts/notes46-installed-source-view.mjs', bytes: 22964, sha256: '4dca3e3b0cd32102af4809139730ffd4d5c9263487b46244ea7e32cb5d5720c6' });
 const MANIFEST = 'products/rea-studio/experiments/notes46-installed-search-20261019/INSTALLED-SOURCE.json';
 const DERIVED = Object.freeze(['PUBLICATION-MANIFEST.json', 'VALIDATION.json']);
 const WORKFLOW = '.github/workflows/notes46-installed-search-publication-cloud.yml';
@@ -221,7 +222,8 @@ function hosted(root) {
   assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA ?? '')); for (const name of ['GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT']) assert(/^[1-9][0-9]*$/.test(process.env[name] ?? ''));
   assert.equal(git(root, ['rev-parse', 'HEAD']).toString().trim(), process.env.GITHUB_SHA);
   assert.equal(git(root, ['rev-list', '--parents', '-n', '1', 'HEAD']).toString().trim(), process.env.GITHUB_SHA + ' ' + CURRENT_SOURCE_PARENT);
-  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', CURRENT_SOURCE_PARENT]).toString().trim(), CURRENT_SOURCE_PARENT + ' ' + HISTORICAL_COMMIT);
+  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', CURRENT_SOURCE_PARENT]).toString().trim(), CURRENT_SOURCE_PARENT + ' ' + REVIEWED_SOURCE_GRANDPARENT);
+  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', REVIEWED_SOURCE_GRANDPARENT]).toString().trim(), REVIEWED_SOURCE_GRANDPARENT + ' ' + HISTORICAL_COMMIT);
   assert.equal(git(root, ['status', '--porcelain=v1', '--untracked-files=all', '-z']).length, 0);
   assert(path.isAbsolute(process.env.RUNNER_TEMP)); noLinks(process.env.RUNNER_TEMP);
 }
@@ -366,8 +368,19 @@ export async function runNotes46Publication({ repoRoot, evidence }) {
     const oldControls = await runNotes46HistoricalPublicationControls(root, path.join(temporary, 'rea-notes46-old551-' + process.env.GITHUB_RUN_ID + '-' + process.env.GITHUB_RUN_ATTEMPT), event);
     assert.equal(oldControls.historicalValidation.result.result.status, 'passed'); assert.equal(oldControls.historicalValidation.result.result.checks, 551);
     json('historical551-controls.json', oldControls); receipt.historical551 = { status: 'passed', checks: 551, subjectCommit: '2a8482b42784eb262d6d5b82e62d8d1220dc4821', actualCurrent46AcceptanceClaimed: false }; save();
-    const newControls = await runNotes46InstalledSourceControls(root, path.join(temporary, 'rea-notes46-current-controls-' + process.env.GITHUB_RUN_ID + '-' + process.env.GITHUB_RUN_ATTEMPT), event, { historicalContext: historical });
-    assert.equal(newControls.status, 'passed'); json('current-source-controls.json', newControls); receipt.currentSourceControls = { status: newControls.status, checks: newControls.checks }; save();
+    // The pure control API requires an existing caller-owned fixture directory.
+    // Create this exact new direct child of the verified hosted temporary root;
+    // an existing file, directory or link is a collision, never an input to reuse.
+    const currentControlsRoot = path.join(temporary, 'rea-notes46-current-controls-' + process.env.GITHUB_RUN_ID + '-' + process.env.GITHUB_RUN_ATTEMPT);
+    assert.equal(path.dirname(currentControlsRoot), temporary); assert(inside(temporary, currentControlsRoot) && !inside(root, currentControlsRoot));
+    noLinks(temporary); assert(fs.lstatSync(temporary).isDirectory());
+    assert(!fs.existsSync(currentControlsRoot), 'Current source-control fixture directory must be new');
+    fs.mkdirSync(currentControlsRoot); noLinks(currentControlsRoot); assert(fs.lstatSync(currentControlsRoot).isDirectory());
+    receipt.currentSourceControlFixture = { parent: 'RUNNER_TEMP', relativePath: path.basename(currentControlsRoot), exclusiveDirectoryCreated: true }; save();
+    const newControls = await runNotes46InstalledSourceControls(root, currentControlsRoot, event, { historicalContext: historical });
+    // Preserve the actual returned case rows even if the subsequent gate rejects.
+    json('current-source-controls.json', newControls); receipt.currentSourceControls = { status: newControls.status, checks: newControls.checks }; save();
+    assert.equal(newControls.status, 'passed');
     // These are actual documented current entry points, not the historical551
     // reader executions. Each owns and disposes its separate hosted2a copy.
     const cliRoster = [

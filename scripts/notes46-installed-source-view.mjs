@@ -7,12 +7,12 @@ import path from 'node:path';
 
 const MANIFEST_PATH = 'products/rea-studio/experiments/notes46-installed-search-20261019/INSTALLED-SOURCE.json';
 // Fixed external source declaration; the helper stays outside its own data group.
-const FROM_ROOT_PIN = Object.freeze({ path: MANIFEST_PATH, bytes: 67453, sha256: '3fc73fff93260c34d5ea6d294129b90b80dc87306682768aef3ed0af5d9862fc' });
-const EPOCH = 'notes46-installed-structured-search-v1';
+const FROM_ROOT_PIN = Object.freeze({ path: MANIFEST_PATH, bytes: 68210, sha256: '2d9279a496f3c70174149eeb5bbfc0f4f0b29c3d88d6886d31e6620efa6a7324' });
+const EPOCH = 'notes46-installed-publication-wire-v2';
 // A separate prospective group, never a change to old145/146 or old proof caps.
 // Final exact dependency roster is a review gate before this work-only freeze.
-const BUDGET = Object.freeze({ sourceRows: 156, manifestRows: 1, dataRows: 157,
-  helperRows: 1, envelopeRows: 158, memberBytes: 512 * 1024,
+const BUDGET = Object.freeze({ sourceRows: 158, manifestRows: 1, dataRows: 159,
+  helperRows: 1, envelopeRows: 160, memberBytes: 512 * 1024,
   helperBytes: 256 * 1024, rawBytes: 8 * 1024 * 1024 });
 const contexts = new WeakMap();
 const id = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
@@ -42,7 +42,7 @@ export function createNotes46InstalledSourceView(rawRead, externallyPinnedManife
     return bytes;
   }
   const planBytes = authenticate(fixedPin), plan = JSON.parse(planBytes);
-  assert.equal(plan.schema, 'rea-notes46-installed-source-declaration/v1');
+  assert.equal(plan.schema, 'rea-notes46-installed-source-declaration/v2');
   assert.equal(plan.status, 'reviewed-frozen-installed-source-binding');
   assert.equal(plan.sourceEpoch, EPOCH); assert.equal(plan.sourceOnly, true);
   assert.equal(plan.behaviorAcceptancePreclaimed, false); assert.equal(plan.historicalReceiptsRebound, false);
@@ -52,7 +52,9 @@ export function createNotes46InstalledSourceView(rawRead, externallyPinnedManife
   assert.equal(plan.currentNotesSources.length, 46); assert.equal(plan.studySources.length, 10);
   assert.equal(plan.retainedSupportingAndConsumerSources.length, 85); assert.equal(plan.newDispatchSources.length, 2);
   assert.equal(plan.historicalApiCompanionSources.length, 8); assert.equal(plan.publicLegacyApiBrandSources.length, 2); assert.equal(plan.historicalAcquisitionAndRecordSources.length, 3);
-  assert.deepEqual(plan.currentSourceRows, [...plan.currentNotesSources, ...plan.studySources, ...plan.retainedSupportingAndConsumerSources, ...plan.newDispatchSources, ...plan.historicalApiCompanionSources, ...plan.publicLegacyApiBrandSources, ...plan.historicalAcquisitionAndRecordSources]);
+  assert.equal(plan.publicationWireSources.length, 2);
+  assert.deepEqual(plan.publicationWireSources.map(row => row.path), ['scripts/notes46-current-validation-wire.mjs', 'scripts/notes46-current-validation-wire.test.mjs']);
+  assert.deepEqual(plan.currentSourceRows, [...plan.currentNotesSources, ...plan.studySources, ...plan.retainedSupportingAndConsumerSources, ...plan.newDispatchSources, ...plan.historicalApiCompanionSources, ...plan.publicLegacyApiBrandSources, ...plan.historicalAcquisitionAndRecordSources, ...plan.publicationWireSources]);
   assert.equal(plan.currentSourceRows.length, BUDGET.sourceRows);
   const selected = new Map(), lower = new Set();
   for (const row of plan.currentSourceRows) {
@@ -76,7 +78,7 @@ export function createNotes46InstalledSourceView(rawRead, externallyPinnedManife
     recheck,
     sourceRead(name) { safe(name); if (name === MANIFEST_PATH) return authenticate(fixedPin); const row = selected.get(name); assert(row, 'Unlisted Notes46 current-source read'); return authenticate(row); },
     sourcePin(name) { const row = name === MANIFEST_PATH ? fixedPin : selected.get(safe(name)); assert(row, 'Unlisted Notes46 source identity'); return Object.freeze({ path: row.path, ...metadata(row) }); },
-    summary() { recheck(); const context = contexts.get(view); return { schema: 'rea-notes46-installed-source-proof/v1', sourceOnly: true, sourceEpoch: EPOCH, currentNotesSources: 46, studySources: 10, retainedSupportingAndConsumerSources: 85, dispatchSources: 2, historicalApiCompanionSources: 8, publicLegacyApiBrandSources: 2, historicalAcquisitionAndRecordSources: 3, currentSourceRows: BUDGET.sourceRows, authenticatedDataRows: observed.size, authenticatedDataBytes: rawBytes, ...BUDGET, censusKind: context.kind, censusCallbackRechecked: true, physicalDirectoryAcquisitionClaimed: context.kind === 'physical-directory', historicalNotes41AcceptanceIsSeparate: true, historicalReceiptsRebound: false, sourceOverlay: false, behaviorAcceptancePreclaimed: false, originalExecutions: 0, productExecutions: 0, fullParity: false, superiority: false }; },
+    summary() { recheck(); const context = contexts.get(view); return { schema: 'rea-notes46-installed-source-proof/v1', sourceOnly: true, sourceEpoch: EPOCH, currentNotesSources: 46, studySources: 10, retainedSupportingAndConsumerSources: 85, dispatchSources: 2, historicalApiCompanionSources: 8, publicLegacyApiBrandSources: 2, historicalAcquisitionAndRecordSources: 3, publicationWireSources: 2, currentSourceRows: BUDGET.sourceRows, authenticatedDataRows: observed.size, authenticatedDataBytes: rawBytes, ...BUDGET, censusKind: context.kind, censusCallbackRechecked: true, physicalDirectoryAcquisitionClaimed: context.kind === 'physical-directory', historicalNotes41AcceptanceIsSeparate: true, historicalReceiptsRebound: false, sourceOverlay: false, behaviorAcceptancePreclaimed: false, originalExecutions: 0, productExecutions: 0, fullParity: false, superiority: false }; },
     envelopeRows() { recheck(); return [...plan.currentSourceRows.map(row => ({ path: row.path, ...metadata(row), base64: authenticate(row).toString('base64'), sourceEpoch: EPOCH, actualCurrentSource: true })), { path: MANIFEST_PATH, ...metadata(fixedPin), base64: authenticate(fixedPin).toString('base64'), externallyPinnedManifest: true }]; }
   });
   contexts.set(view, { read: rawRead, pin: Object.freeze({ ...fixedPin }), census: liveNotesCensus, kind: 'explicit-caller-census-function' });

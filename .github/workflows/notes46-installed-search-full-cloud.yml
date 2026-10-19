@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-          fetch-depth: 4
+          fetch-depth: 5
       - name: Select the pinned Node runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -43,7 +43,7 @@ jobs:
           New-Item -ItemType Directory -Path $evidence | Out-Null
           'REA_DEVELOPMENT_EVIDENCE=' + $evidence | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           $pins = @'
-          [{"path":"products/rea-studio/scripts/notes46-installed-tap-roster.mjs","bytes":6855,"sha256":"7880749e3fb958572f9f7d9688f1156114268df57a7272602653c8b470e8c44a"},{"path":"products/rea-studio/scripts/verify-notes46-installed-cloud.mjs","bytes":21751,"sha256":"31128bb9e5a6d2c2eb47a8d00d3b4e22a83ffbd1e51266c3649a1e35c294db1d"},{"path":"products/rea-studio/scripts/verify-notes46-installed-roster.mjs","bytes":14738,"sha256":"9035c2912737c918bd731a95f6f278410c3e6be76499ddbf07097d35733b495d"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/REGRESSION-FLOOR.json","bytes":229516,"sha256":"ce944a283cafb3ca3c8432b5bab826aee3f0b51d09d4c2b940a4e9b7727f8f40"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/tests/search-http.test.mjs","bytes":3772,"sha256":"a136f101c64716d79e4d6701dbc1e371658adac0b85b17a52895dbcf95f03e45"}]
+          [{"path":"products/rea-studio/scripts/notes46-installed-tap-roster.mjs","bytes":6855,"sha256":"7880749e3fb958572f9f7d9688f1156114268df57a7272602653c8b470e8c44a"},{"path":"products/rea-studio/scripts/verify-notes46-installed-cloud.mjs","bytes":21951,"sha256":"25b19eda1f6732799c782715f3e50f670ded23bd7ca7d462f6cf6165331de0f6"},{"path":"products/rea-studio/scripts/verify-notes46-installed-roster.mjs","bytes":14940,"sha256":"d3b268844b8f6894409501f943b060680e50d14f93f285bb865e9fc6d73d872a"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/REGRESSION-FLOOR.json","bytes":229516,"sha256":"ce944a283cafb3ca3c8432b5bab826aee3f0b51d09d4c2b940a4e9b7727f8f40"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/tests/search-http.test.mjs","bytes":3772,"sha256":"a136f101c64716d79e4d6701dbc1e371658adac0b85b17a52895dbcf95f03e45"}]
           '@ | ConvertFrom-Json
           foreach ($pin in $pins) {
             $source = Get-Item -LiteralPath $pin.path -Force
@@ -260,7 +260,7 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
-          fetch-depth: 4
+          fetch-depth: 5
       - name: Select the pinned Node runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -277,7 +277,7 @@ jobs:
           New-Item -ItemType Directory -Path $evidence | Out-Null
           'REA_DEVELOPMENT_EVIDENCE=' + $evidence | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           $pins = @'
-          [{"path":"products/rea-studio/scripts/notes46-installed-tap-roster.mjs","bytes":6855,"sha256":"7880749e3fb958572f9f7d9688f1156114268df57a7272602653c8b470e8c44a"},{"path":"products/rea-studio/scripts/verify-notes46-installed-cloud.mjs","bytes":21751,"sha256":"31128bb9e5a6d2c2eb47a8d00d3b4e22a83ffbd1e51266c3649a1e35c294db1d"},{"path":"products/rea-studio/scripts/verify-notes46-installed-roster.mjs","bytes":14738,"sha256":"9035c2912737c918bd731a95f6f278410c3e6be76499ddbf07097d35733b495d"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/REGRESSION-FLOOR.json","bytes":229516,"sha256":"ce944a283cafb3ca3c8432b5bab826aee3f0b51d09d4c2b940a4e9b7727f8f40"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/tests/search-http.test.mjs","bytes":3772,"sha256":"a136f101c64716d79e4d6701dbc1e371658adac0b85b17a52895dbcf95f03e45"}]
+          [{"path":"products/rea-studio/scripts/notes46-installed-tap-roster.mjs","bytes":6855,"sha256":"7880749e3fb958572f9f7d9688f1156114268df57a7272602653c8b470e8c44a"},{"path":"products/rea-studio/scripts/verify-notes46-installed-cloud.mjs","bytes":21951,"sha256":"25b19eda1f6732799c782715f3e50f670ded23bd7ca7d462f6cf6165331de0f6"},{"path":"products/rea-studio/scripts/verify-notes46-installed-roster.mjs","bytes":14940,"sha256":"d3b268844b8f6894409501f943b060680e50d14f93f285bb865e9fc6d73d872a"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/REGRESSION-FLOOR.json","bytes":229516,"sha256":"ce944a283cafb3ca3c8432b5bab826aee3f0b51d09d4c2b940a4e9b7727f8f40"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/tests/search-http.test.mjs","bytes":3772,"sha256":"a136f101c64716d79e4d6701dbc1e371658adac0b85b17a52895dbcf95f03e45"}]
           '@ | ConvertFrom-Json
           foreach ($pin in $pins) {
             $source = Get-Item -LiteralPath $pin.path -Force

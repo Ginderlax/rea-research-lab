@@ -16,10 +16,11 @@ import { createHistoricalCarrierPolicyFromRoot } from './historical-carrier-poli
 
 // Fixed external helper identity. This producer is an
 // external captured role, so its helper pin cannot form a manifest hash cycle.
-const CURRENT_SOURCE_PARENT = 'cee2da08f7ebe81a003a6cc9828655794be48cb0';
-const REVIEWED_SOURCE_GRANDPARENT = '40c7df91936aaf9574801aa38c5a635f299e6e39';
+const CURRENT_SOURCE_PARENT = 'ab26bf14bc1a55a723566bbafb3ca391c3ef671c';
+const REVIEWED_SOURCE_GRANDPARENT = 'cee2da08f7ebe81a003a6cc9828655794be48cb0';
+const REVIEWED_SOURCE_GREAT_GRANDPARENT = '40c7df91936aaf9574801aa38c5a635f299e6e39';
 const HISTORICAL_COMMIT = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
-const HELPER_PIN = Object.freeze({ path: 'scripts/notes46-installed-source-view.mjs', bytes: 22964, sha256: '4dca3e3b0cd32102af4809139730ffd4d5c9263487b46244ea7e32cb5d5720c6' });
+const HELPER_PIN = Object.freeze({ path: 'scripts/notes46-installed-source-view.mjs', bytes: 23248, sha256: '248148bb01c2d0de14a5ad654b7cd47f49be95e25c397d9f082d42880998bb5e' });
 const MANIFEST = 'products/rea-studio/experiments/notes46-installed-search-20261019/INSTALLED-SOURCE.json';
 const DERIVED = Object.freeze(['PUBLICATION-MANIFEST.json', 'VALIDATION.json']);
 const WORKFLOW = '.github/workflows/notes46-installed-search-publication-cloud.yml';
@@ -28,7 +29,7 @@ const EXTERNAL_CURRENT_SOURCES = Object.freeze([
   'scripts/notes46-installed-source-controls.mjs', 'scripts/notes46-publication-repeat-controls.mjs',
   'scripts/audit-notes46-installed-delivery.mjs', 'scripts/audit-proof-delivery.mjs', WORKFLOW
 ]);
-// Populated by source-data authoring from the156-row reviewed source plan.
+// Populated by source-data authoring from the158-row reviewed source plan (including two publication-wire sources).
 const CURRENT_SOURCE_PATHS = Object.freeze([
   "products/rea-studio/apps/notes/README.md",
   "products/rea-studio/apps/notes/app.integration.test.mjs",
@@ -185,13 +186,74 @@ const CURRENT_SOURCE_PATHS = Object.freeze([
   "scripts/editor-vault-proof-migration.mjs",
   "products/rea-studio/experiments/notes46-installed-search-20261019/historical-input/TREE-DESCRIPTOR.json",
   "scripts/notes46-historical-record-predicates.mjs",
-  "scripts/historical-carrier-policy.mjs"
+  "scripts/historical-carrier-policy.mjs",
+  "scripts/notes46-current-validation-wire.mjs",
+  "scripts/notes46-current-validation-wire.test.mjs"
 ]);
 const LIMITS = Object.freeze({ files: 96, rawEvidenceBytes: 48 * 1024 * 1024, memberBytes: 8 * 1024 * 1024,
   sourceRawBytes: 8 * 1024 * 1024, sourceJSONBytes: 12 * 1024 * 1024, sourceMemberBytes: 512 * 1024,
   fullPayloadBytes: 2 * 1024 * 1024 * 1024, fullPayloadFiles: 40000, fullPayloadMemberBytes: 32 * 1024 * 1024,
   manifestChunkBytes: 4 * 1024 * 1024, manifestChunks: 4, eventsBytes: 4 * 1024 * 1024,
   childStdoutBytes: 4 * 1024 * 1024, childStderrBytes: 1024 * 1024, allChildRawBytes: 32 * 1024 * 1024, childDeadlineMs: 30 * 60 * 1000 });
+// This literal roster is reviewed against the hosted-only module source.
+const CURRENT_WIRE_UNIT_TITLES = Object.freeze([
+  "only the exact absent historical resolver is omitted without changing input or persisted fields",
+  "an already absent optional resolver retains every other current wire value",
+  "shared plain data and an own __proto__ key survive without prototype mutation",
+  "reject present historical resolver function",
+  "reject present historical resolver null",
+  "reject present historical resolver nonempty data",
+  "reject undefined at any other path",
+  "reject a dotted-key lookalike for the permitted path",
+  "reject function at any other path",
+  "reject negative zero that JSON would change",
+  "reject bigint that JSON cannot encode",
+  "reject symbol value that JSON would omit",
+  "reject symbol key that JSON would omit",
+  "reject sparse array that JSON would fill with null",
+  "reject extra array property that JSON would omit",
+  "reject nonenumerable ordinary field that JSON would omit",
+  "reject nonenumerable array index",
+  "reject date toJSON conversion",
+  "reject Map container that JSON would replace",
+  "reject cyclic data",
+  "reject foreign current schema",
+  "reject foreign historical schema",
+  "reject missing exact historical inline summary",
+  "reject every nonfinite numeric value independently",
+  "reject accessors without invoking them or mutating their source",
+  "reject accessor at the optional resolver slot without invoking it",
+  "reject own toJSON without calling its hook",
+  "reject nonordinary prototypes without calling inherited toJSON",
+  "reject proxy input without invoking proxy traps",
+  "reject overdeep data rather than truncate it",
+  "reject an oversized serialized member rather than drop fields"
+]);
+function qualifyCurrentWireTap(observed) {
+  assert.equal(typeof observed.stdout, 'string');
+  const lines = observed.stdout.replace(/\r\n/g, '\n').split('\n');
+  assert.equal(lines.filter(line => line === 'TAP version 13').length, 1);
+  assert.equal(lines.filter(line => line === '1..31').length, 1);
+  assert(!lines.some(line => /^\s*not ok\b|^Bail out!|^\s+(?:ok|not ok)\s/.test(line)), 'No failed, bailed or nested wire TAP results');
+  const subtests = lines.filter(line => line.startsWith('# Subtest: ')).map(line => line.slice(11));
+  assert.deepEqual(subtests, CURRENT_WIRE_UNIT_TITLES, 'Exact31 ordered wire subtest registrations');
+  const actual = [];
+  for (const line of lines) {
+    if (!/^ok\b/.test(line)) continue;
+    const match = /^ok ([1-9][0-9]*) - (.+)$/.exec(line); assert(match, 'Plain non-skipped wire TAP root');
+    assert.equal(Number(match[1]), actual.length + 1); actual.push(match[2]);
+  }
+  assert.deepEqual(actual, CURRENT_WIRE_UNIT_TITLES, 'Every serialized wire regression must actually pass');
+  for (const [key, expected] of Object.entries({ tests: 31, suites: 0, pass: 31, fail: 0, cancelled: 0, skipped: 0, todo: 0 })) {
+    const matching = lines.filter(line => line.startsWith('# ' + key + ' '));
+    assert.deepEqual(matching, ['# ' + key + ' ' + expected], 'Exact wire TAP counter ' + key);
+  }
+  return { schema: 'rea-notes46-current-wire-hosted-unit-result/v1', status: 'passed', sourceCommit: process.env.GITHUB_SHA,
+    runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT, job: process.env.GITHUB_JOB,
+    tests: 31, pass: 31, fail: 0, cancelled: 0, skipped: 0, todo: 0, orderedTitles: actual,
+    stdout: { path: 'current-wire-unit.stdout.txt', ...observed.stdoutIdentity }, stderr: { path: 'current-wire-unit.stderr.txt', ...observed.stderrIdentity },
+    runOnlyInVerifiedHostedJob: true, runnerTempExplicitlyForwarded: true, historical551Changed: false, current30Changed: false, repeat18Changed: false };
+}
 const id = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
 const blob = bytes => createHash('sha1').update('blob ' + bytes.length + '\0').update(bytes).digest('hex');
 function safe(name) { assert(typeof name === 'string' && name && name.length < 4096 && !name.startsWith('/') && !/[\\:\x00-\x1f\x7f<>"|?*]/.test(name)); assert(name.split('/').every(part => part && part !== '.' && part !== '..' && !/[ .]$/.test(part))); return name; }
@@ -223,7 +285,8 @@ function hosted(root) {
   assert.equal(git(root, ['rev-parse', 'HEAD']).toString().trim(), process.env.GITHUB_SHA);
   assert.equal(git(root, ['rev-list', '--parents', '-n', '1', 'HEAD']).toString().trim(), process.env.GITHUB_SHA + ' ' + CURRENT_SOURCE_PARENT);
   assert.equal(git(root, ['rev-list', '--parents', '-n', '1', CURRENT_SOURCE_PARENT]).toString().trim(), CURRENT_SOURCE_PARENT + ' ' + REVIEWED_SOURCE_GRANDPARENT);
-  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', REVIEWED_SOURCE_GRANDPARENT]).toString().trim(), REVIEWED_SOURCE_GRANDPARENT + ' ' + HISTORICAL_COMMIT);
+  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', REVIEWED_SOURCE_GRANDPARENT]).toString().trim(), REVIEWED_SOURCE_GRANDPARENT + ' ' + REVIEWED_SOURCE_GREAT_GRANDPARENT);
+  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', REVIEWED_SOURCE_GREAT_GRANDPARENT]).toString().trim(), REVIEWED_SOURCE_GREAT_GRANDPARENT + ' ' + HISTORICAL_COMMIT);
   assert.equal(git(root, ['status', '--porcelain=v1', '--untracked-files=all', '-z']).length, 0);
   assert(path.isAbsolute(process.env.RUNNER_TEMP)); noLinks(process.env.RUNNER_TEMP);
 }
@@ -302,7 +365,8 @@ export async function runNotes46Publication({ repoRoot, evidence }) {
     }
     rows.sort((a, b) => a.path.localeCompare(b.path)); return { rows, bytes: total, identity: id(Buffer.from(JSON.stringify(rows))) };
   }
-  async function child(name, argv) {
+  async function child(name, argv, format = 'json') {
+    assert(['json', 'tap'].includes(format));
     const phase = { name, sourceCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT, job: process.env.GITHUB_JOB,
       status: 'running', startedAtUtc: new Date().toISOString(), completedAtUtc: null, exitCode: null, signal: null, closeObserved: false, droppedBytes: 0, stdoutBytes: 0, stderrBytes: 0 };
     receipt.phases.push(phase); save(); event('child-started', { name, argv });
@@ -310,6 +374,9 @@ export async function runNotes46Publication({ repoRoot, evidence }) {
     try {
       const outcome = await new Promise(resolve => {
         const env = { ...process.env }; delete env.NODE_TEST_CONTEXT;
+        // The hosted unit performs real owned temporary-file readback.
+        env.RUNNER_TEMP = process.env.RUNNER_TEMP; assert(path.isAbsolute(env.RUNNER_TEMP));
+        assert.equal(path.resolve(env.RUNNER_TEMP).toLowerCase(), temporary.toLowerCase());
         const owned = spawn(process.execPath, argv, { cwd: root, env, shell: false, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
         let settled = false, stopping = false, failure = null, cleanup;
         const finish = (code, signal, closeObserved) => { if (settled) return; settled = true; clearTimeout(deadline); clearInterval(progress); clearTimeout(cleanup); resolve({ code, signal, closeObserved, failure }); };
@@ -341,7 +408,12 @@ export async function runNotes46Publication({ repoRoot, evidence }) {
       });
       phase.exitCode = outcome.code; phase.signal = outcome.signal; phase.closeObserved = outcome.closeObserved;
       assert.equal(outcome.failure, null); assert.equal(outcome.code, 0); assert.equal(outcome.signal, null); assert.equal(outcome.closeObserved, true); assert.equal(phase.droppedBytes, 0);
-      phase.status = 'passed'; return JSON.parse(fs.readFileSync(path.join(expected, name + '.stdout.txt'), 'utf8').trim());
+      phase.status = 'passed';
+      if (format === 'tap') {
+        const stdout = physical(expected, name + '.stdout.txt', LIMITS.childStdoutBytes), stderr = physical(expected, name + '.stderr.txt', LIMITS.childStderrBytes);
+        return { stdout: new TextDecoder('utf-8', { fatal: true }).decode(stdout), stdoutIdentity: id(stdout), stderrIdentity: id(stderr) };
+      }
+      return JSON.parse(fs.readFileSync(path.join(expected, name + '.stdout.txt'), 'utf8').trim());
     } catch (error) { phase.status = 'failed'; phase.failure = { name: error.name, message: String(error.message).slice(0, 4096) }; throw error; }
     finally { phase.completedAtUtc = new Date().toISOString(); fs.fsyncSync(out); fs.fsyncSync(err); fs.closeSync(out); fs.closeSync(err); save(); event('child-terminal', { name, phase }); }
   }
@@ -352,6 +424,9 @@ export async function runNotes46Publication({ repoRoot, evidence }) {
     current = createNotes46InstalledSourceViewFromRoot(root);
     const currentEnvelope = verifyNotes46InstalledSourceEnvelope(current, current.envelopeRows(), HELPER_PIN, physical(root, HELPER_PIN.path, 256 * 1024));
     receipt.currentSourceProfile = current.summary(); receipt.currentSourceEnvelope = envelope('current-profile.json.gz.snapshot', 'rea-notes46-current-profile-envelope/v1', currentEnvelope.rows, { sourceEpoch: currentEnvelope.sourceEpoch, profileOnly: true }); save();
+    current.recheck();
+    const wireObserved = await child('current-wire-unit', ['--test', '--test-reporter=tap', '--test-concurrency=1', 'scripts/notes46-current-validation-wire.test.mjs'], 'tap');
+    const wireUnit = qualifyCurrentWireTap(wireObserved); json('current-wire-unit.json', wireUnit); receipt.currentWireUnit = wireUnit; save(); current.recheck();
     historical = prepareNotes46HistoricalInputRoot(root); outer = historical.beginExecution('publication-old-and-new-qualification');
     const { createNotes41PublicationSourceViewFromRoot } = await import(pathToFileURL(path.join(historical.root, 'scripts/notes41-publication-source-view.mjs')).href);
     const oldView = createNotes41PublicationSourceViewFromRoot(historical.root);
@@ -457,6 +532,6 @@ export async function runNotes46Publication({ repoRoot, evidence }) {
   inventory(expected); assert(actual.reduce((sum, row) => sum + row.bytes, 0) <= LIMITS.rawEvidenceBytes);
   json('EVIDENCE-INDEX.json', { schema: 'rea-notes46-complete-publication-evidence-inventory/v1', subjectCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT, files: actual, producerCompletedStatus: receipt.status, limits: LIMITS, ownIndexExcluded: true, completeRawMemberReadback: true });
   const indexReadback = physical(expected, 'EVIDENCE-INDEX.json', LIMITS.memberBytes); assert(actual.length + 1 <= LIMITS.files); assert(actual.reduce((sum, row) => sum + row.bytes, 0) + indexReadback.length <= LIMITS.rawEvidenceBytes);
-  console.log(JSON.stringify({ status: receipt.status, sourceCommit: receipt.sourceCommit, runId: receipt.runId, runAttempt: receipt.runAttempt, currentNotesSourceFiles: 46, historical551: receipt.historical551, currentSourceControls: receipt.currentSourceControls, repeatControls: receipt.repeatControls, payload: receipt.payload, comprehensiveRepositoryAcceptanceClaimed: false }));
+  console.log(JSON.stringify({ status: receipt.status, sourceCommit: receipt.sourceCommit, runId: receipt.runId, runAttempt: receipt.runAttempt, currentNotesSourceFiles: 46, historical551: receipt.historical551, currentSourceControls: receipt.currentSourceControls, currentWireUnit: receipt.currentWireUnit, repeatControls: receipt.repeatControls, payload: receipt.payload, comprehensiveRepositoryAcceptanceClaimed: false }));
   return receipt;
 }

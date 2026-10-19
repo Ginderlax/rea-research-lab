@@ -10,6 +10,7 @@ import { createNotes46InstalledSourceViewFromRoot } from './notes46-installed-so
 import { prepareNotes46HistoricalInputRoot } from './notes46-historical-input-root.mjs';
 import { createHistoricalCarrierPolicyFromRoot } from './historical-carrier-policy.mjs';
 import { verifyNotes46HistoricalRecordPredicates } from './notes46-historical-record-predicates.mjs';
+import { createNotes46CurrentValidationWire } from './notes46-current-validation-wire.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const args = process.argv.slice(2);
@@ -125,6 +126,7 @@ try {
 current.recheck(); receipt.historicalInputProof = historical.summary(); assert.equal(receipt.historicalInputProof.pendingOuterBoundary, false); assert.equal(receipt.historicalInputProof.pendingExecutionBoundaries, 0); assert.equal(receipt.historicalInputProof.contextStatus, 'available'); assert(receipt.historicalInputProof.completedOuterBoundaries >= 1 && receipt.historicalInputProof.fullIntegrityPasses >= 2);
 receipt.historicalCleanup = historical.dispose(); assert.equal(receipt.historicalCleanup.status, 'disposed');
 assert.deepEqual(receipt.historicalCleanup.closedSummaryIdentity, { bytes: Buffer.byteLength(JSON.stringify(receipt.historicalInputProof)), sha256: sha(Buffer.from(JSON.stringify(receipt.historicalInputProof))) });
+if (!args.includes('--historical-only')) receipt = createNotes46CurrentValidationWire(receipt);
 if (args.includes('--write')) {
   const target = path.join(root, 'VALIDATION.json');
   // Preserve the documented write destination and readback the exact new wire

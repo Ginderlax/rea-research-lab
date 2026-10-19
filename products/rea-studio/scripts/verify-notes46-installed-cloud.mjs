@@ -14,7 +14,7 @@ const prefix = 'products/rea-studio/experiments/notes46-installed-search-2026101
 const floorPath = prefix + '/REGRESSION-FLOOR.json';
 const floorPin = { bytes: 229516, sha256: 'ce944a283cafb3ca3c8432b5bab826aee3f0b51d09d4c2b940a4e9b7727f8f40' };
 const parent = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
-const sourceParent = 'cee2da08f7ebe81a003a6cc9828655794be48cb0';
+const sourceParent = 'ab26bf14bc1a55a723566bbafb3ca391c3ef671c';
 const branch = 'refs/heads/experiment/notes46-installed-search-20261019';
 const workflowPath = '.github/workflows/notes46-installed-search-full-cloud.yml';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -42,7 +42,8 @@ const save=(name,value)=>write(name,Buffer.from(JSON.stringify(value,null,2)+'\n
 function git(arguments_,maximum=32*1024*1024){const r=spawnSync('git',arguments_,{cwd:repository,shell:false,windowsHide:true,timeout:30000,maxBuffer:maximum});assert.equal(r.error,undefined);assert.equal(r.status,0);assert.equal(r.signal,null);return r.stdout;}
 assert.equal(git(['rev-parse','HEAD']).toString().trim(),process.env.GITHUB_SHA);
 assert.equal(git(['rev-list','--parents','-n','1','HEAD']).toString().trim(),process.env.GITHUB_SHA+' '+sourceParent);
-assert.equal(git(['rev-list','--parents','-n','1',sourceParent]).toString().trim(),sourceParent+' 40c7df91936aaf9574801aa38c5a635f299e6e39');
+assert.equal(git(['rev-list','--parents','-n','1',sourceParent]).toString().trim(),sourceParent+' cee2da08f7ebe81a003a6cc9828655794be48cb0');
+assert.equal(git(['rev-list','--parents','-n','1','cee2da08f7ebe81a003a6cc9828655794be48cb0']).toString().trim(),'cee2da08f7ebe81a003a6cc9828655794be48cb0 40c7df91936aaf9574801aa38c5a635f299e6e39');
 assert.equal(git(['rev-list','--parents','-n','1','40c7df91936aaf9574801aa38c5a635f299e6e39']).toString().trim(),'40c7df91936aaf9574801aa38c5a635f299e6e39 '+parent);
 assert.equal(git(['rev-parse','--show-object-format']).toString().trim(),'sha1');
 const tree=new Map(git(['ls-tree','-rz','HEAD']).toString().split('\0').filter(Boolean).map(line=>{const [meta,name]=line.split('\t'),[mode,type,oid]=meta.split(' ');return[name,{mode,type,oid}];}));

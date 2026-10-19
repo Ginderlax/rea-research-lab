@@ -27,7 +27,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-          fetch-depth: 4
+          fetch-depth: 5
       - name: Select the exact supported hosted runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -45,8 +45,8 @@ jobs:
           'REA_NOTES_SEARCH_EVIDENCE='+$evidence|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
           $collector='products/rea-studio/experiments/notes46-installed-search-browser-20261019/run-installed-study.mjs'
           $plan='products/rea-studio/experiments/notes46-installed-search-browser-20261019/SOURCE-PLAN.json'
-          if((Get-Item -LiteralPath $collector).Length -ne 46683 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $collector).Hash.ToLowerInvariant() -ne '139a8dac31ff31ff4406fb060672a16a7f45d1f212a20b72847c9f93fa1754b5'){throw 'Collector identity differs'}
-          if((Get-Item -LiteralPath $plan).Length -ne 85371 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $plan).Hash.ToLowerInvariant() -ne 'c3c3daa16c2b62636b19558621de856e9ed9561f895e8be1d63be22df8408f6e'){throw 'Source plan identity differs'}
+          if((Get-Item -LiteralPath $collector).Length -ne 47451 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $collector).Hash.ToLowerInvariant() -ne '233d244731e9201eaa03b4a39fc8cc8a73148d47d86f157eb78e536041c1f18d'){throw 'Collector identity differs'}
+          if((Get-Item -LiteralPath $plan).Length -ne 85371 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $plan).Hash.ToLowerInvariant() -ne 'a87232b6dc53d8a418490c2ea32b4dddbbdaa3d68bf7667308c8ac16ca874574'){throw 'Source plan identity differs'}
           $acquisition=Join-Path $evidence 'acquisition'
           New-Item -ItemType Directory -Path $acquisition|Out-Null
           'REA_BROWSER_ACQUISITION_EVIDENCE='+$acquisition|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -138,7 +138,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-          fetch-depth: 4
+          fetch-depth: 5
       - name: Select the exact supported hosted runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -156,8 +156,8 @@ jobs:
           'REA_NOTES_SEARCH_EVIDENCE='+$evidence|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
           $collector='products/rea-studio/experiments/notes46-installed-search-browser-20261019/run-installed-study.mjs'
           $plan='products/rea-studio/experiments/notes46-installed-search-browser-20261019/SOURCE-PLAN.json'
-          if((Get-Item -LiteralPath $collector).Length -ne 46683 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $collector).Hash.ToLowerInvariant() -ne '139a8dac31ff31ff4406fb060672a16a7f45d1f212a20b72847c9f93fa1754b5'){throw 'Collector identity differs'}
-          if((Get-Item -LiteralPath $plan).Length -ne 85371 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $plan).Hash.ToLowerInvariant() -ne 'c3c3daa16c2b62636b19558621de856e9ed9561f895e8be1d63be22df8408f6e'){throw 'Source plan identity differs'}
+          if((Get-Item -LiteralPath $collector).Length -ne 47451 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $collector).Hash.ToLowerInvariant() -ne '233d244731e9201eaa03b4a39fc8cc8a73148d47d86f157eb78e536041c1f18d'){throw 'Collector identity differs'}
+          if((Get-Item -LiteralPath $plan).Length -ne 85371 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $plan).Hash.ToLowerInvariant() -ne 'a87232b6dc53d8a418490c2ea32b4dddbbdaa3d68bf7667308c8ac16ca874574'){throw 'Source plan identity differs'}
 
       - name: Preserve and authenticate installed committed source before acquisition or execution
         id: before

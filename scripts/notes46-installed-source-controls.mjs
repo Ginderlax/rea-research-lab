@@ -21,7 +21,7 @@ const HISTORICAL_MANIFEST = 'products/rea-studio/experiments/notes41-publication
 const LEGACY_ONLY_PROOF = 'products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json';
 // WORK-ONLY UNFROZEN: the consolidator must set this externally reviewed helper
 // identity, then independently review the entire new code/role/pin closure.
-const FIXED_HELPER_PIN = Object.freeze({ path: HELPER, bytes: 22964, sha256: '4dca3e3b0cd32102af4809139730ffd4d5c9263487b46244ea7e32cb5d5720c6' });
+const FIXED_HELPER_PIN = Object.freeze({ path: HELPER, bytes: 23248, sha256: '248148bb01c2d0de14a5ad654b7cd47f49be95e25c397d9f082d42880998bb5e' });
 const id = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
 const pin = row => ({ bytes: row.bytes, sha256: row.sha256 });
 const clone = value => structuredClone(value);
@@ -134,29 +134,29 @@ export async function runNotes46InstalledSourceControls(root, fixtureRoot, emit,
   }
   try {
     const budget = notes46InstalledSourceBudget();
-    assert.deepEqual(budget, { sourceRows: 156, manifestRows: 1, dataRows: 157, helperRows: 1, envelopeRows: 158, memberBytes: 512 * 1024, helperBytes: 256 * 1024, rawBytes: 8 * 1024 * 1024 });
+    assert.deepEqual(budget, { sourceRows: 158, manifestRows: 1, dataRows: 159, helperRows: 1, envelopeRows: 160, memberBytes: 512 * 1024, helperBytes: 256 * 1024, rawBytes: 8 * 1024 * 1024 });
     const actual = createNotes46InstalledSourceViewFromRoot(root), originalPin = actual.sourcePin(MANIFEST);
     const actualRead = name => actual.sourceRead(name), currentCensus = () => notesCensus(root, 47);
     const currentNames = currentCensus(); assert.equal(currentNames.length, 46);
     const target = 'products/rea-studio/apps/notes/server.mjs'; assert(actual.plan.currentNotesSources.some(row => row.path === target));
     const targetPin = actual.sourcePin(target), helperBytes = read(root, HELPER, budget.helperBytes); assert.deepEqual(id(helperBytes), pin(FIXED_HELPER_PIN));
-    const sourceRows = actual.envelopeRows(); assert.equal(sourceRows.length, 157);
+    const sourceRows = actual.envelopeRows(); assert.equal(sourceRows.length, 159);
     const pure = (raw = actualRead, manifest = { ...originalPin }, census = currentCensus) => createNotes46InstalledSourceView(raw, manifest, census);
     const sourceError = (error, name) => assertion(error, 'Notes46 actual source identity: ' + name);
 
     positive('notes46-source-actual-root-positive', () => {
-      actual.recheck(); const summary = actual.summary(); assert.equal(summary.currentNotesSources, 46); assert.equal(summary.authenticatedDataRows, 157);
+      actual.recheck(); const summary = actual.summary(); assert.equal(summary.currentNotesSources, 46); assert.equal(summary.authenticatedDataRows, 159);
       assert.equal(summary.censusKind, 'physical-directory'); assert.equal(summary.physicalDirectoryAcquisitionClaimed, true);
-      return { currentNotesSources: 46, authenticatedDataRows: 157, physicalCensusRechecked: true };
+      return { currentNotesSources: 46, authenticatedDataRows: 159, physicalCensusRechecked: true };
     });
     positive('notes46-source-explicit-reader-positive', () => {
-      const context = pure(); const summary = context.summary(); assert.equal(summary.currentSourceRows, 156); assert.equal(summary.censusKind, 'explicit-caller-census-function');
+      const context = pure(); const summary = context.summary(); assert.equal(summary.currentSourceRows, 158); assert.equal(summary.censusKind, 'explicit-caller-census-function');
       assert.equal(summary.physicalDirectoryAcquisitionClaimed, false); assert(Object.isFrozen(context) && Object.isFrozen(context.plan) && Object.isFrozen(context.plan.currentSourceRows));
-      return { genuineExplicitReaderAndCensus: true, actualSourceDataRows: 157 };
+      return { genuineExplicitReaderAndCensus: true, actualSourceDataRows: 159 };
     });
     positive('notes46-source-fresh-reader-rebind-positive', () => {
       let reads = 0; const context = assertNotes46InstalledSourceView(actual, name => { reads++; return actualRead(name); }, currentCensus);
-      assert.notEqual(context, actual); context.recheck(); assert(reads >= 157); assert.equal(context.summary().physicalDirectoryAcquisitionClaimed, false);
+      assert.notEqual(context, actual); context.recheck(); assert(reads >= 159); assert.equal(context.summary().physicalDirectoryAcquisitionClaimed, false);
       return { freshSuppliedReaderConsumed: reads, physicalAcquisitionNotInherited: true };
     });
     positive('notes46-source-caller-pin-alias-retains-fixed-identity', () => {
@@ -219,8 +219,8 @@ export async function runNotes46InstalledSourceControls(root, fixtureRoot, emit,
 
     positive('notes46-source-envelope-exact-fixed-helper-positive', () => {
       const result = verifyNotes46InstalledSourceEnvelope(actual, sourceRows, FIXED_HELPER_PIN, helperBytes);
-      assert.equal(result.rows.length, 158); assert.equal(result.rows.at(-1).separateFixedHelperSource, true); assert.equal(result.historicalProfileBudgetRaised, false); assert(result.rawBytes <= budget.rawBytes);
-      return { dataRows: 157, separatelyPinnedHelperRows: 1, envelopeRows: 158, rawBytes: result.rawBytes };
+      assert.equal(result.rows.length, 160); assert.equal(result.rows.at(-1).separateFixedHelperSource, true); assert.equal(result.historicalProfileBudgetRaised, false); assert(result.rawBytes <= budget.rawBytes);
+      return { dataRows: 159, separatelyPinnedHelperRows: 1, envelopeRows: 160, rawBytes: result.rawBytes };
     });
     {
       const changed = flip(helperBytes);
@@ -232,7 +232,7 @@ export async function runNotes46InstalledSourceControls(root, fixtureRoot, emit,
       const wrong = { ...FIXED_HELPER_PIN, path: 'scripts/notes46-wrong-helper.mjs' };
       negative('notes46-source-envelope-fixed-helper-path-change', () => verifyNotes46InstalledSourceEnvelope(actual, sourceRows, wrong, helperBytes), error => { assert(error instanceof assert.AssertionError); assert.equal(error.actual, wrong.path); assert.equal(error.expected, HELPER); return { wrongPath: wrong.path }; });
     }
-    negative('notes46-source-envelope-missing-mandatory-row', () => verifyNotes46InstalledSourceEnvelope(actual, sourceRows.slice(1), FIXED_HELPER_PIN, helperBytes), error => { assert(error instanceof assert.AssertionError); assert.equal(error.actual, 156); assert.equal(error.expected, 157); return { attemptedDataRows: 156, requiredDataRows: 157 }; });
+    negative('notes46-source-envelope-missing-mandatory-row', () => verifyNotes46InstalledSourceEnvelope(actual, sourceRows.slice(1), FIXED_HELPER_PIN, helperBytes), error => { assert(error instanceof assert.AssertionError); assert.equal(error.actual, 158); assert.equal(error.expected, 159); return { attemptedDataRows: 158, requiredDataRows: 159 }; });
     {
       const changed = clone(sourceRows); changed[0] = clone(changed[1]);
       negative('notes46-source-envelope-duplicate-path-map', () => verifyNotes46InstalledSourceEnvelope(actual, changed, FIXED_HELPER_PIN, helperBytes), error => { assertion(error, 'Exact externally authenticated current46 path, identity and content map required'); assert.equal(error.actual[0].path, changed[1].path); return { targetedDuplicatePath: changed[1].path, rejectionLayer: 'exact externally authenticated content map' }; });
@@ -262,7 +262,7 @@ export async function runNotes46InstalledSourceControls(root, fixtureRoot, emit,
       const counts = { current: 0, historical: 0, proof: 0, list: 0, finish: 0 };
       const account = (map, name, bytes, maximumFiles, maximumBytes) => { if (map.has(name)) assert.deepEqual(id(bytes), map.get(name)); else { map.set(name, id(bytes)); assert(map.size <= maximumFiles); } assert(bytes.length <= maximumBytes); };
       const io = {
-        sourceRead(name) { counts.current++; let bytes = actualRead(name); if (mutate.current) bytes = mutate.current(name, bytes); if (!sourceSeen.has(name)) sourceTotal += bytes.length; account(sourceSeen, name, bytes, 157, 512 * 1024); assert(sourceTotal <= 8 * 1024 * 1024); return bytes; },
+        sourceRead(name) { counts.current++; let bytes = actualRead(name); if (mutate.current) bytes = mutate.current(name, bytes); if (!sourceSeen.has(name)) sourceTotal += bytes.length; account(sourceSeen, name, bytes, 159, 512 * 1024); assert(sourceTotal <= 8 * 1024 * 1024); return bytes; },
         historicalSourceRead(name) { counts.historical++; let bytes = historicalRead(name); if (mutate.historical) bytes = mutate.historical(name, bytes); if (!historicalSeen.has(name)) historicalTotal += bytes.length; account(historicalSeen, name, bytes, 145, 512 * 1024); assert(historicalTotal <= 8 * 1024 * 1024); return bytes; },
         read(name) { counts.proof++; let bytes = historicalRead(name); if (mutate.proof) bytes = mutate.proof(name, bytes); if (!seen.has(name)) total += bytes.length; account(seen, name, bytes, 1200, 32 * 1024 * 1024); assert(total <= 256 * 1024 * 1024); return bytes; },
         list(name) {
@@ -277,9 +277,9 @@ export async function runNotes46InstalledSourceControls(root, fixtureRoot, emit,
     const editorContext = createNotes46EditorProofContext(actual, historicalRead, historicalCensus);
     positive('notes46-editor-pure-three-real-channels-positive', () => {
       const { io, counts, sourceSeen, historicalSeen, seen } = ioFixture(), result = verifyNotes46EditorValueApiProofBytes(io, { installedSourceContext: editorContext });
-      assert.equal(result.schema, 'rea-notes46-editor-pure-current-and-historical/v1'); assert.equal(result.threeChannelsIndependentlyAuthenticated, true); assert.equal(result.notes46CurrentSourceProof.authenticatedDataRows, 157);
+      assert.equal(result.schema, 'rea-notes46-editor-pure-current-and-historical/v1'); assert.equal(result.threeChannelsIndependentlyAuthenticated, true); assert.equal(result.notes46CurrentSourceProof.authenticatedDataRows, 159);
       assert.equal(result.historicalValidation.inputCommit, '2a8482b42784eb262d6d5b82e62d8d1220dc4821'); assert.equal(result.historicalValidation.current46AcceptanceClaimed, false);
-      assert.equal(sourceSeen.size, 157); assert.equal(historicalSeen.size, 145); assert(seen.size > 0); assert.equal(counts.finish, 1);
+      assert.equal(sourceSeen.size, 159); assert.equal(historicalSeen.size, 145); assert(seen.size > 0); assert.equal(counts.finish, 1);
       return { channels: clone(counts), currentDistinct: sourceSeen.size, historicalDistinct: historicalSeen.size, unchangedProofDistinct: seen.size, unchangedProofCap: 1200 };
     });
     {

@@ -1,18 +1,18 @@
-name: Notes46 installed search browser and observed values
+name: ANY canonical feature-branch real Chromium
 
 on:
   push:
-    branches: [experiment/notes46-installed-search-20261019]
+    branches: [experiment/notes-search-any-browser-20261019]
 
 permissions:
   contents: read
 concurrency:
-  group: notes46-installed-search-browser-${{ github.ref }}
+  group: notes-any-feature-branch-browser-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
   draft-recovery-real-chromium:
-    name: Notes46 installed structured search real Chromium
+    name: ANY canonical feature-branch36 real Chromium
     runs-on: windows-2022
     timeout-minutes: 35
     env:
@@ -27,7 +27,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
-          fetch-depth: 4
+          fetch-depth: 6
       - name: Select the exact supported hosted runtime
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -39,18 +39,18 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
-          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes-any-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
           if(Test-Path -LiteralPath $evidence){throw 'Evidence already exists'}
           New-Item -ItemType Directory -Path $evidence|Out-Null
           'REA_NOTES_SEARCH_EVIDENCE='+$evidence|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
           $collector='products/rea-studio/experiments/notes46-installed-search-browser-20261019/run-installed-study.mjs'
           $plan='products/rea-studio/experiments/notes46-installed-search-browser-20261019/SOURCE-PLAN.json'
-          if((Get-Item -LiteralPath $collector).Length -ne 46683 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $collector).Hash.ToLowerInvariant() -ne '139a8dac31ff31ff4406fb060672a16a7f45d1f212a20b72847c9f93fa1754b5'){throw 'Collector identity differs'}
-          if((Get-Item -LiteralPath $plan).Length -ne 85371 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $plan).Hash.ToLowerInvariant() -ne 'c3c3daa16c2b62636b19558621de856e9ed9561f895e8be1d63be22df8408f6e'){throw 'Source plan identity differs'}
+          if((Get-Item -LiteralPath $collector).Length -ne 63823 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $collector).Hash.ToLowerInvariant() -ne '0a20a2c8d63e1db9bb4f7fa8d405be5552e5b525e9918fc7dab59526fa84a573'){throw 'Collector identity differs'}
+          if((Get-Item -LiteralPath $plan).Length -ne 92262 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $plan).Hash.ToLowerInvariant() -ne '5f4f605d8bab5401dfd59259d242a6fd0b3b3abcb9ef1ddc09f5120069996509'){throw 'Source plan identity differs'}
           $acquisition=Join-Path $evidence 'acquisition'
           New-Item -ItemType Directory -Path $acquisition|Out-Null
           'REA_BROWSER_ACQUISITION_EVIDENCE='+$acquisition|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
-          $cache=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-chromium-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          $cache=Join-Path $env:RUNNER_TEMP ('rea-notes-any-chromium-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
           if(Test-Path -LiteralPath $cache){throw 'Browser cache already exists'}
           'PLAYWRIGHT_BROWSERS_PATH='+$cache|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Preserve and authenticate installed committed source before acquisition or execution
@@ -69,7 +69,7 @@ jobs:
         run: |
           & node products/rea-studio/experiments/notes46-installed-search-browser-20261019/run-installed-study.mjs --phase ready --role browser --evidence "$env:REA_NOTES_SEARCH_EVIDENCE" 1> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-ready-stdout.txt') 2> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-ready-stderr.txt')
           if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
-      - name: Execute exact20 retained and8 new real Chromium cases
+      - name: Execute exact28 retained and8 ANY real Chromium cases
         id: verify
         shell: pwsh
         run: |
@@ -89,24 +89,24 @@ jobs:
         run: |
           $ErrorActionPreference='Stop'
           $evidence=$env:REA_NOTES_SEARCH_EVIDENCE
-          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes-any-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
           New-Item -ItemType Directory -Path $evidence -Force|Out-Null
-          @{schema='rea-notes46-installed-search-browser-workflow-attempt/v1';role='browser';sourceCommit=$env:GITHUB_SHA;baselineCommit='2a8482b42784eb262d6d5b82e62d8d1220dc4821';sourceEpoch='notes46-installed-structured-search-v1';runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;job=$env:GITHUB_JOB;runnerEnvironment=$env:RUNNER_ENVIRONMENT;runnerOS=$env:RUNNER_OS;imageOS=$env:ImageOS;imageVersion=$env:ImageVersion;checkoutOutcome='${{ steps.checkout.outcome }}';bootstrapOutcome='${{ steps.bootstrap.outcome }}';beforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';readyOutcome='${{ steps.ready.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';postcheckOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;actualProductPathsCommitted=$true;appSourceWritesByCollector=0;qualifiedInstalledTargets=18;productionInstallation=$false;historicalReceiptsRebound=$false;originalFullApplicationExecutions=0;performanceMeasured=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          @{schema='rea-any-canonical-feature-branch-browser-workflow-attempt/v1';role='browser';sourceCommit=$env:GITHUB_SHA;baselineCommit='2a8482b42784eb262d6d5b82e62d8d1220dc4821';sourceEpoch='notes46-any-real-browser-v1';runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;job=$env:GITHUB_JOB;runnerEnvironment=$env:RUNNER_ENVIRONMENT;runnerOS=$env:RUNNER_OS;imageOS=$env:ImageOS;imageVersion=$env:ImageVersion;checkoutOutcome='${{ steps.checkout.outcome }}';bootstrapOutcome='${{ steps.bootstrap.outcome }}';beforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';readyOutcome='${{ steps.ready.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';postcheckOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;actualProductPathsCommitted=$true;appSourceWritesByCollector=0;canonicalANYTargets=6;plannedBrowserCases=36;sourceParentCommit='cb88fb39dc874a5f445d3bea6d86f9ddf651b936';canonicalFeatureBranchOnly=$true;productionInstallation=$false;historicalReceiptsRebound=$false;originalFullApplicationExecutions=0;performanceMeasured=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
           $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse -Force)
           $rawBytes=($files|Measure-Object Length -Sum).Sum
           $links=@(Get-ChildItem -LiteralPath $evidence -Recurse -Force|Where-Object {$_.Attributes -band [IO.FileAttributes]::ReparsePoint})
           $bounded=$files.Count -le 5000 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0 -and $links.Count -eq 0
-          $archive=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-notes-any-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
           if(Test-Path -LiteralPath $archive){throw 'Archive already exists'}
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
           $archiveBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
           if(-not $bounded -or $archiveBytes -gt 15*1024*1024){
-            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-incomplete-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes-any-incomplete-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
             New-Item -ItemType Directory -Path $fallback|Out-Null
             foreach($file in Get-ChildItem -LiteralPath $evidence -File -Force){if($file.Length -le 1024*1024 -and -not($file.Attributes -band [IO.FileAttributes]::ReparsePoint)){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name)}}
             @{schema='rea-cloud-evidence-storage-failure/v1';role='browser';status='failed';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$rawBytes;archiveBytes=$archiveBytes;reparsePoints=$links.Count;fileLimit=5000;rawByteLimit=96*1024*1024;individualByteLimit=8*1024*1024;zipLimit=15*1024*1024;reason='Fixed evidence bounds or link checks rejected complete preservation. This fallback cannot qualify the experiment.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
-            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-incomplete-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes-any-incomplete-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
             [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
             if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
             throw 'Complete evidence rejected; preserved fallback is explicitly incomplete'
@@ -116,112 +116,8 @@ jobs:
         if: always() && steps.evidence.outputs.artifact_path != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: notes46-installed-search-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          name: notes-any-real-browser-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.evidence.outputs.artifact_path }}
           if-no-files-found: error
           compression-level: 0
           retention-days: 1
-
-  notes46-observed-values:
-    name: Notes46 installed actual original search values and SQL study
-    runs-on: windows-2022
-    timeout-minutes: 35
-    env:
-      CI: 'true'
-    steps:
-      - name: Enable long research paths
-        shell: pwsh
-        run: git config --global core.longpaths true
-      - name: Check out exact new experiment commit and required baseline parent
-        id: checkout
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
-        with:
-          ref: ${{ github.sha }}
-          persist-credentials: false
-          fetch-depth: 4
-      - name: Select the exact supported hosted runtime
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
-        with:
-          node-version: '24.16.0'
-          architecture: x64
-          check-latest: false
-      - name: Allocate owned evidence and authenticate the collector bootstrap
-        id: bootstrap
-        shell: pwsh
-        run: |
-          $ErrorActionPreference='Stop'
-          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-values-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
-          if(Test-Path -LiteralPath $evidence){throw 'Evidence already exists'}
-          New-Item -ItemType Directory -Path $evidence|Out-Null
-          'REA_NOTES_SEARCH_EVIDENCE='+$evidence|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
-          $collector='products/rea-studio/experiments/notes46-installed-search-browser-20261019/run-installed-study.mjs'
-          $plan='products/rea-studio/experiments/notes46-installed-search-browser-20261019/SOURCE-PLAN.json'
-          if((Get-Item -LiteralPath $collector).Length -ne 46683 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $collector).Hash.ToLowerInvariant() -ne '139a8dac31ff31ff4406fb060672a16a7f45d1f212a20b72847c9f93fa1754b5'){throw 'Collector identity differs'}
-          if((Get-Item -LiteralPath $plan).Length -ne 85371 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $plan).Hash.ToLowerInvariant() -ne 'c3c3daa16c2b62636b19558621de856e9ed9561f895e8be1d63be22df8408f6e'){throw 'Source plan identity differs'}
-
-      - name: Preserve and authenticate installed committed source before acquisition or execution
-        id: before
-        shell: pwsh
-        run: |
-          & node products/rea-studio/experiments/notes46-installed-search-browser-20261019/run-installed-study.mjs --phase before --role values --evidence "$env:REA_NOTES_SEARCH_EVIDENCE" 1> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-before-stdout.txt') 2> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-before-stderr.txt')
-          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
-
-      - name: Authenticate unchanged installed source and declare readiness without an overlay
-        id: ready
-        shell: pwsh
-        run: |
-          & node products/rea-studio/experiments/notes46-installed-search-browser-20261019/run-installed-study.mjs --phase ready --role values --evidence "$env:REA_NOTES_SEARCH_EVIDENCE" 1> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-ready-stdout.txt') 2> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-ready-stderr.txt')
-          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
-      - name: Execute same48 parser and32 SQL comparisons with physical observed-value records
-        id: verify
-        shell: pwsh
-        run: |
-          & node products/rea-studio/experiments/notes46-installed-search-browser-20261019/run-installed-study.mjs --phase values --role values --evidence "$env:REA_NOTES_SEARCH_EVIDENCE" 1> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-values-stdout.txt') 2> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-values-stderr.txt')
-          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
-      - name: Preserve bounded observed source and authenticate it after failures too
-        id: after
-        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
-        shell: pwsh
-        run: |
-          & node products/rea-studio/experiments/notes46-installed-search-browser-20261019/run-installed-study.mjs --phase postcheck --role values --evidence "$env:REA_NOTES_SEARCH_EVIDENCE" 1> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-postcheck-stdout.txt') 2> (Join-Path $env:REA_NOTES_SEARCH_EVIDENCE 'collector-postcheck-stderr.txt')
-          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
-      - name: Package bounded complete evidence or an explicitly incomplete failure record
-        id: evidence
-        if: always()
-        shell: pwsh
-        run: |
-          $ErrorActionPreference='Stop'
-          $evidence=$env:REA_NOTES_SEARCH_EVIDENCE
-          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-values-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
-          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
-          @{schema='rea-notes46-installed-search-browser-workflow-attempt/v1';role='values';sourceCommit=$env:GITHUB_SHA;baselineCommit='2a8482b42784eb262d6d5b82e62d8d1220dc4821';sourceEpoch='notes46-installed-structured-search-v1';runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;job=$env:GITHUB_JOB;runnerEnvironment=$env:RUNNER_ENVIRONMENT;runnerOS=$env:RUNNER_OS;imageOS=$env:ImageOS;imageVersion=$env:ImageVersion;checkoutOutcome='${{ steps.checkout.outcome }}';bootstrapOutcome='${{ steps.bootstrap.outcome }}';beforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';readyOutcome='${{ steps.ready.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';postcheckOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;actualProductPathsCommitted=$true;appSourceWritesByCollector=0;qualifiedInstalledTargets=18;productionInstallation=$false;historicalReceiptsRebound=$false;originalFullApplicationExecutions=0;performanceMeasured=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
-          $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse -Force)
-          $rawBytes=($files|Measure-Object Length -Sum).Sum
-          $links=@(Get-ChildItem -LiteralPath $evidence -Recurse -Force|Where-Object {$_.Attributes -band [IO.FileAttributes]::ReparsePoint})
-          $bounded=$files.Count -le 5000 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0 -and $links.Count -eq 0
-          $archive=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-values-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
-          if(Test-Path -LiteralPath $archive){throw 'Archive already exists'}
-          Add-Type -AssemblyName System.IO.Compression.FileSystem
-          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
-          $archiveBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
-          if(-not $bounded -or $archiveBytes -gt 15*1024*1024){
-            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-incomplete-values-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
-            New-Item -ItemType Directory -Path $fallback|Out-Null
-            foreach($file in Get-ChildItem -LiteralPath $evidence -File -Force){if($file.Length -le 1024*1024 -and -not($file.Attributes -band [IO.FileAttributes]::ReparsePoint)){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name)}}
-            @{schema='rea-cloud-evidence-storage-failure/v1';role='values';status='failed';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$rawBytes;archiveBytes=$archiveBytes;reparsePoints=$links.Count;fileLimit=5000;rawByteLimit=96*1024*1024;individualByteLimit=8*1024*1024;zipLimit=15*1024*1024;reason='Fixed evidence bounds or link checks rejected complete preservation. This fallback cannot qualify the experiment.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
-            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes46-installed-incomplete-values-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
-            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
-            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
-            throw 'Complete evidence rejected; preserved fallback is explicitly incomplete'
-          }
-          'artifact_path='+$archive|Out-File -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-      - name: Preserve actual same-attempt success or failure evidence
-        if: always() && steps.evidence.outputs.artifact_path != ''
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: notes46-installed-search-values-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ steps.evidence.outputs.artifact_path }}
-          if-no-files-found: error
-          compression-level: 0
-          retention-days: 1
-

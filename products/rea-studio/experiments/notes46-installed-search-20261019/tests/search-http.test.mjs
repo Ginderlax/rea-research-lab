@@ -54,8 +54,50 @@ test('real HTTP structured selectors retain type/completion/trash restrictions a
 test('real HTTP unsupported/malformed filters return errors while all persisted source-state bytes remain unchanged', async t => {
   const f = await host(t); await f.call('save', { title: 'Retained', body: 'unchanged' });
   const before = await f.state();
-  for (const input of [{ searchMode: 'unknown' }, { searchMode: 'filters', search: 'any:1' }, { searchMode: 'filters', search: 'title:plan*' }, { searchMode: 'filters', search: 'x'.repeat(501) }]) {
+  for (const input of [{ searchMode: 'unknown' }, { searchMode: 'filters', search: 'resource:image/*' }, { searchMode: 'filters', search: 'title:plan*' }, { searchMode: 'filters', search: 'x'.repeat(501) }]) {
     const response = await f.request('list', input); assert.equal(response.status, 400); assert.equal(typeof response.body.error, 'string');
     assert.deepEqual(await f.state(), before);
   }
+});
+
+test('real HTTP ANY uses first modifiers and tagged alternatives without changing persisted bytes', async t => {
+  const f = await host(t);
+  const plan = await f.call('save', { title: 'Plan', body: 'ready', notebook: 'Lab', tags: ['work'] });
+  const archive = await f.call('save', { title: 'Archive', body: 'archived', notebook: 'Lab', tags: ['spam'] });
+  const untagged = await f.call('save', { title: 'Untagged', body: 'ready', notebook: 'Lab', tags: [] });
+  const before = await f.state(), ids = async search => (await f.call('list', { searchMode: 'filters', search })).notes.map(row => row.id).sort();
+  assert.deepEqual(await ids('any:0 title:Plan body:archived'), []);
+  assert.deepEqual(await ids('any:1 title:Plan body:archived'), [plan.id, archive.id].sort());
+  assert.deepEqual(await ids('any:0 any:1 title:Plan body:archived'), []);
+  assert.deepEqual(await ids('any:1 any:0 title:Plan body:archived'), [plan.id, archive.id].sort());
+  assert.deepEqual(await ids('any:"1" title:Plan body:archived'), []);
+  assert.deepEqual(await ids('-any:1 title:Plan body:archived'), [plan.id, archive.id].sort());
+  assert.deepEqual(await ids('any:1 -tag:work'), [archive.id]);
+  assert.deepEqual(await ids('any:0 -tag:work'), [archive.id, untagged.id].sort());
+  assert.deepEqual(await ids('any:1 -tag:work -tag:spam'), [plan.id, archive.id].sort());
+  assert.deepEqual(await ids('any:1'), []);
+  assert.deepEqual(await ids('any:0'), [plan.id, archive.id, untagged.id].sort());
+  assert.equal((await f.call('list', { searchMode: 'simple', search: 'any:1' })).total, 0);
+  assert.deepEqual(await f.state(), before);
+});
+
+test('real HTTP ANY cannot escape notebook tag to-do trash or session restrictions', async t => {
+  const f = await host(t);
+  const plan = await f.call('save', { title: 'Plan', body: 'ready', notebook: 'Lab', tags: ['work'] });
+  const task = await f.call('save', { title: 'Task', body: 'ready', notebook: 'Lab', tags: ['spam'], newTodo: true });
+  const outside = await f.call('save', { title: 'Outside', body: 'ready', notebook: 'Other', tags: ['work'], newTodo: true });
+  const trash = await f.call('save', { title: 'Hidden task', body: 'ready', notebook: 'Lab', tags: ['spam'], newTodo: true });
+  await f.call('delete', { id: trash.id, revision: trash.revision });
+  const before = await f.state(), query = { searchMode: 'filters', search: 'any:1 notebook:Lab tag:work type:todo' };
+  const ids = async extra => (await f.call('list', { ...query, ...extra })).notes.map(row => row.id).sort();
+  assert.deepEqual(await ids({}), [plan.id, task.id].sort());
+  assert.deepEqual(await ids({ tag: 'work' }), [plan.id]);
+  assert.deepEqual(await ids({ todoFilter: 'todos' }), [task.id]);
+  assert.deepEqual(await ids({ todoFilter: 'notes' }), [plan.id]);
+  assert.deepEqual(await ids({ notebookId: outside.notebookId }), []);
+  assert.deepEqual(await ids({ notebook: 'Other' }), []);
+  assert.deepEqual(await ids({ trash: true }), [trash.id]);
+  assert.deepEqual(await ids({ trash: true, todoFilter: 'notes' }), []);
+  assert.equal((await f.request('list', query, 'invalid-session-token')).status, 403);
+  assert.deepEqual(await f.state(), before);
 });

@@ -35,7 +35,7 @@ test('metadata patterns have bounded SQLite LIKE case, percent and code-point se
 });
 
 test('unsupported parsed clauses and text wildcards fail explicitly', () => {
-  for (const query of ['any:0', 'any:1', 'created:2026', 'updated:2026', 'due:day-1', 'resource:image/*', 'sourceurl:https://example.invalid', 'latitude:12', 'longitude:12', 'altitude:12', 'id:abc']) assert.throws(() => compileStructuredSearch(query, records), /does not yet support/);
+  for (const query of ['created:day-1', 'resource:application/pdf', 'created:2026', 'updated:2026', 'due:day-1', 'resource:image/*', 'sourceurl:https://example.invalid', 'latitude:12', 'longitude:12', 'altitude:12', 'id:abc']) assert.throws(() => compileStructuredSearch(query, records), /does not yet support/);
   for (const query of ['cat*', 'title:plan*', 'body:*secret']) assert.throws(() => compileStructuredSearch(query, records), /wildcards only in tag: and notebook:/);
   for (const query of ['-type:todo', '-iscompleted:1']) assert.throws(() => parseSearchQuery(query), /can't be negated/);
   assert.throws(() => parseSearchQuery('type:TODO'), /must be "note" or "todo"/);
@@ -58,5 +58,67 @@ test('bounds, notebook integrity and immutable query records reject invalid inpu
   assert.throws(() => compileStructuredSearch('notebook:Lab', { a: folder('a', 'Lab', 'a') }), /cycle/);
   assert.throws(() => compileStructuredSearch('notebook:Lab', { a: folder('a', 'Lab', 'missing') }), /ancestor/);
   const before = JSON.stringify({ records, rows }); compileStructuredSearch('notebook:Lab tag:work', records).matches(rows[0]);
+  assert.equal(JSON.stringify({ records, rows }), before);
+});
+
+test('ANY uses the first exact unquoted one while preserving standalone modifier parsing', () => {
+  assert.deepEqual(ids('any:0 title:Project body:archived'), []);
+  assert.deepEqual(ids('any:1 title:Project body:archived'), ['1', '2', '3']);
+  assert.deepEqual(ids('any:0 any:1 title:Project body:archived'), []);
+  assert.deepEqual(ids('any:1 any:0 title:Project body:archived'), ['1', '2', '3']);
+  for (const modifier of ['any:2', 'any:01', 'any:true', 'any:"1"', 'any:""']) assert.deepEqual(ids(`${modifier} title:Project body:archived`), []);
+  for (const modifier of ['-any:1', 'ANY:1']) assert.deepEqual(ids(`${modifier} title:Project body:archived`), ['1', '2', '3']);
+  assert.deepEqual(parseSearchQuery('any:1 any:0 -any:1 any:"1"'), [
+    { name: 'any', value: '1', negated: false }, { name: 'any', value: '0', negated: false },
+    { name: 'any', value: '1', negated: true }, { name: 'any', value: '"1"', negated: false },
+  ]);
+});
+
+test('ANY alternatives combine text fields type and completion without changing conjunction', () => {
+  assert.deepEqual(ids('any:0 title:Project type:todo'), ['3']);
+  assert.deepEqual(ids('any:1 title:Project type:todo'), ['1', '2', '3']);
+  assert.deepEqual(ids('any:1 type:note iscompleted:1'), ['1', '3', '4']);
+  assert.deepEqual(ids('any:1 iscompleted:0 iscompleted:1'), ['2', '3']);
+  assert.deepEqual(ids('any:0 iscompleted:0 iscompleted:1'), []);
+  assert.deepEqual(ids('any:1 review nothing'), ['1', '4']);
+  assert.deepEqual(ids('any:0 review nothing'), []);
+  assert.deepEqual(ids('any:1 title:"Project Other"'), ['1', '2', '3']);
+  assert.deepEqual(ids('any:1 -title:"Project Other"'), ['1', '2', '3', '4']);
+});
+
+test('ANY negative tags exclude untagged notes from tag complements only in alternatives', () => {
+  assert.deepEqual(ids('any:0 -tag:work'), ['3', '4']);
+  assert.deepEqual(ids('any:1 -tag:work'), []);
+  assert.deepEqual(ids('any:1 -tag:spam'), ['1']);
+  assert.deepEqual(ids('any:1 -tag:work -tag:spam'), ['1']);
+  assert.deepEqual(ids('any:1 tag:work -tag:spam'), ['1', '2']);
+  assert.deepEqual(ids('any:1 tag:Missing -tag:Missing'), ['1', '2']);
+  assert.deepEqual(ids('any:1 -tag:*'), []);
+  assert.deepEqual(ids('any:0 -tag:*'), ['3', '4']);
+  assert.deepEqual(ids('any:1 -tag:work title:Elsewhere'), ['4']); // The universe restricts this tag predicate, not other alternatives.
+});
+
+test('ANY keeps notebook scopes independent and defines empty alternatives prospectively', () => {
+  assert.deepEqual(ids('any:1 notebook:Lab title:Elsewhere type:todo'), ['2', '3']);
+  assert.deepEqual(ids('any:1 notebook:Lab -notebook:Child title:Elsewhere type:todo'), ['3']);
+  assert.deepEqual(ids('any:1 notebook:Child notebook:Elsewhere title:Project type:todo'), ['2', '3']);
+  assert.deepEqual(ids('any:1 notebook:Missing type:todo'), []);
+  assert.deepEqual(ids('any:0 notebook:Lab'), ['1', '2', '3']);
+  assert.deepEqual(ids('any:1 notebook:Lab'), ['1', '2', '3']); // Local notebook-only policy; not an original SQL assertion.
+  assert.deepEqual(ids('any:1 -notebook:Lab'), ['4']);
+  assert.deepEqual(ids('any:1'), []);
+  assert.deepEqual(ids('any:0'), ['1', '2', '3', '4']);
+  assert.deepEqual(ids('any:'), ['1', '2', '3', '4']);
+});
+
+test('ANY cannot bypass parser errors unsupported clauses wildcards or existing limits', () => {
+  for (const query of ['any:1 -type:todo', 'any:1 -iscompleted:0']) assert.throws(() => compileStructuredSearch(query, records), /can't be negated/);
+  assert.throws(() => compileStructuredSearch('any:1 type:TODO', records), /must be "note" or "todo"/);
+  assert.throws(() => compileStructuredSearch('any:1 iscompleted:true', records), /must be "1" or "0"/);
+  assert.throws(() => compileStructuredSearch('any:1 resource:image/*', records), /does not yet support resource:/);
+  assert.throws(() => compileStructuredSearch('any:1 title:plan*', records), /wildcards only in tag: and notebook:/);
+  assert.throws(() => compileStructuredSearch('any:1 ' + 'x'.repeat(501), records), /500/);
+  assert.throws(() => compileStructuredSearch('any:1 ' + Array(64).fill('x').join(' '), records), /64 parsed terms/);
+  const before = JSON.stringify({ records, rows }); ids('any:1 notebook:Lab tag:work -tag:spam');
   assert.equal(JSON.stringify({ records, rows }), before);
 });

@@ -9,10 +9,10 @@ import { test as base, expect } from '@playwright/test';
 assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
 for (const [key, value] of Object.entries({ CI: 'true', GITHUB_ACTIONS: 'true', RUNNER_ENVIRONMENT: 'github-hosted',
   RUNNER_OS: 'Windows', RUNNER_ARCH: 'X64', GITHUB_REPOSITORY: 'Ginderlax/rea-research-lab',
-  GITHUB_JOB: 'draft-recovery-real-chromium', GITHUB_REF: 'refs/heads/experiment/notes46-installed-search-20261019', GITHUB_EVENT_NAME: 'push' })) assert.equal(process.env[key], value, key);
+  GITHUB_JOB: 'draft-recovery-real-chromium', GITHUB_REF: 'refs/heads/experiment/notes-search-any-browser-20261019', GITHUB_EVENT_NAME: 'push' })) assert.equal(process.env[key], value, key);
 for (const key of ['GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT']) assert(/^[1-9][0-9]*$/.test(process.env[key]));
 assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));
-const sourceEpoch = 'notes46-installed-structured-search-v1';
+const sourceEpoch = 'notes46-any-real-browser-v1';
 const studioRoot = path.resolve(import.meta.dirname, '..');
 const identity = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
 const bindings = JSON.parse(await fs.readFile(new URL('./notes-structured-search-source-bindings.json', import.meta.url), 'utf8'));
@@ -143,7 +143,7 @@ test('Filters real browser notebook descendants and type completion metadata int
 });
 test('Filters real browser genuine unsupported400 preserves draft and disk then valid search recovers', async ({ studio: s }) => {
   const expected = await s.draft(), before = await s.state(); await s.search('tag:work', 'filters', [s.seed.plan, s.seed.task, s.seed.complete]);
-  const query = 'any:1', actual = s.page.waitForResponse(row => row.url() === s.url + '/api/notes/list' && row.request().postDataJSON().search === query);
+  const query = 'resource:image/*', actual = s.page.waitForResponse(row => row.url() === s.url + '/api/notes/list' && row.request().postDataJSON().search === query);
   s.expectedHttpFailures.push({ path: '/api/notes/list', query, status: 400, observed: false });
   await field(s.page, 'Search notes').fill(query); await button(s.page, 'Search').click(); const response = await actual; assert.equal(response.status(), 400); const payload = await response.json(); assert.equal(typeof payload.error, 'string');
   await expect(root(s.page).getByRole('status')).toHaveText(payload.error); assert.deepEqual(await s.fields(), expected); assert.deepEqual(await s.state(), before);

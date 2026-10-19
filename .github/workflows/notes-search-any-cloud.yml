@@ -1,0 +1,113 @@
+name: Isolated Notes ANY original observations and product regression
+
+on:
+  push:
+    branches: [experiment/notes-search-any-20261019]
+
+permissions:
+  contents: read
+concurrency:
+  group: notes-search-any-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  notes-any-observed-values:
+    name: ANY fixed original parser and metadata SQL observations
+    runs-on: windows-2022
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out exact isolated commit and fixed source parent
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select the supported hosted runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Allocate owned evidence and authenticate all executing harness sources
+        id: bootstrap
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $node=@(Get-Command node -CommandType Application)[0].Source
+          if(-not [IO.Path]::IsPathFullyQualified($node)){throw 'Node executable is not absolute'}
+          $version=& $node --version
+          if($LASTEXITCODE -ne 0 -or $version -cne 'v24.16.0'){throw 'Exact Node runtime differs'}
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes-search-any-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          if(Test-Path -LiteralPath $evidence){throw 'Evidence already exists'}
+          New-Item -ItemType Directory -Path $evidence|Out-Null
+          'REA_ANY_EVIDENCE='+$evidence|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
+          $collector='products/rea-studio/experiments/notes-search-any-20261019/run-any-study.mjs'
+          $plan='products/rea-studio/experiments/notes-search-any-20261019/SOURCE-PLAN.json'
+          $packer='products/rea-studio/experiments/notes-search-any-20261019/package-evidence.ps1'
+          $pins=@(
+            @{path=$collector;bytes=29035;sha256='430f10a0342da542565609b87e01146bfeffa0dd6636a8f45313a89166c798ff'},
+            @{path=$plan;bytes=120075;sha256='2724e4de01d54132643fd7a7c969609b7be7d48960a53c172a8e7881a832312a'},
+            @{path=$packer;bytes=10185;sha256='6791e9b81a3d0ef320f3849c7ddc468ee24f20db248ff5aa7952450fe68ae3e2'}
+          )
+          foreach($row in $pins){$item=Get-Item -LiteralPath $row.path -Force;if($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or $item.Length -ne $row.bytes -or (Get-FileHash -LiteralPath $row.path -Algorithm SHA256).Hash.ToLowerInvariant() -cne $row.sha256){throw ('Harness identity differs: '+$row.path)}}
+          @{schema='rea-notes-search-any-runtime-anchor/v1';sourceCommit=$env:GITHUB_SHA;parentCommit='ab26bf14bc1a55a723566bbafb3ca391c3ef671c';runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;job=$env:GITHUB_JOB;nodeExecutable=$node;nodeVersion=$version;runnerEnvironment=$env:RUNNER_ENVIRONMENT;runnerOS=$env:RUNNER_OS;runnerArch=$env:RUNNER_ARCH;imageOS=$env:ImageOS;imageVersion=$env:ImageVersion;bootstrap=$pins}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'runtime-anchor.json') -Encoding utf8
+      - name: Preserve the exact committed AB26 source before experiment writes
+        id: before
+        shell: pwsh
+        run: |
+          & node products/rea-studio/experiments/notes-search-any-20261019/run-any-study.mjs --phase before --evidence "$env:REA_ANY_EVIDENCE" 1> (Join-Path $env:REA_ANY_EVIDENCE 'collector-before-stdout.txt') 2> (Join-Path $env:REA_ANY_EVIDENCE 'collector-before-stderr.txt')
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+      - name: Apply only the six reviewed prospective product and test replacements
+        id: overlay
+        shell: pwsh
+        run: |
+          & node products/rea-studio/experiments/notes-search-any-20261019/run-any-study.mjs --phase overlay --evidence "$env:REA_ANY_EVIDENCE" 1> (Join-Path $env:REA_ANY_EVIDENCE 'collector-overlay-stdout.txt') 2> (Join-Path $env:REA_ANY_EVIDENCE 'collector-overlay-stderr.txt')
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+      - name: Observe the fixed original code first and run the retained product regression modules
+        id: verify
+        shell: pwsh
+        run: |
+          & node products/rea-studio/experiments/notes-search-any-20261019/run-any-study.mjs --phase verify --evidence "$env:REA_ANY_EVIDENCE" 1> (Join-Path $env:REA_ANY_EVIDENCE 'collector-verify-stdout.txt') 2> (Join-Path $env:REA_ANY_EVIDENCE 'collector-verify-stderr.txt')
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+      - name: Preserve actual post-test source even after a failed observer or regression
+        id: postcheck
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: |
+          & node products/rea-studio/experiments/notes-search-any-20261019/run-any-study.mjs --phase postcheck --evidence "$env:REA_ANY_EVIDENCE" 1> (Join-Path $env:REA_ANY_EVIDENCE 'collector-postcheck-stdout.txt') 2> (Join-Path $env:REA_ANY_EVIDENCE 'collector-postcheck-stderr.txt')
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+      - name: Restore and authenticate the original checkout after failures too
+        id: restore
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: |
+          & node products/rea-studio/experiments/notes-search-any-20261019/run-any-study.mjs --phase restore --evidence "$env:REA_ANY_EVIDENCE" 1> (Join-Path $env:REA_ANY_EVIDENCE 'collector-restore-stdout.txt') 2> (Join-Path $env:REA_ANY_EVIDENCE 'collector-restore-stderr.txt')
+          if($LASTEXITCODE -ne 0){exit $LASTEXITCODE}
+      - name: Preserve bounded complete evidence or an explicitly incomplete failure package
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $evidence=$env:REA_ANY_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes-search-any-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          if(-not (Test-Path -LiteralPath $evidence)){New-Item -ItemType Directory -Path $evidence|Out-Null}
+          @{schema='rea-notes-search-any-workflow-attempt/v1';sourceCommit=$env:GITHUB_SHA;parentCommit='ab26bf14bc1a55a723566bbafb3ca391c3ef671c';runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;job=$env:GITHUB_JOB;runnerEnvironment=$env:RUNNER_ENVIRONMENT;runnerOS=$env:RUNNER_OS;checkoutOutcome='${{ steps.checkout.outcome }}';bootstrapOutcome='${{ steps.bootstrap.outcome }}';beforeOutcome='${{ steps.before.outcome }}';overlayOutcome='${{ steps.overlay.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';postcheckOutcome='${{ steps.postcheck.outcome }}';restoreOutcome='${{ steps.restore.outcome }}';sourceOverlay=$true;installedAnyClaimed=$false;historicalReceiptsRebound=$false;originalFullApplicationExecutions=0;browserExecutions=0;performanceMeasured=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $packer='products/rea-studio/experiments/notes-search-any-20261019/package-evidence.ps1'
+          if((Get-Item -LiteralPath $packer).Length -ne 10185 -or (Get-FileHash -Algorithm SHA256 -LiteralPath $packer).Hash.ToLowerInvariant() -cne '6791e9b81a3d0ef320f3849c7ddc468ee24f20db248ff5aa7952450fe68ae3e2'){throw 'Packer identity differs; original runner logs remain the available failure evidence'}
+          & $packer -Evidence $evidence
+      - name: Upload actual same-attempt success or failure evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes-search-any-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

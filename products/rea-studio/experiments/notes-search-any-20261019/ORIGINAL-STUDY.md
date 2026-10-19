@@ -1,0 +1,11 @@
+# ANY search original-comparison study
+
+This separate source-assisted study preserves the earlier 48-parser/32-SQL inputs unchanged. It adds 16 parser cases, 32 non-notebook metadata SQL cases and eight notebook diagnostics. These are 56 case records and three test parents, so the prospective run has 59 TAP results. No result is established by these source files.
+
+The new test authenticates the existing Joplin Desktop 3.6.14 parser and query-builder bytes at commit 7e2765a3857754d12dbadea442b60ceaf9d4b23d. It reuses the reviewed TypeScript loader and replaces only the date-service import with a deny-on-access adapter, unused by these fixtures. Original function bodies and SQL remain unchanged. The study code is AGPL-3.0-or-later; the preserved original source, license and notices remain in the separate ../notes-search-grammar study.
+
+Parser and non-notebook SQL cases require exact agreement between fresh original and replacement outcomes. Notebook cases preserve two original outcomes and the replacement outcome without requiring agreement. Lane A uses the existing synthetic metadata schema. Lane B adds an explicitly ordinary notes_fts table with the same six ROWIDs, IDs and full stored fields; it verifies that mirror before and after queries. That table is a structural diagnostic adapter, not a full-text index or original application database. Actual errors, SQL, parameters and result IDs are retained.
+
+Execution is restricted to the separately reviewed GitHub-hosted Windows campaign, Node 24.16.0, the exact experiment branch/job and a sole-parent check against AB26. REA_ANY_OBSERVATIONS must name an existing owned directory under the hosted temporary root. The test exclusively creates original-any-values.jsonl, records each outcome before its assertion and writes a footer requiring the actual TAP result. A complete observation stream does not by itself mean the comparisons passed.
+
+The source design's predicted IDs are hypotheses retained outside the test oracle. The test obtains expected comparison values by executing the authenticated originals in the new cloud run. Notebook differences, original application behavior, FTS, ranking, performance, complete parity and superiority remain separate questions.

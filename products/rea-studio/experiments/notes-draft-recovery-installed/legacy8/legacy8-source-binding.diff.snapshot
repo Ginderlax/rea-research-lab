@@ -1,0 +1,113 @@
+--- notes-new-todo.spec.mjs@698d
++++ notes-draft-recovery-installed-legacy.spec.mjs@new-installed-source
+@@ -1,5 +1,5 @@
+-// Source-authored finite real Chromium acceptance. Execute only on the pinned
+-// hosted New To-do experimental after-images. Every fixture is synthetic; no original app runs.
++// Retained eight real Chromium behaviors under a NEW installed Notes41 source binding.
++// Original Notes36 receipts remain immutable. Synthetic fixtures; no original application runs.
+ import assert from 'node:assert/strict';
+ import fs from 'node:fs/promises';
+ import path from 'node:path';
+@@ -10,7 +10,7 @@
+ assert.equal(process.env.CI, 'true'); assert.equal(process.env.GITHUB_ACTIONS, 'true');
+ assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
+ assert.equal(process.env.GITHUB_REPOSITORY, 'Ginderlax/rea-research-lab');
+-assert.equal(process.env.GITHUB_JOB, 'eight-real-chromium-scenarios');
++assert.equal(process.env.GITHUB_JOB, 'installed-recovery-legacy-browser');
+ for (const name of ['GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT']) assert(process.env[name]);
+ const studioRoot = path.resolve(import.meta.dirname, '..');
+ const evidence = await fs.realpath(process.env.REA_BROWSER_EVIDENCE);
+@@ -20,8 +20,8 @@
+ const sourcePins = [
+   [
+     "apps/notes/README.md",
+-    21495,
+-    "1fc382d31ede4d4b82c6bb57fa64b5e1448f533e5a776f1a1a5deb1048c27d0e"
++    23686,
++    "e6c6909e9f15afebe92af75e9f747e16b0757012a7965287febd8d6d5bef6f40"
+   ],
+   [
+     "apps/notes/app.integration.test.mjs",
+@@ -35,8 +35,8 @@
+   ],
+   [
+     "apps/notes/client.mjs",
+-    29531,
+-    "d6f301dcc803c4bfd12a1c03eb71896710d1b42053fa10ee13d25e76d6930daa"
++    39629,
++    "7591daddfc64657b0bdb93f6fea4aa16858757f700a3a6adab5d704772deea85"
+   ],
+   [
+     "apps/notes/core.mjs",
+@@ -44,6 +44,31 @@
+     "06bf9ad2485e39d6c7dea51a3be9a232fefe9d1a2ed1e46482b0459d605aa44c"
+   ],
+   [
++    "apps/notes/draft-recovery-test-fixture.mjs",
++    5397,
++    "d3be480e2f470abe0b4d33c96855950e295a5c35fe9a86774fb9b8b5a1df1a64"
++  ],
++  [
++    "apps/notes/draft-recovery.http.test.mjs",
++    4734,
++    "4a441f969ae2753aee0fad680cfbc2f698c11d10755d035650f809da73fa2dbc"
++  ],
++  [
++    "apps/notes/draft-recovery.mjs",
++    9814,
++    "10d4c3fa2ec7047b9732f6a83aa8cdd76dec48f490a612c18502487058529608"
++  ],
++  [
++    "apps/notes/draft-recovery.test.mjs",
++    3703,
++    "9ad5f46e6dbea1d26d4c52ce938bd823567132e0510e426dc18798909827d0d0"
++  ],
++  [
++    "apps/notes/draft-recovery.ui.test.mjs",
++    14365,
++    "2d3d00118db63882429c6a56f2b913638366b0d3a85dd19ee469a1529f7cb35d"
++  ],
++  [
+     "apps/notes/fixtures/oracle-verification.json",
+     4843,
+     "82b53a9c9c0594b0364f2752e78bef85d374d53a2f4a5b2580daa8edc6079d9f"
+@@ -175,8 +200,8 @@
+   ],
+   [
+     "apps/notes/server.mjs",
+-    25329,
+-    "60e49793486ca0c8867004ff48b92c34eec4bd75ecb7a6d593d31659ab75b6dd"
++    25765,
++    "5bad6e798157a2f7d814326d302905b1b6f8449e5f870214642eab01534ac827"
+   ],
+   [
+     "apps/notes/todo-original.test.mjs",
+@@ -185,8 +210,8 @@
+   ],
+   [
+     "apps/notes/todo.integration.test.mjs",
+-    5802,
+-    "442da2522755a4a0c02a6602a8a63ce367a20d2a65d940a53062a7dc08e9d05e"
++    5864,
++    "7252a94a7b89afba359a6efccba2cd078a520fd268ccbe82ff242fe66ec5ca40"
+   ],
+   [
+     "apps/notes/todo.test.mjs",
+@@ -374,7 +399,7 @@
+       if (expectedConsole.length > expectedHttpFailures.length) errors.push({ type: 'extra-expected-path-console-errors', count: expectedConsole.length });
+       const savedEvents = new Set(savedDownloads.map(row => row.download));
+       if (downloads.some(row => !savedEvents.has(row.download))) errors.push({ type: 'unclaimed-download', count: downloads.length - savedDownloads.length });
+-      await write('case-' + info.testId + '.json', { schema: 'rea-notes-new-todo-real-browser-case/v1', testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry,
++      await write('case-' + info.testId + '.json', { schema: 'rea-notes-draft-recovery-installed-legacy-browser-case/v1', sourceEpoch: 'notes41-installed-recovery', sourceCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT, acceptedRecoverySource: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', installedAcceptancePreclaimed: false, testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry,
+         url: instance.url, ownedDataDirectory: dataDir, serverCloseObserved: teardown.serverClosed, realBrowser: true, actualHTTP: true, originalProductExecutions: 0, originalFullApplicationExecutions: 0, originalHelperExecutions: 0, programmaticDisabledControlProbes: 0,
+         teardown, observations, requests, responses, faults, expectedHttpFailures, expectedConsole, auxiliaryErrors, errors, downloads: savedDownloads.map(({ download, ...row }) => row) });
+       expect(errors).toEqual([]); expect(expectedHttpFailures.every(row => row.observed)).toBe(true);
+@@ -388,7 +413,7 @@
+   expect(browser.version()).toBe('156.0.8078.4');
+   const observation = { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 };
+   const execution = Object.fromEntries(['CI', 'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY', 'GITHUB_JOB'].map(name => [name, process.env[name] ?? null]));
+-  await write('browser-observation-process-' + process.pid + '.json', { schema: 'rea-cloud-notes-new-todo-browser-worker-observation/v1', observation, execution, pid: process.pid, sourcePins: sourcePins.map(([path, bytes, sha256]) => ({ path, bytes, sha256 })) });
++  await write('browser-observation-process-' + process.pid + '.json', { schema: 'rea-notes-draft-recovery-installed-legacy-browser-worker-observation/v1', sourceEpoch: 'notes41-installed-recovery', sourceCommit: process.env.GITHUB_SHA, acceptedRecoverySource: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', installedAcceptancePreclaimed: false, observation, execution, pid: process.pid, sourcePins: sourcePins.map(([path, bytes, sha256]) => ({ path, bytes, sha256 })) });
+   try { await write('browser-observation.json', observation); } catch (error) { if (error.code !== 'EEXIST') throw error; assert.deepEqual(JSON.parse(await fs.readFile(path.join(evidence, 'browser-observation.json'), 'utf8')), observation); }
+ });
+ async function openNotes(s) { await s.page.goto(s.url + '/#notes'); await expect(view(s.page).getByRole('heading', { name: 'Local Notes', exact: true })).toBeVisible(); await expect(status(s.page)).toHaveText('Notes are saved locally when you choose Save.'); }

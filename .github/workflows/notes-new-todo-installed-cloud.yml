@@ -1,32 +1,10 @@
-name: Committed Notes36 New To-do acceptance
+name: Retained Notes36 acceptance - dispatch at pinned historical source
 
 on:
   workflow_dispatch:
-  push:
-    branches: [codex/rea-cloud-recovery-20261015]
-    paths:
-      - '.github/workflows/notes-new-todo-installed-cloud.yml'
-      - '.github/workflows/notes-new-todo-experiment-cloud.yml'
-      - '.github/workflows/notes-installed-cloud.yml'
-      - 'products/rea-studio/results/notes36-source-transition-20261016/**'
-      - 'products/rea-studio/apps/notes/**'
-      - 'products/rea-studio/experiments/notes-new-todo/**'
-      - 'products/rea-studio/scripts/verify-notes36-installed-cloud.mjs'
-      - 'products/rea-studio/scripts/verify-notes36-cloud.mjs'
-      - 'products/rea-studio/scripts/verify-cloud-browser.mjs'
-      - 'products/rea-studio/browser-tests/notes-new-todo.spec.mjs'
-      - 'products/rea-studio/browser-tests/playwright.notes-new-todo.config.mjs'
-      - 'products/rea-studio/browser-tests/notes-new-todo-roster.json'
-      - 'products/rea-studio/browser-tests/browser-metadata.json'
-      - 'products/rea-studio/browser-tests/package.json'
-      - 'products/rea-studio/browser-tests/package-lock.json'
-      - 'products/rea-studio/browser-tests/playwright.config.mjs'
-      - 'products/rea-studio/browser-tests/flow-vault.spec.mjs'
-      - 'products/rea-studio/server.mjs'
-      - 'products/rea-studio/catalog.mjs'
-      - 'products/rea-studio/lib/**'
-      - 'products/rea-studio/public/**'
-      - 'products/rea-studio/package.json'
+
+# Retained Notes36 validation must be dispatched at the immutable source tag.
+# A dispatch at the current Notes41 source fails before any product execution.
 
 permissions:
   contents: read
@@ -35,7 +13,19 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  retained-notes36-source-authority:
+    runs-on: windows-2022
+    timeout-minutes: 5
+    steps:
+      - name: Require the immutable retained Notes36 source event
+        shell: pwsh
+        run: |
+          if($env:GITHUB_SHA -ne '698d2e301765d1b878fb251b3d59dadb5a3c9bac' -or $env:GITHUB_REF -ne 'refs/tags/rea-notes36-retained-698d-20261018'){
+            throw 'This historical Notes36 workflow cannot validate current Notes41 sources. Dispatch at tag rea-notes36-retained-698d-20261018, whose original workflow and source pins remain unchanged. Never override GITHUB_SHA or rebind its receipts.'
+          }
+
   finite-twenty-one-file-selection:
+    needs: retained-notes36-source-authority
     runs-on: windows-2022
     timeout-minutes: 30
     env:
@@ -116,6 +106,7 @@ jobs:
           retention-days: 1
 
   eight-real-chromium-scenarios:
+    needs: retained-notes36-source-authority
     runs-on: windows-2022
     timeout-minutes: 30
     env:

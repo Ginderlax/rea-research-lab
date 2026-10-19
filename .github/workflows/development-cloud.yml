@@ -197,6 +197,11 @@ jobs:
           $composition = Join-Path $env:REA_DEVELOPMENT_EVIDENCE 'bsdtar-composition.json'
           node products/rea-studio/scripts/verify-cloud.mjs --scope full-oracle-experiment --output "$env:REA_DEVELOPMENT_EVIDENCE" --bootstrap-manifest "$manifest" --overlay-manifest "$composition" --timeout-ms 2400000
 
+      - name: Require all retained full-suite names plus the seventeen recovery checks
+        id: recovery_full_roster
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes-draft-recovery-installed-full.mjs --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
       - name: Recheck the oracle source composition after every observable attempt
         id: oracle_postcheck
         if: always() && steps.compose.outcome != 'skipped' && steps.compose.outcome != ''
@@ -210,7 +215,7 @@ jobs:
         run: |
           $evidence = Join-Path $env:RUNNER_TEMP ('rea-development-ci-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
           New-Item -ItemType Directory -Path $evidence -Force | Out-Null
-          @{ schema='rea-cloud-full-oracle-workflow-attempt/v1'; sourceCommit=$env:GITHUB_SHA; runId=$env:GITHUB_RUN_ID; runAttempt=$env:GITHUB_RUN_ATTEMPT; runnerEnvironment=$env:RUNNER_ENVIRONMENT; checkoutOutcome='${{ steps.checkout.outcome }}'; compositionOutcome='${{ steps.compose.outcome }}'; flowVaultOutcome='${{ steps.flow_vault.outcome }}'; archiveOutcome='${{ steps.archive.outcome }}'; bsdtarOutcome='${{ steps.bsdtar.outcome }}'; bsdtarSmokeOutcome='${{ steps.bsdtar_smoke.outcome }}'; additionalOutcome='${{ steps.additional.outcome }}'; testOutcome='${{ steps.full_suite.outcome }}'; oraclePostcheckOutcome='${{ steps.oracle_postcheck.outcome }}'; statusBeforePackaging='${{ job.status }}'; historicalDevelopmentReceiptOverwritten=$false; productAcceptancePreclaimed=$false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          @{ schema='rea-cloud-full-oracle-workflow-attempt/v1'; sourceCommit=$env:GITHUB_SHA; runId=$env:GITHUB_RUN_ID; runAttempt=$env:GITHUB_RUN_ATTEMPT; runnerEnvironment=$env:RUNNER_ENVIRONMENT; checkoutOutcome='${{ steps.checkout.outcome }}'; compositionOutcome='${{ steps.compose.outcome }}'; flowVaultOutcome='${{ steps.flow_vault.outcome }}'; archiveOutcome='${{ steps.archive.outcome }}'; bsdtarOutcome='${{ steps.bsdtar.outcome }}'; bsdtarSmokeOutcome='${{ steps.bsdtar_smoke.outcome }}'; additionalOutcome='${{ steps.additional.outcome }}'; testOutcome='${{ steps.full_suite.outcome }}'; recoveryFullRosterOutcome='${{ steps.recovery_full_roster.outcome }}'; oraclePostcheckOutcome='${{ steps.oracle_postcheck.outcome }}'; statusBeforePackaging='${{ job.status }}'; historicalDevelopmentReceiptOverwritten=$false; productAcceptancePreclaimed=$false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
           $archive = Join-Path $env:RUNNER_TEMP ('rea-development-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           [System.IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[System.IO.Compression.CompressionLevel]::Optimal,$false)

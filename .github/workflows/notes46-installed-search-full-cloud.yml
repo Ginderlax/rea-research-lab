@@ -1,0 +1,360 @@
+name: Notes46 installed search full and finite study
+
+on:
+  push:
+    branches: [experiment/notes46-installed-search-20261019]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: notes46-installed-full-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  full-oracle-experiment:
+    runs-on: windows-2022
+    timeout-minutes: 50
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research snapshot paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact new committed source revision and parent
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select the pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Authenticate new collector data and create one owned evidence directory
+        id: bootstrap
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes46-installed-search-20261019' -or $env:GITHUB_EVENT_NAME -ne 'push') { throw 'Unexpected hosted source context' }
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-notes46-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          if (Test-Path -LiteralPath $evidence) { throw 'Evidence must be new' }
+          New-Item -ItemType Directory -Path $evidence | Out-Null
+          'REA_DEVELOPMENT_EVIDENCE=' + $evidence | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $pins = @'
+          [{"path":"products/rea-studio/scripts/notes46-installed-tap-roster.mjs","bytes":6855,"sha256":"7880749e3fb958572f9f7d9688f1156114268df57a7272602653c8b470e8c44a"},{"path":"products/rea-studio/scripts/verify-notes46-installed-cloud.mjs","bytes":21329,"sha256":"388aac54bc072673a36cd41c974c589f66a70504c6b072127907b0bb5705c17e"},{"path":"products/rea-studio/scripts/verify-notes46-installed-roster.mjs","bytes":14334,"sha256":"00d33b474746f718784c378a62a1f393b09789000e2540bca3307097a5b7611a"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/REGRESSION-FLOOR.json","bytes":229516,"sha256":"ce944a283cafb3ca3c8432b5bab826aee3f0b51d09d4c2b940a4e9b7727f8f40"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/tests/search-http.test.mjs","bytes":3772,"sha256":"a136f101c64716d79e4d6701dbc1e371658adac0b85b17a52895dbcf95f03e45"}]
+          '@ | ConvertFrom-Json
+          foreach ($pin in $pins) {
+            $source = Get-Item -LiteralPath $pin.path -Force
+            if ($source.Attributes -band [IO.FileAttributes]::ReparsePoint -or $source.PSIsContainer -or $source.Length -ne $pin.bytes -or (Get-FileHash -LiteralPath $pin.path -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pin.sha256) { throw ('Reviewed source pin mismatch: ' + $pin.path) }
+          }
+      - name: Capture actual committed Notes46 and ten study inputs before execution
+        id: source_before
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes46-installed-cloud.mjs --scope full --phase before --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Compose only the three reviewed oracle-test sources
+        id: compose
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-bsdtar-oracle-cloud.mjs --phase compose --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Acquire pinned Flow and Vault prerequisites
+        id: flow_vault
+        shell: pwsh
+        run: node products/rea-studio/scripts/bootstrap-cloud-flow-vault.mjs --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Acquire full and Extra 7-Zip inputs with one bounded bootstrap extraction
+        id: archive
+        shell: pwsh
+        run: |
+          $archiveSource = @'
+          import assert from 'node:assert/strict';
+          import * as fs from 'node:fs/promises';
+          import path from 'node:path';
+          import { createHash } from 'node:crypto';
+          import { spawnSync } from 'node:child_process';
+          import { prepareOriginalArchiveOracle } from './products/rea-studio/apps/archive/bootstrap-original.mjs';
+          assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
+          assert.equal(process.env.CI, 'true'); assert.equal(process.env.GITHUB_ACTIONS, 'true'); assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
+          const repository = process.cwd(), evidence = await fs.realpath(process.env.REA_DEVELOPMENT_EVIDENCE);
+          const relative = path.relative(await fs.realpath(process.env.RUNNER_TEMP), evidence);
+          assert(relative && relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative));
+          const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+          const receiptPath = path.join(evidence, 'archive-original-prerequisites.json');
+          const record = { schema: 'rea-cloud-archive-original-prerequisites/v1', status: 'running', startedAtUtc: new Date().toISOString(),
+            execution: Object.fromEntries(['GITHUB_SHA','GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT','GITHUB_REPOSITORY'].map(name => [name, process.env[name]])),
+            scope: 'Authenticated full and Extra 7-Zip inputs, with one original 7zr bootstrap extraction of the pinned standalone oracle. Later comparison calls belong to the tests.', assets: [], bootstrapExtractionProcessAttempts: 0, bootstrapExtractionProcesses: 0, originalProcesses: 0, comparisonProcesses: 0, vendorBinariesPublished: false };
+          async function save(initial = false) {
+            const temporary = initial ? receiptPath : receiptPath + '.tmp', file = await fs.open(temporary, 'wx');
+            try { await file.writeFile(JSON.stringify(record, null, 2) + '\n'); await file.sync(); } finally { await file.close(); }
+            if (!initial) await fs.rename(temporary, receiptPath);
+          }
+          async function authenticate(filename, expected) {
+            const item = await fs.lstat(filename); assert(item.isFile() && !item.isSymbolicLink()); assert.equal(item.size, expected.bytes);
+            const bytes = await fs.readFile(filename); assert.equal(sha(bytes), expected.sha256); return bytes;
+          }
+          await save(true);
+          try {
+            const full = await prepareOriginalArchiveOracle(); assert.equal(full.schema, 'rea-archive-original-acquisition/v1'); assert.equal(full.assets.length, 2);
+            const pins = { '.local/archive-original/7z2604-x64.exe': { bytes:1664082,sha256:'d54bf805f9f3704d1e8db2fa3498ae7ef2df0312b40b558e7c71c734430a665d' }, '.local/archive-original/7zr.exe': { bytes:602624,sha256:'256feca8e274e5da655e2a284fabafd9f554365eb164862089dacd4e8276d282' } };
+            for (const asset of full.assets) { assert(pins[asset.path]); await authenticate(path.join(repository, asset.path), pins[asset.path]); record.assets.push({ ...asset, authenticated:true }); }
+            const provenanceBytes = await fs.readFile('projects/08-7zip/acquisition.json'), provenance = JSON.parse(provenanceBytes);
+            record.extraSourceManifest = { path:'projects/08-7zip/acquisition.json', bytes:provenanceBytes.length, sha256:sha(provenanceBytes) };
+            const extra = provenance.artifacts.find(row => row.relative_path === 'artifacts/7z2604-extra.7z');
+            assert.equal(extra.bytes,1764616); assert.equal(extra.sha256,'dc4b11d3399db18b063630137145f5585d8f7ac847bf3639bd1185d7d1f7cee0');
+            assert.equal(extra.source_url,'https://github.com/ip7z/7zip/releases/download/26.04/7z2604-extra.7z');
+            const artifacts = path.join(repository,'projects/08-7zip/artifacts'); await fs.mkdir(artifacts,{recursive:true}); assert(!(await fs.lstat(artifacts)).isSymbolicLink());
+            const destination = path.join(artifacts,'7z2604-extra.7z');
+            try { await fs.lstat(destination); }
+            catch (error) {
+              if(error.code !== 'ENOENT') throw error;
+              const response = await fetch(extra.source_url,{signal:AbortSignal.timeout(45000)}); assert(response.ok);
+              const chunks=[];let total=0;for await(const chunk of response.body){total+=chunk.length;assert(total<=extra.bytes);chunks.push(chunk);}
+              const bytes=Buffer.concat(chunks);assert.equal(bytes.length,extra.bytes);assert.equal(sha(bytes),extra.sha256);await fs.writeFile(destination,bytes,{flag:'wx'});
+            }
+            await authenticate(destination,extra); record.assets.push({path:'projects/08-7zip/artifacts/7z2604-extra.7z',bytes:extra.bytes,sha256:extra.sha256,source_url:extra.source_url,authenticated:true});
+            const bootstrapPin=pins['.local/archive-original/7zr.exe'],bootstrapBytes=await authenticate(path.join(repository,'.local/archive-original/7zr.exe'),bootstrapPin),extraBootstrap=path.join(artifacts,'7zr.exe');
+            try { await fs.writeFile(extraBootstrap,bootstrapBytes,{flag:'wx'}); } catch(error){if(error.code!=='EEXIST')throw error;}
+            await authenticate(extraBootstrap,bootstrapPin);record.assets.push({path:'projects/08-7zip/artifacts/7zr.exe',...bootstrapPin,authenticated:true,source:'authenticated full-oracle bootstrap copy'});
+            const standalonePin={bytes:1335808,sha256:'15d4c788c148e3677e2fc1c4a01f191fb6669eba4f6acf8a465f0f1a6f1e1260'};
+            record.bootstrapExtractionProcessAttempts=1;await save();
+            const extraction=spawnSync(extraBootstrap,['e','-so',destination,'x64/7za.exe'],{cwd:artifacts,shell:false,windowsHide:true,timeout:20000,maxBuffer:2*1024*1024,encoding:'buffer'});
+            record.bootstrapExtractionProcesses=Number.isInteger(extraction.pid)&&extraction.pid>0?1:0;record.originalProcesses=record.bootstrapExtractionProcesses;
+            const extracted=extraction.stdout??Buffer.alloc(0),extractionStderr=extraction.stderr??Buffer.alloc(0);
+            record.bootstrapExtraction={arguments:['e','-so','projects/08-7zip/artifacts/7z2604-extra.7z','x64/7za.exe'],exitCode:extraction.status,signal:extraction.signal,errorCode:extraction.error?.code??null,stdout:{bytes:extracted.length,sha256:sha(extracted)},stderr:{bytes:extractionStderr.length,sha256:sha(extractionStderr)},binaryOutputRetainedInEvidence:false};await save();
+            assert.equal(extraction.error,undefined);assert.equal(extraction.status,0);assert.equal(record.bootstrapExtractionProcesses,1);assert.equal(extracted.length,standalonePin.bytes);assert.equal(sha(extracted),standalonePin.sha256);
+            const extraDirectory=path.join(artifacts,'extra'),standaloneDirectory=path.join(extraDirectory,'x64');
+            for(const directory of [extraDirectory,standaloneDirectory]){try{await fs.mkdir(directory);}catch(error){if(error.code!=='EEXIST')throw error;}const item=await fs.lstat(directory);assert(item.isDirectory()&&!item.isSymbolicLink());}
+            const standalone=path.join(standaloneDirectory,'7za.exe');try{await fs.writeFile(standalone,extracted,{flag:'wx'});}catch(error){if(error.code!=='EEXIST')throw error;}
+            await authenticate(standalone,standalonePin);record.assets.push({path:'projects/08-7zip/artifacts/extra/x64/7za.exe',...standalonePin,authenticated:true,source:'single bounded 7zr extraction from the authenticated Extra archive'});
+            record.status='acquired';record.completedAtUtc=new Date().toISOString();await save();console.log(JSON.stringify({status:record.status,assets:record.assets.length,bootstrapExtractionProcesses:record.bootstrapExtractionProcesses,originalProcesses:record.originalProcesses,comparisonProcesses:0}));
+          } catch(error){record.status='failed';record.completedAtUtc=new Date().toISOString();record.failure={name:error.name,message:error.message};await save();throw error;}
+          '@
+          $archiveSource | & node --input-type=module
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Acquire the explicitly paired Microsoft bsdtar images
+        id: bsdtar
+        shell: pwsh
+        run: node products/rea-studio/scripts/bootstrap-cloud-bsdtar.mjs --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Record the separate original bsdtar smoke invocation
+        id: bsdtar_smoke
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-cloud-bsdtar.mjs --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Acquire additional Automation, Sketch and Backup prerequisites
+        id: additional
+        shell: pwsh
+        run: node products/rea-studio/scripts/bootstrap-cloud-development.mjs --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Bind the same-attempt prerequisite receipts
+        id: prerequisite_manifest
+        shell: pwsh
+        run: |
+          $definitions = @(
+            @('flow-vault','prerequisite-acquisition.json','rea-cloud-flow-vault-prerequisites/v1','acquired'),
+            @('archive','archive-original-prerequisites.json','rea-cloud-archive-original-prerequisites/v1','acquired'),
+            @('bsdtar','bsdtar-original-acquisition.json','rea-cloud-bsdtar-original-prerequisites/v1','acquired'),
+            @('additional','development-prerequisites.json','rea-cloud-development-additional-prerequisites/v1','acquired'),
+            @('bsdtar-smoke','bsdtar-original-smoke.json','rea-cloud-bsdtar-original-smoke/v1','passed')
+          )
+          $receipts = @()
+          foreach ($definition in $definitions) {
+            $receiptPath = Join-Path $env:REA_DEVELOPMENT_EVIDENCE $definition[1]
+            $value = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
+            if ($value.schema -ne $definition[2] -or $value.status -ne $definition[3]) { throw ('Incomplete prerequisite: ' + $definition[0]) }
+            $receipts += @{ role=$definition[0]; file=$definition[1]; bytes=(Get-Item -LiteralPath $receiptPath).Length; sha256=(Get-FileHash -LiteralPath $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant(); schema=$value.schema; status=$value.status }
+          }
+          @{ schema='rea-cloud-full-oracle-prerequisites/v1'; status='acquired'; execution=@{ GITHUB_SHA=$env:GITHUB_SHA; GITHUB_RUN_ID=$env:GITHUB_RUN_ID; GITHUB_RUN_ATTEMPT=$env:GITHUB_RUN_ATTEMPT; GITHUB_REPOSITORY=$env:GITHUB_REPOSITORY }; receipts=$receipts; productTestsExecutedByManifest=0 } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $env:REA_DEVELOPMENT_EVIDENCE 'full-oracle-prerequisites.json') -Encoding utf8
+
+      - name: Run the complete current167-file suite
+        id: product_tests
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes46-installed-cloud.mjs --scope full --phase verify --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Recheck the oracle source composition after every observable attempt
+        id: oracle_postcheck
+        if: always() && steps.compose.outcome != 'skipped' && steps.compose.outcome != ''
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-bsdtar-oracle-cloud.mjs --phase verify-after --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Recheck actual installed sources after every observable test attempt
+        id: source_postcheck
+        if: always() && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes46-installed-cloud.mjs --scope full --phase postcheck --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+      - name: Require exact ordered names nested comparisons source pins and postchecks
+        id: exact_roster
+        if: always() && steps.product_tests.outcome != '' && steps.product_tests.outcome != 'skipped'
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes46-installed-roster.mjs --scope full --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+      - name: Package bounded portable raw evidence even on failure
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-notes46-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          if (!(Test-Path -LiteralPath $evidence)) { New-Item -ItemType Directory -Path $evidence | Out-Null }
+          $attempt = @{ schema='rea-notes46-installed-full-workflow-attempt/v1'; sourceCommit=$env:GITHUB_SHA; branch=$env:GITHUB_REF; runId=$env:GITHUB_RUN_ID; runAttempt=$env:GITHUB_RUN_ATTEMPT; job=$env:GITHUB_JOB; runnerEnvironment=$env:RUNNER_ENVIRONMENT; checkoutOutcome='${{ steps.checkout.outcome }}'; bootstrapOutcome='${{ steps.bootstrap.outcome }}'; beforeOutcome='${{ steps.source_before.outcome }}'; testOutcome='${{ steps.product_tests.outcome }}'; postcheckOutcome='${{ steps.source_postcheck.outcome }}'; rosterOutcome='${{ steps.exact_roster.outcome }}'; oraclePostcheckOutcome='${{ steps.oracle_postcheck.outcome }}'; statusBeforePackaging='${{ job.status }}'; productAcceptancePreclaimed=$false; historicalReceiptsRebound=$false; fullParity=$false; superiority=$false }
+          $attempt | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'notes46-workflow-attempt.json') -Encoding utf8
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive = Join-Path $env:RUNNER_TEMP ('rea-notes46-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
+          $failure = $null
+          try {
+            $root = [IO.Path]::GetFullPath($evidence).TrimEnd([IO.Path]::DirectorySeparatorChar)
+            $stack = [Collections.Generic.Stack[string]]::new(); $stack.Push($root)
+            $files = @(); $directories = 0; [long]$total = 0; $names = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+            while ($stack.Count) {
+              $directory = $stack.Pop(); $item = Get-Item -LiteralPath $directory -Force
+              if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Evidence links are refused' }
+              foreach ($item in Get-ChildItem -LiteralPath $directory -Force) {
+                if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Evidence links are refused' }
+                $relative = [IO.Path]::GetRelativePath($root,$item.FullName).Replace('\','/')
+                $parts = $relative.Split('/')
+                if ($parts.Count -gt 32 -or $relative.Length -gt 2048 -or !$names.Add($relative) -or $parts.Where({ !$_ -or $_ -eq '.' -or $_ -eq '..' -or $_ -match '[\\:\x00-\x1f\x7f<>"|?*]' -or $_ -match '[ .]$' -or $_ -match '^(?i:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)' }).Count) { throw 'Unsafe or duplicate evidence path' }
+                if ($item.PSIsContainer) { $directories++; if ($directories -gt 5000) { throw 'Directory cap5000 exceeded' }; $stack.Push($item.FullName) }
+                else { if ($item.Length -gt 8*1024*1024) { throw 'Member cap8MiB exceeded' }; $total += $item.Length; if ($total -gt 96*1024*1024) { throw 'Raw cap96MiB exceeded' }; $files += @{ path=$relative; absolute=$item.FullName; bytes=$item.Length; sha256=(Get-FileHash -LiteralPath $item.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }; if ($files.Count -gt 5000) { throw 'File cap5000 exceeded' } }
+              }
+            }
+            $zip = [IO.Compression.ZipFile]::Open($archive,[IO.Compression.ZipArchiveMode]::Create)
+            try { foreach ($file in $files) { $item=Get-Item -LiteralPath $file.absolute -Force; if ($item.Length -ne $file.bytes -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Evidence changed before packaging' }; [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip,$file.absolute,$file.path,[IO.Compression.CompressionLevel]::Optimal) | Out-Null; if ((Get-FileHash -LiteralPath $file.absolute -Algorithm SHA256).Hash.ToLowerInvariant() -ne $file.sha256) { throw 'Evidence changed during packaging' } } } finally { $zip.Dispose() }
+            if ((Get-Item -LiteralPath $archive).Length -gt 15*1024*1024) { throw 'Portable ZIP cap15MiB exceeded' }
+          } catch { $failure=$_.Exception.Message }
+          if ($null -ne $failure) {
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes46-full-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT); New-Item -ItemType Directory -Path $fallback | Out-Null
+            $retained=@();[long]$retainedBytes=0
+            foreach ($name in @('notes46-workflow-attempt.json','notes46-before.json','notes46-verify.json','notes46-postcheck.json','notes46-full-exact-roster.json','attempt-validation.json','bsdtar-composition.json','bsdtar-postrun-source-check.json')) {
+              $candidate=Join-Path $evidence $name
+              if (Test-Path -LiteralPath $candidate -PathType Leaf) { $item=Get-Item -LiteralPath $candidate -Force; if (!($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -and $item.Length -le 512*1024 -and ($retainedBytes+$item.Length) -le 4*1024*1024) { Copy-Item -LiteralPath $candidate -Destination (Join-Path $fallback $name);$retained+=$name;$retainedBytes+=$item.Length } }
+            }
+            @{schema='rea-notes46-evidence-storage-failure/v1';status='failed';reason=$failure;fullEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsCompleteUploaded=$false;retainedFiles=$retained;fileCap=5000;rawCapBytes=96*1024*1024;memberCapBytes=8*1024*1024;archiveCapBytes=15*1024*1024;scope='Explicitly incomplete diagnostic fallback. No complete portable evidence or acceptance claim.'}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes46-full-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip'); [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if ((Get-Item -LiteralPath $archive).Length -gt 15*1024*1024) { throw 'Incomplete fallback exceeded archive cap' }
+            'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            throw ('Full portable evidence is incomplete: '+$failure)
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve the portable raw evidence archive
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes46-installed-full-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
+  notes46-installed-finite:
+    runs-on: windows-2022
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research snapshot paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact new committed source revision and parent
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select the pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Authenticate new collector data and create one owned evidence directory
+        id: bootstrap
+        shell: pwsh
+        run: |
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes46-installed-search-20261019' -or $env:GITHUB_EVENT_NAME -ne 'push') { throw 'Unexpected hosted source context' }
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-notes46-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          if (Test-Path -LiteralPath $evidence) { throw 'Evidence must be new' }
+          New-Item -ItemType Directory -Path $evidence | Out-Null
+          'REA_DEVELOPMENT_EVIDENCE=' + $evidence | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $pins = @'
+          [{"path":"products/rea-studio/scripts/notes46-installed-tap-roster.mjs","bytes":6855,"sha256":"7880749e3fb958572f9f7d9688f1156114268df57a7272602653c8b470e8c44a"},{"path":"products/rea-studio/scripts/verify-notes46-installed-cloud.mjs","bytes":21329,"sha256":"388aac54bc072673a36cd41c974c589f66a70504c6b072127907b0bb5705c17e"},{"path":"products/rea-studio/scripts/verify-notes46-installed-roster.mjs","bytes":14334,"sha256":"00d33b474746f718784c378a62a1f393b09789000e2540bca3307097a5b7611a"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/REGRESSION-FLOOR.json","bytes":229516,"sha256":"ce944a283cafb3ca3c8432b5bab826aee3f0b51d09d4c2b940a4e9b7727f8f40"},{"path":"products/rea-studio/experiments/notes46-installed-search-20261019/tests/search-http.test.mjs","bytes":3772,"sha256":"a136f101c64716d79e4d6701dbc1e371658adac0b85b17a52895dbcf95f03e45"}]
+          '@ | ConvertFrom-Json
+          foreach ($pin in $pins) {
+            $source = Get-Item -LiteralPath $pin.path -Force
+            if ($source.Attributes -band [IO.FileAttributes]::ReparsePoint -or $source.PSIsContainer -or $source.Length -ne $pin.bytes -or (Get-FileHash -LiteralPath $pin.path -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pin.sha256) { throw ('Reviewed source pin mismatch: ' + $pin.path) }
+          }
+      - name: Capture actual committed Notes46 and ten study inputs before execution
+        id: source_before
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes46-installed-cloud.mjs --scope finite --phase before --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Run the current28 Notes modules and the separate three HTTP checks
+        id: product_tests
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes46-installed-cloud.mjs --scope finite --phase verify --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Recheck actual installed sources after every observable test attempt
+        id: source_postcheck
+        if: always() && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes46-installed-cloud.mjs --scope finite --phase postcheck --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+      - name: Require exact ordered names nested comparisons source pins and postchecks
+        id: exact_roster
+        if: always() && steps.product_tests.outcome != '' && steps.product_tests.outcome != 'skipped'
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes46-installed-roster.mjs --scope finite --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+      - name: Package bounded portable raw evidence even on failure
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-notes46-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          if (!(Test-Path -LiteralPath $evidence)) { New-Item -ItemType Directory -Path $evidence | Out-Null }
+          $attempt = @{ schema='rea-notes46-installed-finite-workflow-attempt/v1'; sourceCommit=$env:GITHUB_SHA; branch=$env:GITHUB_REF; runId=$env:GITHUB_RUN_ID; runAttempt=$env:GITHUB_RUN_ATTEMPT; job=$env:GITHUB_JOB; runnerEnvironment=$env:RUNNER_ENVIRONMENT; checkoutOutcome='${{ steps.checkout.outcome }}'; bootstrapOutcome='${{ steps.bootstrap.outcome }}'; beforeOutcome='${{ steps.source_before.outcome }}'; testOutcome='${{ steps.product_tests.outcome }}'; postcheckOutcome='${{ steps.source_postcheck.outcome }}'; rosterOutcome='${{ steps.exact_roster.outcome }}'; oraclePostcheckOutcome='${{ steps.oracle_postcheck.outcome }}'; statusBeforePackaging='${{ job.status }}'; productAcceptancePreclaimed=$false; historicalReceiptsRebound=$false; fullParity=$false; superiority=$false }
+          $attempt | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $evidence 'notes46-workflow-attempt.json') -Encoding utf8
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive = Join-Path $env:RUNNER_TEMP ('rea-notes46-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
+          $failure = $null
+          try {
+            $root = [IO.Path]::GetFullPath($evidence).TrimEnd([IO.Path]::DirectorySeparatorChar)
+            $stack = [Collections.Generic.Stack[string]]::new(); $stack.Push($root)
+            $files = @(); $directories = 0; [long]$total = 0; $names = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+            while ($stack.Count) {
+              $directory = $stack.Pop(); $item = Get-Item -LiteralPath $directory -Force
+              if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Evidence links are refused' }
+              foreach ($item in Get-ChildItem -LiteralPath $directory -Force) {
+                if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Evidence links are refused' }
+                $relative = [IO.Path]::GetRelativePath($root,$item.FullName).Replace('\','/')
+                $parts = $relative.Split('/')
+                if ($parts.Count -gt 32 -or $relative.Length -gt 2048 -or !$names.Add($relative) -or $parts.Where({ !$_ -or $_ -eq '.' -or $_ -eq '..' -or $_ -match '[\\:\x00-\x1f\x7f<>"|?*]' -or $_ -match '[ .]$' -or $_ -match '^(?i:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)' }).Count) { throw 'Unsafe or duplicate evidence path' }
+                if ($item.PSIsContainer) { $directories++; if ($directories -gt 5000) { throw 'Directory cap5000 exceeded' }; $stack.Push($item.FullName) }
+                else { if ($item.Length -gt 8*1024*1024) { throw 'Member cap8MiB exceeded' }; $total += $item.Length; if ($total -gt 96*1024*1024) { throw 'Raw cap96MiB exceeded' }; $files += @{ path=$relative; absolute=$item.FullName; bytes=$item.Length; sha256=(Get-FileHash -LiteralPath $item.FullName -Algorithm SHA256).Hash.ToLowerInvariant() }; if ($files.Count -gt 5000) { throw 'File cap5000 exceeded' } }
+              }
+            }
+            $zip = [IO.Compression.ZipFile]::Open($archive,[IO.Compression.ZipArchiveMode]::Create)
+            try { foreach ($file in $files) { $item=Get-Item -LiteralPath $file.absolute -Force; if ($item.Length -ne $file.bytes -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'Evidence changed before packaging' }; [IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip,$file.absolute,$file.path,[IO.Compression.CompressionLevel]::Optimal) | Out-Null; if ((Get-FileHash -LiteralPath $file.absolute -Algorithm SHA256).Hash.ToLowerInvariant() -ne $file.sha256) { throw 'Evidence changed during packaging' } } } finally { $zip.Dispose() }
+            if ((Get-Item -LiteralPath $archive).Length -gt 15*1024*1024) { throw 'Portable ZIP cap15MiB exceeded' }
+          } catch { $failure=$_.Exception.Message }
+          if ($null -ne $failure) {
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes46-finite-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT); New-Item -ItemType Directory -Path $fallback | Out-Null
+            $retained=@();[long]$retainedBytes=0
+            foreach ($name in @('notes46-workflow-attempt.json','notes46-before.json','notes46-verify.json','notes46-postcheck.json','notes46-finite-exact-roster.json','attempt-validation.json','bsdtar-composition.json','bsdtar-postrun-source-check.json')) {
+              $candidate=Join-Path $evidence $name
+              if (Test-Path -LiteralPath $candidate -PathType Leaf) { $item=Get-Item -LiteralPath $candidate -Force; if (!($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -and $item.Length -le 512*1024 -and ($retainedBytes+$item.Length) -le 4*1024*1024) { Copy-Item -LiteralPath $candidate -Destination (Join-Path $fallback $name);$retained+=$name;$retainedBytes+=$item.Length } }
+            }
+            @{schema='rea-notes46-evidence-storage-failure/v1';status='failed';reason=$failure;fullEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsCompleteUploaded=$false;retainedFiles=$retained;fileCap=5000;rawCapBytes=96*1024*1024;memberCapBytes=8*1024*1024;archiveCapBytes=15*1024*1024;scope='Explicitly incomplete diagnostic fallback. No complete portable evidence or acceptance claim.'}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes46-finite-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip'); [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if ((Get-Item -LiteralPath $archive).Length -gt 15*1024*1024) { throw 'Incomplete fallback exceeded archive cap' }
+            'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            throw ('Full portable evidence is incomplete: '+$failure)
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve the portable raw evidence archive
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes46-installed-finite-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

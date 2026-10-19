@@ -5,6 +5,7 @@ import {ensureOrganization,bindNotebook,organizationList,changeNotebook,checkOrg
 
 import {changeNotebookTrash,restoreNoteFromTrash,trashOrganizationRows} from './notebook-trash.mjs';
 import {todoState,changeTodo,todoMatches} from './core.mjs';
+import {compileStructuredSearch} from './search-query.mjs';
 
 const stateKey = 'notes-state-v2', legacyPrefix = 'notes-note-';
 let queue = Promise.resolve();
@@ -59,10 +60,14 @@ export async function handle({ action, input = {}, store, workspace }) {
     return{scope};
   });
   if (action === 'list') {
-    const s = await state(store), search = text(input.search ?? '', 'Search', 500).trim().toLowerCase(), tokens = search.split(/\s+/).filter(Boolean), notes = Object.values(s.notes);
+    const searchMode = input.searchMode ?? 'simple';
+    if (!['simple', 'filters'].includes(searchMode)) throw new Error('Choose Text or Filters as the search mode.');
+    const s = await state(store), search = text(input.search ?? '', 'Search', 500).trim(), tokens = search.toLowerCase().split(/\s+/).filter(Boolean), notes = Object.values(s.notes);
+    const structured = searchMode === 'filters' ? compileStructuredSearch(search, s.records) : null;
+    const matches = structured ? structured.matches : note => tokens.every(token => `${note.title}\n${note.body}\n${note.tags.join(' ')}\n${note.notebook}`.toLowerCase().includes(token));
     todoMatches({}, input.todoFilter);
-    const visible = notes.filter(note => todoMatches(note, input.todoFilter) && Boolean(note.deletedAt) === Boolean(input.trash) && (!input.notebook || note.notebook === input.notebook) && (!input.notebookId || note.notebookId === input.notebookId) && (!input.tag || note.tags.includes(input.tag)) && tokens.every(token => `${note.title}\n${note.body}\n${note.tags.join(' ')}\n${note.notebook}`.toLowerCase().includes(token))).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-    return { notes: visible.map(note => summary(note, tokens[0])), tags: [...new Set(notes.filter(note => !note.deletedAt).flatMap(note => note.tags))].sort(), notebooks: [...new Set(notes.filter(note => !note.deletedAt).map(note => note.notebook))].sort(), total: visible.length };
+    const visible = notes.filter(note => todoMatches(note, input.todoFilter) && Boolean(note.deletedAt) === Boolean(input.trash) && (!input.notebook || note.notebook === input.notebook) && (!input.notebookId || note.notebookId === input.notebookId) && (!input.tag || note.tags.includes(input.tag)) && matches(note)).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    return { notes: visible.map(note => summary(note, structured ? structured.previewTerm : tokens[0])), tags: [...new Set(notes.filter(note => !note.deletedAt).flatMap(note => note.tags))].sort(), notebooks: [...new Set(notes.filter(note => !note.deletedAt).map(note => note.notebook))].sort(), total: visible.length };
   }
   if(action==='notebook-list'){const s=await state(store),rows=organizationList(s);return{...rows,notebooks:trashOrganizationRows(s,rows.notebooks)};}
   if(['notebook-trash','notebook-restore'].includes(action)){

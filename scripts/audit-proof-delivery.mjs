@@ -714,6 +714,11 @@ function finish(status, error) {
   console.log(JSON.stringify({status:report.status,coverageComplete:report.coverageComplete,counts:report.counts,output}));
 }
 
+if(process.env.GITHUB_REF==='refs/heads/experiment/notes46-installed-search-20261019') {
+  assert.deepEqual(process.argv.slice(2,3),['--output']);assert.equal(process.argv.length,4);assert(isAbsolute(process.argv[3]));
+  const {runNotes46InstalledDeliveryAudit}=await import('./audit-notes46-installed-delivery.mjs');
+  await runNotes46InstalledDeliveryAudit({repoRoot:ROOT,output:process.argv[3]});
+} else {
 try {
   assert.equal(process.platform,'win32');assert.equal(process.env.GITHUB_ACTIONS,'true');assert.equal(process.env.CI,'true');assert.equal(process.env.GITHUB_REPOSITORY,'Ginderlax/rea-research-lab');assert.equal(process.env.RUNNER_ENVIRONMENT,'github-hosted');assert.equal(process.env.RUNNER_OS,'Windows');assert.equal(process.version,'v24.16.0');
   assert(/^\d+$/.test(process.env.GITHUB_RUN_ID??'')&&/^\d+$/.test(process.env.GITHUB_RUN_ATTEMPT??''));assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA??''));
@@ -742,3 +747,5 @@ try {
   assert.equal(git(['rev-parse','HEAD']).toString().trim(),report.provenance.sourceCommit);assert.equal(git(['status','--porcelain=v1','--untracked-files=all']).length,0,'Checkout changed during read-only audit');
   finish('completed');if(!report.declaredDeliveryComplete||!report.declaredSizesMatch)process.exitCode=1;
 } catch(e) { try{finish('failed',e);}catch(storage){console.error('Audit evidence storage failed: '+storage.message);}console.error(String(e.stack??e));process.exitCode=1; }
+
+}

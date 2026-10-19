@@ -11,11 +11,12 @@ import { createNotes41PublicationSourceViewFromRoot } from './notes41-publicatio
 import { createNotes46InstalledSourceViewFromRoot, verifyNotes46InstalledSourceEnvelope, notes46InstalledSourceBudget } from './notes46-installed-source-view.mjs';
 import { prepareNotes46HistoricalInputRoot, assertNotes46HistoricalInputRoot } from './notes46-historical-input-root.mjs';
 
-const CURRENT_EPOCH = 'notes46-installed-publication-wire-v2';
+const CURRENT_EPOCH = 'notes46-installed-any-wire-v1';
 const CURRENT_BRANCH = 'refs/heads/experiment/notes46-installed-search-20261019';
-const CURRENT_SOURCE_PARENT = 'ab26bf14bc1a55a723566bbafb3ca391c3ef671c';
-const REVIEWED_SOURCE_GRANDPARENT = 'cee2da08f7ebe81a003a6cc9828655794be48cb0';
-const REVIEWED_SOURCE_GREAT_GRANDPARENT = '40c7df91936aaf9574801aa38c5a635f299e6e39';
+const CURRENT_SOURCE_PARENT = '35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d';
+const REVIEWED_SOURCE_GRANDPARENT = 'ab26bf14bc1a55a723566bbafb3ca391c3ef671c';
+const REVIEWED_SOURCE_GREAT_GRANDPARENT = 'cee2da08f7ebe81a003a6cc9828655794be48cb0';
+const REVIEWED_SOURCE_FOURTH_ANCESTOR = '40c7df91936aaf9574801aa38c5a635f299e6e39';
 const HISTORICAL_COMMIT = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
 const HISTORICAL_TREE = '34e8de6f0c447edd2bc1a6389ed5dfb727705025';
 const MANIFEST = 'products/rea-studio/experiments/notes46-installed-search-20261019/INSTALLED-SOURCE.json';
@@ -24,8 +25,8 @@ const AUDIT = 'scripts/audit-notes46-installed-delivery.mjs';
 const ALIAS = 'scripts/audit-proof-delivery.mjs';
 const WORKFLOW46 = '.github/workflows/notes46-installed-search-publication-cloud.yml';
 // Fixed separately reviewed current-source declaration, helper and path roster.
-const FIXED_MANIFEST = Object.freeze({ path: MANIFEST, bytes: 68210, sha256: '2d9279a496f3c70174149eeb5bbfc0f4f0b29c3d88d6886d31e6620efa6a7324' });
-const FIXED_HELPER = Object.freeze({ path: HELPER, bytes: 23248, sha256: '248148bb01c2d0de14a5ad654b7cd47f49be95e25c397d9f082d42880998bb5e' });
+const FIXED_MANIFEST = Object.freeze({ path: MANIFEST, bytes: 74689, sha256: '39ffb5fdbd5b66ebe0e04863968291ec61c039de6222faf8287ce226b5261b31' });
+const FIXED_HELPER = Object.freeze({ path: HELPER, bytes: 25730, sha256: '0e58e01f055514638c3b664159ae135129d8dcfa037de76ff85fd978230a6c76' });
 const CURRENT_SOURCE_PATHS = Object.freeze([
   "products/rea-studio/apps/notes/README.md",
   "products/rea-studio/apps/notes/app.integration.test.mjs",
@@ -250,7 +251,7 @@ function sourceSpecification(plan,tree) {
     if(!row.roles.includes(role))row.roles.push(role);specs.set(name,row);
   }
   const declared=new Map(plan?.currentSourceRows?.map(row=>[row.path,row])??[]);
-  if(plan){assert.equal(plan.schema,'rea-notes46-installed-source-declaration/v2');assert.equal(plan.sourceEpoch,CURRENT_EPOCH);assert.deepEqual(plan.currentSourceRows.map(row=>row.path),CURRENT_SOURCE_PATHS,'Fixed manifest path roster differs');}
+  if(plan){assert.equal(plan.schema,'rea-notes46-installed-source-declaration/v3');assert.equal(plan.sourceEpoch,CURRENT_EPOCH);assert.deepEqual(plan.currentSourceRows.map(row=>row.path),CURRENT_SOURCE_PATHS,'Fixed manifest path roster differs');}
   for(const name of CURRENT_SOURCE_PATHS)add(name,'mandatory-current-source',declared.get(name));
   add(MANIFEST,'fixed-current-manifest',FIXED_MANIFEST);add(HELPER,'fixed-current-source-helper',FIXED_HELPER);
   for(const row of OUTER_SOURCE_ROLES)add(row.path,row.role);
@@ -385,7 +386,8 @@ export async function runNotes46InstalledDeliveryAudit({repoRoot,output}={}) {
     assert.equal(currentGit(repoRoot,['rev-list','--parents','-n','1','HEAD']).toString().trim(),execution.GITHUB_SHA+' '+CURRENT_SOURCE_PARENT);
     assert.equal(currentGit(repoRoot,['rev-list','--parents','-n','1',CURRENT_SOURCE_PARENT]).toString().trim(),CURRENT_SOURCE_PARENT+' '+REVIEWED_SOURCE_GRANDPARENT);
     assert.equal(currentGit(repoRoot,['rev-list','--parents','-n','1',REVIEWED_SOURCE_GRANDPARENT]).toString().trim(),REVIEWED_SOURCE_GRANDPARENT+' '+REVIEWED_SOURCE_GREAT_GRANDPARENT);
-    assert.equal(currentGit(repoRoot,['rev-list','--parents','-n','1',REVIEWED_SOURCE_GREAT_GRANDPARENT]).toString().trim(),REVIEWED_SOURCE_GREAT_GRANDPARENT+' '+HISTORICAL_COMMIT);
+    assert.equal(currentGit(repoRoot,['rev-list','--parents','-n','1',REVIEWED_SOURCE_GREAT_GRANDPARENT]).toString().trim(),REVIEWED_SOURCE_GREAT_GRANDPARENT+' '+REVIEWED_SOURCE_FOURTH_ANCESTOR);
+    assert.equal(currentGit(repoRoot,['rev-list','--parents','-n','1',REVIEWED_SOURCE_FOURTH_ANCESTOR]).toString().trim(),REVIEWED_SOURCE_FOURTH_ANCESTOR+' '+HISTORICAL_COMMIT);
     assert.equal(currentGit(repoRoot,['rev-parse','--show-object-format']).toString().trim(),'sha1');assert.equal(currentGit(repoRoot,['status','--porcelain=v1','--untracked-files=all']).length,0);
     const tree=actualTree(repoRoot);
     // Capture all fixed physical paths before the branded current helper can

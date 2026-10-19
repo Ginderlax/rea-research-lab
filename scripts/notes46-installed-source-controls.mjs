@@ -21,7 +21,7 @@ const HISTORICAL_MANIFEST = 'products/rea-studio/experiments/notes41-publication
 const LEGACY_ONLY_PROOF = 'products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json';
 // WORK-ONLY UNFROZEN: the consolidator must set this externally reviewed helper
 // identity, then independently review the entire new code/role/pin closure.
-const FIXED_HELPER_PIN = Object.freeze({ path: HELPER, bytes: 23248, sha256: '248148bb01c2d0de14a5ad654b7cd47f49be95e25c397d9f082d42880998bb5e' });
+const FIXED_HELPER_PIN = Object.freeze({ path: HELPER, bytes: 25730, sha256: '0e58e01f055514638c3b664159ae135129d8dcfa037de76ff85fd978230a6c76' });
 const id = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
 const pin = row => ({ bytes: row.bytes, sha256: row.sha256 });
 const clone = value => structuredClone(value);
@@ -107,7 +107,7 @@ export async function runNotes46InstalledSourceControls(root, fixtureRoot, emit,
   const rows = [], failures = [];
   const record = {
     schema: 'rea-notes46-installed-source-controls/v1', status: 'failed', sourceOnly: true,
-    sourceEpoch: 'notes46-installed-structured-search-v1', expectedChecks: NOTES46_INSTALLED_SOURCE_CONTROL_ROSTER.length,
+    sourceEpoch: 'notes46-installed-any-wire-v1', expectedChecks: NOTES46_INSTALLED_SOURCE_CONTROL_ROSTER.length,
     actualCurrent46BehaviorAcceptanceClaimed: false, historical551ControlsIncluded: false,
     historicalReceiptsRebound: false, oldBudgetsChanged: false, helperPin: FIXED_HELPER_PIN,
     fixtureScope: 'Owned callback mutations over actual authenticated current46 and fixed physical historical2a bytes; no files are changed, no recorded callback replay.',

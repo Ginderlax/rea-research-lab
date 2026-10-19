@@ -89,8 +89,8 @@ export function notes46FullExpectedNodes(floor) {
       sourceBinding: 'Exact ordered aggregate command/current source pin and literal source registration contract; no per-event filename is asserted.' });
     added.push(...module.topLevelNodes.map(plain)); nextOrdinal += module.topLevelNodes.length;
   }
-  assert.equal(bindings.length, 4); assert.equal(added.length, 14);
+  assert.equal(bindings.length, 4); assert.equal(added.length, 23);
   nodes.splice(offset, 0, ...added);
-  assert.equal(nodes.length, 1156); assert.equal(expectedTree(nodes), 1236);
+  assert.equal(nodes.length, 1165); assert.equal(expectedTree(nodes), 1245);
   return { nodes, bindings };
 }

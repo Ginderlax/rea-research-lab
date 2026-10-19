@@ -4,7 +4,7 @@
 import { todoState } from './core.mjs';
 
 const filters = new Set(['any', 'title', 'body', 'tag', 'notebook', 'created', 'updated', 'type', 'iscompleted', 'due', 'latitude', 'longitude', 'altitude', 'resource', 'sourceurl', 'id']);
-const supported = new Set(['text', 'title', 'body', 'tag', 'notebook', 'type', 'iscompleted']);
+const supported = new Set(['any', 'text', 'title', 'body', 'tag', 'notebook', 'type', 'iscompleted']);
 const quoted = value => value.startsWith('"') && value.endsWith('"');
 const unquote = value => value.startsWith('"') ? value.slice(1, -1) : value;
 const addQuotes = value => quoted(value) ? value : `"${value}"`;
@@ -97,11 +97,15 @@ function notebookScopes(records, terms) {
 export function compileStructuredSearch(query, records = {}) {
   const terms = parseSearchQuery(query);
   for (const term of terms) {
-    if (!supported.has(term.name)) throw new Error(`The Filters mode does not yet support ${term.name}:. Use title:, body:, tag:, notebook:, type: or iscompleted:.`);
+    if (!supported.has(term.name)) throw new Error(`The Filters mode does not yet support ${term.name}:. Use any:, title:, body:, tag:, notebook:, type: or iscompleted:.`);
     if (['text', 'title', 'body'].includes(term.name) && term.wildcard) throw new Error('Filters mode supports wildcards only in tag: and notebook:. Text, title and body use literal substring matching.');
   }
-  const scope = notebookScopes(records, terms.filter(term => term.name === 'notebook'));
-  const predicates = terms.filter(term => term.name !== 'notebook').map(term => {
+  // The pinned standalone builder uses the first any value, including its quotes,
+  // and does not inspect that modifier's negated flag. Other values retain AND.
+  const alternatives = terms.find(term => term.name === 'any')?.value === '1';
+  const notebookTerms = terms.filter(term => term.name === 'notebook');
+  const scope = notebookScopes(records, notebookTerms);
+  const predicates = terms.filter(term => term.name !== 'notebook' && term.name !== 'any').map(term => {
     let match;
     if (term.name === 'tag') match = note => note.tags.some(tag => metadataLike(tag, term.value));
     else if (term.name === 'type') match = note => todoState(note).isTodo === (term.value === 'todo');
@@ -110,8 +114,15 @@ export function compileStructuredSearch(query, records = {}) {
       const value = (term.name === 'text' ? unquote(term.value) : term.value).toLowerCase();
       match = note => (term.name === 'title' ? [note.title] : term.name === 'body' ? [note.body] : [note.title, note.body]).some(text => text.toLowerCase().includes(value));
     }
+    // OR-negative tags complement matches only inside the tagged-note universe.
+    // Keep the existing AND-negative behavior, which includes untagged notes.
+    if (alternatives && term.name === 'tag' && term.negated) return note => note.tags.length > 0 && !match(note);
     return term.negated ? note => !match(note) : match;
   });
   const preview = terms.find(term => !term.negated && (term.name === 'text' || term.name === 'body'));
-  return Object.freeze({ terms, previewTerm: preview ? (preview.name === 'text' ? unquote(preview.value) : preview.value) : '', matches: note => scope(note) && predicates.every(predicate => predicate(note)) });
+  // Local notebook policy: a scope without ordinary clauses selects its own
+  // scope. Bare any:1 has no alternative and selects none. The original builder's
+  // notebook+ANY SQL/FTS-seed behavior is a separate diagnostic, not a parity claim.
+  const ordinaryMatches = note => alternatives ? (predicates.length ? predicates.some(predicate => predicate(note)) : notebookTerms.length > 0) : predicates.every(predicate => predicate(note));
+  return Object.freeze({ terms, previewTerm: preview ? (preview.name === 'text' ? unquote(preview.value) : preview.value) : '', matches: note => scope(note) && ordinaryMatches(note) });
 }

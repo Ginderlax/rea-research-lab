@@ -12,9 +12,9 @@ const repository = path.resolve(fileURLToPath(new URL('../../../', import.meta.u
 const studio = path.join(repository, 'products/rea-studio');
 const prefix = 'products/rea-studio/experiments/notes46-installed-search-20261019';
 const floorPath = prefix + '/REGRESSION-FLOOR.json';
-const floorPin = { bytes: 229516, sha256: 'ce944a283cafb3ca3c8432b5bab826aee3f0b51d09d4c2b940a4e9b7727f8f40' };
+const floorPin = { bytes: 236430, sha256: 'f29fe39bbd37456140d6a149e88b1511920100194ce694ea47d6ad93c0dd4d81' };
 const parent = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
-const sourceParent = 'ab26bf14bc1a55a723566bbafb3ca391c3ef671c';
+const sourceParent = '35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d';
 const branch = 'refs/heads/experiment/notes46-installed-search-20261019';
 const workflowPath = '.github/workflows/notes46-installed-search-full-cloud.yml';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -42,14 +42,15 @@ const save=(name,value)=>write(name,Buffer.from(JSON.stringify(value,null,2)+'\n
 function git(arguments_,maximum=32*1024*1024){const r=spawnSync('git',arguments_,{cwd:repository,shell:false,windowsHide:true,timeout:30000,maxBuffer:maximum});assert.equal(r.error,undefined);assert.equal(r.status,0);assert.equal(r.signal,null);return r.stdout;}
 assert.equal(git(['rev-parse','HEAD']).toString().trim(),process.env.GITHUB_SHA);
 assert.equal(git(['rev-list','--parents','-n','1','HEAD']).toString().trim(),process.env.GITHUB_SHA+' '+sourceParent);
-assert.equal(git(['rev-list','--parents','-n','1',sourceParent]).toString().trim(),sourceParent+' cee2da08f7ebe81a003a6cc9828655794be48cb0');
+assert.equal(git(['rev-list','--parents','-n','1',sourceParent]).toString().trim(),sourceParent+' ab26bf14bc1a55a723566bbafb3ca391c3ef671c');
+assert.equal(git(['rev-list','--parents','-n','1','ab26bf14bc1a55a723566bbafb3ca391c3ef671c']).toString().trim(),'ab26bf14bc1a55a723566bbafb3ca391c3ef671c cee2da08f7ebe81a003a6cc9828655794be48cb0');
 assert.equal(git(['rev-list','--parents','-n','1','cee2da08f7ebe81a003a6cc9828655794be48cb0']).toString().trim(),'cee2da08f7ebe81a003a6cc9828655794be48cb0 40c7df91936aaf9574801aa38c5a635f299e6e39');
 assert.equal(git(['rev-list','--parents','-n','1','40c7df91936aaf9574801aa38c5a635f299e6e39']).toString().trim(),'40c7df91936aaf9574801aa38c5a635f299e6e39 '+parent);
 assert.equal(git(['rev-parse','--show-object-format']).toString().trim(),'sha1');
 const tree=new Map(git(['ls-tree','-rz','HEAD']).toString().split('\0').filter(Boolean).map(line=>{const [meta,name]=line.split('\t'),[mode,type,oid]=meta.split(' ');return[name,{mode,type,oid}];}));
 function committed(name,bytes){const row=tree.get(name);assert(row&&row.mode==='100644'&&row.type==='blob');assert.equal(gitBlob(bytes),row.oid,'Current source differs from committed Git: '+name);return row.oid;}
 const floorBytes=read(repository,floorPath);assert.deepEqual(identity(floorBytes),floorPin);committed(floorPath,floorBytes);const floor=JSON.parse(floorBytes);
-assert.equal(floor.schema,'rea-notes46-installed-search-regression-floor/v1');assert.equal(floor.branch,branch);assert.equal(floor.baselineParent,parent);
+assert.equal(floor.schema,'rea-notes46-installed-search-regression-floor/v1');assert.equal(floor.branch,branch);assert.equal(floor.baselineParent,parent);assert.equal(floor.sourceEpoch,'notes46-installed-any-wire-v1');
 const originalFloorBytes=read(repository,floor.oldFloor.path);assert.deepEqual(identity(originalFloorBytes),pin(floor.oldFloor));const originalFloor=JSON.parse(originalFloorBytes);
 const fixedRoles=[floorPath,'products/rea-studio/scripts/notes46-installed-tap-roster.mjs','products/rea-studio/scripts/verify-notes46-installed-cloud.mjs','products/rea-studio/scripts/verify-notes46-installed-roster.mjs',workflowPath];
 const immutable=[floor.oldFloor,floor.oldCore,floor.oldFlatGate,floor.oldComposer,{path:originalFloor.baseline.rawTAP.path,...pin(originalFloor.baseline.rawTAP)},{path:'products/rea-studio/experiments/bsdtar-oracle/bundle.json',bytes:7684,sha256:'9a04b60ed08f21fd1b5efd17c37645de27e3149ee7bc2fba61e42731ff638ced'}];
@@ -154,11 +155,11 @@ try {
       if(scope==='full'){
         const call=await runNode([path.join(studio,'scripts/verify-cloud.mjs'),'--scope','full-oracle-experiment','--output',evidence,'--bootstrap-manifest',path.join(evidence,'full-oracle-prerequisites.json'),'--overlay-manifest',path.join(evidence,'bsdtar-composition.json'),'--timeout-ms','2400000'],'notes46-full-core-invocation',41*60000,16*1024*1024,4*1024*1024);
         record.coreInvocation=call.receipt;assert.equal(call.receipt.code,0);assert.equal(call.receipt.signal,null);assert.equal(call.receipt.error,null);assert.equal(call.receipt.closeObserved,true);assert.equal(call.receipt.timedOut,false);assert.equal(call.receipt.overflow,false);assert.equal(call.receipt.interrupted,null);
-        const attempt=JSON.parse(read(evidence,'attempt-validation.json',2*1024*1024));assert.equal(attempt.status,'passed');assert.equal(attempt.scope,'full-oracle-experiment');assert.equal(attempt.repositoryCommit,process.env.GITHUB_SHA);assert.deepEqual(attempt.selectedTestFiles,floor.full.selectedTestPins.map(r=>r.path));assert.equal(attempt.summary.tests,1236);record.coreAttempt={path:'attempt-validation.json',...identity(read(evidence,'attempt-validation.json',2*1024*1024))};record.resultCountIsNotRosterAcceptance=true;
+        const attempt=JSON.parse(read(evidence,'attempt-validation.json',2*1024*1024));assert.equal(attempt.status,'passed');assert.equal(attempt.scope,'full-oracle-experiment');assert.equal(attempt.repositoryCommit,process.env.GITHUB_SHA);assert.deepEqual(attempt.selectedTestFiles,floor.full.selectedTestPins.map(r=>r.path));assert.equal(attempt.summary.tests,1245);record.coreAttempt={path:'attempt-validation.json',...identity(read(evidence,'attempt-validation.json',2*1024*1024))};record.resultCountIsNotRosterAcceptance=true;
       } else {
         assert.deepEqual(status(),[]);record.modules=[];const finiteDeadline=Date.now()+20*60000;record.finiteOverallBudgetMs=20*60000;const modules=[...floor.finite.appModules,floor.finite.separateHTTP];
         for(const [index,module]of modules.entries()){assert.equal(receivedSignal,null,'Finite attempt interrupted');assert(Date.now()<finiteDeadline,'Finite overall20minute budget exhausted; no incomplete roster can pass');const folder='notes46-finite-tests/'+String(index+1).padStart(2,'0')+'-'+path.basename(module.path),observation=path.join(evidence,'notes46-finite-observations',String(index+1).padStart(2,'0'));fs.mkdirSync(observation,{recursive:true});noLinks(observation);const call=await runNode(['--test','--test-reporter=tap','--test-concurrency=1',module.path.slice('products/rea-studio/'.length)],folder,Math.min(180000,finiteDeadline-Date.now()),1024*1024,1024*1024,{NOTES_REVIEW_OUTPUT:pathToFileURL(observation+path.sep).href});let actual=null,failure=null;try{for(const key of ['error','signal','interrupted'])assert.equal(call.receipt[key],null);for(const key of ['timedOut','overflow'])assert.equal(call.receipt[key],false);assert.equal(call.receipt.code,0);assert.equal(call.receipt.closeObserved,true);actual=parseNotes46Tap(call.stdout,module.topLevelNodes,module.results,module.path);}catch(error){failure={name:error.name,message:error.message};}const result={path:module.path,sourceCommandBound:true,folder,process:call.receipt,actual,failure,status:failure?'failed':'passed'};save(folder+'/result.json',result);record.modules.push(result);}
-        assert(record.modules.every(r=>r.status==='passed'),'At least one finite module failed; all attempted raw outputs retained');record.appModuleResults=record.modules.slice(0,28).reduce((n,r)=>n+r.actual.totalResults,0);record.separateHTTPResults=record.modules[28].actual.totalResults;assert.equal(record.appModuleResults,228);assert.equal(record.separateHTTPResults,3);record.combinedFiniteResults=231;
+        assert(record.modules.every(r=>r.status==='passed'),'At least one finite module failed; all attempted raw outputs retained');record.appModuleResults=record.modules.slice(0,28).reduce((n,r)=>n+r.actual.totalResults,0);record.separateHTTPResults=record.modules[28].actual.totalResults;assert.equal(record.appModuleResults,237);assert.equal(record.separateHTTPResults,5);record.combinedFiniteResults=242;
       }
     } finally {record.trashObservation=preserveTrashObservation();record.after=capture('after');assert.deepEqual(record.after.rows,before.before.rows);record.visibleStateAfterExecution=requireVisibleState('after');}
     assert.equal(receivedSignal,null);record.status='passed';record.separateExactRosterAndPostcheckStillRequired=true;

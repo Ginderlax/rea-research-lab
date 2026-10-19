@@ -7,8 +7,8 @@ import path from 'node:path';
 
 const MANIFEST_PATH = 'products/rea-studio/experiments/notes46-installed-search-20261019/INSTALLED-SOURCE.json';
 // Fixed external source declaration; the helper stays outside its own data group.
-const FROM_ROOT_PIN = Object.freeze({ path: MANIFEST_PATH, bytes: 68210, sha256: '2d9279a496f3c70174149eeb5bbfc0f4f0b29c3d88d6886d31e6620efa6a7324' });
-const EPOCH = 'notes46-installed-publication-wire-v2';
+const FROM_ROOT_PIN = Object.freeze({ path: MANIFEST_PATH, bytes: 74689, sha256: '39ffb5fdbd5b66ebe0e04863968291ec61c039de6222faf8287ce226b5261b31' });
+const EPOCH = 'notes46-installed-any-wire-v1';
 // A separate prospective group, never a change to old145/146 or old proof caps.
 // Final exact dependency roster is a review gate before this work-only freeze.
 const BUDGET = Object.freeze({ sourceRows: 158, manifestRows: 1, dataRows: 159,
@@ -42,13 +42,20 @@ export function createNotes46InstalledSourceView(rawRead, externallyPinnedManife
     return bytes;
   }
   const planBytes = authenticate(fixedPin), plan = JSON.parse(planBytes);
-  assert.equal(plan.schema, 'rea-notes46-installed-source-declaration/v2');
+  assert.equal(plan.schema, 'rea-notes46-installed-source-declaration/v3');
   assert.equal(plan.status, 'reviewed-frozen-installed-source-binding');
   assert.equal(plan.sourceEpoch, EPOCH); assert.equal(plan.sourceOnly, true);
   assert.equal(plan.behaviorAcceptancePreclaimed, false); assert.equal(plan.historicalReceiptsRebound, false);
   assert.equal(plan.baselineCommit, '2a8482b42784eb262d6d5b82e62d8d1220dc4821');
-  assert.equal(plan.qualifiedPayloadSource, '0e2b6d70c31e1534e61c203e8fa78c2fc6c19da5');
-  assert.equal(plan.exactPromotedTargets, 18); assert.deepEqual(plan.sourceBudget, BUDGET);
+  assert.equal(plan.historicalQualifiedStructuredPayloadSource, '0e2b6d70c31e1534e61c203e8fa78c2fc6c19da5');
+  assert.equal(plan.historicalStructuredPromotedTargets, 18); assert.deepEqual(plan.sourceBudget, BUDGET);
+  assert.equal(plan.actualSourceParent, '35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d');
+  assert.equal(plan.qualifiedANYPayloadSource, 'cb88fb39dc874a5f445d3bea6d86f9ddf651b936');
+  assert.equal(plan.qualifiedANYBrowserSource, 'abb20f4705a7c474957520a1c05ca398a418f46b');
+  assert.equal(plan.exactANYProductTargets, 6); assert.equal(plan.priorRuntimeAcceptanceTransferred, false);
+  assert.equal(plan.canonicalANYTargets.length, 6);
+  assert.equal(plan.canonicalANYTargets.filter(row => row.currentPublicationProfileMember === true).length, 5);
+  assert.deepEqual(plan.canonicalANYTargets.map(row => row.path).sort(), ["products/rea-studio/apps/notes/README.md", "products/rea-studio/apps/notes/search-query.integration.test.mjs", "products/rea-studio/apps/notes/search-query.mjs", "products/rea-studio/apps/notes/search-query.test.mjs", "products/rea-studio/apps/notes/search-query.ui.test.mjs", "products/rea-studio/experiments/notes46-installed-search-20261019/tests/search-http.test.mjs"].sort());
   assert.equal(plan.currentNotesSources.length, 46); assert.equal(plan.studySources.length, 10);
   assert.equal(plan.retainedSupportingAndConsumerSources.length, 85); assert.equal(plan.newDispatchSources.length, 2);
   assert.equal(plan.historicalApiCompanionSources.length, 8); assert.equal(plan.publicLegacyApiBrandSources.length, 2); assert.equal(plan.historicalAcquisitionAndRecordSources.length, 3);
@@ -61,6 +68,24 @@ export function createNotes46InstalledSourceView(rawRead, externallyPinnedManife
     pin(row); assert(!selected.has(row.path) && !lower.has(row.path.toLowerCase()));
     assert(![MANIFEST_PATH, 'scripts/notes46-installed-source-view.mjs', 'scripts/verify-notes46-publication.mjs', 'scripts/verify-cloud-publication.mjs', '.github/workflows/notes46-installed-search-publication-cloud.yml', 'scripts/notes46-publication-controls.mjs', 'scripts/notes46-installed-source-controls.mjs', 'scripts/notes46-publication-repeat-controls.mjs', 'scripts/audit-notes46-installed-delivery.mjs'].includes(row.path), 'No source/helper/collector/control hash cycle');
     selected.set(row.path, row); lower.add(row.path.toLowerCase()); authenticate(row);
+  }
+  // These six fixed source references do not turn sibling runtime receipts into current acceptance.
+  // Five Notes members are physically authenticated by this158 profile. HTTP is explicit separate140/154 delivery.
+  for (const row of plan.canonicalANYTargets) {
+    safe(row.path); assert.equal(typeof row.currentPublicationProfileMember, 'boolean');
+    pin({ path: row.path, ...row.before }); pin({ path: row.path, ...row.after });
+    assert.equal(row.beforeCommit, plan.actualSourceParent);
+    assert.equal(row.qualifiedSourceCommit, plan.qualifiedANYPayloadSource);
+    assert.equal(row.qualifiedPayloadPath, 'products/rea-studio/experiments/notes-search-any-20261019/overlay/' + row.path + '.snapshot');
+    assert.equal(row.priorRuntimeAcceptanceTransferred, false);
+    if (row.currentPublicationProfileMember) {
+      assert(row.path.startsWith('products/rea-studio/apps/notes/'));
+      assert.deepEqual(metadata(selected.get(row.path)), metadata(row.after));
+      assert.deepEqual(row.externalHTTPDeliveryGroups, []);
+    } else {
+      assert.equal(row.path, 'products/rea-studio/experiments/notes46-installed-search-20261019/tests/search-http.test.mjs');
+      assert(!selected.has(row.path)); assert.deepEqual(row.externalHTTPDeliveryGroups, ['full-finite140', 'real-browser154']);
+    }
   }
   const noteNames = plan.currentNotesSources.map(row => row.path).sort();
   assert(noteNames.every(name => name.startsWith('products/rea-studio/apps/notes/') && !name.split('/').includes('results')));
@@ -78,7 +103,7 @@ export function createNotes46InstalledSourceView(rawRead, externallyPinnedManife
     recheck,
     sourceRead(name) { safe(name); if (name === MANIFEST_PATH) return authenticate(fixedPin); const row = selected.get(name); assert(row, 'Unlisted Notes46 current-source read'); return authenticate(row); },
     sourcePin(name) { const row = name === MANIFEST_PATH ? fixedPin : selected.get(safe(name)); assert(row, 'Unlisted Notes46 source identity'); return Object.freeze({ path: row.path, ...metadata(row) }); },
-    summary() { recheck(); const context = contexts.get(view); return { schema: 'rea-notes46-installed-source-proof/v1', sourceOnly: true, sourceEpoch: EPOCH, currentNotesSources: 46, studySources: 10, retainedSupportingAndConsumerSources: 85, dispatchSources: 2, historicalApiCompanionSources: 8, publicLegacyApiBrandSources: 2, historicalAcquisitionAndRecordSources: 3, publicationWireSources: 2, currentSourceRows: BUDGET.sourceRows, authenticatedDataRows: observed.size, authenticatedDataBytes: rawBytes, ...BUDGET, censusKind: context.kind, censusCallbackRechecked: true, physicalDirectoryAcquisitionClaimed: context.kind === 'physical-directory', historicalNotes41AcceptanceIsSeparate: true, historicalReceiptsRebound: false, sourceOverlay: false, behaviorAcceptancePreclaimed: false, originalExecutions: 0, productExecutions: 0, fullParity: false, superiority: false }; },
+    summary() { recheck(); const context = contexts.get(view); return { schema: 'rea-notes46-installed-source-proof/v1', sourceOnly: true, sourceEpoch: EPOCH, canonicalANYSourceTargets: 6, currentANYProfileMembers: 5, priorRuntimeAcceptanceTransferred: false, currentANYBehaviorAcceptanceClaimed: false, currentNotesSources: 46, studySources: 10, retainedSupportingAndConsumerSources: 85, dispatchSources: 2, historicalApiCompanionSources: 8, publicLegacyApiBrandSources: 2, historicalAcquisitionAndRecordSources: 3, publicationWireSources: 2, currentSourceRows: BUDGET.sourceRows, authenticatedDataRows: observed.size, authenticatedDataBytes: rawBytes, ...BUDGET, censusKind: context.kind, censusCallbackRechecked: true, physicalDirectoryAcquisitionClaimed: context.kind === 'physical-directory', historicalNotes41AcceptanceIsSeparate: true, historicalReceiptsRebound: false, sourceOverlay: false, behaviorAcceptancePreclaimed: false, originalExecutions: 0, productExecutions: 0, fullParity: false, superiority: false }; },
     envelopeRows() { recheck(); return [...plan.currentSourceRows.map(row => ({ path: row.path, ...metadata(row), base64: authenticate(row).toString('base64'), sourceEpoch: EPOCH, actualCurrentSource: true })), { path: MANIFEST_PATH, ...metadata(fixedPin), base64: authenticate(fixedPin).toString('base64'), externallyPinnedManifest: true }]; }
   });
   contexts.set(view, { read: rawRead, pin: Object.freeze({ ...fixedPin }), census: liveNotesCensus, kind: 'explicit-caller-census-function' });

@@ -22,8 +22,8 @@ const write = (name, value) => fs.writeFile(path.join(evidence, name), JSON.stri
 const sourcePins = [
   [
     "apps/notes/README.md",
-    26685,
-    "9567a32b8de57bf0f1c6cc882228ab4cdca92609eabe65a28d1f180395fc3d4c"
+    28887,
+    "cd8a93222688008adac05478d976c5a622931a913c2db53e66459c7d9edf170e"
   ],
   [
     "apps/notes/app.integration.test.mjs",
@@ -207,23 +207,23 @@ const sourcePins = [
   ],
   [
     "apps/notes/search-query.integration.test.mjs",
-    3648,
-    "ca5d578b5c080e6994ff3b17d9d03c7d2cdf68398314a91cfcba43c41f2cf975"
+    6948,
+    "bf00dc48b418687b7b4dbc69ba65c130fc271512ff7a0539c464a3630681ba8d"
   ],
   [
     "apps/notes/search-query.mjs",
-    7557,
-    "8ff7de2badbaf3726bc03ffd848a4b68a6c05c6c8ad94bc0d7b70f403690064d"
+    8564,
+    "a8c90608778aea07bc027ac8ccd853bac069a27b79fb1032cf8ff607413a8868"
   ],
   [
     "apps/notes/search-query.test.mjs",
-    4836,
-    "b674309b52a4191751178049b5b878f1f9ed806d4d1b74d4c4c8caef311ca97b"
+    9141,
+    "11722cbbc5b790611c6653514556ef2831d21dfec32ed2b352751f3c5e43645a"
   ],
   [
     "apps/notes/search-query.ui.test.mjs",
-    2722,
-    "8b2475bd16f2760d548084f01230fa7b9cacdd57709d636b6d677b7f88dca3bf"
+    6739,
+    "2473657cbd547698ab86e0d073e8dcaaef3cb6350e36d07a27e37b24995838d8"
   ],
   [
     "apps/notes/server.mjs",
@@ -426,7 +426,7 @@ const test = base.extend({
       if (expectedConsole.length > expectedHttpFailures.length) errors.push({ type: 'extra-expected-path-console-errors', count: expectedConsole.length });
       const savedEvents = new Set(savedDownloads.map(row => row.download));
       if (downloads.some(row => !savedEvents.has(row.download))) errors.push({ type: 'unclaimed-download', count: downloads.length - savedDownloads.length });
-      await write('case-' + info.testId + '.json', { schema: 'rea-notes-search-retained-new-todo-browser-case/v1', sourceEpoch: 'notes46-installed-structured-search-v1', sourceCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT, historicalRecoverySourceContextOnly: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', priorRuntimeAcceptanceReused: false, installedAcceptancePreclaimed: false, testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry,
+      await write('case-' + info.testId + '.json', { schema: 'rea-notes-search-retained-new-todo-browser-case/v1', sourceEpoch: 'notes46-installed-any-wire-v1', sourceCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, runAttempt: process.env.GITHUB_RUN_ATTEMPT, historicalRecoverySourceContextOnly: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', priorRuntimeAcceptanceReused: false, installedAcceptancePreclaimed: false, testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry,
         url: instance.url, ownedDataDirectory: dataDir, serverCloseObserved: teardown.serverClosed, realBrowser: true, actualHTTP: true, originalProductExecutions: 0, originalFullApplicationExecutions: 0, originalHelperExecutions: 0, programmaticDisabledControlProbes: 0,
         teardown, observations, requests, responses, faults, expectedHttpFailures, expectedConsole, auxiliaryErrors, errors, downloads: savedDownloads.map(({ download, ...row }) => row) });
       expect(errors).toEqual([]); expect(expectedHttpFailures.every(row => row.observed)).toBe(true);
@@ -440,7 +440,7 @@ test.beforeAll(async ({ browser }) => {
   expect(browser.version()).toBe('156.0.8078.4');
   const observation = { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 };
   const execution = Object.fromEntries(['CI', 'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY', 'GITHUB_JOB'].map(name => [name, process.env[name] ?? null]));
-  await write('browser-observation-process-' + process.pid + '.json', { schema: 'rea-notes-search-retained-new-todo-browser-worker/v1', sourceEpoch: 'notes46-installed-structured-search-v1', sourceCommit: process.env.GITHUB_SHA, historicalRecoverySourceContextOnly: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', priorRuntimeAcceptanceReused: false, installedAcceptancePreclaimed: false, observation, execution, pid: process.pid, sourcePins: sourcePins.map(([path, bytes, sha256]) => ({ path, bytes, sha256 })) });
+  await write('browser-observation-process-' + process.pid + '.json', { schema: 'rea-notes-search-retained-new-todo-browser-worker/v1', sourceEpoch: 'notes46-installed-any-wire-v1', sourceCommit: process.env.GITHUB_SHA, historicalRecoverySourceContextOnly: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', priorRuntimeAcceptanceReused: false, installedAcceptancePreclaimed: false, observation, execution, pid: process.pid, sourcePins: sourcePins.map(([path, bytes, sha256]) => ({ path, bytes, sha256 })) });
   try { await write('browser-observation.json', observation); } catch (error) { if (error.code !== 'EEXIST') throw error; assert.deepEqual(JSON.parse(await fs.readFile(path.join(evidence, 'browser-observation.json'), 'utf8')), observation); }
 });
 async function openNotes(s) { await s.page.goto(s.url + '/#notes'); await expect(view(s.page).getByRole('heading', { name: 'Local Notes', exact: true })).toBeVisible(); await expect(status(s.page)).toHaveText('Notes are saved locally when you choose Save.'); }

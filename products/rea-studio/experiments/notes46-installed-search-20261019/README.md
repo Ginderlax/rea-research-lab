@@ -1,3 +1,11 @@
+# Current recovery admission (fresh cloud verification pending)
+
+Revision118D committed the full combined ANY/wire source. Its two browser/value jobs failed during command-scoped URL preflight before fetch, HTTP acquisition or product/original verification; all616 before/postrun snapshots authenticated. The prospective correction preserves all product bodies and previously declared test/control rosters, validates one raw URL plus the effective rewritten URL, and requires fresh hosted evidence. The next immediate source parent is118D; the canonical ANY before-image subject remains35a9 and all original2a historical receipts remain unchanged.
+
+The sections below document the original118D integration plan and its older qualified sibling evidence. They do not claim that118D browser/value execution passed or that the new recovery has run. Full1245, finite242,80 separate strict comparisons,36 browser cases and publication/audit roles remain distinct qualification gates. The existing delivery audit has no waiver. No default installation, parity, superiority or all-ten completion is claimed.
+
+---
+
 # Installed Notes ANY search and publication protocol
 
 This source epoch combines the bounded structured-search implementation with the six ANY-search after-images already observed on isolated source branches. The intended experiment branch is `experiment/notes46-installed-search-20261019`; a new commit must have sole parent `35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d`. This document describes prospective gates. It is not a receipt that this combined source has passed them.

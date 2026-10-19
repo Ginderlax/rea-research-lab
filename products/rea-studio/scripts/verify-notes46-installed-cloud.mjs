@@ -12,9 +12,9 @@ const repository = path.resolve(fileURLToPath(new URL('../../../', import.meta.u
 const studio = path.join(repository, 'products/rea-studio');
 const prefix = 'products/rea-studio/experiments/notes46-installed-search-20261019';
 const floorPath = prefix + '/REGRESSION-FLOOR.json';
-const floorPin = { bytes: 236430, sha256: 'f29fe39bbd37456140d6a149e88b1511920100194ce694ea47d6ad93c0dd4d81' };
+const floorPin = { bytes: 236430, sha256: 'f6231eee6f50725bc7a79f18431922bf8497f91236d9c11e36db4b752a8c8df2' };
 const parent = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
-const sourceParent = '35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d';
+const sourceParent = '118dca070525fe0e8b0ccac638c60d75a5a70723';
 const branch = 'refs/heads/experiment/notes46-installed-search-20261019';
 const workflowPath = '.github/workflows/notes46-installed-search-full-cloud.yml';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -42,7 +42,8 @@ const save=(name,value)=>write(name,Buffer.from(JSON.stringify(value,null,2)+'\n
 function git(arguments_,maximum=32*1024*1024){const r=spawnSync('git',arguments_,{cwd:repository,shell:false,windowsHide:true,timeout:30000,maxBuffer:maximum});assert.equal(r.error,undefined);assert.equal(r.status,0);assert.equal(r.signal,null);return r.stdout;}
 assert.equal(git(['rev-parse','HEAD']).toString().trim(),process.env.GITHUB_SHA);
 assert.equal(git(['rev-list','--parents','-n','1','HEAD']).toString().trim(),process.env.GITHUB_SHA+' '+sourceParent);
-assert.equal(git(['rev-list','--parents','-n','1',sourceParent]).toString().trim(),sourceParent+' ab26bf14bc1a55a723566bbafb3ca391c3ef671c');
+assert.equal(git(['rev-list','--parents','-n','1',sourceParent]).toString().trim(),sourceParent+' 35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d');
+assert.equal(git(['rev-list','--parents','-n','1','35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d']).toString().trim(),'35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d ab26bf14bc1a55a723566bbafb3ca391c3ef671c');
 assert.equal(git(['rev-list','--parents','-n','1','ab26bf14bc1a55a723566bbafb3ca391c3ef671c']).toString().trim(),'ab26bf14bc1a55a723566bbafb3ca391c3ef671c cee2da08f7ebe81a003a6cc9828655794be48cb0');
 assert.equal(git(['rev-list','--parents','-n','1','cee2da08f7ebe81a003a6cc9828655794be48cb0']).toString().trim(),'cee2da08f7ebe81a003a6cc9828655794be48cb0 40c7df91936aaf9574801aa38c5a635f299e6e39');
 assert.equal(git(['rev-list','--parents','-n','1','40c7df91936aaf9574801aa38c5a635f299e6e39']).toString().trim(),'40c7df91936aaf9574801aa38c5a635f299e6e39 '+parent);

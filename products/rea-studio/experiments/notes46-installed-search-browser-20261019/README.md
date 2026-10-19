@@ -1,3 +1,13 @@
+# Reviewed URL-preflight recovery (fresh execution pending)
+
+The first combined source revision was [118dca0](https://github.com/Ginderlax/rea-research-lab/commit/118dca070525fe0e8b0ccac638c60d75a5a70723). In [run39239523923](https://github.com/Ginderlax/rea-research-lab/actions/runs/39239523923), both jobs authenticated154 source files and then failed before fetch, HTTP reference acquisition, or product/original tests: Git returned `No such remote` for the command-scoped remote. Postcheck subsequently lacked `ready.json`. Both original artifacts and logs were preserved; their616 before/postrun source snapshots matched the declaration. No36-case or80-comparison acceptance is inferred from this failed attempt.
+
+The prospective correction validates the complete NUL-delimited raw URL list and resolves the effective rewritten URL using the same command-scoped configuration as the bounded fetch. [Git documents that ls-remote --get-url resolves insteadOf rewrites without contacting the remote](https://git-scm.com/docs/git-ls-remote). Pinned upstream source explains why remote get-url requires an in-repository remote; equivalence to the hosted Git binary and a successful correction still require fresh cloud execution. Existing remote-name rejection, fixed origin, no persistent configuration writes, source/object/process budgets and repository-state checks remain required.
+
+The next commit must have immediate parent118D, while canonical ANY before-images remain fixed to35a9. The plan declares those two subjects separately. All36 browser cases,53 bindings,80 separate original-value comparisons and product/runtime/test/fixture bodies remain unchanged. Physical154 membership stays fixed while these four orchestration/document files change. The earlier campaign description below is retained as historical context for the first118D attempt, not as a claim that it passed. No default-branch installation, parity, superiority or completion of all ten products is claimed.
+
+---
+
 # Prospective installed ANY plus publication-wire browser study
 
 This source component targets `experiment/notes46-installed-search-20261019` with sole source parent `35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d`. The source epoch is `notes46-installed-any-wire-v1`. It is work-only source until the complete coupled epoch is independently reviewed, integrated by its owner and executed on a verified hosted Windows2022 runner with Node24.16.0.

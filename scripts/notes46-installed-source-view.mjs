@@ -7,7 +7,7 @@ import path from 'node:path';
 
 const MANIFEST_PATH = 'products/rea-studio/experiments/notes46-installed-search-20261019/INSTALLED-SOURCE.json';
 // Fixed external source declaration; the helper stays outside its own data group.
-const FROM_ROOT_PIN = Object.freeze({ path: MANIFEST_PATH, bytes: 74689, sha256: '39ffb5fdbd5b66ebe0e04863968291ec61c039de6222faf8287ce226b5261b31' });
+const FROM_ROOT_PIN = Object.freeze({ path: MANIFEST_PATH, bytes: 74763, sha256: '4bf2519e4c8205e769fd0f4da71cbdd90980d13f59a8469ff1839de636547202' });
 const EPOCH = 'notes46-installed-any-wire-v1';
 // A separate prospective group, never a change to old145/146 or old proof caps.
 // Final exact dependency roster is a review gate before this work-only freeze.
@@ -49,7 +49,8 @@ export function createNotes46InstalledSourceView(rawRead, externallyPinnedManife
   assert.equal(plan.baselineCommit, '2a8482b42784eb262d6d5b82e62d8d1220dc4821');
   assert.equal(plan.historicalQualifiedStructuredPayloadSource, '0e2b6d70c31e1534e61c203e8fa78c2fc6c19da5');
   assert.equal(plan.historicalStructuredPromotedTargets, 18); assert.deepEqual(plan.sourceBudget, BUDGET);
-  assert.equal(plan.actualSourceParent, '35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d');
+  assert.equal(plan.actualSourceParent, '118dca070525fe0e8b0ccac638c60d75a5a70723');
+  assert.equal(plan.canonicalANYBeforeCommit, '35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d');
   assert.equal(plan.qualifiedANYPayloadSource, 'cb88fb39dc874a5f445d3bea6d86f9ddf651b936');
   assert.equal(plan.qualifiedANYBrowserSource, 'abb20f4705a7c474957520a1c05ca398a418f46b');
   assert.equal(plan.exactANYProductTargets, 6); assert.equal(plan.priorRuntimeAcceptanceTransferred, false);
@@ -74,7 +75,7 @@ export function createNotes46InstalledSourceView(rawRead, externallyPinnedManife
   for (const row of plan.canonicalANYTargets) {
     safe(row.path); assert.equal(typeof row.currentPublicationProfileMember, 'boolean');
     pin({ path: row.path, ...row.before }); pin({ path: row.path, ...row.after });
-    assert.equal(row.beforeCommit, plan.actualSourceParent);
+    assert.equal(row.beforeCommit, plan.canonicalANYBeforeCommit);
     assert.equal(row.qualifiedSourceCommit, plan.qualifiedANYPayloadSource);
     assert.equal(row.qualifiedPayloadPath, 'products/rea-studio/experiments/notes-search-any-20261019/overlay/' + row.path + '.snapshot');
     assert.equal(row.priorRuntimeAcceptanceTransferred, false);

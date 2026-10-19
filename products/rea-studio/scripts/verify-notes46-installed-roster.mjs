@@ -9,7 +9,7 @@ import { parseNotes46Tap, notes46FullExpectedNodes } from './notes46-installed-t
 
 const repository=path.resolve(fileURLToPath(new URL('../../../',import.meta.url))),studio=path.join(repository,'products/rea-studio');
 const floorPath='products/rea-studio/experiments/notes46-installed-search-20261019/REGRESSION-FLOOR.json';
-const floorPin={bytes:236430,sha256:'f29fe39bbd37456140d6a149e88b1511920100194ce694ea47d6ad93c0dd4d81'};
+const floorPin={bytes:236430,sha256:'f6231eee6f50725bc7a79f18431922bf8497f91236d9c11e36db4b752a8c8df2'};
 const identity=bytes=>({bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
 const rowPin=row=>({bytes:row.bytes,sha256:row.sha256});
 const args=process.argv.slice(2);assert.equal(args.length,4);assert.equal(args[0],'--scope');assert(['full','finite'].includes(args[1]));assert.equal(args[2],'--evidence');assert(path.isAbsolute(args[3]));const scope=args[1];
@@ -26,7 +26,8 @@ function committed(name,bytes){assert.deepEqual(git(['show','HEAD:'+name],Math.m
 const record={schema:'rea-notes46-installed-'+scope+'-exact-roster/v1',sourceCommit:process.env.GITHUB_SHA,execution,scope,sourceEpoch:'notes46-installed-any-wire-v1',status:'failed',floor:floorPin,accepted:false,appOrOriginalProcessesStartedByGate:0,historicalReceiptsRebound:false,fullParity:false,superiority:false,productionInstallationReceiptClaimed:false};
 try {
   assert.equal(git(['rev-parse','HEAD']).toString().trim(),process.env.GITHUB_SHA);
-  assert.equal(git(['rev-list','--parents','-n','1','HEAD']).toString().trim(),process.env.GITHUB_SHA+' 35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d');
+  assert.equal(git(['rev-list','--parents','-n','1','HEAD']).toString().trim(),process.env.GITHUB_SHA+' 118dca070525fe0e8b0ccac638c60d75a5a70723');
+  assert.equal(git(['rev-list','--parents','-n','1','118dca070525fe0e8b0ccac638c60d75a5a70723']).toString().trim(),'118dca070525fe0e8b0ccac638c60d75a5a70723 35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d');
   assert.equal(git(['rev-list','--parents','-n','1','35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d']).toString().trim(),'35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d ab26bf14bc1a55a723566bbafb3ca391c3ef671c');
   assert.equal(git(['rev-list','--parents','-n','1','ab26bf14bc1a55a723566bbafb3ca391c3ef671c']).toString().trim(),'ab26bf14bc1a55a723566bbafb3ca391c3ef671c cee2da08f7ebe81a003a6cc9828655794be48cb0');
   assert.equal(git(['rev-list','--parents','-n','1','cee2da08f7ebe81a003a6cc9828655794be48cb0']).toString().trim(),'cee2da08f7ebe81a003a6cc9828655794be48cb0 40c7df91936aaf9574801aa38c5a635f299e6e39');

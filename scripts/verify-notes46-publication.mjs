@@ -16,12 +16,13 @@ import { createHistoricalCarrierPolicyFromRoot } from './historical-carrier-poli
 
 // Fixed external helper identity. This producer is an
 // external captured role, so its helper pin cannot form a manifest hash cycle.
-const CURRENT_SOURCE_PARENT = '35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d';
-const REVIEWED_SOURCE_GRANDPARENT = 'ab26bf14bc1a55a723566bbafb3ca391c3ef671c';
-const REVIEWED_SOURCE_GREAT_GRANDPARENT = 'cee2da08f7ebe81a003a6cc9828655794be48cb0';
-const REVIEWED_SOURCE_FOURTH_ANCESTOR = '40c7df91936aaf9574801aa38c5a635f299e6e39';
+const CURRENT_SOURCE_PARENT = '118dca070525fe0e8b0ccac638c60d75a5a70723';
+const REVIEWED_SOURCE_GRANDPARENT = '35a9e686e8cd21e5a7618cfcea5f4c1aa01dc71d';
+const REVIEWED_SOURCE_GREAT_GRANDPARENT = 'ab26bf14bc1a55a723566bbafb3ca391c3ef671c';
+const REVIEWED_SOURCE_FOURTH_ANCESTOR = 'cee2da08f7ebe81a003a6cc9828655794be48cb0';
+const REVIEWED_SOURCE_FIFTH_ANCESTOR = '40c7df91936aaf9574801aa38c5a635f299e6e39';
 const HISTORICAL_COMMIT = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
-const HELPER_PIN = Object.freeze({ path: 'scripts/notes46-installed-source-view.mjs', bytes: 25730, sha256: '0e58e01f055514638c3b664159ae135129d8dcfa037de76ff85fd978230a6c76' });
+const HELPER_PIN = Object.freeze({ path: 'scripts/notes46-installed-source-view.mjs', bytes: 25827, sha256: 'f2f0a14841772d0495b7851014d39fc6b258f02de33533e4c85791a9d107c188' });
 const MANIFEST = 'products/rea-studio/experiments/notes46-installed-search-20261019/INSTALLED-SOURCE.json';
 const DERIVED = Object.freeze(['PUBLICATION-MANIFEST.json', 'VALIDATION.json']);
 const WORKFLOW = '.github/workflows/notes46-installed-search-publication-cloud.yml';
@@ -288,7 +289,8 @@ function hosted(root) {
   assert.equal(git(root, ['rev-list', '--parents', '-n', '1', CURRENT_SOURCE_PARENT]).toString().trim(), CURRENT_SOURCE_PARENT + ' ' + REVIEWED_SOURCE_GRANDPARENT);
   assert.equal(git(root, ['rev-list', '--parents', '-n', '1', REVIEWED_SOURCE_GRANDPARENT]).toString().trim(), REVIEWED_SOURCE_GRANDPARENT + ' ' + REVIEWED_SOURCE_GREAT_GRANDPARENT);
   assert.equal(git(root, ['rev-list', '--parents', '-n', '1', REVIEWED_SOURCE_GREAT_GRANDPARENT]).toString().trim(), REVIEWED_SOURCE_GREAT_GRANDPARENT + ' ' + REVIEWED_SOURCE_FOURTH_ANCESTOR);
-  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', REVIEWED_SOURCE_FOURTH_ANCESTOR]).toString().trim(), REVIEWED_SOURCE_FOURTH_ANCESTOR + ' ' + HISTORICAL_COMMIT);
+  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', REVIEWED_SOURCE_FOURTH_ANCESTOR]).toString().trim(), REVIEWED_SOURCE_FOURTH_ANCESTOR + ' ' + REVIEWED_SOURCE_FIFTH_ANCESTOR);
+  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', REVIEWED_SOURCE_FIFTH_ANCESTOR]).toString().trim(), REVIEWED_SOURCE_FIFTH_ANCESTOR + ' ' + HISTORICAL_COMMIT);
   assert.equal(git(root, ['status', '--porcelain=v1', '--untracked-files=all', '-z']).length, 0);
   assert(path.isAbsolute(process.env.RUNNER_TEMP)); noLinks(process.env.RUNNER_TEMP);
 }

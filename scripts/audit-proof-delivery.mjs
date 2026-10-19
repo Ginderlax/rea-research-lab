@@ -1,10 +1,12 @@
-// Hosted, read-only delivery diagnosis. No proof/product code is imported or run.
+// Hosted, read-only delivery diagnosis. Imports one source metadata adapter; no application or historical proof validator is executed.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { appendFileSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { createNotes41PublicationSourceViewFromRoot } from './notes41-publication-source-view.mjs';
+import { gzipSync, gunzipSync } from 'node:zlib';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const SCRIPT = 'scripts/audit-proof-delivery.mjs';
@@ -288,6 +290,188 @@ function projectionRead(path, cap=LIMIT.singleManifestBytes) {
   assert(closedProjectionReadBytes+report.counts.manifestBytes<=LIMIT.manifestBytes,'Combined manifest/projection read bound exceeded');
   closedProjectionReadCache.set(path,b);return b;
 }
+
+// These immutable Notes36 documents describe source identities at their declared
+// epoch. Later logical paths are separately authenticated actual current inputs.
+// Only the following seven exact logical names may acquire physical carriers;
+// neither an arbitrary SHA match nor a blanket historical read overlay is used.
+const NOTES36_HISTORICAL_PROJECTION_NAMES = new Set([
+  '.github/workflows/notes-new-todo-installed-cloud.yml',
+  'products/rea-studio/apps/notes/README.md',
+  'products/rea-studio/apps/notes/client.mjs',
+  'products/rea-studio/apps/notes/server.mjs',
+  'products/rea-studio/apps/notes/todo.integration.test.mjs',
+  'scripts/verify-cloud-publication.mjs',
+  'scripts/publication-integrity-controls.mjs',
+]);
+let notes41ProjectionBinding;
+function currentSourceEpochBinding() {
+  if (notes41ProjectionBinding) return notes41ProjectionBinding;
+  // Proposed next-protocol interface: source view only, with nine actual reader
+  // rows, nine reader carriers and the additional exact old-controls carrier.
+  const view = createNotes41PublicationSourceViewFromRoot(ROOT);
+  const rows = view.envelopeRows();
+  assert.equal(rows.length,132,'Complete audit consumer/source-carrier dependency group');
+  assert.equal(view.plan.currentRecordReaders.length,9);
+  assert.equal(view.plan.oldNotes36Source,'698d2e301765d1b878fb251b3d59dadb5a3c9bac');
+  const current = new Map(view.plan.currentSourceRows.map(row=>[row.path,identity(row)]));
+  assert.equal(current.size,114);
+  const authenticated = [];
+  for (const row of rows) {
+    const b=projectionRead(row.path);
+    assert.deepEqual({bytes:b.length,sha256:sha(b)},identity(row),'Actual source-data Git identity differs: '+row.path);
+    authenticated.push({path:row.path,...identity(row),gitBlob:trees.get(row.path).oid});
+  }
+  const excludedCurrent = new Map();
+  for (const name of ['scripts/verify-cloud-publication.mjs','scripts/publication-integrity-controls.mjs']) {
+    assert(!current.has(name),'Excluded self-source must not form a source hash cycle');
+    const b=projectionRead(name);excludedCurrent.set(name,{bytes:b.length,sha256:sha(b)});
+  }
+  // The expected helper SHA comes from the actual committed current producer's
+  // fixed literal. Embedding the final helper or manifest SHA here would create
+  // audit -> helper -> manifest -> audit and is intentionally prohibited.
+  const producer=projectionRead('scripts/verify-cloud-publication.mjs').toString('utf8');
+  const literals=[...producer.matchAll(/^const NOTES41_PUBLICATION_HELPER = \{ path: 'scripts\/notes41-publication-source-view\.mjs', bytes: ([1-9][0-9]*), sha256: '([0-9a-f]{64})' \};$/gm)];
+  assert.equal(literals.length,1,'One exact current producer helper literal');
+  const helper={path:'scripts/notes41-publication-source-view.mjs',bytes:Number(literals[0][1]),sha256:literals[0][2]};
+  assert(helper.bytes<=256*1024);const helperBytes=projectionRead(helper.path,256*1024);
+  assert.deepEqual({bytes:helperBytes.length,sha256:sha(helperBytes)},identity(helper),'Current producer fixed helper identity differs');
+  const rawBytes=rows.reduce((sum,row)=>sum+row.bytes,helper.bytes);assert(rawBytes<=8*1024*1024);
+  const controls=view.plan.historicalPublicationControls;
+  assert(controls&&controls.logicalPath==='scripts/publication-integrity-controls.mjs');
+  assert.deepEqual(controls.before,{bytes:74921,sha256:'6178c7eedc355b2f5e9ba9be009d6558b0fcf99158803437268289682ee1b51d'});
+  const importedModule={path:'scripts/editor-vault-proof-migration.mjs',bytes:186405,sha256:'6519e83c4315e60b503b67f306ed0a265cbcc141ff48b79db86d7da457026abf'};
+  const importedBytes=projectionRead(importedModule.path,512*1024);
+  assert.deepEqual({bytes:importedBytes.length,sha256:sha(importedBytes)},identity(importedModule),'Imported immutable source module identity differs');
+  const currentSelf=[...excludedCurrent].map(([path,id])=>({path,...id,gitBlob:trees.get(path).oid}));
+  report.sourceEpochAuthentication={
+    schema:'rea-audit-separate-current-source-authentication/v1',
+    sourceView:view.summary(),dataRows:132,separateFixedHelperRows:1,flatSourceRows:133,
+    combinedRawSourceBytes:rawBytes,helper:{...helper,gitBlob:trees.get(helper.path).oid},
+    actualGitAuthenticatedData:authenticated,actualExcludedCurrentProducerAndControls:currentSelf,actualImportedImmutableSourceModule:{...importedModule,gitBlob:trees.get(importedModule.path).oid},sourceContextCaptureRows:136,
+    historicalLogicalEpoch:view.plan.oldNotes36Source,logicalPathsSubstitutedInCurrentGroup:false,
+    oldManifestBytesRewritten:false,proofVerifierExecutions:0,
+    sourceDependencyContentsUploadedByAudit:false,sourceContextEnvelopeCapturedAndReadbackPrepared:false,
+    dependencyContentsRemainInCommittedSourceAndSeparatePublicationCollectorRoles:true,
+    currentBehaviorAcceptanceClaimed:false,globalCoverageOrDeliveryPassClaimed:false,
+  };
+  notes41ProjectionBinding={view,current,excludedCurrent,rows,helper,importedModule};
+  prepareSourceContextEnvelope(notes41ProjectionBinding);
+  return notes41ProjectionBinding;
+}
+function historicalProjectionRow(declaration,row,read=projectionRead) {
+  const expected=CLOSED_EPOCH_DOCUMENTS.get(declaration.path);
+  exactContext({name:declaration.path,data:{schema:declaration.schema},bytes:declaration.bytes,sha256:declaration.sha256},expected);
+  const scopedRole=expected.kind==='notes-plan'&&['current36-source','fixed-current-tooling'].includes(row.projectionRole)
+    ||expected.kind==='notes-journal'&&row.projectionRole==='actual-installed-after-target';
+  if(!scopedRole||!NOTES36_HISTORICAL_PROJECTION_NAMES.has(row.path))return row;
+  const binding=currentSourceEpochBinding(),declared=identity(row);
+  const physical=binding.view.historicalReadPath(row.path,declared);
+  safe(physical);assert.notEqual(physical,row.path,'A historical projection needs an explicit distinct physical carrier');
+  const expectedCurrent=binding.current.get(row.path)??binding.excludedCurrent.get(row.path);
+  assert(expectedCurrent,'No separately authenticated actual current source: '+row.path);
+  const live=read(row.path,LIMIT.singleManifestBytes);
+  assert.deepEqual({bytes:live.length,sha256:sha(live)},expectedCurrent,'Actual current logical source differs: '+row.path);
+  return {...row,path:physical,historicalLogicalProjection:{
+    declaredLogicalPath:row.path,declaredIdentity:declared,declaredProjectionRole:row.projectionRole,
+    declaredSourceEpoch:binding.view.plan.oldNotes36Source,physicalDeliveryPath:physical,
+    actualCurrentLogicalIdentity:expectedCurrent,actualCurrentGitBlob:trees.get(row.path).oid,
+    logicalPathAtHistoricalIdentityClaimedCurrent:false,currentLogicalDeliveryClaimedByHistoricalRow:false,
+    currentBehavioralAcceptanceClaimed:false,
+  }};
+}
+function recheckCurrentSourceEpochBinding() {
+  if(!notes41ProjectionBinding)return;
+  const binding=notes41ProjectionBinding;binding.view.recheck();
+  for(const row of [...binding.rows,binding.helper,binding.importedModule,...[...binding.excludedCurrent].map(([path,id])=>({path,...id}))]){
+    const b=trackedBytes(row.path);
+    assert.deepEqual({bytes:b.length,sha256:sha(b)},identity(row),'Source epoch changed during audit: '+row.path);
+  }
+  report.sourceEpochAuthentication.finalSourceRecheckPassed=true;
+}
+// Bounded source bytes only. This validator decodes inert source payloads; it
+// never imports, evaluates or invokes the contents carried by the envelope.
+const SOURCE_CONTEXT_LIMIT = Object.freeze({dataRows:132,helperRows:1,currentSelfRows:2,importedModuleRows:1,rows:136,singleSourceBytes:512*1024,rawBytes:8*1024*1024,decodedBytes:12*1024*1024,storedBytes:4*1024*1024});
+const SOURCE_CONTEXT_ROLE = 'source-context.json.gz.snapshot';
+function contextExpectedRows(binding) {
+  const rows=[
+    ...binding.rows.map(row=>({path:row.path,...identity(row),gitBlob:trees.get(row.path).oid,sourceGroup:'mandatory-source-data'})),
+    {path:binding.helper.path,...identity(binding.helper),gitBlob:trees.get(binding.helper.path).oid,sourceGroup:'fixed-helper'},
+    ...[...binding.excludedCurrent].map(([path,id])=>({path,...id,gitBlob:trees.get(path).oid,sourceGroup:'actual-current-producer-controls'})),
+    {...binding.importedModule,gitBlob:trees.get(binding.importedModule.path).oid,sourceGroup:'immutable-imported-source-module'},
+  ];
+  assert.equal(binding.rows.length,132);assert.equal(binding.excludedCurrent.size,2);assert.equal(rows.length,136);
+  assert.equal(new Set(rows.map(row=>row.path.toLowerCase())).size,136,'Disjoint complete source-context roster');
+  return rows;
+}
+function verifySourceContextEnvelope(envelope,expectedRows) {
+  assert(envelope&&typeof envelope==='object'&&!Array.isArray(envelope));
+  assert.equal(envelope.schema,'rea-proof-delivery-audit-complete-source-context/v1');
+  assert.equal(envelope.repository,'Ginderlax/rea-research-lab');assert.equal(envelope.sourceCommit,report.provenance.sourceCommit);
+  assert.deepEqual(envelope.groups,{mandatorySourceData:132,fixedHelper:1,actualCurrentProducerControls:2,immutableImportedSourceModule:1});
+  assert.equal(envelope.sourceRows,136);assert(Array.isArray(envelope.rows));assert.equal(envelope.rows.length,136);
+  assert(Number.isSafeInteger(envelope.rawSourceBytes)&&envelope.rawSourceBytes>=0&&envelope.rawSourceBytes<=SOURCE_CONTEXT_LIMIT.rawBytes,'Source-context aggregate raw byte cap');
+  assert.equal(envelope.sourceCodeExecutedFromEnvelope,false);assert.equal(envelope.uploadAcceptanceClaimed,false);
+  assert(Array.isArray(expectedRows));assert.equal(expectedRows.length,136);
+  const expected=new Map(expectedRows.map(row=>[safe(row.path),row]));assert.equal(expected.size,136);
+  assert.equal(new Set(expectedRows.map(row=>row.path.toLowerCase())).size,136);
+  const seen=new Set();let total=0;
+  for(const row of envelope.rows){
+    safe(row.path);const folded=row.path.toLowerCase();assert(!seen.has(folded),'Duplicate source-context path: '+row.path);seen.add(folded);
+    const wanted=expected.get(row.path);assert(wanted,'Unknown source-context path: '+row.path);
+    assert.deepEqual(identity(row),identity(wanted),'Pinned source-context identity differs: '+row.path);
+    assert.equal(row.gitBlob,wanted.gitBlob,'Pinned source-context Git blob differs: '+row.path);
+    assert(/^[0-9a-f]{40}$/.test(row.gitBlob));assert.equal(row.sourceGroup,wanted.sourceGroup,'Source-context group differs: '+row.path);
+    assert(row.bytes<=SOURCE_CONTEXT_LIMIT.singleSourceBytes,'Individual source-context byte cap');
+    assert(typeof row.base64==='string'&&row.base64.length===4*Math.ceil(row.bytes/3),'Exact source-context base64 length: '+row.path);
+    assert(!/[^A-Za-z0-9+\x2f=]/.test(row.base64),'Canonical source-context base64 alphabet');
+    const b=Buffer.from(row.base64,'base64');assert.equal(b.toString('base64'),row.base64,'Canonical source-context base64 encoding');
+    assert.equal(b.length,row.bytes,'Decoded source-context length differs: '+row.path);assert.equal(sha(b),row.sha256,'Decoded source-context SHA differs: '+row.path);
+    const oid=createHash('sha1').update(Buffer.from('blob '+b.length+'\0')).update(b).digest('hex');assert.equal(oid,row.gitBlob,'Decoded source-context Git blob differs: '+row.path);
+    total+=b.length;assert(total<=SOURCE_CONTEXT_LIMIT.rawBytes,'Source-context aggregate raw byte cap');
+  }
+  assert.equal(seen.size,136);assert.equal(total,envelope.rawSourceBytes,'Source-context raw byte accounting differs');
+  return {rows:136,rawSourceBytes:total,allExpectedPathsExact:true,allDecodedBytesSHAAndGitAuthenticated:true};
+}
+function prepareSourceContextEnvelope(binding) {
+  assert(output);assert(!binding.sourceContext,'Source context may be prepared only once');
+  const expectedRows=contextExpectedRows(binding),rows=[];
+  for(const expected of expectedRows){const b=projectionRead(expected.path,SOURCE_CONTEXT_LIMIT.singleSourceBytes);assert.deepEqual({bytes:b.length,sha256:sha(b)},identity(expected),'Captured source-context bytes differ: '+expected.path);rows.push({...expected,base64:b.toString('base64')});}
+  const envelope={schema:'rea-proof-delivery-audit-complete-source-context/v1',repository:'Ginderlax/rea-research-lab',sourceCommit:report.provenance.sourceCommit,sourceRows:136,groups:{mandatorySourceData:132,fixedHelper:1,actualCurrentProducerControls:2,immutableImportedSourceModule:1},rawSourceBytes:rows.reduce((sum,row)=>sum+row.bytes,0),sourceCodeExecutedFromEnvelope:false,uploadAcceptanceClaimed:false,workflowSourceCapturedSeparately:true,rows};
+  const verified=verifySourceContextEnvelope(envelope,expectedRows),decoded=Buffer.from(JSON.stringify(envelope));
+  assert(decoded.length<=SOURCE_CONTEXT_LIMIT.decodedBytes,'Source-context decoded JSON byte cap');
+  const stored=gzipSync(decoded,{mtime:0});assert(stored.length<=SOURCE_CONTEXT_LIMIT.storedBytes,'Source-context stored gzip byte cap');
+  writeFileSync(join(output,SOURCE_CONTEXT_ROLE),stored,{flag:'wx'});filesWritten.set(SOURCE_CONTEXT_ROLE,stored.length);
+  const observed=readFileSync(join(output,SOURCE_CONTEXT_ROLE));assert(observed.equals(stored),'Source-context exclusive gzip write/readback differs');
+  const unpacked=gunzipSync(observed,{maxOutputLength:SOURCE_CONTEXT_LIMIT.decodedBytes});assert(unpacked.equals(decoded),'Source-context decoded readback differs');
+  verifySourceContextEnvelope(JSON.parse(unpacked),expectedRows);
+  binding.sourceContext={envelope,expectedRows};
+  report.sourceEpochAuthentication.sourceContextEnvelopeCapturedAndReadbackPrepared=true;
+  report.sourceEpochAuthentication.sourceContextEnvelope={path:SOURCE_CONTEXT_ROLE,sourceRows:136,groups:envelope.groups,...verified,decoded:{bytes:decoded.length,sha256:sha(decoded)},stored:{bytes:observed.length,sha256:sha(observed)},limits:SOURCE_CONTEXT_LIMIT,capturedAndReadbackPrepared:true,sourceContentsCaptured:true,artifactPackagingComplete:false,contentsUploadedAccepted:false,artifactQualificationPending:true,workflowCapturedSeparately:true};
+}
+function sourceContextControls() {
+  const binding=currentSourceEpochBinding();assert(binding.sourceContext);
+  const {envelope,expectedRows}=binding.sourceContext,observations=[];
+  function check(name,edit,expectedMessage){
+    const changed=structuredClone(envelope);edit(changed);let error=null;try{verifySourceContextEnvelope(changed,expectedRows);}catch(e){error=e;}
+    assert(error,'Source-context mutation accepted: '+name);assert(String(error.message).includes(expectedMessage),'Source-context rejected at unexpected guard: '+name+': '+error.message);
+    observations.push({name,expected:'rejection',passed:true,targetedGuard:expectedMessage});
+  }
+  const valid=verifySourceContextEnvelope(envelope,expectedRows);assert.equal(valid.rows,136);
+  observations.push({name:'positive-exact136-source-context-bytes-and-rosters',expected:'acceptance',passed:true});
+  check('reject-missing-context-row',m=>{m.rows.pop();},'136');
+  check('reject-duplicate-context-path',m=>{m.rows[1]=structuredClone(m.rows[0]);},'Duplicate source-context path');
+  check('reject-unknown-context-path',m=>{m.rows[0].path='scripts/unlisted-audit-context-source.mjs';},'Unknown source-context path');
+  check('reject-context-SHA-rebinding',m=>{m.rows[0].sha256='0'.repeat(64);},'Pinned source-context identity differs');
+  check('reject-context-decoded-content-mutation',m=>{const row=m.rows.find(row=>row.bytes>0),b=Buffer.from(row.base64,'base64');b[0]^=1;row.base64=b.toString('base64');},'Decoded source-context SHA differs');
+  check('reject-context-source-group-rebinding',m=>{m.rows[0].sourceGroup='fixed-helper';},'Source-context group differs');
+  check('reject-context-raw-byte-cap',m=>{m.rawSourceBytes=SOURCE_CONTEXT_LIMIT.rawBytes+1;},'Source-context aggregate raw byte cap');
+  check('reject-context-Git-identity-rebinding',m=>{m.rows[0].gitBlob='0'.repeat(40);},'Pinned source-context Git blob differs');
+  check('reject-imported-immutable-module-identity-rebinding',m=>{const row=m.rows.find(row=>row.sourceGroup==='immutable-imported-source-module');assert(row);row.sha256='0'.repeat(64);},'Pinned source-context identity differs: scripts/editor-vault-proof-migration.mjs');
+  assert.equal(observations.filter(row=>row.expected==='acceptance').length,1);assert.equal(observations.filter(row=>row.expected==='rejection').length,9);
+  report.sourceContextControls={status:'passed',positive:1,negative:9,observations,sourceCodeExecutedFromEnvelope:false,uploadedArtifactAcceptanceClaimed:false};
+}
+
 function exactContext(ctx, expected) {
   assert(expected, 'No reviewed exact source-epoch projection');
   assert.equal(ctx.name, expected.path, 'Closed projection path differs');
@@ -382,7 +566,7 @@ function projectionBody(ctx, read = projectionRead) {
     assert.equal(m.tooling.collectorSelfSeparateFrom12,true);assert.equal(m.tooling.collectorSelf.isThirteenthToolingRow,false);
     const declaration=dependency('declaration');assert.deepEqual(m.currentNotesSources,declaration.currentNotesSources);assert.equal(declaration.combinedProofRowCount,60);
     dependency('rolePlan');assert.equal(m.publication.artifactTable,CLOSED_EPOCH_DEPENDENCIES.get('rolePlan').path);assert.equal(m.publication.finalRoles,95);assert.equal(m.publication.fileLimit,96);assert.equal(m.publication.actualControlsExecuted,null);
-    notes.push({classification:'closed-current-and-frozen-source-plan',currentSources:36,applicationTargets:7,frozenBeforeImages:3,frozenAfterImages:7,fixedTooling:12,separateCollectorSelf:true,before32IsHistoricalAndNotCurrentTargetIdentity:true,plannedControlsAreNotActualResults:true});
+    notes.push({classification:'historical-Notes36-current-at-declared-epoch-and-frozen-source-plan',declaredEpochSources:36,current41AcceptanceClaimed:false,applicationTargets:7,frozenBeforeImages:3,frozenAfterImages:7,fixedTooling:12,separateCollectorSelf:true,before32IsHistoricalAndNotCurrentTargetIdentity:true,plannedControlsAreNotActualResults:true});
   } else if (definition.kind === 'notes-journal') {
     assert.equal(m.actualBeforeGitHEAD,CLOSED_EPOCH_HEAD);assert.equal(m.actualReadableRecoveryDirectory,RECOVERY_PREFIX);assert.equal(m.sourceCommitAfterCopy,null);assert.equal(m.sourceCommitAssignedByLaterRootCommit,true);
     assert.equal(m.status,'source-installed-fresh-hosted-acceptance-pending');assert.equal(m.historicalReceiptsRebound,false);assert.equal(m.fullParity,false);assert.equal(m.superiority,false);
@@ -395,13 +579,15 @@ function projectionBody(ctx, read = projectionRead) {
       if(r.before===null){assert.equal(r.beforeSnapshot,null);}else{assert.equal(r.beforeSnapshot.path,RECOVERY_PREFIX+'/before/'+r.path+'.snapshot');assert.deepEqual(identity(r.beforeSnapshot),identity(r.before));localRecoveryPaths++;historical++;add(beforeImage(r.path),r.before,'separately-delivered-historical-before');}}
     assert.equal(historical,11);assert.equal(localRecoveryPaths,42);assert.equal(m.finalPublicJournalPath,ctx.name);
     assert.equal(m.freshInstalledAcceptance.allRequireActualHostedResultsForLaterCommittedSource,true);for(const key of ['finite111Across21Files','browser8','fullImplementedSuiteSuperset','publication306ControlsAnd95Roles'])assert.equal(m.freshInstalledAcceptance[key],null);
-    notes.push({classification:'actual-source-copy-journal-with-bounded-public-target-projection',afterTargets:31,separatelyPublicBeforeImages:11,localRecoveryPathReferences:42,localRecoveryPathsGitDeliveryClaimed:false,localAuthoritiesAndReviewsAreOriginProvenanceOnly:true,sourceInstallationReexecuted:false,freshBehavioralAcceptanceClaimed:false});
+    notes.push({classification:'historical-source-copy-journal-with-bounded-physical-carrier-projection',declaredEpochAfterTargets:31,current41AcceptanceClaimed:false,separatelyPublicBeforeImages:11,localRecoveryPathReferences:42,localRecoveryPathsGitDeliveryClaimed:false,localAuthoritiesAndReviewsAreOriginProvenanceOnly:true,sourceInstallationReexecuted:false,freshBehavioralAcceptanceClaimed:false});
   } else assert.fail('Unknown closed projection kind');
-  return {rows,notes,dependencies};
+  return {rows,notes,dependencies,declaration:{path:ctx.name,schema:ctx.data.schema,bytes:ctx.bytes,sha256:ctx.sha256}};
 }
 function authenticateProjectionRows(projection, read=projectionRead) {
-  for(const r of projection.rows){const b=read(r.path,LIMIT.singleManifestBytes);assert.equal(b.length,r.bytes,'Projected stored/current public size differs: '+r.path);assert.equal(sha(b),r.sha256,'Projected stored/current public SHA differs: '+r.path);}
-  return projection;
+  const rows=[];
+  for(const declared of projection.rows){const r=historicalProjectionRow(projection.declaration,declared,read);const b=read(r.path,LIMIT.singleManifestBytes);assert.equal(b.length,r.bytes,'Projected physical public size differs: '+r.path);assert.equal(sha(b),r.sha256,'Projected physical public SHA differs: '+r.path);rows.push(r);}
+  const historicalRows=rows.filter(row=>row.historicalLogicalProjection);
+  return {...projection,rows,notes:[...projection.notes,...(historicalRows.length?[{classification:'exact-historical-logical-to-physical-source-delivery',declaredSourceEpoch:'698d2e301765d1b878fb251b3d59dadb5a3c9bac',historicalRows:historicalRows.length,actualCurrentSourcesAuthenticatedSeparately:true,currentLogicalTargetIdentityOrBehaviorAcceptanceClaimed:false}]:[])]};
 }
 function exactProjection(ctx, read=projectionRead) {
   exactContext(ctx,CLOSED_EPOCH_DOCUMENTS.get(ctx.name));
@@ -433,7 +619,32 @@ function closedEpochControls() {
   mutate(5,'reject-journal-local-recovery-path-rebinding',m=>{m.installedFiles[0].beforeSnapshot.path='work/other.snapshot';});
   mutate(5,'reject-journal-new-behavioral-acceptance',m=>{m.freshInstalledAcceptance.browser8=true;});
   check('reject-authenticated-transport-content-mutation',()=>exactProjection(contexts[0],(p,cap)=>{const b=projectionRead(p,cap);if(p===contexts[0].data.roles[0].stored.path){const changed=Buffer.from(b);changed[0]^=1;return changed;}return b;}),true);
-  persist('projection-controls.json',{schema:'rea-hosted-six-closed-delivery-projection-controls/v1',status:'passed',observations,positive:6,negative:observations.length-6,executedOnlyWithinVerifiedHostedAudit:true,checkoutWrites:0,productExecutions:0,legacyHandlersChanged:false,limitsChanged:false,semanticMutationControlsExerciseBodySeparatelyFromWholeDocumentPin:true,globalDeliveryOrBehavioralSuccessClaimed:false});
+  const sourceObservations=[];
+  const sourceCheck=(name,fn,reject=false)=>{let error=null;try{fn();}catch(e){error=e;}assert(reject?error:!error,'Historical source binding control failed: '+name+(error?': '+error.message:''));sourceObservations.push({name,expected:reject?'rejection':'acceptance',passed:true});};
+  sourceCheck('positive-exact-historical-physical-provenance',()=>{
+    const projected=exactProjection(contexts[4]),mapped=projected.rows.filter(row=>row.historicalLogicalProjection);
+    assert.equal(mapped.length,5);
+    for(const row of mapped){const p=row.historicalLogicalProjection;assert.notEqual(row.path,p.declaredLogicalPath);assert.equal(p.physicalDeliveryPath,row.path);assert.deepEqual(identity(row),p.declaredIdentity);assert.equal(p.declaredSourceEpoch,'698d2e301765d1b878fb251b3d59dadb5a3c9bac');assert.equal(p.logicalPathAtHistoricalIdentityClaimedCurrent,false);assert.equal(p.currentBehavioralAcceptanceClaimed,false);}
+  });
+  sourceCheck('positive-current-producer-and-controls-separate-from-historical-journal',()=>{
+    const projected=exactProjection(contexts[5]);
+    for(const name of ['scripts/verify-cloud-publication.mjs','scripts/publication-integrity-controls.mjs']){const row=projected.rows.find(row=>row.historicalLogicalProjection?.declaredLogicalPath===name);assert(row);assert.notDeepEqual(row.historicalLogicalProjection.actualCurrentLogicalIdentity,identity(row));assert.equal(row.historicalLogicalProjection.currentLogicalDeliveryClaimedByHistoricalRow,false);}
+  });
+  function rejectChangedRead(label,ctx,path){let changedReads=0;sourceCheck(label,()=>exactProjection(ctx,(p,cap)=>{const b=projectionRead(p,cap);if(p!==path)return b;changedReads++;const changed=Buffer.from(b);assert(changed.length);changed[0]^=1;return changed;}),true);assert(changedReads>0,'The intended source/carrier mutation must be consumed: '+path);}
+  const originalReadme=projectionBody(contexts[4]).rows.find(row=>row.path==='products/rea-studio/apps/notes/README.md');assert(originalReadme);
+  const readmeCarrier=historicalProjectionRow(projectionBody(contexts[4]).declaration,originalReadme).path;
+  rejectChangedRead('reject-current-Notes-README-hidden-by-old-carrier',contexts[4],originalReadme.path);
+  rejectChangedRead('reject-historical-README-physical-carrier-mutation',contexts[4],readmeCarrier);
+  const controlsRow=exactProjection(contexts[5]).rows.find(row=>row.historicalLogicalProjection?.declaredLogicalPath==='scripts/publication-integrity-controls.mjs');assert(controlsRow);
+  rejectChangedRead('reject-historical-controls-physical-carrier-mutation',contexts[5],controlsRow.path);
+  rejectChangedRead('reject-actual-current-controls-mutation',contexts[5],'scripts/publication-integrity-controls.mjs');
+  rejectChangedRead('reject-actual-current-producer-mutation',contexts[5],'scripts/verify-cloud-publication.mjs');
+  sourceCheck('reject-unlisted-historical-source-identity',()=>historicalProjectionRow(projectionBody(contexts[4]).declaration,{...originalReadme,sha256:'0'.repeat(64)}),true);
+  sourceCheck('reject-historical-binding-outside-exact-manifest',()=>authenticateProjectionRows({...projectionBody(contexts[4]),declaration:{...projectionBody(contexts[4]).declaration,path:NOTES36_PREFIX+'/unlisted-plan.json'}}),true);
+  assert.equal(sourceObservations.filter(row=>row.expected==='acceptance').length,2);assert.equal(sourceObservations.filter(row=>row.expected==='rejection').length,7);
+  report.historicalSourceProjectionControls={status:'passed',positive:2,negative:7,observations:sourceObservations,historicalManifestBytesRewritten:false,currentBehaviorOrGlobalCoverageAccepted:false};
+  sourceContextControls();
+  persist('projection-controls.json',{schema:'rea-hosted-six-closed-delivery-projection-controls/v1',status:'passed',observations,positive:6,negative:observations.length-6,executedOnlyWithinVerifiedHostedAudit:true,checkoutWrites:0,productExecutions:0,legacyHandlersChanged:false,limitsChanged:false,semanticMutationControlsExerciseBodySeparatelyFromWholeDocumentPin:true,globalDeliveryOrBehavioralSuccessClaimed:false,historicalSourceProjectionControls:report.historicalSourceProjectionControls,sourceContextControls:report.sourceContextControls});
   report.closedEpochProjectionControls={status:'passed',positive:6,negative:observations.length-6};
 }
 function applyClosedEpochProjection(ctx) {
@@ -471,7 +682,7 @@ function declare(ctx, field, i, row, rule) {
   // Only inert destinations are treated as immutable shared delivery objects.
   if(prior && target.endsWith('.snapshot') && ((prior.bytes!==null&&id.bytes!==null&&prior.bytes!==id.bytes)||prior.sha256!==id.sha256))unresolved(ctx.name,ctx.data.schema,'Conflicting identities for one inert public target',{field,index:i,target,previous:prior,current:id});
   if(!prior||prior.bytes===null&&id.bytes!==null)seenTargets.set(target,id);
-  const origin={manifest:ctx.name,manifestSHA256:ctx.sha256,schema:ctx.data.schema,field,index:i,target,...id,declaredBytesAvailable:id.bytes!==null};
+  const origin={manifest:ctx.name,manifestSHA256:ctx.sha256,schema:ctx.data.schema,field,index:i,target,...id,declaredBytesAvailable:id.bytes!==null,...(field==='reviewed-closed-projection'&&row.historicalLogicalProjection?{historicalLogicalProjection:row.historicalLogicalProjection}: {})};
   const alias=aliases.get(target);if(alias){assert.equal(alias.manifest,ctx.name);assert.deepEqual(identity(alias),id);report.counts.existingClosedAliases++;detail('closed-aliases.jsonl',{...origin,status:'existing-exact-closed-alias',gitDeliveredPayload:alias.delivered,logicalPathGitDelivered:false});return;}
   const blob=trees.get(target);if(!blob){report.counts.missingGit++;report.missingByPrefix[prefix]=(report.missingByPrefix[prefix]??0)+1;
     const candidates=contentCandidates.get(id.sha256+':'+id.bytes)??[];
@@ -527,6 +738,7 @@ try {
     for(const rule of fields){let value=ctx.data[rule.field];if(value===undefined&&rule.inventoryAlternative){const raw=ctx.data.inventory;assert(raw&&typeof raw==='object','Missing inventory alternative');value=Array.isArray(raw)?raw:Object.entries(raw).map(([path,r])=>({...r,path}));}assert(value!==undefined,'Missing recognized pointer field '+rule.field);const rows=rule.single?[value]:value;assert(Array.isArray(rows),'Expected declaration array '+rule.field);for(let i=0;i<rows.length;i++){if((rule.kind&&rows[i].kind!==rule.kind)||(rule.optionalPointer&&rows[i][rule.pointer]===undefined)){report.counts.excludedLogicalRows++;continue;}try{declare(ctx,rule.field,i,rows[i],rule);}catch(e){unresolved(p,schema,'Invalid recognized declaration',{field:rule.field,index:i,error:String(e.message).slice(0,1000)});}}}
     report.counts.recognizedManifests++;detail('manifests.jsonl',{manifest:p,schema,sha256:ctx.sha256,bytes:ctx.bytes,classification:'closed-public-pointers',fields});
   }catch(e){unresolved(p,ctx?.data?.schema??null,'Manifest audit incomplete',{error:String(e.message).slice(0,1000)});}}
+  recheckCurrentSourceEpochBinding();
   assert.equal(git(['rev-parse','HEAD']).toString().trim(),report.provenance.sourceCommit);assert.equal(git(['status','--porcelain=v1','--untracked-files=all']).length,0,'Checkout changed during read-only audit');
   finish('completed');if(!report.declaredDeliveryComplete||!report.declaredSizesMatch)process.exitCode=1;
 } catch(e) { try{finish('failed',e);}catch(storage){console.error('Audit evidence storage failed: '+storage.message);}console.error(String(e.stack??e));process.exitCode=1; }

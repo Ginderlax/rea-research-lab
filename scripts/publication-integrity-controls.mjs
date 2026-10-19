@@ -4,8 +4,8 @@ import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import vm from 'node:vm';
-import { assertNotes41AwareProofMigration, createNotes41AwareProofMigration, createNotes41AwareProofMigrationFromRoot, createNotes41PublicationSourceView, notes41PublicationTransitionPin, verifyNotes41PublicationArtifactRoles, verifyNotes41PublicationHelperRow } from './notes41-publication-source-view.mjs';
+import nativeVm from 'node:vm';
+import { assertNotes41AwareProofMigration, createNotes41AwareProofMigration, createNotes41AwareProofMigrationFromRoot, createNotes41PublicationSourceViewFromRoot, createNotes41PublicationSourceView, notes41PublicationTransitionPin, verifyNotes41PublicationArtifactRoles, verifyNotes41PublicationHelperRow, createNotes41Historical937VmFacade, createNotes41Historical937ReadContext } from './notes41-publication-source-view.mjs';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const identity = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
 const ROOT_ID = { bytes: 149123, sha256: 'b5d48417f94e9464c071610ffc2720451cebae126b94b674e67c8f6fe16967d8' };
@@ -38,6 +38,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const notes41Initial = createNotes41AwareProofMigrationFromRoot(root), notes41View = notes41Initial.notes41SourceView;
   const actualLiveNotesPaths = notes41View.plan.currentNotesSources.map(row => row.path);
   const read = name => notes41View.legacyRead(name);
+  const vm = createNotes41Historical937VmFacade(nativeVm, root, notes41Initial);
   let migration;
   positive('named-migration-positive', () => { migration = createEditorVaultProofMigration(read); assert.equal(migration.summary().latestInstalledSourcesMandatory, 35); });
   const notesIndexPath='products/rea-studio/apps/notes/results/todo-followup/publication-index.json';
@@ -528,20 +529,20 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
 
   assert.equal(rows.length, 306); assert.ok(rows.every(row => row.passed));
   // All306 previous control bodies and their count assertion remain above.
-  // Exact129 mandatory source-data rows plus one separately pinned helper are
+  // Exact132 mandatory source-data rows plus one separately pinned helper are
   // a new source protocol. Legacy 60/64/256KiB/306/95/96 bounds stay unchanged.
   const retainedControlCount = rows.length, notes41Pin = notes41PublicationTransitionPin();
   const allHistoricalRoutes=[...notes41View.plan.historical36Routes,...notes41View.plan.historicalRecordReaderRoutes];
   positive('notes41-current-source-and-historical36-scopes',()=>{
-    const s=notes41View.summary();assert.equal(s.currentNotesSources,41);assert.equal(s.currentRows,113);
-    assert.equal(s.supportingSources,60);assert.equal(s.historical36CarrierRows,6);assert.equal(s.historicalRecordReaderRows,8);assert.equal(s.historicalProducerCarrierRows,1);
-    assert.equal(s.authenticatedDataRows,129);assert.equal(s.fileLimit,129);assert.equal(s.individualByteLimit,512*1024);assert.equal(s.byteLimit,8*1024*1024);
-    assert.equal(s.combinedEnvelopeRowsWithSeparateHelper,130);assert.equal(s.separateHelperIndividualByteLimit,256*1024);
+    const s=notes41View.summary();assert.equal(s.currentNotesSources,41);assert.equal(s.currentRows,114);
+    assert.equal(s.supportingSources,60);assert.equal(s.historical36CarrierRows,6);assert.equal(s.historicalRecordReaderRows,9);assert.equal(s.historicalProducerCarrierRows,1);assert.equal(s.historicalControlsCarrierRows,1);
+    assert.equal(s.authenticatedDataRows,132);assert.equal(s.fileLimit,132);assert.equal(s.individualByteLimit,512*1024);assert.equal(s.byteLimit,8*1024*1024);
+    assert.equal(s.combinedEnvelopeRowsWithSeparateHelper,133);assert.equal(s.separateHelperIndividualByteLimit,256*1024);
     assert.equal(s.currentDirectoryClosureRequired,true);assert.equal(s.oldNotes36ProofRemainsHistorical,true);assert.equal(s.old36BudgetsUnchanged,true);
     assert.equal(s.currentSourceChannelSeparateFromLegacyProofReads,true);assert.equal(s.actualDirectoryCensusKind,'live-rechecked-acquisition');assert.equal(s.actualDirectoryCensusRechecked,true);assert.equal(s.historicalReceiptsRebound,false);assert.equal(s.installedBehaviorAccepted,false);
   });
   for(const row of notes41View.plan.currentSourceRows)negative('notes41-current-source-byte-change:'+row.path,()=>createNotes41PublicationSourceView(p=>p===row.path?flip(actualRead(p)):actualRead(p),notes41Pin,actualLiveNotesPaths),'separate externally pinned actual current source group; no old source identity is substituted');
-  for(const row of [...allHistoricalRoutes,notes41View.plan.historicalPublicationProducer])negative('notes41-historical-carrier-byte-change:'+row.carrier.path,()=>createNotes41PublicationSourceView(p=>p===row.carrier.path?flip(actualRead(p)):actualRead(p),notes41Pin,actualLiveNotesPaths),'exact physical historical carrier under a distinct source epoch');
+  for(const row of [...allHistoricalRoutes,notes41View.plan.historicalPublicationProducer,notes41View.plan.historicalPublicationControls])negative('notes41-historical-carrier-byte-change:'+row.carrier.path,()=>createNotes41PublicationSourceView(p=>p===row.carrier.path?flip(actualRead(p)):actualRead(p),notes41Pin,actualLiveNotesPaths),'exact physical historical carrier under a distinct source epoch');
   negative('notes41-external-transition-byte-change',()=>createNotes41PublicationSourceView(p=>p===notes41Pin.path?flip(actualRead(p)):actualRead(p),notes41Pin,actualLiveNotesPaths),'external fixed transition pin; an altered declaration cannot redefine its own expected identities');
   for(const[label,names]of[['missing',actualLiveNotesPaths.slice(1)],['duplicate',[...actualLiveNotesPaths,actualLiveNotesPaths[0]]],['unknown',actualLiveNotesPaths.map((name,i)=>i===0?'products/rea-studio/apps/notes/unlisted-source.mjs':name)]])negative('notes41-live-directory-closure:'+label,()=>createNotes41PublicationSourceView(actualRead,notes41Pin,names),'exact41 live app names remain independent from historical36 proof names');
   for(const row of allHistoricalRoutes)negative('notes41-unknown-source-epoch:'+row.logicalPath,()=>notes41View.resolve(row.logicalPath,{bytes:1,sha256:'0'.repeat(64)},migration.resolve),'only exact externally pinned current/historical36 or previously named older source epochs are allowed');
@@ -555,7 +556,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   const oldRoleValidator=paths=>sourceGate('roles',read,paths);
   positive('notes41-exact96-roles-retain-all95-historical-roles',()=>{assert.equal(verifyNotes41PublicationArtifactRoles(notes41ArtifactPaths,oldRoleValidator),true);});
   for(const[label,paths]of[['missing-new',artifactPaths],['duplicate-new',[...notes41ArtifactPaths,'notes41-current-sources.json.gz.snapshot']],['unknown-new',notes41ArtifactPaths.map(name=>name==='notes41-current-sources.json.gz.snapshot'?'unlisted-current-source-envelope.snapshot':name)],['old-role-replacement',notes41ArtifactPaths.map((name,i)=>i===0?'unlisted-old-source-envelope.snapshot':name)]])negative('notes41-artifact-role-census:'+label,()=>verifyNotes41PublicationArtifactRoles(paths,oldRoleValidator),'exact96-role union; immutable old95-role verifier independently checks the complete historical subset');
-  // Eight reader source transitions are actual current input rows and exact
+  // Nine reader source transitions are actual current input rows and exact
   // historical physical paths, not an unchecked optional migration override.
   for(const row of notes41View.plan.historicalRecordReaderRoutes){
     positive('notes41-reader-exact-current-and-before:'+row.logicalPath,()=>{
@@ -585,7 +586,7 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   assert(rows.at(-1).rejected.message.includes('A real frozen current-source context is required'),'Forged context must reject at the actual brand guard');
   function proofList(prefix){assert(typeof prefix==='string'&&prefix.endsWith('/'));const names=[];function visit(directory,relative,depth){assert(depth<=32);const entries=fs.readdirSync(directory,{withFileTypes:true});assert(entries.length<=1200);for(const item of entries){assert(!item.isSymbolicLink());const name=relative+item.name;if(item.isDirectory())visit(path.join(directory,item.name),name+'/',depth+1);else{assert(item.isFile());names.push(name);assert(names.length<=1200);}}}visit(path.join(root,prefix),prefix,0);return names;}
   const pureHost=notes41View.plan.historical36Routes.find(row=>row.logicalPath==='products/rea-studio/server.mjs');assert(pureHost);
-  positive('notes41-editor-pure-valid-two-channel-context',()=>{const result=verifyEditorValueApiProofBytes({read:actualRead,list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial});assert.equal(result.sourceMigration.notes41PublicationSourceProof.authenticatedDataRows,129);assert.equal(result.newApplicationExecutions,0);});
+  positive('notes41-editor-pure-valid-two-channel-context',()=>{const result=verifyEditorValueApiProofBytes({read:actualRead,list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial});assert.equal(result.sourceMigration.notes41PublicationSourceProof.authenticatedDataRows,132);assert.equal(result.newApplicationExecutions,0);});
   negative('notes41-editor-pure-physical-proof-carrier-mutation',()=>verifyEditorValueApiProofBytes({read:p=>p===pureHost.carrier.path?flip(actualRead(p)):actualRead(p),list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial}),'actual pure validator retains exact historical carrier identity checks on io.read independently of current-source authentication');
   positive('notes41-old-publication-producer-is-explicit-carrier',()=>{const old=notes41View.plan.historicalPublicationProducer;same(notes41View.legacyRead(old.logicalPath),old.before);same(actualRead(old.carrier.path),old.before);assert.equal(notes41View.envelopeRows().filter(row=>row.historicalPublicationProducer).length,1);});
   negative('notes41-context-extra-eligible-source-after-authentication',()=>{
@@ -604,16 +605,63 @@ export async function runPublicationControls(root, fixtureRoot, emit) {
   negative('notes41-fixed-helper-wrong-size',()=>verifyNotes41PublicationHelperRow(helperBytes,{...helperPin,bytes:helperPin.bytes+1},helperDataRows),'exact externally fixed helper byte count');
   negative('notes41-fixed-helper-data-overlap',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.map((row,i)=>i===0?{...helperPin}:row)),'helper is separately counted and cannot replace a mandatory data row');
   negative('notes41-fixed-helper-individual-cap',()=>verifyNotes41PublicationHelperRow(Buffer.alloc(256*1024+1),helperPin,helperDataRows),'fixed helper256KiB individual cap precedes acceptance');
-  negative('notes41-fixed-helper-combined-raw-cap',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.map(row=>({...row,bytes:512*1024}))),'combined129 data rows plus helper remain below8MiB');
-  negative('notes41-fixed-helper-missing-data-row',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.slice(1)),'all129 data rows are mandatory before the130th helper row');
+  negative('notes41-fixed-helper-combined-raw-cap',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.map(row=>({...row,bytes:512*1024}))),'combined132 data rows plus helper remain below8MiB');
+  negative('notes41-fixed-helper-missing-data-row',()=>verifyNotes41PublicationHelperRow(helperBytes,helperPin,helperDataRows.slice(1)),'all132 data rows are mandatory before the133rd helper row');
   const legacyOnlyDeclaration='products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json';
   assert(!notes41View.plan.currentSourceRows.some(row=>row.path===legacyOnlyDeclaration));
   let pureLegacyMutationHits=0;
-  negative('notes41-editor-pure-legacy-only-proof-channel-mutation',()=>verifyEditorValueApiProofBytes({read:p=>{if(p===legacyOnlyDeclaration){pureLegacyMutationHits++;return flip(actualRead(p));}return actualRead(p);},list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial}),'fresh legacy constructor authenticates supplied io.read even for mandatory declarations outside the129 current-source data group');
+  negative('notes41-editor-pure-legacy-only-proof-channel-mutation',()=>verifyEditorValueApiProofBytes({read:p=>{if(p===legacyOnlyDeclaration){pureLegacyMutationHits++;return flip(actualRead(p));}return actualRead(p);},list:proofList,sourceRead:actualRead},{sourceMigration:notes41Initial}),'fresh legacy constructor authenticates supplied io.read even for mandatory declarations outside the132 current-source data group');
   assert(pureLegacyMutationHits>0,'The exact mandatory legacy-only declaration mutation must be read');assert(rows.at(-1).rejected.message.includes(legacyOnlyDeclaration),'Legacy rejection must identify the actually mutated declaration');
+  // Additional controls for one named old937 context. Actual new source bytes
+  // remain separately mandatory; no old row is relabeled current acceptance.
+  const shared937Host={path:'products/rea-studio/server.mjs',bytes:7840,sha256:'85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94'};
+  const shared937Carrier=notes41View.historicalReadPath(shared937Host.path,shared937Host);
+  const shared937LogicalAbsolute=path.join(root,shared937Host.path),shared937CarrierAbsolute=path.join(root,shared937Carrier);
+  const is937Carrier=filename=>path.resolve(filename).toLowerCase()===path.resolve(shared937CarrierAbsolute).toLowerCase();
+  function owned937Context(overrides={}){return {root,developmentRoot:path.join(root,'products/rea-studio'),status:JSON.parse(read('products/rea-studio/STATUS.json')),assert,join:path.join,lstatSync:fs.lstatSync,sha,sourceProofMigration:migration,
+    safeRecordPath(name){assert.ok(typeof name==='string'&&name&&!name.startsWith('/')&&!name.split('/').includes('..')&&!name.includes('\\'));},
+    readFileSync:(filename,...args)=>fs.readFileSync(filename,...args),...overrides};}
+  positive('notes41-historical937-fixed-host-physical-projection',()=>{
+    const scoped=createNotes41Historical937ReadContext(root,notes41Initial),stat=scoped.lstatSync(shared937LogicalAbsolute),bytes=scoped.readFileSync(shared937LogicalAbsolute);
+    same(bytes,shared937Host);assert.equal(stat.size,7840);assert.equal(stat.size,fs.lstatSync(shared937CarrierAbsolute).size);assert.equal(scoped.resolve(shared937Host.path,shared937Host),null);
+    const scope=scoped.summary();assert.equal(scope.oldHostPhysicalPath,shared937Carrier);assert.equal(scope.actualCurrentSourceGroupAuthenticatedSeparately,true);assert.equal(scope.extraMigrationRoutesAdded,0);assert.equal(scope.globalFilesystemAdapter,false);
+    const result=script.runInNewContext(owned937Context(),{timeout:120000});assert.deepEqual({...result},{rows:737,routed:13,unchanged:724});
+  });
+  let shared937CarrierByteHits=0;
+  negative('notes41-historical937-physical-carrier-byte-mutation',()=>script.runInNewContext(owned937Context({readFileSync(filename,...args){const bytes=fs.readFileSync(filename,...args);if(is937Carrier(filename)){shared937CarrierByteHits++;return flip(bytes);}return bytes;}}),{timeout:120000}),'exact old937 block reads the fixed physical carrier through the actual scoped VM context');
+  assert(shared937CarrierByteHits>0,'The precise old937 physical byte channel must be read');assert(rows.at(-1).rejected.message.includes('Historical937 proof changed: '+shared937Host.path));
+  let shared937CarrierStatHits=0;
+  negative('notes41-historical937-physical-carrier-stat-mutation',()=>script.runInNewContext(owned937Context({lstatSync(filename,...args){const stat=fs.lstatSync(filename,...args);if(!is937Carrier(filename))return stat;shared937CarrierStatHits++;return new Proxy(stat,{get(target,key,receiver){return key==='size'?target.size+1:Reflect.get(target,key,receiver);}});}}),{timeout:120000}),'the actual physical carrier stat must agree with its7840-byte read; the owned metadata mutation never changes a file');
+  assert(shared937CarrierStatHits>0,'The precise old937 physical stat channel must be read');assert(rows.at(-1).rejected.message.includes('7840'));
+  let mutate937ActualHost=false,shared937CurrentHostHits=0;
+  const sourceToggle937=createNotes41AwareProofMigration(name=>{const bytes=actualRead(name);if(mutate937ActualHost&&name===shared937Host.path){shared937CurrentHostHits++;return flip(bytes);}return bytes;},notes41Pin,()=>[...actualLiveNotesPaths]);
+  mutate937ActualHost=true;
+  negative('notes41-historical937-actual-current-host-byte-mutation',()=>{const scoped=createNotes41Historical937ReadContext(root,sourceToggle937);same(scoped.readFileSync(shared937LogicalAbsolute),shared937Host);},'a previously authenticated current source context is rechecked before projecting any old host bytes');
+  assert(shared937CurrentHostHits>0,'The actual current7953-byte host must be observed');assert(rows.at(-1).rejected.message.includes(shared937Host.path));
+  const known937Scope=createNotes41Historical937ReadContext(root,notes41Initial);
+  for(const[label,expected]of[['modern-source',{bytes:7953,sha256:'c13a55cb66a13e973847ff6a970006b2acf3cf6c4752d1e25292ef67695329ae'}],['unknown-SHA',{bytes:7840,sha256:'0'.repeat(64)}]]){
+    negative('notes41-historical937-unexpected-host-identity:'+label,()=>known937Scope.resolve(shared937Host.path,expected),'only the exact7840-byte historical source identity is eligible for the named old937 boundary');
+    assert(rows.at(-1).rejected.message.includes('Only the exact old937 shared-host identity can be projected'));
+  }
+  negative('notes41-historical937-changed-VM-source-hash',()=>new vm.Script(block+'\n// Owned exact-source mutation.',{filename:'exact-reviewed-root-historical937-control.mjs'}),'the local facade binds one exact immutable5784-byte control source, not merely a chosen filename');
+  assert(rows.at(-1).rejected.message.includes('Only the immutable exact reviewed937 control block is eligible'));
+  positive('notes41-historical937-other-VM-filename-keeps-native-context',()=>{const unrelated=new vm.Script(block,{filename:'owned-unlisted-historical937-filename.mjs'});assert(unrelated instanceof nativeVm.Script);});
+  positive('notes41-old-publication-controls-is-explicit-carrier',()=>{const old=notes41View.plan.historicalPublicationControls;same(notes41View.legacyRead(old.logicalPath),old.before);assert.equal(notes41View.historicalReadPath(old.logicalPath,old.before),old.carrier.path);same(actualRead(old.carrier.path),old.before);assert.equal(notes41View.envelopeRows().filter(row=>row.historicalPublicationControls).length,1);});
+  for(const old of [notes41View.plan.historicalPublicationProducer,notes41View.plan.historicalPublicationControls]){
+    negative('notes41-excluded-publication-source-unknown-old-identity:'+old.logicalPath,()=>notes41View.historicalReadPath(old.logicalPath,{bytes:old.before.bytes,sha256:'0'.repeat(64)}),'excluded self-sources have exactly named historical carrier identities; current actual self-sources are separately Git authenticated');
+    assert(rows.at(-1).rejected.message.includes('Only exact named Notes36 predecessor identities can be projected'));
+  }
+  const sourceOnlyAuditView=createNotes41PublicationSourceViewFromRoot(root);
+  positive('notes41-source-only-factory-has-real-rechecked-census',()=>{const s=sourceOnlyAuditView.summary();assert.equal(s.authenticatedDataRows,132);assert.equal(s.currentRows,114);assert.equal(s.historicalRecordReaderRows,9);assert.equal(s.actualDirectoryCensusKind,'live-rechecked-acquisition');assert.equal(s.sourceOnly,true);});
+  negative('notes41-source-only-view-cannot-stand-in-for-proof-context',()=>assertNotes41AwareProofMigration(sourceOnlyAuditView,actualRead,actualRead),'a source-only view cannot bypass historical proof validation by masquerading as a branded proof context');
+  assert(rows.at(-1).rejected.message.includes('A real frozen current-source context is required'));
   assert.equal(retainedControlCount,306);
-  assert.equal(rows.length,306+196);assert.ok(rows.every(row=>row.passed));
-  return { schema: 'rea-cloud-publication-controls/v3', sourceEpoch: 'notes41-installed-recovery-r2-publication-eight-readers', retainedHistoricalControls:306, current41AdditionalControls:196, status: 'passed', sourceOnly: true, rows, checks: rows.length,
+  const actualAdditional=rows.slice(retainedControlCount).map(row=>({name:row.name,expected:row.rejected?'rejection':'acceptance'}));
+  const frozenAdditional=notes41View.plan.publicationAdditionalControlRoster.map(row=>({name:row.name,expected:row.expected}));
+  assert.equal(frozenAdditional.length,216);assert.equal(new Set(frozenAdditional.map(row=>row.name)).size,216);
+  assert.deepEqual(actualAdditional,frozenAdditional,'Every new control name, order and expected outcome must match its externally pinned closed roster');
+  assert.equal(rows.length,306+216);assert.ok(rows.every(row=>row.passed));
+  return { schema: 'rea-cloud-publication-controls/v4', sourceEpoch: 'notes41-installed-recovery-r2-publication-nine-readers', retainedHistoricalControls:306, current41AdditionalControls:216, historical937AdditionalControls:8, sourceOnlyAuditAndSpecialCarrierAdditionalControls:5, status: 'passed', sourceOnly: true, rows, checks: rows.length,
     exactReviewed937Block: ROOT_ID, fixtureFiles: copies.size, fixtureBytes: copiedBytes, gitAliasFixtureFiles: gitCopies.size, gitAliasFixtureBytes: gitCopiedBytes,
     actualCheckoutFilesMutated: 0, applicationTests: 0, originalExecutions: 0,
     limits: ['Finite manifest/attempt mutations are rejected at their immutable identity layer; deeper semantic branches are not separately bypassed or claimed tested.', 'The937 block executes only publication assertions/readers in a bounded VM; it does not execute the historical937 behavioral tests.', 'Current-source io.sourceRead and historical proof-carrier io.read are distinct explicit channels; both are checked and no optional unbranded migration is accepted.'] };

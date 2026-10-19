@@ -1,11 +1,11 @@
 {
-  "schema": "rea-notes41-publication-source-transition/v2",
+  "schema": "rea-notes41-publication-source-transition/v3",
   "status": "reviewed-frozen-source-transition",
   "sourceOnly": true,
   "actualInstalledBehaviorAccepted": false,
   "historicalReceiptsRebound": false,
   "publicationAcceptancePreclaimed": false,
-  "sourceEpoch": "notes41-installed-recovery-r2-publication-eight-readers",
+  "sourceEpoch": "notes41-installed-recovery-r2-publication-nine-readers",
   "oldNotes36Source": "698d2e301765d1b878fb251b3d59dadb5a3c9bac",
   "currentDeclarationSchema": "rea-notes41-installed-source-declaration/v2",
   "currentDeclaration": {
@@ -582,8 +582,8 @@
   "currentRecordReaders": [
     {
       "path": "scripts/verify-records.mjs",
-      "bytes": 149418,
-      "sha256": "f747287963590c308514c2b909f1eb1dbbb82b885e56dfc707493141f279572a"
+      "bytes": 149831,
+      "sha256": "ae1a96502e094842e60d47f2dacc382fcd717240666ff9fdebe5a8d750c8a0c4"
     },
     {
       "path": "scripts/verify-followup-records.mjs",
@@ -619,6 +619,11 @@
       "path": "scripts/verify-editor-value-api-followups.mjs",
       "bytes": 23592,
       "sha256": "dbdfc7957bca2fb2c39a8504e5162de55c51e1f63a3ba93ef2336a949df264a0"
+    },
+    {
+      "path": "scripts/audit-proof-delivery.mjs",
+      "bytes": 74020,
+      "sha256": "0acc159a56e20d54b47774cd3f6d947658b5c1a9031b7acad113e901eb043dcc"
     }
   ],
   "currentSourceRows": [
@@ -1190,8 +1195,8 @@
     },
     {
       "path": "scripts/verify-records.mjs",
-      "bytes": 149418,
-      "sha256": "f747287963590c308514c2b909f1eb1dbbb82b885e56dfc707493141f279572a"
+      "bytes": 149831,
+      "sha256": "ae1a96502e094842e60d47f2dacc382fcd717240666ff9fdebe5a8d750c8a0c4"
     },
     {
       "path": "scripts/verify-followup-records.mjs",
@@ -1227,9 +1232,14 @@
       "path": "scripts/verify-editor-value-api-followups.mjs",
       "bytes": 23592,
       "sha256": "dbdfc7957bca2fb2c39a8504e5162de55c51e1f63a3ba93ef2336a949df264a0"
+    },
+    {
+      "path": "scripts/audit-proof-delivery.mjs",
+      "bytes": 74020,
+      "sha256": "0acc159a56e20d54b47774cd3f6d947658b5c1a9031b7acad113e901eb043dcc"
     }
   ],
-  "currentSourceRowsRequired": 113,
+  "currentSourceRowsRequired": 114,
   "historical36Routes": [
     {
       "logicalPath": "products/rea-studio/apps/notes/README.md",
@@ -1350,8 +1360,8 @@
         "sha256": "b5d48417f94e9464c071610ffc2720451cebae126b94b674e67c8f6fe16967d8"
       },
       "current": {
-        "bytes": 149418,
-        "sha256": "f747287963590c308514c2b909f1eb1dbbb82b885e56dfc707493141f279572a"
+        "bytes": 149831,
+        "sha256": "ae1a96502e094842e60d47f2dacc382fcd717240666ff9fdebe5a8d750c8a0c4"
       },
       "carrier": {
         "path": "products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/verify-records.mjs.snapshot",
@@ -1485,6 +1495,24 @@
         "sha256": "ef80f2ba98cf81b637fa8a361196ceab84f06fb9e1de5d87ccb1d0965e31017f"
       },
       "scope": "Exact old proof-reader source carrier; actual new current reader source is independently mandatory."
+    },
+    {
+      "logicalPath": "scripts/audit-proof-delivery.mjs",
+      "historicalEpoch": "698d2e301765d1b878fb251b3d59dadb5a3c9bac",
+      "before": {
+        "bytes": 52515,
+        "sha256": "2ae56eda012a6783f7661ec4381e320e39e83057a5506dbee59a926ab929a1f3"
+      },
+      "current": {
+        "bytes": 74020,
+        "sha256": "0acc159a56e20d54b47774cd3f6d947658b5c1a9031b7acad113e901eb043dcc"
+      },
+      "carrier": {
+        "path": "products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/audit-proof-delivery.mjs.snapshot",
+        "bytes": 52515,
+        "sha256": "2ae56eda012a6783f7661ec4381e320e39e83057a5506dbee59a926ab929a1f3"
+      },
+      "scope": "Exact unchanged698d audit predecessor source; new actual audit bytes are independently mandatory. Historical projection source is not rebound to the new audit."
     }
   ],
   "oldProofBudgetsUnchanged": {
@@ -1497,23 +1525,24 @@
     "currentNotes36IndividualByteLimit": 262144
   },
   "separateNewSourceBudget": {
-    "currentSourceRows": 113,
+    "currentSourceRows": 114,
     "historicalRuntimeCarrierRows": 6,
-    "historicalReaderCarrierRows": 8,
+    "historicalReaderCarrierRows": 9,
     "historicalProducerCarrierRows": 1,
+    "historicalControlsCarrierRows": 1,
     "externalManifestRows": 1,
-    "authenticatedDataRows": 129,
-    "dataFileLimit": 129,
+    "authenticatedDataRows": 132,
+    "dataFileLimit": 132,
     "individualByteLimit": 524288,
     "helperSelfRows": 1,
     "helperIndividualByteLimit": 262144,
-    "combinedEnvelopeRows": 130,
+    "combinedEnvelopeRows": 133,
     "rawByteLimit": 8388608
   },
   "newArtifactRole": "notes41-current-sources.json.gz.snapshot",
   "oldArtifactRoleSetPreserved": true,
   "newCombinedArtifactRoles": 96,
-  "note": "Source-only new eight-reader publication protocol: exactly113 actual current inputs,14 named runtime/reader source-before carriers,1 explicit old producer carrier and1 external manifest form129 mandatory authenticated data rows. One separately pinned helper forms130 truthful envelope rows. Combined raw content remains at most8MiB; helper at most256KiB. No prior result is rebound or old count/cap relaxed. All old306 control bodies,60/64/256KiB Notes36 proof objects,95 historical roles and96 outer file cap remain unchanged. No hosted publication acceptance is established by this declaration.",
+  "note": "New source-only nine-reader epoch: exactly114 actual current files +17 exact physical historical carriers +one external manifest =132 mandatory source-data rows. A separately pinned helper yields133 publication rows; audit additionally captures actual current producer/controls and immutable imported legacy module, yielding136 audit rows plus the separate audit workflow. All old306 controls, Notes36 60/64/256KiB proofs, exact95 historical publication roles and96 outer publication cap stay unchanged. The new216 controls have an exact ordered name/polarity roster. No hosted acceptance, receipt rebinding or product superiority is claimed.",
   "historicalPublicationProducer": {
     "logicalPath": "scripts/verify-cloud-publication.mjs",
     "historicalEpoch": "698d2e301765d1b878fb251b3d59dadb5a3c9bac",
@@ -1529,8 +1558,8 @@
     "scope": "Explicit physical source for unchanged old306 controls and their fixed producer/VM literals. The actual new producer is separately Git-authenticated and captured in the existing collector-sources role; its self hash is excluded from this manifest to avoid a hash cycle."
   },
   "old306ControlsUnchanged": true,
-  "additionalSourceControlsRequired": 196,
-  "totalProspectiveControlsRequired": 502,
+  "additionalSourceControlsRequired": 216,
+  "totalProspectiveControlsRequired": 522,
   "twoChannelPureIoContract": {
     "sourceRead": "Separate physical mandatory current/source-carrier channel under exact129 data objects; independently reauthenticated by a real branded context.",
     "read": "Original exact historical proof-carrier byte assertions, inert checks and counters remain unchanged.",
@@ -1541,7 +1570,8 @@
   "supersededUnexecutedDesigns": [
     "Frozen14-file two-reader117-row proposal (not integration ready).",
     "Eight-reader128-data-plus-helper129-row arithmetic before the discovered mandatory old producer carrier.",
-    "Frozen27-file V2 source candidate; no hosted run. Superseded after independent review found stale census provenance and missing new helper-self negative controls."
+    "Frozen27-file V2 source candidate; no hosted run. Superseded after independent review found stale census provenance and missing new helper-self negative controls.",
+    "Historical937 scoped work proposals remain source-only. C9 eight-reader129-data epoch was executed and failed publication; it is preserved and never relabeled as a next-epoch pass."
   ],
   "actualCensusContract": {
     "FromRoot": "Physical eligible Notes source enumeration on construction, every recheck and every pure-context bind; excludes results and rejects extra/missing/symlink entries.",
@@ -1549,5 +1579,1153 @@
     "functionProviderPureApi": "Explicit acquisition callback retained privately and invoked on every recheck/bind; an owned callback mutation supplies the extra-source control."
   },
   "helperSelfGuardContract": "The actual producer and hosted controls invoke the same exported helper-row guard. A strict producer-source literal extraction supplies the expected pin to controls; bytes/path/duplicate overlap/individual and aggregate caps/exact129+1 rows remain mandatory. No helper-derived expected hash is accepted as the producer identity.",
-  "preservedUnexecutedV3": "V3 was never executed/integrated; source review found newline normalization and non-discriminating pure negative fixtures. V4 regenerates from exact V2 bytes and uses valid proof inventories, targeted mutation observation and an actually mandatory legacy-only declaration."
+  "preservedUnexecutedV3": "V3 was never executed/integrated; source review found newline normalization and non-discriminating pure negative fixtures. V4 regenerates from exact V2 bytes and uses valid proof inventories, targeted mutation observation and an actually mandatory legacy-only declaration.",
+  "historicalPublicationControls": {
+    "logicalPath": "scripts/publication-integrity-controls.mjs",
+    "historicalEpoch": "698d2e301765d1b878fb251b3d59dadb5a3c9bac",
+    "before": {
+      "bytes": 74921,
+      "sha256": "6178c7eedc355b2f5e9ba9be009d6558b0fcf99158803437268289682ee1b51d"
+    },
+    "carrier": {
+      "path": "products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-publication/scripts/publication-integrity-controls.mjs.snapshot",
+      "bytes": 74921,
+      "sha256": "6178c7eedc355b2f5e9ba9be009d6558b0fcf99158803437268289682ee1b51d"
+    },
+    "scope": "Explicit physical old74921-byte control source for the fixed historical Notes36 installation journal. Actual current controls are excluded from current rows to avoid a source hash cycle and are separately Git authenticated/captured."
+  },
+  "auditSourceContextCaptureBudget": {
+    "sourceDataRows": 132,
+    "separateFixedHelperRows": 1,
+    "excludedActualCurrentProducerAndControlsRows": 2,
+    "actualImmutableImportedModuleRows": 1,
+    "exactAuditEnvelopeRows": 136,
+    "rawSourceByteLimit": 8388608,
+    "serializedJsonByteLimit": 12582912,
+    "storedGzipByteLimit": 4194304,
+    "auditWorkflowSeparatelyCaptured": true,
+    "publicationEnvelopeRowsUnchanged": 133,
+    "publicationOuterRolesUnchanged": 96,
+    "auditOuterFileCapUnchanged": 12,
+    "auditOuterRawByteCapUnchanged": 25165824,
+    "immutableImportedModule": {
+      "path": "scripts/editor-vault-proof-migration.mjs",
+      "bytes": 186405,
+      "sha256": "6519e83c4315e60b503b67f306ed0a265cbcc141ff48b79db86d7da457026abf"
+    },
+    "legacyProofConstructorInvokedBySourceOnlyFactory": false,
+    "esmImportsAreActualSourceDependencies": true
+  },
+  "historical937Context": {
+    "fixedHostLogicalPath": "products/rea-studio/server.mjs",
+    "fixedHostBefore": {
+      "bytes": 7840,
+      "sha256": "85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94"
+    },
+    "oldSourceRows": 737,
+    "oldRuntimeRoutes": 13,
+    "oldUnchangedHistoricalViewRows": 724,
+    "fixedOldVmSource": {
+      "bytes": 5784,
+      "sha256": "f8e6931ecf46bcd6e68c2effa610eceef34d8848ec2febcb7e7118b08164ba78"
+    },
+    "realPhysicalCarrierReadAndStat": true,
+    "actualCurrentSourceGroupAuthenticatedSeparately": true,
+    "noImportedVmOrFilesystemObjectMutation": true,
+    "noCurrentBehaviorAcceptanceClaimed": true
+  },
+  "publicationAdditionalControlRoster": [
+    {
+      "name": "notes41-current-source-and-historical36-scopes",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/README.md",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/app.integration.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/app.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/client.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/core.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/draft-recovery-test-fixture.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/draft-recovery.http.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/draft-recovery.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/draft-recovery.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/draft-recovery.ui.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/fixtures/oracle-verification.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/fixtures/pinned-joplin.jex",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/fixtures/pinned-joplin.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/interop-fixture-tool.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/jex.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/jex.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/markdown.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/new-todo-original.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/new-todo.integration.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/new-todo.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/new-todo.ui.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-confirmation-cancel-open-note.ui.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-confirmation.ui.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-original-oracle.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-trash-fresh-boundaries.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-trash-original-oracle.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-trash-publication-boundaries.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-trash-review-fixture.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-trash-review.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-trash.integration.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-trash.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-trash.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebook-trash.ui.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebooks.integration.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebooks.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/notebooks.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/server.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/todo-original.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/todo.integration.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/todo.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/apps/notes/todo.ui.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:.github/workflows/development-cloud.yml",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:.github/workflows/notes-new-todo-installed-cloud.yml",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/browser-metadata.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/notes-draft-recovery-installed-legacy-r2-roster.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/notes-draft-recovery-installed-legacy-r2.spec.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/notes-draft-recovery-installed-legacy-roster.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/notes-draft-recovery-installed-legacy.spec.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/notes-draft-recovery.spec.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/notes-draft-recovery.storage.spec.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/package-lock.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/package.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/playwright.notes-draft-recovery-installed-legacy-r2.config.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/playwright.notes-draft-recovery-installed-legacy.config.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/browser-tests/playwright.notes-draft-recovery.config.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed-r2/legacy8/README.md",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed-r2/legacy8/TRANSITION.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed-r2/legacy8/notes-draft-recovery-installed-legacy-roster.json.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed-r2/legacy8/notes-draft-recovery-installed-legacy.spec.mjs.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed-r2/legacy8/playwright.notes-draft-recovery-installed-legacy.config.mjs.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed-r2/legacy8/retained8-r2-source-binding.diff.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed-r2/review/full-r2-independent-peer-final-r4.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed-r2/review/full-r2-source-authority-final-r4.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed-r2/review/root-product-r4-independent-source-peer.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/FULL-REGRESSION-FLOOR-R2.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/FULL-REGRESSION-FLOOR.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/INSTALLED-REGRESSION-FLOOR-R2.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/full-baseline-1119.tap.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/full-r2/draft-recovery.ui.test.mjs.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/full/development-cloud.yml.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/historical36/notes-new-todo-installed-cloud.yml.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/legacy8/README.md",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/legacy8/TRANSITION.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/legacy8/legacy8-complete-test-body.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/legacy8/legacy8-source-binding.diff.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/legacy8/notes-new-todo-roster.json.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/legacy8/notes-new-todo.spec.mjs.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/legacy8/notes-readme-two-edit.diff.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/legacy8/playwright.notes-new-todo.config.mjs.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/NOTES41-SOURCE.ff3.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/OWNED-OPEN-ROOT-SOURCE-AUTHORITY-R4.json.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/OWNED-OPEN-TRANSITION-R2.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/README.md",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/client.mjs.ff3.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/development-cloud.yml.ff3.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/draft-recovery.ui.test.mjs.ff3.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/draft-recovery.ui.test.mjs.r2.append.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/notes-draft-recovery-installed-cloud.yml.ff3.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/r2-owned-open/verify-notes41-installed-cloud.mjs.ff3.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/source/README.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/todo.integration.test.mjs.before.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/results/notes36-source-transition-20261016/current-source-declaration.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/scripts/notes-draft-recovery-regression-floor.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/scripts/verify-cloud-browser.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/scripts/verify-notes-draft-recovery-cloud.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/scripts/verify-notes-draft-recovery-installed-full-r2.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/scripts/verify-notes-draft-recovery-installed-full.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/scripts/verify-notes36-cloud.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/scripts/verify-notes36-installed-cloud.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/scripts/verify-notes41-legacy-browser-results-r2.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/scripts/verify-notes41-legacy-browser-results.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/server.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/experiments/notes-draft-recovery-installed/NOTES41-SOURCE-R2.json",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:products/rea-studio/scripts/verify-notes41-installed-cloud-r2.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:.github/workflows/notes-draft-recovery-installed-cloud.yml",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:scripts/verify-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:scripts/verify-followup-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:scripts/verify-archive-integration-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:scripts/verify-editor-save-followup.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:scripts/verify-notes-inline-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:scripts/verify-notes-vault-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:scripts/verify-editor-value-api-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-current-source-byte-change:scripts/audit-proof-delivery.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical36/products/rea-studio/apps/notes/README.md.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical36/products/rea-studio/apps/notes/client.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical36/products/rea-studio/apps/notes/server.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical36/products/rea-studio/apps/notes/todo.integration.test.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical36/products/rea-studio/server.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical36/.github/workflows/notes-new-todo-installed-cloud.yml.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/verify-records.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/verify-followup-records.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/verify-archive-integration-records.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/verify-editor-save-followup.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/verify-notes-layout-value-api-checkpoint.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/verify-notes-inline-followups.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/verify-notes-vault-followups.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/verify-editor-value-api-followups.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-readers/scripts/audit-proof-delivery.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-publication/scripts/verify-cloud-publication.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical-carrier-byte-change:products/rea-studio/experiments/notes41-publication-source-transition-20261019/historical-publication/scripts/publication-integrity-controls.mjs.snapshot",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-external-transition-byte-change",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-live-directory-closure:missing",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-live-directory-closure:duplicate",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-live-directory-closure:unknown",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:products/rea-studio/apps/notes/README.md",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:products/rea-studio/apps/notes/client.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:products/rea-studio/apps/notes/server.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:products/rea-studio/apps/notes/todo.integration.test.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:products/rea-studio/server.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:.github/workflows/notes-new-todo-installed-cloud.yml",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:scripts/verify-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:scripts/verify-followup-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:scripts/verify-archive-integration-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:scripts/verify-editor-save-followup.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:scripts/verify-notes-inline-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:scripts/verify-notes-vault-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:scripts/verify-editor-value-api-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-unknown-source-epoch:scripts/audit-proof-delivery.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-excluded-results-and-unrelated-SHA-only-resolver-contract",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-exact96-roles-retain-all95-historical-roles",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-artifact-role-census:missing-new",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-artifact-role-census:duplicate-new",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-artifact-role-census:unknown-new",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-artifact-role-census:old-role-replacement",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-exact-current-and-before:scripts/verify-records.mjs",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-current-channel-mutation:scripts/verify-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-physical-carrier-mutation:scripts/verify-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-exact-current-and-before:scripts/verify-followup-records.mjs",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-current-channel-mutation:scripts/verify-followup-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-physical-carrier-mutation:scripts/verify-followup-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-exact-current-and-before:scripts/verify-archive-integration-records.mjs",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-current-channel-mutation:scripts/verify-archive-integration-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-physical-carrier-mutation:scripts/verify-archive-integration-records.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-exact-current-and-before:scripts/verify-editor-save-followup.mjs",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-current-channel-mutation:scripts/verify-editor-save-followup.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-physical-carrier-mutation:scripts/verify-editor-save-followup.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-exact-current-and-before:scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-current-channel-mutation:scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-physical-carrier-mutation:scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-exact-current-and-before:scripts/verify-notes-inline-followups.mjs",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-current-channel-mutation:scripts/verify-notes-inline-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-physical-carrier-mutation:scripts/verify-notes-inline-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-exact-current-and-before:scripts/verify-notes-vault-followups.mjs",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-current-channel-mutation:scripts/verify-notes-vault-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-physical-carrier-mutation:scripts/verify-notes-vault-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-exact-current-and-before:scripts/verify-editor-value-api-followups.mjs",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-current-channel-mutation:scripts/verify-editor-value-api-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-physical-carrier-mutation:scripts/verify-editor-value-api-followups.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-exact-current-and-before:scripts/audit-proof-delivery.mjs",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-current-channel-mutation:scripts/audit-proof-delivery.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-reader-physical-carrier-mutation:scripts/audit-proof-delivery.mjs",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-context-forged-object",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-context-missing-current-channel",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-context-stale-after-authentication",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-editor-pure-current-source-channel-mutation",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-editor-pure-forged-context",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-editor-pure-valid-two-channel-context",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-editor-pure-physical-proof-carrier-mutation",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-old-publication-producer-is-explicit-carrier",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-context-extra-eligible-source-after-authentication",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-fixed-helper-real-shared-guard",
+      "expected": "acceptance",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-fixed-helper-byte-change",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-fixed-helper-wrong-path",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-fixed-helper-wrong-SHA",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-fixed-helper-wrong-size",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-fixed-helper-data-overlap",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-fixed-helper-individual-cap",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-fixed-helper-combined-raw-cap",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-fixed-helper-missing-data-row",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-editor-pure-legacy-only-proof-channel-mutation",
+      "expected": "rejection",
+      "scope": "source-protocol"
+    },
+    {
+      "name": "notes41-historical937-fixed-host-physical-projection",
+      "expected": "acceptance",
+      "scope": "historical937"
+    },
+    {
+      "name": "notes41-historical937-physical-carrier-byte-mutation",
+      "expected": "rejection",
+      "scope": "historical937"
+    },
+    {
+      "name": "notes41-historical937-physical-carrier-stat-mutation",
+      "expected": "rejection",
+      "scope": "historical937"
+    },
+    {
+      "name": "notes41-historical937-actual-current-host-byte-mutation",
+      "expected": "rejection",
+      "scope": "historical937"
+    },
+    {
+      "name": "notes41-historical937-unexpected-host-identity:modern-source",
+      "expected": "rejection",
+      "scope": "historical937"
+    },
+    {
+      "name": "notes41-historical937-unexpected-host-identity:unknown-SHA",
+      "expected": "rejection",
+      "scope": "historical937"
+    },
+    {
+      "name": "notes41-historical937-changed-VM-source-hash",
+      "expected": "rejection",
+      "scope": "historical937"
+    },
+    {
+      "name": "notes41-historical937-other-VM-filename-keeps-native-context",
+      "expected": "acceptance",
+      "scope": "historical937"
+    },
+    {
+      "name": "notes41-old-publication-controls-is-explicit-carrier",
+      "expected": "acceptance",
+      "scope": "source-only-audit-and-special-carriers"
+    },
+    {
+      "name": "notes41-excluded-publication-source-unknown-old-identity:scripts/verify-cloud-publication.mjs",
+      "expected": "rejection",
+      "scope": "source-only-audit-and-special-carriers"
+    },
+    {
+      "name": "notes41-excluded-publication-source-unknown-old-identity:scripts/publication-integrity-controls.mjs",
+      "expected": "rejection",
+      "scope": "source-only-audit-and-special-carriers"
+    },
+    {
+      "name": "notes41-source-only-factory-has-real-rechecked-census",
+      "expected": "acceptance",
+      "scope": "source-only-audit-and-special-carriers"
+    },
+    {
+      "name": "notes41-source-only-view-cannot-stand-in-for-proof-context",
+      "expected": "rejection",
+      "scope": "source-only-audit-and-special-carriers"
+    }
+  ],
+  "additionalControlScopeCounts": {
+    "historical937": 8,
+    "source-only-audit-and-special-carriers": 5,
+    "source-protocol": 203
+  },
+  "preservedC9HistoricalFailure": {
+    "source": "c9af0602783a04c7fca9013457e5fbebcc53b3d6",
+    "publicationRun": 39185226729,
+    "publicationJob": 117846137646,
+    "artifact": 12157852116,
+    "failure": "Actual7953-byte host reached the old937 source read requiring7840 bytes; explicit historical context is a new source proposal, not a retroactive fix to that result."
+  }
 }

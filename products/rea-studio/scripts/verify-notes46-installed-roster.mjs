@@ -26,7 +26,8 @@ function committed(name,bytes){assert.deepEqual(git(['show','HEAD:'+name],Math.m
 const record={schema:'rea-notes46-installed-'+scope+'-exact-roster/v1',sourceCommit:process.env.GITHUB_SHA,execution,scope,sourceEpoch:'notes46-installed-structured-search-v1',status:'failed',floor:floorPin,accepted:false,appOrOriginalProcessesStartedByGate:0,historicalReceiptsRebound:false,fullParity:false,superiority:false,productionInstallationReceiptClaimed:false};
 try {
   assert.equal(git(['rev-parse','HEAD']).toString().trim(),process.env.GITHUB_SHA);
-  assert.equal(git(['rev-list','--parents','-n','1','HEAD']).toString().trim(),process.env.GITHUB_SHA+' 2a8482b42784eb262d6d5b82e62d8d1220dc4821');
+  assert.equal(git(['rev-list','--parents','-n','1','HEAD']).toString().trim(),process.env.GITHUB_SHA+' 40c7df91936aaf9574801aa38c5a635f299e6e39');
+  assert.equal(git(['rev-list','--parents','-n','1','40c7df91936aaf9574801aa38c5a635f299e6e39']).toString().trim(),'40c7df91936aaf9574801aa38c5a635f299e6e39 2a8482b42784eb262d6d5b82e62d8d1220dc4821');
   const floorRaw=read(repository,floorPath);assert.deepEqual(identity(floorRaw),floorPin);committed(floorPath,floorRaw);const floor=JSON.parse(floorRaw);
   const oldRaw=read(repository,floor.oldFloor.path);assert.deepEqual(identity(oldRaw),rowPin(floor.oldFloor));committed(floor.oldFloor.path,oldRaw);const old=JSON.parse(oldRaw);
   assert.equal(old.schema,'rea-notes-draft-recovery-installed-full-regression-floor/v2');assert.equal(old.priorNamedResults.length,1119);assert.equal(old.newNamedResults.length,23);

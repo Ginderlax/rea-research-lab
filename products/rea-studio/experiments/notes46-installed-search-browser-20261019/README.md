@@ -1,6 +1,6 @@
 # Installed Notes46 browser and original-search study
 
-This prospective hosted lane tests the exact committed Notes46 product files. It performs no application source overlay. The parent is fixed to2a8482b42784eb262d6d5b82e62d8d1220dc4821; the18 existing qualified target byte identities and historical three beforeimages are checked separately. Actual acceptance is pending new same-attempt cloud evidence.
+This prospective hosted lane tests the exact committed Notes46 product files. It performs no application source overlay. The historical comparison parent is fixed to2a8482b42784eb262d6d5b82e62d8d1220dc4821; the18 existing qualified target byte identities and historical three beforeimages are checked separately. Actual acceptance is pending new same-attempt cloud evidence.
 
 Both jobs authenticate and preserve the selected committed source before execution, at readiness and after execution, with a real46-file Notes directory census and unchanged256-file/512KiB-member/8MiB source limits. Browser acquisition occurs only between before and readiness. The browser job captures locked installed tool package source before/after, observed Chromium1248/version156.0.8078.4 and exact System32 native tar identity. It requires all28 fresh cases, actual runtime IDs, cleanup, eight search PNGs and valid GitHub commit/run metadata URLs. Retained20 and new8 test behavior bodies remain unchanged.
 

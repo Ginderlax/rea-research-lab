@@ -16,7 +16,9 @@ import { createHistoricalCarrierPolicyFromRoot } from './historical-carrier-poli
 
 // Fixed external helper identity. This producer is an
 // external captured role, so its helper pin cannot form a manifest hash cycle.
-const HELPER_PIN = Object.freeze({ path: 'scripts/notes46-installed-source-view.mjs', bytes: 22964, sha256: 'cc1fc420f7503161bc1483bea78c278f4da139b6ca56f02038230b4973dc7af5' });
+const CURRENT_SOURCE_PARENT = '40c7df91936aaf9574801aa38c5a635f299e6e39';
+const HISTORICAL_COMMIT = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
+const HELPER_PIN = Object.freeze({ path: 'scripts/notes46-installed-source-view.mjs', bytes: 22964, sha256: '1ff5079f5a7b0373f47d3af808c3398da4ff5e128c9d14f22ed1526dc65ee6da' });
 const MANIFEST = 'products/rea-studio/experiments/notes46-installed-search-20261019/INSTALLED-SOURCE.json';
 const DERIVED = Object.freeze(['PUBLICATION-MANIFEST.json', 'VALIDATION.json']);
 const WORKFLOW = '.github/workflows/notes46-installed-search-publication-cloud.yml';
@@ -218,7 +220,8 @@ function hosted(root) {
   for (const [name, value] of Object.entries({ CI: 'true', GITHUB_ACTIONS: 'true', RUNNER_ENVIRONMENT: 'github-hosted', RUNNER_OS: 'Windows', RUNNER_ARCH: 'X64', GITHUB_REPOSITORY: 'Ginderlax/rea-research-lab', GITHUB_SERVER_URL: 'https://github.com', GITHUB_EVENT_NAME: 'push', GITHUB_REF: 'refs/heads/experiment/notes46-installed-search-20261019', GITHUB_JOB: 'publication-integrity' })) assert.equal(process.env[name], value, name);
   assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA ?? '')); for (const name of ['GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT']) assert(/^[1-9][0-9]*$/.test(process.env[name] ?? ''));
   assert.equal(git(root, ['rev-parse', 'HEAD']).toString().trim(), process.env.GITHUB_SHA);
-  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', 'HEAD']).toString().trim(), process.env.GITHUB_SHA + ' 2a8482b42784eb262d6d5b82e62d8d1220dc4821');
+  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', 'HEAD']).toString().trim(), process.env.GITHUB_SHA + ' ' + CURRENT_SOURCE_PARENT);
+  assert.equal(git(root, ['rev-list', '--parents', '-n', '1', CURRENT_SOURCE_PARENT]).toString().trim(), CURRENT_SOURCE_PARENT + ' ' + HISTORICAL_COMMIT);
   assert.equal(git(root, ['status', '--porcelain=v1', '--untracked-files=all', '-z']).length, 0);
   assert(path.isAbsolute(process.env.RUNNER_TEMP)); noLinks(process.env.RUNNER_TEMP);
 }

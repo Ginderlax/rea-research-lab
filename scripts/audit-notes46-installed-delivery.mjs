@@ -13,6 +13,7 @@ import { prepareNotes46HistoricalInputRoot, assertNotes46HistoricalInputRoot } f
 
 const CURRENT_EPOCH = 'notes46-installed-structured-search-v1';
 const CURRENT_BRANCH = 'refs/heads/experiment/notes46-installed-search-20261019';
+const CURRENT_SOURCE_PARENT = '40c7df91936aaf9574801aa38c5a635f299e6e39';
 const HISTORICAL_COMMIT = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
 const HISTORICAL_TREE = '34e8de6f0c447edd2bc1a6389ed5dfb727705025';
 const MANIFEST = 'products/rea-studio/experiments/notes46-installed-search-20261019/INSTALLED-SOURCE.json';
@@ -21,8 +22,8 @@ const AUDIT = 'scripts/audit-notes46-installed-delivery.mjs';
 const ALIAS = 'scripts/audit-proof-delivery.mjs';
 const WORKFLOW46 = '.github/workflows/notes46-installed-search-publication-cloud.yml';
 // Fixed separately reviewed current-source declaration, helper and path roster.
-const FIXED_MANIFEST = Object.freeze({ path: MANIFEST, bytes: 67453, sha256: 'b7c61fa2410906856cac54c4aaacbe7ac201c39fe1c30b75e5639a389100f2d9' });
-const FIXED_HELPER = Object.freeze({ path: HELPER, bytes: 22964, sha256: 'cc1fc420f7503161bc1483bea78c278f4da139b6ca56f02038230b4973dc7af5' });
+const FIXED_MANIFEST = Object.freeze({ path: MANIFEST, bytes: 67453, sha256: '3897c35484ac153985e8d1a77d44d592c784ace2582f7e228c581ab7cfb2b5b6' });
+const FIXED_HELPER = Object.freeze({ path: HELPER, bytes: 22964, sha256: '1ff5079f5a7b0373f47d3af808c3398da4ff5e128c9d14f22ed1526dc65ee6da' });
 const CURRENT_SOURCE_PATHS = Object.freeze([
   "products/rea-studio/apps/notes/README.md",
   "products/rea-studio/apps/notes/app.integration.test.mjs",
@@ -377,7 +378,8 @@ export async function runNotes46InstalledDeliveryAudit({repoRoot,output}={}) {
   try {
     assert(FIXED_MANIFEST.bytes>0&&FIXED_HELPER.bytes>0,'WORK-ONLY audit manifest/helper pins are not frozen');assert.equal(CURRENT_SOURCE_PATHS.length,CURRENT_SOURCE_COUNT);
     assert.equal(currentGit(repoRoot,['rev-parse','HEAD']).toString().trim(),execution.GITHUB_SHA);
-    assert.equal(currentGit(repoRoot,['rev-list','--parents','-n','1','HEAD']).toString().trim(),execution.GITHUB_SHA+' '+HISTORICAL_COMMIT);
+    assert.equal(currentGit(repoRoot,['rev-list','--parents','-n','1','HEAD']).toString().trim(),execution.GITHUB_SHA+' '+CURRENT_SOURCE_PARENT);
+    assert.equal(currentGit(repoRoot,['rev-list','--parents','-n','1',CURRENT_SOURCE_PARENT]).toString().trim(),CURRENT_SOURCE_PARENT+' '+HISTORICAL_COMMIT);
     assert.equal(currentGit(repoRoot,['rev-parse','--show-object-format']).toString().trim(),'sha1');assert.equal(currentGit(repoRoot,['status','--porcelain=v1','--untracked-files=all']).length,0);
     const tree=actualTree(repoRoot);
     // Capture all fixed physical paths before the branded current helper can

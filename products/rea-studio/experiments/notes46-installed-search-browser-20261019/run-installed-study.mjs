@@ -9,7 +9,7 @@ import { spawn, spawnSync } from 'node:child_process';
 const PREFIX = 'products/rea-studio/experiments/notes46-installed-search-browser-20261019';
 const SELF = PREFIX + '/run-installed-study.mjs';
 const WORKFLOW = '.github/workflows/notes46-installed-search-browser-cloud.yml';
-const PLAN = { path: PREFIX + '/SOURCE-PLAN.json', bytes: 84449, sha256: '5dc9c948faf89d4e9eea525d3e27aea68105c32758e1a9f5f07309b37ccdd981' };
+const PLAN = { path: PREFIX + '/SOURCE-PLAN.json', bytes: 84449, sha256: '597eefb5d7055b58e9d252fb8c2b3e2dfa6e0b0b1a2f283bc817db591a2ee149' };
 const BASELINE = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
 const BRANCH = 'refs/heads/experiment/notes46-installed-search-20261019';
 const root = path.resolve(fileURLToPath(new URL('../../../../', import.meta.url)));
@@ -42,7 +42,8 @@ function hosted() {
   assert(['draft-recovery-real-chromium', 'notes46-observed-values'].includes(process.env.GITHUB_JOB));
   for (const key of ['GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT']) assert(/^[1-9][0-9]*$/.test(process.env[key]));
   assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA)); assert.equal(git(['rev-parse', 'HEAD']).toString().trim(), process.env.GITHUB_SHA);
-  assert.deepEqual(git(['rev-list', '--parents', '-n', '1', 'HEAD']).toString().trim().split(' '), [process.env.GITHUB_SHA, BASELINE]);
+  assert.deepEqual(git(['rev-list', '--parents', '-n', '1', 'HEAD']).toString().trim().split(' '), [process.env.GITHUB_SHA, '40c7df91936aaf9574801aa38c5a635f299e6e39']);
+  assert.deepEqual(git(['rev-list', '--parents', '-n', '1', '40c7df91936aaf9574801aa38c5a635f299e6e39']).toString().trim().split(' '), ['40c7df91936aaf9574801aa38c5a635f299e6e39', BASELINE]);
   assert.equal(git(['rev-parse', '--show-object-format']).toString().trim(), 'sha1');
   assert.equal(path.resolve(fileURLToPath(import.meta.url)).toLowerCase(), path.join(root, SELF).toLowerCase()); noLinks(root);
 }

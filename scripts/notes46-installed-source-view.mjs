@@ -7,7 +7,7 @@ import path from 'node:path';
 
 const MANIFEST_PATH = 'products/rea-studio/experiments/notes46-installed-search-20261019/INSTALLED-SOURCE.json';
 // Fixed external source declaration; the helper stays outside its own data group.
-const FROM_ROOT_PIN = Object.freeze({ path: MANIFEST_PATH, bytes: 67453, sha256: 'b7c61fa2410906856cac54c4aaacbe7ac201c39fe1c30b75e5639a389100f2d9' });
+const FROM_ROOT_PIN = Object.freeze({ path: MANIFEST_PATH, bytes: 67453, sha256: '3897c35484ac153985e8d1a77d44d592c784ace2582f7e228c581ab7cfb2b5b6' });
 const EPOCH = 'notes46-installed-structured-search-v1';
 // A separate prospective group, never a change to old145/146 or old proof caps.
 // Final exact dependency roster is a review gate before this work-only freeze.

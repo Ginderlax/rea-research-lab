@@ -21,7 +21,7 @@ const HISTORICAL_MANIFEST = 'products/rea-studio/experiments/notes41-publication
 const LEGACY_ONLY_PROOF = 'products/rea-studio/results/publication-git-directory-closure-20261015/preservation-manifest.json';
 // WORK-ONLY UNFROZEN: the consolidator must set this externally reviewed helper
 // identity, then independently review the entire new code/role/pin closure.
-const FIXED_HELPER_PIN = Object.freeze({ path: HELPER, bytes: 22964, sha256: 'cc1fc420f7503161bc1483bea78c278f4da139b6ca56f02038230b4973dc7af5' });
+const FIXED_HELPER_PIN = Object.freeze({ path: HELPER, bytes: 22964, sha256: '1ff5079f5a7b0373f47d3af808c3398da4ff5e128c9d14f22ed1526dc65ee6da' });
 const id = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
 const pin = row => ({ bytes: row.bytes, sha256: row.sha256 });
 const clone = value => structuredClone(value);

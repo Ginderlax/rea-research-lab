@@ -14,6 +14,7 @@ const prefix = 'products/rea-studio/experiments/notes46-installed-search-2026101
 const floorPath = prefix + '/REGRESSION-FLOOR.json';
 const floorPin = { bytes: 229516, sha256: 'ce944a283cafb3ca3c8432b5bab826aee3f0b51d09d4c2b940a4e9b7727f8f40' };
 const parent = '2a8482b42784eb262d6d5b82e62d8d1220dc4821';
+const sourceParent = '40c7df91936aaf9574801aa38c5a635f299e6e39';
 const branch = 'refs/heads/experiment/notes46-installed-search-20261019';
 const workflowPath = '.github/workflows/notes46-installed-search-full-cloud.yml';
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -40,7 +41,8 @@ function write(name,bytes){const filename=path.join(evidence,safe(name));fs.mkdi
 const save=(name,value)=>write(name,Buffer.from(JSON.stringify(value,null,2)+'\n'));
 function git(arguments_,maximum=32*1024*1024){const r=spawnSync('git',arguments_,{cwd:repository,shell:false,windowsHide:true,timeout:30000,maxBuffer:maximum});assert.equal(r.error,undefined);assert.equal(r.status,0);assert.equal(r.signal,null);return r.stdout;}
 assert.equal(git(['rev-parse','HEAD']).toString().trim(),process.env.GITHUB_SHA);
-assert.equal(git(['rev-list','--parents','-n','1','HEAD']).toString().trim(),process.env.GITHUB_SHA+' '+parent);
+assert.equal(git(['rev-list','--parents','-n','1','HEAD']).toString().trim(),process.env.GITHUB_SHA+' '+sourceParent);
+assert.equal(git(['rev-list','--parents','-n','1',sourceParent]).toString().trim(),sourceParent+' '+parent);
 assert.equal(git(['rev-parse','--show-object-format']).toString().trim(),'sha1');
 const tree=new Map(git(['ls-tree','-rz','HEAD']).toString().split('\0').filter(Boolean).map(line=>{const [meta,name]=line.split('\t'),[mode,type,oid]=meta.split(' ');return[name,{mode,type,oid}];}));
 function committed(name,bytes){const row=tree.get(name);assert(row&&row.mode==='100644'&&row.type==='blob');assert.equal(gitBlob(bytes),row.oid,'Current source differs from committed Git: '+name);return row.oid;}
@@ -54,7 +56,7 @@ assert.equal(floor.installedSourceInputs.length,128);assert.equal(inputs.length,
 for(const row of immutable){const b=read(repository,row.path);assert.deepEqual(identity(b),pin(row));committed(row.path,b);}
 function noteNames(root,depth=0){assert(depth<=32);const rows=[];noLinks(root);for(const entry of fs.readdirSync(root,{withFileTypes:true})){if(entry.name==='results')continue;assert(!entry.isSymbolicLink());const full=path.join(root,entry.name);if(entry.isDirectory())rows.push(...noteNames(full,depth+1));else{assert(entry.isFile());rows.push(slash(path.relative(repository,full)));}}return rows.sort();}
 function status(){return git(['status','--porcelain=v1','-z','--untracked-files=all']).toString().split('\0').filter(Boolean).map(line=>({status:line.slice(0,2),path:line.slice(3)})).sort((a,b)=>a.path.localeCompare(b.path));}
-function capture(kind){const errors=[],rows=[];let total=0;const names=noteNames(path.join(studio,'apps/notes')),expectedNotes=floor.installedSourceInputs.filter(r=>r.path.startsWith('products/rea-studio/apps/notes/')).map(r=>r.path).sort();
+function capture(kind){const errors=[],rows=[];let total=0;const names=noteNames(path.join(studio,'apps/notes')),expectedNotes=floor.installedSourceInputs.filter(r=>r.path.startsWith('products/rea-studio/apps/notes/')&&!r.path.split('/').includes('results')).map(r=>r.path).sort();
   if(JSON.stringify(names)!==JSON.stringify(expectedNotes))errors.push({path:'actual Notes census',message:'Physical Notes paths differ from exact46 declarations'});assert.equal(expectedNotes.length,46);
   for(const row of inputs){try{const bytes=read(repository,row.path,floor.sourceLimits.memberBytes);total+=bytes.length;assert(total<=floor.sourceLimits.rawBytes);const observed={path:row.path,...identity(bytes),gitBlob:gitBlob(bytes)};rows.push(observed);write('notes46-source-'+kind+'/'+row.path+'.snapshot',bytes);if(row.sha256)assert.deepEqual(identity(bytes),pin(row));committed(row.path,bytes);}catch(error){errors.push({path:row.path,name:error.name,message:String(error.message).slice(0,4000)});}}
   assert(rows.length<=floor.sourceLimits.files);const result={schema:'rea-notes46-installed-execution-source-capture/v1',execution:execution(),scope,phase:kind,sourceCommit:process.env.GITHUB_SHA,sourceEpoch:floor.sourceEpoch,floor:floorPin,selectedNotesSources:46,studySources:10,selectedSemanticInputs:128,cycleFreeAndImmutableRoles:12,files:rows.length,rawBytes:total,limits:floor.sourceLimits,actualNotes:names,gitStatus:status(),rows,safeObservedSourceBytesPreserved:true,contentsPreserved:errors.length===0,authenticationErrors:errors,sourceAuthenticated:errors.length===0};save('notes46-source-'+kind+'.json',result);assert.equal(errors.length,0,'Actual bounded sources/errors were preserved before rejection');assert.equal(rows.length,140);return result;}

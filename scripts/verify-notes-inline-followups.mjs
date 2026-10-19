@@ -1,4 +1,4 @@
-import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';
+import {createNotes41AwareProofMigrationFromRoot as createEditorVaultProofMigrationFromRoot} from './notes41-publication-source-view.mjs';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync, lstatSync, realpathSync } from 'node:fs';
 import { resolve, relative, sep } from 'node:path';
@@ -41,8 +41,8 @@ function reader(root,onFile) {
  function location(p){safe(p);let current=base;for(const s of p.split('/')){current=resolve(current,s);assert.equal(lstatSync(current).isSymbolicLink(),false,'Symlink/reparse proof path');}const real=realpathSync(current),r=relative(base,real);assert.ok(r && r!=='..' && !r.startsWith('..'+sep) && !r.startsWith(sep),'Escaping proof path');return current;}
  function rawRead(p, expected, inert=false){const at=location(p),stat=lstatSync(at);assert.ok(stat.isFile() && stat.size<=32*1024*1024);const b=readFileSync(at),id={bytes:b.length,sha256:sha(b)};assert.equal(b.length,stat.size);if(expected)same(id,expected,p);
   if(seen.has(p))same(id,seen.get(p),'Changed during verification: '+p);else{seen.set(p,id);total+=b.length;assert.ok(seen.size<=5000 && total<=512*1024*1024);onFile?.({path:p,...id});}if(inert)carrier(b);return b;}
- const migration=createEditorVaultProofMigration(rawRead);function read(p,expected,inert=false){return rawRead(migration.resolve(p,expected)??p,expected,inert);}function json(p,expected){return JSON.parse(read(p,expected,true));}
- function finish(){for(const [p,id]of seen)rawRead(p,id);return {authenticatedFiles:seen.size,authenticatedBytes:total};}
+ const migration=createEditorVaultProofMigrationFromRoot(base);function read(p,expected,inert=false){return rawRead(migration.resolve(p,expected)??p,expected,inert);}function json(p,expected){return JSON.parse(read(p,expected,true));}
+ function finish(){for(const [p,id]of seen)rawRead(p,id);migration.notes41SourceView.recheck();return {authenticatedFiles:seen.size,authenticatedBytes:total};}
  return {read,json,finish,base};
 }
 

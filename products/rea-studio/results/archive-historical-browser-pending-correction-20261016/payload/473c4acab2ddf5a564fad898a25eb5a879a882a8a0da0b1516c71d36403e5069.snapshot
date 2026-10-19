@@ -1,0 +1,75 @@
+"""Bounded portable publication-backup verification only; no product execution."""
+import sys, json, zipfile, hashlib, stat
+from pathlib import Path
+
+source = Path(sys.argv[1]).resolve()
+expected = sys.argv[2]
+base = Path(__file__).resolve().parent / 'cloud-verification-backups'
+assert source.is_relative_to(base.resolve()) and source.is_file()
+digest = lambda data: hashlib.sha256(data).hexdigest()
+raw = source.read_bytes()
+assert len(raw) <= 32 * 1024 * 1024 and digest(raw) == expected
+folder = source.parent / source.stem
+folder.mkdir(exist_ok=False)
+
+def unpack(archive, destination, limit_files, limit_bytes, limit_file):
+    destination.mkdir(parents=True, exist_ok=True)
+    rows, seen = [], set()
+    with zipfile.ZipFile(archive) as zipped:
+        assert len(zipped.infolist()) <= limit_files
+        assert sum(entry.file_size for entry in zipped.infolist()) <= limit_bytes
+        for entry in zipped.infolist():
+            name = entry.filename
+            assert name and name.casefold() not in seen
+            seen.add(name.casefold())
+            assert not name.startswith(('/', '\\')) and '\\' not in name and ':' not in name
+            assert all(part not in ('..', '.') for part in Path(name).parts)
+            assert not stat.S_ISLNK(entry.external_attr >> 16)
+            target = (destination / name).resolve()
+            assert target.is_relative_to(destination.resolve())
+            if entry.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            assert entry.file_size <= limit_file
+            data = zipped.read(entry)
+            assert len(data) == entry.file_size
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with target.open('xb') as output:
+                output.write(data)
+            assert target.read_bytes() == data
+            rows.append({'path': name, 'bytes': len(data), 'sha256': digest(data)})
+    return rows
+
+unpack(source, folder / 'downloaded-contents', 100, 32 * 1024 * 1024, 32 * 1024 * 1024)
+archives = list((folder / 'downloaded-contents').rglob('*.zip'))
+assert len(archives) == 1
+evidence = folder / 'readable-evidence'
+files = unpack(archives[0], evidence, 100, 35 * 1024 * 1024, 12 * 1024 * 1024)
+result = {'schema': 'rea-local-publication-attempt-backup/v1', 'artifact': str(source), 'artifactSHA256': expected,
+          'archiveBytes': len(raw), 'readableEvidence': str(evidence), 'files': files,
+          'allCRCAndBytesReadable': True, 'publicationAcceptance': False, 'localProductExecutions': 0,
+          'localTests': 0, 'localBuilds': 0, 'fullDevelopmentSuiteAcceptance': False}
+attempt_file = evidence / 'attempt-validation.json'
+if attempt_file.exists():
+    attempt = json.loads(attempt_file.read_text(encoding='utf-8-sig'))
+    assert attempt['schema'] == 'rea-hosted-publication-validation-attempt/v1'
+    assert attempt['status'] in ('passed', 'failed', 'interrupted', 'running')
+    result['attempt'] = attempt
+    controls_file = evidence / 'controls.json'
+    if controls_file.exists():
+        controls = json.loads(controls_file.read_text(encoding='utf-8-sig'))
+        assert controls['schema'] == 'rea-cloud-publication-controls/v1'
+        assert controls['checks'] == len(controls['rows'])
+        result['controls'] = {'status': controls['status'], 'checks': controls['checks']}
+    if attempt['status'] == 'passed':
+        assert attempt['payloadStable'] and attempt['controls']['status'] == 'passed'
+        assert len(attempt['phases']) == 2 and all(row['exitCode'] == 0 and row['status'] == 'passed' for row in attempt['phases'])
+        for row in attempt['derived']:
+            assert row['path'] in ('PUBLICATION-MANIFEST.json', 'VALIDATION.json')
+            data = (evidence / 'derived' / row['path']).read_bytes()
+            assert len(data) == row['bytes'] and digest(data) == row['sha256']
+        result['publicationAcceptance'] = True
+else:
+    result['evidenceState'] = 'No producer receipt; preserve available workflow/storage diagnostics without acceptance.'
+(folder / 'local-backup-verification.json').write_text(json.dumps(result, indent=2) + '\n', encoding='utf-8')
+print(json.dumps({key: value for key, value in result.items() if key not in ('files', 'attempt')}))

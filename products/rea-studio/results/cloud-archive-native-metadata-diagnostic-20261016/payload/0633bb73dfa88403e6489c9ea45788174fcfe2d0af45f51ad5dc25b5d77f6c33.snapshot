@@ -1,0 +1,37 @@
+from pathlib import Path
+import json,hashlib,difflib,subprocess
+ROOT=Path(__file__).resolve().parents[1];WORK=ROOT/'work';REPO=ROOT/'outputs/rea-research-lab';STAGE=WORK/'native-diagnostic-backup-binding-38938239800-r3-next'
+assert not STAGE.exists()
+ident=lambda b:{'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+run='38938239800';head='e655fd909c7bed411c5bee50ce248dd6fe0787c6';job='117099039133'
+auth_path=WORK/'native-diagnostic-backup-template-r3-20261016-next/source-authority.json';auth_raw=auth_path.read_bytes();assert ident(auth_raw)=={'bytes':15258,'sha256':'8d3dae5edca845bd05e6cf215605465efefc4f9f3b91779a5f14d92d106bb244'};auth=json.loads(auth_raw)
+peer_path=WORK/'native-diagnostic-r3-backup-template-complete-independent-source-review-20261016.json';peer_raw=peer_path.read_bytes();assert ident(peer_raw)=={'bytes':3592,'sha256':'1cd98a0ba03ed877bdda6798fa537eeda2ff11223be7cd8c40af8218f81b4259'}
+reader_old=(ROOT/auth['reader']['path']).read_bytes();collector_old=(ROOT/auth['collector']['path']).read_bytes()
+assert ident(reader_old)=={k:auth['reader'][k] for k in ('bytes','sha256')};assert ident(collector_old)=={k:auth['collector'][k] for k in ('bytes','sha256')}
+assert subprocess.run(['git','rev-parse','HEAD'],cwd=REPO,capture_output=True,check=True).stdout.decode().strip()==head
+git_bound=[]
+for row in auth['fixedSourceRows'][-3:]:
+ raw=subprocess.run(['git','show',head+':'+row['path']],cwd=REPO,capture_output=True,check=True).stdout
+ assert ident(raw)=={k:row[k] for k in ('bytes','sha256')};git_bound.append(row)
+reader_new=reader_old;collector_new=collector_old
+for before,after in [('PENDING_RUN',run),('PENDING_HEAD',head),('PENDING_JOB',job)]:
+ assert reader_new.count(before.encode())==1 and collector_new.count(before.encode())==1
+ reader_new=reader_new.replace(before.encode(),after.encode());collector_new=collector_new.replace(before.encode(),after.encode())
+reader_name='unpack-archive-native-diagnostic-'+run+'-r3.py';collector_name='collect-archive-native-diagnostic-'+run+'-r3.mjs';reader_id=ident(reader_new)
+old_name=Path(auth['reader']['path']).name
+for before,after in [(old_name.encode(),reader_name.encode()),(('READER_BYTES='+str(auth['reader']['bytes'])).encode(),('READER_BYTES='+str(reader_id['bytes'])).encode()),(auth['reader']['sha256'].encode(),reader_id['sha256'].encode())]:
+ assert collector_new.count(before)==1;collector_new=collector_new.replace(before,after)
+STAGE.mkdir()
+for name,raw in [(reader_name,reader_new),(collector_name,collector_new)]:
+ file=WORK/name;assert not file.exists();file.write_bytes(raw);assert file.read_bytes()==raw;(STAGE/(name+'.snapshot')).write_bytes(raw)
+for label,before,after in [('reader',reader_old,reader_new),('collector',collector_old,collector_new)]:
+ (STAGE/(label+'-identity-only.diff')).write_text(''.join(difflib.unified_diff(before.decode().splitlines(True),after.decode().splitlines(True),fromfile='approved-unbound/'+label,tofile='actual-run-bound/'+label)),encoding='utf-8',newline='')
+record={'schema':'rea-native-diagnostic-exact-run-backup-binding/v1','sourceOnly':True,'runId':run,'headSHA':head,'jobId':job,'runAttempt':'1',
+ 'observedDiscovery':'Supported read-only rea-cloud-github.mjs runs and jobs output on2026-10-16; exact terminal raw API will be collected only after narrow source peer.',
+ 'templateAuthority':{'path':str(auth_path.relative_to(ROOT)).replace('\\','/'),**ident(auth_raw)},'templatePeer':{'path':str(peer_path.relative_to(ROOT)).replace('\\','/'),**ident(peer_raw)},
+ 'reader':{'path':'work/'+reader_name,**reader_id},'collector':{'path':'work/'+collector_name,**ident(collector_new)},'exactThreeCommittedDiagnosticPins':git_bound,
+ 'allowedReaderDelta':['RUN','HEAD','JOB'],'allowedCollectorDelta':['RUN','HEAD','JOB','reader filename','reader byte count','reader SHA256'],
+ 'allByteBoundsSourceTablesAndAcceptanceGatesUnchanged':True,'templateBodiesPreserved':True,'readerOrCollectorExecutions':0,'apiCollectionExecutions':0,'localProductExecutions':0,'activeWrites':0,
+ 'requiredBeforeUse':'Independent narrow source binding review and existing root full-template review.'}
+raw=(json.dumps(record,indent=2)+'\n').encode();(STAGE/'source-authority.json').write_bytes(raw)
+print(json.dumps({'stage':str(STAGE),'authority':ident(raw),'reader':reader_id,'collector':ident(collector_new)}))

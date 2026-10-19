@@ -1,0 +1,25 @@
+{
+  "schema": "rea-flow-link-installed-cache-path-adapter/v1",
+  "source": "products/rea-studio/apps/flow/link-original.test.mjs",
+  "sourceFingerprint": {
+    "bytes": 7127,
+    "sha256": "e5687e7c27db8624680ea304acf9a50b6b29ab236a38942e5c87ab6ede6ef223"
+  },
+  "proposal": "proposed-live/link-original.test.mjs",
+  "proposalFingerprint": {
+    "bytes": 7208,
+    "sha256": "6e57d79f6785fe66542013cee6f59f2f431bee671edb7071dad5923f96c9a864"
+  },
+  "edits": [
+    {
+      "before": "cache=process.env.FLOW_ORIGINAL_CACHE;",
+      "after": "cache=process.env.FLOW_ORIGINAL_CACHE??path.resolve(here,'../../../../.local/flow-original');"
+    },
+    {
+      "before": "const env={...process.env,FLOW_LINK_OBSERVATIONS:out};",
+      "after": "const env={...process.env,FLOW_LINK_OBSERVATIONS:out,FLOW_ORIGINAL_CACHE:cache};"
+    }
+  ],
+  "inverseExact": true,
+  "scope": "Only default original cache path and explicit child cache environment forwarding. Assertions, fixture algorithms, counters and outputs unchanged. Source-only proposal, not executed in current campaign."
+}

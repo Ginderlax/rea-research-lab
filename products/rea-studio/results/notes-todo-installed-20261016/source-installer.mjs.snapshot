@@ -1,0 +1,68 @@
+// Reversible source copying and readable backups only. No application or verifier is imported or executed.
+import fs from 'node:fs';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
+const work=import.meta.dirname,lab=path.resolve(work,'../outputs/rea-research-lab');
+const stage=path.join(work,'notes-installed-tooling-phase3-r4-next'),candidate=path.join(stage,'candidate');
+const head='cc7a5830b1c4e719b1f3ceb5b3aa1abe52c3cae3',tag='rea-notes-before-install-cc7a583-20261016';
+const prefix='products/rea-studio/results/notes-todo-installed-20261016',local=path.join(work,'cloud-recovery-20261015/notes-source-installation');
+const authorityPin={bytes:13003,sha256:'a223a3e3498a83e5fd6b3f5619e6c66c6cc337b6de770849a3e62a5155fc47e4'};
+const peers=[{name:'notes-installed-phase12-independent-source-review-20261016.json',publicName:'independent-phase12-source-review.json.snapshot',pin:{bytes:10465,sha256:'7017848fac20b51eb951b1249655e72dc3e2296aea6f8d5a50eb7d53f67c42d7'}},{name:'notes-installed-phase3-r4-independent-source-review-20261016.json',publicName:'independent-phase3-r4-source-review.json.snapshot',pin:{bytes:10328,sha256:'8b42360db4671e43f87eda449640442120791ee29bb9de0673cdf5a7a396566b'}}];
+const id=b=>({bytes:b.length,sha256:createHash('sha256').update(b).digest('hex')});
+function safe(p){assert(typeof p==='string'&&p&&!/[\\:\x00-\x1f\x7f]/.test(p)&&!p.startsWith('/')&&p.split('/').every(x=>x&&x!=='.'&&x!=='..'));return p;}
+function read(root,p){let at=root;for(const x of safe(p).split('/')){at=path.join(at,x);assert(!fs.lstatSync(at).isSymbolicLink());}const s=fs.lstatSync(at);assert(s.isFile()&&s.size<=1024*1024);const b=fs.readFileSync(at);assert.equal(b.length,s.size);return b;}
+function git(...args){return execFileSync('git',['-C',lab,...args],{maxBuffer:8*1024*1024,timeout:30000,windowsHide:true});}
+function text(...args){return git(...args).toString('utf8').trim();}
+assert.equal(text('branch','--show-current'),'codex/rea-cloud-recovery-20261015');assert.equal(text('rev-parse','HEAD'),head);assert.equal(text('status','--porcelain=v1','--untracked-files=all'),'');
+assert.equal(text('rev-parse','refs/tags/'+tag),head);assert.equal(text('ls-remote','--tags','origin','refs/tags/'+tag),head+'\trefs/tags/'+tag);
+git('merge-base','--is-ancestor','016ecd175c0700d1a94d5219af6719989a4a6e45',head);
+assert(!fs.existsSync(local));assert(!fs.existsSync(path.join(lab,prefix)));
+const authorityBytes=read(stage,'change-authority.json');assert.deepEqual(id(authorityBytes),authorityPin);const authority=JSON.parse(authorityBytes);
+assert.equal(authority.baseCommit,'016ecd175c0700d1a94d5219af6719989a4a6e45');assert.equal(authority.candidateFiles,34);assert.equal(authority.candidateBytes,1410942);assert.equal(authority.files.length,34);assert.equal(new Set(authority.files.map(r=>r.path)).size,34);assert.equal(authority.applicationTargetsUnchanged,8);assert.equal(authority.publicationControlsPlanned,208);assert.equal(authority.actualSourceInstallationPerformedByAuthor,false);
+for(const p of peers){p.bytes=read(work,p.name);assert.deepEqual(id(p.bytes),p.pin);const value=JSON.parse(p.bytes);if(value.blockers)assert.deepEqual(value.blockers,[]);if(value.remainingSourceBlockers)assert.deepEqual(value.remainingSourceBlockers,[]);}
+const toolingPeer=JSON.parse(peers[1].bytes);assert.deepEqual({bytes:toolingPeer.authority.bytes,sha256:toolingPeer.authority.sha256},authorityPin);assert.equal(toolingPeer.candidate.all34AfterIdentitiesIndependentlyMatched,true);assert.equal(toolingPeer.resolvedSourceBlocker.R4ExactCorrectionDiffRead,true);
+const beforeAliases={
+ '.github/workflows/notes-todo-browser-cloud.yml':'products/rea-studio/results/notes-todo-source-transition-20261016/workflow-before/notes-todo-browser-cloud.yml.snapshot',
+ '.github/workflows/notes-todo-cloud.yml':'products/rea-studio/results/notes-todo-source-transition-20261016/workflow-before/notes-todo-cloud.yml.snapshot',
+ 'products/rea-studio/apps/notes/client.mjs':'products/rea-studio/experiments/notes-todo/before/products/rea-studio/apps/notes/client.mjs.snapshot',
+ 'products/rea-studio/apps/notes/server.mjs':'products/rea-studio/experiments/notes-todo/before/products/rea-studio/apps/notes/server.mjs.snapshot',
+ 'products/rea-studio/apps/notes/README.md':'products/rea-studio/experiments/notes-todo/before/products/rea-studio/apps/notes/README.md.snapshot',
+ 'products/rea-studio/scripts/verify-cloud.mjs':'products/rea-studio/results/notes-todo-source-transition-20261016/verifier-before/verify-cloud.mjs.snapshot',
+ 'products/rea-studio/scripts/verify-cloud-browser.mjs':'products/rea-studio/results/notes-todo-source-transition-20261016/verifier-before/verify-cloud-browser.mjs.snapshot',
+ ...Object.fromEntries(['verify-records.mjs','verify-followup-records.mjs','editor-vault-proof-migration.mjs','verify-cloud-publication.mjs','publication-integrity-controls.mjs'].map(n=>['scripts/'+n,'products/rea-studio/results/notes-todo-source-transition-20261016/verifier-before/'+n+'.snapshot']))
+};assert.equal(Object.keys(beforeAliases).length,12);
+const plan=authority.files.map(row=>{safe(row.path);assert(row.before===null||row.before&&Number.isSafeInteger(row.before.bytes));const after=read(candidate,row.path);assert.deepEqual(id(after),row.after);let before=null;
+ if(row.before){before=read(lab,row.path);assert.deepEqual(id(before),row.before);assert.deepEqual(before,git('show',head+':'+row.path));assert(beforeAliases[row.path]);const alias=beforeAliases[row.path],aliasRoot=fs.existsSync(path.join(candidate,alias))?candidate:lab;assert.deepEqual(read(aliasRoot,alias),before);}else assert(!fs.existsSync(path.join(lab,row.path)));
+ return{...row,beforeBytes:before,afterBytes:after,beforeImage:beforeAliases[row.path]??null};});
+assert.equal(plan.filter(r=>r.before).length,12);assert.equal(plan.filter(r=>r.before===null).length,22);assert.equal(plan.reduce((n,r)=>n+r.afterBytes.length,0),1410942);
+const notePrefix='products/rea-studio/apps/notes/';
+const oldNoteNames=text('ls-files','--',notePrefix).split(/\r?\n/).filter(n=>n&&!n.split('/').includes('results')).sort();assert.equal(oldNoteNames.length,27);
+const notesExpected=new Map(oldNoteNames.map(name=>[name,id(read(lab,name))]));for(const r of plan.filter(r=>r.path.startsWith(notePrefix)&&!r.path.split('/').includes('results')))notesExpected.set(r.path,r.after);assert.equal(notesExpected.size,32);
+const protectedNames=['products/rea-studio/requirements/INDEX.json','products/rea-studio/requirements/workspace-products.json','products/rea-studio/results/development-validation.json','products/rea-studio/experiments/notes-todo/bundle.json','products/rea-studio/results/cloud-notes-todo-first-pass-20261016/preservation-manifest.json','products/rea-studio/results/cloud-notes-todo-browser-first-pass-20261016/preservation-manifest.json'];
+const protectedPins=protectedNames.map(name=>({path:name,...id(read(lab,name))}));
+fs.mkdirSync(local,{recursive:true});
+for(const r of plan){for(const[k,b]of [['before',r.beforeBytes],['after',r.afterBytes]])if(b!==null){const f=path.join(local,k,r.path+'.snapshot');fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,b,{flag:'wx'});assert.deepEqual(read(path.join(local,k),r.path+'.snapshot'),b);}}
+fs.writeFileSync(path.join(local,'source-authority.json.snapshot'),authorityBytes,{flag:'wx'});for(const p of peers)fs.writeFileSync(path.join(local,p.publicName),p.bytes,{flag:'wx'});
+assert.equal(text('rev-parse','HEAD'),head);assert.equal(text('status','--porcelain=v1','--untracked-files=all'),'');
+for(const r of plan){if(r.before)assert.deepEqual(id(read(lab,r.path)),r.before);else assert(!fs.existsSync(path.join(lab,r.path)));}
+const installedAtUtc=new Date().toISOString();
+for(const r of plan){const f=path.join(lab,r.path);fs.mkdirSync(path.dirname(f),{recursive:true});fs.writeFileSync(f,r.afterBytes,{flag:r.before?'w':'wx'});assert.deepEqual(id(read(lab,r.path)),r.after);}
+for(const r of plan)assert.deepEqual(id(read(lab,r.path)),r.after);for(const r of protectedPins)assert.deepEqual(id(read(lab,r.path)),{bytes:r.bytes,sha256:r.sha256});for(const[name,pin]of notesExpected)assert.deepEqual(id(read(lab,name)),pin);
+function notesFiles(folder){return fs.readdirSync(folder,{withFileTypes:true}).flatMap(e=>{assert(!e.isSymbolicLink());if(e.name==='results')return[];const f=path.join(folder,e.name);return e.isDirectory()?notesFiles(f):[path.relative(lab,f).split(path.sep).join('/')];});}
+assert.deepEqual(notesFiles(path.join(lab,notePrefix)).sort(),[...notesExpected.keys()].sort());
+const journalRoot=path.join(lab,prefix);fs.mkdirSync(journalRoot,{recursive:true});const publicRecords=[];
+function publish(name,bytes){fs.writeFileSync(path.join(journalRoot,name),bytes,{flag:'wx'});assert.deepEqual(read(journalRoot,name),bytes);publicRecords.push({path:name,...id(bytes)});}
+publish('source-authority-r4.json.snapshot',authorityBytes);for(const p of peers)publish(p.publicName,p.bytes);publish('source-installer.mjs.snapshot',fs.readFileSync(import.meta.filename));
+const receipt={schema:'rea-Notes-actual-reviewed-source-installation/v1',status:'exact-reviewed-source-images-installed-awaiting-hosted-acceptance',installedAtUtc,actualPreInstallHead:head,authoredBaseCommit:authority.baseCommit,authoredBaseIsAncestorAndAllExactBeforePinsMatch:true,preInstallGitTag:tag,preInstallTagRemoteVerified:true,
+ sourceAuthority:{path:prefix+'/source-authority-r4.json.snapshot',...authorityPin},independentSourceReviewRecords:publicRecords.filter(r=>r.path.startsWith('independent-')),sourceTargets:34,applicationTargets:8,applicationReplacements:3,applicationAdditions:5,totalReplacements:12,totalAdditions:22,all32CurrentNotesFilesByteVerified:true,eligibleNotesSources:30,
+ rows:plan.map(({path:name,before,after,beforeImage})=>({path:name,before,after,beforeImage,copyReadbackExact:true})),allCurrentAfterPinsVerified:true,allPublicBeforeAliasesMatchActualBeforeBytes:true,protectedUnchangedRecords:protectedPins,
+ actualLocalBeforeFiles:12,actualLocalAfterFiles:34,localBackupReadabilityVerified:true,publicRecords,sourceInstallationPerformed:true,applicationRuntimeImportedOrExecuted:false,installationPerformedByCloudWorkflow:false,
+ hostedInstalledAcceptance:false,hostedFinite92Accepted:false,hostedBrowser8Accepted:false,hostedPublication208Accepted:false,hostedNewFullSuiteAccepted:false,historicalExperimental92Or8Rebound:false,historicalReceiptsRewritten:false,requirementsRegistriesRewritten:false,
+ oldExperimentalAutomaticTriggersRetired:2,oldExperimentalManualEntriesRetained:2,frozenReadmeIsHistoricalProposalEpoch:true,fullOriginalProductParity:false,universalSuperiority:false,localProductExecutions:0,localTests:0,localBuilds:0,localSyntaxChecks:0,localBrowserExecutions:0,
+ acceptanceScope:'Actual byte-exact source copy on the declared pre-install commit. Fresh committed finite92/browser8, source postchecks, publication208 and full-suite results remain required and must have their own run/source identities. The frozen proposal README, source maps and old experimental receipts retain their original status.'};
+const receiptBytes=Buffer.from(JSON.stringify(receipt,null,2)+'\n');publish('installation-receipt.json',receiptBytes);fs.writeFileSync(path.join(local,'installation-receipt.json'),receiptBytes,{flag:'wx'});
+const allChanged=git('status','--porcelain=v1','--untracked-files=all').toString('utf8').trimEnd().split(/\r?\n/).filter(Boolean).map(line=>line.slice(3)).sort();assert.deepEqual(allChanged,[...plan.map(r=>r.path),...publicRecords.map(r=>prefix+'/'+r.path)].sort());
+assert.equal(text('rev-parse','HEAD'),head);fs.writeFileSync(path.join(local,'changed-paths.txt'),allChanged.join('\n')+'\n',{flag:'wx'});
+console.log(JSON.stringify({installedSourceFiles:34,applicationTargets:8,currentNotesFiles:32,actualLocalBackupFiles:46,publicJournalFiles:publicRecords.length,installedAtUtc,preInstallHead:head,tag,receipt:prefix+'/installation-receipt.json',freshHostedAcceptance:false}));

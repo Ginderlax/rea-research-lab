@@ -1,0 +1,94 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import {fileURLToPath,pathToFileURL} from 'node:url';
+const own=path.dirname(fileURLToPath(import.meta.url));
+const workspace=path.resolve(own,'../..');
+const repo=path.join(workspace,'outputs/rea-research-lab');
+const stage='work/flow-vault-proof-transition-next';
+const pins={manifest:'1eee491b8e980014c813f9f626219c2bb9e6a0adfcbbd0360ac5ddb4e0247d08',candidate:'3d0a4ee0b5e9eef36c357c9a3c6170008a2bb0882cc8a755756358aabdf6ced1',prior:'69449058df56a5841d4a0dafc2d88603f3022a71cec6f7363ec3751f0ffef5a2'};
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+const id=b=>({bytes:b.length,sha256:sha(b)});
+const captured=new Map(),calls=[],rejections=[],checks=[];
+const startedAt=new Date().toISOString();
+function safe(p){assert.equal(typeof p,'string');assert(p&&!path.isAbsolute(p)&&!p.includes('\\')&&!p.includes(':'));assert(p.split('/').every(s=>s&&s!=='.'&&s!=='..'));}
+function read(root,p){safe(p);const full=path.join(root==='repo'?repo:workspace,root==='repo'?'':root,p);const b=fs.readFileSync(full);const row={root,path:p,...id(b)},key=root+'/'+p;if(captured.has(key))assert.deepEqual(captured.get(key),row,'Source changed '+key);captured.set(key,row);return b;}
+function match(b,r,label){assert.equal(sha(b),r.sha256,label+' SHA');if(r.bytes!==undefined)assert.equal(b.length,r.bytes,label+' bytes');}
+function json(root,p){return JSON.parse(read(root,p));}
+function strict(root,count,pin,manifestName='manifest.json'){const b=read(root,manifestName);match(b,{sha256:pin},root+' manifest');const m=JSON.parse(b);assert.equal(m.inventory.length,count);const expected=new Set([manifestName,...m.inventory.map(r=>r.path)]);assert.equal(expected.size,count+1);for(const r of m.inventory)match(read(root,r.path),r,root+'/'+r.path);const walk=(rel='')=>fs.readdirSync(path.join(workspace,root,rel),{withFileTypes:true}).flatMap(e=>{const p=rel?rel+'/'+e.name:e.name;assert(!e.isSymbolicLink());return e.isDirectory()?walk(p):[p];});assert.deepEqual(walk().sort(),[...expected].sort());return m;}
+function checked(name,details={}){checks.push({name,accepted:true,...details});console.log(JSON.stringify(checks.at(-1)));}
+function rejects(name,fn){try{fn();assert.fail('Unexpected acceptance: '+name);}catch(e){if(e.message==='Unexpected acceptance: '+name)throw e;rejections.push({name,rejected:true,error:e.message});}}
+let failure=null,summary=null,counts=null;
+try{
+  strict(stage,22,pins.manifest);
+  strict('work/flow-static-link-textarea-publication-independent-review',67,'4eabe6a590f3a43a49164f9ccf0891bb5e404e14bfa008b15822e95d8319a8f4');
+  strict('work/vault-group-edit-installation-plan-independent-review',72,'37a4c4fa3da7bcf99f7ef9116b0be3a0d6cdf6f210d4cb3d9d4c1ea03857590e');
+  checked('strict22 candidate and exact accepted independent Flow67/Vault72 proof epochs');
+  const candidate=read(stage,'candidate/scripts/editor-vault-proof-migration.mjs');match(candidate,{bytes:47841,sha256:pins.candidate},'candidate');
+  const prior=read(stage,'before/scripts/editor-vault-proof-migration.mjs.snapshot');match(prior,{bytes:26303,sha256:pins.prior},'prior');
+  match(read('repo','scripts/editor-vault-proof-migration.mjs'),id(prior),'installed prior module remains');
+  const adaptations=json(stage,'exact-adaptations.json');assert.equal(adaptations.length,5);
+  let inverse=candidate.toString();for(const a of [...adaptations].reverse()){assert.equal(inverse.split(a.after).length-1,1,a.name);inverse=inverse.replace(a.after,a.before);}assert.deepEqual(Buffer.from(inverse),prior);
+  const fixed=JSON.parse(candidate.toString().match(/const fixed=(\{[\s\S]*?\});\r?\nconst next=/)[1]);
+  const next=JSON.parse(candidate.toString().match(/const next=(\{[\s\S]*?\});\r?\nconst sha=/)[1]);
+  assert.deepEqual(next,json(stage,'fixed-next-identities.json'));
+  assert.deepEqual(fixed,JSON.parse(prior.toString().match(/const fixed=(\{[\s\S]*?\});\r?\nconst sha=/)[1]));
+  checked('five exact inverses recover installed prior26303 module; fixed earlier schema/body identities preserved');
+  const virtual=new Map(),virtualSources=[];
+  const sets=[['flow','work/flow-static-link-textarea-publication-plan-next','installation-proposals.json','proposals',83,'7fe69cfdd42a44716e31c07b3a65a2ee29634e105acfdb35865bc4e9beb5d7a4'],['vault','work/vault-group-edit-installation-plan-next','installation-plan.json','rows',291,'08ba0c57de6456c8cb5c508be318703a1c55977dc0c9d7f4bd6b5271f513d99d']];
+  const derived=[];
+  for(const [name,root,file,key,count,pin] of sets){strict(root,count,pin);const rows=json(root,file)[key];assert.equal(rows.length,name==='flow'?19:16);for(const r of rows){const destination=r.destination??r.target,source=r.sourcePath??r.source;const b=read(root,source);match(b,r.after,destination);if(r.before)match(read('repo',destination),r.before,destination+' current before');else assert(!fs.existsSync(path.join(repo,destination)));virtual.set(destination,b);virtualSources.push({path:destination,sourceRoot:root,sourcePath:source,...id(b)});derived.push({path:destination,before:r.before,after:r.after,plan:name});}}
+  assert.deepEqual(derived,next.sources);assert.equal(derived.length,35);assert.equal(next.routes.length,9);
+  const publicCopies=json(stage,'public-copy-list.json').records;assert.equal(publicCopies.length,12);
+  for(const r of publicCopies){const b=read(stage,r.sourcePath);match(b,r,r.sourcePath);assert.equal(r.publicPath,'products/rea-studio/results/flow-vault-proof-transition-20261013/'+r.sourcePath);virtual.set(r.publicPath,b);virtualSources.push({path:r.publicPath,sourceRoot:stage,sourcePath:r.sourcePath,...id(b)});}
+  assert.equal(virtual.size,47);
+  const overlap=fixed.sources.filter(r=>next.sources.some(n=>n.path===r.path));assert.equal(overlap.length,4);
+  const mandatory=[...fixed.sources.filter(r=>!overlap.some(o=>o.path===r.path)),...next.sources];assert.equal(mandatory.length,61);assert.equal(new Set(mandatory.map(r=>r.path)).size,61);
+  assert.equal(next.routes.filter(r=>r.path.endsWith('.mjs')).length,6);assert.equal(next.routes.filter(r=>r.path.endsWith('.md')).length,3);
+  assert.equal(new Set([...fixed.routes,...next.routes].map(r=>r.path)).size,13);
+  checked('reviewed35 exact proposals and12 exact own inert aliases; union61 current mandatory/9 before/4 overwritten prior after');
+  const module=await import(pathToFileURL(path.join(workspace,stage,'candidate/scripts/editor-vault-proof-migration.mjs')).href);
+  const rawRead=p=>{calls.push(p);return virtual.has(p)?Buffer.from(virtual.get(p)):Buffer.from(read('repo',p));};
+  const good=module.createEditorVaultProofMigration(rawRead);summary=good.summary();
+  assert.equal(summary.authenticatedFiles,106);assert.equal(summary.authenticatedBytes,3431611);assert.equal(summary.currentInstalledSourcesMandatory,61);assert.equal(summary.latestBeforeImagesMandatory,9);assert.equal(summary.currentVerifierAfterMandatory,7);assert.equal(summary.historical937NotCurrentAcceptance,true);assert.equal(summary.historical847NotCurrentAcceptance,true);
+  for(const r of fixed.verifiers)match(read('repo',r.path),r.after,'unchanged current verifier '+r.path);
+  checked('actual candidate library-only virtual proof succeeds with106 files/3431611 bytes and7 current verifier guards',summary);
+  let rank=0;
+  const instantiateMutated=(p,mode)=>module.createEditorVaultProofMigration(q=>{const b=rawRead(q);if(q!==p)return b;if(mode==='missing')throw new Error('Owned unavailable proof input '+p);const out=Buffer.from(b);out[rank++%out.length]^=1;return out;});
+  for(const r of mandatory)rejects('fresh current mutation '+r.path,()=>instantiateMutated(r.path,'mutation'));
+  for(const r of fixed.verifiers)rejects('fresh verifier mutation '+r.path,()=>instantiateMutated(r.path,'mutation'));
+  for(const r of next.routes){rejects('fresh before mutation '+r.path,()=>instantiateMutated(r.historicalPath,'mutation'));rejects('fresh before missing '+r.path,()=>instantiateMutated(r.historicalPath,'missing'));}
+  for(const r of next.authorities)rejects('fresh authority mutation '+r.name,()=>instantiateMutated(r.path,'mutation'));
+  checked('fresh exact current61/verifier7/before18/authority2 mutation refusals',{refusals:88});
+  const routes=[...fixed.routes,...next.routes];
+  for(const r of fixed.routes){assert.equal(good.resolve(r.path,r.before),r.historicalPath);if(!next.routes.some(n=>n.path===r.path))assert.equal(good.resolve(r.path,r.after),null);}
+  for(const r of next.routes){assert.equal(good.resolve(r.path,r.before),r.historicalPath);assert.equal(good.resolve(r.path,r.after),null);}
+  for(const r of fixed.verifiers){assert.equal(good.resolve(r.path,r.before),r.historicalPath);assert.equal(good.resolve(r.path,r.after),null);}
+  for(const r of routes){rejects('fresh wrong SHA '+r.path,()=>good.resolve(r.path,{bytes:r.before.bytes,sha256:'1'.repeat(64)}));rejects('fresh wrong bytes '+r.path,()=>good.resolve(r.path,{...r.before,bytes:r.before.bytes+1}));rejects('fresh missing requested identity '+r.path,()=>good.resolve(r.path));}
+  for(const r of fixed.verifiers)rejects('fresh wrong old verifier '+r.path,()=>good.resolve(r.path,{...r.before,sha256:'2'.repeat(64)}));
+  checked('old847 routes/latest937 routes/intermediate four/prior7 verifier identities resolve only exact named bytes',{namedRouteRows:routes.length,identityRefusals:58});
+  const unknown=['products/rea-studio/apps/flow/no-such-file.mjs','products/rea-studio/apps/vault/CLIENT.mjs','products/rea-studio/apps/vault/client.mjs.extra','products/rea-studio/apps/flow/constructor','products/rea-studio/apps/editor/new-unknown.mjs'];
+  for(const p of unknown){assert.equal(good.resolve(p,{bytes:7,sha256:'3'.repeat(64)}),null);assert.equal(good.resolve(p),null);}
+  for(const p of ['../x','/x','C:/x','a\\b','a//b','a/./b','a/../b','a/.local/b','a/work/b','a/node_modules/b','a/artifacts/b','a/tooling/b','a\u0000b','a\u007fb','x'.repeat(4097)])rejects('fresh unsafe path '+JSON.stringify(p),()=>good.resolve(p,{bytes:0,sha256:'0'.repeat(64)}));
+  for(const bad of [{bytes:-1,sha256:'0'.repeat(64)},{bytes:1.2,sha256:'0'.repeat(64)},{bytes:32*1024*1024+1,sha256:'0'.repeat(64)},{bytes:1,sha256:'XYZ'},{bytes:1,sha256:'A'.repeat(64)}])rejects('fresh malformed expected '+JSON.stringify(bad),()=>good.resolve(next.routes[0].path,bad));
+  checked('unknown names return no mapping;15 unsafe paths+5 malformed identity shapes refused');
+  const summaryTargets=[mandatory[mandatory.length-1].path,next.routes[next.routes.length-1].historicalPath,fixed.verifiers[fixed.verifiers.length-1].path,next.historical937.selected[0].path,next.historical937.statusBefore.path];
+  for(const target of summaryTargets){let settled=false;const instance=module.createEditorVaultProofMigration(p=>{const b=rawRead(p);if(settled&&p===target)b[b.length-1]^=1;return b;});settled=true;rejects('fresh final-summary reread '+target,()=>instance.summary());}
+  rejects('fresh nonbuffer reader',()=>module.createEditorVaultProofMigration(p=>rawRead(p).toString('utf8')));
+  rejects('fresh oversize reader',()=>module.createEditorVaultProofMigration(()=>Buffer.alloc(32*1024*1024+1)));
+  checked('five settled source/alias mutations caught on summary reread;nonbuffer/oversize public reader refused');
+  for(const name of ['development','status'])match(good.historicalMetadata(name),fixed.metadata[name],name+' before metadata');
+  for(const name of ['latest','current','constructor','__proto__'])rejects('fresh unknown historical metadata '+name,()=>good.historicalMetadata(name));
+  const historical937=json('repo',next.historical937.path);assert.equal(historical937.summary.tests,937);assert.equal(historical937.sourceFiles,737);
+  for(const r of next.historical937.selected)match(read('repo',r.path),r,r.path);
+  const status=json(stage,'metadata-before/products/rea-studio/STATUS.json.snapshot');assert.equal(status.source_stable_combined_checks.pass,937);assert.equal(status.complete_replacement_products,0);
+  checked('exact historical847 metadata and937/737/753 selected proof inputs retain epoch labels;current future acceptance not claimed');
+  const verifierInspection={wholeRootExecuted:false,reason:'The current PUBLICATION-MANIFEST pins pre-installation active files. No future publication manifest or current test receipt is fabricated; whole-root verification is deferred to root after actual installation/regeneration. This campaign invokes only the exported source-proof library with47 explicit virtual inputs, never a behavioral app.',fromRootAdapter:'Unchanged earlier filesystem adapter body is preserved by exact inverse. Segment lstat/realpath/file-size and reread checks are source-inspected; this campaign uses declared rawRead injection, not a synthetic filesystem race claim.',bounds:{files:160,aggregateBytes:16*1024*1024,perReadBytes:32*1024*1024},limits:['Bound checks occur after rawRead supplies a Buffer; custom-reader preallocation is not prevented.','The filesystem adapter checks size before reading; read/reparse races are not an atomic filesystem snapshot.','Only fixed source-proof paths are read; no credentials/network/application/original operation.']};
+  counts={checkGroups:checks.length+1,rejectionChecks:rejections.length,virtualInputs:47,mandatoryCurrent:61,priorUnchanged:26,latestCurrent:35,beforeAliases:9,overwrittenPriorAfter:4,priorVerifierCurrent:7,oldRouteRows:8,latestRouteRows:9,distinctHistoricalSourceNames:13,old720ChangedCodeNames:9,docsOutsideOld720:4,actualLibraryInvocations:1+88+5+2,wholeRootProofExecutions:0};
+  checked('bounded non-atomic source-proof contract;whole-root execution deferred without inventing future acceptance',verifierInspection);
+}catch(e){failure={name:e.name,message:e.message,stack:e.stack};console.error(e.stack);}
+const before=[...captured.values()].sort((a,b)=>(a.root+'/'+a.path).localeCompare(b.root+'/'+b.path));
+const after=before.map(r=>{const b=fs.readFileSync(path.join(r.root==='repo'?repo:workspace,r.root==='repo'?'':r.root,r.path));const row={root:r.root,path:r.path,...id(b)};assert.deepEqual(row,r,'Final stable source '+r.root+'/'+r.path);return row;});
+for(const [file,value] of [['source-before.json',{at:startedAt,records:before}],['source-after.json',{at:new Date().toISOString(),records:after}],['virtual-proof-read-log.json',{paths:calls,uniquePaths:[...new Set(calls)]}],['review-validation.json',{schema:'rea-flow-vault-proof-transition-independent-review/v1',startedAt,endedAt:new Date().toISOString(),accepted:!failure,pins,sourceOnly:true,checks,rejections,summary,counts,failure,sourceRows:before.length,sourceStable:true,applicationExecutions:0,originalExecutions:0,browserExecutions:0,fullSuiteExecutions:0,benchmarks:0,productionWrites:0,publicWrites:0,oldEvidenceRebound:false,fullProductParity:false,universalSuperiority:false}]])fs.writeFileSync(path.join(own,file),JSON.stringify(value,null,2)+'\n');
+console.log(JSON.stringify({accepted:!failure,checkGroups:checks.length,rejections:rejections.length,sourceRows:before.length,sourceStable:true,summary,failure}));if(failure)process.exitCode=1;

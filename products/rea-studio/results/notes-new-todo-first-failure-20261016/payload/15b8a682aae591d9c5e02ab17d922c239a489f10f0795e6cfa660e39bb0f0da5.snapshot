@@ -1,0 +1,327 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: notes-new-todo.spec.mjs >> New To-do ordinary unsaved draft sends no save and genuine empty-title400 retains fields before explicit retry
+- Location: notes-new-todo.spec.mjs:407:1
+
+# Error details
+
+```
+Error: expect(received).toEqual(expected) // deep equality
+
+- Expected  - 0
++ Received  + 1
+
+@@ -2,10 +2,11 @@
+    "body": "Saved synthetic body",
+    "createdAt": "2026-10-16T15:44:22.114Z",
+    "deletedAt": null,
+    "history": Array [],
+    "id": "1ece79a5-dd77-44d7-b00c-34dcd4603b0a",
++   "metadataEdited": false,
+    "notebook": "Notes",
+    "notebookId": "4cdd6db14da7bf859108ed2dd938a26e",
+    "revision": 1,
+    "tags": Array [
+      "study",
+```
+
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - text: REA
+      - strong [ref=e4]: Studio
+    - generic [ref=e5]: Local applications · development
+  - generic [ref=e6]:
+    - complementary [ref=e7]:
+      - paragraph [ref=e8]: YOUR WORKSPACE
+      - navigation "Applications" [ref=e9]:
+        - button "Lab Editor" [ref=e10] [cursor=pointer]
+        - button "Lab Metrics" [ref=e11] [cursor=pointer]
+        - button "Lab Automation" [ref=e12] [cursor=pointer]
+        - button "Lab Sketch" [ref=e13] [cursor=pointer]
+        - button "Lab Notes" [ref=e14] [cursor=pointer]
+        - button "Lab Flow" [ref=e15] [cursor=pointer]
+        - button "Lab Vault" [ref=e16] [cursor=pointer]
+        - button "Lab Archive" [ref=e17] [cursor=pointer]
+        - button "Lab Backup" [ref=e18] [cursor=pointer]
+        - button "Lab Sync" [ref=e19] [cursor=pointer]
+      - generic [ref=e20]: Files and records are stored on this machine.
+    - main [ref=e21]:
+      - generic [ref=e22]:
+        - heading "Lab Notes" [level=1] [ref=e23]
+        - paragraph [ref=e24]: Notes, tags, search and export
+        - paragraph [ref=e25]: Development version. Full product feature parity and comparative improvements are still being evaluated.
+      - generic [ref=e27]:
+        - heading "Local Notes" [level=2] [ref=e28]
+        - paragraph [ref=e29]: Write Markdown notes, organize notebooks and tags, search, export and restore versions.
+        - generic [ref=e30]:
+          - textbox "Search notes" [ref=e31]:
+            - /placeholder: Search titles, content and tags
+          - combobox "Filter tag" [ref=e32]:
+            - option "All tags" [selected]
+            - option "draft"
+            - option "study"
+          - combobox "Filter notebook" [ref=e33]:
+            - option "All notebooks" [selected]
+            - option "Notes · 4cdd6d"
+          - generic [ref=e34]:
+            - text: Show trash
+            - checkbox "Show trash" [ref=e35]
+          - button "Search" [ref=e36] [cursor=pointer]
+          - button "New note" [ref=e37] [cursor=pointer]
+          - button "New to-do" [ref=e38] [cursor=pointer]
+          - button "Export notes JSON" [ref=e39] [cursor=pointer]
+          - button "Export Joplin JEX" [ref=e40] [cursor=pointer]
+          - combobox "Filter note type" [ref=e41]:
+            - option "All notes and to-dos" [selected]
+            - option "Notes only"
+            - option "All to-dos"
+            - option "Open to-dos"
+            - option "Completed to-dos"
+        - region "Notebook organization" [ref=e42]:
+          - heading "Notebooks" [level=3] [ref=e43]
+          - paragraph [ref=e44]: Organize notebooks or move a notebook with its descendants to trash. Restoring also restores independently trashed descendant notes. Save your draft first.
+          - paragraph [ref=e46]: Notes (2 notes)
+          - combobox "Manage notebook" [ref=e47]:
+            - option "Choose a notebook" [selected]
+            - option "Notes · 4cdd6d"
+          - textbox "Notebook name" [ref=e48]
+          - combobox "Parent notebook" [ref=e49]:
+            - option "Top level" [selected]
+            - option "Notes · 4cdd6d"
+          - button "Create notebook" [ref=e50] [cursor=pointer]
+          - button "Rename notebook" [ref=e51] [cursor=pointer]
+          - button "Move notebook" [ref=e52] [cursor=pointer]
+          - button "Move notebook to trash" [ref=e53] [cursor=pointer]
+          - button "Restore notebook" [ref=e54] [cursor=pointer]
+          - combobox "Move note to notebook" [ref=e55]:
+            - option "Unfiled" [selected]
+            - option "Notes · 4cdd6d"
+          - button "Move saved note" [ref=e56] [cursor=pointer]
+        - generic [ref=e57]:
+          - heading "2 notes" [level=3] [ref=e58]
+          - button "Explicitly retried new task · Notes · study, draft" [ref=e59] [cursor=pointer]
+          - paragraph [ref=e60]: "[Open to-do] Keep this body after validation"
+          - button "Unrelated saved baseline · Notes · study" [ref=e61] [cursor=pointer]
+          - paragraph [ref=e62]: Saved synthetic body
+        - generic [ref=e63]:
+          - heading "Note draft" [level=3] [ref=e64]
+          - textbox "Note title" [ref=e65]: Explicitly retried new task
+          - combobox "Notebook" [ref=e66]:
+            - option "Notes (created when saved)"
+            - option "Unfiled"
+            - option "Notes · 4cdd6d" [selected]
+          - textbox "Note tags" [ref=e67]:
+            - /placeholder: Tags, separated by commas
+            - text: study, draft
+          - textbox "Markdown note" [ref=e68]: Keep this body after validation
+          - generic [ref=e69]:
+            - button "Save note" [ref=e70] [cursor=pointer]
+            - button "Move to trash" [ref=e71] [cursor=pointer]
+            - button "Restore note" [disabled] [ref=e72]
+            - button "Export Markdown" [ref=e73] [cursor=pointer]
+          - region "Saved note to-do controls" [ref=e74]:
+            - heading "To-do" [level=3] [ref=e75]
+            - paragraph [ref=e76]: Save your draft first. Converting changes note type and clears due/completion dates. Due dates help you track tasks; reminders are not available yet.
+            - paragraph [ref=e77]: Open to-do · No due date
+            - button "Convert to note" [ref=e78] [cursor=pointer]
+            - button "Mark complete" [ref=e79] [cursor=pointer]
+            - textbox "To-do due date in local time" [ref=e80]
+            - button "Set due date" [ref=e81] [cursor=pointer]
+            - button "Clear due date" [ref=e82] [cursor=pointer]
+          - generic [ref=e83]:
+            - heading "Attachments" [level=3] [ref=e84]
+            - paragraph [ref=e85]: "Save your draft first. Attachments are stored locally and included in JEX exports. Maximum file size: 4 MiB."
+            - button "Attach a file to the saved note" [ref=e86]
+            - paragraph [ref=e88]: No attached files.
+          - heading "Safe Markdown preview" [level=3] [ref=e89]
+          - article "Markdown preview" [ref=e90]:
+            - paragraph [ref=e91]: Keep this body after validation
+          - heading "Previous saved versions" [level=4] [ref=e93]
+        - generic [ref=e94]:
+          - heading "Import notes or Joplin JEX" [level=3] [ref=e95]
+          - paragraph [ref=e96]: "JEX preserves supported note IDs, notebook hierarchy, tags, metadata and attachments. Existing ID collisions reject the entire import. Maximum JEX size: 8 MiB. JSON creates note copies and excludes binaries."
+          - button "Import Markdown, REA notes JSON or Joplin JEX" [ref=e97]
+        - status [ref=e98]: Saved revision 1.
+```
+
+# Test source
+
+```ts
+  314 |           })(), 5000, 'Prior attachment-list and other owned requests did not finish before fault');
+  315 |           stamp('all-other-owned-requests-and-attachment-response-drained');
+  316 |           assert.equal(pending.size, 1); assert(pending.has(route.request()));
+  317 |           backup = ownership('notes/records/new-todo-owned-fault-original.json');
+  318 |           assert.equal(await fs.stat(backup).then(() => true, error => { if(error.code === 'ENOENT') return false; throw error; }), false);
+  319 |           const originalStat = await fs.lstat(stateFilename); assert(originalStat.isFile() && !originalStat.isSymbolicLink());
+  320 |           assert((await fs.readFile(stateFilename)).equals(original.bytes));
+  321 |           activeDiskFault = { heldRequest: route.request() }; stamp('fault-ownership-entered');
+  322 |           await fs.rename(stateFilename, backup); moved = true; stamp('committed-state-renamed-to-owned-sibling');
+  323 |           await fs.mkdir(stateFilename); directory = true; stamp('empty-directory-installed-at-owned-state-file');
+  324 |           response = await route.fetch({ timeout: 15000 }); body = await response.body();
+  325 |           assert.equal(response.status(), 400); assert(body.length <= 2048);
+  326 |           const parsed = JSON.parse(body); assert.equal(typeof parsed.error, 'string'); assert(/^(EISDIR|EPERM|EACCES): /.test(parsed.error));
+  327 |           row.actualStatus = response.status(); row.actualError = parsed.error; row.actualBody = metadata(body); stamp('unchanged-host-returned-real-filesystem400');
+  328 |           expectedHttpFailures.push({ path: '/api/notes/list', status: 400, errorMessage: parsed.error, observed: false });
+  329 |         } catch(error) { entered.reject(error); throw error; }
+  330 |         finally {
+  331 |           try {
+  332 |             if (directory) { const item = await fs.lstat(stateFilename); assert(item.isDirectory() && !item.isSymbolicLink()); assert.deepEqual(await fs.readdir(stateFilename), []); assert.equal(stateFilename, ownership('notes/records/notes-state-v2.json')); await fs.rmdir(stateFilename); stamp('owned-empty-directory-removed-without-recursion'); }
+  333 |             if (moved) { assert((await fs.readFile(backup)).equals(original.bytes)); await fs.rename(backup, stateFilename); stamp('original-state-restored'); assert((await fs.readFile(stateFilename)).equals(original.bytes)); row.restoredState = metadata(await fs.readFile(stateFilename)); assert.deepEqual(row.restoredState, row.originalCommittedState); stamp('restored-exact-original-bytes-verified'); }
+  334 |             activeDiskFault = null; row.restoreCompletedBeforeResponseDelivery = moved && directory; assert(row.restoreCompletedBeforeResponseDelivery);
+  335 |           } catch(error) { errors.push({ type: 'owned-fault-restore-failure', message: error.message }); entered.reject(error); finished.resolve(); throw error; }
+  336 |         }
+  337 |         try {
+  338 |           entered.resolve({ noteId: row.noteId, revision: row.committedRevision, error: row.actualError, originalState: row.originalCommittedState });
+  339 |           await released.promise; stamp('actual-response-release-requested');
+  340 |           assert.deepEqual((await disk()).identity, row.originalCommittedState);
+  341 |           await route.fulfill({ response }); stamp('unchanged-actual400-delivered-after-restoration');
+  342 |         } finally { finished.resolve(); }
+  343 |       });
+  344 |       return gate;
+  345 |     }
+  346 | 
+  347 |     async function settle() { await bounded(drain(), 5000, 'Owned Notes requests did not drain'); await bounded(Promise.all([...responseTasks]), 5000, 'Response observer deadline'); await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => resolve()))); }
+  348 |     const s = { page, url: instance.url, api, disk, hold, listFault, settle, requests, responses, observations, faults,
+  349 |       expectHttpFailure(action, errorMessage) { expectedHttpFailures.push({ path: '/api/notes/' + action, status: 400, errorMessage, observed: false }); },
+  350 |       async saveDownload(trigger, label, expectedFilename) {
+  351 |         assert(/^[a-z0-9][a-z0-9.-]{0,80}$/.test(label) && !label.includes('..')); const event = page.waitForEvent('download'); await trigger(); const download = await event;
+  352 |         assert.equal(await download.failure(), null); assert.equal(download.suggestedFilename(), expectedFilename);
+  353 |         const relative = 'downloads/' + info.testId + '-' + label, destination = path.join(evidence, relative);
+  354 |         await fs.mkdir(path.dirname(destination), { recursive: true }); assert.equal(await fs.stat(destination).then(() => true, error => { if (error.code === 'ENOENT') return false; throw error; }), false);
+  355 |         await download.saveAs(destination); const bytes = await fs.readFile(destination); assert(bytes.length <= 8 * 1024 * 1024);
+  356 |         const record = { kind: 'real-browser-file-download', path: relative, observed: metadata(bytes), suggestedFilename: download.suggestedFilename() };
+  357 |         savedDownloads.push({ download, ...record }); observations.push(record); return { bytes, destination, record };
+  358 |       }
+  359 |     };
+  360 |     try { await use(s); }
+  361 |     finally {
+  362 |       const teardown = { stage: 'starting', heldRoutesFinished: false, drained: false, contextClosed: false, serverClosed: false, screenshotSaved: false, requestCounts, steps: [] }, failures = [];
+  363 |       async function step(name, operation) { const row = { name, status: 'running', startedAtUtc: new Date().toISOString() }; teardown.steps.push(row); teardown.stage = name;
+  364 |         try { await operation(); row.status = 'passed'; } catch (error) { row.status = 'failed'; row.failure = { name: error.name, message: error.message }; failures.push(error); } finally { row.completedAtUtc = new Date().toISOString(); } }
+  365 |       await step('release-held-routes', async () => { assert.equal(activeDiskFault, null, 'Owned I/O fault must be restored before fixture release'); for (const gate of holds) gate.release(); await bounded(Promise.all(holds.filter(gate => gate.used()).map(gate => gate.finished)), 5000, 'Held route cleanup deadline'); teardown.heldRoutesFinished = true; });
+  366 |       await step('screenshot', async () => { await fs.mkdir(path.join(evidence, 'screenshots'), { recursive: true }); await page.screenshot({ path: path.join(evidence, 'screenshots', info.testId + '.png'), fullPage: false }); teardown.screenshotSaved = true; });
+  367 |       await step('drain-owned-page-requests', async () => { await bounded(drain(), 5000, 'Owned request cleanup deadline'); await bounded(Promise.all([...responseTasks]), 5000, 'Response observer cleanup deadline'); teardown.drained = true; });
+  368 |       await step('capture-synthetic-final-record', async () => { try { const current = await disk(); await fs.mkdir(path.join(evidence, 'notes-records'), { recursive: true }); const relative = 'notes-records/' + info.testId + '.json'; await fs.writeFile(path.join(evidence, relative), current.bytes, { flag: 'wx' }); observations.push({ kind: 'owned-synthetic-disk-record', path: relative, ...current.identity }); } catch (error) { if (error.code !== 'ENOENT') throw error; observations.push({ kind: 'owned-note-record-absent' }); } });
+  369 |       await step('close-owned-context', async () => { await bounded(page.context().close(), 5000, 'Owned context close deadline'); teardown.contextClosed = true; assert.equal(pending.size, 0); });
+  370 |       await step('close-owned-server', async () => { await bounded(instance.close(), 5000, 'Owned server close deadline'); teardown.serverClosed = true; });
+  371 |       teardown.pendingOwnedRequests = pending.size; teardown.activeOwnedIOFault = activeDiskFault !== null; teardown.stage = failures.length ? 'failed' : 'completed';
+  372 |       const expectedConsole = consoleErrors.filter(item => expectedHttpFailures.some(row => row.observed && item.location.url === instance.url + row.path && /400/.test(item.message)));
+  373 |       errors.push(...consoleErrors.filter(item => !expectedConsole.includes(item)));
+  374 |       if (expectedConsole.length > expectedHttpFailures.length) errors.push({ type: 'extra-expected-path-console-errors', count: expectedConsole.length });
+  375 |       const savedEvents = new Set(savedDownloads.map(row => row.download));
+  376 |       if (downloads.some(row => !savedEvents.has(row.download))) errors.push({ type: 'unclaimed-download', count: downloads.length - savedDownloads.length });
+  377 |       await write('case-' + info.testId + '.json', { schema: 'rea-notes-new-todo-real-browser-case/v1', testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry,
+  378 |         url: instance.url, ownedDataDirectory: dataDir, serverCloseObserved: teardown.serverClosed, realBrowser: true, actualHTTP: true, originalProductExecutions: 0, originalFullApplicationExecutions: 0, originalHelperExecutions: 0, programmaticDisabledControlProbes: 0,
+  379 |         teardown, observations, requests, responses, faults, expectedHttpFailures, expectedConsole, auxiliaryErrors, errors, downloads: savedDownloads.map(({ download, ...row }) => row) });
+  380 |       expect(errors).toEqual([]); expect(expectedHttpFailures.every(row => row.observed)).toBe(true);
+  381 |       if (failures.length) throw new AggregateError(failures, 'Notes owned fixture cleanup failed');
+  382 |       expect(teardown.drained && teardown.contextClosed && teardown.serverClosed && teardown.heldRoutesFinished && !teardown.activeOwnedIOFault).toBe(true);
+  383 |     }
+  384 |   }
+  385 | });
+  386 | 
+  387 | test.beforeAll(async ({ browser }) => {
+  388 |   expect(browser.version()).toBe('156.0.8078.4');
+  389 |   const observation = { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 };
+  390 |   const execution = Object.fromEntries(['CI', 'GITHUB_ACTIONS', 'RUNNER_ENVIRONMENT', 'RUNNER_OS', 'RUNNER_ARCH', 'GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'GITHUB_REPOSITORY', 'GITHUB_JOB'].map(name => [name, process.env[name] ?? null]));
+  391 |   await write('browser-observation-process-' + process.pid + '.json', { schema: 'rea-cloud-notes-new-todo-browser-worker-observation/v1', observation, execution, pid: process.pid, sourcePins: sourcePins.map(([path, bytes, sha256]) => ({ path, bytes, sha256 })) });
+  392 |   try { await write('browser-observation.json', observation); } catch (error) { if (error.code !== 'EEXIST') throw error; assert.deepEqual(JSON.parse(await fs.readFile(path.join(evidence, 'browser-observation.json'), 'utf8')), observation); }
+  393 | });
+  394 | async function openNotes(s) { await s.page.goto(s.url + '/#notes'); await expect(view(s.page).getByRole('heading', { name: 'Local Notes', exact: true })).toBeVisible(); await expect(status(s.page)).toHaveText('Notes are saved locally when you choose Save.'); }
+  395 | async function successfulAction(s, action, trigger) { const response = s.page.waitForResponse(r => r.url() === s.url + '/api/notes/' + action && r.request().method() === 'POST'); await trigger(); const actual = await response; expect(actual.status()).toBe(200); return (await actual.json()).result; }
+  396 | async function save(s) { const note = await successfulAction(s, 'save', () => button(s.page, 'Save note').click()); await expect(status(s.page)).toHaveText('Saved revision ' + note.revision + '.'); return note; }
+  397 | async function createNote(s, title, body = 'Saved synthetic body', tags = 'study') { await button(s.page, 'New note').click(); await field(s.page, 'Note title').fill(title); await field(s.page, 'Markdown note').fill(body); await field(s.page, 'Note tags').fill(tags); return save(s); }
+  398 | const diskNote = async (s, id) => { const value = await s.disk(); assert(value.state.notes[id]); return value.state.notes[id]; };
+  399 | const saves = s => s.requests.filter(row => row.path === '/api/notes/save');
+  400 | async function newTaskDraft(s, title, body = 'Synthetic new-task body', tags = 'study') {
+  401 |   await button(s.page, 'New to-do').click(); await expect(status(s.page)).toHaveText('New to-do draft. Save to create it.');
+  402 |   await field(s.page, 'Note title').fill(title); await field(s.page, 'Markdown note').fill(body); await field(s.page, 'Note tags').fill(tags);
+  403 | }
+  404 | async function confirmedNew(s, name) { const dialog = s.page.waitForEvent('dialog'); const click = button(s.page, name).click(); const native = await dialog; expect(native.message()).toBe('Discard this unsaved draft?'); await native.accept(); await click; }
+  405 | function openTask(note) { expect(note.revision).toBe(1); expect(note.history).toEqual([]); expect(note.todo).toEqual({ isTodo: true, due: 0, completed: 0 }); }
+  406 | 
+  407 | test('New To-do ordinary unsaved draft sends no save and genuine empty-title400 retains fields before explicit retry', async ({ studio: s }) => {
+  408 |   await openNotes(s); const baseline = await createNote(s, 'Unrelated saved baseline'); const before = await s.disk(), count = saves(s).length;
+  409 |   await newTaskDraft(s, '', 'Keep this body after validation', 'study, draft'); await s.settle();
+  410 |   expect(saves(s)).toHaveLength(count); expect((await s.disk()).bytes.equals(before.bytes)).toBe(true); await expect(button(s.page, 'Convert to note')).toBeDisabled();
+  411 |   s.expectHttpFailure('save', 'Give the note a title.'); const rejected = s.page.waitForResponse(r => r.url() === s.url + '/api/notes/save'); await button(s.page, 'Save note').click(); expect((await rejected).status()).toBe(400);
+  412 |   await expect(status(s.page)).toHaveText('Give the note a title.'); await expect(button(s.page, 'Save note')).toBeEnabled(); await expect(field(s.page, 'Markdown note')).toHaveValue('Keep this body after validation'); expect((await s.disk()).bytes.equals(before.bytes)).toBe(true);
+  413 |   await field(s.page, 'Note title').fill('Explicitly retried new task'); const note = await save(s); openTask(note); expect(note.body).toBe('Keep this body after validation'); expect(note.tags).toEqual(['study','draft']);
+> 414 |   expect(JSON.parse(saves(s).at(-1).postData).newTodo).toBe(true); expect((await diskNote(s, baseline.id))).toEqual(before.state.notes[baseline.id]);
+      |                                                                                                             ^ Error: expect(received).toEqual(expected) // deep equality
+  415 |   s.observations.push({ kind: 'new-task-unsaved-validation-and-explicit-retry', ordinaryDraftMutationRequests: 0, actualEmptyTitleStatus: 400, failedState: before.identity, noteId: note.id, firstRevision: note.revision, initialHistoryLength: note.history.length, explicitNewTodo: true });
+  416 | });
+  417 | 
+  418 | test('New To-do native discard cancellation retains draft fields and accepted New note resets creation type', async ({ studio: s }) => {
+  419 |   await openNotes(s); await newTaskDraft(s, 'Retain cancelled task', 'Native dialog retained body', 'keep');
+  420 |   const event = s.page.waitForEvent('dialog'), click = button(s.page, 'New note').click(), dialog = await event; expect(dialog.message()).toBe('Discard this unsaved draft?'); await dialog.dismiss(); await click;
+  421 |   await expect(field(s.page, 'Note title')).toHaveValue('Retain cancelled task'); await expect(field(s.page, 'Markdown note')).toHaveValue('Native dialog retained body'); await expect(field(s.page, 'Note tags')).toHaveValue('keep'); expect(saves(s)).toHaveLength(0);
+  422 |   await confirmedNew(s, 'New to-do'); await expect(field(s.page, 'Note title')).toHaveValue(''); await expect(status(s.page)).toHaveText('New to-do draft. Save to create it.');
+  423 |   await field(s.page, 'Note title').fill('Draft to discard'); await confirmedNew(s, 'New note'); await expect(status(s.page)).toHaveText('New note draft.'); await field(s.page, 'Note title').fill('Accepted ordinary new note'); const note = await save(s);
+  424 |   expect(note.todo?.isTodo ?? false).toBe(false); expect(JSON.parse(saves(s).at(-1).postData)).not.toHaveProperty('newTodo');
+  425 |   s.observations.push({ kind: 'native-discard-cancel-and-new-note-kind-reset', nativeDialogs: 3, cancellationRetainedAllFields: true, noteId: note.id, savedAsTask: false });
+  426 | });
+  427 | 
+  428 | test('New To-do real committed Save response blocks native duplicate clicks and retains newer ordinary typing at returned revision', async ({ studio: s }) => {
+  429 |   await openNotes(s); await newTaskDraft(s, 'Held newly created task'); const gate = await s.hold('save', input => input.newTodo === true);
+  430 |   await button(s.page, 'Save note').click(); const committed = await bounded(gate.entered, 15000, 'Actual first task save not held'); openTask(committed); expect((await diskNote(s, committed.id)).revision).toBe(1);
+  431 |   await expect(button(s.page, 'Save note')).toBeDisabled(); const bounds = await button(s.page, 'Save note').boundingBox(); assert(bounds); await s.page.mouse.dblclick(bounds.x+bounds.width/2, bounds.y+bounds.height/2); expect(saves(s)).toHaveLength(1);
+  432 |   await expect(field(s.page, 'Markdown note')).toBeEnabled(); await field(s.page, 'Markdown note').fill('Newer body typed after actual first commit'); gate.release(); await gate.finished;
+  433 |   await expect(status(s.page)).toHaveText('Saved revision 1. Your newer draft is retained.'); await expect(field(s.page, 'Markdown note')).toHaveValue('Newer body typed after actual first commit');
+  434 |   const saved = await save(s), input = JSON.parse(saves(s).at(-1).postData); expect(input.id).toBe(committed.id); expect(input.revision).toBe(1); expect(input).not.toHaveProperty('newTodo'); expect(saved.revision).toBe(2); expect(saved.history).toHaveLength(1); expect(saved.todo).toEqual(committed.todo); expect((await diskNote(s, saved.id)).body).toBe(saved.body);
+  435 |   s.observations.push({ kind: 'new-task-commit-held-native-duplicate-and-newer-draft', noteId: saved.id, committedRevision: 1, nativeDuplicatePointerClicks: 2, firstSaveRequests: 1, nextSubmittedRevision: input.revision, finalRevision: saved.revision, ordinaryEnabledFieldTyping: true, programmaticDisabledControlProbe: false });
+  436 | });
+  437 | 
+  438 | test('New To-do new editor owns a separate unsaved task while older actual creation response is held after commit', async ({ studio: s }) => {
+  439 |   await openNotes(s); await newTaskDraft(s, 'Old held creation'); const gate = await s.hold('save', input => input.newTodo === true); await button(s.page, 'Save note').click(); const committed = await bounded(gate.entered,15000,'Owned newer task gate'); openTask(committed);
+  440 |   await confirmedNew(s, 'New to-do'); await field(s.page,'Note title').fill('Independent newer task'); await field(s.page,'Markdown note').fill('New editor owns this body'); gate.release(); await gate.finished; await s.settle();
+  441 |   await expect(status(s.page)).toHaveText('Unsaved draft. Save to keep this note.'); await expect(field(s.page,'Note title')).toHaveValue('Independent newer task'); const note=await save(s); openTask(note); expect(note.id).not.toBe(committed.id); expect((await diskNote(s,committed.id)).title).toBe('Old held creation');
+  442 |   s.observations.push({kind:'new-task-editor-ownership-after-actual-commit',oldId:committed.id,newId:note.id,oldRevision:1,newRevision:1});
+  443 | });
+  444 | 
+  445 | test('New To-do actual navigation disposal suppresses all late Notes publication and reads after held first commit', async ({ studio:s }) => {
+  446 |   await openNotes(s); await newTaskDraft(s,'Disposed task creation'); const old=await field(s.page,'Markdown note').elementHandle(),gate=await s.hold('save',input=>input.newTodo===true); await button(s.page,'Save note').click(); const committed=await bounded(gate.entered,15000,'Disposal first-save gate'); openTask(committed);
+  447 |   await s.page.getByRole('button',{name:'Lab Flow',exact:true}).click(); await expect(s.page.getByRole('heading',{name:'Native Node-RED flows',exact:true})).toBeVisible(); expect(await old.evaluate(node=>node.isConnected)).toBe(false); const before=s.requests.length; gate.release(); await gate.finished; await s.settle(); expect(s.requests).toHaveLength(before); await expect(s.page.getByRole('heading',{name:'Local Notes',exact:true})).toHaveCount(0); expect((await diskNote(s,committed.id)).revision).toBe(1);
+  448 |   s.observations.push({kind:'new-task-disposal-after-actual-first-commit',noteId:committed.id,committedRevision:1,lateNotesRequests:0,detachedControlObserved:true,detachedControlScrubbingClaimed:false});
+  449 | });
+  450 | 
+  451 | test('New To-do newer typing survives a held genuine post-commit list400 after exact owned filesystem restoration', async ({ studio:s }) => {
+  452 |   await openNotes(s); await newTaskDraft(s,'Held genuine refresh failure'); await s.settle(); const gate=await s.listFault('Held genuine refresh failure',true); await button(s.page,'Save note').click(); const actual=await bounded(gate.entered,20000,'Owned genuine list400 gate'); expect((await diskNote(s,actual.noteId)).revision).toBe(1);
+  453 |   await field(s.page,'Markdown note').fill('Newer draft while genuine list400 is held'); await expect(status(s.page)).toHaveText('Unsaved draft. Save to keep this note.'); gate.release(); await gate.finished; await s.settle();
+  454 |   await expect(status(s.page)).toHaveText('Unsaved draft. Save to keep this note.'); await expect(field(s.page,'Markdown note')).toHaveValue('Newer draft while genuine list400 is held'); await expect(button(s.page,'Save note')).toBeEnabled(); const note=await save(s),input=JSON.parse(saves(s).at(-1).postData); expect(input.id).toBe(actual.noteId); expect(input.revision).toBe(1); expect(note.revision).toBe(2); expect(note.todo).toEqual({isTodo:true,due:0,completed:0});
+  455 |   s.observations.push({kind:'new-task-postcommit-genuine-list400-newer-draft',noteId:actual.noteId,actualHTTPStatus:400,syntheticOwnedFilesystemFault:true,responseMocked:false,restoredBeforeHeldDelivery:true,nextSubmittedRevision:1,finalRevision:2,ordinaryEnabledFieldTyping:true});
+  456 | });
+  457 | 
+  458 | test('New To-do committed save distinguishes genuine list400 from persistence failure and explicit refresh preserves state', async ({ studio:s }) => {
+  459 |   await openNotes(s); await newTaskDraft(s,'Reported genuine refresh failure'); await s.settle(); const fault=await s.listFault('Reported genuine refresh failure',false); await button(s.page,'Save note').click(); const actual=await bounded(fault.entered,20000,'Unheld genuine list400'); await fault.finished; await s.settle();
+  460 |   await expect(status(s.page)).toHaveText('Saved revision 1. Could not refresh the note list: '+actual.error); const before=await s.disk(); expect(before.state.notes[actual.noteId].revision).toBe(1); await expect(button(s.page,'Save note')).toBeEnabled();
+  461 |   const list=s.page.waitForResponse(r=>r.url()===s.url+'/api/notes/list'); await button(s.page,'Search').click(); expect((await list).status()).toBe(200); await s.settle(); await expect(savedRow(s.page,'Reported genuine refresh failure')).toHaveCount(1); expect((await s.disk()).bytes.equals(before.bytes)).toBe(true); expect(saves(s)).toHaveLength(1);
+  462 |   s.observations.push({kind:'new-task-committed-save-refresh-failure-explicit-recovery',noteId:actual.noteId,committedRevision:1,actualHTTPStatus:400,syntheticOwnedFilesystemFault:true,responseMocked:false,restoredBeforeDelivery:true,explicitRefreshStatus:200,stateBefore:before.identity,stateAfter:(await s.disk()).identity});
+  463 | });
+  464 | 
+  465 | function nativeTar(archive, entry = null) {
+  466 |   const executable=path.join(process.env.SystemRoot,'System32/tar.exe'),args=entry===null?['-tf',archive]:['-xOf',archive,entry]; const result=spawnSync(executable,args,{shell:false,windowsHide:true,timeout:10000,maxBuffer:1024*1024}); assert.equal(result.error,undefined); assert.equal(result.status,0,result.stderr.toString('utf8')); return result.stdout;
+  467 | }
+  468 | function rawRecord(bytes) { const lines=bytes.toString('utf8').split('\n');if(lines.at(-1)==='')lines.pop();let boundary=lines.length-1;while(boundary>=0&&lines[boundary]!=='')boundary--;assert(boundary>=0);const properties=Object.fromEntries(lines.slice(boundary+1).map(line=>{const m=/^([a-z][a-z0-9_]*): (.*)$/.exec(line);assert(m);return[m[1],m[2]];}));return{title:lines[0],body:lines.slice(2,boundary).join('\n'),properties}; }
+  469 | test('New To-do actual JEX and resource downloads preserve all seven prior records and binary alongside new task metadata',async({studio:s},info)=>{
+  470 |   await openNotes(s); await field(s.page,'Import Markdown, REA notes JSON or Joplin JEX').setInputFiles({name:'pinned-study.jex',mimeType:'application/x-tar',buffer:fixtureBytes}); await expect(status(s.page)).toHaveText('Imported 2 notes, 2 notebooks and 1 attachments with original IDs.');
+  471 |   await newTaskDraft(s,'New task alongside original records','Preserved new task body',''); await field(s.page,'Notebook').selectOption('1'.repeat(32)); const note=await save(s); openTask(note); expect(note.notebookId).toBe('1'.repeat(32));
+  472 |   const archive=await s.saveDownload(()=>button(s.page,'Export Joplin JEX').click(),'new-task-notes.jex','rea-notes.jex'); await expect(status(s.page)).toHaveText('Exported 3 notes and 1 attachments as JEX. Saved-version history is not included.'); const listing=nativeTar(archive.destination); await fs.writeFile(path.join(evidence,'notes-native-tar-list-'+info.testId+'.txt'),listing,{flag:'wx'}); expect(listing.toString('utf8').trim().split(/\r?\n/)).toHaveLength(9);
+  473 |   for(const[id,expected]of Object.entries(fixtureProvenance.expected))expect(metadata(nativeTar(archive.destination,id+'.md')).sha256).toBe(expected.rawSha256); expect(Object.keys(fixtureProvenance.expected)).toHaveLength(7);
+  474 |   const added=rawRecord(nativeTar(archive.destination,note.id.replaceAll('-','')+'.md')); expect(added.body).toBe(note.body); expect(added.properties.is_todo).toBe('1'); expect(added.properties.todo_due).toBe('0'); expect(added.properties.todo_completed).toBe('0'); expect(added.properties.parent_id).toBe('1'.repeat(32)); expect(added.title).toBe(note.title);
+  475 |   const resource=nativeTar(archive.destination,'resources/'+'5'.repeat(32)+'.bin'); expect(resource.equals(Buffer.from([0,1,127,128,255]))).toBe(true); expect(metadata(resource).sha256).toBe(fixtureProvenance.resourceSha256);
+  476 |   const imported=await s.api('get',{id:'3'.repeat(32)}); const opened=s.page.waitForResponse(r=>r.url()===s.url+'/api/notes/get'); await savedRow(s.page,imported.title).click(); expect((await opened).status()).toBe(200); await expect(status(s.page)).toHaveText('Opened revision '+imported.revision+'.'); const binary=await s.saveDownload(()=>button(s.page,'Download sample.bin (5 bytes)').click(),'resource-sample.bin','sample.bin'); expect(binary.bytes.equals(resource)).toBe(true);
+  477 |   s.observations.push({kind:'new-task-actual-jex-native-tar-and-resource-download',noteId:note.id,parentId:note.notebookId,initialTaskState:note.todo,independentNativeTar:{executable:metadata(await fs.readFile(path.join(process.env.SystemRoot,'System32/tar.exe'))),listing:metadata(listing),archive:metadata(archive.bytes),resource:metadata(resource),unchangedRawRecordComparisons:7},newOriginalProductExecutions:0,resourceDownload:metadata(binary.bytes)});
+  478 | });
+  479 | 
+```

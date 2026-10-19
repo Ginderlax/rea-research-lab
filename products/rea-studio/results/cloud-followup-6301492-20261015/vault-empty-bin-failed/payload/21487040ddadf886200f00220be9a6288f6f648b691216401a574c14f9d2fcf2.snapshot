@@ -1,0 +1,42 @@
+// Separate adjacent epoch; original20 authored test bodies remain unchanged.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { dispose } from './server.mjs';
+import { mount, button, field, groupRow, click, type, walk, deferred } from './group-edit-review-fixture.mjs';
+const confirmLabel = 'Confirm permanently deleting all recycle-bin contents';
+async function ready(t, name) {
+  const f = await mount(t, name), selected = (await f.direct('recycleGroupList')).groups.find(row => row.name === 'Selected');
+  await f.direct('recycleGroupDelete', { id: selected.id, revision: selected.recycleRevision, confirm: true });
+  await click(button(f.root, 'Show recycled groups')); const bin = groupRow(f.root, 'Recycle Bin'); await click(button(bin, 'Preview empty recycle bin'));
+  return { ...f, bin };
+}
+test('dispose during held encrypted persistence cannot reopen the session and committed state unlocks empty', async t => {
+  const f = await ready(t, 'empty-bin-persistence-dispose'), preview = await f.direct('recycleBinPreview'), entered = deferred(), release = deferred(), real = f.store.set; t.after(() => release.resolve());
+  f.store.set = async (key, value) => { entered.resolve(); await release.promise; return real(key, value); };
+  const pending = f.direct('emptyRecycleBin', { id: preview.id, revision: preview.revision, confirm: true }); await entered.promise;
+  dispose(f.workspace); release.resolve(); await pending; assert.equal((await f.direct('status')).locked, true);
+  await f.direct('unlock', { password: f.pass }); assert.equal((await f.direct('recycleBinPreview')).entryCount, 0); assert.deepEqual((await f.direct('list')).entries.map(row => row.title), ['C']);
+});
+test('queued lock stays serialized behind held encrypted empty-bin persistence', async t => {
+  const f = await ready(t, 'empty-bin-persistence-lock'), preview = await f.direct('recycleBinPreview'), entered = deferred(), release = deferred(), real = f.store.set; t.after(() => release.resolve());
+  f.store.set = async (key, value) => { entered.resolve(); await release.promise; return real(key, value); };
+  const pending = f.direct('emptyRecycleBin', { id: preview.id, revision: preview.revision, confirm: true }); await entered.promise;
+  let lockCompleted = false; const lock = f.direct('lock').then(value => { lockCompleted = true; return value; }); await Promise.resolve(); assert.equal(lockCompleted, false);
+  release.resolve(); await pending; await lock; assert.equal((await f.direct('status')).locked, true); await f.direct('unlock', { password: f.pass }); assert.equal((await f.direct('recycleBinPreview')).entryCount, 0);
+});
+test('detached old bin confirmation cannot delete contents after opening a dirty current group draft', async t => {
+  const f = await ready(t, 'empty-bin-dirty-group'), oldButton = button(f.bin, 'Empty recycle bin permanently'); field(f.bin, confirmLabel).checked = true;
+  await click(button(f.root, 'Show groups')); const row = groupRow(f.root, 'Other'); await click(button(row, 'Edit group details')); await type(field(f.root, 'Group notes'), 'Keep this current group draft');
+  const before = f.store.identity(); await click(oldButton); assert.equal(f.calls.filter(value => value.action === 'emptyRecycleBin').length, 0); assert.equal(f.store.identity(), before);
+  assert.equal(field(f.root, 'Group notes').value, 'Keep this current group draft'); assert.equal((await f.direct('recycleBinPreview')).entryCount, 2);
+});
+test('disposed render cannot publish a held actual empty-bin preview', async t => {
+  const f = await ready(t, 'empty-bin-preview-dispose'), held = f.hold('recycleBinPreview'), pending = click(button(f.bin, 'Preview empty recycle bin')); await held.started.promise;
+  f.cleanup(); const calls = f.calls.length, text = f.root.textContent; held.release.resolve(); await pending;
+  assert.equal(f.calls.length, calls); assert.equal(f.root.textContent, text); assert(!walk(f.root).some(value => value.textContent === 'Empty recycle bin permanently'));
+});
+test('disposed render cannot issue refreshes or republish a held committed empty-bin response', async t => {
+  const f = await ready(t, 'empty-bin-commit-dispose'), held = f.hold('emptyRecycleBin'); field(f.bin, confirmLabel).checked = true;
+  const pending = click(button(f.bin, 'Empty recycle bin permanently')); await held.started.promise; f.cleanup(); const calls = f.calls.length, text = f.root.textContent;
+  held.release.resolve(); await pending; assert.equal(f.calls.length, calls); assert.equal(f.root.textContent, text); assert.equal((await f.direct('recycleBinPreview')).entryCount, 0);
+});

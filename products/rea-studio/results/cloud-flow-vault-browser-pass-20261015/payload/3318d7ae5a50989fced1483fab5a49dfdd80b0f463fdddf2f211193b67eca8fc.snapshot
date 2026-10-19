@@ -1,0 +1,81 @@
+{
+   "rev": "opaque browser revision",
+   "vendor": {
+      "preserved": [
+         "yes",
+         7
+      ],
+      "unicode": "before after 😀 é é"
+   },
+   "flows": [
+      {
+         "id": "tab",
+         "type": "tab",
+         "label": "Owned browser fixture"
+      },
+      {
+         "id": "start",
+         "type": "inject",
+         "z": "tab",
+         "props": [],
+         "wires": [
+            [
+               "out"
+            ]
+         ],
+         "x": 100,
+         "y": 100
+      },
+      {
+         "id": "out",
+         "type": "link out",
+         "z": "tab",
+         "links": [],
+         "wires": [
+            [
+               "ignored"
+            ]
+         ],
+         "x": 300,
+         "y": 100,
+         "custom": "retained"
+      },
+      {
+         "id": "in",
+         "type": "link in",
+         "z": "tab",
+         "links": [
+            "out"
+         ],
+         "wires": [
+            [
+               "debug"
+            ]
+         ],
+         "x": 550,
+         "y": 100
+      },
+      {
+         "id": "debug",
+         "type": "debug",
+         "z": "tab",
+         "complete": "true",
+         "active": true,
+         "tosidebar": true,
+         "wires": [],
+         "x": 800,
+         "y": 100
+      },
+      {
+         "id": "ignored",
+         "type": "debug",
+         "z": "tab",
+         "complete": "true",
+         "active": true,
+         "tosidebar": true,
+         "wires": [],
+         "x": 800,
+         "y": 230
+      }
+   ]
+}

@@ -1,0 +1,49 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtemp, rm, readFile } from 'node:fs/promises';
+import path from 'node:path';
+import os from 'node:os';
+import { start } from '../../server.mjs';
+import { readJex } from './jex.mjs';
+import { todoState } from './core.mjs';
+
+async function setup(t) {
+  const dataDir = await mkdtemp(path.join(os.tmpdir(), 'rea-notes-new-todo-http-')); let host = await start({ port: 0, dataDir });
+  t.after(async () => { await host.close(); assert.equal(path.dirname(dataDir), path.resolve(os.tmpdir())); assert.ok(path.basename(dataDir).startsWith('rea-notes-new-todo-http-')); await rm(dataDir, { recursive: true, force: true }); });
+  const call = async (action, input = {}, expectedStatus = 200) => { const response = await fetch(`${host.url}/api/notes/${action}`, { method: 'POST', headers: { 'content-type': 'application/json', 'x-rea-token': host.token }, body: JSON.stringify(input) }); const payload = await response.json(); assert.equal(response.status, expectedStatus, payload.error); return payload.result ?? payload; };
+  return { call, disk: () => readFile(path.join(dataDir, 'notes/records/notes-state-v2.json')), restart: async () => { await host.close(); host = await start({ port: 0, dataDir }); } };
+}
+
+test('New to-do real HTTP cold restarts retain first-save state, later history and exact supported JEX metadata', async t => {
+  const f = await setup(t); let note = await f.call('save', { title: 'Cold new task', body: 'First persisted body', tags: ['task'], newTodo: true });
+  assert.equal(note.revision, 1); assert.deepEqual(note.history, []); await f.restart(); note = await f.call('get', { id: note.id });
+  assert.deepEqual(todoState(note), { isTodo: true, due: 0, completed: 0 }); assert.equal((await f.call('list', { todoFilter: 'open' })).notes[0].id, note.id);
+  note = await f.call('save', { id: note.id, revision: note.revision, title: note.title, body: 'Second persisted body', notebookId: note.notebookId, tags: note.tags });
+  await f.restart(); note = await f.call('get', { id: note.id }); assert.equal(note.revision, 2); assert.equal(note.history[0].body, 'First persisted body'); assert.deepEqual(note.history[0].todo, { isTodo: true, due: 0, completed: 0 });
+  const exported = await f.call('jex-export'), parsed = readJex(Buffer.from(exported.base64, 'base64')), record = parsed.records.get(note.id.replaceAll('-', ''));
+  assert.equal(record.props.parent_id, note.notebookId); assert.equal(record.props.is_todo, '1'); assert.equal(record.props.todo_due, '0'); assert.equal(record.props.todo_completed, '0'); assert.equal(record.body, 'Second persisted body');
+  note = await f.call('history-restore', { id: note.id, revision: note.revision, historyRevision: 1 }); await f.restart(); note = await f.call('get', { id: note.id }); assert.equal(note.body, 'First persisted body'); assert.equal(todoState(note).isTodo, true);
+});
+
+test('New to-do actual HTTP400 flag failures do not mutate existing notes and queue remains usable', async t => {
+  const f = await setup(t); const firstSave = await f.call('save', { title: 'Must stay a note', body: 'Saved body' }), persistedBefore = await f.disk();
+  // Existing ensureOrganization adds metadataEdited:false to a read copy of a
+  // first-save note. Capture that complete public read contract explicitly;
+  // invalid requests must still leave every original persisted byte untouched.
+  const ordinary = await f.call('get', { id: firstSave.id }); assert.deepEqual(ordinary, { ...firstSave, metadataEdited: false }); assert.deepEqual(await f.disk(), persistedBefore);
+  for (const newTodo of [null, 1, 'true']) { const error = await f.call('save', { title: 'Rejected task', newTodo }, 400); assert.match(error.error, /explicit Boolean flag/); assert.deepEqual(await f.disk(), persistedBefore); assert.deepEqual(await f.call('get', { id: ordinary.id }), ordinary); }
+  const error = await f.call('save', { id: ordinary.id, revision: ordinary.revision, title: 'Wrong overwrite', newTodo: true }, 400); assert.match(error.error, /only valid for an unsaved note/); assert.deepEqual(await f.disk(), persistedBefore); assert.deepEqual(await f.call('get', { id: ordinary.id }), ordinary);
+  await f.restart(); assert.deepEqual(await f.disk(), persistedBefore); assert.deepEqual(await f.call('get', { id: ordinary.id }), ordinary); assert.equal((await f.call('list')).total, 1); assert.deepEqual(await f.disk(), persistedBefore);
+  const task = await f.call('save', { title: 'Explicit valid retry', newTodo: true }); assert.equal(task.revision, 1); assert.equal(todoState(task).isTodo, true); assert.equal((await f.call('list')).total, 2); assert.deepEqual(await f.call('get', { id: ordinary.id }), ordinary);
+});
+
+test('New to-do creation preserves every prior imported JEX record and binary through restart and export', async t => {
+  const f = await setup(t), fixture = await readFile(new URL('./fixtures/pinned-joplin.jex', import.meta.url)); await f.call('jex-import', { base64: fixture.toString('base64') });
+  const before = readJex(Buffer.from((await f.call('jex-export')).base64, 'base64')), resourceId = '5'.repeat(32);
+  const note = await f.call('save', { title: 'Task with retained resource', body: `[Existing resource](:/${resourceId})`, tags: ['new-task-tag'], notebook: 'Task notebook', newTodo: true });
+  await f.restart(); const after = readJex(Buffer.from((await f.call('jex-export')).base64, 'base64'));
+  for (const [id, record] of before.records) assert.deepEqual(after.records.get(id), record, `Prior record ${id}`);
+  for (const [id, resource] of before.resources) assert.deepEqual(after.resources.get(id).bytes, resource.bytes, `Prior resource ${id}`);
+  const taskRecord = after.records.get(note.id.replaceAll('-', '')); assert.equal(taskRecord.props.is_todo, '1'); assert.equal(taskRecord.props.parent_id, note.notebookId); assert.equal(taskRecord.body, note.body);
+  const downloaded = await f.call('attachment-get', { noteId: note.id, id: resourceId }); assert.deepEqual(Buffer.from(downloaded.base64, 'base64'), before.resources.get(resourceId).bytes);
+});

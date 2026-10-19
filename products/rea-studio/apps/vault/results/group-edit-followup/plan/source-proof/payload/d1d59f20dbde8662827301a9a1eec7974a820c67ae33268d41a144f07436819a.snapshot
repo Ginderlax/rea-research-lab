@@ -1,0 +1,33 @@
+{
+  "schema": "rea-root-vault-group-editor-browser-observations/v1",
+  "candidateManifestSHA256": "52a88d027dc910c3ef8723e80690aef98dacdc9c98d43902192663ca43799ff4",
+  "url": "http://127.0.0.1:58473/#vault",
+  "ownedTab": "17",
+  "ownedPID": 58776,
+  "normalSharedHostAndShell": true,
+  "handlerSubstitutions": 0,
+  "transportBridge": false,
+  "observations": [
+    {"id": "empty-child-created", "passed": true, "result": "Group created; native group roster increased from5 to6 and displayed new child1 group/0 entries; existing3 entry rows retained."},
+    {"id": "literal-name-and-notes-reopened", "passed": true, "result": "Saved child textContent retained two leading/trailing spaces in '  Browser empty / α 😀  '; native group editor reloaded the same name and exact two-line notes 'Browser group notes\nsecond line 🦉'."},
+    {"id": "name-and-notes-saved", "passed": true, "result": "Group details saved; 'Browser renamed empty 😀' displayed1 group/0 entries. Reopening loaded 'Edited notes 🦉'."},
+    {"id": "dirty-close-refused", "passed": true, "result": "Close group editor refused with explicit discard message and retained 'Unsaved group name' draft."},
+    {"id": "explicit-discard-closed", "passed": true, "result": "Checking the exact group draft discard checkbox and closing removed the group-name field while keeping the saved name visible."},
+    {"id": "parent-rename-updates-descendants", "passed": true, "result": "Saving Parent as 'Browser renamed parent' updated A to Browser renamed parent/Selected and B to Browser renamed parent/Selected/Deep; C remained in Other."},
+    {"id": "selected-entry-write-guard", "passed": true, "result": "After opening Browser synthetic A, group editor opening was allowed; Save group details refused with 'Close the entry editor and save or discard its draft before changing a group.' Its uncommitted rename draft remained and A's title remained exact. No success claim for opening refusal."},
+    {"id": "reload-saved-state", "passed": true, "result": "After confirmed draft discard, New entry, and normal reload, Show groups displayed renamed parent and empty child with correct descendant paths and six native groups; entry draft was blank."}
+  ],
+  "semanticObservationGroups": 8,
+  "automatedTestFunctionCount": 0,
+  "originalExecutions": 0,
+  "heldTransportCampaign": false,
+  "freshDiskRestartInBrowser": false,
+  "nativeKDBXDownloadFileAcceptance": false,
+  "screenshot": {"inspected": true, "fullPage": true, "conversationOnly": true, "localImageBytesPreserved": false, "publicImageBytesPreserved": false},
+  "toolingDiagnostics": [{"kind": "owned locator ambiguity", "productFailure": false, "detail": "section.card containing Parent also matched the outer Groups card; exact click refused before action with5 matches. A current displayed row anchored text locator resolved the intended Parent controls. No source change."}],
+  "ownedTabClosed": true,
+  "user4311Touched": false,
+  "productionWrites": 0,
+  "fullProductParity": false,
+  "universalSuperiority": false
+}

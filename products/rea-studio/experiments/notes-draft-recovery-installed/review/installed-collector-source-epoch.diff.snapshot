@@ -1,0 +1,233 @@
+--- accepted-f0-experiment-collector
++++ new-notes41-installed-collector
+@@ -1,4 +1,4 @@
+-// Hosted-only R2 source epoch; one exact prior test strengthening is declared.
++// New committed Notes41 installation epoch; prior source epochs remain frozen.
+ import assert from 'node:assert/strict';
+ import fs from 'node:fs';
+ import path from 'node:path';
+@@ -14,19 +14,19 @@
+ assert.equal(process.env.RUNNER_OS, 'Windows');
+ assert.equal(process.env.RUNNER_ARCH, 'X64');
+ assert.equal(process.env.GITHUB_REPOSITORY, 'Ginderlax/rea-research-lab');
+-assert.equal(process.env.GITHUB_REF, 'refs/heads/experiment/notes-draft-recovery-20261018');
+-assert.equal(process.env.GITHUB_EVENT_NAME, 'push');
++assert.equal(process.env.GITHUB_REF, 'refs/heads/codex/rea-cloud-recovery-20261015');
++assert(['push', 'workflow_dispatch'].includes(process.env.GITHUB_EVENT_NAME));
+ const args = process.argv.slice(2);
+ assert.equal(args.length, 6);
+ assert.equal(args[0], '--phase');
+-assert(['before', 'finite', 'browser', 'after'].includes(args[1]));
++assert(['before', 'finite', 'browser', 'legacy-browser', 'after'].includes(args[1]));
+ assert.equal(args[2], '--role');
+-assert(['finite', 'browser'].includes(args[3]));
++assert(['finite', 'browser', 'legacy-browser'].includes(args[3]));
+ assert.equal(args[4], '--evidence');
+ assert(path.isAbsolute(args[5]));
+ const phase = args[1], role = args[3];
+-if (['finite', 'browser'].includes(phase)) assert.equal(phase, role);
+-assert.equal(process.env.GITHUB_JOB, role === 'finite' ? 'draft-recovery-finite' : 'draft-recovery-real-chromium');
++if (['finite', 'browser', 'legacy-browser'].includes(phase)) assert.equal(phase, role);
++assert.equal(process.env.GITHUB_JOB, { finite: 'notes41-finite', browser: 'draft-recovery-real-chromium', 'legacy-browser': 'installed-recovery-legacy-browser' }[role]);
+ for (const key of ['GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT', 'RUNNER_TEMP']) assert(process.env[key]);
+ assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));
+ const studio = fileURLToPath(new URL('../', import.meta.url));
+@@ -81,8 +81,12 @@
+   return result.stdout;
+ }
+ const floorPath = 'products/rea-studio/scripts/notes-draft-recovery-regression-floor.json';
+-const workflowPath = '.github/workflows/notes-draft-recovery-experiment-cloud.yml';
+-const collectorPath = 'products/rea-studio/scripts/verify-notes-draft-recovery-cloud.mjs';
++const workflowPath = '.github/workflows/notes-draft-recovery-installed-cloud.yml';
++const collectorPath = 'products/rea-studio/scripts/verify-notes41-installed-cloud.mjs';
++const declarationPath = 'products/rea-studio/experiments/notes-draft-recovery-installed/NOTES41-SOURCE.json';
++const declarationPin = { bytes: 30400, sha256: '88c89083ae402775a42c4f364d09a502558ffe30c9dba5a19439fb02ec10595f' };
++const installedPrefix = 'products/rea-studio/experiments/notes-draft-recovery-installed/';
++const legacyResultHelper = 'products/rea-studio/scripts/verify-notes41-legacy-browser-results.mjs';
+ const transitionedTestPath = 'products/rea-studio/apps/notes/todo.integration.test.mjs';
+ const testBeforePath = 'products/rea-studio/experiments/notes-draft-recovery/transitions/todo.integration.test.mjs.before.snapshot';
+ const exactTestReplacements = [
+@@ -90,6 +94,11 @@
+   { before: 'unchangedPublicModuleBoundary: true, actualBrowserExecution: false', after: 'unchangedPublicModuleBoundary: false, explicitlyAddedRecoveryModule: true, actualBrowserExecution: false' },
+ ];
+ const required = [workflowPath, collectorPath, floorPath,
++  declarationPath, legacyResultHelper, '.github/workflows/development-cloud.yml', '.github/workflows/notes-new-todo-installed-cloud.yml',
++  'products/rea-studio/scripts/verify-notes-draft-recovery-installed-full.mjs',
++  'products/rea-studio/browser-tests/notes-draft-recovery-installed-legacy.spec.mjs',
++  'products/rea-studio/browser-tests/playwright.notes-draft-recovery-installed-legacy.config.mjs',
++  'products/rea-studio/browser-tests/notes-draft-recovery-installed-legacy-roster.json',
+   testBeforePath,
+   'products/rea-studio/experiments/notes-draft-recovery/transitions/README.md',
+   'products/rea-studio/apps/notes/draft-recovery.mjs',
+@@ -104,6 +113,7 @@
+ const directories = ['apps', 'lib', 'public', 'browser-tests', 'scripts', 'tests'];
+ function eligible(name) {
+   if (required.includes(name)) return true;
++  if (name.startsWith(installedPrefix)) return true;
+   if (!name.startsWith('products/rea-studio/')) return false;
+   const relative = name.slice('products/rea-studio/'.length), parts = relative.split('/');
+   if (['server.mjs', 'catalog.mjs', 'package.json'].includes(relative)) return true;
+@@ -112,7 +122,7 @@
+   return directories.includes(parts[0]) && /\.(mjs|json|html|css|ps1)$/.test(parts.at(-1));
+ }
+ function tree() {
+-  const raw = git(['ls-tree', '-r', '-z', '--full-tree', 'HEAD', '--', 'products/rea-studio', workflowPath]);
++  const raw = git(['ls-tree', '-r', '-z', '--full-tree', 'HEAD', '--', 'products/rea-studio', workflowPath, '.github/workflows/development-cloud.yml', '.github/workflows/notes-new-todo-installed-cloud.yml']);
+   const objects = new Map(), rawRows = new Map();
+   for (const row of raw.toString('utf8').split('\0').filter(Boolean)) {
+     const match = /^(100644|100755) blob ([0-9a-f]{40})\t(.+)$/.exec(row);
+@@ -181,10 +191,55 @@
+   assert.deepEqual(actual, tests, 'No omitted or additional active Notes finite tests');
+   return { raw, value, tests };
+ }
++function installedNotes41(objects) {
++  const raw = committed(declarationPath, objects);
++  assert.deepEqual(identity(raw), declarationPin);
++  const declaration = JSON.parse(raw);
++  assert.equal(declaration.schema, 'rea-notes41-installed-source-declaration/v1');
++  assert.equal(declaration.sourceOnly, true); assert.equal(declaration.installedAcceptancePreclaimed, false);
++  assert.equal(declaration.installationPerformedByDeclaration, false); assert.equal(declaration.selfIdentityContained, false);
++  assert.equal(declaration.externalDeclarationPinRequired, true); assert.equal(declaration.sourceEpoch, 'notes41-installed-recovery');
++  assert.equal(declaration.historicalNotes36Source, '698d2e301765d1b878fb251b3d59dadb5a3c9bac');
++  assert.equal(declaration.acceptedRecoverySource, 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269');
++  assert.equal(declaration.historicalNotes36Files, 36); assert.equal(declaration.currentNotesFiles, 41);
++  assert.equal(declaration.currentNotesSources.length, 41); assert.equal(declaration.acceptedExperimentalNotesSources.length, 41);
++  assert.equal(new Set(declaration.currentNotesSources.map(row => row.path)).size, 41);
++  const actualNames = [];
++  function walk(directory) {
++    assert(fs.lstatSync(directory).isDirectory() && !fs.lstatSync(directory).isSymbolicLink());
++    for (const item of fs.readdirSync(directory, { withFileTypes: true })) {
++      if (item.name === 'results') continue;
++      assert(!item.isSymbolicLink()); const filename = path.join(directory, item.name);
++      if (item.isDirectory()) walk(filename);
++      else { assert(item.isFile()); actualNames.push(path.relative(repository, filename).replaceAll('\\', '/')); }
++    }
++  }
++  walk(path.join(studio, 'apps/notes'));
++  assert.deepEqual(actualNames.sort(), declaration.currentNotesSources.map(row => row.path).sort(), 'Every installed Notes file must belong to the exact declared41-file epoch');
++  const accepted = new Map(declaration.acceptedExperimentalNotesSources.map(row => [row.path, row])); assert.equal(accepted.size, 41);
++  for (const row of declaration.currentNotesSources) {
++    const bytes = committed(row.path, objects); assert.deepEqual(identity(bytes), pin(row)); assert.equal(objects.get(row.path), row.gitBlob);
++    const prior = accepted.get(row.path); assert(prior);
++    if (row.path !== 'products/rea-studio/apps/notes/README.md') assert.deepEqual(row, prior, 'Only the explicitly declared documentation transition may differ from acceptedf0 Notes bytes');
++  }
++  const transition = declaration.readmeTransition;
++  assert.equal(transition.path, 'products/rea-studio/apps/notes/README.md');
++  assert.equal(transition.beforeSnapshotPath, installedPrefix + 'source/README.before.snapshot');
++  assert.deepEqual(transition.before, pin(accepted.get(transition.path)));
++  assert.deepEqual(identity(committed(transition.beforeSnapshotPath, objects)), transition.before);
++  assert.deepEqual(identity(committed(transition.path, objects)), transition.after);
++  assert.deepEqual(transition.after, { bytes: 23686, sha256: 'e6c6909e9f15afebe92af75e9f747e16b0757012a7965287febd8d6d5bef6f40' });
++  assert.deepEqual(identity(committed(declaration.commonServer.path, objects)), pin(declaration.commonServer));
++  assert.deepEqual(declaration.commonServer, { path: 'products/rea-studio/server.mjs', bytes: 7953, sha256: 'c13a55cb66a13e973847ff6a970006b2acf3cf6c4752d1e25292ef67695329ae' });
++  assert.equal(new Set(declaration.supportingSources.map(row => row.path)).size, declaration.supportingSources.length);
++  for (const row of declaration.supportingSources) assert.deepEqual(identity(committed(row.path, objects)), pin(row));
++  for (const flag of ['historicalReceiptsRebound', 'originalAutosaveComparison', 'fullParity', 'superiority']) assert.equal(declaration[flag], false);
++  return { declaration, receipt: { path: declarationPath, ...identity(raw) }, currentNotesFiles: 41, acceptedExperimentalNotesPreservedExceptDeclaredReadme: true, allNotesGitBlobsAuthenticated: true };
++}
+ function census(capturePrefix = null) {
+   assert.equal(git(['rev-parse', 'HEAD']).toString('utf8').trim(), process.env.GITHUB_SHA);
+   assert.equal(git(['status', '--porcelain=v1', '--untracked-files=all']).toString('utf8'), '', 'Source checkout must remain clean');
+-  const { objects, rawRows } = tree(), floor = regressionFloor(objects);
++  const { objects, rawRows } = tree(), floor = regressionFloor(objects), installed = installedNotes41(objects);
+   for (const name of required) assert(objects.has(name), 'Missing committed experiment source: ' + name);
+   const names = [...new Set([...objects.keys()].filter(eligible).concat(floor.value.originalInputs.map(row => row.path)))].sort();
+   assert(names.length <= limits.files);
+@@ -205,6 +260,7 @@
+     }
+   }
+   for (const name of directories) walk(path.join(studio, name));
++  walk(path.join(repository, installedPrefix));
+   for (const name of ['server.mjs', 'catalog.mjs', 'package.json']) actualActive.push('products/rea-studio/' + name);
+   const activeExpected = [...objects.keys()].filter(name => eligible(name) && !required.includes(name)).sort();
+   assert.deepEqual(actualActive.filter(name => !required.includes(name)).sort(), activeExpected, 'Complete active six-directory filesystem/Git source closure');
+@@ -217,19 +273,19 @@
+   }
+   const selectedTree = Buffer.from(names.map(name => rawRows.get(name) + '\0').join(''));
+   if (capturePrefix) writeBytes(capturePrefix + '/GIT-TREE.selected.raw', selectedTree);
+-  return { rows, bytes: total, floor, gitTree: { ...identity(selectedTree), scope: 'Exact raw Git rows for the complete selected active source closure and fixed original inputs' }, sourceCommit: process.env.GITHUB_SHA };
++  return { rows, bytes: total, floor, installed, gitTree: { ...identity(selectedTree), scope: 'Exact raw Git rows for the complete selected active source closure and fixed original inputs' }, sourceCommit: process.env.GITHUB_SHA };
+ }
+ function sameAttempt(value) {
+   assert.deepEqual(value.execution, execution);
+   assert.equal(value.sourceCommit, process.env.GITHUB_SHA);
+   assert.equal(value.role, role);
+ }
+-const record = { schema: 'rea-notes-draft-recovery-experiment-cloud/v2', phase, role, status: 'running', sourceCommit: process.env.GITHUB_SHA,
+-  sourceEpoch: 'explicit-canonical-save-and-delivery-transition-r2', historicalFailureSourceCommit: '3b4cfc3d14af3254273c666ab0c919965ab93dbe',
++const record = { schema: 'rea-notes41-installed-recovery-cloud/v1', phase, role, status: 'running', sourceCommit: process.env.GITHUB_SHA,
++  sourceEpoch: 'notes41-installed-recovery', acceptedRecoverySource: 'f0ca90d2cfafcc10f102c88b7dce3ef3c895d269', historicalNotes36Source: '698d2e301765d1b878fb251b3d59dadb5a3c9bac', sourceInstallationPerformedByCollector: false,
+   execution, startedAtUtc: new Date().toISOString(), limits, children: [], sourceOverlay: false, sourceMutationPerformed: false,
+   installedAcceptance: false, historicalReceiptsRebound: false, originalFullApplicationExecutions: 0,
+   originalAutosaveComparison: false, fullParity: false, superiority: false, failure: null };
+-const recordName = 'draft-recovery-' + role + '-' + phase + '.json';
++const recordName = 'notes41-' + role + '-' + phase + '.json';
+ let active = null, interrupted = null;
+ function saveRecord() {
+   const target = path.join(evidence, recordName), next = target + '.pending';
+@@ -407,22 +463,25 @@
+ try {
+   if (phase === 'before') {
+     const current = census('source-before');
+-    write('draft-recovery-' + role + '-source-before.json', current.rows);
+-    record.sourceAuthentication = { files: current.rows.length, bytes: current.bytes, gitTree: current.gitTree, originalPriorPinsPreserved: 21, unchangedPriorTestFiles: 20, explicitlyStrengthenedPriorTestFiles: 1, retainedPriorNamedResults: 111, capturedOriginalInputs: 64 };
++    write('notes41-' + role + '-source-before.json', current.rows);
++    record.sourceAuthentication = { files: current.rows.length, bytes: current.bytes, gitTree: current.gitTree, installedNotesFiles: 41, originalPriorPinsPreserved: 21, unchangedPriorTestFiles: 20, explicitlyStrengthenedPriorTestFiles: 1, retainedPriorNamedResults: 111, capturedOriginalInputs: 64 };
++    record.notes41SourceProof = { declaration: current.installed.receipt, currentNotesSources: current.installed.declaration.currentNotesSources, acceptedRecoverySource: current.installed.declaration.acceptedRecoverySource, commonServer: current.installed.declaration.commonServer, readmeTransition: current.installed.declaration.readmeTransition, allNotesGitBlobsAuthenticated: true };
+     record.sourceStable = true; record.status = 'source-verified-unexecuted';
+   } else {
+-    const receipt = json('draft-recovery-' + role + '-before.json'); sameAttempt(receipt);
++    const receipt = json('notes41-' + role + '-before.json'); sameAttempt(receipt);
+     assert.equal(receipt.status, 'source-verified-unexecuted');
+-    before = json('draft-recovery-' + role + '-source-before.json');
++    before = json('notes41-' + role + '-source-before.json');
+     const current = census(phase === 'after' ? 'source-after' : null);
+     assert.deepEqual(current.rows, before, 'Execution inputs differ from the before snapshot');
+-    record.beforeReceipt = identity(readEvidence('draft-recovery-' + role + '-before.json'));
++    assert.deepEqual(receipt.notes41SourceProof.declaration, current.installed.receipt);
++    record.notes41SourceProof = receipt.notes41SourceProof;
++    record.beforeReceipt = identity(readEvidence('notes41-' + role + '-before.json'));
+     record.regressionFloor = identity(current.floor.raw);
+     if (phase === 'after') {
+-      write('draft-recovery-' + role + '-source-after.json', current.rows);
++      write('notes41-' + role + '-source-after.json', current.rows);
+       record.sourceStable = true; record.sourceAuthentication = receipt.sourceAuthentication;
+-      const prior = json('draft-recovery-' + role + '-' + role + '.json'); sameAttempt(prior);
+-      record.executionAttempt = identity(readEvidence('draft-recovery-' + role + '-' + role + '.json'));
++      const prior = json('notes41-' + role + '-' + role + '.json'); sameAttempt(prior);
++      record.executionAttempt = identity(readEvidence('notes41-' + role + '-' + role + '.json'));
+       record.executionStatus = prior.status;
+       record.status = 'source-verified';
+     } else if (phase === 'finite') {
+@@ -439,10 +498,19 @@
+       assert(within(temporary, dataRoot)); assert(!within(repository, dataRoot)); assert(!within(evidence, dataRoot));
+       assert.equal(fs.readdirSync(dataRoot).length, 0, 'Browser fixtures need an initially empty owned data root');
+       record.ownedSyntheticDataRoot = dataRoot;
+-      await run([path.join(studio, 'browser-tests/node_modules/playwright/cli.js'), 'test', '--config', path.join(studio, 'browser-tests/playwright.notes-draft-recovery.config.mjs')], 'real-chromium', 15 * 60000,
++      const config = role === 'browser' ? 'playwright.notes-draft-recovery.config.mjs' : 'playwright.notes-draft-recovery-installed-legacy.config.mjs';
++      await run([path.join(studio, 'browser-tests/node_modules/playwright/cli.js'), 'test', '--config', path.join(studio, 'browser-tests', config)], role === 'browser' ? 'real-chromium' : 'legacy-chromium', 15 * 60000,
+         { REA_BROWSER_EVIDENCE: evidence, REA_BROWSER_DATA_ROOT: dataRoot });
+-      record.browser = browserResults(current.floor);
+-      record.productTests = 12; record.status = 'passed';
++      if (role === 'browser') {
++        record.browser = browserResults(current.floor); record.productTests = 12;
++      } else {
++        assert.equal(role, 'legacy-browser');
++        const { verifyNotes41LegacyBrowserResults } = await import(pathToFileURL(path.join(repository, legacyResultHelper)).href);
++        record.browser = verifyNotes41LegacyBrowserResults({ evidence, execution, currentNotesSources: current.installed.declaration.currentNotesSources, readEvidence,
++          readCommitted: (name, expected) => { const raw = committed(name, objects); if (expected) assert.deepEqual(identity(raw), pin(expected)); return raw; } });
++        record.productTests = 8;
++      }
++      record.status = 'passed';
+     }
+   }
+ } catch (error) {
+@@ -453,7 +521,7 @@
+   if (before && phase !== 'after') {
+     try {
+       const after = census();
+-      write('draft-recovery-' + role + '-execution-postcheck.json', after.rows);
++      write('notes41-' + role + '-execution-postcheck.json', after.rows);
+       assert.deepEqual(after.rows, before); record.sourceStable = true;
+     } catch (error) {
+       record.status = 'failed'; record.sourceStable = false;

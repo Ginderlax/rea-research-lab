@@ -1,0 +1,1072 @@
+TAP version 13
+# Subtest: archive HTTP file creation, ZIP validation and extraction persist through host restarts
+not ok 1 - archive HTTP file creation, ZIP validation and extraction persist through host restarts
+  ---
+  duration_ms: 9971.5771
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\app.integration.test.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Native Windows source metadata is unavailable or invalid; archive creation was refused.
+    
+    400 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 400
+  operator: 'strictEqual'
+  stack: |-
+    call (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.integration.test.mjs:13:51)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.integration.test.mjs:15:85)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: stored and deflated ZIP files preserve binary, UTF-8, empty files and directories
+not ok 2 - stored and deflated ZIP files preserve binary, UTF-8, empty files and directories
+  ---
+  duration_ms: 313.847
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\app.test.mjs:17:1'
+  failureType: 'testCodeFailure'
+  error: 'Native Windows source metadata is unavailable or invalid; archive creation was refused.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    unavailable (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:69:33)
+    readSourceMetadata (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:141:19)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async collect (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:49:20)
+    async run (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:106:22)
+    async handle (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:168:18)
+    async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.test.mjs:23:20)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: ZIP parser validates CRC and headers and refuses traversal, duplicate paths, and oversized expansion
+ok 3 - ZIP parser validates CRC and headers and refuses traversal, duplicate paths, and oversized expansion
+  ---
+  duration_ms: 2.9175
+  type: 'test'
+  ...
+# Subtest: malicious archive cannot create files outside workspace and unconfirmed extraction does not write
+not ok 4 - malicious archive cannot create files outside workspace and unconfirmed extraction does not write
+  ---
+  duration_ms: 282.8017
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\app.test.mjs:44:1'
+  failureType: 'testCodeFailure'
+  error: 'Native Windows source metadata is unavailable or invalid; archive creation was refused.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    unavailable (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:69:33)
+    readSourceMetadata (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:141:19)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async collect (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:49:20)
+    async run (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:106:22)
+    async handle (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:168:18)
+    async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/app.test.mjs:45:104)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: Windows .NET independently reads generated ZIP and our parser reads independently created ZIP
+ok 5 - Windows .NET independently reads generated ZIP and our parser reads independently created ZIP
+  ---
+  duration_ms: 875.4626
+  type: 'test'
+  ...
+# Retained compressed-writer fixtures: D:\\a\\rea-research-lab\\rea-research-lab\\.local\\lzma-tests\\encoder-WYxhQa
+# Subtest: original accepts candidate lzma/fast, solid=false, encoded=false
+ok 6 - original accepts candidate lzma/fast, solid=false, encoded=false
+  ---
+  duration_ms: 133.5613
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/fast, solid=false, encoded=true
+ok 7 - original accepts candidate lzma/fast, solid=false, encoded=true
+  ---
+  duration_ms: 90.3412
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/fast, solid=true, encoded=false
+ok 8 - original accepts candidate lzma/fast, solid=true, encoded=false
+  ---
+  duration_ms: 75.616
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/fast, solid=true, encoded=true
+ok 9 - original accepts candidate lzma/fast, solid=true, encoded=true
+  ---
+  duration_ms: 75.3637
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/balanced, solid=false, encoded=false
+ok 10 - original accepts candidate lzma/balanced, solid=false, encoded=false
+  ---
+  duration_ms: 75.5473
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/balanced, solid=false, encoded=true
+ok 11 - original accepts candidate lzma/balanced, solid=false, encoded=true
+  ---
+  duration_ms: 72.8363
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/balanced, solid=true, encoded=false
+ok 12 - original accepts candidate lzma/balanced, solid=true, encoded=false
+  ---
+  duration_ms: 75.102
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/balanced, solid=true, encoded=true
+ok 13 - original accepts candidate lzma/balanced, solid=true, encoded=true
+  ---
+  duration_ms: 75.5
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/thorough, solid=false, encoded=false
+ok 14 - original accepts candidate lzma/thorough, solid=false, encoded=false
+  ---
+  duration_ms: 70.6046
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/thorough, solid=false, encoded=true
+ok 15 - original accepts candidate lzma/thorough, solid=false, encoded=true
+  ---
+  duration_ms: 71.3201
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/thorough, solid=true, encoded=false
+ok 16 - original accepts candidate lzma/thorough, solid=true, encoded=false
+  ---
+  duration_ms: 74.7497
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma/thorough, solid=true, encoded=true
+ok 17 - original accepts candidate lzma/thorough, solid=true, encoded=true
+  ---
+  duration_ms: 73.687
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/fast, solid=false, encoded=false
+ok 18 - original accepts candidate lzma2/fast, solid=false, encoded=false
+  ---
+  duration_ms: 94.7299
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/fast, solid=false, encoded=true
+ok 19 - original accepts candidate lzma2/fast, solid=false, encoded=true
+  ---
+  duration_ms: 97.4206
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/fast, solid=true, encoded=false
+ok 20 - original accepts candidate lzma2/fast, solid=true, encoded=false
+  ---
+  duration_ms: 90.6826
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/fast, solid=true, encoded=true
+ok 21 - original accepts candidate lzma2/fast, solid=true, encoded=true
+  ---
+  duration_ms: 89.94
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/balanced, solid=false, encoded=false
+ok 22 - original accepts candidate lzma2/balanced, solid=false, encoded=false
+  ---
+  duration_ms: 86.8337
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/balanced, solid=false, encoded=true
+ok 23 - original accepts candidate lzma2/balanced, solid=false, encoded=true
+  ---
+  duration_ms: 92.1473
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/balanced, solid=true, encoded=false
+ok 24 - original accepts candidate lzma2/balanced, solid=true, encoded=false
+  ---
+  duration_ms: 92.0279
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/balanced, solid=true, encoded=true
+ok 25 - original accepts candidate lzma2/balanced, solid=true, encoded=true
+  ---
+  duration_ms: 93.3181
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/thorough, solid=false, encoded=false
+ok 26 - original accepts candidate lzma2/thorough, solid=false, encoded=false
+  ---
+  duration_ms: 86.7761
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/thorough, solid=false, encoded=true
+ok 27 - original accepts candidate lzma2/thorough, solid=false, encoded=true
+  ---
+  duration_ms: 89.7668
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/thorough, solid=true, encoded=false
+ok 28 - original accepts candidate lzma2/thorough, solid=true, encoded=false
+  ---
+  duration_ms: 91.0103
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2/thorough, solid=true, encoded=true
+ok 29 - original accepts candidate lzma2/thorough, solid=true, encoded=true
+  ---
+  duration_ms: 91.5181
+  type: 'test'
+  ...
+# Subtest: known compressible lzma/fast has genuine compressed symbols
+ok 30 - known compressible lzma/fast has genuine compressed symbols
+  ---
+  duration_ms: 3.0668
+  type: 'test'
+  ...
+# Subtest: known compressible lzma/balanced has genuine compressed symbols
+ok 31 - known compressible lzma/balanced has genuine compressed symbols
+  ---
+  duration_ms: 2.9199
+  type: 'test'
+  ...
+# Subtest: known compressible lzma/thorough has genuine compressed symbols
+ok 32 - known compressible lzma/thorough has genuine compressed symbols
+  ---
+  duration_ms: 2.9918
+  type: 'test'
+  ...
+# Subtest: known compressible lzma2/fast has genuine compressed symbols
+ok 33 - known compressible lzma2/fast has genuine compressed symbols
+  ---
+  duration_ms: 2.9061
+  type: 'test'
+  ...
+# Subtest: known compressible lzma2/balanced has genuine compressed symbols
+ok 34 - known compressible lzma2/balanced has genuine compressed symbols
+  ---
+  duration_ms: 2.8671
+  type: 'test'
+  ...
+# Subtest: known compressible lzma2/thorough has genuine compressed symbols
+ok 35 - known compressible lzma2/thorough has genuine compressed symbols
+  ---
+  duration_ms: 2.9149
+  type: 'test'
+  ...
+# Subtest: original accepts incompressible lzma/fast without relabeling chunks
+ok 36 - original accepts incompressible lzma/fast without relabeling chunks
+  ---
+  duration_ms: 884.8385
+  type: 'test'
+  ...
+# Subtest: original accepts incompressible lzma/balanced without relabeling chunks
+ok 37 - original accepts incompressible lzma/balanced without relabeling chunks
+  ---
+  duration_ms: 1156.4784
+  type: 'test'
+  ...
+# Subtest: original accepts incompressible lzma/thorough without relabeling chunks
+ok 38 - original accepts incompressible lzma/thorough without relabeling chunks
+  ---
+  duration_ms: 1189.9709
+  type: 'test'
+  ...
+# Subtest: original accepts incompressible lzma2/fast without relabeling chunks
+ok 39 - original accepts incompressible lzma2/fast without relabeling chunks
+  ---
+  duration_ms: 465.0084
+  type: 'test'
+  ...
+# Subtest: original accepts incompressible lzma2/balanced without relabeling chunks
+ok 40 - original accepts incompressible lzma2/balanced without relabeling chunks
+  ---
+  duration_ms: 443.633
+  type: 'test'
+  ...
+# Subtest: original accepts incompressible lzma2/thorough without relabeling chunks
+ok 41 - original accepts incompressible lzma2/thorough without relabeling chunks
+  ---
+  duration_ms: 449.091
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma lc=0,lp=0,pb=0
+ok 42 - original accepts candidate lzma lc=0,lp=0,pb=0
+  ---
+  duration_ms: 92.765
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2 lc=0,lp=0,pb=0
+ok 43 - original accepts candidate lzma2 lc=0,lp=0,pb=0
+  ---
+  duration_ms: 91.3662
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma lc=4,lp=0,pb=4
+ok 44 - original accepts candidate lzma lc=4,lp=0,pb=4
+  ---
+  duration_ms: 103.1193
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2 lc=4,lp=0,pb=4
+ok 45 - original accepts candidate lzma2 lc=4,lp=0,pb=4
+  ---
+  duration_ms: 88.8886
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma lc=0,lp=4,pb=1
+ok 46 - original accepts candidate lzma lc=0,lp=4,pb=1
+  ---
+  duration_ms: 90.2815
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2 lc=0,lp=4,pb=1
+ok 47 - original accepts candidate lzma2 lc=0,lp=4,pb=1
+  ---
+  duration_ms: 89.3617
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma lc=2,lp=2,pb=2
+ok 48 - original accepts candidate lzma lc=2,lp=2,pb=2
+  ---
+  duration_ms: 92.5538
+  type: 'test'
+  ...
+# Subtest: original accepts candidate lzma2 lc=2,lp=2,pb=2
+ok 49 - original accepts candidate lzma2 lc=2,lp=2,pb=2
+  ---
+  duration_ms: 88.5449
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=0, EOS=false
+ok 50 - original independently reads LZMA-alone wrapper size=0, EOS=false
+  ---
+  duration_ms: 42.813
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=0, EOS=true
+ok 51 - original independently reads LZMA-alone wrapper size=0, EOS=true
+  ---
+  duration_ms: 42.2892
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=1, EOS=false
+ok 52 - original independently reads LZMA-alone wrapper size=1, EOS=false
+  ---
+  duration_ms: 42.6461
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=1, EOS=true
+ok 53 - original independently reads LZMA-alone wrapper size=1, EOS=true
+  ---
+  duration_ms: 42.4296
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=273, EOS=false
+ok 54 - original independently reads LZMA-alone wrapper size=273, EOS=false
+  ---
+  duration_ms: 44.5124
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=273, EOS=true
+ok 55 - original independently reads LZMA-alone wrapper size=273, EOS=true
+  ---
+  duration_ms: 42.9697
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=32768, EOS=false
+ok 56 - original independently reads LZMA-alone wrapper size=32768, EOS=false
+  ---
+  duration_ms: 48.5582
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=32768, EOS=true
+ok 57 - original independently reads LZMA-alone wrapper size=32768, EOS=true
+  ---
+  duration_ms: 46.0633
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=32769, EOS=false
+ok 58 - original independently reads LZMA-alone wrapper size=32769, EOS=false
+  ---
+  duration_ms: 45.5184
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=32769, EOS=true
+ok 59 - original independently reads LZMA-alone wrapper size=32769, EOS=true
+  ---
+  duration_ms: 45.6093
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=65537, EOS=false
+ok 60 - original independently reads LZMA-alone wrapper size=65537, EOS=false
+  ---
+  duration_ms: 49.6706
+  type: 'test'
+  ...
+# Subtest: original independently reads LZMA-alone wrapper size=65537, EOS=true
+ok 61 - original independently reads LZMA-alone wrapper size=65537, EOS=true
+  ---
+  duration_ms: 53.5067
+  type: 'test'
+  ...
+# Subtest: candidate LZMA2 uses genuine compressed chunks and honest mixed stored fallback
+ok 62 - candidate LZMA2 uses genuine compressed chunks and honest mixed stored fallback
+  ---
+  duration_ms: 93.843
+  type: 'test'
+  ...
+# Subtest: profiles have real dictionary differences on a distant-repeat workload
+ok 63 - profiles have real dictionary differences on a distant-repeat workload
+  ---
+  duration_ms: 539.8504
+  type: 'test'
+  ...
+# Subtest: LZMA2 chunk-size boundaries and profile options are genuine compressed original-compatible data
+ok 64 - LZMA2 chunk-size boundaries and profile options are genuine compressed original-compatible data
+  ---
+  duration_ms: 155.7819
+  type: 'test'
+  ...
+# Subtest: container LZMA2 encoded header and LZMA1 EOS are accepted by original
+ok 65 - container LZMA2 encoded header and LZMA1 EOS are accepted by original
+  ---
+  duration_ms: 146.8813
+  type: 'test'
+  ...
+# Subtest: byte input, dictionaries, literal contexts, search, output and option bounds reject
+ok 66 - byte input, dictionaries, literal contexts, search, output and option bounds reject
+  ---
+  duration_ms: 6.6807
+  type: 'test'
+  ...
+# Subtest: optional work/time budgets reject deterministically and successful bounded work is exact
+ok 67 - optional work/time budgets reject deterministically and successful bounded work is exact
+  ---
+  duration_ms: 39.2179
+  type: 'test'
+  ...
+# Subtest: per-file, total, path and method limits remain enforced before container exchange
+ok 68 - per-file, total, path and method limits remain enforced before container exchange
+  ---
+  duration_ms: 12.2466
+  type: 'test'
+  ...
+# Subtest: receipt records exact source and independently verified original fixtures
+ok 69 - receipt records exact source and independently verified original fixtures
+  ---
+  duration_ms: 2.3256
+  type: 'test'
+  ...
+# Subtest: aggregate budget spans entries, header decoding, CRCs and separate codec calls
+ok 70 - aggregate budget spans entries, header decoding, CRCs and separate codec calls
+  ---
+  duration_ms: 275.8826
+  type: 'test'
+  ...
+# Retained application compressed-LZMA fixtures: D:\\a\\rea-research-lab\\rea-research-lab\\.local\\lzma-tests\\http-F9D6ma
+# Subtest: HTTP genuine LZMA/LZMA2 all profiles, encoded headers and restart preserve exact content
+ok 71 - HTTP genuine LZMA/LZMA2 all profiles, encoded headers and restart preserve exact content
+  ---
+  duration_ms: 3170.8064
+  type: 'test'
+  ...
+# Retained LZMA research vectors: D:\\a\\rea-research-lab\\rea-research-lab\\.local\\lzma-tests\\decoder-DHHNY1
+# Subtest: original LZMA raw and .7z roundtrip: single
+ok 72 - original LZMA raw and .7z roundtrip: single
+  ---
+  duration_ms: 58.048
+  type: 'test'
+  ...
+# Subtest: original LZMA raw and .7z roundtrip: repeated
+ok 73 - original LZMA raw and .7z roundtrip: repeated
+  ---
+  duration_ms: 68.1348
+  type: 'test'
+  ...
+# Subtest: original LZMA raw and .7z roundtrip: random
+ok 74 - original LZMA raw and .7z roundtrip: random
+  ---
+  duration_ms: 146.652
+  type: 'test'
+  ...
+# Subtest: original LZMA raw and .7z roundtrip: distance
+ok 75 - original LZMA raw and .7z roundtrip: distance
+  ---
+  duration_ms: 127.6476
+  type: 'test'
+  ...
+# Subtest: original LZMA2 raw and .7z roundtrip: single
+ok 76 - original LZMA2 raw and .7z roundtrip: single
+  ---
+  duration_ms: 48.0255
+  type: 'test'
+  ...
+# Subtest: original LZMA2 raw and .7z roundtrip: repeated
+ok 77 - original LZMA2 raw and .7z roundtrip: repeated
+  ---
+  duration_ms: 57.8846
+  type: 'test'
+  ...
+# Subtest: original LZMA2 raw and .7z roundtrip: random
+ok 78 - original LZMA2 raw and .7z roundtrip: random
+  ---
+  duration_ms: 62.503
+  type: 'test'
+  ...
+# Subtest: original LZMA2 raw and .7z roundtrip: distance
+ok 79 - original LZMA2 raw and .7z roundtrip: distance
+  ---
+  duration_ms: 81.9645
+  type: 'test'
+  ...
+# Subtest: original LZMA nondefault lc=0:lp=0:pb=0
+ok 80 - original LZMA nondefault lc=0:lp=0:pb=0
+  ---
+  duration_ms: 58.0915
+  type: 'test'
+  ...
+# Subtest: original LZMA2 nondefault lc=0:lp=0:pb=0
+ok 81 - original LZMA2 nondefault lc=0:lp=0:pb=0
+  ---
+  duration_ms: 51.8689
+  type: 'test'
+  ...
+# Subtest: original LZMA nondefault lc=4:lp=0:pb=4
+ok 82 - original LZMA nondefault lc=4:lp=0:pb=4
+  ---
+  duration_ms: 51.696
+  type: 'test'
+  ...
+# Subtest: original LZMA2 nondefault lc=4:lp=0:pb=4
+ok 83 - original LZMA2 nondefault lc=4:lp=0:pb=4
+  ---
+  duration_ms: 54.9348
+  type: 'test'
+  ...
+# Subtest: original LZMA nondefault lc=0:lp=4:pb=1
+ok 84 - original LZMA nondefault lc=0:lp=4:pb=1
+  ---
+  duration_ms: 53.9815
+  type: 'test'
+  ...
+# Subtest: original LZMA2 nondefault lc=0:lp=4:pb=1
+ok 85 - original LZMA2 nondefault lc=0:lp=4:pb=1
+  ---
+  duration_ms: 53.1059
+  type: 'test'
+  ...
+# Subtest: original LZMA nondefault lc=2:lp=2:pb=2
+ok 86 - original LZMA nondefault lc=2:lp=2:pb=2
+  ---
+  duration_ms: 50.799
+  type: 'test'
+  ...
+# Subtest: original LZMA2 nondefault lc=2:lp=2:pb=2
+ok 87 - original LZMA2 nondefault lc=2:lp=2:pb=2
+  ---
+  duration_ms: 52.8094
+  type: 'test'
+  ...
+# Subtest: original raw LZMA with explicit end marker finishes exactly
+ok 88 - original raw LZMA with explicit end marker finishes exactly
+  ---
+  duration_ms: 96.8425
+  type: 'test'
+  ...
+# Subtest: original LZMA2 long continuing compressed chunks preserve probability state and dictionary
+ok 89 - original LZMA2 long continuing compressed chunks preserve probability state and dictionary
+  ---
+  duration_ms: 347.2043
+  type: 'test'
+  ...
+# Subtest: original LZMA2 mixed copy/compressed chunks preserve and initialize state correctly
+ok 90 - original LZMA2 mixed copy/compressed chunks preserve and initialize state correctly
+  ---
+  duration_ms: 403.6238
+  type: 'test'
+  ...
+# Subtest: ordinary original defaults .7z with encoded header, solid=off
+ok 91 - ordinary original defaults .7z with encoded header, solid=off
+  ---
+  duration_ms: 52.475
+  type: 'test'
+  ...
+# Subtest: ordinary original LZMA .7z with encoded header, solid=off
+ok 92 - ordinary original LZMA .7z with encoded header, solid=off
+  ---
+  duration_ms: 51.7294
+  type: 'test'
+  ...
+# Subtest: ordinary original LZMA2 .7z with encoded header, solid=off
+ok 93 - ordinary original LZMA2 .7z with encoded header, solid=off
+  ---
+  duration_ms: 51.565
+  type: 'test'
+  ...
+# Subtest: ordinary original defaults .7z with encoded header, solid=on
+ok 94 - ordinary original defaults .7z with encoded header, solid=on
+  ---
+  duration_ms: 50.9154
+  type: 'test'
+  ...
+# Subtest: ordinary original LZMA .7z with encoded header, solid=on
+ok 95 - ordinary original LZMA .7z with encoded header, solid=on
+  ---
+  duration_ms: 52.1455
+  type: 'test'
+  ...
+# Subtest: ordinary original LZMA2 .7z with encoded header, solid=on
+ok 96 - ordinary original LZMA2 .7z with encoded header, solid=on
+  ---
+  duration_ms: 54.2493
+  type: 'test'
+  ...
+# Subtest: raw input, dictionary, expansion, option and property limits reject before allocation
+ok 97 - raw input, dictionary, expansion, option and property limits reject before allocation
+  ---
+  duration_ms: 2.1734
+  type: 'test'
+  ...
+# Subtest: all cuts of small original raw LZMA/LZMA2 vectors reject truncation
+ok 98 - all cuts of small original raw LZMA/LZMA2 vectors reject truncation
+  ---
+  duration_ms: 41.5258
+  type: 'test'
+  ...
+# Subtest: optional work and elapsed budgets reject deterministically without partial success
+ok 99 - optional work and elapsed budgets reject deterministically without partial success
+  ---
+  duration_ms: 77.6288
+  type: 'test'
+  ...
+# Subtest: maximum permitted dictionary and LZMA1 literal contexts have finite allocations
+ok 100 - maximum permitted dictionary and LZMA1 literal contexts have finite allocations
+  ---
+  duration_ms: 1.5606
+  type: 'test'
+  ...
+# Subtest: back references cannot escape the advertised dictionary or reset history
+ok 101 - back references cannot escape the advertised dictionary or reset history
+  ---
+  duration_ms: 35.0046
+  type: 'test'
+  ...
+# Subtest: exact consumption, declared output and range stream initialization are required
+ok 102 - exact consumption, declared output and range stream initialization are required
+  ---
+  duration_ms: 14.98
+  type: 'test'
+  ...
+# Subtest: LZMA2 missing/reset controls, invalid properties, end marker and packed lengths reject
+ok 103 - LZMA2 missing/reset controls, invalid properties, end marker and packed lengths reject
+  ---
+  duration_ms: 0.794
+  type: 'test'
+  ...
+# Subtest: compressed chunk and header mutation are caught by original container CRCs
+ok 104 - compressed chunk and header mutation are caught by original container CRCs
+  ---
+  duration_ms: 27.7087
+  type: 'test'
+  ...
+# Subtest: LZMA2 synthetic copy reset and compressed state/property transitions
+ok 105 - LZMA2 synthetic copy reset and compressed state/property transitions
+  ---
+  duration_ms: 8.4022
+  type: 'test'
+  ...
+# Subtest: receipt retains exact independent vectors and output digests
+ok 106 - receipt retains exact independent vectors and output digests
+  ---
+  duration_ms: 1.6758
+  type: 'test'
+  ...
+# Subtest: independent ordinary folder fixture enforces AES alignment, properties, file/expansion/path and missing-digest limits before output
+ok 107 - independent ordinary folder fixture enforces AES alignment, properties, file/expansion/path and missing-digest limits before output
+  ---
+  duration_ms: 9.7944
+  type: 'test'
+  ...
+# Subtest: CRC is corruption detection, not authentication: controlled IV tamper plus rebuilt CRC changes plaintext without re-encryption
+ok 108 - CRC is corruption detection, not authentication: controlled IV tamper plus rebuilt CRC changes plaintext without re-encryption
+  ---
+  duration_ms: 1.0612
+  type: 'test'
+  ...
+# Subtest: aggregate KDF budget spans separate encrypted read/write operations and deterministic small guards refuse work
+ok 109 - aggregate KDF budget spans separate encrypted read/write operations and deterministic small guards refuse work
+  ---
+  duration_ms: 133.6115
+  type: 'test'
+  ...
+# Subtest: genuine AES chains roundtrip bounded Copy/Deflate/LZMA/LZMA2 data, solid and selected plain/encrypted/compressed headers
+ok 110 - genuine AES chains roundtrip bounded Copy/Deflate/LZMA/LZMA2 data, solid and selected plain/encrypted/compressed headers
+  ---
+  duration_ms: 1811.5481
+  type: 'test'
+  ...
+# Subtest: unencrypted archive behavior remains readable and encrypted reads require the exact password
+ok 111 - unencrypted archive behavior remains readable and encrypted reads require the exact password
+  ---
+  duration_ms: 57.4627
+  type: 'test'
+  ...
+# Subtest: real HTTP encrypted create/list/test/extract and restart retain exact files and persist no password records
+not ok 112 - real HTTP encrypted create/list/test/extract and restart retain exact files and persist no password records
+  ---
+  duration_ms: 362.4786
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\sevenzip-aes-http.test.mjs:4:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Native Windows source metadata is unavailable or invalid; archive creation was refused.
+    
+    400 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 400
+  operator: 'strictEqual'
+  stack: |-
+    Object.call (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/sevenzip-aes-http.test.mjs:3:896)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/sevenzip-aes-http.test.mjs:4:473)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: HTTP password/method/deadline refusals leave no destination or archive and preserve existing source
+ok 113 - HTTP password/method/deadline refusals leave no destination or archive and preserve existing source
+  ---
+  duration_ms: 41.2727
+  type: 'test'
+  ...
+# Subtest: direct queued caller mutation cannot replace captured password/path/output or encryption intent
+not ok 114 - direct queued caller mutation cannot replace captured password/path/output or encryption intent
+  ---
+  duration_ms: 288.9817
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\sevenzip-aes-http.test.mjs:6:1'
+  failureType: 'testCodeFailure'
+  error: 'Native Windows source metadata is unavailable or invalid; archive creation was refused.'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    unavailable (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:69:33)
+    readSourceMetadata (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.mjs:141:19)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async collect (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:49:20)
+    async run (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:106:22)
+    async handle (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/server.mjs:168:18)
+    async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/sevenzip-aes-http.test.mjs:6:849)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: complete original encrypts bounded files; native decoder verifies plain and encrypted headers with UTF16 Unicode passwords
+ok 115 - complete original encrypts bounded files; native decoder verifies plain and encrypted headers with UTF16 Unicode passwords
+  ---
+  duration_ms: 1329.3282
+  type: 'test'
+  ...
+# Subtest: native encrypted chains with fresh salt/IV are tested and extracted byte-for-byte by the complete original
+ok 116 - native encrypted chains with fresh salt/IV are tested and extracted byte-for-byte by the complete original
+  ---
+  duration_ms: 3168.2067
+  type: 'test'
+  ...
+# Subtest: released empty-password read and passwordless plaintext-header listing remain explicitly distinct from writer/full-verification policy
+ok 117 - released empty-password read and passwordless plaintext-header listing remain explicitly distinct from writer/full-verification policy
+  ---
+  duration_ms: 153.7842
+  type: 'test'
+  ...
+# Subtest: actual staged component captures 7Z password/header choices, preserves compression level and clears private fields after success
+ok 118 - actual staged component captures 7Z password/header choices, preserves compression level and clears private fields after success
+  ---
+  duration_ms: 4.2334
+  type: 'test'
+  ...
+# Subtest: inspection captures even explicit empty read password, displays encrypted metadata and clears it after verification
+ok 119 - inspection captures even explicit empty read password, displays encrypted metadata and clears it after verification
+  ---
+  duration_ms: 0.9265
+  type: 'test'
+  ...
+# Subtest: held request blocks duplicate operations; disposal clears secrets and suppresses late success publication
+ok 120 - held request blocks duplicate operations; disposal clears secrets and suppresses late success publication
+  ---
+  duration_ms: 1.1913
+  type: 'test'
+  ...
+# Subtest: refused password operation restores usable controls and scrubs fields
+ok 121 - refused password operation restores usable controls and scrubs fields
+  ---
+  duration_ms: 0.9817
+  type: 'test'
+  ...
+# Subtest: late refused operation after disposal cannot republish status or retain password fields
+ok 122 - late refused operation after disposal cannot republish status or retain password fields
+  ---
+  duration_ms: 1.3177
+  type: 'test'
+  ...
+# Subtest: bounded AES primitive performs genuine CBC with released UTF16LE/counter SHA256 construction and zero padding
+ok 123 - bounded AES primitive performs genuine CBC with released UTF16LE/counter SHA256 construction and zero padding
+  ---
+  duration_ms: 3.4855
+  type: 'test'
+  ...
+# Subtest: direct63 decoding and empty-property defaults match finite released source branches without exposing key material
+ok 124 - direct63 decoding and empty-property defaults match finite released source branches without exposing key material
+  ---
+  duration_ms: 0.4929
+  type: 'test'
+  ...
+# Subtest: password/properties/cipher lengths/shared input/KDF and closed-context limits fail before unintended work
+ok 125 - password/properties/cipher lengths/shared input/KDF and closed-context limits fail before unintended work
+  ---
+  duration_ms: 0.957
+  type: 'test'
+  ...
+# Subtest: UINT64 encodings include all lengths and upper boundary
+ok 126 - UINT64 encodings include all lengths and upper boundary
+  ---
+  duration_ms: 2.3365
+  type: 'test'
+  ...
+# Subtest: candidate copy, solid=false, exchanges exact files and timestamps with original
+ok 127 - candidate copy, solid=false, exchanges exact files and timestamps with original
+  ---
+  duration_ms: 70.3146
+  type: 'test'
+  ...
+# Subtest: candidate copy, solid=true, exchanges exact files and timestamps with original
+ok 128 - candidate copy, solid=true, exchanges exact files and timestamps with original
+  ---
+  duration_ms: 47.0603
+  type: 'test'
+  ...
+# Subtest: candidate deflate, solid=false, exchanges exact files and timestamps with original
+ok 129 - candidate deflate, solid=false, exchanges exact files and timestamps with original
+  ---
+  duration_ms: 47.5335
+  type: 'test'
+  ...
+# Subtest: candidate deflate, solid=true, exchanges exact files and timestamps with original
+ok 130 - candidate deflate, solid=true, exchanges exact files and timestamps with original
+  ---
+  duration_ms: 47.5358
+  type: 'test'
+  ...
+# Subtest: candidate lzma2-store, solid=false, exchanges exact files and timestamps with original
+ok 131 - candidate lzma2-store, solid=false, exchanges exact files and timestamps with original
+  ---
+  duration_ms: 52.2143
+  type: 'test'
+  ...
+# Subtest: candidate lzma2-store, solid=true, exchanges exact files and timestamps with original
+ok 132 - candidate lzma2-store, solid=true, exchanges exact files and timestamps with original
+  ---
+  duration_ms: 51.7623
+  type: 'test'
+  ...
+# Subtest: original Copy, solid=off, decodes with exact files and timestamps
+ok 133 - original Copy, solid=off, decodes with exact files and timestamps
+  ---
+  duration_ms: 23.6222
+  type: 'test'
+  ...
+# Subtest: original Copy, solid=on, decodes with exact files and timestamps
+ok 134 - original Copy, solid=on, decodes with exact files and timestamps
+  ---
+  duration_ms: 23.5334
+  type: 'test'
+  ...
+# Subtest: original Deflate, solid=off, decodes with exact files and timestamps
+ok 135 - original Deflate, solid=off, decodes with exact files and timestamps
+  ---
+  duration_ms: 28.9188
+  type: 'test'
+  ...
+# Subtest: original Deflate, solid=on, decodes with exact files and timestamps
+ok 136 - original Deflate, solid=on, decodes with exact files and timestamps
+  ---
+  duration_ms: 29.3069
+  type: 'test'
+  ...
+# Subtest: candidate supported compressed header is accepted by original and reader
+ok 137 - candidate supported compressed header is accepted by original and reader
+  ---
+  duration_ms: 52.7603
+  type: 'test'
+  ...
+# Subtest: default original LZMA2 data and LZMA encoded header extract exact bytes
+ok 138 - default original LZMA2 data and LZMA encoded header extract exact bytes
+  ---
+  duration_ms: 63.5654
+  type: 'test'
+  ...
+# Subtest: original multiple alignment properties and optional creation/access times decode
+ok 139 - original multiple alignment properties and optional creation/access times decode
+  ---
+  duration_ms: 219.1341
+  type: 'test'
+  ...
+# Subtest: candidate metadata bitmaps beyond one byte and undefined timestamps are compatible
+ok 140 - candidate metadata bitmaps beyond one byte and undefined timestamps are compatible
+  ---
+  duration_ms: 70.1971
+  type: 'test'
+  ...
+# Subtest: empty archive, empty streams, omitted and pre-1970 timestamps
+ok 141 - empty archive, empty streams, omitted and pre-1970 timestamps
+  ---
+  duration_ms: 0.8283
+  type: 'test'
+  ...
+# Subtest: signature/start/header/packed CRC corruption and trailing concatenation fail
+ok 142 - signature/start/header/packed CRC corruption and trailing concatenation fail
+  ---
+  duration_ms: 4.628
+  type: 'test'
+  ...
+# Subtest: writer refuses unsafe or ambiguous paths and bounded inputs
+ok 143 - writer refuses unsafe or ambiguous paths and bounded inputs
+  ---
+  duration_ms: 3.2955
+  type: 'test'
+  ...
+# Subtest: direct codec checks accepted byte types and bounds before copying input
+ok 144 - direct codec checks accepted byte types and bounds before copying input
+  ---
+  duration_ms: 13.6525
+  type: 'test'
+  ...
+# Subtest: reader verifies independent pack, folder and solid substream CRCs
+ok 145 - reader verifies independent pack, folder and solid substream CRCs
+  ---
+  duration_ms: 2.436
+  type: 'test'
+  ...
+# Subtest: reader refuses malformed counts, out-of-bound sizes and unassigned data
+ok 146 - reader refuses malformed counts, out-of-bound sizes and unassigned data
+  ---
+  duration_ms: 1.1682
+  type: 'test'
+  ...
+# Subtest: reader validates filesystem names, anti-items, attributes and repeated alignment
+ok 147 - reader validates filesystem names, anti-items, attributes and repeated alignment
+  ---
+  duration_ms: 1.4186
+  type: 'test'
+  ...
+# Subtest: raw DEFLATE rejects trailing bytes and output inconsistent with headers
+ok 148 - raw DEFLATE rejects trailing bytes and output inconsistent with headers
+  ---
+  duration_ms: 0.9111
+  type: 'test'
+  ...
+# Subtest: uncompressed LZMA2 enforces reset, controls, terminator, dictionary and exact output
+ok 149 - uncompressed LZMA2 enforces reset, controls, terminator, dictionary and exact output
+  ---
+  duration_ms: 1.5554
+  type: 'test'
+  ...
+# Subtest: 7Z HTTP creation, listing, solid metadata, extraction and restart persistence
+ok 150 - 7Z HTTP creation, listing, solid metadata, extraction and restart persistence
+  ---
+  duration_ms: 2890.0044
+  type: 'test'
+  ...
+# Retained independent exchange fixtures and manifest: D:\\a\\rea-research-lab\\rea-research-lab\\.local\\sevenzip-tests\\run-DtQkaW
+# Subtest: 7Z HTTP refuses malformed archives before any extraction writes
+ok 151 - 7Z HTTP refuses malformed archives before any extraction writes
+  ---
+  duration_ms: 34.412
+  type: 'test'
+  ...
+# Subtest: Windows batch reader correlates every Unicode path/type and preserves dates across the 32-bit-seconds boundary
+ok 152 - Windows batch reader correlates every Unicode path/type and preserves dates across the 32-bit-seconds boundary
+  ---
+  duration_ms: 2.938
+  type: 'test'
+  ...
+# Subtest: exact native UTC and decimal milliseconds agree before whole-millisecond reduction, including negative fractional milliseconds
+ok 153 - exact native UTC and decimal milliseconds agree before whole-millisecond reduction, including negative fractional milliseconds
+  ---
+  duration_ms: 0.401
+  type: 'test'
+  ...
+# Subtest: malformed native output, missing/reordered/type-mismatched paths and inconsistent/nonfinite dates refuse with redacted errors
+ok 154 - malformed native output, missing/reordered/type-mismatched paths and inconsistent/nonfinite dates refuse with redacted errors
+  ---
+  duration_ms: 1.4727
+  type: 'test'
+  ...
+# Subtest: metadata reader rejects escaped/duplicate paths and preserves the original non-Windows stat-date contract
+ok 155 - metadata reader rejects escaped/duplicate paths and preserves the original non-Windows stat-date contract
+  ---
+  duration_ms: 0.3895
+  type: 'test'
+  ...
+# Subtest: one metadata collection covers every walked directory/file; failure precedes output directory/archive creation
+ok 156 - one metadata collection covers every walked directory/file; failure precedes output directory/archive creation
+  ---
+  duration_ms: 23.0385
+  type: 'test'
+  ...
+# Subtest: single-file GZIP/Zstandard metadata failure also precedes output writes
+ok 157 - single-file GZIP/Zstandard metadata failure also precedes output writes
+  ---
+  duration_ms: 6.0284
+  type: 'test'
+  ...
+# Subtest: Windows native source → plain ZIP/plain+encrypted 7Z → native restored dates cover 1969/2106 boundary/2107 and Unicode names
+not ok 158 - Windows native source → plain ZIP/plain+encrypted 7Z → native restored dates cover 1969/2106 boundary/2107 and Unicode names
+  ---
+  duration_ms: 358.792
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\archive\\source-metadata.test.mjs:175:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + "c:\\users\\runneradmin\\appdata\\local\\temp\\rea-source-metadata-5yaqdm\\workspace\\source-年😀\\date-0-年😀'$();.txt"
+    - "c:\\users\\runner~1\\appdata\\local\\temp\\rea-source-metadata-5yaqdm\\workspace\\source-年😀\\date-0-年😀'$();.txt"
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: "c:\\users\\runner~1\\appdata\\local\\temp\\rea-source-metadata-5yaqdm\\workspace\\source-年😀\\date-0-年😀'$();.txt"
+  actual: "c:\\users\\runneradmin\\appdata\\local\\temp\\rea-source-metadata-5yaqdm\\workspace\\source-年😀\\date-0-年😀'$();.txt"
+  operator: 'strictEqual'
+  stack: |-
+    nativeFixture (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.test.mjs:170:60)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/archive/source-metadata.test.mjs:186:20)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: Windows invalid JSON, process failure and disappeared source refuse before any archive output
+ok 159 - Windows invalid JSON, process failure and disappeared source refuse before any archive output
+  ---
+  duration_ms: 473.9524
+  type: 'test'
+  ...
+# Subtest: Windows existing no-link walk rejects a junction before calling the metadata batch
+ok 160 - Windows existing no-link walk rejects a junction before calling the metadata batch
+  ---
+  duration_ms: 5.6604
+  type: 'test'
+  ...
+1..160
+# tests 160
+# suites 0
+# pass 154
+# fail 6
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 40047.255

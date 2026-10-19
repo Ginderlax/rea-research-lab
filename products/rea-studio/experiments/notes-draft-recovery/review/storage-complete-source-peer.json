@@ -1,0 +1,34 @@
+{
+  "schema": "rea-independent-draft-recovery-storage-source-peer/v1",
+  "atUtc": "2026-10-18T22:37:10.692125+00:00",
+  "status": "source-approved-for-review-and-cloud-tests-with-explicit-scope",
+  "source": {
+    "path": "work/notes-draft-recovery-20261018-next/candidate/products/rea-studio/apps/notes/draft-recovery.mjs",
+    "bytes": 9814,
+    "sha256": "10d4c3fa2ec7047b9732f6a83aa8cdd76dec48f490a612c18502487058529608"
+  },
+  "completeSourceBodyRead": true,
+  "findings": [],
+  "review": {
+    "noNetworkOrNoteMutationOrCapturedCodeExecution": true,
+    "rawEditorStringsPreserved": true,
+    "descriptorBasedPlainRecordValidationWithoutGetterExecution": true,
+    "scopeSchemaIDsRevisionVersionsFlagsFiniteClockAndUTF8BytesValidated": true,
+    "perRecordBytes": 2097152,
+    "perScopeRecords": 4,
+    "perScopeLogicalBytes": 8388608,
+    "newestFirstDetachedValidatedList": true,
+    "capacityAndExistingVersionCheckedInAtomicReadwriteTransaction": true,
+    "conditionalRemoveRequiresExactCurrentVersion": true,
+    "abortPreservesCommittedBytesAndCorruptionNeverSilentlyDeleted": true,
+    "closeAbortsOwnedTransactionsAndVersionChangeClosesConnection": true,
+    "blockedOpenRejectedAndLateSuccessfulConnectionClosed": true
+  },
+  "scopeLimits": [
+    "Source review only: no IndexedDB, syntax, unit, UI, browser or product execution.",
+    "A successful remove retires its id only inside that open connection; no durable cross-connection tombstone or broadcast invalidation is claimed. The client must serialize/retire its own writes and close old views.",
+    "Atomic version-conditional delete preserves a newer existing row, but does not promise to suppress arbitrary later writes from other still-open connections.",
+    "Capacity is four logical records/eightMiB serialized record data, not total on-disk browser storage overhead."
+  ],
+  "nextAction": "Root independently reads source and runs reviewed finite plus actual IndexedDB/browser cases on verified hosted Windows."
+}

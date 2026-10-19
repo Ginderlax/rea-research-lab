@@ -1,0 +1,39 @@
+# Native group creation and name/notes candidate
+
+This reviewed subset adds child-group creation and editing of group name and notes to the existing native group recycle workflow. The source-only installation proposal is separate from the immutable author885 and corrected137 epochs. Other group settings, full KeePass feature parity, general compatibility and comparative performance remain outside this evidence.
+
+## Behavior
+
+Use **Show groups**, then **New child group** or **Edit group details**. A group can be empty. Its identity and parent selection use a native UUID and a private whole-document MAC from `recycleGroupView`; names and displayed paths do not authorize the target. A rename rebuilds projected entry paths for all descendants while retaining each entry's native group UUID.
+
+`groupCreate` and `groupSave` accept exactly `id`, `revision`, `name` and `notes`. For creation, `id` is the selected parent. Both text values are required. Names retain literal empty, whitespace, duplicate and slash content, matching the selected released source assignments. The local limits are 256 UTF-16 code units for a name, 100,000 for notes, 256 for complete projected group paths, 10,000 groups/entries, XML parser depth64/group graph depth63 and 8MiB XML/attachment representation. A later serialization check can reject a metadata-bearing group even when the lightweight list flag permits creation. XML-invalid characters, malformed clocks/counts and identity collisions refuse without changing caller data or persisted bytes.
+
+Creation chooses a fresh native UUID, Folder icon48, expanded state, empty Auto-Type sequence, inherited Auto-Type/searching values (`null`) and zero LastTopVisibleEntry. Creation and save update the selected group's access/modification time and increment native uint64 usage, including wrap, without touching parent or descendant timestamps. Successful creation expands the parent. The fixture adapter chooses deterministic creation/expiry clocks for finite comparison; the release constructor's process-default expiry time is not a general temporal-equivalence claim.
+
+Root name/notes editing and child creation follow the selected source; root deletion remains guarded. Recycled parents/groups refuse these active editor commands. No parent move, icon editing, tags, custom data, expiry, inheritance editing, default templates or full group editor is offered. Existing settings and unknown XML fields/attributes, entry history, attachment references/tables and public KDBX custom metadata are retained.
+
+## Persistence and view lifecycle
+
+All mutations are prepared from private parsed data and persisted as an encrypted envelope before publishing the new in-memory state. A failed persistence call leaves memory and encrypted durable bytes unchanged. Direct caller input is captured before queued work awaits. Old group and entry recycle MACs stale after either new operation.
+
+The editor refuses writes while an entry is selected, an entry draft is dirty (even without an input event), or an entry mutation is pending. It retains concurrently typed newer group and new-entry drafts through a held group commit. A successfully created group's retained newer draft changes to its actual new UUID and fresh MAC before a subsequent save. Closing or switching away from an unsaved group draft requires explicit discard confirmation; detached field values are scrubbed. Old entry list/read, bin list/password preview, group preview/editor-read and disposed view callbacks cannot publish after the relevant mutation or view generation changes.
+
+The corrected343 recycle client policy stays intact: confirmed recursive operations detach obsolete controls and clear indexes; failed persistence requires explicit fresh **Show groups**, reconfirmation and **Search** as appropriate. A rejected new group detail write retains its mounted draft and unchanged uncommitted selection for explicit retry.
+
+## Source provenance and comparison scope
+
+The backend baseline is every byte in the 777-file strict manifest `048fc56fded29bb89cf43830919c4b717a82d055e531644028b85ef07917e28d`. Original selected source comes from KeePass2.61.1, authenticated archive5333853B SHA256 `711bd9ec7076661678469e51bae876debac07a08c32f1b1c6b3b8fe5e761c13a`. GroupForm.cs9171B SHA256 `6f541e74d722e24f3ae401a4b2b752f402f48df1d2541dc0e54f22c3a727c610` was selected from that exact archive and is preserved with its original license header.
+
+The selected implementation contracts are `MainForm.cs` OnGroupAdd around line1356, `GroupForm.cs` OnBtnOK lines210–241, `PwGroup.cs` constructors lines306–343, Touch lines547–568 and AddGroup lines1277–1302, and `KdbxFile.Write.cs` StartGroup lines487–519. The manual supplement's `KPM2611-GROUP-CREATE` record supports user-created groups; name/notes behavior is source-assisted and is not promoted to a new manual corpus count.
+
+The UI epoch uses every byte in the separately verified 343-file corrected-client manifest `d24b555cc9f35f4720920d385c97496803e787f69f76caca4af0fcf2b4c4acdd`. Its baseline client24831B SHA256 `6409badcd044cadc07d17edd4d749165f5cd5498d206f946f299da48d05477a5` and corrected UI tests are separately snapshotted. The backend-only source and managed attempts are preserved under `epochs/backend-v1/` before this extension.
+
+Actual comparisons load the pinned KeePass2.61.1 managed assembly SHA256 `04d29636c393f0c1fc99ff739295494be3adefded93271e44591e8e300225a5a`. They invoke real PwGroup constructor/AddGroup/Touch and KDBX open/save operations with source-composed selected name/notes assignment and explicit synthetic UUID/time adapters. They do not invoke GroupForm GUI events, run the original full GUI program, demonstrate arbitrary database support or measure broad performance. Owned-DOM tests execute the staged real client/server against synthetic encrypted stores and held transport; those are not full browser or original GUI executions.
+
+Run receipts preserve source before/after inventories, actual output, finite bounds, zero-skip counts and observations. Failed archive discovery, collector-format, helper UTF-8, mixed historical UI policy and ambiguous synthetic locator attempts remain in `failure-ledger.json` and immutable per-attempt directories. The final candidate manifest and validation record bind the accepted final source and finite test roster. The historical885 host/browser evidence and corrected137 normal-browser/model evidence are qualified separately below. Source-bound installed validation and root publication approval remain required.
+
+## Corrected publication boundary and finite acceptance
+
+The corrected client29f99c9132286e93ffdcc26105daa9d4209591b4aedad438cc6830841f227908 rechecks enabled name/notes values after the final group-list response. Newer drafts retain their mounted controls and adopt the saved native UUID/current MAC before subsequent Save; an acknowledged effective draft is cleared. A loaded list avoids a second unchecked await. Four substitutions invert exactly to the historical885 client.
+
+[Source-proof map](results/group-edit-followup/source-proof/preservation-manifest.json) preserves author885, negative78, corrected137, independent55, historical HTTP21/browser21 and corrected browser24 as distinct epochs. Independent15 consists of exact11 replay plus four additional controls; it is not a blind held-out campaign. The corrected normal browser records9 finite ordinary-response observations and13 stable source identities, with owned host/tab/data cleanup. Its browser campaign did not exercise held late-list responses; those boundaries use the independent real-client/backend model. Earlier22 original managed-assembly loads remain historical; installation adapters have not been executed by the publication-plan author. Root must run the installed source-bound selection after approval.

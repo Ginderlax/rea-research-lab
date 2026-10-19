@@ -1,0 +1,292 @@
+name: Committed Notes41 draft recovery acceptance
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/rea-cloud-recovery-20261015]
+    paths:
+      - '.github/workflows/notes-draft-recovery-installed-cloud.yml'
+      - '.github/workflows/notes-new-todo-installed-cloud.yml'
+      - '.github/workflows/development-cloud.yml'
+      - 'products/rea-studio/apps/notes/**'
+      - 'products/rea-studio/experiments/notes-draft-recovery-installed/**'
+      - 'products/rea-studio/scripts/verify-notes41-*.mjs'
+      - 'products/rea-studio/scripts/notes-draft-recovery-regression-floor.json'
+      - 'products/rea-studio/scripts/verify-notes-draft-recovery-installed-full.mjs'
+      - 'products/rea-studio/scripts/verify-cloud-browser.mjs'
+      - 'products/rea-studio/browser-tests/notes-draft-recovery*.mjs'
+      - 'products/rea-studio/browser-tests/notes-draft-recovery*.json'
+      - 'products/rea-studio/browser-tests/playwright.notes-draft-recovery*.mjs'
+      - 'products/rea-studio/browser-tests/package*.json'
+      - 'products/rea-studio/browser-tests/browser-metadata.json'
+      - 'products/rea-studio/server.mjs'
+      - 'products/rea-studio/catalog.mjs'
+      - 'products/rea-studio/lib/**'
+      - 'products/rea-studio/public/**'
+      - 'products/rea-studio/package.json'
+
+permissions:
+  contents: read
+concurrency:
+  group: notes41-installed-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  notes41-finite:
+    name: notes41-finite
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out exact committed installed source
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Select pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Select owned evidence outside the checkout
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes41-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence|Out-Null
+          'REA_NOTES41_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Authenticate all41 Notes sources and preserve complete Git-bound input bytes
+        id: before
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase before --role finite --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Execute all128 finite checks with20 unchanged and one explicitly strengthened prior file
+        id: verify
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase finite --role finite --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Independently authenticate source after acquisition and failures too
+        id: after
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase after --role finite --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Package complete bounded success or failure evidence
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $evidence=$env:REA_NOTES41_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes41-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-notes41-installed-workflow-attempt/v1';role='finite';sourceEpoch='notes41-installed-recovery';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';currentNotesFiles=41;sourceOverlay=$false;sourceInstallationPerformedByWorkflow=$false;installedAcceptancePreclaimed=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
+          $rawBytes=($files|Measure-Object Length -Sum).Sum
+          $bounded=$files.Count -le 5000 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-notes41-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $archiveBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $archiveBytes -gt 15*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes41-incomplete-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback|Out-Null
+            foreach($file in Get-ChildItem -LiteralPath $evidence -File){if($file.Length -le 1024*1024){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name)}}
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';role='finite';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$rawBytes;archiveBytes=$archiveBytes;fileLimit=5000;rawByteLimit=96*1024*1024;individualByteLimit=8*1024*1024;zipLimit=15*1024*1024;reason='Complete Notes41 evidence exceeded a fixed bound; fallback is not portable acceptance.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes41-incomplete-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
+            throw 'Complete Notes41 evidence exceeded a fixed bound; preserved fallback is explicitly incomplete.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve actual success or failure evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes41-installed-finite-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
+  draft-recovery-real-chromium:
+    name: draft-recovery-real-chromium
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out exact committed installed source
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Select pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Select owned evidence outside the checkout
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes41-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence|Out-Null
+          'REA_NOTES41_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $data=Join-Path $env:RUNNER_TEMP ('rea-notes41-data-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $data|Out-Null
+          'REA_BROWSER_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          'REA_BROWSER_DATA_ROOT='+$data|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          'PLAYWRIGHT_BROWSERS_PATH='+(Join-Path $env:RUNNER_TEMP ('rea-notes41-playwright-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT))|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Authenticate all41 Notes sources and preserve complete Git-bound input bytes
+        id: before
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase before --role browser --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Acquire unchanged locked Playwright packages and Chromium
+        id: acquire
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-cloud-browser.mjs --phase acquire --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Execute unchanged12 accepted recovery Chromium scenarios
+        id: verify
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase browser --role browser --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Independently authenticate source after acquisition and failures too
+        id: after
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase after --role browser --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Package complete bounded success or failure evidence
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $evidence=$env:REA_NOTES41_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes41-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-notes41-installed-workflow-attempt/v1';role='browser';sourceEpoch='notes41-installed-recovery';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';currentNotesFiles=41;sourceOverlay=$false;sourceInstallationPerformedByWorkflow=$false;installedAcceptancePreclaimed=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
+          $rawBytes=($files|Measure-Object Length -Sum).Sum
+          $bounded=$files.Count -le 5000 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-notes41-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $archiveBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $archiveBytes -gt 15*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes41-incomplete-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback|Out-Null
+            foreach($file in Get-ChildItem -LiteralPath $evidence -File){if($file.Length -le 1024*1024){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name)}}
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';role='browser';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$rawBytes;archiveBytes=$archiveBytes;fileLimit=5000;rawByteLimit=96*1024*1024;individualByteLimit=8*1024*1024;zipLimit=15*1024*1024;reason='Complete Notes41 evidence exceeded a fixed bound; fallback is not portable acceptance.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes41-incomplete-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
+            throw 'Complete Notes41 evidence exceeded a fixed bound; preserved fallback is explicitly incomplete.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve actual success or failure evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes41-installed-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
+  installed-recovery-legacy-browser:
+    name: installed-recovery-legacy-browser
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out exact committed installed source
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Select pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Select owned evidence outside the checkout
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-notes41-legacy-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence|Out-Null
+          'REA_NOTES41_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $data=Join-Path $env:RUNNER_TEMP ('rea-notes41-data-legacy-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $data|Out-Null
+          'REA_BROWSER_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          'REA_BROWSER_DATA_ROOT='+$data|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          'PLAYWRIGHT_BROWSERS_PATH='+(Join-Path $env:RUNNER_TEMP ('rea-notes41-playwright-legacy-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT))|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Authenticate all41 Notes sources and preserve complete Git-bound input bytes
+        id: before
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase before --role legacy-browser --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Acquire unchanged locked Playwright packages and Chromium
+        id: acquire
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-cloud-browser.mjs --phase acquire --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Execute all8 retained behavior bodies on the explicit Notes41 source epoch
+        id: verify
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase legacy-browser --role legacy-browser --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Independently authenticate source after acquisition and failures too
+        id: after
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes41-installed-cloud.mjs --phase after --role legacy-browser --evidence "$env:REA_NOTES41_EVIDENCE"
+      - name: Package complete bounded success or failure evidence
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $evidence=$env:REA_NOTES41_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-notes41-legacy-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-notes41-installed-workflow-attempt/v1';role='legacy-browser';sourceEpoch='notes41-installed-recovery';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';currentNotesFiles=41;sourceOverlay=$false;sourceInstallationPerformedByWorkflow=$false;installedAcceptancePreclaimed=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
+          $rawBytes=($files|Measure-Object Length -Sum).Sum
+          $bounded=$files.Count -le 5000 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-notes41-legacy-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $archiveBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $archiveBytes -gt 15*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-notes41-incomplete-legacy-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback|Out-Null
+            foreach($file in Get-ChildItem -LiteralPath $evidence -File){if($file.Length -le 1024*1024){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name)}}
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';role='legacy-browser';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$rawBytes;archiveBytes=$archiveBytes;fileLimit=5000;rawByteLimit=96*1024*1024;individualByteLimit=8*1024*1024;zipLimit=15*1024*1024;reason='Complete Notes41 evidence exceeded a fixed bound; fallback is not portable acceptance.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-notes41-incomplete-legacy-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
+            throw 'Complete Notes41 evidence exceeded a fixed bound; preserved fallback is explicitly incomplete.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve actual success or failure evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes41-installed-legacy-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+

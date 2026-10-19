@@ -1,0 +1,89 @@
+name: Archive native metadata transport diagnostic
+on:
+  workflow_dispatch:
+  push:
+    branches: [codex/rea-cloud-recovery-20261015]
+    paths:
+      - '.github/workflows/archive-native-metadata-diagnostic.yml'
+      - 'scripts/archive-native-metadata-diagnostic.mjs'
+      - 'scripts/archive-native-metadata-trace.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: archive-native-diagnostic-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  five-unchanged-archive-checks:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out exact committed sources
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Select verified Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Create owned evidence directory
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-archive-native-diagnostic-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence|Out-Null
+          'REA_ARCHIVE_NATIVE_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Authenticate unchanged Archive and diagnostic sources
+        id: before
+        shell: pwsh
+        run: node scripts/archive-native-metadata-diagnostic.mjs --phase before --evidence "$env:REA_ARCHIVE_NATIVE_EVIDENCE"
+      - name: Observe exact native calls during the five original checks
+        id: execute
+        shell: pwsh
+        run: node scripts/archive-native-metadata-diagnostic.mjs --phase execute --evidence "$env:REA_ARCHIVE_NATIVE_EVIDENCE"
+      - name: Independently verify source stability after failures too
+        id: after
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: node scripts/archive-native-metadata-diagnostic.mjs --phase after --evidence "$env:REA_ARCHIVE_NATIVE_EVIDENCE"
+      - name: Package bounded complete diagnostic evidence
+        id: package
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence=$env:REA_ARCHIVE_NATIVE_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-archive-native-diagnostic-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT);New-Item -ItemType Directory -Path $evidence -Force|Out-Null}
+          @{schema='rea-archive-native-diagnostic-workflow/v1';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;checkout='${{ steps.checkout.outcome }}';before='${{ steps.before.outcome }}';execute='${{ steps.execute.outcome }}';after='${{ steps.after.outcome }}';applicationSourcesChanged=$false;originalMetadataDeadlineMs=15000;diagnosticOnly=$true;historicalD24CauseProven=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
+          $rawBytes=($files|Measure-Object Length -Sum).Sum
+          $bounded=$files.Count -le 96 -and $rawBytes -le 16*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-archive-native-diagnostic-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $archiveBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $archiveBytes -gt 8*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-archive-native-diagnostic-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback|Out-Null
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';completeEvidenceUploaded=$false;rawFiles=$files.Count;rawBytes=$rawBytes;zipBytes=$archiveBytes;fileLimit=96;rawByteLimit=16777216;individualByteLimit=8388608;zipByteLimit=8388608}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-archive-native-diagnostic-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            throw 'Complete diagnostic exceeded a fixed bound; fallback is incomplete.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve success or failure evidence
+        if: always() && steps.package.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: archive-native-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.package.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

@@ -1,0 +1,156 @@
+{
+  "schema": "rea-cloud-browser-archive-case-observation/v1",
+  "testId": "43647ef1e946c3ff6fc7-06353a784fd6cd490cee",
+  "title": "Archive wrong password refuses real list and extraction before destination creation",
+  "statusAtFixtureClose": "passed",
+  "retry": 0,
+  "url": "http://127.0.0.1:55761",
+  "ownedDataDirectory": "D:\\a\\_temp\\rea-browser-synthetic-data-f6Uhhm\\archive-case-xrWCmW",
+  "serverCloseObserved": true,
+  "realBrowser": true,
+  "actualHTTP": true,
+  "originalProductExecutions": 0,
+  "productDownloadUIAbsent": true,
+  "actualDownloads": 0,
+  "observations": [
+    {
+      "kind": "wrong-password-refusal",
+      "action": "list",
+      "status": 400,
+      "body": {
+        "bytes": 35,
+        "sha256": "89ac0deb0cd89c7441ca1fbf4684e4cf9a288986c8d4023d27ce648b01f997ca"
+      },
+      "passwordRetainedInEvidence": false
+    },
+    {
+      "kind": "wrong-password-refusal",
+      "action": "extract",
+      "status": 400,
+      "body": {
+        "bytes": 35,
+        "sha256": "89ac0deb0cd89c7441ca1fbf4684e4cf9a288986c8d4023d27ce648b01f997ca"
+      },
+      "passwordRetainedInEvidence": false
+    },
+    {
+      "kind": "real-ui-extraction-content",
+      "path": "archive/correct-after-refusal/astral-😀-é-é.txt",
+      "artifact": "workspace-artifacts/correct-after-refusal.txt",
+      "expected": {
+        "bytes": 62,
+        "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+      },
+      "observed": {
+        "bytes": 62,
+        "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+      }
+    }
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/api/session",
+      "keys": [],
+      "passwordSupplied": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/archive/putFile",
+      "keys": [
+        "content",
+        "path"
+      ],
+      "passwordSupplied": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/archive/create",
+      "keys": [
+        "comment",
+        "compression",
+        "encodedHeader",
+        "encryptHeaders",
+        "format",
+        "level",
+        "output",
+        "password",
+        "profile",
+        "solid",
+        "source",
+        "zip64"
+      ],
+      "passwordSupplied": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/archive/list",
+      "keys": [
+        "password",
+        "path"
+      ],
+      "passwordSupplied": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/archive/extract",
+      "keys": [
+        "confirm",
+        "destination",
+        "password",
+        "path"
+      ],
+      "passwordSupplied": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/archive/extract",
+      "keys": [
+        "confirm",
+        "destination",
+        "password",
+        "path"
+      ],
+      "passwordSupplied": true
+    }
+  ],
+  "faults": [],
+  "expectedAuxiliaryResourceErrors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:55761/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    },
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "location": {
+        "url": "http://127.0.0.1:55761/api/archive/list",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "expectedRefusal": true
+    },
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "location": {
+        "url": "http://127.0.0.1:55761/api/archive/extract",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      },
+      "expectedRefusal": true
+    }
+  ],
+  "errors": []
+}

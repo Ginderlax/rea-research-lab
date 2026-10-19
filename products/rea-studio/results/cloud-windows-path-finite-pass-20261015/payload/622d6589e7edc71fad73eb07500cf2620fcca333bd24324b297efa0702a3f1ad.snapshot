@@ -1,0 +1,40 @@
+// File an already verified portable cloud backup; no product execution.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+const work=import.meta.dirname,lab=path.resolve(work,'../outputs/rea-research-lab');
+const backup=path.join(work,'cloud-verification-backups/run-38814327316/artifact-12010251786'),source=path.join(backup,'readable-evidence');
+const prefix='products/rea-studio/results/cloud-windows-path-finite-pass-20261015',target=path.join(lab,prefix);
+const artifactSHA256='9a6160f65fb72ffcb15f9a9960b9165461fd264cc0d342932cdab871d52d4835';
+const sha=b=>createHash('sha256').update(b).digest('hex'),id=b=>({bytes:b.length,sha256:sha(b)});
+function safe(name){assert(typeof name==='string'&&name&&!/[\\:\x00-\x1f\x7f]/.test(name)&&!name.startsWith('/')&&name.split('/').every(p=>p&&p!=='.'&&p!=='..'));return name;}
+function read(base,name){safe(name);let filename=base;for(const part of name.split('/')){filename=path.join(filename,part);assert(!fs.lstatSync(filename).isSymbolicLink());}const stat=fs.lstatSync(filename);assert(stat.isFile()&&stat.size<=4*1024*1024);const bytes=fs.readFileSync(filename);assert.equal(bytes.length,stat.size);return bytes;}
+const localBytes=read(backup,'local-backup-verification.json'),local=JSON.parse(localBytes);
+assert.equal(local.schema,'rea-local-cloud-attempt-backup/v1');assert.equal(local.artifactSHA256,artifactSHA256);assert.equal(local.allCRCAndBytesReadable,true);
+const zip=fs.readFileSync(backup+'.zip');assert.equal(sha(zip),artifactSHA256);assert.equal(zip.length,local.archiveBytes);
+const inventory=new Map();for(const row of local.files){safe(row.path);assert(!inventory.has(row.path));inventory.set(row.path,row);}
+function evidence(name){const bytes=read(source,name),row=inventory.get(name);assert(row);assert.deepEqual(id(bytes),{bytes:row.bytes,sha256:row.sha256});return bytes;}
+const attempt=JSON.parse(evidence('attempt-validation.json'));
+assert.equal(attempt.repositoryCommit,'93b5dbe79f100781fd847af4c1ce76b25a2f21aa');assert.equal(attempt.scope,'windows-path-experiment');assert.equal(attempt.status,'passed');
+assert.deepEqual(attempt.summary,{tests:47,pass:47,fail:0,cancelled:0,skipped:0,todo:0,duration_ms:20326.034});
+assert.equal(attempt.sourceFiles,772);assert.equal(attempt.sourceSnapshotFiles,350);assert.equal(attempt.sourceStable,true);
+assert.deepEqual(evidence('source-before.json'),evidence('source-after.json'));
+const alias=attempt.windowsPathAliasObservation;assert.equal(alias.kind,'native-workspace-root-spelling');assert.equal(alias.differentSpelling,true);assert.equal(alias.observedShortComponent,true);assert.equal(alias.syntheticAliasConstructed,false);
+const overlay=attempt.windowsPathOverlay;assert.equal(overlay.sha256,'7774bfa56f708adbe35eacebc21385a9eed56175e2df6f67c8fec0350af4b7b0');assert.equal(overlay.productionInstalled,false);assert.equal(overlay.gitBaselineEligibleActiveFiles,347);assert.equal(overlay.gitBaselineEligibleActiveBytesAuthenticated,true);
+const composition=evidence('windows-path-composition.json');assert.equal(sha(composition),overlay.sha256);
+const postcheck=JSON.parse(evidence('windows-path-postrun-source-check.json'));assert.equal(postcheck.status,'passed');assert.equal(postcheck.sourceStable,true);assert.equal(postcheck.checkedTargets,3);assert.equal(postcheck.compositionSHA256,overlay.sha256);
+const workflow=JSON.parse(evidence('windows-path-workflow-attempt.json'));assert.equal(workflow.runId,'38814327316');for(const key of ['compositionOutcome','testOutcome','postcheckOutcome'])assert.equal(workflow[key],'success');
+const raw=evidence('stdout.txt').toString('utf8');for(const[key,value]of Object.entries(attempt.summary)){const matches=[...raw.matchAll(new RegExp('^# '+key+' (\\d+(?:\\.\\d+)?)\\r?$','gm'))];assert.equal(matches.length,1);assert.equal(Number(matches[0][1]),value);}assert.equal([...raw.matchAll(/^not ok \d+ - /gm)].length,0);
+const omitted=[...inventory.values()].filter(r=>r.path.startsWith('source/')).map(r=>({sourcePath:r.path,bytes:r.bytes,sha256:r.sha256}));assert.equal(omitted.length,350);
+const retained=[...inventory.keys()].filter(name=>!name.startsWith('source/'));assert(retained.length<=100);
+assert(!fs.existsSync(target));fs.mkdirSync(target);fs.mkdirSync(path.join(target,'payload'));
+const records=[],objects=new Set();let copied=0;
+function save(sourcePath,bytes){safe(sourcePath);assert(!records.some(r=>r.sourcePath===sourcePath));assert(!/\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/.test(bytes.toString('utf8')));copied+=bytes.length;assert(copied<=16*1024*1024);const row=id(bytes),name='payload/'+row.sha256+'.snapshot';if(!objects.has(name)){fs.writeFileSync(path.join(target,name),bytes,{flag:'wx'});objects.add(name);}assert.deepEqual(read(target,name),bytes);records.push({sourcePath,path:name,...row});}
+for(const name of retained)save(name,evidence(name));save('local-backup-verification.json',localBytes);save('preservation-collector.mjs',fs.readFileSync(import.meta.filename));
+const manifest={schema:'rea-cloud-windows-path-finite-pass-preservation/v1',at:new Date().toISOString(),status:'passed-finite-experimental-contracts',runId:38814327316,runAttempt:1,runURL:'https://github.com/Ginderlax/rea-research-lab/actions/runs/38814327316',sourceCommit:attempt.repositoryCommit,pullRequestHead:'b0cdb55065e52b0ec7774cce1271fb82b72864bd',testedReference:'refs/pull/1/merge',artifactId:12010251786,artifactSHA256,summary:attempt.summary,sourceFiles:772,sourceStable:true,activeSourceSnapshotsInVerifiedLocalBackup:350,compositionSHA256:overlay.sha256,
+ sourceIdentity:{baselineGitCommit:attempt.repositoryCommit,modifiedRuntimeTargets:1,modifiedObserverTargets:1,newRegressionTargets:1,otherActiveSourcesAuthenticatedToGit:347},actualWindowsShortPathObservation:alias,separatePostrunSourceCheck:'passed',completeReadableLocalBackupVerified:true,localBackupFiles:inventory.size,retainedArtifactFiles:retained.length,publicSourceSnapshotPayloads:0,omittedSourceSnapshotPayloads:omitted,
+ omissionScope:'Only source/ active payloads are omitted publicly. All350 remain in the verified readable local backup; every other artifact file, raw TAP, source identities and composition/postcheck record is retained.',records,uniqueInertObjects:objects.size,allCopiesExact:true,allPayloadsInert:true,completedTestReceipt:true,productionInstalled:false,fullDevelopmentSuiteAcceptance:false,browserAcceptance:false,originalProductComparisons:0,historicalReceiptsRebound:false,fullParity:false,superiority:false,localProductExecutions:0,localTests:0,localBuilds:0,
+ acceptanceScope:'47 finite Editor Git/Sync WebDAV checks passed with a genuine Windows short-root spelling on an explicit three-target hosted derivative. Production installation and a fresh full current-suite replay remain required. These counts are separate from publication source controls and browser cases.'};
+const bytes=Buffer.from(JSON.stringify(manifest,null,2)+'\n');fs.writeFileSync(path.join(target,'preservation-manifest.json'),bytes,{flag:'wx'});
+const result={prefix,records:records.length,objects:objects.size,omittedSnapshots:350,manifestSHA256:sha(bytes),summary:attempt.summary,productionInstalled:false,localProductExecutions:0};fs.writeFileSync(path.join(work,'cloud-recovery-20261015/windows-path-finite-pass-preservation.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx'});console.log(JSON.stringify(result));

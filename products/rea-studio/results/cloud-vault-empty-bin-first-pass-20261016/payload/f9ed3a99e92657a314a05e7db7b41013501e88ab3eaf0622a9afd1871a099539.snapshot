@@ -1,0 +1,84 @@
+"""Check already-recorded serialized reopen projections in a readable backup. Never run candidate/oracle code."""
+import copy, datetime, hashlib, json, re, sys
+from pathlib import Path
+
+folder = Path(sys.argv[1]).resolve()
+base = Path(__file__).resolve().parent / 'cloud-verification-backups'
+assert folder.is_relative_to(base.resolve()) and folder.is_dir()
+verification = json.loads((folder / 'local-backup-verification.json').read_text(encoding='utf-8'))
+sidecars = json.loads((folder / 'local-empty-bin-sidecar-verification.json').read_text(encoding='utf-8'))
+assert verification['allCRCAndBytesReadable'] and sidecars['allFourComparisonsEstablished']
+assert sidecars['localProductExecutions'] == sidecars['localOriginalExecutions'] == 0
+root = folder / 'readable-evidence'
+files = {row['path']: row for row in verification['files']}
+selected = []
+
+def read(name):
+    assert name in files and '\\' not in name and ':' not in name and all(part not in ('.', '..') for part in Path(name).parts)
+    target = (root / name).resolve()
+    assert target.is_relative_to(root.resolve()) and target.is_file() and not target.is_symlink()
+    raw = target.read_bytes()
+    assert len(raw) < 1024 * 1024 and len(raw) == files[name]['bytes'] and hashlib.sha256(raw).hexdigest() == files[name]['sha256']
+    selected.append({'path': name, 'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()})
+    return json.loads(raw.decode('utf-8-sig'))
+
+summary = read('empty-bin-original-observations/summary.json')
+assert summary['childAttempts'] == summary['comparisonsPassed'] == summary['actualLibraryCalls'] == summary['actualAssemblyLoads'] == 4
+records = [read('empty-bin-original-observations/' + row['path']) for row in summary['observations']]
+native = [row for row in records if row['name'] == 'native-save-reopen']
+assert len(native) == 1
+row = native[0]
+assert row['comparisonPassed'] and row['status'] == 'passed'
+actual, contract = row['actual'], row['serializedReopenContract']
+assert actual['savePerformed'] and actual['inputHeaderVersion'] == 0x40001 and actual['outputHeaderVersion'] == contract['outputHeaderVersion'] == 0x40000
+assert actual['calls']['assemblyLoads'] == actual['calls']['deleteAllObjects'] == actual['calls']['databaseSaves'] == 1
+assert actual['calls']['databaseOpens'] == 2 and actual['calls']['originalClockAssignments'] == actual['calls']['originalUuidAssignments'] == 0
+assert contract['rawObservationsRewritten'] is False and contract['nonTimeFieldsDeepExact'] is True
+assert contract['sources'] == [
+    {'path': 'results/history-followup/stage/source/KeePassLib/Serialization/KdbxFile.Write.cs.snapshot', 'bytes': 33386, 'sha256': '9a0d45d6ec93106d8539d04f7ea043e5e98b95816986249cc4d88cd7420d1790', 'method': 'WriteObject(string,DateTime)', 'lines': [781, 805]},
+    {'path': 'results/history-followup/stage/source/KeePassLib/Utility/TimeUtil.cs.snapshot', 'bytes': 12220, 'sha256': '2345549af8189e64c22fd0134346a7200814fd037b247e03a17ffdb067219f5a', 'method': 'SerializeUtc(DateTime)', 'lines': [214, 220]},
+]
+
+def seconds(raw):
+    assert isinstance(raw, str) and re.fullmatch(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z', raw)
+    parsed = datetime.datetime.fromisoformat(raw.replace('Z', '+00:00'))
+    assert 1 <= parsed.year <= 9999
+    return raw[:19] + '.000Z'
+
+expected, dates = copy.deepcopy(actual['after']), []
+def replace(item, key, location):
+    raw = item[key]
+    encoded = seconds(raw)
+    dates.append({'path': location + '.' + key, 'rawInMemory': raw, 'exactExpectedSerialized': encoded})
+    item[key] = encoded
+
+for index, group in enumerate(expected['groups']):
+    for key in ('created', 'access', 'modified', 'location', 'expiry'):
+        replace(group, key, 'groups[' + str(index) + ']')
+for index, entry in enumerate(expected['entries']):
+    for key in ('created', 'modified'):
+        replace(entry, key, 'entries[' + str(index) + ']')
+    for hindex, history in enumerate(entry['history']):
+        replace(history, 'modified', 'entries[' + str(index) + '].history[' + str(hindex) + ']')
+for index, item in enumerate(expected['deleted']):
+    replace(item, 'time', 'deleted[' + str(index) + ']')
+assert dates == contract['dates']
+assert expected == contract['expectedReopened'] == actual['reopened']
+changed = [date for date in dates if date['rawInMemory'] != date['exactExpectedSerialized']]
+assert len(changed) == 5 and all(date['path'].startswith('deleted[') for date in changed)
+assert all(date['rawInMemory'].endswith('.392Z') and date['exactExpectedSerialized'].endswith('31.000Z') for date in changed)
+post = read('vault-empty-bin-postrun-source-check.json')
+assert post['status'] == 'passed' and post['sourceStable'] and post['checkedTargets'] == 9 and not post['productionInstalled']
+assert len(post['tests']) == 45
+result = {'schema': 'rea-local-empty-bin-r7-serialization-record-consistency/v1', 'sourceCommit': sidecars['sourceCommit'], 'runId': sidecars['runId'],
+          'actualHostedTests': sidecars['summary'], 'childAttempts': 4, 'comparisonsPassed': 4, 'actualLibraryCalls': 4, 'actualAssemblyLoads': 4,
+          'nativeSaveAndReopenObserved': True, 'rawNamedDateFieldsChecked': len(dates), 'rawSubsecondDatesPreserved': len(changed),
+          'expectedSerializedNamedProjectionExactlyMatchesActualReopened': True, 'allOtherNamedProjectionFieldsDeepExact': True,
+          'inputHeaderVersion': actual['inputHeaderVersion'], 'outputHeaderVersion': actual['outputHeaderVersion'], 'unchangedFileVersionClaimed': False,
+          'originalWriterSourcePinsRecorded': contract['sources'], 'separateNineTargetPostcheckPassed': True, 'productionInstalled': False,
+          'checkedFiles': selected, 'localProductExecutions': 0, 'localOriginalExecutions': 0, 'localTests': 0, 'localBuilds': 0,
+          'scope': 'Backup readability and consistency of actual hosted raw observations only. No application/oracle execution or performance, security or full-feature parity acceptance.'}
+target = folder / 'local-empty-bin-r7-serialization-verification.json'
+with target.open('x', encoding='utf-8') as stream:
+    stream.write(json.dumps(result, indent=2) + '\n')
+print(json.dumps({key: value for key, value in result.items() if key not in ('checkedFiles', 'originalWriterSourcePinsRecorded')}))

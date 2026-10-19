@@ -2,7 +2,7 @@ import { createCipheriv, createDecipheriv, createHmac, randomBytes, randomInt, r
 import { promisify } from 'node:util';
 import { importKdbx, exportKdbx, base64 } from './kdbx.mjs';
 import {applyEntrySave,listEntryHistory,readEntryHistory,restoreEntryHistory} from './history.mjs';
-import {normalizeRecycleData,recycleView,recycleRead,activeEntry,deleteRecycleEntry,restoreRecycleEntry,recycleGroupView,recycleGroupRead,deleteRecycleGroup,restoreRecycleGroup} from './recycle.mjs';
+import {normalizeRecycleData,recycleView,recycleRead,activeEntry,deleteRecycleEntry,restoreRecycleEntry,recycleGroupView,recycleGroupRead,deleteRecycleGroup,restoreRecycleGroup,createNativeGroup,editNativeGroup} from './recycle.mjs';
 
 const scrypt = promisify(derive);
 const sessions = new Map();
@@ -208,6 +208,11 @@ async function run({ action, input = {}, store, workspace }) {
   }
   if(action==='recycleGroupList')return recycleGroupView(state.data,state.key,{bin:input.bin??false});
   if(action==='recycleGroupRead')return recycleGroupRead(state.data,input.id,input.revision,state.key);
+  if(action==='groupCreate'||action==='groupSave'){
+    if(Object.keys(input).some(k=>!['id','revision','name','notes'].includes(k)))throw new Error('Only group name and notes are supported.');
+    const fields={name:input.name,notes:input.notes},staged=action==='groupCreate'?createNativeGroup(state.data,input.id,input.revision,state.key,fields):editNativeGroup(state.data,input.id,input.revision,state.key,fields);
+    await store.set(KEY,encode(staged.data,state.key,state.salt));if(sessions.get(id)===state)state.data=staged.data;return staged.result;
+  }
   if(action==='recycleGroupDelete'||action==='recycleGroupRestore'){
     const staged=action==='recycleGroupDelete'?deleteRecycleGroup(state.data,input.id,input.revision,state.key,{confirm:input.confirm,permanent:input.permanent??false}):restoreRecycleGroup(state.data,input.id,input.revision,state.key,{confirm:input.confirm});
     await store.set(KEY,encode(staged.data,state.key,state.salt));if(sessions.get(id)===state)state.data=staged.data;return staged.result;

@@ -1,0 +1,170 @@
+TAP version 13
+# Subtest: each supported editable value changed before Restore refuses the effect without relying on input events
+ok 1 - each supported editable value changed before Restore refuses the effect without relying on input events
+  ---
+  duration_ms: 393.222
+  type: 'test'
+  ...
+# Subtest: a draft typed while the post-Restore read is held retains editor fields and saves to the same entry
+ok 2 - a draft typed while the post-Restore read is held retains editor fields and saves to the same entry
+  ---
+  duration_ms: 67.213
+  type: 'test'
+  ...
+# Subtest: new-entry Save response retains the subsequent draft and its committed identity for the next Save
+ok 3 - new-entry Save response retains the subsequent draft and its committed identity for the next Save
+  ---
+  duration_ms: 58.0624
+  type: 'test'
+  ...
+# Subtest: typing and reverting values while Restore is held still preserves the active editor through the input revision
+ok 4 - typing and reverting values while Restore is held still preserves the active editor through the input revision
+  ---
+  duration_ms: 56.4633
+  type: 'test'
+  ...
+# Subtest: a delayed Delete response retains newly typed values as a new draft with no deleted identity
+ok 5 - a delayed Delete response retains newly typed values as a new draft with no deleted identity
+  ---
+  duration_ms: 53.1203
+  type: 'test'
+  ...
+# Subtest: a delayed generated-password response cannot overwrite a newer explicitly typed password
+ok 6 - a delayed generated-password response cannot overwrite a newer explicitly typed password
+  ---
+  duration_ms: 56.4223
+  type: 'test'
+  ...
+# Subtest: actual group UI previews descendants without passwords, confirms recursive recycle and restore
+ok 7 - actual group UI previews descendants without passwords, confirms recursive recycle and restore
+  ---
+  duration_ms: 76.4655
+  type: 'test'
+  ...
+# Subtest: open entry and new dirty draft prevent group commands before any mutation transport
+ok 8 - open entry and new dirty draft prevent group commands before any mutation transport
+  ---
+  duration_ms: 52.4721
+  type: 'test'
+  ...
+# Subtest: held real committed recursive deletion retains newly typed draft, blocks duplicate/entry Save, and suppresses closed-panel publication
+ok 9 - held real committed recursive deletion retains newly typed draft, blocks duplicate/entry Save, and suppresses closed-panel publication
+  ---
+  duration_ms: 55.5204
+  type: 'test'
+  ...
+# Subtest: held group preview cannot publish after view disposal
+ok 10 - held group preview cannot publish after view disposal
+  ---
+  duration_ms: 56.2169
+  type: 'test'
+  ...
+# Subtest: failed group persistence restores controls and explicit retry uses same uncommitted selection
+not ok 11 - failed group persistence restores controls and explicit retry uses same uncommitted selection
+  ---
+  duration_ms: 55.7933
+  type: 'test'
+  location: 'C:\\Users\\evanh\\Documents\\Codex\\2026-10-12\\go\\WORK\\vault-group-edit-next\\products\\rea-studio\\apps\\vault\\group-ui.test.mjs:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    2 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/WORK/vault-group-edit-next/products/rea-studio/apps/vault/group-ui.test.mjs:9:490)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: older real entry read cannot reopen a now-recycled descendant after group mutation starts
+ok 12 - older real entry read cannot reopen a now-recycled descendant after group mutation starts
+  ---
+  duration_ms: 53.3756
+  type: 'test'
+  ...
+# Subtest: late committed group response performs no follow-up API read after disposal
+ok 13 - late committed group response performs no follow-up API read after disposal
+  ---
+  duration_ms: 48.5091
+  type: 'test'
+  ...
+# Subtest: actual client deletion/readonly masked preview/confirmed previous-group recovery and permanent purge use separate bin controls
+ok 14 - actual client deletion/readonly masked preview/confirmed previous-group recovery and permanent purge use separate bin controls
+  ---
+  duration_ms: 75.629
+  type: 'test'
+  ...
+# Subtest: late bin preview cannot expose secrets after Close bin or disposed view
+ok 15 - late bin preview cannot expose secrets after Close bin or disposed view
+  ---
+  duration_ms: 56.4544
+  type: 'test'
+  ...
+# Subtest: held recovery response preserves another enabled editor draft and never changes its save identity
+ok 16 - held recovery response preserves another enabled editor draft and never changes its save identity
+  ---
+  duration_ms: 62.4223
+  type: 'test'
+  ...
+# Subtest: held post-recovery bin list cannot replace a newer enabled Show-bin generation
+ok 17 - held post-recovery bin list cannot replace a newer enabled Show-bin generation
+  ---
+  duration_ms: 51.8425
+  type: 'test'
+  ...
+# Subtest: New entry remains a new identity after a late post-restore read
+ok 18 - New entry remains a new identity after a late post-restore read
+  ---
+  duration_ms: 70.1013
+  type: 'test'
+  ...
+# Subtest: locking during a held restore read cannot resurrect its old selected entry after unlock
+ok 19 - locking during a held restore read cannot resurrect its old selected entry after unlock
+  ---
+  duration_ms: 100.2301
+  type: 'test'
+  ...
+# Subtest: late explicit history preview cannot populate a newly opened empty editor
+ok 20 - late explicit history preview cannot populate a newly opened empty editor
+  ---
+  duration_ms: 59.521
+  type: 'test'
+  ...
+# Subtest: a delayed post-restore list does not change the next editor selected by the user
+ok 21 - a delayed post-restore list does not change the next editor selected by the user
+  ---
+  duration_ms: 58.2831
+  type: 'test'
+  ...
+# Subtest: a failed history restore persistence keeps ciphertext and active entry/history unchanged
+ok 22 - a failed history restore persistence keeps ciphertext and active entry/history unchanged
+  ---
+  duration_ms: 57.722
+  type: 'test'
+  ...
+# Subtest: ordinary save completion preserves a different editor opened while that response was held
+ok 23 - ordinary save completion preserves a different editor opened while that response was held
+  ---
+  duration_ms: 54.9181
+  type: 'test'
+  ...
+# Subtest: late post-restore read must not redirect the newly selected editor save to a different entry
+ok 24 - late post-restore read must not redirect the newly selected editor save to a different entry
+  ---
+  duration_ms: 80.3963
+  type: 'test'
+  ...
+1..24
+# tests 24
+# suites 0
+# pass 23
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2116.0781

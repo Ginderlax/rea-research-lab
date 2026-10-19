@@ -1,0 +1,72 @@
+{
+  "schema": "rea-Notes-new-todo-canonical-baseline-source-correction/v1",
+  "sourceOnly": true,
+  "status": "future inert proposal; independent source peer and fresh cloud acceptance pending",
+  "actualFailedRun": {
+    "runId": "38926216286",
+    "headSHA": "b635c33d971768682360e2c518b9b2bb0840985b",
+    "finiteGroups": 111,
+    "finitePassed": 107,
+    "finiteFailed": 4,
+    "browserCases": 8,
+    "browserPassed": 7,
+    "browserFailed": 1
+  },
+  "files": [
+    {
+      "path": "products/rea-studio/apps/notes/new-todo.integration.test.mjs",
+      "before": {
+        "bytes": 5185,
+        "sha256": "27e88d76cb1db9dd4cd685b14c34266d8a9462cc5008f8d89ed59a258aa88eb1"
+      },
+      "beforeImage": "before/products/rea-studio/apps/notes/new-todo.integration.test.mjs",
+      "after": {
+        "bytes": 6131,
+        "sha256": "e98cfe05932c8b0a6c2bf15582aeaef4257e9aa67f2ed8409856789a3aad6bcf"
+      }
+    },
+    {
+      "path": "products/rea-studio/browser-tests/notes-new-todo.spec.mjs",
+      "before": {
+        "bytes": 41689,
+        "sha256": "a9507d147a92665eae81c507aa313997f7e0e30976775c1255cfcc2161656d19"
+      },
+      "beforeImage": "before/products/rea-studio/browser-tests/notes-new-todo.spec.mjs",
+      "after": {
+        "bytes": 42394,
+        "sha256": "037522c77be34b54a822d207011609b64409f632708d14756bc98dff2f2a62ec"
+      }
+    }
+  ],
+  "candidateFiles": 2,
+  "runtimeChanges": 0,
+  "oldTestsAdapted": 0,
+  "groupNamesChanged": 0,
+  "groupsAdded": 0,
+  "groupsRemoved": 0,
+  "expectedFutureGroups": 111,
+  "expectedFutureFiles": 21,
+  "expectedBrowserCases": 8,
+  "justification": "Existing unchanged notebooks.ensureOrganization materializes metadataEdited:false on its read copy. Initial raw Save does not include that field. The integration assertion wrongly compared different API epochs; the browser assertion wrongly captured pre-canonical raw storage then compared after a later valid write. These corrections make the comparison epochs explicit and strengthen byte-exact invalid-request/no-change checks, without dropping any field, altering normalization, changing failure statuses or relaxing counts.",
+  "integrationBoundary": "Explicit full normalized GET expected as {...firstSave,metadataEdited:false}; exact original persisted Buffer must remain equal after GET, each invalid400, repeated GET, restart and list; later valid retry must preserve full original normalized note.",
+  "browserBoundary": "Real ordinary second Save establishes revision2/history1/metadataEdited:true before capture. Entire raw baseline note must match after unrelated New To-do creation, and its complete JSON identity is recorded before/after.",
+  "sourceBasis": {
+    "path": "products/rea-studio/apps/notes/notebooks.mjs",
+    "line": 14,
+    "bytes": 6902,
+    "sha256": "4ba3d49563b87d1a37ebb4314d4f513f84e0c8681f9404842c380bc49175edc9"
+  },
+  "preservedFeatureAuthority": {
+    "bytes": 7958,
+    "sha256": "f34bc8608b1661202c11acf42f531051706b1c29b24db155945766cae841be64"
+  },
+  "preservedCloudAuthority": {
+    "bytes": 9803,
+    "sha256": "bf09b19451d439836aa84db52be04f32e4fe9314896d8fd90562170a457f5ce2"
+  },
+  "activeWrites": 0,
+  "localProductExecutions": 0,
+  "localTests": 0,
+  "localBuilds": 0,
+  "localBrowserExecutions": 0
+}

@@ -1,0 +1,74 @@
+{
+  "schema": "rea-notes-draft-recovery-authored-checks-authority/v1",
+  "createdAtUtc": "2026-10-18T22:44:34.234144+00:00",
+  "status": "unexecuted-source-requires-independent-root-review-and-hosted-checks",
+  "contract": "Workspace-scoped IndexedDB recovery COPIES; acknowledgement required; restore always NEW unsaved note/to-do, never in-place update/replay. Four copies/twoMiB each/eightMiB logical total.",
+  "candidateFiles": [
+    {
+      "path": "work/notes-draft-recovery-20261018-review/candidate/products/rea-studio/apps/notes/draft-recovery-test-fixture.mjs",
+      "bytes": 5397,
+      "sha256": "d3be480e2f470abe0b4d33c96855950e295a5c35fe9a86774fb9b8b5a1df1a64"
+    },
+    {
+      "path": "work/notes-draft-recovery-20261018-review/candidate/products/rea-studio/apps/notes/draft-recovery.http.test.mjs",
+      "bytes": 4734,
+      "sha256": "4a441f969ae2753aee0fad680cfbc2f698c11d10755d035650f809da73fa2dbc"
+    },
+    {
+      "path": "work/notes-draft-recovery-20261018-review/candidate/products/rea-studio/apps/notes/draft-recovery.test.mjs",
+      "bytes": 3703,
+      "sha256": "9ad5f46e6dbea1d26d4c52ce938bd823567132e0510e426dc18798909827d0d0"
+    },
+    {
+      "path": "work/notes-draft-recovery-20261018-review/candidate/products/rea-studio/apps/notes/draft-recovery.ui.test.mjs",
+      "bytes": 14365,
+      "sha256": "2d3d00118db63882429c6a56f2b913638366b0d3a85dd19ee469a1529f7cb35d"
+    },
+    {
+      "path": "work/notes-draft-recovery-20261018-review/candidate/products/rea-studio/browser-tests/notes-draft-recovery.spec.mjs",
+      "bytes": 16530,
+      "sha256": "430c2e6fe65d6371d68438287ce665e564621fc6d72d09a1ec92c0dd3603dcab"
+    },
+    {
+      "path": "work/notes-draft-recovery-20261018-review/candidate/products/rea-studio/browser-tests/playwright.notes-draft-recovery.config.mjs",
+      "bytes": 1293,
+      "sha256": "223cba594e3eaaa9549d0551f7bcb93cb56308834867f70d4cffc81363e207d2"
+    }
+  ],
+  "newNodeNamedGroups": 17,
+  "newNodeNameRoster": {
+    "products/rea-studio/apps/notes/draft-recovery.http.test.mjs": [
+      "draft recovery scope persists for the same workspace, differs at the same origin for another workspace, and never edits saved notes",
+      "draft recovery public module delivery is byte exact and scope access retains the host token and origin boundaries"
+    ],
+    "products/rea-studio/apps/notes/draft-recovery.test.mjs": [
+      "draft recovery records preserve exact editor text and creation type while adding only their explicit storage schema and scope",
+      "draft recovery validation keeps source identity as provenance and refuses inconsistent saved revisions, stale consent fields and foreign namespaces",
+      "draft recovery validation rejects malformed record types, unsafe versions and nonfinite clocks without mutating the caller",
+      "draft recovery record limits admit documented text boundaries and separately enforce UTF8 serialized bytes"
+    ],
+    "products/rea-studio/apps/notes/draft-recovery.ui.test.mjs": [
+      "draft recovery preserves unsaved fields and parent/type across a remount and creates no note until an acknowledged explicit Save",
+      "recovery provenance never becomes an in-place update even when the original note advanced to a newer revision",
+      "an unacknowledged committed first Save recovers only as an explicitly chosen separate copy after reload",
+      "an old held Save cannot clear or rewrite a newer editor recovery owner",
+      "quota and corrupt-list failures preserve the active draft and do not prevent explicit server Save",
+      "discarding an older displayed version cannot delete another tab newer recovery record",
+      "explicit recovery discard leaves the active editor intact and later typing starts a fresh recoverable identity",
+      "discard cancellation and exports preserve the unsaved recovery boundary without treating a copy as a saved item",
+      "rapid input retains at most one active storage write and one latest pending snapshot while preserving the final complete text",
+      "a delayed recovery-open read cannot replace later typing or a newly selected editor",
+      "a missing recovered notebook has an explicit default-Notes warning before a separate copy can be saved"
+    ]
+  },
+  "newRealChromiumUICases": 4,
+  "browserStorageSpecSeparateOwner": "/root/audit_projection_1018",
+  "browserConfigurationIncludesBothNewSpecs": true,
+  "old21NotesTestFilesModified": false,
+  "localAppImportsOrExecutions": 0,
+  "tests": 0,
+  "browserExecutions": 0,
+  "builds": 0,
+  "syntaxChecks": 0,
+  "activeRepositoryOrGitWrites": 0
+}

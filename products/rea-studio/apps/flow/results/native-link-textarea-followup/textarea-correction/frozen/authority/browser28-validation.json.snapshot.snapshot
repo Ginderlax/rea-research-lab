@@ -1,0 +1,307 @@
+{
+  "schema": "rea-root-flow-normal-browser-host/v1",
+  "startedAt": "2026-10-13T05:50:33.372Z",
+  "endedAt": "2026-10-13T05:55:37.972Z",
+  "reason": "Explicit owned browser review shutdown",
+  "before": {
+    "manifestSHA256": "0a03866476a81f83762bdfc10d65be639c24f25778b6c03fdac5b9ee906bea5d",
+    "records": 457
+  },
+  "after": {
+    "manifestSHA256": "0a03866476a81f83762bdfc10d65be639c24f25778b6c03fdac5b9ee906bea5d",
+    "records": 457
+  },
+  "sourceRoster": 13,
+  "sourceStable": true,
+  "runtime": {
+    "version": "v24.16.0",
+    "sha256": "b3094d0b49f9ad602262a9921551737bb97637c05dd357a06ae98188d7290aa3"
+  },
+  "savedId": "11cd3d27-9af5-4424-8702-219ff6a40b96",
+  "finalState": {
+    "savedId": "11cd3d27-9af5-4424-8702-219ff6a40b96",
+    "exportedText": "{\n  \"rev\": \"opaque publisher revision\",\n  \"vendor\": {\n    \"untouched\": [\n      \"Flow static-link fixture\",\n      17\n    ],\n    \"nativeMetadata\": true\n  },\n  \"flows\": [\n    {\n      \"id\": \"tab\",\n      \"type\": \"tab\",\n      \"label\": \"Owned static links\"\n    },\n    {\n      \"id\": \"start\",\n      \"type\": \"inject\",\n      \"z\": \"tab\",\n      \"name\": \"Owned edited manual Inject\",\n      \"props\": [],\n      \"x\": 120,\n      \"y\": 120,\n      \"wires\": [\n        [\n          \"out\"\n        ]\n      ]\n    },\n    {\n      \"id\": \"out\",\n      \"type\": \"link out\",\n      \"z\": \"tab\",\n      \"name\": \"Static Out\",\n      \"links\": [\n        \"in\"\n      ],\n      \"x\": 340,\n      \"y\": 120,\n      \"wires\": [\n        [\n          \"physical-debug\"\n        ]\n      ],\n      \"opaque\": {\n        \"originalOption\": [\n          \"retained\",\n          true\n        ]\n      }\n    },\n    {\n      \"id\": \"in\",\n      \"type\": \"link in\",\n      \"z\": \"tab\",\n      \"name\": \"Static In\",\n      \"links\": [\n        \"out\"\n      ],\n      \"x\": 540,\n      \"y\": 120,\n      \"wires\": [\n        [\n          \"virtual-debug\"\n        ]\n      ]\n    },\n    {\n      \"id\": \"virtual-debug\",\n      \"type\": \"debug\",\n      \"z\": \"tab\",\n      \"name\": \"Virtual Debug\",\n      \"active\": true,\n      \"tosidebar\": true,\n      \"complete\": \"true\",\n      \"x\": 780,\n      \"y\": 120,\n      \"wires\": []\n    },\n    {\n      \"id\": \"physical-debug\",\n      \"type\": \"debug\",\n      \"z\": \"tab\",\n      \"name\": \"Overwritten physical Debug\",\n      \"active\": true,\n      \"tosidebar\": true,\n      \"complete\": \"true\",\n      \"x\": 780,\n      \"y\": 280,\n      \"wires\": []\n    }\n  ]\n}",
+    "exportRevision": "0f96b2d06f76f352448ac9670a4fc73f338ee85d28b4435244a00575584a8fff",
+    "deployedRevision": "0f96b2d06f76f352448ac9670a4fc73f338ee85d28b4435244a00575584a8fff",
+    "metadataPreserved": true,
+    "physicalWiresRetained": true,
+    "outLinks": [
+      "in"
+    ],
+    "inLinks": [
+      "out"
+    ],
+    "compiledConnections": [
+      {
+        "source": "out",
+        "target": "in"
+      }
+    ],
+    "stateStored": true,
+    "state": {
+      "flows": {},
+      "global": {},
+      "previous": {}
+    },
+    "runs": [
+      {
+        "id": "4fb717d6-9a13-4768-a035-ad0c106b27be",
+        "startedAt": "2026-10-13T05:52:24.599Z",
+        "deployedRevision": "63a768eaad8d4cf33772e65ee59f83b49974d4dead148166a679ca443b415797",
+        "debug": [
+          {
+            "node": "virtual-debug",
+            "name": "Virtual Debug",
+            "sequence": 4,
+            "message": {
+              "_msgid": "owned-browser-id",
+              "payload": {
+                "message": "α 😀",
+                "nested": [
+                  1,
+                  true
+                ]
+              },
+              "_event": "node:out"
+            },
+            "value": {
+              "_msgid": "owned-browser-id",
+              "payload": {
+                "message": "α 😀",
+                "nested": [
+                  1,
+                  true
+                ]
+              },
+              "_event": "node:out"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "node": "start",
+            "type": "inject",
+            "sequence": 1
+          },
+          {
+            "node": "out",
+            "type": "link out",
+            "sequence": 2
+          },
+          {
+            "node": "in",
+            "type": "link in",
+            "sequence": 3
+          },
+          {
+            "node": "virtual-debug",
+            "type": "debug",
+            "sequence": 4
+          }
+        ],
+        "deliveries": 4,
+        "reachable": [
+          "start",
+          "out",
+          "in",
+          "virtual-debug"
+        ],
+        "sourceRevision": "63a768eaad8d4cf33772e65ee59f83b49974d4dead148166a679ca443b415797",
+        "status": "completed",
+        "durationMs": 1.955
+      },
+      {
+        "id": "810af68d-61ec-4db5-bad5-5d3569072f2d",
+        "startedAt": "2026-10-13T05:53:47.105Z",
+        "deployedRevision": "0f96b2d06f76f352448ac9670a4fc73f338ee85d28b4435244a00575584a8fff",
+        "debug": [
+          {
+            "node": "virtual-debug",
+            "name": "Virtual Debug",
+            "sequence": 4,
+            "message": {
+              "_msgid": "owned-browser-id",
+              "payload": {
+                "message": "α 😀",
+                "nested": [
+                  1,
+                  true
+                ]
+              },
+              "_event": "node:out"
+            },
+            "value": {
+              "_msgid": "owned-browser-id",
+              "payload": {
+                "message": "α 😀",
+                "nested": [
+                  1,
+                  true
+                ]
+              },
+              "_event": "node:out"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "node": "start",
+            "type": "inject",
+            "sequence": 1
+          },
+          {
+            "node": "out",
+            "type": "link out",
+            "sequence": 2
+          },
+          {
+            "node": "in",
+            "type": "link in",
+            "sequence": 3
+          },
+          {
+            "node": "virtual-debug",
+            "type": "debug",
+            "sequence": 4
+          }
+        ],
+        "deliveries": 4,
+        "reachable": [
+          "start",
+          "out",
+          "in",
+          "virtual-debug"
+        ],
+        "sourceRevision": "0f96b2d06f76f352448ac9670a4fc73f338ee85d28b4435244a00575584a8fff",
+        "status": "completed",
+        "durationMs": 1.949
+      },
+      {
+        "id": "f43f7c5f-f1af-4b58-91f5-87a6bc9e598a",
+        "startedAt": "2026-10-13T05:53:56.526Z",
+        "deployedRevision": "eca619b26285bf369764891cb869370b4eb486715cd63cfed42f5c3569357280",
+        "debug": [],
+        "trace": [
+          {
+            "node": "start",
+            "type": "inject",
+            "sequence": 1
+          },
+          {
+            "node": "out",
+            "type": "link out",
+            "sequence": 2
+          }
+        ],
+        "deliveries": 2,
+        "reachable": [
+          "start",
+          "out"
+        ],
+        "sourceRevision": "eca619b26285bf369764891cb869370b4eb486715cd63cfed42f5c3569357280",
+        "status": "completed",
+        "durationMs": 2.062
+      },
+      {
+        "id": "273c8ae2-9f47-4762-aa7a-1ce55d038eb0",
+        "startedAt": "2026-10-13T05:54:05.026Z",
+        "deployedRevision": "0f96b2d06f76f352448ac9670a4fc73f338ee85d28b4435244a00575584a8fff",
+        "debug": [
+          {
+            "node": "virtual-debug",
+            "name": "Virtual Debug",
+            "sequence": 4,
+            "message": {
+              "_msgid": "owned-browser-id",
+              "payload": {
+                "message": "α 😀",
+                "nested": [
+                  1,
+                  true
+                ]
+              },
+              "_event": "node:out"
+            },
+            "value": {
+              "_msgid": "owned-browser-id",
+              "payload": {
+                "message": "α 😀",
+                "nested": [
+                  1,
+                  true
+                ]
+              },
+              "_event": "node:out"
+            }
+          }
+        ],
+        "trace": [
+          {
+            "node": "start",
+            "type": "inject",
+            "sequence": 1
+          },
+          {
+            "node": "out",
+            "type": "link out",
+            "sequence": 2
+          },
+          {
+            "node": "in",
+            "type": "link in",
+            "sequence": 3
+          },
+          {
+            "node": "virtual-debug",
+            "type": "debug",
+            "sequence": 4
+          }
+        ],
+        "deliveries": 4,
+        "reachable": [
+          "start",
+          "out",
+          "in",
+          "virtual-debug"
+        ],
+        "sourceRevision": "0f96b2d06f76f352448ac9670a4fc73f338ee85d28b4435244a00575584a8fff",
+        "status": "completed",
+        "durationMs": 1.954
+      }
+    ],
+    "observed": {
+      "completedRun": true,
+      "virtualDebugOnly": true,
+      "physicalDebugAbsent": true,
+      "linkEventMatches": true,
+      "draftMatchesDeployment": true
+    }
+  },
+  "durable": {
+    "reopenedDiskStore": true,
+    "exportedTextExact": true,
+    "historyExact": true,
+    "contextExact": true,
+    "additionalHostStarts": 0,
+    "scope": "Owned direct disk-store read after normal HTTP host close; no browser handler or transport substitution."
+  },
+  "finalReadError": null,
+  "cleanupError": null,
+  "sourceError": null,
+  "ownedHostClosed": true,
+  "ownedDataRemoved": true,
+  "privateControlRemoved": true,
+  "scope": {
+    "normalSharedHostExact": true,
+    "shellExact": true,
+    "candidateFlowExact": true,
+    "transportBridge": false,
+    "handlerSubstitutions": 0,
+    "originalExecutions": 0,
+    "browserAcceptance": "Root must provide separate actual CUA observations; this host receipt does not assert browser workflows completed.",
+    "productionWrites": 0,
+    "user4311Touched": false,
+    "fullParity": false,
+    "universalSuperiority": false
+  }
+}

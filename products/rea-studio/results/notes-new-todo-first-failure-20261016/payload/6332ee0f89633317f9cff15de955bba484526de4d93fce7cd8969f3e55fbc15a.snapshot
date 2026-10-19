@@ -1,0 +1,268 @@
+"""Portable ZIP/source evidence reader only. Never imports or executes product code.
+This pending-identity template MUST be versioned to an exact completed run first.
+"""
+import hashlib,io,json,re,stat,struct,subprocess,sys,tarfile,traceback,zipfile,zlib
+from pathlib import Path
+RUN='38926216286'
+HEAD='b635c33d971768682360e2c518b9b2bb0840985b'
+assert re.fullmatch(r'[0-9]+',RUN) and re.fullmatch(r'[0-9a-f]{40}',HEAD),'Unbound template must not run'
+WORK=Path(__file__).resolve().parent;LAB=WORK.parent/'outputs/rea-research-lab'
+source=Path(sys.argv[1]).resolve();expected=sys.argv[2];ROLE=sys.argv[3]
+assert ROLE in ('finite','browser') and sys.argv[4:]==[RUN,HEAD]
+assert source.is_relative_to((WORK/'cloud-verification-backups').resolve()) and source.parent.name=='run-'+RUN
+assert re.fullmatch(r'[0-9a-f]{64}',expected)
+sha=lambda b:hashlib.sha256(b).hexdigest()
+identity=lambda b:{'bytes':len(b),'sha256':sha(b)}
+pin=lambda r:{k:r[k]for k in ('bytes','sha256')}
+PREFIX='products/rea-studio/'
+BUNDLE=PREFIX+'experiments/notes-new-todo/bundle.json'
+COMPOSER=PREFIX+'scripts/compose-notes-new-todo-cloud.mjs'
+COLLECTOR=PREFIX+'scripts/verify-notes-new-todo-cloud.mjs'
+WORKFLOW='.github/workflows/notes-new-todo-experiment-cloud.yml'
+PINS={BUNDLE:{'bytes':30920,'sha256':'25e6cafeda55ad4f21badf45b6dc30904767a1bfb4d48a295fcafeebde3edbb0'},COMPOSER:{'bytes':19431,'sha256':'12dfa419e951e0c97b479622ee80da22640d744c5c9d36495dd97785765faa6d'},COLLECTOR:{'bytes':32585,'sha256':'af05b88890fc19269d5ea47a2ba1a772b07257c7e403f2190d55d8be152d62a1'},WORKFLOW:{'bytes':14958,'sha256':'1d9f81e8f342ffc3682e08263824e9892118cdf29b782bda2e9de3b6cd03b705'}}
+raw=source.read_bytes();assert len(raw)<=16*1024*1024 and sha(raw)==expected
+folder=source.parent/(source.stem+'-new-todo-reader-v4');folder.mkdir(exist_ok=False)
+def safe(root,name):
+ assert isinstance(name,str)and name and not re.search(r'[\\:\x00-\x1f\x7f]',name)and not name.startswith('/')and all(p not in ('','.','..')for p in name.split('/'))
+ result=(root/name).resolve();assert result.is_relative_to(root.resolve())and not result.is_symlink();return result
+def unpack(archive,destination,file_limit,byte_limit,individual_limit):
+ destination.mkdir(parents=True,exist_ok=False);rows=[];names=set()
+ with zipfile.ZipFile(archive)as z:
+  entries=z.infolist();assert len(entries)<=file_limit and sum(r.file_size for r in entries)<=byte_limit
+  for row in entries:
+   assert row.filename not in names;names.add(row.filename);assert not stat.S_ISLNK(row.external_attr>>16)
+   target=safe(destination,row.filename.rstrip('/'))
+   if row.is_dir():target.mkdir(parents=True,exist_ok=True);continue
+   assert row.file_size<=individual_limit;data=z.read(row);assert len(data)==row.file_size
+   target.parent.mkdir(parents=True,exist_ok=True)
+   with target.open('xb')as out:out.write(data)
+   assert target.read_bytes()==data;rows.append({'path':row.filename,**identity(data),'zipCRC32':format(row.CRC,'08x')})
+ return rows
+outer=unpack(source,folder/'downloaded-contents',4,16*1024*1024,15*1024*1024)
+assert len(outer)==1 and outer[0]['path']in('rea-notes-new-todo-'+ROLE+'-'+RUN+'-1.zip','rea-notes-new-todo-incomplete-'+ROLE+'-'+RUN+'-1.zip')
+archive=folder/'downloaded-contents'/outer[0]['path'];evidence=folder/'readable-evidence'
+files=unpack(archive,evidence,2500,96*1024*1024,8*1024*1024)
+def content(name):
+ p=safe(evidence,name);assert p.is_file()and p.stat().st_size<=8*1024*1024;return p.read_bytes()
+def load(name):return json.loads(content(name).decode('utf-8-sig'))
+def png(data):
+ assert data[:8]==bytes.fromhex('89504e470d0a1a0a');at=8;dimensions=None;ended=False
+ while at+12<=len(data):
+  size=int.from_bytes(data[at:at+4],'big');kind=data[at+4:at+8];end=at+size+12;assert end<=len(data);payload=data[at+8:at+8+size];assert(zlib.crc32(kind+payload)&0xffffffff)==int.from_bytes(data[at+8+size:end],'big')
+  if kind==b'IHDR':assert at==8 and size==13;dimensions=struct.unpack('>II',payload[:8])
+  at=end
+  if kind==b'IEND':assert size==0 and at==len(data);ended=True;break
+ assert ended and dimensions==(1440,1100)
+execution={'CI':'true','GITHUB_ACTIONS':'true','RUNNER_ENVIRONMENT':'github-hosted','RUNNER_OS':'Windows','RUNNER_ARCH':'X64','GITHUB_SHA':HEAD,'GITHUB_RUN_ID':RUN,'GITHUB_RUN_ATTEMPT':'1','GITHUB_REPOSITORY':'Ginderlax/rea-research-lab','GITHUB_JOB':'finite-twenty-one-file-selection'if ROLE=='finite'else'eight-real-chromium-scenarios'}
+result={'schema':'rea-local-Notes-new-todo-experiment-backup/v4','runId':RUN,'sourceCommit':HEAD,'role':ROLE,'artifact':str(source),'artifactSHA256':expected,'archiveBytes':len(raw),'portableEvidenceArchive':str(archive),'readableEvidence':str(evidence),'files':files,'allCRCAndBytesReadable':True,'recordedContractPassed':False,'evidenceConsistencyErrors':[],'localProductExecutions':0,'localTests':0,'localBuilds':0,'localBrowserExecutions':0,'fullParity':False,'superiority':False,'attempt':None}
+tree_raw=subprocess.run(['git','-C',str(LAB),'ls-tree','-rz',HEAD],capture_output=True,check=True).stdout
+tree={};modes={}
+for item in tree_raw.split(b'\0'):
+ if item:
+  meta,name=item.split(b'\t',1);mode,kind,blob=meta.split()
+  if kind==b'blob':tree[name.decode()]=blob.decode();modes[name.decode()]=mode
+def gitbound(name,data):assert name in tree and modes[name]in(b'100644',b'100755')and hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()==tree[name],name
+def mapping(rows):
+ assert isinstance(rows,list);d={r['path']:pin(r)for r in rows};assert len(d)==len(rows);return d
+def source_proof():
+ receipt=load('notes-new-todo-composition.json');assert receipt['schema']=='rea-Notes-new-todo-composition/v1'and receipt['status']=='composed-unexecuted';assert receipt['execution']==execution and receipt['sourceCommit']==HEAD
+ assert receipt['productionInstalled']is False and receipt['historicalReceiptsRebound']is False and receipt['applicationExecutions']+receipt['originalExecutions']+receipt['browserExecutions']==0
+ after_dir='composition-source/';before_dir='composition-baseline-source/';raw_bundle=content(after_dir+BUNDLE+'.snapshot');assert identity(raw_bundle)==PINS[BUNDLE];gitbound(BUNDLE,raw_bundle);bundle=json.loads(raw_bundle)
+ assert bundle['schema']=='rea-Notes-new-to-do-cloud-source-bundle/v1'and bundle['productionInstalled']is False and bundle['historicalReceiptsRebound']is False
+ assert len(bundle['transitions'])==7 and len(bundle['payloads'])==17 and len(bundle['baselineNotesSources'])==32 and len(bundle['composedNotesSources'])==36 and len(bundle['fixedTests'])==21
+ assert len(bundle['oldNamedGroupsRequired'])==23 and len(bundle['newNamedGroupsRequired'])==19 and bundle['plannedGroups']==111
+ assert bundle['separateComparisonCounts']=={'existingConversionAndCompletion':20,'newParentAndType':4,'newDesktopCommandArguments':2,'addedToTestGroupCounts':False}
+ assert bundle['featureAuthority']=={'bytes':7958,'sha256':'f34bc8608b1661202c11acf42f531051706b1c29b24db155945766cae841be64'}and bundle['featureIndependentPeer']=={'bytes':9942,'sha256':'94069513adb32e1bb98b4b2eee4b28c47fd1ccf5fcb0a64f9011c81fef940379'}
+ targets={r['path']:r for r in bundle['transitions']};assert len(targets)==7
+ eligible={p:r for p,r in targets.items()if re.search(r'\.(mjs|json|html|css|ps1)$',p)};assert len(eligible)==6
+ shared=[{'path':BUNDLE,**PINS[BUNDLE]},*bundle['payloads'],*bundle['historicalOriginalDependencies'],*bundle['sharedHostSources'],bundle['workflow']]
+ before_inputs={r['path']:pin(r)for r in [*shared,*bundle['baselineNotesSources']]};after_inputs={r['path']:pin(r)for r in [*shared,*bundle['composedNotesSources']]};assert len(before_inputs)==56 and len(after_inputs)==60
+ for name,expected_pin in before_inputs.items():data=content(before_dir+name+'.snapshot');assert identity(data)==expected_pin;gitbound(name,data)
+ for name,expected_pin in after_inputs.items():
+  data=content(after_dir+name+'.snapshot');assert identity(data)==expected_pin
+  if name in targets:
+   assert identity(data)==targets[name]['after']
+   if targets[name]['before']:assert targets[name]['before']==before_inputs[name]
+   else:assert name not in tree
+  else:gitbound(name,data)
+ for row in bundle['transitions']:
+  assert pin(row['afterImage'])==row['after']and pin(next(r for r in bundle['payloads']if r['path']==row['afterImage']['path']))==row['after']
+  if row['before']:assert pin(row['beforeImage'])==row['before']and pin(next(r for r in bundle['payloads']if r['path']==row['beforeImage']['path']))==row['before']
+ assert mapping(receipt['baselineSources'])==mapping(bundle['baselineNotesSources'])and mapping(receipt['composedSources'])==mapping(bundle['composedNotesSources'])
+ assert mapping(receipt['currentSourceInputs'])==after_inputs and receipt['proofReadFiles']==60 and receipt['proofReadBytes']==sum(r['bytes']for r in after_inputs.values())and receipt['proofFileLimit']==64 and receipt['proofByteLimit']==8388608
+ assert receipt['bundle']==PINS[BUNDLE]and[receipt[k]for k in('exactTargets','eligibleTargets','separateReadmeTargets')]==[7,6,1]
+ allowed={p:(' M'if r['before']else'??')for p,r in targets.items()};actual_allowed=receipt['allowedDirtyPaths'];assert len(actual_allowed)==len({r['path']for r in actual_allowed})==7 and all(set(r)=={'path','status'}for r in actual_allowed);assert {r['path']:r['status']for r in actual_allowed}==allowed
+ expected_baseline={p for p in tree if p.startswith(PREFIX+'apps/notes/')and'/results/'not in p};assert expected_baseline==set(mapping(bundle['baselineNotesSources']))
+ oldtests={p for p in expected_baseline if p.endswith('.test.mjs')};assert len(oldtests)==17 and oldtests.issubset(mapping(bundle['composedNotesSources']))
+ for p in oldtests:assert before_inputs[p]==after_inputs[p]
+ assert sorted(bundle['fixedTests'])==sorted(p.removeprefix(PREFIX)for p in after_inputs if p.startswith(PREFIX+'apps/notes/')and p.endswith('.test.mjs'))
+ before=load('composition-source-before.json');after=load('composition-source-after.json');bm=mapping(before);am=mapping(after);assert len(after)==len(before)+4
+ roots={'apps','lib','public','browser-tests','scripts','tests'};excluded={'node_modules','.local','results'};top={'server.mjs','catalog.mjs','package.json'}
+ expected_eligible=set()
+ for full in tree:
+  if not full.startswith(PREFIX):continue
+  relative=full.removeprefix(PREFIX);parts=relative.split('/')
+  if relative in top or(len(parts)>=2 and parts[0]in roots and not excluded.intersection(parts)and re.search(r'\.(mjs|json|html|css|ps1)$',relative)):expected_eligible.add(relative)
+ assert set(bm)==expected_eligible,'Complete baseline six-directory census must equal HEAD eligible Git tree'
+ additions={name.removeprefix(PREFIX)for name,row in eligible.items()if row['before']is None};assert len(additions)==4 and not additions.intersection(expected_eligible)
+ assert set(am)==expected_eligible|additions,'Complete after census must add exactly four reviewed test files'
+ assert all(name.removeprefix(PREFIX)in am for name in eligible)
+ assert receipt['baselineCensus']==identity(content('composition-source-before.json'))and receipt['composedCensus']==identity(content('composition-source-after.json'))
+ assert len(before)<=2000 and len(after)<=2000 and sum(r['bytes']for r in after)<=67108864 and all(r['bytes']<=8388608 for r in after)
+ for p,r in bm.items():
+  name=PREFIX+p
+  if name in eligible:assert eligible[name]['before']and r==eligible[name]['before']
+  else:assert am[p]==r
+ for p,r in am.items():
+  data=content('active-source/'+p+'.snapshot');assert identity(data)==r
+  if PREFIX+p in eligible:assert r==eligible[PREFIX+p]['after']
+  else:assert p in bm;gitbound(PREFIX+p,data)
+ expected_auth={'activeSixDirectorySources':len(after),'eligibleNotesSources':34,'exactOverlayAfterimages':6,'allOtherGitBlobs':len(after)-6,'separatelyPinnedReadme':1,'sourceOverlay':True}
+ assert receipt['composedSourceAuthentication']==expected_auth
+ assert receipt['baselineSourceAuthentication']=={'activeSixDirectorySources':len(before),'eligibleNotesSources':30,'exactOverlayAfterimages':0,'allOtherGitBlobs':len(before),'separatelyPinnedReadme':1,'sourceOverlay':False}
+ assert len([p for p in am if p.startswith('apps/notes/')])==34
+ proof=load('notes-new-todo-postrun-source-check.json');assert proof['schema']=='rea-Notes-new-todo-postrun-source-check/v1'and proof['status']=='source-verified'and proof['execution']==execution and proof['sourceCommit']==HEAD
+ assert proof['productionInstalled']is False and proof['historicalReceiptsRebound']is False and proof['applicationExecutions']+proof['originalExecutions']+proof['browserExecutions']==0 and proof['sourceStable']is True
+ assert proof['compositionReceipt']==identity(content('notes-new-todo-composition.json'))and mapping(proof['currentSources'])==mapping(bundle['composedNotesSources'])and proof['sourceAuthentication']==expected_auth and proof['proofReadFiles']==60 and proof['proofReadBytes']==receipt['proofReadBytes']
+ collector=content('active-source/scripts/verify-notes-new-todo-cloud.mjs.snapshot');assert identity(collector)==PINS[COLLECTOR];gitbound(COLLECTOR,collector)
+ composer=content('tooling-source/'+COMPOSER+'.snapshot');assert identity(composer)==PINS[COMPOSER];gitbound(COMPOSER,composer)
+ workflow=content('tooling-source/'+WORKFLOW+'.snapshot');assert identity(workflow)==PINS[WORKFLOW];gitbound(WORKFLOW,workflow)
+ return bundle,receipt,proof,after,expected_auth
+def common_attempt(bundle,receipt,after,expected_auth):
+ attempt=load('new-todo-'+ROLE+'-attempt.json');assert attempt['schema']=='rea-Notes-new-todo-'+ROLE+'-attempt/v1'and attempt['status']=='passed'and attempt['phase']==ROLE and attempt['role']==ROLE and attempt['execution']==execution and attempt['sourceCommit']==HEAD
+ assert attempt['sourceOverlay']is True and attempt['productionInstalled']is False and attempt['historicalReceiptsRebound']is False and attempt['sourceStable']is True and attempt['applicationSourcesChanged']is False
+ assert attempt['exactTargets']==7 and attempt['eligibleTargets']==6 and attempt['composedNotesFiles']==36 and attempt['composition']==identity(content('notes-new-todo-composition.json'))
+ for k in('originalFullApplicationExecutions','originalDatabaseExecutions','originalGuiExecutions'):assert attempt[k]==0
+ assert attempt['sourceFiles']==len(after)and attempt['sourceCapturedBeforeExecution']is True and attempt['notesSourceAuthentication']==expected_auth and attempt['sourceAuthentication']==expected_auth
+ assert load('new-todo-'+ROLE+'-source-before.json')==load('new-todo-'+ROLE+'-source-after.json')==after
+ t=attempt['tooling'];assert t['readFiles']==12 and t['fileLimit']==12 and t['byteLimit']==8388608 and len(t['paths'])==12 and len(mapping(t['paths']))==12
+ collector=content('active-source/scripts/verify-notes-new-todo-cloud.mjs.snapshot').decode();literal=re.findall(r"source\('([^']+)',(\d+),'([0-9a-f]{64})'\)",collector);assert len(literal)==11
+ expected_tooling={name:{'bytes':int(n),'sha256':digest}for name,n,digest in literal};expected_tooling[COMPOSER]=PINS[COMPOSER];assert mapping(t['paths'])==expected_tooling
+ for name,p in expected_tooling.items():data=content('tooling-source/'+name+'.snapshot');assert identity(data)==p;gitbound(name,data)
+ assert t['readBytes']==sum(r['bytes']for r in t['paths'])and t['readBytes']<=8388608 and t['selfSource']=={'path':COLLECTOR,**PINS[COLLECTOR],'GitBound':True}
+ assert len(attempt['children'])==1;child=attempt['children'][0];assert child['exitCode']==0 and child['signal']is None and child['closeObserved']is True and child['spawnError']is None and child['stopReason']is None and child['droppedOutputBytes']==0
+ assert child['stdoutBytes']==len(content(ROLE+'-stdout.txt'))and child['stderrBytes']==len(content(ROLE+'-stderr.txt'))
+ events=[json.loads(line)for line in content(ROLE+'-events.jsonl').decode().splitlines()];assert events and [r['sequence']for r in events]==list(range(1,len(events)+1))and events[0]['kind']=='child-started'and events[-1]['kind']=='child-closed'
+ workflow=load('new-todo-workflow-attempt.json');assert workflow['schema']=='rea-Notes-new-todo-experiment-workflow-attempt/v1'and workflow['role']==ROLE and workflow['sourceCommit']==HEAD and workflow['runId']==RUN and workflow['runAttempt']=='1'and workflow['runnerEnvironment']=='github-hosted'
+ for k in('checkoutOutcome','sourceBeforeOutcome','verificationOutcome','sourceAfterOutcome'):assert workflow[k]=='success'
+ assert workflow['sourceOverlay']is True and workflow['exactOverlayTargets']==7 and workflow['composedNotesFiles']==36 and workflow['productionInstallationPerformedByWorkflow']is False and workflow['historicalReceiptsRebound']is False
+ if ROLE=='browser':assert workflow['acquisitionOutcome']=='success'and workflow['browserPostcheckOutcome']=='success'
+ return attempt
+def finite_results(bundle,attempt):
+ raw=content('finite-stdout.txt').decode();summary={}
+ for key in('tests','pass','fail','cancelled','skipped','todo'):
+  rows=re.findall(r'^# '+key+r' (\d+)\r?$',raw,re.M);assert len(rows)==1;summary[key]=int(rows[0])
+ assert summary=={'tests':111,'pass':111,'fail':0,'cancelled':0,'skipped':0,'todo':0}and attempt['productTests']==111
+ assert attempt['fixedTestFiles']==bundle['fixedTests']and attempt['command'][1:]==['--test','--test-reporter=tap','--test-concurrency=1',*bundle['fixedTests']]
+ assert attempt['children'][0]['command']==attempt['command'],'Observed child invocation must equal exact fixed attempt command'
+ for name in bundle['oldNamedGroupsRequired']+bundle['newNamedGroupsRequired']:assert raw.splitlines().count('# Subtest: '+name)==1
+ observations=[]
+ for line in raw.splitlines():
+  if line.startswith('# {'):
+   try:observations.append(json.loads(line[2:]))
+   except json.JSONDecodeError:pass
+ def one(key):
+  values=[r[key]for r in observations if key in r];assert len(values)==1;return values[0]
+ old=one('notesTodoOriginalComparisons');parent=one('notesNewTodoOriginalHelperComparisons');command=one('notesNewTodoOriginalCommandComparisons');delivery=one('notesTodoActualHttpModuleDelivery')
+ assert old['sourceSha256']==bundle['historicalOriginalDependencies'][0]['sha256']and old['conversionComparisons']==16 and old['completionComparisons']==4 and old['clock']==1790000000123
+ assert parent['comparisons']==4 and parent['comparedFields']==['parent_id','is_todo']and parent['fieldsAdapter']==['parent_id','is_todo','adapterSentinel']and parent['dueAndCompletionZerosAreCandidateOnlyChecks']is True
+ assert parent['sourcePins']=={'note':[45302,'5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647'],'base':[26960,'c0a19f6d2d689cc75de99e4ba57058ec02f9171c5b5b3c739aa45d11d5920fde']}
+ assert [[r['owner'],r['name']]for r in parent['bindings']]==[['BaseModel','new'],['Note','new'],['Note','newTodo']]
+ assert parent['sourceCommit']==command['sourceCommit']=='7e2765a3857754d12dbadea442b60ceaf9d4b23d'and command['comparisons']==2 and command['comparedArguments']==['body','isTodo']and command['delegatedCommand']=='newNote'and command['actualNewNoteCommandExecuted']is False and command['originalProvisionalSaveExecuted']is False
+ for row in(parent,command):
+  assert row['countsAddedToTestGroups']is False
+  for k in('originalDatabaseExecutions','originalGuiExecutions','originalFullApplicationExecutions'):assert row[k]==0
+ for k in('originalFullApplicationExecutions','originalDatabaseExecutions','originalGuiSessions'):assert old[k]==0
+ assert delivery['unchangedPublicModuleBoundary']is True and delivery['actualBrowserExecution']is False and delivery['client']==identity(content('active-source/apps/notes/client.mjs.snapshot'))
+ assert[r['path']for r in delivery['delivered']]==['/apps/notes/markdown.mjs','/apps/notes/core.mjs']
+ for row in delivery['delivered']:assert pin(row)==identity(content('active-source'+row['path']+'.snapshot'))
+ stored=load('new-todo-finite-observations.json');assert stored==attempt['finite']and stored['summary']==summary and stored['execution']==execution and stored['sourceCommit']==HEAD and stored['fixedFiles']==bundle['fixedTests']and stored['oldNamedGroupsObserved']==23 and stored['newNamedGroupsObserved']==19 and stored['separateComparisonCounts']==bundle['separateComparisonCounts']
+ assert stored['existingOriginalHelper']==old and stored['newParentAndTypeOriginalHelpers']==parent and stored['newDesktopCommandArguments']==command and stored['actualHttpModuleDelivery']==delivery
+ return {'fixedFiles':21,'passedGroups':111,'oldNames':23,'newNames':19,'separateOriginalComparisons':bundle['separateComparisonCounts'],'actualHTTPModuleDelivery':True,'stderrBytes':len(content('finite-stderr.txt'))}
+def browser_results(bundle,attempt,receipt,proof,after,auth):
+ report=load('playwright-results.json');specs=[]
+ def visit(suite):
+  specs.extend(suite.get('specs',[]))
+  for child in suite.get('suites',[]):visit(child)
+ for suite in report['suites']:visit(suite)
+ roster=load('tooling-source/'+PREFIX+'browser-tests/notes-new-todo-roster.json.snapshot');assert len(roster)==8 and len(set(roster))==8 and len(specs)==8 and sorted(r['title']for r in specs)==sorted(roster)and report['errors']==[]
+ assert [report['stats'][k]for k in('expected','unexpected','skipped','flaky')]==[8,0,0,0]
+ for spec in specs:
+  assert spec['ok']is True and len(spec['tests'])==1;test=spec['tests'][0];assert test['status']=='expected'and len(test['results'])==1 and test['results'][0]['status']=='passed'and test['results'][0]['retry']==0
+ observation=load('browser-observation.json');assert observation=={'schema':'rea-cloud-real-browser-observation/v1','browser':'chromium','channel':'chromium','version':'156.0.8078.4','realBrowserFixtureCreated':True,'retries':0}
+ workers=[r['path']for r in files if re.fullmatch(r'browser-observation-process-[0-9]+\.json',r['path'])];assert len(workers)==1;worker=load(workers[0]);assert worker['schema']=='rea-cloud-notes-new-todo-browser-worker-observation/v1'and worker['execution']==execution and worker['observation']==observation and workers[0]=='browser-observation-process-'+str(worker['pid'])+'.json'
+ assert worker['sourcePins']==[{'path':r['path'].removeprefix(PREFIX),**pin(r)}for r in bundle['composedNotesSources']]
+ kinds=['new-task-unsaved-validation-and-explicit-retry','native-discard-cancel-and-new-note-kind-reset','new-task-commit-held-native-duplicate-and-newer-draft','new-task-editor-ownership-after-actual-commit','new-task-disposal-after-actual-first-commit','new-task-postcommit-genuine-list400-newer-draft','new-task-committed-save-refresh-failure-explicit-recovery','new-task-actual-jex-native-tar-and-resource-download']
+ case_names=[r['path']for r in files if re.fullmatch(r'case-[A-Za-z0-9-]+\.json',r['path'])];assert len(case_names)==8;values=[load(p)for p in case_names];assert sorted(v['title']for v in values)==sorted(roster)
+ holds=[];faults=[];downloads=[];screenshots=[];records=[];summaries=[]
+ for value in values:
+  index=roster.index(value['title']);tid=value['testId'];assert re.fullmatch(r'[A-Za-z0-9-]+',tid)and value['schema']=='rea-notes-new-todo-real-browser-case/v1'and value['statusAtFixtureClose']=='passed'and value['retry']==0 and value['realBrowser']is True and value['actualHTTP']is True and value['serverCloseObserved']is True and value['errors']==[]
+  for k in('originalProductExecutions','originalFullApplicationExecutions','originalHelperExecutions','programmaticDisabledControlProbes'):assert value[k]==0
+  cleanup=value['teardown'];assert cleanup['stage']=='completed'and cleanup['pendingOwnedRequests']==0 and cleanup['activeOwnedIOFault']is False and cleanup['requestCounts']['failed']==0 and cleanup['requestCounts']['started']==cleanup['requestCounts']['finished']
+  for k in('heldRoutesFinished','drained','contextClosed','serverClosed','screenshotSaved'):assert cleanup[k]is True
+  assert[r['name']for r in cleanup['steps']]==['release-held-routes','screenshot','drain-owned-page-requests','capture-synthetic-final-record','close-owned-context','close-owned-server']and all(r['status']=='passed'for r in cleanup['steps'])
+  image='screenshots/'+tid+'.png';png(content(image));screenshots.append({'path':image,**identity(content(image))})
+  disk=[r for r in value['observations']if r['kind']=='owned-synthetic-disk-record'];assert len(disk)==1 and disk[0]['path']=='notes-records/'+tid+'.json';stored_bytes=content(disk[0]['path']);assert identity(stored_bytes)==pin(disk[0]);stored=json.loads(stored_bytes);assert stored['schema']==2;records.append({'path':disk[0]['path'],**identity(stored_bytes)})
+  actual=[r for r in value['observations']if r['kind']==kinds[index]];assert len(actual)==1;observed=actual[0];expected=1 if index in(0,5,6)else 0;assert len(value['expectedHttpFailures'])==expected and len([r for r in value['responses']if r['status']>=400])==expected
+  for failure in value['expectedHttpFailures']:
+   assert failure['status']==400 and failure['observed']is True and failure['path']==('/api/notes/save'if index==0 else'/api/notes/list')
+   if index==0:assert failure['errorMessage']=='Give the note a title.'
+   else:assert re.match(r'^(EISDIR|EPERM|EACCES): ',failure['errorMessage'])
+   assert len([r for r in value['responses']if r['status']==400 and r.get('expectedActualHostFailure')is True and r['error']==failure['errorMessage']and r['path']==failure['path']])==1
+  assert len(value['expectedConsole'])<=expected and len(value['faults'])==(1 if index in(2,3,4,5,6)else 0)
+  for fault in value['faults']:
+   assert fault['handlerMocked']is False and fault['responseRewritten']is False
+   if index in(2,3,4):assert fault['kind']=='delay-after-actual-host-response'and fault['action']=='save'and fault['status']==200;holds.append(fault)
+   else:
+    assert fault['kind']=='actual-host-list400-after-owned-filesystem-read-fault'and fault['actualStatus']==400 and fault['restoreCompletedBeforeResponseDelivery']is True and fault['heldAfterRestore']==(index==5)and fault['originalCommittedState']==fault['restoredState']
+    assert[r['name']for r in fault['steps']]==['all-other-owned-requests-and-attachment-response-drained','fault-ownership-entered','committed-state-renamed-to-owned-sibling','empty-directory-installed-at-owned-state-file','unchanged-host-returned-real-filesystem400','owned-empty-directory-removed-without-recursion','original-state-restored','restored-exact-original-bytes-verified','actual-response-release-requested','unchanged-actual400-delivered-after-restoration']
+    assert fault['actualError']==value['expectedHttpFailures'][0]['errorMessage'];faults.append(fault)
+    if fault['heldAfterRestore']:holds.append(fault)
+  if index==0:assert observed['ordinaryDraftMutationRequests']==0 and observed['actualEmptyTitleStatus']==400 and observed['explicitNewTodo']is True and stored['notes'][observed['noteId']]['revision']==1
+  if index==1:assert observed['nativeDialogs']==3 and observed['cancellationRetainedAllFields']is True and observed['savedAsTask']is False
+  if index==2:assert observed['nativeDuplicatePointerClicks']==2 and observed['firstSaveRequests']==1 and observed['nextSubmittedRevision']==1 and observed['finalRevision']==2 and observed['ordinaryEnabledFieldTyping']is True and observed['programmaticDisabledControlProbe']is False and stored['notes'][observed['noteId']]['revision']==2
+  if index==3:assert observed['oldId']!=observed['newId']and stored['notes'][observed['oldId']]['revision']==stored['notes'][observed['newId']]['revision']==1
+  if index==4:assert observed['lateNotesRequests']==0 and observed['detachedControlObserved']is True and observed['detachedControlScrubbingClaimed']is False
+  if index==5:assert observed['nextSubmittedRevision']==1 and observed['finalRevision']==2 and observed['ordinaryEnabledFieldTyping']is True
+  if index==6:assert observed['explicitRefreshStatus']==200 and observed['stateBefore']==observed['stateAfter']==identity(stored_bytes)
+  assert len(value['downloads'])==(2 if index==7 else 0)
+  for download in value['downloads']:
+   suffix='-new-task-notes.jex'if download['suggestedFilename']=='rea-notes.jex'else'-resource-sample.bin'if download['suggestedFilename']=='sample.bin'else None;assert suffix and download['path']=='downloads/'+tid+suffix;data=content(download['path']);assert identity(data)==download['observed'];assert[r for r in value['observations']if r['kind']=='real-browser-file-download'and r['path']==download['path']]==[download]
+   if suffix.endswith('.bin'):assert data==bytes([0,1,127,128,255])
+   downloads.append({'path':download['path'],**identity(data)})
+  if index==7:
+   original=content('composition-source/'+PREFIX+'apps/notes/fixtures/pinned-joplin.jex.snapshot');archive_data=content(next(r['path']for r in value['downloads']if r['suggestedFilename']=='rea-notes.jex'))
+   def tar(data):
+    with tarfile.open(fileobj=io.BytesIO(data),mode='r:')as t:
+     members=t.getmembers();assert len(members)<=2000 and len({m.name for m in members})==len(members)and all(m.isfile()and m.size<=8388608 for m in members);return{m.name:t.extractfile(m).read()for m in members}
+   prior=tar(original);exported=tar(archive_data);assert len(prior)==8 and len(exported)==9
+   for name,data in prior.items():assert exported[name]==data,name
+   note=stored['notes'][observed['noteId']];new_raw=exported[observed['noteId'].replace('-','')+'.md'].decode();assert new_raw.startswith(note['title']+'\n\n'+note['body']+'\n\n')
+   for prop in('is_todo: 1','todo_due: 0','todo_completed: 0','parent_id: '+'1'*32):assert prop in new_raw.splitlines()
+   assert observed['independentNativeTar']['unchangedRawRecordComparisons']==7 and observed['independentNativeTar']['archive']==identity(archive_data)and observed['resourceDownload']=={'bytes':5,'sha256':'0150a92bb1212cd00516b65fde0704614760000963874fcbb11eaa734ee87809'}
+   listing=content('notes-native-tar-list-'+tid+'.txt');assert identity(listing)==observed['independentNativeTar']['listing']and len(listing.decode().strip().splitlines())==9
+  summaries.append({'title':value['title'],'testId':tid,'finalRecord':identity(stored_bytes)})
+ assert len(holds)==4 and len(faults)==2 and len(downloads)==2 and len(screenshots)==8 and len(records)==8
+ assert len([r for r in files if r['path'].startswith('screenshots/')and r['path'].endswith('.png')])==8 and len([r for r in files if r['path'].startswith('downloads/')])==2 and len([r for r in files if r['path'].startswith('notes-records/')])==8
+ observed=attempt['browser'];assert observed['allOwnedCleanupVerified']is True and len(observed['cases'])==8 and len(observed['screenshots'])==8 and len(observed['downloads'])==2 and len(observed['ownedSyntheticRecords'])==8 and len(observed['realResponseHolds'])==4 and len(observed['genuineOwnedIOFailures'])==2
+ assert observed['summary']=={'tests':8,'passed':8,'failed':0,'skipped':0,'flaky':0,'retries':0,'successfulActualResponseHolds':3,'failedActualResponseHolds':1,'genuineEmptyTitle400':1,'genuineOwnedHostList400':2,'downloads':2,'PNGs':8,'completeOwnedCleanups':8,'programmaticDisabledControlProbes':0,'originalFullApplicationExecutions':0}and attempt['productTests']==8
+ acquisition=load('browser-tooling-acquisition.json');expected_execution=dict(execution);del expected_execution['GITHUB_JOB'];assert acquisition['execution']==expected_execution and acquisition['sourceCommit']==HEAD and acquisition['schema']=='rea-cloud-browser-tooling-acquisition/v1'and acquisition['status']=='acquired'and acquisition['productTests']==0 and acquisition['applicationSourcesChanged']is False and attempt['acquisition']==identity(content('browser-tooling-acquisition.json'))and attempt['browserImage']==acquisition['browserImage']
+ post=load('new-todo-browser-postrun-source-check.json');assert post['schema']=='rea-Notes-new-todo-browser-postcheck/v1'and post['status']=='source-verified'and post['execution']==execution and post['sourceCommit']==HEAD and post['priorStatus']=='passed'and post['priorAttempt']==identity(content('new-todo-browser-attempt.json'))and post['composerPostcheck']==identity(content('notes-new-todo-postrun-source-check.json'))and post['sourceAuthentication']==auth and post['sourceStable']is True and post['applicationSourcesChanged']is False and post['productTests']==0 and post['composition']==identity(content('notes-new-todo-composition.json'))and post['tooling']==attempt['tooling']
+ return {'cases':summaries,'passedCases':8,'successfulHolds':3,'failedHolds':1,'ownedIOFaultsRestored':2,'genuineTitle400':1,'genuineList400':2,'downloads':downloads,'screenshots':screenshots,'records':records,'allOwnedCleanupVerified':True,'nativePriorRawRecords':7,'exactResourceBytes':5,'independentAlwaysPostchecks':2}
+try:
+ assert not outer[0]['path'].startswith('rea-notes-new-todo-incomplete-'),'Explicit incomplete evidence cannot certify acceptance'
+ result['readbackStage']='source-proof'
+ bundle,receipt,proof,after,auth=source_proof()
+ result['sourceProof']={'NotesBaselineFiles':32,'NotesComposedFiles':36,'exactTargets':7,'eligibleTargets':6,'proofPaths':60,'toolingPaths':12,'activeCensusFiles':len(after),'otherEligibleGitBlobs':len(after)-6,'baselineSnapshotFiles':56,'composedSnapshotFiles':60,'allSourcesAuthenticated':True,'alwaysComposerPostcheck':True}
+ result['readbackStage']='required-passed-attempt'
+ attempt=common_attempt(bundle,receipt,after,auth);result['attempt']=attempt
+ result['readbackStage']='required-passed-'+ROLE+'-observations'
+ result['verifiedObservations']=finite_results(bundle,attempt)if ROLE=='finite'else browser_results(bundle,attempt,receipt,proof,after,auth)
+ result['recordedContractPassed']=True
+except Exception as error:
+ result['evidenceConsistencyErrors'].append({'type':type(error).__name__,'message':str(error),'stage':result.get('readbackStage','complete-evidence-required'),'traceback':traceback.format_exc()})
+ for candidate in('new-todo-'+ROLE+'-attempt.json','new-todo-workflow-attempt.json'):
+  try:result.setdefault('availableFailureRecords',{})[candidate]=load(candidate)
+  except Exception:pass
+report=folder/'local-new-todo-backup-verification.json';report.write_bytes((json.dumps(result,indent=2)+'\n').encode());assert json.loads(report.read_bytes())==result
+print(json.dumps({'schema':result['schema'],'role':ROLE,'readableFiles':len(files),'allCRCAndBytesReadable':True,'recordedContractPassed':result['recordedContractPassed'],'evidenceConsistencyErrors':result['evidenceConsistencyErrors'],'report':str(report)}))

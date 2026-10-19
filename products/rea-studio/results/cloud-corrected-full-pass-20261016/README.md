@@ -1,0 +1,5 @@
+# Corrected Archive source in the full implemented suite
+
+Actual1077/1077 current implemented checks passed on the016ecd17 branch/b7bb3010 tested merge, with the corrected1bde bounds source in the committed baseline and executed census. The existing three oracle test-loader/helper files were explicitly composed; application runtime was not overlaid. All current test files were selected, same-attempt prerequisites and the separate three-target postcheck passed. This does not certify every documented original feature, whole-product compatibility/security/performance superiority, unrelated future changes or browser acceptance. Separate finite161 and targeted3 results are not added to this1077 count.
+
+All57 nonsource uploaded roles are retained. Read identity objects directly or decompress gzip objects, verifying stored and decoded byte counts and SHA256. The366 active source snapshots remain recoverable in the complete verified local backup with their exact identities listed. Earlier failed and predecessor-pass receipts remain unchanged.

@@ -1,0 +1,20 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import {fileURLToPath} from 'node:url';
+const own=path.dirname(fileURLToPath(import.meta.url)),workspace=path.resolve(own,'../..');
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex'),copies=[];
+function copy(root,p,d){const b=fs.readFileSync(path.join(workspace,root,p));fs.mkdirSync(path.dirname(path.join(own,d)),{recursive:true});fs.writeFileSync(path.join(own,d),b);copies.push({sourceRoot:root,sourcePath:p,path:d,bytes:b.length,sha256:sha(b),inert:true});}
+const stage='work/flow-vault-proof-transition-next';
+for(const p of ['manifest.json','validation.json','candidate/scripts/editor-vault-proof-migration.mjs','before/scripts/editor-vault-proof-migration.mjs.snapshot','exact-adaptations.json','fixed-next-identities.json','public-copy-list.json'])copy(stage,p,'authority/root-transition/'+p+'.snapshot');
+for(const [root,files] of [
+ ['work/flow-static-link-textarea-publication-independent-review',['manifest.json','review-validation.json']],
+ ['work/vault-group-edit-installation-plan-independent-review',['manifest.json','review-validation.json']],
+ ['work/flow-static-link-textarea-publication-plan-next',['manifest.json','installation-proposals.json']],
+ ['work/vault-group-edit-installation-plan-next',['manifest.json','installation-plan.json']]
+])for(const p of files)copy(root,p,'authority/reviewed-plans/'+path.basename(root)+'.'+p+'.snapshot');
+fs.writeFileSync(path.join(own,'authority-copy-list.json'),JSON.stringify({schema:'rea-flow-vault-transition-review-inert-source-authority-copies/v1',records:copies,recursivePayloadCopy:false},null,2)+'\n');
+const receipt=JSON.parse(fs.readFileSync(path.join(own,'review-validation.json')));assert.equal(receipt.accepted,true);assert.equal(receipt.checks.length,10);assert.equal(receipt.rejections.length,177);assert.equal(receipt.sourceRows,609);
+const inventory=[];function walk(rel=''){for(const e of fs.readdirSync(path.join(own,rel),{withFileTypes:true})){const p=rel?rel+'/'+e.name:e.name;if(p==='manifest.json')continue;assert(!e.isSymbolicLink());if(e.isDirectory())walk(p);else{const b=fs.readFileSync(path.join(own,p));inventory.push({path:p,bytes:b.length,sha256:sha(b)});}}}walk();inventory.sort((a,b)=>a.path.localeCompare(b.path));
+const m={schema:'rea-flow-vault-proof-transition-independent-review-strict-freeze/v1',at:new Date().toISOString(),strict:true,inventory,files:inventory.length,sourceOnly:true,applicationExecutions:0,originalExecutions:0,browserExecutions:0,fullSuiteExecutions:0,benchmarks:0,productionWrites:0,publicWrites:0,wholeRootVerificationExecuted:false};const b=Buffer.from(JSON.stringify(m,null,2)+'\n');fs.writeFileSync(path.join(own,'manifest.json'),b);console.log(JSON.stringify({files:inventory.length,manifestSHA256:sha(b),receiptSHA256:sha(fs.readFileSync(path.join(own,'review-validation.json'))),authorityCopies:copies.length,totalBytes:inventory.reduce((n,r)=>n+r.bytes,0)}));

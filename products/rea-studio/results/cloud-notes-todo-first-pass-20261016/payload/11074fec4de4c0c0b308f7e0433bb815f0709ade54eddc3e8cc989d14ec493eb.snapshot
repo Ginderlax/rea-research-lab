@@ -1,0 +1,90 @@
+"""Bounded Notes evidence backup readback. Never import or execute product code."""
+import sys,json,zipfile,hashlib,re,stat
+from pathlib import Path
+source=Path(sys.argv[1]).resolve();expected=sys.argv[2]
+base=Path(__file__).resolve().parent/'cloud-verification-backups'
+assert source.is_relative_to(base.resolve()) and source.is_file()
+assert source.parent.name=='run-38903252258'
+digest=lambda b:hashlib.sha256(b).hexdigest()
+raw=source.read_bytes();assert len(raw)<=32*1024*1024 and digest(raw)==expected
+folder=source.parent/source.stem;folder.mkdir(exist_ok=False)
+def unpack(archive,destination):
+    destination.mkdir(parents=True,exist_ok=True);records=[];seen=set()
+    with zipfile.ZipFile(archive) as z:
+        assert len(z.infolist())<=3000 and sum(e.file_size for e in z.infolist())<=64*1024*1024
+        for e in z.infolist():
+            name=e.filename
+            assert name not in seen;seen.add(name)
+            assert not name.startswith(('/', '\\')) and '\\' not in name and ':' not in name
+            assert all(p not in ('..','.') for p in Path(name).parts)
+            assert not stat.S_ISLNK(e.external_attr>>16)
+            target=(destination/name).resolve();assert target.is_relative_to(destination.resolve())
+            if e.is_dir():target.mkdir(parents=True,exist_ok=True);continue
+            assert e.file_size<=24*1024*1024
+            data=z.read(e);assert len(data)==e.file_size
+            target.parent.mkdir(parents=True,exist_ok=True)
+            with target.open('xb') as f:f.write(data)
+            records.append({'path':name,'bytes':len(data),'sha256':digest(data)})
+    return records
+unpack(source,folder/'downloaded-contents')
+archives=list((folder/'downloaded-contents').rglob('*.zip'));assert len(archives)==1
+evidence=folder/'readable-evidence';files=unpack(archives[0],evidence)
+load=lambda p:json.loads(p.read_text(encoding='utf-8-sig'))
+result={'schema':'rea-local-notes-todo-cloud-attempt-backup/v1','artifact':str(source),'artifactSHA256':expected,'archiveBytes':len(raw),'portableEvidenceArchive':str(archives[0]),'readableEvidence':str(evidence),'files':files,'allCRCAndBytesReadable':True,'localProductExecutions':0,'localTests':0,'localBuilds':0,'attempts':[],'fullParity':False,'superiority':False,'acceptanceScope':'Backup readability and recorded Notes evidence consistency only. Failed attempts stay failed and no new behavioral execution occurs locally.'}
+for attempt in evidence.rglob('attempt-validation.json'):
+    a=load(attempt);root=attempt.parent;assert a['scope']=='notes-todo-experiment'
+    assert a['repositoryCommit']=='1d6fd83d6e40453e6db96420de15baf7eca50fa0'
+    assert a['environment']['GITHUB_RUN_ID']=='38903252258'
+    assert a['environment']['GITHUB_RUN_ATTEMPT']=='1'
+    assert a['environment']['GITHUB_REPOSITORY']=='Ginderlax/rea-research-lab'
+    assert a['executionEnvironment']=='github-hosted'
+    assert a['runtime']['version']=='v24.16.0' and a['runtime']['platform']=='win32'
+    before_path=root/'source-before.json';after_path=root/'source-after.json';manifest_path=root/'source-snapshot-manifest.json'
+    if before_path.is_file():
+        before=load(before_path);assert len(before)==a['sourceFiles']
+        if after_path.is_file():assert (before==load(after_path))==a['sourceStable']
+        elif a['status']=='passed':raise AssertionError('Passing attempt missing source-after')
+    elif a['status']=='passed':raise AssertionError('Passing attempt missing source-before')
+    if manifest_path.is_file():
+        m=load(manifest_path);assert len(m['files'])==a['sourceSnapshotFiles']
+        for row in m['files']:
+            p=(root/row['path']).resolve();assert p.is_relative_to(root.resolve())
+            data=p.read_bytes();assert len(data)==row['bytes'] and digest(data)==row['sha256']
+    elif a['status']=='passed':raise AssertionError('Passing attempt missing snapshots')
+    stdout=(root/'stdout.txt').read_text(encoding='utf-8')
+    if a['summary'] is not None:
+        for k,v in a['summary'].items():
+            values=re.findall(r'^# '+k+r' (\d+(?:\.\d+)?)\r?$',stdout,re.M)
+            assert values and float(values[-1])==v
+    bpath=root/'notes-todo-bundle.json.snapshot'
+    if bpath.is_file():
+        braw=bpath.read_bytes();assert len(braw)==10977 and digest(braw)=='6489170855483748eaff4ece03bdbadc29f79ab87cf9a16015dede504891bd62'
+        b=load(bpath);names=b['authoredNewGroupNames'];assert len(names)==23 and len(b['tests'])==17
+        assert a['selectedTestFiles']==[p.removeprefix('products/rea-studio/') for p in b['tests']]
+        counts={name:len(re.findall(r'^# Subtest: '+re.escape(name)+r'\r?$',stdout,re.M)) for name in names}
+    else:counts={}
+    observations=[]
+    for line in stdout.splitlines():
+        if not line.startswith('# {'):continue
+        try:observations.append(json.loads(line[2:]))
+        except json.JSONDecodeError:pass
+    original=[r['notesTodoOriginalComparisons'] for r in observations if 'notesTodoOriginalComparisons' in r]
+    delivery=[r['notesTodoActualHttpModuleDelivery'] for r in observations if 'notesTodoActualHttpModuleDelivery' in r]
+    postpath=root/'notes-todo-postrun-source-check.json';post=load(postpath) if postpath.is_file() else None
+    if a['status']=='passed':
+        assert a['summary']['tests']==a['summary']['pass'] and a['summary']['tests']>=23
+        assert all(a['summary'][k]==0 for k in ['fail','cancelled','skipped','todo'])
+        assert a['sourceStable'] is True and len(counts)==23 and all(v==1 for v in counts.values())
+        assert len(original)==1 and original[0]['conversionComparisons']==16 and original[0]['completionComparisons']==4
+        assert original[0]['sourceSha256']=='5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647'
+        assert original[0]['clock']==1790000000123
+        assert all(original[0][k]==0 for k in ['originalFullApplicationExecutions','originalDatabaseExecutions','originalGuiSessions'])
+        assert [r['name'] for r in original[0]['bindings']]==['changeNoteType','toggleTodoCompleted']
+        assert len(delivery)==1 and delivery[0]['unchangedPublicModuleBoundary'] is True and delivery[0]['actualBrowserExecution'] is False
+        assert [r['path'] for r in delivery[0]['delivered']]==['/apps/notes/markdown.mjs','/apps/notes/core.mjs']
+        assert post and post['status']=='passed' and post['sourceStable'] is True and post['checkedTargets']==8
+        assert post['execution']['GITHUB_RUN_ID']=='38903252258' and post['execution']['GITHUB_RUN_ATTEMPT']=='1'
+        assert (root/'notes-legacy-trash-original.json').is_file()
+    result['attempts'].append({'receipt':str(attempt.relative_to(evidence)),**{k:a.get(k) for k in ('status','scope','repositoryCommit','summary','sourceFiles','sourceStable','sourceSnapshotFiles','failure')},'selectedFileCount':len(a['selectedTestFiles']),'authoredNewGroupOccurrences':counts,'originalHelperObservations':original,'actualHttpDeliveryObservations':delivery,'independentPostcheck':post})
+(folder/'local-notes-todo-backup-verification.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+print(json.dumps({k:v for k,v in result.items() if k!='files'}))

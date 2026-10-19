@@ -1,0 +1,155 @@
+{
+  "schema": "rea-bsdtar-oracle-hosted-source-bundle/v1",
+  "sourceOnly": true,
+  "sourceAuthoringOnly": true,
+  "productionInstalled": false,
+  "applicationRuntimeChanged": false,
+  "originalAcquisitions": 0,
+  "originalExecutions": 0,
+  "testExecutions": 0,
+  "fullDevelopmentSuiteAcceptance": false,
+  "historicalReceiptsRebound": false,
+  "historicalDLLDependencyEstablished": false,
+  "testBodiesAndExpectationsPreserved": true,
+  "scope": "New oracle-dependency source epoch only; no hosted acquisition, loader, test or full-suite result is preclaimed.",
+  "pairedOriginalAssets": [
+    {
+      "name": "tar.exe",
+      "bytes": 92280,
+      "sha256": "4e598a8cec84af779e3377442fce2b94b976f614ed4c6e5a665e19308fd1e379"
+    },
+    {
+      "name": "archiveint.dll",
+      "bytes": 1482752,
+      "sha256": "ca36efd61b33586e4cee69513bf3dcc8d20b65f37bd6495d5d82eb15833b5824"
+    }
+  ],
+  "transitions": [
+    {
+      "target": "products/rea-studio/apps/archive/formats.test.mjs",
+      "before": {
+        "sourcePath": "before/products/rea-studio/apps/archive/formats.test.mjs.snapshot",
+        "bytes": 31783,
+        "sha256": "7a7847d60b34ead39b597aac54c1612f616ffe69b9a267e193bb01fc78554c98"
+      },
+      "after": {
+        "sourcePath": "after/products/rea-studio/apps/archive/formats.test.mjs.snapshot",
+        "bytes": 31500,
+        "sha256": "da7434f30495ae78c859e0de32b750ab11e87d7d46b74f99965ebb67fd58f206"
+      },
+      "patch": "plan/formats-bsdtar-pair.patch.snapshot",
+      "adaptations": [
+        {
+          "before": "import { createWorkspace } from '../../lib/storage.mjs';",
+          "after": "import { createWorkspace } from '../../lib/storage.mjs';\nimport { prepareOriginalBsdtar } from './bsdtar-original-test-helper.mjs';"
+        },
+        {
+          "before": "async function bsdtar(root) {\n  const original = path.join(process.env.WINDIR || 'C:/Windows', 'System32/tar.exe'); const bytes = await fs.readFile(original);\n  assert.equal(sha(bytes), '4e598a8cec84af779e3377442fce2b94b976f614ed4c6e5a665e19308fd1e379', 'The recorded Windows bsdtar oracle changed; rebind explicitly before claiming this comparison.');\n  const executable = path.join(root, 'oracle-bsdtar.exe'); await fs.writeFile(executable, bytes, { flag: 'wx' }); assert.match(command(executable, ['--version'], root).toString(), /bsdtar 3\\.8\\.8 - libarchive 3\\.8\\.8/);\n  return args => command(executable, args, root);\n}",
+          "after": "async function bsdtar(root) {\n  const executable = await prepareOriginalBsdtar(root, 'oracle-bsdtar.exe');\n  assert.match(command(executable, ['--version'], root).toString(), /bsdtar 3\\.8\\.8 - libarchive 3\\.8\\.8/);\n  return args => command(executable, args, root);\n}"
+        }
+      ]
+    },
+    {
+      "target": "products/rea-studio/apps/archive/zstd.test.mjs",
+      "before": {
+        "sourcePath": "before/products/rea-studio/apps/archive/zstd.test.mjs.snapshot",
+        "bytes": 19409,
+        "sha256": "b50927498b32b96dd40096618a0a412b7a9a54a9548a40cd76fe23c0fba6dbaa"
+      },
+      "after": {
+        "sourcePath": "after/products/rea-studio/apps/archive/zstd.test.mjs.snapshot",
+        "bytes": 19262,
+        "sha256": "e0b3387b533629bc8c2cada818fa724606f3fb0d1595d1286403eb5dcbffa6bb"
+      },
+      "patch": "plan/zstd-bsdtar-pair.patch.snapshot",
+      "adaptations": [
+        {
+          "before": "import { installerPath, bootstrapPath } from './bootstrap-original.mjs';",
+          "after": "import { installerPath, bootstrapPath } from './bootstrap-original.mjs';\nimport { prepareOriginalBsdtar } from './bsdtar-original-test-helper.mjs';"
+        },
+        {
+          "before": "async function bsdtar(root) {\n  const bytes = await fs.readFile(path.join(process.env.WINDIR || 'C:/Windows', 'System32/tar.exe')); assert.equal(sha(bytes), '4e598a8cec84af779e3377442fce2b94b976f614ed4c6e5a665e19308fd1e379');\n  const exe = path.join(root, 'bsdtar.exe'); await fs.writeFile(exe, bytes, { flag: 'wx' }); assert.match(command(exe, ['--version'], root).toString(), /bsdtar 3\\.8\\.8.*libzstd\\/1\\.5\\.7/); return args => command(exe, args, root);\n}",
+          "after": "async function bsdtar(root) {\n  const exe = await prepareOriginalBsdtar(root, 'bsdtar.exe');\n  assert.match(command(exe, ['--version'], root).toString(), /bsdtar 3\\.8\\.8.*libzstd\\/1\\.5\\.7/);\n  return args => command(exe, args, root);\n}"
+        }
+      ]
+    },
+    {
+      "target": "products/rea-studio/apps/archive/bsdtar-original-test-helper.mjs",
+      "before": null,
+      "after": {
+        "sourcePath": "after/products/rea-studio/apps/archive/bsdtar-original-test-helper.mjs.snapshot",
+        "bytes": 2602,
+        "sha256": "b41cad7ea4389afb9d7278b02c80e24013ceae8e18a465e694d4db0a4ea07a50"
+      },
+      "adaptations": []
+    }
+  ],
+  "provenance": [
+    "plan/PLAN.txt.snapshot",
+    "plan/SOURCE-REVIEW.archive-recovery.txt.snapshot",
+    "plan/formats-bsdtar-pair.patch.snapshot",
+    "plan/zstd-bsdtar-pair.patch.snapshot"
+  ],
+  "payloads": [
+    {
+      "path": "plan/PLAN.txt.snapshot",
+      "bytes": 4109,
+      "sha256": "cd1f20e9f74c36b22a08c4753e9c1c1eead0e69f7d8bcc23956a1ad81d504f0b",
+      "origin": "work/bsdtar-oracle-hosted-plan-20261015/PLAN.txt"
+    },
+    {
+      "path": "plan/SOURCE-REVIEW.archive-recovery.txt.snapshot",
+      "bytes": 3829,
+      "sha256": "f8af76bd3b39fc49b8a75c7d2c1cae315251efe85c4c8282a5bd84572ad2e75f",
+      "origin": "work/bsdtar-oracle-hosted-plan-20261015/SOURCE-REVIEW.archive-recovery.txt"
+    },
+    {
+      "path": "plan/formats-bsdtar-pair.patch.snapshot",
+      "bytes": 1255,
+      "sha256": "b6bb75afaa2c4bc832384be618a0c8879c60b8fea08c5677f6adfefae5725c58",
+      "origin": "work/bsdtar-oracle-hosted-plan-20261015/formats-bsdtar-pair.patch"
+    },
+    {
+      "path": "plan/zstd-bsdtar-pair.patch.snapshot",
+      "bytes": 1072,
+      "sha256": "874064874838a3cf713e3a9a08da28348a554a55dc628a59ed54483bdc6dd33d",
+      "origin": "work/bsdtar-oracle-hosted-plan-20261015/zstd-bsdtar-pair.patch"
+    },
+    {
+      "path": "before/products/rea-studio/apps/archive/formats.test.mjs.snapshot",
+      "bytes": 31783,
+      "sha256": "7a7847d60b34ead39b597aac54c1612f616ffe69b9a267e193bb01fc78554c98",
+      "origin": "unchanged active source before-image"
+    },
+    {
+      "path": "after/products/rea-studio/apps/archive/formats.test.mjs.snapshot",
+      "bytes": 31500,
+      "sha256": "da7434f30495ae78c859e0de32b750ab11e87d7d46b74f99965ebb67fd58f206",
+      "origin": "source-text transform from the exact before-image and work-only patch"
+    },
+    {
+      "path": "before/products/rea-studio/apps/archive/zstd.test.mjs.snapshot",
+      "bytes": 19409,
+      "sha256": "b50927498b32b96dd40096618a0a412b7a9a54a9548a40cd76fe23c0fba6dbaa",
+      "origin": "unchanged active source before-image"
+    },
+    {
+      "path": "after/products/rea-studio/apps/archive/zstd.test.mjs.snapshot",
+      "bytes": 19262,
+      "sha256": "e0b3387b533629bc8c2cada818fa724606f3fb0d1595d1286403eb5dcbffa6bb",
+      "origin": "source-text transform from the exact before-image and work-only patch"
+    },
+    {
+      "path": "after/products/rea-studio/apps/archive/bsdtar-original-test-helper.mjs.snapshot",
+      "bytes": 2602,
+      "sha256": "b41cad7ea4389afb9d7278b02c80e24013ceae8e18a465e694d4db0a4ea07a50",
+      "origin": "work/bsdtar-oracle-hosted-plan-20261015/proposed/products/rea-studio/apps/archive/bsdtar-original-test-helper.mjs"
+    },
+    {
+      "path": "README.txt",
+      "bytes": 1193,
+      "sha256": "b34255a1474e00a47a41353b957fbc6624b2b7171ef71fbadf666804404bed0c",
+      "origin": "new source-only bundle description"
+    }
+  ]
+}

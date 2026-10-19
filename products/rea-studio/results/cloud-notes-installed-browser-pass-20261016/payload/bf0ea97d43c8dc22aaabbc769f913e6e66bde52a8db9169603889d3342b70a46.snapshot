@@ -1,0 +1,48 @@
+// Read-only API orchestration and recoverable backup collection. No product runs.
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+const work = import.meta.dirname, lab = path.resolve(work, '../outputs/rea-research-lab');
+const runId = '38917424088', head = '362bda055ac4cf7201b2d6a75a2b30dc6fedb578';
+const jobsExpected = new Map([['finite', { id: 117028376098, name: 'finite-seventeen-file-selection' }], ['browser', { id: 117028376576, name: 'eight-real-chromium-scenarios' }]]);
+const hash = bytes => createHash('sha256').update(bytes).digest('hex');
+async function exists(filename) { try { await fs.access(filename); return true; } catch (error) { if (error.code === 'ENOENT') return false; throw error; } }
+const credential = spawnSync('git', ['credential', 'fill'], { cwd: lab, env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GCM_INTERACTIVE: 'Never' }, input: 'protocol=https\nhost=github.com\n\n', encoding: 'utf8', windowsHide: true, timeout: 20000 });
+assert.equal(credential.status, 0, 'Saved authentication unavailable');
+const fields = Object.fromEntries(credential.stdout.split('\n').filter(value => value.includes('=')).map(value => { const i = value.indexOf('='); return [value.slice(0, i), value.slice(i + 1)]; })); assert(fields.password);
+const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'REA-cloud-verification', 'X-GitHub-Api-Version': '2022-11-28', Authorization: 'Bearer ' + fields.password };
+async function request(endpoint, limit) { assert(endpoint.startsWith('/repos/Ginderlax/rea-research-lab/actions/')); const response = await fetch('https://api.github.com' + endpoint, { headers, signal: AbortSignal.timeout(60000) }); assert.equal(response.status, 200); const chunks = []; let size = 0; for await (const chunk of response.body) { size += chunk.length; assert(size <= limit); chunks.push(chunk); } return Buffer.concat(chunks); }
+const folder = path.join(work, 'cloud-verification-backups', 'run-' + runId);
+await fs.mkdir(folder, { recursive: true });
+const rows = await Promise.all(['run', 'jobs', 'artifacts'].map(async kind => { const bytes = await request('/repos/Ginderlax/rea-research-lab/actions/runs/' + runId + (kind === 'run' ? '' : '/' + kind), 512 * 1024); return { kind, bytes, value: JSON.parse(bytes) }; }));
+const [run, jobs, artifacts] = rows.map(row => row.value); assert.equal(String(run.id), runId); assert.equal(run.head_sha, head); assert.equal(run.path, '.github/workflows/notes-installed-cloud.yml'); assert.equal(run.run_attempt, 1); assert.equal(run.head_branch, 'codex/rea-cloud-recovery-20261015'); assert.equal(jobs.total_count, 2); assert.equal(jobs.jobs.length, 2);
+const control = path.join(folder, 'control-plane-' + (run.status === 'completed' ? 'completed' : 'observation') + '-' + new Date().toISOString().replace(/[:.]/g, '-'));
+await fs.mkdir(control);
+const summary = { schema: 'rea-installed-Notes-two-job-readonly-collection/v1', collectedAtUtc: new Date().toISOString(), runId, attempt: 1, headSHA: head, runStatus: run.status, runConclusion: run.conclusion, controlPlane: [], jobs: [], artifacts: [], localProductExecutions: 0, localTests: 0, localBuilds: 0, localBrowserExecutions: 0 };
+for (const row of rows) { const filename = path.join(control, row.kind + '.json'); await fs.writeFile(filename, row.bytes, { flag: 'wx' }); summary.controlPlane.push({ kind: row.kind, path: filename, bytes: row.bytes.length, sha256: hash(row.bytes) }); }
+for (const [role, expected] of jobsExpected) {
+  const job = jobs.jobs.find(row => row.id === expected.id); assert(job && job.name === expected.name); assert(job.labels.includes('windows-2022')); assert.equal(job.runner_group_name, 'GitHub Actions');
+  const row = { role, jobId: job.id, name: job.name, status: job.status, conclusion: job.conclusion, startedAt: job.started_at, completedAt: job.completed_at, labels: job.labels, runnerGroup: job.runner_group_name, steps: job.steps };
+  if (job.status === 'completed') { const filename = path.join(work, 'cloud-verification-backups', 'job-' + job.id, 'logs.txt'); if (!await exists(filename)) { const bytes = await request('/repos/Ginderlax/rea-research-lab/actions/jobs/' + job.id + '/logs', 20 * 1024 * 1024); await fs.mkdir(path.dirname(filename), { recursive: true }); await fs.writeFile(filename, bytes, { flag: 'wx' }); } const bytes = await fs.readFile(filename); row.rawJobLog = { path: filename, bytes: bytes.length, sha256: hash(bytes) }; }
+  summary.jobs.push(row);
+}
+assert.equal(artifacts.total_count, artifacts.artifacts.length, 'Artifact pagination must be complete');
+assert(artifacts.artifacts.length <= 2, 'At most one artifact per exact job role');
+const artifactRoles = new Set();
+for (const artifact of artifacts.artifacts) {
+  const role = [...jobsExpected.keys()].find(role => artifact.name === 'notes-installed-' + role + '-' + runId + '-1'); assert(role, 'Unexpected artifact role');
+  assert(!artifactRoles.has(role), 'Duplicate artifact role'); artifactRoles.add(role);
+  const digest = artifact.digest?.replace(/^sha256:/, ''); assert(/^[0-9a-f]{64}$/.test(digest)); assert.equal(artifact.expired, false); assert.equal(artifact.workflow_run.id, Number(runId)); assert.equal(artifact.workflow_run.head_sha, head);
+  const filename = path.join(folder, 'artifact-' + artifact.id + '.zip'); if (!await exists(filename)) { const bytes = await request('/repos/Ginderlax/rea-research-lab/actions/artifacts/' + artifact.id + '/zip', 32 * 1024 * 1024); await fs.writeFile(filename, bytes, { flag: 'wx' }); }
+  const bytes = await fs.readFile(filename); assert.equal(bytes.length, artifact.size_in_bytes); assert.equal(hash(bytes), digest);
+  const verification = path.join(folder, 'artifact-' + artifact.id, 'local-installed-notes-backup-verification.json');
+  if (!await exists(verification)) { const result = spawnSync('C:/Users/evanh/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe', [path.join(work, 'unpack-installed-notes-run-38917424088.py'), filename, digest, role, runId, head], { encoding: 'utf8', windowsHide: true, timeout: 120000, maxBuffer: 4 * 1024 * 1024 }); assert.equal(result.status, 0, result.stderr); }
+  const readable = JSON.parse(await fs.readFile(verification, 'utf8')); assert.equal(readable.allCRCAndBytesReadable, true);
+  summary.artifacts.push({ role, artifactId: artifact.id, artifactName: artifact.name, path: filename, bytes: bytes.length, sha256: digest, verification, readableFiles: readable.files.length, recordedContractPassed: readable.recordedContractPassed, evidenceConsistencyErrors: readable.evidenceConsistencyErrors, attempt: readable.attempt });
+}
+summary.terminalCompleteCollection = run.status === 'completed' && summary.jobs.every(job => job.status === 'completed') && artifactRoles.size === 2 && [...jobsExpected.keys()].every(role => artifactRoles.has(role));
+const filename = path.join(control, 'collection-summary.json'); await fs.writeFile(filename, JSON.stringify(summary, null, 2) + '\n', { flag: 'wx' });
+if (summary.terminalCompleteCollection && !await exists(path.join(folder, 'installed-collection-summary.json'))) await fs.writeFile(path.join(folder, 'installed-collection-summary.json'), JSON.stringify(summary, null, 2) + '\n', { flag: 'wx' });
+console.log(JSON.stringify({ ...summary, jobs: summary.jobs.map(({ steps, ...row }) => row) }));

@@ -1,0 +1,179 @@
+name: Notes draft recovery experiment acceptance
+
+on:
+  push:
+    branches: [experiment/notes-draft-recovery-20261018]
+
+permissions:
+  contents: read
+concurrency:
+  group: notes-draft-recovery-experiment-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  draft-recovery-finite:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact experiment commit
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Select the pinned runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Select a new owned evidence directory outside the checkout
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence|Out-Null
+          'REA_DRAFT_RECOVERY_EVIDENCE='+$evidence|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Authenticate and preserve the exact committed source before execution
+        id: before
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes-draft-recovery-cloud.mjs --phase before --role finite --evidence "$env:REA_DRAFT_RECOVERY_EVIDENCE"
+      - name: Execute20 unchanged prior Notes test files one strengthened delivery test and three new test files
+        id: verify
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes-draft-recovery-cloud.mjs --phase finite --role finite --evidence "$env:REA_DRAFT_RECOVERY_EVIDENCE"
+      - name: Independently preserve and authenticate source after failures too
+        id: after
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes-draft-recovery-cloud.mjs --phase after --role finite --evidence "$env:REA_DRAFT_RECOVERY_EVIDENCE"
+      - name: Package complete bounded evidence or an explicit incomplete failure record
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $evidence=$env:REA_DRAFT_RECOVERY_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-notes-draft-recovery-workflow-attempt/v1';role='finite';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;installedAcceptance=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
+          $rawBytes=($files|Measure-Object Length -Sum).Sum
+          $bounded=$files.Count -le 5000 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $archiveBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $archiveBytes -gt 15*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-incomplete-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback|Out-Null
+            foreach($file in Get-ChildItem -LiteralPath $evidence -File){if($file.Length -le 1024*1024){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name)}}
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';role='finite';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$rawBytes;archiveBytes=$archiveBytes;fileLimit=5000;rawByteLimit=96*1024*1024;individualByteLimit=8*1024*1024;zipLimit=15*1024*1024;reason='Complete evidence exceeded a fixed bound. This fallback does not provide portable acceptance.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-incomplete-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
+            throw 'Complete evidence exceeded a fixed bound; the preserved fallback is explicitly incomplete.'
+          }
+          'artifact_path='+$archive|Out-File -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve the actual success or failure evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes-draft-recovery-finite-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
+  draft-recovery-real-chromium:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact experiment commit
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Select the pinned runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Select new owned evidence browser and data directories outside the checkout
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          $data=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-data-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence|Out-Null
+          New-Item -ItemType Directory -Path $data|Out-Null
+          'REA_DRAFT_RECOVERY_EVIDENCE='+$evidence|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
+          'REA_BROWSER_EVIDENCE='+$evidence|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
+          'REA_BROWSER_DATA_ROOT='+$data|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
+          'PLAYWRIGHT_BROWSERS_PATH='+(Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-playwright-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT))|Out-File -LiteralPath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Authenticate and preserve the exact committed source before acquisition or execution
+        id: before
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes-draft-recovery-cloud.mjs --phase before --role browser --evidence "$env:REA_DRAFT_RECOVERY_EVIDENCE"
+      - name: Acquire the unchanged locked Playwright packages and Chromium image
+        id: acquire
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-cloud-browser.mjs --phase acquire --evidence "$env:REA_DRAFT_RECOVERY_EVIDENCE"
+      - name: Execute four real UI scenarios and eight real IndexedDB controls
+        id: verify
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes-draft-recovery-cloud.mjs --phase browser --role browser --evidence "$env:REA_DRAFT_RECOVERY_EVIDENCE"
+      - name: Independently preserve and authenticate source after acquisition and failures too
+        id: after
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes-draft-recovery-cloud.mjs --phase after --role browser --evidence "$env:REA_DRAFT_RECOVERY_EVIDENCE"
+      - name: Package complete bounded evidence or an explicit incomplete failure record
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          $evidence=$env:REA_DRAFT_RECOVERY_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-notes-draft-recovery-workflow-attempt/v1';role='browser';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;installedAcceptance=$false;historicalReceiptsRebound=$false;originalAutosaveComparison=$false;fullParity=$false;superiority=$false}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -File -Recurse)
+          $rawBytes=($files|Measure-Object Length -Sum).Sum
+          $bounded=$files.Count -le 5000 -and $rawBytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $archiveBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $archiveBytes -gt 15*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-incomplete-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback|Out-Null
+            foreach($file in Get-ChildItem -LiteralPath $evidence -File){if($file.Length -le 1024*1024){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name)}}
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';role='browser';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$rawBytes;archiveBytes=$archiveBytes;fileLimit=5000;rawByteLimit=96*1024*1024;individualByteLimit=8*1024*1024;zipLimit=15*1024*1024;reason='Complete evidence exceeded a fixed bound. This fallback does not provide portable acceptance.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-draft-recovery-incomplete-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
+            throw 'Complete evidence exceeded a fixed bound; the preserved fallback is explicitly incomplete.'
+          }
+          'artifact_path='+$archive|Out-File -LiteralPath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve the actual success or failure evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: notes-draft-recovery-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

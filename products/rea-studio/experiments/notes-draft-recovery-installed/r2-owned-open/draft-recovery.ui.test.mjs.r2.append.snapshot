@@ -1,0 +1,101 @@
+
+
+check('pending saved-note opening disables only draft input and Save until the selected source owns later recovery text', async t => {
+  const g = gate(), organized = gate(); let hold = true, holdOrganizationRefresh = false; t.after(g.release); t.after(organized.release);
+  const f = await recoveryUi(t, { hook: async ({ action }) => {
+    if (action === 'get' && hold) { hold = false; g.enter(); await g.held; }
+    if (action === 'notebook-list' && holdOrganizationRefresh) { holdOrganizationRefresh = false; organized.enter(); await organized.held; }
+  } });
+  const original = structuredClone(f.read().notes[f.original.id]), opening = f.openOriginal(); await g.started;
+  for (const name of ['Note title', 'Markdown note', 'Note tags', 'Notebook']) assert.equal(f.byLabel(name).disabled, true);
+  assert.equal(f.byText('Save note').disabled, true); assert.equal(f.byText('New note').disabled, false); assert.equal(f.byText('New to-do').disabled, false);
+  assert.equal(await f.click(f.byText('Save note')), false); assert.equal(saves(f).length, 0); assert.equal(f.store.puts.length, 0);
+  const createsBefore = f.calls.filter(row => row.action === 'notebook-create').length;
+  await f.type('Notebook name', 'Wait for the selected note'); await f.click(f.byText('Create notebook'));
+  assert.equal(f.calls.filter(row => row.action === 'notebook-create').length, createsBefore);
+  assert.equal(primaryStatus(f).textContent, 'Opening saved note…'); assert.equal(f.byText('Save note').disabled, true);
+  for (const name of ['Note title', 'Markdown note', 'Note tags', 'Notebook']) assert.equal(f.byLabel(name).disabled, true);
+  g.release(); await opening;
+  for (const name of ['Note title', 'Markdown note', 'Note tags', 'Notebook']) assert.equal(f.byLabel(name).disabled, false);
+  assert.equal(f.byText('Save note').disabled, false); assert.equal(f.fields()[0], original.title); assert.equal(f.fields()[1], original.body);
+  holdOrganizationRefresh = true; const organization = f.click(f.byText('Create notebook')); await organized.started;
+  assert.equal(f.calls.filter(row => row.action === 'notebook-create').length, createsBefore + 1);
+  for (const name of ['Note title', 'Markdown note', 'Note tags', 'Notebook']) assert.equal(f.byLabel(name).disabled, true);
+  assert.equal(f.byText('Save note').disabled, true); organized.release(); await organization;
+  for (const name of ['Note title', 'Markdown note', 'Note tags', 'Notebook']) assert.equal(f.byLabel(name).disabled, false);
+  assert.equal(f.byText('Save note').disabled, false);
+  await f.type('Markdown note', 'Typing belongs to the actually opened source'); await editedCopy(f.store, original.title, 'Typing belongs to the actually opened source');
+  const copy = listCopy(f.store, original.title); assert.equal(copy.sourceNoteId, original.id); assert.equal(copy.sourceRevision, original.revision);
+  assert.equal(copy.body, 'Typing belongs to the actually opened source'); assert.deepEqual(f.read().notes[original.id], original); assert.equal(saves(f).length, 0);
+});
+
+check('a held saved-note read cannot replace newer New to-do or New note editor recovery ownership', async t => {
+  const g = gate(); let hold = true; t.after(g.release);
+  const f = await recoveryUi(t, { hook: async ({ action }) => { if (action === 'get' && hold) { hold = false; g.enter(); await g.held; } } });
+  const opening = f.openOriginal(); await g.started; await f.click(f.byText('New to-do'));
+  assert.equal(f.byLabel('Markdown note').disabled, false); assert.equal(primaryStatus(f).textContent, 'New to-do draft. Save to create it.');
+  await f.type('Note title', 'New task supersedes old open'); await f.type('Markdown note', 'Independent task text'); await editedCopy(f.store, 'New task supersedes old open', 'Independent task text');
+  assert.equal(listCopy(f.store, 'New task supersedes old open').isTodo, true);
+  await f.click(f.byText('New note')); await f.type('Note title', 'New ordinary editor wins'); await f.type('Markdown note', 'Independent ordinary text');
+  await editedCopy(f.store, 'New ordinary editor wins', 'Independent ordinary text'); const owned = structuredClone(listCopy(f.store, 'New ordinary editor wins'));
+  const status = primaryStatus(f).textContent, fields = f.fields(); g.release(); await opening;
+  assert.deepEqual(f.fields(), fields); assert.equal(primaryStatus(f).textContent, status); assert.equal(f.byLabel('Markdown note').disabled, false);
+  assert.deepEqual(listCopy(f.store, 'New ordinary editor wins'), owned); assert.equal(owned.isTodo, false); assert.equal(owned.sourceNoteId, null); assert.equal(saves(f).length, 0);
+});
+
+check('a later saved-note selection owns its fields and recovery after an earlier real read resolves out of order', async t => {
+  const g = gate(); let hold = true; t.after(g.release);
+  const f = await recoveryUi(t, { hook: async ({ action, input }) => { if (action === 'get' && input.id === f.original.id && hold) { hold = false; g.enter(); await g.held; } } });
+  const second = await f.call('save', { title: 'Second selected source', body: 'Second saved body', tags: ['second'] }); await f.mount();
+  const firstOpening = f.openOriginal(); await g.started;
+  await f.click(find(f.root, node => node.tagName === 'button' && node.textContent.startsWith(second.title + ' · ')));
+  assert.equal(f.fields()[0], second.title); assert.equal(f.fields()[1], second.body); assert.equal(f.byText('Save note').disabled, false);
+  await f.type('Markdown note', 'Keep newer selected-source editing'); await editedCopy(f.store, second.title, 'Keep newer selected-source editing');
+  const copy = structuredClone(listCopy(f.store, second.title)); assert.equal(copy.sourceNoteId, second.id); assert.equal(copy.sourceRevision, second.revision);
+  g.release(); await firstOpening;
+  assert.equal(f.fields()[0], second.title); assert.equal(f.fields()[1], 'Keep newer selected-source editing'); assert.deepEqual(listCopy(f.store, second.title), copy); assert.equal(saves(f).length, 0);
+});
+
+check('a failed owned saved-note read restores editable draft fields without deleting the earlier recovery copy', async t => {
+  const g = gate(); let hold = true; t.after(g.release);
+  const f = await recoveryUi(t, { hook: async ({ action }) => { if (action === 'get' && hold) { hold = false; g.enter(); await g.held; throw new Error('Actual saved-note read failed'); } } });
+  await f.type('Note title', 'Keep draft after failed open'); await f.type('Markdown note', 'Last committed recovery text'); await editedCopy(f.store, 'Keep draft after failed open', 'Last committed recovery text');
+  const copy = structuredClone(listCopy(f.store, 'Keep draft after failed open')), values = f.fields(), opening = f.openOriginal(); await g.started;
+  assert.equal(f.byLabel('Markdown note').disabled, true); g.release(); await opening;
+  for (const name of ['Note title', 'Markdown note', 'Note tags', 'Notebook']) assert.equal(f.byLabel(name).disabled, false);
+  assert.equal(f.byText('Save note').disabled, false); assert.deepEqual(f.fields(), values); assert.deepEqual(listCopy(f.store, 'Keep draft after failed open'), copy);
+  assert.equal(primaryStatus(f).textContent, 'Actual saved-note read failed'); assert.equal(saves(f).length, 0);
+});
+
+check('a saved-note read finishing after disposal publishes no old editor or recovery cleanup', async t => {
+  const g = gate(); let hold = true; t.after(g.release);
+  const f = await recoveryUi(t, { hook: async ({ action }) => { if (action === 'get' && hold) { hold = false; g.enter(); await g.held; } } });
+  await f.type('Note title', 'Preserve copy across disposal'); await f.type('Markdown note', 'Owned text before open'); await editedCopy(f.store, 'Preserve copy across disposal', 'Owned text before open');
+  const opening = f.openOriginal(); await g.started; f.dispose(); const fields = f.fields(), status = primaryStatus(f).textContent;
+  const records = structuredClone([...f.store.rows.values()]), calls = f.calls.length, removals = f.store.removes.length;
+  g.release(); await opening;
+  assert.deepEqual(f.fields(), fields); assert.equal(primaryStatus(f).textContent, status); assert.deepEqual([...f.store.rows.values()], records);
+  assert.equal(f.calls.length, calls); assert.equal(f.store.removes.length, removals); assert.equal(saves(f).length, 0);
+});
+
+
+check('a newer pending saved-note opening keeps input and Save locked when an older committed Save response finishes', async t => {
+  const saved = gate(), opened = gate(); let holdSave = true, holdGet = false; t.after(saved.release); t.after(opened.release);
+  const f = await recoveryUi(t, { hook: async ({ action }) => {
+    if (action === 'save' && holdSave) { holdSave = false; saved.enter(); await saved.held; }
+    if (action === 'get' && holdGet) { holdGet = false; opened.enter(); await opened.held; }
+  } });
+  await f.openOriginal(); await f.type('Markdown note', 'Older Save committed body');
+  const saving = f.click(f.byText('Save note')); await saved.started;
+  assert.equal(f.byLabel('Markdown note').disabled, false); await f.type('Markdown note', 'Ordinary typing remains allowed during Save');
+  holdGet = true; const opening = f.openOriginal(); await opened.started;
+  for (const name of ['Note title', 'Markdown note', 'Note tags', 'Notebook']) assert.equal(f.byLabel(name).disabled, true);
+  saved.release(); await saving;
+  assert.equal(primaryStatus(f).textContent, 'Opening saved note…'); assert.equal(f.byText('Save note').disabled, true);
+  for (const name of ['Note title', 'Markdown note', 'Note tags', 'Notebook']) assert.equal(f.byLabel(name).disabled, true);
+  opened.release(); await opening;
+  assert.equal(f.fields()[1], 'Older Save committed body'); assert.equal(f.byLabel('Markdown note').disabled, false); assert.equal(f.byText('Save note').disabled, false);
+  await f.type('Markdown note', 'New selected revision editing'); await editedCopy(f.store, f.original.title, 'New selected revision editing');
+  const copy = listCopy(f.store, f.original.title); assert.equal(copy.sourceNoteId, f.original.id); assert.equal(copy.sourceRevision, 2);
+  assert.equal(saves(f).length, 1); assert.equal(f.read().notes[f.original.id].revision, 2); assert.equal(f.read().notes[f.original.id].body, 'Older Save committed body');
+});

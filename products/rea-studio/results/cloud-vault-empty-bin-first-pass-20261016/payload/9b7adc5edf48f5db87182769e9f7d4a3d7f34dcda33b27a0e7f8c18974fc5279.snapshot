@@ -1,0 +1,62 @@
+"""Authenticate already extracted comparison sidecars; never execute product/oracle code."""
+import hashlib,json,re,sys
+from pathlib import Path
+
+folder=Path(sys.argv[1]).resolve()
+base=Path(__file__).resolve().parent/'cloud-verification-backups'
+assert folder.is_relative_to(base.resolve()) and folder.is_dir()
+backup=json.loads((folder/'local-backup-verification.json').read_text(encoding='utf-8'))
+assert backup['allCRCAndBytesReadable'] is True and backup['localProductExecutions']==0
+evidence=Path(backup['readableEvidence']).resolve();assert evidence==folder/'readable-evidence'
+files={row['path']:row for row in backup['files']}
+sha=lambda b:hashlib.sha256(b).hexdigest()
+checked=[]
+def read(relative):
+    assert isinstance(relative,str) and relative and not relative.startswith(('/','\\')) and '\\' not in relative and ':' not in relative
+    assert all(p not in ('.','..') for p in Path(relative).parts)
+    target=(evidence/relative).resolve();assert target.is_relative_to(evidence) and target.is_file() and not target.is_symlink()
+    assert relative in files
+    data=target.read_bytes();assert len(data)<=1024*1024
+    assert len(data)==files[relative]['bytes'] and sha(data)==files[relative]['sha256']
+    checked.append({'path':relative,'bytes':len(data),'sha256':sha(data)})
+    return data
+def js(relative):return json.loads(read(relative).decode('utf-8-sig'))
+attempt=js('attempt-validation.json');assert attempt['scope']=='vault-empty-bin-experiment'
+execution=attempt['environment']
+summary=js('empty-bin-original-observations/summary.json')
+assert summary['schema']=='rea-empty-bin-original-comparison-summary/v1'
+assert summary['execution']=={k:execution[k] for k in ('GITHUB_SHA','GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT','GITHUB_REPOSITORY')}
+assert 0<=summary['childAttempts']<=4 and summary['childAttempts']==len(summary['observations'])
+assert summary['namedProjectionOnly'] is True and summary['exactTimestampEqualityClaimed'] is False
+assert summary['originalGUI']==summary['originalProgram']==summary['originalClockAssignments']==0
+names=set();rows=[];passed=0;calls=0;loads=0
+for observed in summary['observations']:
+    relative=observed['path'];assert re.fullmatch(r'\d{2}-[0-9a-f-]{36}\.json',relative)
+    child=js('empty-bin-original-observations/'+relative)
+    assert child['schema']=='rea-empty-bin-original-child/v1' and child['execution']==summary['execution']
+    assert child['name'] in ('nested-direct-bin','disabled-existing-bin','native-save-reopen','already-empty-bin') and child['name'] not in names;names.add(child['name'])
+    for key in ('status','comparisonPassed','childCloseObserved'):assert child[key]==observed[key]
+    assert child['executable']=={'bytes':3265880,'sha256':'04d29636c393f0c1fc99ff739295494be3adefded93271e44591e8e300225a5a'}
+    assert child['namedProjectionOnly'] is True and child['arbitraryOriginalXMLPreservationClaimed'] is False
+    stdout=read('empty-bin-original-observations/'+relative[:-5]+'.stdout.txt').decode('utf-8-sig')
+    stderr=read('empty-bin-original-observations/'+relative[:-5]+'.stderr.txt').decode('utf-8-sig')
+    markers=stderr.count('REA_EMPTY_BIN_ASSEMBLY_LOADED_2_61_1')
+    actual=child.get('actual')
+    if actual is not None:
+        assert json.loads(stdout.strip())==actual
+        assert actual['schema']=='rea-keepass-empty-bin-actual-library/v1'
+        assert actual['executableSHA256']==child['executable']['sha256'] and actual['executableBytes']==child['executable']['bytes']
+        calls+=actual['calls']['deleteAllObjects'];loads+=actual['calls']['assemblyLoads']
+    if child['comparisonPassed']:
+        assert child['status']=='passed' and child['exit']=={'code':0,'signal':None,'closeObserved':True}
+        assert child['childCloseObserved'] and markers==1 and actual is not None
+        assert actual['calls']['deleteAllObjects']==actual['calls']['assemblyLoads']==1
+        passed+=1
+    else:
+        assert child['status']=='failed' and child.get('failure')
+    rows.append({'name':child['name'],'status':child['status'],'comparisonPassed':child['comparisonPassed'],'closeObserved':child['childCloseObserved'],'exit':child.get('exit'),'assemblyLoadMarkers':markers,'actualLibraryObservationPresent':actual is not None,'stderr':stderr})
+assert summary['comparisonsPassed']==passed and summary['actualLibraryCalls']==calls and summary['actualAssemblyLoads']==loads
+result={'schema':'rea-local-empty-bin-sidecar-backup-verification/v1','attributionScope':'Readability, recorded stream identities and consistency only. No local oracle or product execution; failure and absence remain explicit.','sourceCommit':attempt['repositoryCommit'],'runId':execution['GITHUB_RUN_ID'],'attemptStatus':attempt['status'],'summary':attempt['summary'],'originalChildAttempts':len(rows),'comparisonsPassed':passed,'recordedActualLibraryCalls':calls,'recordedActualAssemblyLoads':loads,'allFourComparisonsEstablished':len(rows)==passed==calls==loads==4,'observations':rows,'checkedFiles':checked,'allSelectedFilesMatchVerifiedPortableBackup':True,'localProductExecutions':0,'localOriginalExecutions':0,'localTests':0,'localBuilds':0}
+target=folder/'local-empty-bin-sidecar-verification.json'
+with target.open('x',encoding='utf-8') as out:out.write(json.dumps(result,indent=2)+'\n')
+print(json.dumps({k:v for k,v in result.items() if k not in ('checkedFiles','observations')}))

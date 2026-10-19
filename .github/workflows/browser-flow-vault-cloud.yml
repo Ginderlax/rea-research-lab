@@ -1,0 +1,108 @@
+name: Cloud Flow and Vault browser acceptance
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/browser-flow-vault-cloud.yml'
+      - 'products/rea-studio/browser-tests/**'
+      - 'products/rea-studio/scripts/verify-cloud-browser.mjs'
+      - 'products/rea-studio/apps/flow/**'
+      - 'products/rea-studio/apps/vault/**'
+      - 'products/rea-studio/lib/**'
+      - 'products/rea-studio/public/**'
+      - 'products/rea-studio/server.mjs'
+      - 'products/rea-studio/catalog.mjs'
+  pull_request:
+    paths:
+      - '.github/workflows/browser-flow-vault-cloud.yml'
+      - 'products/rea-studio/browser-tests/**'
+      - 'products/rea-studio/scripts/verify-cloud-browser.mjs'
+      - 'products/rea-studio/apps/flow/**'
+      - 'products/rea-studio/apps/vault/**'
+      - 'products/rea-studio/lib/**'
+      - 'products/rea-studio/public/**'
+      - 'products/rea-studio/server.mjs'
+      - 'products/rea-studio/catalog.mjs'
+
+permissions:
+  contents: read
+concurrency:
+  group: flow-vault-browser-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  finite-real-chromium:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact source revision
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Select pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Select owned evidence outside the source tree
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-browser-evidence-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          'REA_BROWSER_EVIDENCE='+$evidence | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $browserCache=Join-Path $env:RUNNER_TEMP ('rea-playwright-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          'PLAYWRIGHT_BROWSERS_PATH='+$browserCache | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Install exact locked browser tooling and matching Chromium on the hosted runner
+        id: acquire
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-cloud-browser.mjs --phase acquire --evidence "$env:REA_BROWSER_EVIDENCE"
+      - name: Run twelve finite current Flow and Vault real-browser scenarios
+        id: browser
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-cloud-browser.mjs --phase verify --evidence "$env:REA_BROWSER_EVIDENCE"
+      - name: Package bounded portable browser evidence after every observable attempt
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-browser-evidence-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          @{schema='rea-cloud-browser-workflow-attempt/v1';sourceCommit=$env:GITHUB_SHA;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;runnerEnvironment=$env:RUNNER_ENVIRONMENT;checkoutOutcome='${{ steps.checkout.outcome }}';acquisitionOutcome='${{ steps.acquire.outcome }}';browserOutcome='${{ steps.browser.outcome }}';statusBeforePackaging='${{ job.status }}';historicalReceiptsRebound=$false;originalProductComparisons=0;acceptancePreclaimed=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'browser-workflow-attempt.json') -Encoding utf8
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+          $limit=15*1024*1024;$bytes=(Get-Item -LiteralPath $archive).Length
+          if($bytes -gt $limit){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-browser-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback | Out-Null
+            $retained=@();$omitted=@()
+            foreach($file in Get-ChildItem -LiteralPath $evidence -File){
+              if($file.Length -le 1024*1024){Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $fallback $file.Name);$retained+=$file.Name}
+              elseif($file.Extension -eq '.txt'){$target=Join-Path $fallback ($file.BaseName+'.tail.txt');$logInput=[IO.File]::OpenRead($file.FullName);$logOutput=[IO.File]::Create($target);try{$logInput.Position=[Math]::Max(0,$logInput.Length-256*1024);$logInput.CopyTo($logOutput)}finally{$logOutput.Dispose();$logInput.Dispose()};$omitted+=@{file=$file.Name;originalBytes=$file.Length;tailOnly=$true}}
+              else{$omitted+=@{file=$file.Name;bytes=$file.Length;tailOnly=$false}}
+            }
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';fullArchiveBytes=$bytes;limitBytes=$limit;completeEvidenceUploaded=$false;screenshotsAndTracesUploaded=$false;sourceSnapshotsUploaded=$false;retainedFiles=$retained;omittedOrTailed=$omitted;reason='Full browser evidence exceeded15MiB; this diagnostic fallback cannot establish complete portable acceptance evidence.'}|ConvertTo-Json -Depth 6|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-browser-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+            [IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le $limit){'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
+            throw 'Full browser evidence exceeded15MiB; only an explicitly incomplete bounded fallback can be uploaded.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve the portable browser evidence
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: flow-vault-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

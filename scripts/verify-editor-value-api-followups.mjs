@@ -1,4 +1,5 @@
-import {createEditorVaultProofMigration,createEditorVaultProofMigrationFromRoot} from './editor-vault-proof-migration.mjs';
+import {createEditorVaultProofMigration} from './editor-vault-proof-migration.mjs';
+import {createNotes41AwareProofMigrationFromRoot,assertNotes41AwareProofMigration} from './notes41-publication-source-view.mjs';
 import assert from 'node:assert/strict';
 import {readFileSync,readdirSync,lstatSync,realpathSync} from 'node:fs';
 import {resolve,relative,sep} from 'node:path';
@@ -35,11 +36,17 @@ function diskIO(root,onFile){const base=realpathSync(resolve(root)),seen=new Map
  function location(p){assertEditorValueApiPublicPath(p);let at=base;for(const s of p.split('/')){at=resolve(at,s);assert(!lstatSync(at).isSymbolicLink(),'Symlink/reparse proof path');}const real=realpathSync(at),rel=relative(base,real);assert(rel&&rel!=='..'&&!rel.startsWith('..'+sep)&&!rel.startsWith(sep),'Escaping proof path');return at;}
  function read(p){const at=location(p),stat=lstatSync(at);assert(stat.isFile()&&stat.size<=32*1024*1024);const b=readFileSync(at);assert.equal(b.length,stat.size);const id=identity(b);if(seen.has(p))same(id,seen.get(p),'Changed during proof '+p);else{seen.set(p,id);total+=b.length;assert(seen.size<=1200&&total<=256*1024*1024);onFile?.({path:p,...id});}return b;}
  function list(p){assertEditorValueApiPublicPath(p.replace(/\/$/,''));const out=[];function visit(dir,relativePath,depth){assert(depth<=32);const names=readdirSync(dir,{withFileTypes:true});assert(names.length<=1200);for(const e of names){assert(!e.isSymbolicLink());const name=relativePath+e.name;assertEditorValueApiPublicPath(name);if(e.isDirectory())visit(resolve(dir,e.name),name+'/',depth+1);else{assert(e.isFile());out.push(name);assert(out.length<=1200);}}}visit(location(p.replace(/\/$/,'')),p,0);return out;}
- function finish(){for(const [p,r]of seen)same(identity(read(p)),r);return{authenticatedFiles:seen.size,authenticatedBytes:total};}return{read,list,finish};
+ // The current-source channel has a distinct protocol-owned budget and never
+ // enters the historical proof-channel counters or onFile observations.
+ function sourceRead(p){const at=location(p),stat=lstatSync(at);assert(stat.isFile()&&stat.size<=32*1024*1024);const b=readFileSync(at);assert.equal(b.length,stat.size);return b;}
+ function finish(){for(const [p,r]of seen)same(identity(read(p)),r);return{authenticatedFiles:seen.size,authenticatedBytes:total};}return{read,list,finish,sourceRead};
 }
 
 /** Pure byte/metadata validator for owned in-memory negative guards; no application code executes. */
-export function verifyEditorValueApiProofBytes(io){assert(io&&typeof io.read==='function'&&typeof io.list==='function');const migration=createEditorVaultProofMigration(io.read.bind(io));const read=(p,r)=>{assertEditorValueApiPublicPath(p);const b=io.read(migration.resolve(p,r)??p);inert(b);if(r)same(identity(b),r,p);return b;},j=(p,r)=>JSON.parse(read(p,r));
+/** An explicit current-source context uses io.sourceRead for mandatory actual
+ * current bytes and io.read for exact proof carriers. The no-context pure API
+ * retains its historical source scope and mutation-control behavior. */
+export function verifyEditorValueApiProofBytes(io,{sourceMigration}={}){assert(io&&typeof io.read==='function'&&typeof io.list==='function');if(sourceMigration!==undefined)assert.equal(typeof io.sourceRead,'function','Current context requires a separate physical current-source reader');const migration=sourceMigration===undefined?createEditorVaultProofMigration(io.read.bind(io)):assertNotes41AwareProofMigration(sourceMigration,io.sourceRead.bind(io),io.read.bind(io));const read=(p,r)=>{assertEditorValueApiPublicPath(p);const b=io.read(migration.resolve(p,r)??p);inert(b);if(r)same(identity(b),r,p);return b;},j=(p,r)=>JSON.parse(read(p,r));
  const epochs=new Map(),expected475=[];
  for(const [p,name,count,digest,schema]of pins){const publicPath=source=>p+sourcePath(source).split('/').map(s=>remap[s]??s).join('/')+'.snapshot';const b=read(publicPath(name));assert.equal(sha(b),digest,p);const m=JSON.parse(b);assert.equal(m.schema,schema);if(m.strict!==undefined)assert.equal(m.strict,true);else assert(p===pins[0][0]||p===pins[1][0],'Only original319/81 schemas omit a strict flag');const rs=rows(m);assert.equal(rs.length,count);assert.equal(m.files,count);const want=[...rs.map(r=>publicPath(r.path)),publicPath(name)];assert.deepEqual(io.list(p).sort(),want.slice().sort(),'Strict public prefix '+p);for(const r of rs)read(publicPath(r.path),r);epochs.set(p,{manifest:m,records:rs,bytes:b});if(p.startsWith(prefix))for(const r of [...rs,{path:name,...identity(b)}])expected475.push({path:publicPath(r.path),bytes:r.bytes,sha256:r.sha256});}
  const expected=j(focus+'expected-public475.json.snapshot');const aliasSet=assertEditorValueApiAliasRows(expected);assert.deepEqual(expected.map(r=>({path:r.path,...byteRecord(r)})).sort((a,b)=>a.path.localeCompare(b.path)),expected475.sort((a,b)=>a.path.localeCompare(b.path)));assert.deepEqual(io.list(prefix).sort(),[...aliasSet].sort(),'Unmapped API proof file');for(const r of expected)read(r.path,r);
@@ -64,4 +71,4 @@ export function verifyEditorValueApiProofBytes(io){assert(io&&typeof io.read==='
 }
 
 /** Synchronous public verification. Current source checks cannot be disabled. */
-export function verifyEditorValueApiFollowups(root,{onFile}={}){assert(typeof root==='string');assert(onFile===undefined||typeof onFile==='function');return verifyEditorValueApiProofBytes(diskIO(root,onFile));}
+export function verifyEditorValueApiFollowups(root,{onFile}={}){assert(typeof root==='string');assert(onFile===undefined||typeof onFile==='function');const sourceMigration=createNotes41AwareProofMigrationFromRoot(root);return verifyEditorValueApiProofBytes(diskIO(root,onFile),{sourceMigration});}

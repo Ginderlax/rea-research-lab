@@ -1,0 +1,49 @@
+
+Running 6 tests using 1 worker
+
+[1/6] archive-aes.spec.mjs:127:1 › Archive plain ZIP UI round trip retain Unicode bytes and refuse ZIP encryption
+  1) archive-aes.spec.mjs:127:1 › Archive plain ZIP UI round trip retain Unicode bytes and refuse ZIP encryption 
+
+    TimeoutError: locator.selectOption: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for getByLabel('Archive format', { exact: true })
+
+
+      101 | }
+      102 | async function configure(s, { encrypted = true, headers = false, output = 'archive/browser.7z', password } = {}) {
+    > 103 |   await s.page.getByLabel('Archive format', { exact: true }).selectOption(encrypted ? 'sevenzip' : 'zip');
+          |                                                              ^
+      104 |   await s.page.getByLabel('New archive path', { exact: true }).fill(output);
+      105 |   if (encrypted) {
+      106 |     await s.page.getByLabel('Encrypt 7Z contents with AES-256', { exact: true }).check();
+        at configure (D:\a\rea-research-lab\rea-research-lab\products\rea-studio\browser-tests\archive-aes.spec.mjs:103:62)
+        at D:\a\rea-research-lab\rea-research-lab\products\rea-studio\browser-tests\archive-aes.spec.mjs:128:41
+
+    Error Context: ..\..\..\..\..\_temp\rea-browser-evidence-38824829929-1\playwright-output\archive-aes-Archive-plain--1bdd9-s-and-refuse-ZIP-encryption\error-context.md
+
+
+[2/6] archive-aes.spec.mjs:138:38 › Archive AES 7Z content UI round trip retain Unicode bytes
+  2) archive-aes.spec.mjs:138:38 › Archive AES 7Z content UI round trip retain Unicode bytes ───────
+
+    Error: EEXIST: file already exists, open 'D:\a\_temp\rea-browser-evidence-38824829929-1\browser-observation.json'
+
+      91 | test.beforeAll(async ({ browser }) => {
+      92 |   expect(browser.version()).toBe('156.0.8078.4');
+    > 93 |   await write('browser-observation.json', { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 });
+         |   ^
+      94 | });
+      95 | async function open(s) { await s.page.goto(s.url + '/#archive'); await expect(s.page.getByRole('heading', { name: 'REA Archive', exact: true })).toBeVisible(); }
+      96 | async function done(s) { await expect(rootView(s.page)).toHaveAttribute('aria-busy', 'false'); await expect(rootView(s.page).locator(':scope > p.status')).toHaveText('Done.'); }
+        at D:\a\rea-research-lab\rea-research-lab\products\rea-studio\browser-tests\archive-aes.spec.mjs:93:3
+
+    Error Context: ..\..\..\..\..\_temp\rea-browser-evidence-38824829929-1\playwright-output\archive-aes-Archive-AES-7Z-60539-d-trip-retain-Unicode-bytes\error-context.md
+
+
+[3/6] archive-aes.spec.mjs:138:38 › Archive AES 7Z encrypted-header UI round trip retain Unicode bytes
+[4/6] archive-aes.spec.mjs:147:1 › Archive wrong password refuses real list and extraction before destination creation
+[5/6] archive-aes.spec.mjs:162:1 › Archive held actual create response keeps controls busy and clears private fields
+[6/6] archive-aes.spec.mjs:172:1 › Archive disposal scrubs detached passwords after actual committed extraction
+  2 failed
+    archive-aes.spec.mjs:127:1 › Archive plain ZIP UI round trip retain Unicode bytes and refuse ZIP encryption 
+    archive-aes.spec.mjs:138:38 › Archive AES 7Z content UI round trip retain Unicode bytes ────────
+  4 did not run

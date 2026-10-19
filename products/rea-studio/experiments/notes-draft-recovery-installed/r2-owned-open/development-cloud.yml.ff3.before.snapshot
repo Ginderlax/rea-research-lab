@@ -1,0 +1,256 @@
+name: Cloud development oracle experiment
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/development-cloud.yml'
+      - 'products/rea-studio/apps/**'
+      - 'products/rea-studio/lib/**'
+      - 'products/rea-studio/public/**'
+      - 'products/rea-studio/scripts/**'
+      - 'products/rea-studio/tests/**'
+      - 'products/rea-studio/experiments/bsdtar-oracle/**'
+      - 'products/rea-studio/server.mjs'
+      - 'products/rea-studio/catalog.mjs'
+      - 'products/rea-studio/package.json'
+      - 'projects/07-keepass/**'
+      - 'projects/08-7zip/**'
+      - 'projects/09-restic/**'
+      - 'scripts/acquire-windows-release.mjs'
+  pull_request:
+    paths:
+      - '.github/workflows/development-cloud.yml'
+      - 'products/rea-studio/apps/**'
+      - 'products/rea-studio/lib/**'
+      - 'products/rea-studio/public/**'
+      - 'products/rea-studio/scripts/**'
+      - 'products/rea-studio/tests/**'
+      - 'products/rea-studio/experiments/bsdtar-oracle/**'
+      - 'products/rea-studio/server.mjs'
+      - 'products/rea-studio/catalog.mjs'
+      - 'products/rea-studio/package.json'
+      - 'projects/07-keepass/**'
+      - 'projects/08-7zip/**'
+      - 'projects/09-restic/**'
+      - 'scripts/acquire-windows-release.mjs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: development-oracle-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  full-oracle-experiment:
+    runs-on: windows-2022
+    timeout-minutes: 50
+    env:
+      CI: 'true'
+    steps:
+      - name: Enable long research snapshot paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+
+      - name: Check out the exact source revision
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Select the pinned Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+
+      - name: Select a unique evidence directory
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-development-ci-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          'REA_DEVELOPMENT_EVIDENCE=' + $evidence | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Compose only the three reviewed oracle-test sources
+        id: compose
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-bsdtar-oracle-cloud.mjs --phase compose --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Acquire pinned Flow and Vault prerequisites
+        id: flow_vault
+        shell: pwsh
+        run: node products/rea-studio/scripts/bootstrap-cloud-flow-vault.mjs --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Acquire full and Extra 7-Zip inputs with one bounded bootstrap extraction
+        id: archive
+        shell: pwsh
+        run: |
+          $archiveSource = @'
+          import assert from 'node:assert/strict';
+          import * as fs from 'node:fs/promises';
+          import path from 'node:path';
+          import { createHash } from 'node:crypto';
+          import { spawnSync } from 'node:child_process';
+          import { prepareOriginalArchiveOracle } from './products/rea-studio/apps/archive/bootstrap-original.mjs';
+          assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
+          assert.equal(process.env.CI, 'true'); assert.equal(process.env.GITHUB_ACTIONS, 'true'); assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
+          const repository = process.cwd(), evidence = await fs.realpath(process.env.REA_DEVELOPMENT_EVIDENCE);
+          const relative = path.relative(await fs.realpath(process.env.RUNNER_TEMP), evidence);
+          assert(relative && relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative));
+          const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+          const receiptPath = path.join(evidence, 'archive-original-prerequisites.json');
+          const record = { schema: 'rea-cloud-archive-original-prerequisites/v1', status: 'running', startedAtUtc: new Date().toISOString(),
+            execution: Object.fromEntries(['GITHUB_SHA','GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT','GITHUB_REPOSITORY'].map(name => [name, process.env[name]])),
+            scope: 'Authenticated full and Extra 7-Zip inputs, with one original 7zr bootstrap extraction of the pinned standalone oracle. Later comparison calls belong to the tests.', assets: [], bootstrapExtractionProcessAttempts: 0, bootstrapExtractionProcesses: 0, originalProcesses: 0, comparisonProcesses: 0, vendorBinariesPublished: false };
+          async function save(initial = false) {
+            const temporary = initial ? receiptPath : receiptPath + '.tmp', file = await fs.open(temporary, 'wx');
+            try { await file.writeFile(JSON.stringify(record, null, 2) + '\n'); await file.sync(); } finally { await file.close(); }
+            if (!initial) await fs.rename(temporary, receiptPath);
+          }
+          async function authenticate(filename, expected) {
+            const item = await fs.lstat(filename); assert(item.isFile() && !item.isSymbolicLink()); assert.equal(item.size, expected.bytes);
+            const bytes = await fs.readFile(filename); assert.equal(sha(bytes), expected.sha256); return bytes;
+          }
+          await save(true);
+          try {
+            const full = await prepareOriginalArchiveOracle(); assert.equal(full.schema, 'rea-archive-original-acquisition/v1'); assert.equal(full.assets.length, 2);
+            const pins = { '.local/archive-original/7z2604-x64.exe': { bytes:1664082,sha256:'d54bf805f9f3704d1e8db2fa3498ae7ef2df0312b40b558e7c71c734430a665d' }, '.local/archive-original/7zr.exe': { bytes:602624,sha256:'256feca8e274e5da655e2a284fabafd9f554365eb164862089dacd4e8276d282' } };
+            for (const asset of full.assets) { assert(pins[asset.path]); await authenticate(path.join(repository, asset.path), pins[asset.path]); record.assets.push({ ...asset, authenticated:true }); }
+            const provenanceBytes = await fs.readFile('projects/08-7zip/acquisition.json'), provenance = JSON.parse(provenanceBytes);
+            record.extraSourceManifest = { path:'projects/08-7zip/acquisition.json', bytes:provenanceBytes.length, sha256:sha(provenanceBytes) };
+            const extra = provenance.artifacts.find(row => row.relative_path === 'artifacts/7z2604-extra.7z');
+            assert.equal(extra.bytes,1764616); assert.equal(extra.sha256,'dc4b11d3399db18b063630137145f5585d8f7ac847bf3639bd1185d7d1f7cee0');
+            assert.equal(extra.source_url,'https://github.com/ip7z/7zip/releases/download/26.04/7z2604-extra.7z');
+            const artifacts = path.join(repository,'projects/08-7zip/artifacts'); await fs.mkdir(artifacts,{recursive:true}); assert(!(await fs.lstat(artifacts)).isSymbolicLink());
+            const destination = path.join(artifacts,'7z2604-extra.7z');
+            try { await fs.lstat(destination); }
+            catch (error) {
+              if(error.code !== 'ENOENT') throw error;
+              const response = await fetch(extra.source_url,{signal:AbortSignal.timeout(45000)}); assert(response.ok);
+              const chunks=[];let total=0;for await(const chunk of response.body){total+=chunk.length;assert(total<=extra.bytes);chunks.push(chunk);}
+              const bytes=Buffer.concat(chunks);assert.equal(bytes.length,extra.bytes);assert.equal(sha(bytes),extra.sha256);await fs.writeFile(destination,bytes,{flag:'wx'});
+            }
+            await authenticate(destination,extra); record.assets.push({path:'projects/08-7zip/artifacts/7z2604-extra.7z',bytes:extra.bytes,sha256:extra.sha256,source_url:extra.source_url,authenticated:true});
+            const bootstrapPin=pins['.local/archive-original/7zr.exe'],bootstrapBytes=await authenticate(path.join(repository,'.local/archive-original/7zr.exe'),bootstrapPin),extraBootstrap=path.join(artifacts,'7zr.exe');
+            try { await fs.writeFile(extraBootstrap,bootstrapBytes,{flag:'wx'}); } catch(error){if(error.code!=='EEXIST')throw error;}
+            await authenticate(extraBootstrap,bootstrapPin);record.assets.push({path:'projects/08-7zip/artifacts/7zr.exe',...bootstrapPin,authenticated:true,source:'authenticated full-oracle bootstrap copy'});
+            const standalonePin={bytes:1335808,sha256:'15d4c788c148e3677e2fc1c4a01f191fb6669eba4f6acf8a465f0f1a6f1e1260'};
+            record.bootstrapExtractionProcessAttempts=1;await save();
+            const extraction=spawnSync(extraBootstrap,['e','-so',destination,'x64/7za.exe'],{cwd:artifacts,shell:false,windowsHide:true,timeout:20000,maxBuffer:2*1024*1024,encoding:'buffer'});
+            record.bootstrapExtractionProcesses=Number.isInteger(extraction.pid)&&extraction.pid>0?1:0;record.originalProcesses=record.bootstrapExtractionProcesses;
+            const extracted=extraction.stdout??Buffer.alloc(0),extractionStderr=extraction.stderr??Buffer.alloc(0);
+            record.bootstrapExtraction={arguments:['e','-so','projects/08-7zip/artifacts/7z2604-extra.7z','x64/7za.exe'],exitCode:extraction.status,signal:extraction.signal,errorCode:extraction.error?.code??null,stdout:{bytes:extracted.length,sha256:sha(extracted)},stderr:{bytes:extractionStderr.length,sha256:sha(extractionStderr)},binaryOutputRetainedInEvidence:false};await save();
+            assert.equal(extraction.error,undefined);assert.equal(extraction.status,0);assert.equal(record.bootstrapExtractionProcesses,1);assert.equal(extracted.length,standalonePin.bytes);assert.equal(sha(extracted),standalonePin.sha256);
+            const extraDirectory=path.join(artifacts,'extra'),standaloneDirectory=path.join(extraDirectory,'x64');
+            for(const directory of [extraDirectory,standaloneDirectory]){try{await fs.mkdir(directory);}catch(error){if(error.code!=='EEXIST')throw error;}const item=await fs.lstat(directory);assert(item.isDirectory()&&!item.isSymbolicLink());}
+            const standalone=path.join(standaloneDirectory,'7za.exe');try{await fs.writeFile(standalone,extracted,{flag:'wx'});}catch(error){if(error.code!=='EEXIST')throw error;}
+            await authenticate(standalone,standalonePin);record.assets.push({path:'projects/08-7zip/artifacts/extra/x64/7za.exe',...standalonePin,authenticated:true,source:'single bounded 7zr extraction from the authenticated Extra archive'});
+            record.status='acquired';record.completedAtUtc=new Date().toISOString();await save();console.log(JSON.stringify({status:record.status,assets:record.assets.length,bootstrapExtractionProcesses:record.bootstrapExtractionProcesses,originalProcesses:record.originalProcesses,comparisonProcesses:0}));
+          } catch(error){record.status='failed';record.completedAtUtc=new Date().toISOString();record.failure={name:error.name,message:error.message};await save();throw error;}
+          '@
+          $archiveSource | & node --input-type=module
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Acquire the explicitly paired Microsoft bsdtar images
+        id: bsdtar
+        shell: pwsh
+        run: node products/rea-studio/scripts/bootstrap-cloud-bsdtar.mjs --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Record the separate original bsdtar smoke invocation
+        id: bsdtar_smoke
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-cloud-bsdtar.mjs --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Acquire additional Automation, Sketch and Backup prerequisites
+        id: additional
+        shell: pwsh
+        run: node products/rea-studio/scripts/bootstrap-cloud-development.mjs --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Bind the same-attempt prerequisite receipts
+        id: prerequisite_manifest
+        shell: pwsh
+        run: |
+          $definitions = @(
+            @('flow-vault','prerequisite-acquisition.json','rea-cloud-flow-vault-prerequisites/v1','acquired'),
+            @('archive','archive-original-prerequisites.json','rea-cloud-archive-original-prerequisites/v1','acquired'),
+            @('bsdtar','bsdtar-original-acquisition.json','rea-cloud-bsdtar-original-prerequisites/v1','acquired'),
+            @('additional','development-prerequisites.json','rea-cloud-development-additional-prerequisites/v1','acquired'),
+            @('bsdtar-smoke','bsdtar-original-smoke.json','rea-cloud-bsdtar-original-smoke/v1','passed')
+          )
+          $receipts = @()
+          foreach ($definition in $definitions) {
+            $receiptPath = Join-Path $env:REA_DEVELOPMENT_EVIDENCE $definition[1]
+            $value = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
+            if ($value.schema -ne $definition[2] -or $value.status -ne $definition[3]) { throw ('Incomplete prerequisite: ' + $definition[0]) }
+            $receipts += @{ role=$definition[0]; file=$definition[1]; bytes=(Get-Item -LiteralPath $receiptPath).Length; sha256=(Get-FileHash -LiteralPath $receiptPath -Algorithm SHA256).Hash.ToLowerInvariant(); schema=$value.schema; status=$value.status }
+          }
+          @{ schema='rea-cloud-full-oracle-prerequisites/v1'; status='acquired'; execution=@{ GITHUB_SHA=$env:GITHUB_SHA; GITHUB_RUN_ID=$env:GITHUB_RUN_ID; GITHUB_RUN_ATTEMPT=$env:GITHUB_RUN_ATTEMPT; GITHUB_REPOSITORY=$env:GITHUB_REPOSITORY }; receipts=$receipts; productTestsExecutedByManifest=0 } | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath (Join-Path $env:REA_DEVELOPMENT_EVIDENCE 'full-oracle-prerequisites.json') -Encoding utf8
+
+      - name: Run every current test in the explicit oracle-test epoch
+        id: full_suite
+        shell: pwsh
+        run: |
+          $manifest = Join-Path $env:REA_DEVELOPMENT_EVIDENCE 'full-oracle-prerequisites.json'
+          $composition = Join-Path $env:REA_DEVELOPMENT_EVIDENCE 'bsdtar-composition.json'
+          node products/rea-studio/scripts/verify-cloud.mjs --scope full-oracle-experiment --output "$env:REA_DEVELOPMENT_EVIDENCE" --bootstrap-manifest "$manifest" --overlay-manifest "$composition" --timeout-ms 2400000
+
+      - name: Require all retained full-suite names plus the seventeen recovery checks
+        id: recovery_full_roster
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-notes-draft-recovery-installed-full.mjs --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Recheck the oracle source composition after every observable attempt
+        id: oracle_postcheck
+        if: always() && steps.compose.outcome != 'skipped' && steps.compose.outcome != ''
+        shell: pwsh
+        run: node products/rea-studio/scripts/compose-bsdtar-oracle-cloud.mjs --phase verify-after --evidence "$env:REA_DEVELOPMENT_EVIDENCE"
+
+      - name: Package bounded portable evidence even on failure
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence = Join-Path $env:RUNNER_TEMP ('rea-development-ci-evidence-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          New-Item -ItemType Directory -Path $evidence -Force | Out-Null
+          @{ schema='rea-cloud-full-oracle-workflow-attempt/v1'; sourceCommit=$env:GITHUB_SHA; runId=$env:GITHUB_RUN_ID; runAttempt=$env:GITHUB_RUN_ATTEMPT; runnerEnvironment=$env:RUNNER_ENVIRONMENT; checkoutOutcome='${{ steps.checkout.outcome }}'; compositionOutcome='${{ steps.compose.outcome }}'; flowVaultOutcome='${{ steps.flow_vault.outcome }}'; archiveOutcome='${{ steps.archive.outcome }}'; bsdtarOutcome='${{ steps.bsdtar.outcome }}'; bsdtarSmokeOutcome='${{ steps.bsdtar_smoke.outcome }}'; additionalOutcome='${{ steps.additional.outcome }}'; testOutcome='${{ steps.full_suite.outcome }}'; recoveryFullRosterOutcome='${{ steps.recovery_full_roster.outcome }}'; oraclePostcheckOutcome='${{ steps.oracle_postcheck.outcome }}'; statusBeforePackaging='${{ job.status }}'; historicalDevelopmentReceiptOverwritten=$false; productAcceptancePreclaimed=$false } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $archive = Join-Path $env:RUNNER_TEMP ('rea-development-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[System.IO.Compression.CompressionLevel]::Optimal,$false)
+          $archiveBytes = (Get-Item -LiteralPath $archive).Length
+          $limit = 15 * 1024 * 1024
+          if ($archiveBytes -gt $limit) {
+            $fallback = Join-Path $env:RUNNER_TEMP ('rea-development-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+            New-Item -ItemType Directory -Path $fallback | Out-Null
+            $retained=@();$omitted=@();$tailed=@()
+            foreach ($name in @('workflow-attempt.json','attempt-validation.json','events.jsonl','stdout.txt','stderr.txt','source-before.json','source-after.json','git-baseline-active-source.json','bsdtar-composition.json','bsdtar-postrun-source-check.json','prerequisite-acquisition.json','archive-original-prerequisites.json','bsdtar-original-acquisition.json','bsdtar-original-smoke.json','bsdtar-smoke-stdout.txt','bsdtar-smoke-stderr.txt','development-prerequisites.json','development-prerequisites.events.jsonl','full-oracle-prerequisites.json')) {
+              $candidate=Join-Path $evidence $name
+              if (Test-Path -LiteralPath $candidate -PathType Leaf) {
+                $bytes=(Get-Item -LiteralPath $candidate).Length
+                if($bytes -le 512*1024){Copy-Item -LiteralPath $candidate -Destination (Join-Path $fallback $name);$retained+=$name}
+                elseif($name -in @('stdout.txt','stderr.txt')){
+                  $tailName=$name.Replace('.txt','.tail.txt');$logInput=[IO.File]::OpenRead($candidate);$logTail=[IO.File]::Create((Join-Path $fallback $tailName))
+                  try{$logInput.Position=[Math]::Max(0,$logInput.Length-256*1024);$logInput.CopyTo($logTail)}finally{$logTail.Dispose();$logInput.Dispose()}
+                  $retained+=$tailName;$tailed+=@{original=$name;originalBytes=$bytes;retainedTailBytes=256*1024}
+                }else{$omitted+=@{name=$name;bytes=$bytes}}
+              }
+            }
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';fullArchiveBytes=$archiveBytes;limitBytes=$limit;fullEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;retainedFiles=$retained;truncatedLogs=$tailed;omittedLargeTopLevelFiles=$omitted;reason='Full portable evidence exceeded15MiB. This fallback is incomplete; complete source/raw evidence backup is not established. Streaming test logs may remain in the Actions console.'}|ConvertTo-Json -Depth 8|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-development-incomplete-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT + '.zip')
+            [System.IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[System.IO.Compression.CompressionLevel]::Optimal,$false)
+            'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            throw 'Full evidence exceeded15MiB; only the explicitly incomplete diagnostic fallback will be uploaded.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+
+      - name: Preserve the portable evidence archive
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: development-oracle-windows-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

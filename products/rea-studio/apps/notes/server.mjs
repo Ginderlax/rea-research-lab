@@ -4,6 +4,7 @@ import { decodeBase64, MAX_ARCHIVE, MAX_RESOURCE, digest, readJex, serializeReco
 import {ensureOrganization,bindNotebook,organizationList,changeNotebook,checkOrganizationRevision} from './notebooks.mjs';
 
 import {changeNotebookTrash,restoreNoteFromTrash,trashOrganizationRows} from './notebook-trash.mjs';
+import {todoState,changeTodo,todoMatches} from './core.mjs';
 
 const stateKey = 'notes-state-v2', legacyPrefix = 'notes-note-';
 let queue = Promise.resolve();
@@ -22,8 +23,8 @@ async function state(store) {
 }
 function get(s, id) { const note = s.notes[validId(id)]; if (!note) throw new Error('Note does not exist.'); return note; }
 function checkRevision(note, value) { if (!Number.isInteger(value) || value !== note.revision) throw new Error('Note changed since it was opened. Reopen it before saving; your draft is preserved.'); }
-function summary(note, query = '') { const at = query ? note.body.toLowerCase().indexOf(query.toLowerCase()) : 0, start = Math.max(0, at - 40); const { body, history, joplin, ...rest } = note; return { ...rest, preview: body.slice(start, start + 180), characters: body.length, historyCount: history.length }; }
-function historical(note) { const { revision, title, body, tags, notebook, notebookId, updatedAt } = note; return { revision, title, body, tags, notebook, notebookId, updatedAt }; }
+function summary(note, query = '') { const at = query ? note.body.toLowerCase().indexOf(query.toLowerCase()) : 0, start = Math.max(0, at - 40); const { body, history, joplin, ...rest } = note; return { ...rest, todo: todoState(note), preview: body.slice(start, start + 180), characters: body.length, historyCount: history.length }; }
+function historical(note) { const { revision, title, body, tags, notebook, notebookId, updatedAt } = note; return { revision, title, body, tags, notebook, notebookId, updatedAt, todo: todoState(note) }; }
 function edited(note, changes) { const time=new Date().toISOString();return { ...note, ...changes, metadataEdited:true, updatedAt:time,userUpdatedAt:time, revision: note.revision + 1, history: [...note.history, historical(note)].slice(-20) }; }
 function folderPath(records, id) { if (!id) return 'Imported'; const r = records[id]; return r.props.parent_id ? folderPath(records, r.props.parent_id) + ' / ' + r.title : r.title; }
 function iso(value) { return value || '1970-01-01T00:00:00.000Z'; }
@@ -51,9 +52,16 @@ async function commitWithResources(store, workspace, s, resources) {
 }
 
 export async function handle({ action, input = {}, store, workspace }) {
+  if(action==='draft-recovery-scope')return exclusive(async()=>{
+    const key='notes-draft-recovery-scope-v1';let scope=await store.get(key,null);
+    if(scope===null){scope=randomUUID();await store.set(key,scope);}
+    if(typeof scope!=='string'||!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(scope))throw new Error('Stored recovery identity is invalid; it was not replaced.');
+    return{scope};
+  });
   if (action === 'list') {
     const s = await state(store), search = text(input.search ?? '', 'Search', 500).trim().toLowerCase(), tokens = search.split(/\s+/).filter(Boolean), notes = Object.values(s.notes);
-    const visible = notes.filter(note => Boolean(note.deletedAt) === Boolean(input.trash) && (!input.notebook || note.notebook === input.notebook) && (!input.notebookId || note.notebookId === input.notebookId) && (!input.tag || note.tags.includes(input.tag)) && tokens.every(token => `${note.title}\n${note.body}\n${note.tags.join(' ')}\n${note.notebook}`.toLowerCase().includes(token))).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+    todoMatches({}, input.todoFilter);
+    const visible = notes.filter(note => todoMatches(note, input.todoFilter) && Boolean(note.deletedAt) === Boolean(input.trash) && (!input.notebook || note.notebook === input.notebook) && (!input.notebookId || note.notebookId === input.notebookId) && (!input.tag || note.tags.includes(input.tag)) && tokens.every(token => `${note.title}\n${note.body}\n${note.tags.join(' ')}\n${note.notebook}`.toLowerCase().includes(token))).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     return { notes: visible.map(note => summary(note, tokens[0])), tags: [...new Set(notes.filter(note => !note.deletedAt).flatMap(note => note.tags))].sort(), notebooks: [...new Set(notes.filter(note => !note.deletedAt).map(note => note.notebook))].sort(), total: visible.length };
   }
   if(action==='notebook-list'){const s=await state(store),rows=organizationList(s);return{...rows,notebooks:trashOrganizationRows(s,rows.notebooks)};}
@@ -63,6 +71,21 @@ export async function handle({ action, input = {}, store, workspace }) {
   }
   if(['notebook-create','notebook-rename','notebook-move'].includes(action))return exclusive(async()=>{const s=await state(store),title=action==='notebook-move'?undefined:label(input.title,'Notebook title',200).trim();if(action!=='notebook-move'&&!title)throw new Error('Give the notebook a title.');const result=changeNotebook(s,{...input,title,action},new Date().toISOString());await store.set(stateKey,s);return result;});
   if(action==='note-move')return exclusive(async()=>{const s=await state(store),note=get(s,input.id);checkRevision(note,input.revision);checkOrganizationRevision(s,input.organizationRevision);if(note.deletedAt)throw new Error('Restore this note before moving it.');if(note.joplin?.props.share_id||(note.notebookId&&organizationList(s).notebooks.find(row=>row.id===note.notebookId)?.editable===false))throw new Error('Shared or trashed notebook organization is outside this local subset.');if(typeof input.notebookId!=='string')throw new Error('Choose a valid notebook ID.');const selected=bindNotebook(s,note,{notebookId:input.notebookId}),now=new Date().toISOString(),updated={...selected,revision:note.revision+1,updatedAt:now,userUpdatedAt:note.userUpdatedAt??note.updatedAt,history:[...note.history,historical(note)].slice(-20)};if(updated.joplin)updated.joplin={...updated.joplin,props:{...updated.joplin.props,parent_id:updated.notebookId,updated_time:now,is_conflict:'0',conflict_original_id:'',deleted_time:'0'}};s.notes[note.id]=updated;s.organization.revision++;await store.set(stateKey,s);return{note:updated,...organizationList(s)};});
+  if (['todo-type', 'todo-completed', 'todo-due'].includes(action)) {
+    const request = Object.freeze({ action, id: input.id, revision: input.revision, type: input.type, completed: input.completed, due: input.due });
+    return exclusive(async () => {
+      const s = await state(store), note = get(s, request.id);
+      checkRevision(note, request.revision);
+      if (note.deletedAt) throw new Error('Restore this note before changing its to-do state.');
+      if (note.joplin?.props.share_id || Number(note.joplin?.props.is_locked ?? 0)) throw new Error('Shared or locked to-do editing is outside this local subset.');
+      const now = Date.now(), changed = changeTodo(note, request, now);
+      if (changed === note) return { note, changed: false };
+      const updated = edited(note, { todo: changed.todo });
+      s.notes[note.id] = updated;
+      await store.set(stateKey, s);
+      return { note: updated, changed: true };
+    });
+  }
   if (action === 'get') return get(await state(store), input.id);
   if (action === 'link-target') {
     if (!isJoplinId(input.id)) throw new Error('Internal links need an exact 32-hex Joplin ID.');
@@ -77,19 +100,23 @@ export async function handle({ action, input = {}, store, workspace }) {
     if (s.records[input.id]) throw new Error('This internal item type is unsupported. Only local notes and attachments can be opened.');
     throw new Error('The linked note or attachment does not exist in this local collection.');
   }
-  if (action === 'save') return exclusive(async () => {
-    const s = await state(store), existing = input.id ? get(s, input.id) : null;
-    if (existing) { if (existing.deletedAt) throw new Error('Restore this note before editing.'); checkRevision(existing, input.revision); }
-    else if (input.revision !== undefined && input.revision !== 0) throw new Error('New notes start at revision zero.');
-    const inputTitle = text(input.title, 'Title', 300), title = existing?.title === inputTitle ? inputTitle : label(inputTitle, 'Title', 300).trim(); if (!title && !existing) throw new Error('Give the note a title.');
-    const inputNotebook = text(input.notebook ?? 'Notes', 'Notebook', 200), notebook = existing?.notebook === inputNotebook ? inputNotebook : label(inputNotebook, 'Notebook', 200).trim() || 'Notes';
-    const cleanTags = existing && JSON.stringify(input.tags) === JSON.stringify(existing.tags) ? existing.tags : tags(input.tags ?? []);
-    const changes = { title, body: text(input.body ?? '', 'Note', 200_000), notebook, tags: cleanTags }, now = new Date().toISOString();
-    const draft = existing ? edited(existing, changes) : { id: randomUUID(), ...changes, createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [] };
-    const selection={...input,notebook};if(existing&&input.notebook!==undefined&&input.notebookId===existing.notebookId&&input.notebook!==existing.notebook)delete selection.notebookId;
+  if (action === 'save') {
+    const request=Object.freeze({...input,tags:Array.isArray(input.tags)?Object.freeze([...input.tags]):input.tags});
+    if(request.newTodo!==undefined&&typeof request.newTodo!=='boolean')throw new Error('New to-do creation must use an explicit Boolean flag.');
+    return exclusive(async () => {
+    const s = await state(store), existing = request.id ? get(s, request.id) : null;
+    if (existing) { if(request.newTodo!==undefined)throw new Error('New to-do creation is only valid for an unsaved note. Use the saved-note controls to change its type.'); if (existing.deletedAt) throw new Error('Restore this note before editing.'); checkRevision(existing, request.revision); }
+    else if (request.revision !== undefined && request.revision !== 0) throw new Error('New notes start at revision zero.');
+    const inputTitle = text(request.title, 'Title', 300), title = existing?.title === inputTitle ? inputTitle : label(inputTitle, 'Title', 300).trim(); if (!title && !existing) throw new Error('Give the note a title.');
+    const inputNotebook = text(request.notebook ?? 'Notes', 'Notebook', 200), notebook = existing?.notebook === inputNotebook ? inputNotebook : label(inputNotebook, 'Notebook', 200).trim() || 'Notes';
+    const cleanTags = existing && JSON.stringify(request.tags) === JSON.stringify(existing.tags) ? existing.tags : tags(request.tags ?? []);
+    const changes = { title, body: text(request.body ?? '', 'Note', 200_000), notebook, tags: cleanTags }, now = new Date().toISOString();
+    const draft = existing ? edited(existing, changes) : { id: randomUUID(), ...changes, createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [], metadataEdited: false, ...(request.newTodo ? {todo:{isTodo:true,due:0,completed:0}} : {}) };
+    const selection={...request,notebook};if(existing&&request.notebook!==undefined&&request.notebookId===existing.notebookId&&request.notebook!==existing.notebook)delete selection.notebookId;
     const note=bindNotebook(s,draft,selection);
     s.notes[note.id] = note; await store.set(stateKey, s); return note;
-  });
+    });
+  }
   if (action === 'delete' || action === 'restore') return exclusive(async () => {
     const s = await state(store), note = get(s, input.id); checkRevision(note, input.revision);
     const time=new Date().toISOString();if(action==='restore'){const result=restoreNoteFromTrash(s,note.id,time);await store.set(stateKey,result.state);return result.note;}const updated = { ...note, metadataEdited:true,userUpdatedAt:note.userUpdatedAt??note.joplin?.props.user_updated_time??note.updatedAt, deletedAt:time, updatedAt:time, revision: note.revision + 1 };
@@ -98,7 +125,7 @@ export async function handle({ action, input = {}, store, workspace }) {
   if (action === 'history-restore') return exclusive(async () => {
     const s = await state(store), note = get(s, input.id); checkRevision(note, input.revision); if (note.deletedAt) throw new Error('Restore this note before restoring a version.');
     const version = note.history.find(item => item.revision === input.historyRevision); if (!version) throw new Error('Historical version does not exist.');
-    const draft=edited(note,{title:version.title,body:version.body,tags:version.tags,notebook:version.notebook});const updated=bindNotebook(s,draft,{notebook:version.notebook,...(version.notebookId!==undefined?{notebookId:version.notebookId}:{})});s.notes[note.id]=updated;await store.set(stateKey,s);return updated;
+    const draft=edited(note,{title:version.title,body:version.body,tags:version.tags,notebook:version.notebook,...(version.todo?{todo:todoState({todo:version.todo})}:{})});const updated=bindNotebook(s,draft,{notebook:version.notebook,...(version.notebookId!==undefined?{notebookId:version.notebookId}:{})});s.notes[note.id]=updated;await store.set(stateKey,s);return updated;
   });
   if (action === 'export') {
     const s = await state(store);
@@ -115,7 +142,7 @@ export async function handle({ action, input = {}, store, workspace }) {
       if (!source || typeof source !== 'object') throw new Error('Each imported note must be an object.');
       if (source.joplin || /:\/[a-f0-9]{32}/i.test(source.body ?? '')) throw new Error('JSON cannot preserve Joplin metadata or resource links. Import a complete JEX instead.');
       const title = label(source.title, 'Title', 300).trim(); if (!title) throw new Error('Imported notes need titles.');
-      return { id: randomUUID(), title, body: text(source.body ?? '', 'Body', 200_000), notebook: label(source.notebook ?? 'Imported', 'Notebook', 200).trim() || 'Imported', tags: tags(source.tags ?? []), createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [] };
+      return { id: randomUUID(), title, body: text(source.body ?? '', 'Body', 200_000), notebook: label(source.notebook ?? 'Imported', 'Notebook', 200).trim() || 'Imported', tags: tags(source.tags ?? []), createdAt: now, updatedAt: now, revision: 1, deletedAt: null, history: [], ...(source.todo !== undefined ? {todo: todoState(source)} : {}) };
     });
     for (const note of notes) s.notes[note.id] = note; ensureOrganization(s);await store.set(stateKey, s); return { imported: notes.length, ids: notes.map(note => note.id) };
   });
@@ -165,6 +192,10 @@ export async function handle({ action, input = {}, store, workspace }) {
       const r = note.joplin ? structuredClone(note.joplin) : newRecord(1, id, note.title, note.createdAt); delete r.originalNotebook; r.title = note.title; r.body = note.body; r.props.parent_id = parentId;
       if (!note.joplin || note.metadataEdited) { r.props.updated_time = note.updatedAt; r.props.user_updated_time = note.userUpdatedAt??note.updatedAt; r.props.deleted_time = String(note.deletedAt ? Date.parse(note.deletedAt) : 0); }
       if (!note.joplin) Object.assign(r.props, { is_todo: '0', is_conflict: '0', todo_due: '0', todo_completed: '0', latitude: '0.00000000', longitude: '0.00000000', altitude: '0.0000', author: '', source_url: '', markup_language: '1' });
+      if (note.todo !== undefined) {
+        const value = todoState(note);
+        Object.assign(r.props, { is_todo: value.isTodo ? '1' : '0', todo_due: String(value.due), todo_completed: String(value.completed) });
+      }
       if (records.has(id)) throw new Error('Note identity collides with another item.'); records.set(id, r);
       for (const tagTitle of note.tags) {
         const originalLinks = Object.values(s.records).filter(link => link.type === 6 && link.props.note_id === id && s.records[link.props.tag_id]?.title === tagTitle);

@@ -1,0 +1,7 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+const metadata=JSON.parse(await fs.readFile(path.join(import.meta.dirname,'.local/private-control.json')));
+assert.equal(metadata.hostURL,'http://127.0.0.1:58473');assert.equal(metadata.pid,58776);
+const response=await fetch(metadata.url,{method:'POST',headers:{'x-owned-control':metadata.token},signal:AbortSignal.timeout(10000)});
+assert.equal(response.status,200);console.log(JSON.stringify({ownedReviewStopRequested:true,status:response.status}));

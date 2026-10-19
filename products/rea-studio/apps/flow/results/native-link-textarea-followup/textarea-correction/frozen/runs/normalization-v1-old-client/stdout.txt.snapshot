@@ -1,0 +1,395 @@
+✖ unchanged saved actual-root-seed deploys its exact raw source despite native textarea normalization (5.3201ms)
+✖ unchanged saved CRLF deploys its exact raw source despite native textarea normalization (1.537ms)
+✖ unchanged saved bareCR deploys its exact raw source despite native textarea normalization (1.0675ms)
+✔ unchanged saved LF deploys its exact raw source despite native textarea normalization (1.5495ms)
+✔ U+2028, astral and combining Unicode are preserved without extra normalization in Deploy and Export (1.5385ms)
+✖ unchanged loaded actual-root CRLF source exports exact raw decoded text (1.6298ms)
+✖ new imported bareCR decoded file text exports and saves its backing source unchanged (1.2909ms)
+✖ renaming and saving an otherwise unchanged loaded CRLF draft does not rewrite saved raw text (1.4485ms)
+✔ genuine content, whitespace and non-normalization Unicode differences still refuse deployment without an API request (1.206ms)
+✖ held Export validation cannot export an unvalidated newer programmatic draft or stale raw backing (0.9323ms)
+✖ held committed Save retains newer programmatic input, advances its saved baseline and permits a later explicit Save/Deploy (1.1006ms)
+✔ disposed native view cannot export a held validation result or revive raw text (0.7435ms)
+✖ held file text cannot replace a newer programmatic native document (1.0888ms)
+✔ held imported file completion after disposal stays scrubbed (0.9729ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 5
+ℹ fail 9
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1091.2787
+
+✖ failing tests:
+
+test at work\flow-native-textarea-normalization-fix-next\candidate\products\rea-studio\apps\flow\normalization-ui.test.mjs:6:129
+✖ unchanged saved actual-root-seed deploys its exact raw source despite native textarea normalization (5.3201ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:6:414
+      at async owned (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:4:77)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at work\flow-native-textarea-normalization-fix-next\candidate\products\rea-studio\apps\flow\normalization-ui.test.mjs:6:129
+✖ unchanged saved CRLF deploys its exact raw source despite native textarea normalization (1.537ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:6:414
+      at async owned (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:4:77)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at work\flow-native-textarea-normalization-fix-next\candidate\products\rea-studio\apps\flow\normalization-ui.test.mjs:6:129
+✖ unchanged saved bareCR deploys its exact raw source despite native textarea normalization (1.0675ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:6:414
+      at async owned (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:4:77)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at work\flow-native-textarea-normalization-fix-next\candidate\products\rea-studio\apps\flow\normalization-ui.test.mjs:8:1
+✖ unchanged loaded actual-root CRLF source exports exact raw decoded text (1.6298ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  ... Skipped lines
+  
+  + '\n' +
+  - '\r\n' +
+      '{\n' +
+      '   "rev": "opaque publisher revision",\n' +
+      '   "vendor": {\n' +
+      '      "untouched": [\n' +
+      '         "Flow static-link fixture",\n' +
+  ...
+      '   ]\n' +
+  +   '}\n'
+  -   '}\r\n'
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:8:253
+      at async owned (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:4:77)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '\n{\n   "rev": "opaque publisher revision",\n   "vendor": {\n      "untouched": [\n         "Flow static-link fixture",\n         17\n      ],\n      "nativeMetadata": true\n   },\n   "flows": [\n      {\n         "id": "tab",\n         "type": "tab",\n         "label": "Owned static links"\n      },\n      {\n         "id": "start",\n         "type": "inject",\n         "z": "tab",\n         "name": "Owned manual Inject",\n         "props": [],\n         "x": 120,\n         "y": 120,\n         "wires": [\n            [\n               "out"\n            ]\n         ]\n      },\n      {\n         "id": "out",\n         "type": "link out",\n         "z": "tab",\n         "name": "Static Out",\n         "links": [],\n         "x": 340,\n         "y": 120,\n         "wires": [\n            [\n               "physical-debug"\n            ]\n         ],\n         "opaque": {\n            "originalOption": [\n               "retained",\n               true\n            ]\n         }\n      },\n      {\n         "id": "in",\n         "type": "link in",\n         "z": "tab",\n         "name": "Static In",\n         "links": [\n            "out"\n         ],\n         "x": 540,\n         "y": 120,\n         "wires": [\n            [\n               "virtual-debug"\n            ]\n         ]\n      },\n      {\n         "id": "virtual-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Virtual Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 120,\n         "wires": []\n      },\n      {\n         "id": "physical-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Overwritten physical Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 280,\n         "wires": []\n      }\n   ]\n}\n',
+    expected: '\r\n{\n   "rev": "opaque publisher revision",\n   "vendor": {\n      "untouched": [\n         "Flow static-link fixture",\n         17\n      ],\n      "nativeMetadata": true\n   },\n   "flows": [\n      {\n         "id": "tab",\n         "type": "tab",\n         "label": "Owned static links"\n      },\n      {\n         "id": "start",\n         "type": "inject",\n         "z": "tab",\n         "name": "Owned manual Inject",\n         "props": [],\n         "x": 120,\n         "y": 120,\n         "wires": [\n            [\n               "out"\n            ]\n         ]\n      },\n      {\n         "id": "out",\n         "type": "link out",\n         "z": "tab",\n         "name": "Static Out",\n         "links": [],\n         "x": 340,\n         "y": 120,\n         "wires": [\n            [\n               "physical-debug"\n            ]\n         ],\n         "opaque": {\n            "originalOption": [\n               "retained",\n               true\n            ]\n         }\n      },\n      {\n         "id": "in",\n         "type": "link in",\n         "z": "tab",\n         "name": "Static In",\n         "links": [\n            "out"\n         ],\n         "x": 540,\n         "y": 120,\n         "wires": [\n            [\n               "virtual-debug"\n            ]\n         ]\n      },\n      {\n         "id": "virtual-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Virtual Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 120,\n         "wires": []\n      },\n      {\n         "id": "physical-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Overwritten physical Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 280,\n         "wires": []\n      }\n   ]\n}\r\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at work\flow-native-textarea-normalization-fix-next\candidate\products\rea-studio\apps\flow\normalization-ui.test.mjs:9:1
+✖ new imported bareCR decoded file text exports and saves its backing source unchanged (1.2909ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '{\n' +
+  +   '   "rev": "opaque revision",\n' +
+  +   '   "vendor": {\n' +
+  +   '      "preserved": [\n' +
+  +   '         "yes",\n' +
+  +   '         7\n' +
+  +   '      ]\n' +
+  +   '   },\n' +
+  +   '   "flows": [\n' +
+  +   '      {\n' +
+  +   '         "id": "tab",\n' +
+  +   '         "type": "tab"\n' +
+  +   '      },\n' +
+  +   '      {\n' +
+  +   '         "id": "start",\n' +
+  +   '         "type": "inject",\n' +
+  +   '         "z": "tab",\n' +
+  +   '         "props": [],\n' +
+  +   '         "wires": [\n' +
+  +   '            [\n' +
+  +   '               "out"\n' +
+  +   '            ]\n' +
+  +   '         ]\n' +
+  +   '      },\n' +
+  +   '      {\n' +
+  +   '         "id": "out",\n' +
+  +   '         "type": "link out",\n' +
+  +   '         "z": "tab",\n' +
+  +   '         "links": [],\n' +
+  +   '         "wires": [\n' +
+  +   '            [\n' +
+  +   '               "ignored"\n' +
+  +   '            ]\n' +
+  +   '         ],\n' +
+  +   '         "x": 200,\n' +
+  +   '         "y": 100,\n' +
+  +   '         "custom": "retained"\n' +
+  +   '      },\n' +
+  +   '      {\n' +
+  +   '         "id": "in",\n' +
+  +   '         "type": "link in",\n' +
+  +   '         "z": "tab",\n' +
+  +   '         "links": [\n' +
+  +   '            "out"\n' +
+  +   '         ],\n' +
+  +   '         "wires": [\n' +
+  +   '            [\n' +
+  +   '               "debug"\n' +
+  +   '            ]\n' +
+  +   '         ],\n' +
+  +   '         "x": 400,\n' +
+  +   '         "y": 100\n' +
+  +   '      },\n' +
+  +   '      {\n' +
+  +   '         "id": "debug",\n' +
+  +   '         "type": "debug",\n' +
+  +   '         "z": "tab",\n' +
+  +   '         "complete": "true",\n' +
+  +   '         "active": true,\n' +
+  +   '         "tosidebar": true,\n' +
+  +   '         "wires": [],\n' +
+  +   '         "x": 600,\n' +
+  +   '         "y": 100\n' +
+  +   '      },\n' +
+  +   '      {\n' +
+  +   '         "id": "ignored",\n' +
+  +   '         "type": "debug",\n' +
+  +   '         "z": "tab",\n' +
+  +   '         "complete": "true",\n' +
+  +   '         "active": true,\n' +
+  +   '         "tosidebar": true,\n' +
+  +   '         "wires": [],\n' +
+  +   '         "x": 600,\n' +
+  +   '         "y": 200\n' +
+  +   '      }\n' +
+  +   '   ]\n' +
+  +   '}\n'
+  - '{\r   "rev": "opaque revision",\r   "vendor": {\r      "preserved": [\r         "yes",\r         7\r      ]\r   },\r   "flows": [\r      {\r         "id": "tab",\r         "type": "tab"\r      },\r      {\r         "id": "start",\r         "type": "inject",\r         "z": "tab",\r         "props": [],\r         "wires": [\r            [\r               "out"\r            ]\r         ]\r      },\r      {\r         "id": "out",\r         "type": "link out",\r         "z": "tab",\r         "links": [],\r         "wires": [\r            [\r               "ignored"\r            ]\r         ],\r         "x": 200,\r         "y": 100,\r         "custom": "retained"\r      },\r      {\r         "id": "in",\r         "type": "link in",\r         "z": "tab",\r         "links": [\r            "out"\r         ],\r         "wires": [\r            [\r               "debug"\r            ]\r         ],\r         "x": 400,\r         "y": 100\r      },\r      {\r         "id": "debug",\r         "type": "debug",\r         "z": "tab",\r         "complete": "true",\r         "active": true,\r         "tosidebar": true,\r         "wires": [],\r         "x": 600,\r         "y": 100\r      },\r      {\r         "id": "ignored",\r         "type": "debug",\r         "z": "tab",\r         "complete": "true",\r         "active": true,\r         "tosidebar": true,\r         "wires": [],\r         "x": 600,\r         "y": 200\r      }\r   ]\r}\r'
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:9:462
+      at async owned (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:4:77)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '{\n   "rev": "opaque revision",\n   "vendor": {\n      "preserved": [\n         "yes",\n         7\n      ]\n   },\n   "flows": [\n      {\n         "id": "tab",\n         "type": "tab"\n      },\n      {\n         "id": "start",\n         "type": "inject",\n         "z": "tab",\n         "props": [],\n         "wires": [\n            [\n               "out"\n            ]\n         ]\n      },\n      {\n         "id": "out",\n         "type": "link out",\n         "z": "tab",\n         "links": [],\n         "wires": [\n            [\n               "ignored"\n            ]\n         ],\n         "x": 200,\n         "y": 100,\n         "custom": "retained"\n      },\n      {\n         "id": "in",\n         "type": "link in",\n         "z": "tab",\n         "links": [\n            "out"\n         ],\n         "wires": [\n            [\n               "debug"\n            ]\n         ],\n         "x": 400,\n         "y": 100\n      },\n      {\n         "id": "debug",\n         "type": "debug",\n         "z": "tab",\n         "complete": "true",\n         "active": true,\n         "tosidebar": true,\n         "wires": [],\n         "x": 600,\n         "y": 100\n      },\n      {\n         "id": "ignored",\n         "type": "debug",\n         "z": "tab",\n         "complete": "true",\n         "active": true,\n         "tosidebar": true,\n         "wires": [],\n         "x": 600,\n         "y": 200\n      }\n   ]\n}\n',
+    expected: '{\r   "rev": "opaque revision",\r   "vendor": {\r      "preserved": [\r         "yes",\r         7\r      ]\r   },\r   "flows": [\r      {\r         "id": "tab",\r         "type": "tab"\r      },\r      {\r         "id": "start",\r         "type": "inject",\r         "z": "tab",\r         "props": [],\r         "wires": [\r            [\r               "out"\r            ]\r         ]\r      },\r      {\r         "id": "out",\r         "type": "link out",\r         "z": "tab",\r         "links": [],\r         "wires": [\r            [\r               "ignored"\r            ]\r         ],\r         "x": 200,\r         "y": 100,\r         "custom": "retained"\r      },\r      {\r         "id": "in",\r         "type": "link in",\r         "z": "tab",\r         "links": [\r            "out"\r         ],\r         "wires": [\r            [\r               "debug"\r            ]\r         ],\r         "x": 400,\r         "y": 100\r      },\r      {\r         "id": "debug",\r         "type": "debug",\r         "z": "tab",\r         "complete": "true",\r         "active": true,\r         "tosidebar": true,\r         "wires": [],\r         "x": 600,\r         "y": 100\r      },\r      {\r         "id": "ignored",\r         "type": "debug",\r         "z": "tab",\r         "complete": "true",\r         "active": true,\r         "tosidebar": true,\r         "wires": [],\r         "x": 600,\r         "y": 200\r      }\r   ]\r}\r',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at work\flow-native-textarea-normalization-fix-next\candidate\products\rea-studio\apps\flow\normalization-ui.test.mjs:10:1
+✖ renaming and saving an otherwise unchanged loaded CRLF draft does not rewrite saved raw text (1.4485ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  ... Skipped lines
+  
+  + '\n' +
+  - '\r\n' +
+      '{\n' +
+      '   "rev": "opaque publisher revision",\n' +
+      '   "vendor": {\n' +
+      '      "untouched": [\n' +
+      '         "Flow static-link fixture",\n' +
+  ...
+      '   ]\n' +
+  +   '}\n'
+  -   '}\r\n'
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:10:333
+      at async owned (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:4:77)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '\n{\n   "rev": "opaque publisher revision",\n   "vendor": {\n      "untouched": [\n         "Flow static-link fixture",\n         17\n      ],\n      "nativeMetadata": true\n   },\n   "flows": [\n      {\n         "id": "tab",\n         "type": "tab",\n         "label": "Owned static links"\n      },\n      {\n         "id": "start",\n         "type": "inject",\n         "z": "tab",\n         "name": "Owned manual Inject",\n         "props": [],\n         "x": 120,\n         "y": 120,\n         "wires": [\n            [\n               "out"\n            ]\n         ]\n      },\n      {\n         "id": "out",\n         "type": "link out",\n         "z": "tab",\n         "name": "Static Out",\n         "links": [],\n         "x": 340,\n         "y": 120,\n         "wires": [\n            [\n               "physical-debug"\n            ]\n         ],\n         "opaque": {\n            "originalOption": [\n               "retained",\n               true\n            ]\n         }\n      },\n      {\n         "id": "in",\n         "type": "link in",\n         "z": "tab",\n         "name": "Static In",\n         "links": [\n            "out"\n         ],\n         "x": 540,\n         "y": 120,\n         "wires": [\n            [\n               "virtual-debug"\n            ]\n         ]\n      },\n      {\n         "id": "virtual-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Virtual Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 120,\n         "wires": []\n      },\n      {\n         "id": "physical-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Overwritten physical Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 280,\n         "wires": []\n      }\n   ]\n}\n',
+    expected: '\r\n{\n   "rev": "opaque publisher revision",\n   "vendor": {\n      "untouched": [\n         "Flow static-link fixture",\n         17\n      ],\n      "nativeMetadata": true\n   },\n   "flows": [\n      {\n         "id": "tab",\n         "type": "tab",\n         "label": "Owned static links"\n      },\n      {\n         "id": "start",\n         "type": "inject",\n         "z": "tab",\n         "name": "Owned manual Inject",\n         "props": [],\n         "x": 120,\n         "y": 120,\n         "wires": [\n            [\n               "out"\n            ]\n         ]\n      },\n      {\n         "id": "out",\n         "type": "link out",\n         "z": "tab",\n         "name": "Static Out",\n         "links": [],\n         "x": 340,\n         "y": 120,\n         "wires": [\n            [\n               "physical-debug"\n            ]\n         ],\n         "opaque": {\n            "originalOption": [\n               "retained",\n               true\n            ]\n         }\n      },\n      {\n         "id": "in",\n         "type": "link in",\n         "z": "tab",\n         "name": "Static In",\n         "links": [\n            "out"\n         ],\n         "x": 540,\n         "y": 120,\n         "wires": [\n            [\n               "virtual-debug"\n            ]\n         ]\n      },\n      {\n         "id": "virtual-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Virtual Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 120,\n         "wires": []\n      },\n      {\n         "id": "physical-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Overwritten physical Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 280,\n         "wires": []\n      }\n   ]\n}\r\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at work\flow-native-textarea-normalization-fix-next\candidate\products\rea-studio\apps\flow\normalization-ui.test.mjs:12:1
+✖ held Export validation cannot export an unvalidated newer programmatic draft or stale raw backing (0.9323ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:12:588
+      at async owned (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:4:77)
+      at async TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:12:134)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at work\flow-native-textarea-normalization-fix-next\candidate\products\rea-studio\apps\flow\normalization-ui.test.mjs:13:1
+✖ held committed Save retains newer programmatic input, advances its saved baseline and permits a later explicit Save/Deploy (1.1006ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  ... Skipped lines
+  
+  + '\n' +
+  - '\r\n' +
+      '{\n' +
+      '   "rev": "opaque publisher revision",\n' +
+      '   "vendor": {\n' +
+      '      "untouched": [\n' +
+      '         "Flow static-link fixture",\n' +
+  ...
+      '   ]\n' +
+  +   '}\n'
+  -   '}\r\n'
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:13:367
+      at async owned (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:4:77)
+      at async TestContext.<anonymous> (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:13:159)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '\n{\n   "rev": "opaque publisher revision",\n   "vendor": {\n      "untouched": [\n         "Flow static-link fixture",\n         17\n      ],\n      "nativeMetadata": true\n   },\n   "flows": [\n      {\n         "id": "tab",\n         "type": "tab",\n         "label": "Owned static links"\n      },\n      {\n         "id": "start",\n         "type": "inject",\n         "z": "tab",\n         "name": "Owned manual Inject",\n         "props": [],\n         "x": 120,\n         "y": 120,\n         "wires": [\n            [\n               "out"\n            ]\n         ]\n      },\n      {\n         "id": "out",\n         "type": "link out",\n         "z": "tab",\n         "name": "Static Out",\n         "links": [],\n         "x": 340,\n         "y": 120,\n         "wires": [\n            [\n               "physical-debug"\n            ]\n         ],\n         "opaque": {\n            "originalOption": [\n               "retained",\n               true\n            ]\n         }\n      },\n      {\n         "id": "in",\n         "type": "link in",\n         "z": "tab",\n         "name": "Static In",\n         "links": [\n            "out"\n         ],\n         "x": 540,\n         "y": 120,\n         "wires": [\n            [\n               "virtual-debug"\n            ]\n         ]\n      },\n      {\n         "id": "virtual-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Virtual Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 120,\n         "wires": []\n      },\n      {\n         "id": "physical-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Overwritten physical Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 280,\n         "wires": []\n      }\n   ]\n}\n',
+    expected: '\r\n{\n   "rev": "opaque publisher revision",\n   "vendor": {\n      "untouched": [\n         "Flow static-link fixture",\n         17\n      ],\n      "nativeMetadata": true\n   },\n   "flows": [\n      {\n         "id": "tab",\n         "type": "tab",\n         "label": "Owned static links"\n      },\n      {\n         "id": "start",\n         "type": "inject",\n         "z": "tab",\n         "name": "Owned manual Inject",\n         "props": [],\n         "x": 120,\n         "y": 120,\n         "wires": [\n            [\n               "out"\n            ]\n         ]\n      },\n      {\n         "id": "out",\n         "type": "link out",\n         "z": "tab",\n         "name": "Static Out",\n         "links": [],\n         "x": 340,\n         "y": 120,\n         "wires": [\n            [\n               "physical-debug"\n            ]\n         ],\n         "opaque": {\n            "originalOption": [\n               "retained",\n               true\n            ]\n         }\n      },\n      {\n         "id": "in",\n         "type": "link in",\n         "z": "tab",\n         "name": "Static In",\n         "links": [\n            "out"\n         ],\n         "x": 540,\n         "y": 120,\n         "wires": [\n            [\n               "virtual-debug"\n            ]\n         ]\n      },\n      {\n         "id": "virtual-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Virtual Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 120,\n         "wires": []\n      },\n      {\n         "id": "physical-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Overwritten physical Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 280,\n         "wires": []\n      }\n   ]\n}\r\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at work\flow-native-textarea-normalization-fix-next\candidate\products\rea-studio\apps\flow\normalization-ui.test.mjs:15:1
+✖ held file text cannot replace a newer programmatic native document (1.0888ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + '\n' +
+  +   '{\n' +
+  +   '   "rev": "opaque publisher revision",\n' +
+  +   '   "vendor": {\n' +
+  +   '      "untouched": [\n' +
+  +   '         "Flow static-link fixture",\n' +
+  +   '         17\n' +
+  +   '      ],\n' +
+  +   '      "nativeMetadata": true\n' +
+  +   '   },\n' +
+  +   '   "flows": [\n' +
+  +   '      {\n' +
+  +   '         "id": "tab",\n' +
+  +   '         "type": "tab",\n' +
+  +   '         "label": "Owned static links"\n' +
+  +   '      },\n' +
+  +   '      {\n' +
+  +   '         "id": "start",\n' +
+  +   '         "type": "inject",\n' +
+  +   '         "z": "tab",\n' +
+  +   '         "name": "Owned manual Inject",\n' +
+  +   '         "props": [],\n' +
+  +   '         "x": 120,\n' +
+  +   '         "y": 120,\n' +
+  +   '         "wires": [\n' +
+  +   '            [\n' +
+  +   '               "out"\n' +
+  +   '            ]\n' +
+  +   '         ]\n' +
+  +   '      },\n' +
+  +   '      {\n' +
+  +   '         "id": "out",\n' +
+  +   '         "type": "link out",\n' +
+  +   '         "z": "tab",\n' +
+  +   '         "name": "Static Out",\n' +
+  +   '         "links": [],\n' +
+  +   '         "x": 340,\n' +
+  +   '         "y": 120,\n' +
+  +   '         "wires": [\n' +
+  +   '            [\n' +
+  +   '               "physical-debug"\n' +
+  +   '            ]\n' +
+  +   '         ],\n' +
+  +   '         "opaque": {\n' +
+  +   '            "originalOption": [\n' +
+  +   '               "retained",\n' +
+  +   '               true\n' +
+  +   '            ]\n' +
+  +   '         }\n' +
+  +   '      },\n' +
+  +   '      {\n' +
+  +   '         "id": "in",\n' +
+  +   '         "type": "link in",\n' +
+  +   '         "z": "tab",\n' +
+  +   '         "name": "Static In",\n' +
+  +   '         "links": [\n' +
+  +   '            "out"\n' +
+  +   '         ],\n' +
+  +   '         "x": 540,\n' +
+  +   '         "y": 120,\n' +
+  +   '         "wires": [\n' +
+  +   '            [\n' +
+  +   '               "virtual-debug"\n' +
+  +   '            ]\n' +
+  +   '         ]\n' +
+  +   '      },\n' +
+  +   '      {\n' +
+  +   '         "id": "virtual-debug",\n' +
+  +   '         "type": "debug",\n' +
+  +   '         "z": "tab",\n' +
+  +   '         "name": "Virtual Debug",\n' +
+  +   '         "active": true,\n' +
+  +   '         "tosidebar": true,\n' +
+  +   '         "complete": "true",\n' +
+  +   '         "x": 780,\n' +
+  +   '         "y": 120,\n' +
+  +   '         "wires": []\n' +
+  +   '      },\n' +
+  +   '      {\n' +
+  +   '         "id": "physical-debug",\n' +
+  +   '         "type": "debug",\n' +
+  +   '         "z": "tab",\n' +
+  +   '         "name": "Overwritten physical Debug",\n' +
+  +   '         "active": true,\n' +
+  +   '         "tosidebar": true,\n' +
+  +   '         "complete": "true",\n' +
+  +   '         "x": 780,\n' +
+  +   '         "y": 280,\n' +
+  +   '         "wires": []\n' +
+  +   '      }\n' +
+  +   '   ]\n' +
+  +   '}\n'
+  - '{"rev":"opaque revision","vendor":{"preserved":["yes",7]},"flows":[{"id":"tab","type":"tab"},{"id":"start","type":"inject","z":"tab","props":[],"wires":[["out"]]},{"id":"out","type":"link out","z":"tab","links":[],"wires":[["ignored"]],"x":200,"y":100,"custom":"retained"},{"id":"in","type":"link in","z":"tab","links":["out"],"wires":[["debug"]],"x":400,"y":100},{"id":"debug","type":"debug","z":"tab","complete":"true","active":true,"tosidebar":true,"wires":[],"x":600,"y":100},{"id":"ignored","type":"debug","z":"tab","complete":"true","active":true,"tosidebar":true,"wires":[],"x":600,"y":200}],"newer":"keep import draft"}'
+  
+      at file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:15:658
+      at async owned (file:///C:/Users/evanh/Documents/Codex/2026-10-12/go/work/flow-native-textarea-normalization-fix-next/candidate/products/rea-studio/apps/flow/normalization-ui.test.mjs:4:77)
+      at async Test.run (node:internal/test_runner/test:1313:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:897:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '\n{\n   "rev": "opaque publisher revision",\n   "vendor": {\n      "untouched": [\n         "Flow static-link fixture",\n         17\n      ],\n      "nativeMetadata": true\n   },\n   "flows": [\n      {\n         "id": "tab",\n         "type": "tab",\n         "label": "Owned static links"\n      },\n      {\n         "id": "start",\n         "type": "inject",\n         "z": "tab",\n         "name": "Owned manual Inject",\n         "props": [],\n         "x": 120,\n         "y": 120,\n         "wires": [\n            [\n               "out"\n            ]\n         ]\n      },\n      {\n         "id": "out",\n         "type": "link out",\n         "z": "tab",\n         "name": "Static Out",\n         "links": [],\n         "x": 340,\n         "y": 120,\n         "wires": [\n            [\n               "physical-debug"\n            ]\n         ],\n         "opaque": {\n            "originalOption": [\n               "retained",\n               true\n            ]\n         }\n      },\n      {\n         "id": "in",\n         "type": "link in",\n         "z": "tab",\n         "name": "Static In",\n         "links": [\n            "out"\n         ],\n         "x": 540,\n         "y": 120,\n         "wires": [\n            [\n               "virtual-debug"\n            ]\n         ]\n      },\n      {\n         "id": "virtual-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Virtual Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 120,\n         "wires": []\n      },\n      {\n         "id": "physical-debug",\n         "type": "debug",\n         "z": "tab",\n         "name": "Overwritten physical Debug",\n         "active": true,\n         "tosidebar": true,\n         "complete": "true",\n         "x": 780,\n         "y": 280,\n         "wires": []\n      }\n   ]\n}\n',
+    expected: '{"rev":"opaque revision","vendor":{"preserved":["yes",7]},"flows":[{"id":"tab","type":"tab"},{"id":"start","type":"inject","z":"tab","props":[],"wires":[["out"]]},{"id":"out","type":"link out","z":"tab","links":[],"wires":[["ignored"]],"x":200,"y":100,"custom":"retained"},{"id":"in","type":"link in","z":"tab","links":["out"],"wires":[["debug"]],"x":400,"y":100},{"id":"debug","type":"debug","z":"tab","complete":"true","active":true,"tosidebar":true,"wires":[],"x":600,"y":100},{"id":"ignored","type":"debug","z":"tab","complete":"true","active":true,"tosidebar":true,"wires":[],"x":600,"y":200}],"newer":"keep import draft"}',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

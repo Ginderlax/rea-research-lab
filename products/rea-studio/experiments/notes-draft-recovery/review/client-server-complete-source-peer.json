@@ -1,0 +1,61 @@
+{
+  "schema": "rea-independent-draft-recovery-client-server-source-peer/v1",
+  "atUtc": "2026-10-18T22:45:13.703119+00:00",
+  "status": "source-approved-for-reviewed-hosted-checks-no-runtime-acceptance",
+  "baselineCommit": "698d2e301765d1b878fb251b3d59dadb5a3c9bac",
+  "reviewedSources": [
+    {
+      "path": "work/notes-draft-recovery-20261018-next/candidate/products/rea-studio/apps/notes/client.mjs",
+      "bytes": 39629,
+      "sha256": "7591daddfc64657b0bdb93f6fea4aa16858757f700a3a6adab5d704772deea85",
+      "baselineBytes": 29531,
+      "baselineSHA256": "d6f301dcc803c4bfd12a1c03eb71896710d1b42053fa10ee13d25e76d6930daa",
+      "unchangedRawLinesByteIdentical": 160,
+      "changedRegions": 14
+    },
+    {
+      "path": "work/notes-draft-recovery-20261018-next/candidate/products/rea-studio/apps/notes/server.mjs",
+      "bytes": 25742,
+      "sha256": "4166bfea21ebf4c237aad41c3d5ace51eb21037db599b91a29217d52dde01569",
+      "baselineBytes": 25329,
+      "baselineSHA256": "60e49793486ca0c8867004ff48b92c34eec4bd75ecb7a6d593d31659ab75b6dd",
+      "unchangedRawLinesByteIdentical": 208,
+      "changedRegions": 1
+    },
+    {
+      "path": "work/notes-draft-recovery-20261018-next/candidate/products/rea-studio/server.mjs",
+      "bytes": 7953,
+      "sha256": "c13a55cb66a13e973847ff6a970006b2acf3cf6c4752d1e25292ef67695329ae",
+      "baselineBytes": 7840,
+      "baselineSHA256": "85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94",
+      "unchangedRawLinesByteIdentical": 125,
+      "changedRegions": 1
+    }
+  ],
+  "storageDependency": {
+    "path": "work/notes-draft-recovery-20261018-next/candidate/products/rea-studio/apps/notes/draft-recovery.mjs",
+    "bytes": 9814,
+    "sha256": "10d4c3fa2ec7047b9732f6a83aa8cdd76dec48f490a612c18502487058529608",
+    "disjointFullSourcePeer": "work/notes-draft-recovery-20261018-review/storage-complete-source-peer.json"
+  },
+  "completeNewRecoveryClientLogicAndAllServerChangesRead": true,
+  "unchangedRawLineContinuityVerified": true,
+  "prior21NotesTestWorkingBytesUnchanged": true,
+  "findings": [],
+  "fixedPriorReviewFinding": "recoveryTask now returns the actual operation result when no onSuccess callback is supplied; discard success is reported accurately.",
+  "review": [
+    "Recovery always opens a NEW unsaved copy only after explicit acknowledgement and a fresh exact-version read; source note id/revision remain provenance and cannot enter the Save request as an existing target.",
+    "Saved-notebook fallback is explicit and visible before Save; raw fields/type retained where supported.",
+    "Client Save/input/editor generation guards and notebook confirmation admission retained; late recovery-open reads require unchanged editor/input ownership.",
+    "Durable queue holds one active write and one coalesced latest snapshot, retires owned ids before removal, closes a disposed connection after already-owned queue work.",
+    "Conditional cleanup of a recovered parent uses its displayed version, preserving a newer other-tab row; connection-local retirement is not a durable global tombstone.",
+    "Storage refusal/corruption remains secondary status; explicit server Save stays available, with no captured source execution or automatic replay.",
+    "Workspace UUID creation uses separate Notes store key and existing serialized handler, preserves existing Notes state and rejects invalid stored scope without rewriting it.",
+    "The only new public module route is exact Notes draft-recovery.mjs; existing host/origin/token/content-type and private-source route boundaries remain unchanged."
+  ],
+  "scopeLimits": [
+    "Source review and lightweight byte metadata only; no imports/execution of app/module/tests/browser, no builds or syntax checks.",
+    "Authored tests are independently reviewed by root, not self-certified by this source peer.",
+    "No browser persistence, runtime reliability, feature parity or superiority acceptance before actual hosted evidence."
+  ]
+}

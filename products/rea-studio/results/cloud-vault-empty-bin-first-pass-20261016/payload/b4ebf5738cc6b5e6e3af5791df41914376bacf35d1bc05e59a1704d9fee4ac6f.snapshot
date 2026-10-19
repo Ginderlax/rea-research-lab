@@ -1,0 +1,47 @@
+"""Verify a bounded downloaded evidence backup; never execute product code."""
+import sys,json,zipfile,hashlib,re,stat
+from pathlib import Path
+source=Path(sys.argv[1]).resolve();expected=sys.argv[2]
+base=Path(__file__).resolve().parent/'cloud-verification-backups'
+assert source.is_relative_to(base.resolve()) and source.is_file()
+digest=lambda b:hashlib.sha256(b).hexdigest()
+raw=source.read_bytes();assert len(raw)<=32*1024*1024 and digest(raw)==expected
+folder=source.parent/source.stem;folder.mkdir(exist_ok=False)
+def unpack(archive,destination):
+    destination.mkdir(parents=True,exist_ok=True);records=[];seen=set()
+    with zipfile.ZipFile(archive) as z:
+        assert len(z.infolist())<=3000 and sum(e.file_size for e in z.infolist())<=64*1024*1024
+        for e in z.infolist():
+            name=e.filename
+            assert name not in seen;seen.add(name)
+            assert not name.startswith(('/', '\\')) and '\\' not in name and ':' not in name
+            assert all(p not in ('..','.') for p in Path(name).parts)
+            assert not stat.S_ISLNK(e.external_attr>>16)
+            target=(destination/name).resolve();assert target.is_relative_to(destination.resolve())
+            if e.is_dir():target.mkdir(parents=True,exist_ok=True);continue
+            assert e.file_size<=24*1024*1024
+            data=z.read(e);assert len(data)==e.file_size
+            target.parent.mkdir(parents=True,exist_ok=True)
+            with target.open('xb') as f:f.write(data)
+            records.append({'path':name,'bytes':len(data),'sha256':digest(data)})
+    return records
+unpack(source,folder/'downloaded-contents')
+archives=list((folder/'downloaded-contents').rglob('*.zip'));assert len(archives)==1
+evidence=folder/'readable-evidence';files=unpack(archives[0],evidence)
+result={'schema':'rea-local-cloud-attempt-backup/v1','artifact':str(source),'artifactSHA256':expected,'archiveBytes':len(raw),'portableEvidenceArchive':str(archives[0]),'readableEvidence':str(evidence),'files':files,'allCRCAndBytesReadable':True,'localProductExecutions':0,'localTests':0,'localBuilds':0,'attempts':[],'fullParity':False,'superiority':False,'acceptanceScope':'Backup readability and recorded evidence consistency only; failed attempts stay failed and no new behavioral execution occurs locally.'}
+for attempt in evidence.rglob('attempt-validation.json'):
+    a=json.loads(attempt.read_text(encoding='utf-8-sig'));root=attempt.parent
+    before=json.loads((root/'source-before.json').read_text());after=json.loads((root/'source-after.json').read_text())
+    assert len(before)==a['sourceFiles'] and (before==after)==a['sourceStable']
+    m=json.loads((root/'source-snapshot-manifest.json').read_text());assert len(m['files'])==a['sourceSnapshotFiles']
+    for row in m['files']:
+        p=(root/row['path']).resolve();assert p.is_relative_to(root.resolve())
+        data=p.read_bytes();assert len(data)==row['bytes'] and digest(data)==row['sha256']
+    if a['summary'] is not None:
+        stdout=(root/'stdout.txt').read_text(encoding='utf-8')
+        for k,v in a['summary'].items():
+            values=re.findall(r'^# '+k+r' (\d+(?:\.\d+)?)\r?$',stdout,re.M)
+            assert values and float(values[-1])==v
+    result['attempts'].append({'receipt':str(attempt.relative_to(evidence)),**{k:a.get(k) for k in ('status','scope','repositoryCommit','summary','sourceFiles','sourceStable','sourceSnapshotFiles','failure')}})
+(folder/'local-backup-verification.json').write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
+print(json.dumps({k:v for k,v in result.items() if k!='files'}))

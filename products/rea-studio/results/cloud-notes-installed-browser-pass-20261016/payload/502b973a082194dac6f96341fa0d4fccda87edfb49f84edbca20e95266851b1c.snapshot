@@ -1,0 +1,327 @@
+{
+  "schema": "rea-notes-todo-real-browser-case/v1",
+  "testId": "ce7710fa7634e1b776b4-c41ac36cb5572223e5cf",
+  "title": "Notes genuine concurrent revision conflict preserves disk state and explicit reopen then retry succeeds",
+  "statusAtFixtureClose": "passed",
+  "retry": 0,
+  "url": "http://127.0.0.1:61244",
+  "ownedDataDirectory": "D:\\a\\_temp\\rea-installed-notes-browser-synthetic-data-Vf867g\\notes-case-Up4JIq",
+  "serverCloseObserved": true,
+  "realBrowser": true,
+  "actualHTTP": true,
+  "originalProductExecutions": 0,
+  "originalFullApplicationExecutions": 0,
+  "originalHelperExecutions": 0,
+  "programmaticDisabledControlProbes": 0,
+  "teardown": {
+    "stage": "completed",
+    "heldRoutesFinished": true,
+    "drained": true,
+    "contextClosed": true,
+    "serverClosed": true,
+    "screenshotSaved": true,
+    "requestCounts": {
+      "started": 26,
+      "finished": 26,
+      "failed": 0
+    },
+    "steps": [
+      {
+        "name": "release-held-routes",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:46.922Z",
+        "completedAtUtc": "2026-10-16T14:39:46.922Z"
+      },
+      {
+        "name": "screenshot",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:46.922Z",
+        "completedAtUtc": "2026-10-16T14:39:46.972Z"
+      },
+      {
+        "name": "drain-owned-page-requests",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:46.972Z",
+        "completedAtUtc": "2026-10-16T14:39:46.972Z"
+      },
+      {
+        "name": "capture-synthetic-final-record",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:46.972Z",
+        "completedAtUtc": "2026-10-16T14:39:46.974Z"
+      },
+      {
+        "name": "close-owned-context",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:46.974Z",
+        "completedAtUtc": "2026-10-16T14:39:47.031Z"
+      },
+      {
+        "name": "close-owned-server",
+        "status": "passed",
+        "startedAtUtc": "2026-10-16T14:39:47.031Z",
+        "completedAtUtc": "2026-10-16T14:39:47.032Z"
+      }
+    ],
+    "pendingOwnedRequests": 0
+  },
+  "observations": [
+    {
+      "kind": "actual-host-revision-conflict-and-explicit-retry",
+      "noteId": "86409546-f7d8-493c-be4d-5b7954663318",
+      "staleRevision": 2,
+      "concurrentRevision": 3,
+      "rejectedHTTPStatus": 400,
+      "rejectedStoredBytes": {
+        "bytes": 1393,
+        "sha256": "1b712227956c7f0893eade17e8753ae94027312d155bdc2f8c3729795d33eebe"
+      },
+      "reopenedRevision": 3,
+      "successfulRetryRevision": 4,
+      "responseMocked": false
+    },
+    {
+      "kind": "owned-synthetic-disk-record",
+      "path": "notes-records/ce7710fa7634e1b776b4-c41ac36cb5572223e5cf.json",
+      "bytes": 1658,
+      "sha256": "3c45a79159080c8afb1754d5a7fd2786555f1a384efa65142c66682a442f2a8c"
+    }
+  ],
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/save",
+      "postData": "{\"revision\":0,\"title\":\"Conflict task\",\"body\":\"Saved synthetic body\",\"notebook\":\"Notes\",\"tags\":[\"study\"]}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"86409546-f7d8-493c-be4d-5b7954663318\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/todo-type",
+      "postData": "{\"id\":\"86409546-f7d8-493c-be4d-5b7954663318\",\"revision\":1,\"type\":\"todo\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"86409546-f7d8-493c-be4d-5b7954663318\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/todo-completed",
+      "postData": "{\"id\":\"86409546-f7d8-493c-be4d-5b7954663318\",\"revision\":2,\"completed\":true}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/get",
+      "postData": "{\"id\":\"86409546-f7d8-493c-be4d-5b7954663318\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"86409546-f7d8-493c-be4d-5b7954663318\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/todo-completed",
+      "postData": "{\"id\":\"86409546-f7d8-493c-be4d-5b7954663318\",\"revision\":3,\"completed\":true}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/attachment-list",
+      "postData": "{\"id\":\"86409546-f7d8-493c-be4d-5b7954663318\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/list",
+      "postData": "{\"search\":\"\",\"tag\":\"\",\"notebookId\":\"\",\"trash\":false,\"todoFilter\":\"all\"}"
+    },
+    {
+      "method": "POST",
+      "path": "/api/notes/notebook-list",
+      "postData": "{}"
+    }
+  ],
+  "responses": [
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/save",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/todo-type",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/todo-completed",
+      "status": 400,
+      "method": "POST",
+      "body": {
+        "bytes": 95,
+        "sha256": "cea49ea27a15332385c24304cc7f4eb8d160df981d2e5f4fbc2fdda0d67ec51f"
+      },
+      "error": "Note changed since it was opened. Reopen it before saving; your draft is preserved.",
+      "expectedActualHostFailure": true
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/get",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/todo-completed",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/attachment-list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/list",
+      "status": 200,
+      "method": "POST"
+    },
+    {
+      "path": "/api/notes/notebook-list",
+      "status": 200,
+      "method": "POST"
+    }
+  ],
+  "faults": [],
+  "expectedHttpFailures": [
+    {
+      "path": "/api/notes/todo-completed",
+      "status": 400,
+      "errorMessage": "Note changed since it was opened. Reopen it before saving; your draft is preserved.",
+      "observed": true
+    }
+  ],
+  "expectedConsole": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 400 (Bad Request)",
+      "location": {
+        "url": "http://127.0.0.1:61244/api/notes/todo-completed",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "auxiliaryErrors": [
+    {
+      "type": "console",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "location": {
+        "url": "http://127.0.0.1:61244/favicon.ico",
+        "line": 0,
+        "column": 0,
+        "lineNumber": 0,
+        "columnNumber": 0
+      }
+    }
+  ],
+  "errors": [],
+  "downloads": []
+}

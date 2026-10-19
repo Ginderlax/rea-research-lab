@@ -1,0 +1,74 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+import {createHash} from 'node:crypto';
+import {compileNativeLinks} from '../flow-native-link-next/candidate/products/rea-studio/apps/flow/native-link.mjs';
+import {executeNative,parseNative,nativePreflight} from '../flow-native-link-next/candidate/products/rea-studio/apps/flow/native.mjs';
+import {fixture,linkScene} from '../flow-native-link-next/candidate/products/rea-studio/apps/flow/link-ui-fixture.mjs';
+
+const own=import.meta.dirname,cache=path.resolve(own,'../../outputs/rea-research-lab/.local/flow-original');
+const compilerPath=path.join(cache,'node_modules/@node-red/runtime/lib/flows/util.js');
+assert.equal(createHash('sha256').update(await fs.readFile(compilerPath)).digest('hex'),'7881b34a1056bd2e75c132038e2d8e4acb5213165541be85fa40a8a4fcd0b87e');
+const require=createRequire(path.join(cache,'package.json')),original=require('@node-red/runtime/lib/flows/util.js');
+const observations=[];let originalCompilerCalls=0;
+test.after(async()=>fs.writeFile(path.join(own,'observations.json'),JSON.stringify({originalCompilerCalls,observations,originalRuntimeHosts:0,originalGUI:0,browser:0,benchmarks:0},null,2)+'\n',{flag:'wx'}));
+function graph(){return[{id:'tab',type:'tab'},{id:'start',type:'inject',z:'tab',x:50,y:50,props:[],wires:[['out']]},{id:'out',type:'link out',z:'tab',x:150,y:50,links:['in'],wires:[['physical']]},{id:'in',type:'link in',z:'tab',x:300,y:50,links:['out'],wires:[['sink']]},{id:'sink',type:'debug',z:'tab',x:400,y:50,complete:'true',active:true,tosidebar:true,wires:[]},{id:'physical',type:'debug',z:'tab',x:400,y:150,complete:'true',active:true,tosidebar:true,wires:[]}];}
+
+test('independent seeded valid static graphs match released compiler exactly and leave candidate raw input unchanged',()=>{
+  let seed=0x5a17a921;const next=()=>{seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;return seed>>>0;};
+  const ids=['2','10','01','in.alpha','in:beta','in-gamma'];
+  for(let i=0;i<128;i++){
+    const nodes=[{id:'tab',type:'tab'},{id:'second',type:'tab',disabled:i%11===0}];
+    for(let n=0;n<3;n++){
+      const out={id:'out'+n,type:'link out',z:n%2?'second':'tab',x:100,y:50+n*60,wires:[['physical']],d:i%13===0};
+      const mode=i%8;if(mode===0){}else if(mode<5)out.links=[null,false,0,''][mode-1];else out.links=Array.from({length:next()%9},()=>ids[next()%ids.length]);nodes.push(out);
+    }
+    for(const id of ids)nodes.push({id,type:'link in',z:next()%2?'second':'tab',x:400,y:50+next()%300,links:Array.from({length:next()%6},()=> 'out'+next()%3),wires:[['physical']],d:next()%7===0});
+    nodes.push({id:'physical',type:'debug',z:'tab',x:600,y:100,wires:[]});
+    const raw=JSON.stringify(nodes),released=structuredClone(nodes);original.parseConfig(released);originalCompilerCalls++;
+    const compiled=compileNativeLinks(nodes),expected=released.filter(n=>n.type==='link out').map(n=>({id:n.id,wires:n.wires})),actual=[...compiled.nodes.values()].filter(n=>n.type==='link out').map(n=>({id:n.id,wires:n.wires}));
+    observations.push({kind:'seeded-released-compiler',i,input:nodes,expected,actual});assert.deepEqual(actual,expected);assert.equal(JSON.stringify(nodes),raw);
+  }
+});
+test('multiple Link Outs overwrite the event at each hop while preserving rich caller message and raw physical wires',async()=>{
+  const nodes=graph();nodes[3].wires=[['out2']];nodes.push({id:'out2',type:'link out',z:'tab',x:350,y:80,links:['in2'],wires:[['physical']]},{id:'in2',type:'link in',z:'tab',x:450,y:80,links:['out2'],wires:[['sink']]});
+  const input={_msgid:'retained-id',_event:'initial',payload:Buffer.from([0,128,255]),when:new Date('2026-01-01T00:00:00Z'),nested:{a:[1,'α 😀']}};
+  const result=await executeNative(JSON.stringify(nodes),{messages:[input]});assert.deepEqual(result.trace.map(n=>n.node),['start','out','in','out2','in2','sink']);assert.equal(result.debug.length,1);
+  assert.deepEqual(result.debug[0].message,{...input,_event:'node:out2'});assert.equal(input._event,'initial');assert.deepEqual(parseNative(JSON.stringify(nodes)).document,nodes);
+  observations.push({kind:'candidate-multiple-hops',trace:result.trace,event:result.debug[0].message._event,richExact:true});
+});
+test('overwritten physical unsupported nodes are unreachable while explicitly empty outgoing lists include backreferences',async()=>{
+  const nodes=graph();nodes[2].links=[];nodes[5].type='function';nodes[5].func='throw Error("must not execute")';
+  const info=parseNative(JSON.stringify(nodes));assert.ok(info.issues.some(x=>x.node==='physical'));assert.doesNotThrow(()=>nativePreflight(info,'start'));
+  const result=await executeNative(JSON.stringify(nodes),{messages:[{_msgid:'fixed',payload:'virtual'}]});assert.deepEqual(result.debug.map(x=>x.node),['sink']);
+  observations.push({kind:'candidate-preflight-overwritten',trace:result.trace,issues:info.issues});
+});
+test('disabled virtual target with unsupported mode drops delivery without enabling unreachable runtime behavior',async()=>{
+  const nodes=graph();nodes[3].d=true;nodes[3].wires=[['bad']];nodes.push({id:'bad',type:'link call',z:'tab',x:600,y:100,links:['in'],wires:[]});
+  const result=await executeNative(JSON.stringify(nodes),{messages:[{_msgid:'fixed'}]});assert.equal(result.debug.length,0);assert.deepEqual(result.trace.map(x=>x.node),['start','out']);
+  observations.push({kind:'candidate-disabled-target',trace:result.trace});
+});
+test('malformed unreachable virtual target remains reported while enabled independent start can run',async()=>{
+  const nodes=graph();nodes.push({id:'unused',type:'link out',z:'tab',x:150,y:200,links:['missing'],wires:[]});
+  const info=parseNative(JSON.stringify(nodes));assert.ok(info.linkIssues.some(x=>x.node==='unused'));const result=await executeNative(JSON.stringify(nodes),{messages:[{_msgid:'fixed'}]});assert.equal(result.debug.length,1);
+  observations.push({kind:'candidate-unreachable-invalid',issues:info.linkIssues,trace:result.trace});
+});
+test('Connect submitted while held actual validation cannot publish after a newer draft is typed',async()=>{
+  let armed=false;const scene=linkScene();scene.flows[3].links=[];scene.flows[2].links=[];
+  const f=await fixture({scene,hold:a=>armed&&a==='native-validate'});try{
+    await f.load();armed=true;const pending=f.button('Connect static link').click();await f.held;
+    const field=f.field('Native Node-RED flow JSON'),newer=JSON.stringify({...scene,newer:{notes:'preserve α 😀'}});field.value=newer;
+    f.release();await pending;assert.equal(field.value,newer);assert.equal(f.calls.filter(x=>x.action==='native-save').length,0);
+    observations.push({kind:'model-held-connect-newer',newDraftPreserved:true,calls:f.calls.map(c=>c.action)});
+  }finally{await f.close();}
+});
+test('detached started pointer drag cannot mutate native text after closing and late Connect response',async()=>{
+  let armed=false;const f=await fixture({hold:a=>armed&&a==='native-validate'});try{
+    await f.load();const node=f.field('Edit native node out'),field=f.field('Native Node-RED flow JSON');await node.fire('pointerdown',{clientX:200,clientY:100});
+    armed=true;const pending=f.button('Connect static link').click();await f.held;f.dispose();
+    await assert.doesNotReject(node.fire('pointerup',{clientX:500,clientY:200}));f.release();await pending;assert.equal(field.value,'');assert.equal(f.section.children.length,0);
+    observations.push({kind:'model-disposed-pointer-held-connect',scrubbed:true,calls:f.calls.map(c=>c.action)});
+  }finally{await f.close();}
+});

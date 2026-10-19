@@ -1,0 +1,76 @@
+test('New To-do ordinary unsaved draft sends no save and genuine empty-title400 retains fields before explicit retry', async ({ studio: s }) => {
+  await openNotes(s); const firstSave = await createNote(s, 'Unrelated saved baseline');
+  // Establish an explicitly saved canonical revision before the no-change
+  // boundary. This is a real ordinary Save, not a dropped metadata assertion.
+  const baseline = await save(s); expect(baseline.id).toBe(firstSave.id); expect(baseline.revision).toBe(2); expect(baseline.metadataEdited).toBe(true); expect(baseline.history).toHaveLength(1);
+  const before = await s.disk(), count = saves(s).length; expect(before.state.notes[baseline.id]).toEqual(baseline);
+  await newTaskDraft(s, '', 'Keep this body after validation', 'study, draft'); await s.settle();
+  expect(saves(s)).toHaveLength(count); expect((await s.disk()).bytes.equals(before.bytes)).toBe(true); await expect(button(s.page, 'Convert to note')).toBeDisabled();
+  s.expectHttpFailure('save', 'Give the note a title.'); const rejected = s.page.waitForResponse(r => r.url() === s.url + '/api/notes/save'); await button(s.page, 'Save note').click(); expect((await rejected).status()).toBe(400);
+  await expect(status(s.page)).toHaveText('Give the note a title.'); await expect(button(s.page, 'Save note')).toBeEnabled(); await expect(field(s.page, 'Markdown note')).toHaveValue('Keep this body after validation'); expect((await s.disk()).bytes.equals(before.bytes)).toBe(true);
+  await field(s.page, 'Note title').fill('Explicitly retried new task'); const note = await save(s); openTask(note); expect(note.body).toBe('Keep this body after validation'); expect(note.tags).toEqual(['study','draft']);
+  expect(JSON.parse(saves(s).at(-1).postData).newTodo).toBe(true); expect((await diskNote(s, baseline.id))).toEqual(before.state.notes[baseline.id]);
+  s.observations.push({ kind: 'new-task-unsaved-validation-and-explicit-retry', ordinaryDraftMutationRequests: 0, actualEmptyTitleStatus: 400, failedState: before.identity, noteId: note.id, firstRevision: note.revision, initialHistoryLength: note.history.length, explicitNewTodo: true, canonicalBaselineRevision: baseline.revision, canonicalBaselineMetadataEdited: baseline.metadataEdited, unrelatedRawNoteBefore: metadata(Buffer.from(JSON.stringify(before.state.notes[baseline.id]))), unrelatedRawNoteAfter: metadata(Buffer.from(JSON.stringify(await diskNote(s, baseline.id)))) });
+});
+
+test('New To-do native discard cancellation retains draft fields and accepted New note resets creation type', async ({ studio: s }) => {
+  await openNotes(s); await newTaskDraft(s, 'Retain cancelled task', 'Native dialog retained body', 'keep');
+  const event = s.page.waitForEvent('dialog'), click = button(s.page, 'New note').click(), dialog = await event; expect(dialog.message()).toBe('Discard this unsaved draft?'); await dialog.dismiss(); await click;
+  await expect(field(s.page, 'Note title')).toHaveValue('Retain cancelled task'); await expect(field(s.page, 'Markdown note')).toHaveValue('Native dialog retained body'); await expect(field(s.page, 'Note tags')).toHaveValue('keep'); expect(saves(s)).toHaveLength(0);
+  await confirmedNew(s, 'New to-do'); await expect(field(s.page, 'Note title')).toHaveValue(''); await expect(status(s.page)).toHaveText('New to-do draft. Save to create it.');
+  await field(s.page, 'Note title').fill('Draft to discard'); await confirmedNew(s, 'New note'); await expect(status(s.page)).toHaveText('New note draft.'); await field(s.page, 'Note title').fill('Accepted ordinary new note'); const note = await save(s);
+  expect(note.todo?.isTodo ?? false).toBe(false); expect(JSON.parse(saves(s).at(-1).postData)).not.toHaveProperty('newTodo');
+  s.observations.push({ kind: 'native-discard-cancel-and-new-note-kind-reset', nativeDialogs: 3, cancellationRetainedAllFields: true, noteId: note.id, savedAsTask: false });
+});
+
+test('New To-do real committed Save response blocks native duplicate clicks and retains newer ordinary typing at returned revision', async ({ studio: s }) => {
+  await openNotes(s); await newTaskDraft(s, 'Held newly created task'); const gate = await s.hold('save', input => input.newTodo === true);
+  await button(s.page, 'Save note').click(); const committed = await bounded(gate.entered, 15000, 'Actual first task save not held'); openTask(committed); expect((await diskNote(s, committed.id)).revision).toBe(1);
+  await expect(button(s.page, 'Save note')).toBeDisabled(); const bounds = await button(s.page, 'Save note').boundingBox(); assert(bounds); await s.page.mouse.dblclick(bounds.x+bounds.width/2, bounds.y+bounds.height/2); expect(saves(s)).toHaveLength(1);
+  await expect(field(s.page, 'Markdown note')).toBeEnabled(); await field(s.page, 'Markdown note').fill('Newer body typed after actual first commit'); gate.release(); await gate.finished;
+  await expect(status(s.page)).toHaveText('Saved revision 1. Your newer draft is retained.'); await expect(field(s.page, 'Markdown note')).toHaveValue('Newer body typed after actual first commit');
+  const saved = await save(s), input = JSON.parse(saves(s).at(-1).postData); expect(input.id).toBe(committed.id); expect(input.revision).toBe(1); expect(input).not.toHaveProperty('newTodo'); expect(saved.revision).toBe(2); expect(saved.history).toHaveLength(1); expect(saved.todo).toEqual(committed.todo); expect((await diskNote(s, saved.id)).body).toBe(saved.body);
+  s.observations.push({ kind: 'new-task-commit-held-native-duplicate-and-newer-draft', noteId: saved.id, committedRevision: 1, nativeDuplicatePointerClicks: 2, firstSaveRequests: 1, nextSubmittedRevision: input.revision, finalRevision: saved.revision, ordinaryEnabledFieldTyping: true, programmaticDisabledControlProbe: false });
+});
+
+test('New To-do new editor owns a separate unsaved task while older actual creation response is held after commit', async ({ studio: s }) => {
+  await openNotes(s); await newTaskDraft(s, 'Old held creation'); const gate = await s.hold('save', input => input.newTodo === true); await button(s.page, 'Save note').click(); const committed = await bounded(gate.entered,15000,'Owned newer task gate'); openTask(committed);
+  await confirmedNew(s, 'New to-do'); await field(s.page,'Note title').fill('Independent newer task'); await field(s.page,'Markdown note').fill('New editor owns this body'); gate.release(); await gate.finished; await s.settle();
+  await expect(status(s.page)).toHaveText('Unsaved draft. Save to keep this note.'); await expect(field(s.page,'Note title')).toHaveValue('Independent newer task'); const note=await save(s); openTask(note); expect(note.id).not.toBe(committed.id); expect((await diskNote(s,committed.id)).title).toBe('Old held creation');
+  s.observations.push({kind:'new-task-editor-ownership-after-actual-commit',oldId:committed.id,newId:note.id,oldRevision:1,newRevision:1});
+});
+
+test('New To-do actual navigation disposal suppresses all late Notes publication and reads after held first commit', async ({ studio:s }) => {
+  await openNotes(s); await newTaskDraft(s,'Disposed task creation'); const old=await field(s.page,'Markdown note').elementHandle(),gate=await s.hold('save',input=>input.newTodo===true); await button(s.page,'Save note').click(); const committed=await bounded(gate.entered,15000,'Disposal first-save gate'); openTask(committed);
+  await s.page.getByRole('button',{name:'Lab Flow',exact:true}).click(); await expect(s.page.getByRole('heading',{name:'Native Node-RED flows',exact:true})).toBeVisible(); expect(await old.evaluate(node=>node.isConnected)).toBe(false); const before=s.requests.length; gate.release(); await gate.finished; await s.settle(); expect(s.requests).toHaveLength(before); await expect(s.page.getByRole('heading',{name:'Local Notes',exact:true})).toHaveCount(0); expect((await diskNote(s,committed.id)).revision).toBe(1);
+  s.observations.push({kind:'new-task-disposal-after-actual-first-commit',noteId:committed.id,committedRevision:1,lateNotesRequests:0,detachedControlObserved:true,detachedControlScrubbingClaimed:false});
+});
+
+test('New To-do newer typing survives a held genuine post-commit list400 after exact owned filesystem restoration', async ({ studio:s }) => {
+  await openNotes(s); await newTaskDraft(s,'Held genuine refresh failure'); await s.settle(); const gate=await s.listFault('Held genuine refresh failure',true); await button(s.page,'Save note').click(); const actual=await bounded(gate.entered,20000,'Owned genuine list400 gate'); expect((await diskNote(s,actual.noteId)).revision).toBe(1);
+  await field(s.page,'Markdown note').fill('Newer draft while genuine list400 is held'); await expect(status(s.page)).toHaveText('Unsaved draft. Save to keep this note.'); gate.release(); await gate.finished; await s.settle();
+  await expect(status(s.page)).toHaveText('Unsaved draft. Save to keep this note.'); await expect(field(s.page,'Markdown note')).toHaveValue('Newer draft while genuine list400 is held'); await expect(button(s.page,'Save note')).toBeEnabled(); const note=await save(s),input=JSON.parse(saves(s).at(-1).postData); expect(input.id).toBe(actual.noteId); expect(input.revision).toBe(1); expect(note.revision).toBe(2); expect(note.todo).toEqual({isTodo:true,due:0,completed:0});
+  s.observations.push({kind:'new-task-postcommit-genuine-list400-newer-draft',noteId:actual.noteId,actualHTTPStatus:400,syntheticOwnedFilesystemFault:true,responseMocked:false,restoredBeforeHeldDelivery:true,nextSubmittedRevision:1,finalRevision:2,ordinaryEnabledFieldTyping:true});
+});
+
+test('New To-do committed save distinguishes genuine list400 from persistence failure and explicit refresh preserves state', async ({ studio:s }) => {
+  await openNotes(s); await newTaskDraft(s,'Reported genuine refresh failure'); await s.settle(); const fault=await s.listFault('Reported genuine refresh failure',false); await button(s.page,'Save note').click(); const actual=await bounded(fault.entered,20000,'Unheld genuine list400'); await fault.finished; await s.settle();
+  await expect(status(s.page)).toHaveText('Saved revision 1. Could not refresh the note list: '+actual.error); const before=await s.disk(); expect(before.state.notes[actual.noteId].revision).toBe(1); await expect(button(s.page,'Save note')).toBeEnabled();
+  const list=s.page.waitForResponse(r=>r.url()===s.url+'/api/notes/list'); await button(s.page,'Search').click(); expect((await list).status()).toBe(200); await s.settle(); await expect(savedRow(s.page,'Reported genuine refresh failure')).toHaveCount(1); expect((await s.disk()).bytes.equals(before.bytes)).toBe(true); expect(saves(s)).toHaveLength(1);
+  s.observations.push({kind:'new-task-committed-save-refresh-failure-explicit-recovery',noteId:actual.noteId,committedRevision:1,actualHTTPStatus:400,syntheticOwnedFilesystemFault:true,responseMocked:false,restoredBeforeDelivery:true,explicitRefreshStatus:200,stateBefore:before.identity,stateAfter:(await s.disk()).identity});
+});
+
+function nativeTar(archive, entry = null) {
+  const executable=path.join(process.env.SystemRoot,'System32/tar.exe'),args=entry===null?['-tf',archive]:['-xOf',archive,entry]; const result=spawnSync(executable,args,{shell:false,windowsHide:true,timeout:10000,maxBuffer:1024*1024}); assert.equal(result.error,undefined); assert.equal(result.status,0,result.stderr.toString('utf8')); return result.stdout;
+}
+function rawRecord(bytes) { const lines=bytes.toString('utf8').split('\n');if(lines.at(-1)==='')lines.pop();let boundary=lines.length-1;while(boundary>=0&&lines[boundary]!=='')boundary--;assert(boundary>=0);const properties=Object.fromEntries(lines.slice(boundary+1).map(line=>{const m=/^([a-z][a-z0-9_]*): (.*)$/.exec(line);assert(m);return[m[1],m[2]];}));return{title:lines[0],body:lines.slice(2,boundary).join('\n'),properties}; }
+test('New To-do actual JEX and resource downloads preserve all seven prior records and binary alongside new task metadata',async({studio:s},info)=>{
+  await openNotes(s); await field(s.page,'Import Markdown, REA notes JSON or Joplin JEX').setInputFiles({name:'pinned-study.jex',mimeType:'application/x-tar',buffer:fixtureBytes}); await expect(status(s.page)).toHaveText('Imported 2 notes, 2 notebooks and 1 attachments with original IDs.');
+  await newTaskDraft(s,'New task alongside original records','Preserved new task body',''); await field(s.page,'Notebook').selectOption('1'.repeat(32)); const note=await save(s); openTask(note); expect(note.notebookId).toBe('1'.repeat(32));
+  const archive=await s.saveDownload(()=>button(s.page,'Export Joplin JEX').click(),'new-task-notes.jex','rea-notes.jex'); await expect(status(s.page)).toHaveText('Exported 3 notes and 1 attachments as JEX. Saved-version history is not included.'); const listing=nativeTar(archive.destination); await fs.writeFile(path.join(evidence,'notes-native-tar-list-'+info.testId+'.txt'),listing,{flag:'wx'}); expect(listing.toString('utf8').trim().split(/\r?\n/)).toHaveLength(9);
+  for(const[id,expected]of Object.entries(fixtureProvenance.expected))expect(metadata(nativeTar(archive.destination,id+'.md')).sha256).toBe(expected.rawSha256); expect(Object.keys(fixtureProvenance.expected)).toHaveLength(7);
+  const added=rawRecord(nativeTar(archive.destination,note.id.replaceAll('-','')+'.md')); expect(added.body).toBe(note.body); expect(added.properties.is_todo).toBe('1'); expect(added.properties.todo_due).toBe('0'); expect(added.properties.todo_completed).toBe('0'); expect(added.properties.parent_id).toBe('1'.repeat(32)); expect(added.title).toBe(note.title);
+  const resource=nativeTar(archive.destination,'resources/'+'5'.repeat(32)+'.bin'); expect(resource.equals(Buffer.from([0,1,127,128,255]))).toBe(true); expect(metadata(resource).sha256).toBe(fixtureProvenance.resourceSha256);
+  const imported=await s.api('get',{id:'3'.repeat(32)}); const opened=s.page.waitForResponse(r=>r.url()===s.url+'/api/notes/get'); await savedRow(s.page,imported.title).click(); expect((await opened).status()).toBe(200); await expect(status(s.page)).toHaveText('Opened revision '+imported.revision+'.'); const binary=await s.saveDownload(()=>button(s.page,'Download sample.bin (5 bytes)').click(),'resource-sample.bin','sample.bin'); expect(binary.bytes.equals(resource)).toBe(true);
+  s.observations.push({kind:'new-task-actual-jex-native-tar-and-resource-download',noteId:note.id,parentId:note.notebookId,initialTaskState:note.todo,independentNativeTar:{executable:metadata(await fs.readFile(path.join(process.env.SystemRoot,'System32/tar.exe'))),listing:metadata(listing),archive:metadata(archive.bytes),resource:metadata(resource),unchangedRawRecordComparisons:7},newOriginalProductExecutions:0,resourceDownload:metadata(binary.bytes)});
+});

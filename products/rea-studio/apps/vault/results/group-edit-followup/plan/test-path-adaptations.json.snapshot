@@ -1,0 +1,107 @@
+{
+  "schema": "rea-vault-group-edit-declared-test-only-source-adapters/v1",
+  "changes": [
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-original.test.mjs",
+      "sourceRoot": "work/vault-group-edit-next",
+      "sourcePath": "products/rea-studio/apps/vault/group-edit-original.test.mjs",
+      "before": "oracle=process.env.REA_KEEPASS_EXE,observations=[]",
+      "after": "oracle=process.env.REA_KEEPASS_EXE??path.resolve(here,'../../../..','projects/07-keepass/artifacts/portable/KeePass.exe'),observationRoot=process.env.GROUP_EDIT_OBSERVATIONS??path.join(os.tmpdir(),'rea-group-edit-original-observations-'+process.pid),observations=[]",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    },
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-original.test.mjs",
+      "sourceRoot": "work/vault-group-edit-next",
+      "sourcePath": "products/rea-studio/apps/vault/group-edit-original.test.mjs",
+      "before": "if(!oracle||!process.env.GROUP_EDIT_OBSERVATIONS)throw new Error('Pinned local original and owned observation destination required.');",
+      "after": "// Original bytes are authenticated at each bounded test invocation; default observations are owned temporary output.",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    },
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-original.test.mjs",
+      "sourceRoot": "work/vault-group-edit-next",
+      "sourcePath": "products/rea-studio/apps/vault/group-edit-original.test.mjs",
+      "before": "await fs.writeFile(path.join(process.env.GROUP_EDIT_OBSERVATIONS,'group-edit-original.json')",
+      "after": "await fs.mkdir(observationRoot,{recursive:true});await fs.writeFile(path.join(observationRoot,'group-edit-original.json')",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    },
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-final-list-replay.test.mjs",
+      "sourceRoot": "work/vault-group-edit-correction-independent-review",
+      "sourcePath": "draft-boundaries.test.mjs",
+      "before": "from'./ui-fixture.mjs'",
+      "after": "from'./group-edit-review-fixture.mjs'",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    },
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-adjacent-replay.test.mjs",
+      "sourceRoot": "work/vault-group-edit-correction-independent-review",
+      "sourcePath": "adjacent.test.mjs",
+      "before": "from'./ui-fixture.mjs'",
+      "after": "from'./group-edit-review-fixture.mjs'",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    },
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-independent-persistence.test.mjs",
+      "sourceRoot": "work/vault-group-edit-correction-independent-review",
+      "sourcePath": "fresh.test.mjs",
+      "before": "from './ui-fixture.mjs'",
+      "after": "from './group-edit-review-fixture.mjs'",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    },
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-review-fixture.mjs",
+      "sourceRoot": "work/vault-group-edit-correction-independent-review",
+      "sourcePath": "ui-fixture.mjs",
+      "before": "'../vault-group-edit-late-draft-fix-next/products/rea-studio/apps/vault/client.mjs'",
+      "after": "'./client.mjs'",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    },
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-review-fixture.mjs",
+      "sourceRoot": "work/vault-group-edit-correction-independent-review",
+      "sourcePath": "ui-fixture.mjs",
+      "before": "'../vault-group-edit-late-draft-fix-next/products/rea-studio/apps/vault/server.mjs'",
+      "after": "'./server.mjs'",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    },
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-review-fixture.mjs",
+      "sourceRoot": "work/vault-group-edit-correction-independent-review",
+      "sourcePath": "ui-fixture.mjs",
+      "before": "'../vault-group-edit-late-draft-fix-next/products/rea-studio/apps/vault/kdbx.mjs'",
+      "after": "'./kdbx.mjs'",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    },
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-review-fixture.mjs",
+      "sourceRoot": "work/vault-group-edit-correction-independent-review",
+      "sourcePath": "ui-fixture.mjs",
+      "before": "'../vault-group-edit-late-draft-fix-next/products/rea-studio/apps/vault/group-fixture.mjs'",
+      "after": "'./group-fixture.mjs'",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    },
+    {
+      "destination": "products/rea-studio/apps/vault/group-edit-correction-controls.test.mjs",
+      "sourceRoot": "work/vault-group-edit-late-draft-fix-next",
+      "sourcePath": "regression/correction-controls.test.mjs",
+      "before": "from'./ui-fixture.mjs'",
+      "after": "from'./group-edit-review-fixture.mjs'",
+      "occurrences": 1,
+      "scope": "Source-path/default-observation adapter only; case bodies not altered."
+    }
+  ],
+  "allInverseRequired": true,
+  "allAdaptersUnexecuted": true,
+  "caseAssertionBodiesUnchanged": true
+}

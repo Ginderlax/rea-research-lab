@@ -1,0 +1,35 @@
+{
+  "schema": "rea-vault-group-edit-failure-ledger/v1",
+  "attempts": [
+    {
+      "stage": "original source discovery",
+      "failed": true,
+      "detail": "A guessed KeePass/Forms/PwGroupForm.cs archive entry did not exist. No bytes were extracted. A subsequent read-only archive inventory identified KeePass/Forms/GroupForm.cs and those exact original bytes were selected.",
+      "effect": "No prior stage or production files changed."
+    },
+    {
+      "stage": "backend-v1 collector",
+      "failed": true,
+      "detail": "All 18 backend tests passed with zero skips and stable source; the collector expected TAP but Node defaulted to the spec reporter, so summary values were null and the collector exited 1. The full run/source/output receipt remains preserved. The corrected collector explicitly selects TAP for a new run.",
+      "effect": "Implementation tests passed; this attempt is not counted as accepted validation."
+    },
+    {
+      "stage": "original-v1 UTF-8 helper input",
+      "failed": true,
+      "detail": "Three of four managed original tests passed; the Unicode creation comparison failed because Windows PowerShell read the UTF-8 configuration using its default legacy code page. The actual library name received mojibake. The helper now explicitly reads UTF-8; no application code changed. Seven actual assembly loads in the failed attempt remain recorded and are not counted as accepted comparison evidence.",
+      "effect": "original-v1 raw output, source snapshots and observations are preserved."
+    },
+    {
+      "stage": "existing-ui-v1 mixed 777/343 UI test policy",
+      "failed": true,
+      "detail": "The first UI extension regression ran the corrected343 client with the historical777 group-ui test. It passed23/24 but failed the old detached-control automatic retry expectation. Parent review clarified that343 intentionally detaches and invalidates old controls on confirmed start, requiring fresh Show groups and reconfirmation after failed persistence. No rollback-to-old-row patch was applied; corrected343 UI test bytes and new lifecycle tests are separately bound.",
+      "effect": "This mixed-policy diagnostic is preserved and not accepted validation. It is not classified as a product defect."
+    },
+    {
+      "stage": "focused-final-v1 synthetic bin row locator",
+      "failed": true,
+      "detail": "104/106 tests passed with zero skips; two newly added bin lifecycle tests looked up the first synthetic C row, which was an older active index row after direct fixture setup recycling. That row correctly lacked Preview recycled entry. The owned locator now requires the bin preview control and the C identity together; application code was unchanged for this correction.",
+      "effect": "The full failed106-test receipt and source snapshots remain preserved and are not accepted validation."
+    }
+  ]
+}

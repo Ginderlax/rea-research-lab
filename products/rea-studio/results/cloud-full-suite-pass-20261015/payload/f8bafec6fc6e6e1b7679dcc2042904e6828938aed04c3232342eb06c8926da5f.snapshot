@@ -1,0 +1,63 @@
+// Lightweight read-only control-plane filing for one completed authorized run.
+// No product, test, build, browser or vendor execution.
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+const work = import.meta.dirname, lab = path.resolve(work, '../outputs/rea-research-lab');
+const run = '38816488464', job = '116705342025', artifact = '12011708044';
+const repo = '/repos/Ginderlax/rea-research-lab';
+const folder = path.join(work, 'cloud-verification-backups', 'run-' + run);
+const sourceCommit = '4a69ae1f8e0156fa9608faf357d415f536ba95f7';
+const pin = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+const credential = spawnSync('git', ['credential', 'fill'], { cwd: lab, env: { ...process.env, GIT_TERMINAL_PROMPT: '0', GCM_INTERACTIVE: 'Never' }, input: 'protocol=https\nhost=github.com\n\n', encoding: 'utf8', windowsHide: true, timeout: 20000 });
+assert.equal(credential.status, 0, 'Saved GitHub authentication unavailable');
+const fields = Object.fromEntries(credential.stdout.split('\n').filter(value => value.includes('=')).map(value => { const i = value.indexOf('='); return [value.slice(0, i), value.slice(i + 1)]; }));
+assert(fields.password, 'Saved authentication unavailable');
+const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'REA-cloud-verification', 'X-GitHub-Api-Version': '2022-11-28', Authorization: 'Bearer ' + fields.password };
+async function collect(kind) {
+  assert(['run', 'jobs', 'artifacts'].includes(kind));
+  const target = path.join(folder, 'control-plane-evidence', kind + '.json');
+  await fs.mkdir(path.dirname(target), { recursive: true });
+  let bytes, reused = false;
+  try { bytes = await fs.readFile(target); reused = true; }
+  catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    const endpoint = repo + '/actions/runs/' + run + (kind === 'run' ? '' : '/' + kind);
+    const response = await fetch('https://api.github.com' + endpoint, { headers, signal: AbortSignal.timeout(60000) });
+    assert.equal(response.status, 200, 'Read-only metadata request failed: ' + kind);
+    const chunks = []; let count = 0;
+    for await (const chunk of response.body) { count += chunk.length; assert(count <= 512 * 1024); chunks.push(chunk); }
+    bytes = Buffer.concat(chunks); JSON.parse(bytes); await fs.writeFile(target, bytes, { flag: 'wx' });
+  }
+  assert(bytes.length <= 512 * 1024);
+  return { kind, path: 'control-plane-evidence/' + kind + '.json', ...pin(bytes), reused, value: JSON.parse(bytes) };
+}
+const records = await Promise.all(['run', 'jobs', 'artifacts'].map(collect));
+const [r, j, a] = records.map(row => row.value);
+assert.equal(String(r.id), run); assert.equal(r.status, 'completed'); assert.equal(r.conclusion, 'success'); assert.equal(r.run_attempt, 1);
+assert.equal(r.event, 'pull_request'); assert.equal(r.head_sha, '464be289452a4df50fc1af14a27685e0dbfb2eec'); assert.equal(r.path, '.github/workflows/development-cloud.yml');
+assert.equal(j.jobs.length, 1); assert.equal(String(j.jobs[0].id), job); assert.equal(j.jobs[0].status, 'completed'); assert.equal(j.jobs[0].conclusion, 'success');
+assert.equal(j.jobs[0].runner_group_name, 'GitHub Actions'); assert(j.jobs[0].labels.includes('windows-2022'));
+assert.equal(a.artifacts.length, 1); assert.equal(String(a.artifacts[0].id), artifact);
+const artifactMetadata = a.artifacts[0], archiveBytes = await fs.readFile(path.join(folder, 'artifact-' + artifact + '.zip'));
+const verificationBytes = await fs.readFile(path.join(folder, 'artifact-' + artifact, 'local-backup-verification.json')), verification = JSON.parse(verificationBytes);
+assert.equal(verification.schema, 'rea-local-cloud-attempt-backup/v1'); assert.equal(verification.allCRCAndBytesReadable, true);
+assert.equal(verification.artifactSHA256, pin(archiveBytes).sha256); assert.equal(verification.archiveBytes, archiveBytes.length);
+assert.equal(artifactMetadata.size_in_bytes, archiveBytes.length); assert.equal(artifactMetadata.digest, 'sha256:' + pin(archiveBytes).sha256);
+const attempt = JSON.parse(await fs.readFile(path.join(folder, 'artifact-' + artifact, 'readable-evidence', 'attempt-validation.json')));
+assert.equal(attempt.repositoryCommit, sourceCommit); assert.equal(attempt.environment.GITHUB_RUN_ID, run); assert.equal(attempt.status, 'passed');
+const logPath = path.join(work, 'cloud-verification-backups', 'job-' + job, 'logs.txt'), logBytes = await fs.readFile(logPath);
+assert(logBytes.length <= 20 * 1024 * 1024);
+const summary = { schema: 'rea-completed-hosted-attempt-local-backup/v1', recordedAtUtc: new Date().toISOString(), run, job, artifact, artifactSHA256: verification.artifactSHA256,
+  scope: attempt.scope, head: r.head_sha, actualMerge: sourceCommit, runAttempt: r.run_attempt, runConclusion: r.conclusion,
+  rawControlPlane: records.map(({ value, ...row }) => row), archiveReadable: true, completeArtifactFilesReadable: true,
+  verificationSHA256: pin(verificationBytes).sha256, rawJobLog: 'job-' + job + '/logs.txt', rawJobLogIdentity: pin(logBytes),
+  sourceSnapshotsChecked: true, sourceSnapshotVerificationBasis: 'Existing complete ZIP/CRC/readability/identity reader receipt; this metadata export does not repeat source-payload bulk hashing.',
+  summary: attempt.summary, sourceFiles: attempt.sourceFiles, sourceStable: attempt.sourceStable, sourceSnapshotFiles: attempt.sourceSnapshotFiles,
+  localProductExecutions: 0, localTests: 0, localBuilds: 0, noAcceptanceFromBackupAlone: true };
+const summaryPath = path.join(folder, 'collection-summary.json');
+try { const previous = JSON.parse(await fs.readFile(summaryPath)); assert.equal(previous.run, run); assert.equal(previous.artifactSHA256, summary.artifactSHA256); }
+catch (error) { if (error.code !== 'ENOENT') throw error; await fs.writeFile(summaryPath, JSON.stringify(summary, null, 2) + '\n', { flag: 'wx' }); }
+console.log(JSON.stringify({ run, job, artifact, head: r.head_sha, testedMerge: sourceCommit, conclusion: r.conclusion, controlPlaneFiles: records.map(({ value, ...row }) => row), collectionSummary: summaryPath }));

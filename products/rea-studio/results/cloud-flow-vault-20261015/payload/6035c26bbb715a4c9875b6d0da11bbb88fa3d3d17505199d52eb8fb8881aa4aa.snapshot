@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import {readFileSync,writeFileSync,readdirSync,mkdirSync} from 'node:fs';
+import {join,dirname,relative} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {spawnSync} from 'node:child_process';
+import {readRabinObservation} from './read-rabin-tap.mjs';
+const root=fileURLToPath(new URL('../',import.meta.url)),app=join(root,'apps/backup'),hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+function walk(folder){return readdirSync(folder,{withFileTypes:true}).flatMap(e=>e.isDirectory()?(e.name==='results'?[]:walk(join(folder,e.name))):[join(folder,e.name)]);}
+const names=[...walk(app).filter(p=>/\.(mjs|json|md|txt)$/.test(p)),...['lib/storage.mjs','server.mjs','scripts/verify-backup-rabin.mjs','scripts/read-rabin-tap.mjs'].map(p=>join(root,p))].sort();
+const capture=()=>names.map(path=>{const bytes=readFileSync(path);return{path:'products/rea-studio/'+relative(root,path).replaceAll('\\','/'),bytes:bytes.length,sha256:hash(bytes)};});
+const before=capture(),preservationPath='products/rea-studio/apps/backup/results/rabin-source-study/preservation-manifest.json';
+const preservationBytes=readFileSync(join(app,'results/rabin-source-study/preservation-manifest.json')),preservation=JSON.parse(preservationBytes),lab=fileURLToPath(new URL('../../../',import.meta.url));
+assert.equal(preservation.schema,'rea-restic-rabin-source-preservation/v1');
+for(const e of preservation.snapshots){assert.ok(e.path.startsWith('products/rea-studio/apps/backup/results/rabin-source-study/')&&!e.path.split('/').includes('..'));const bytes=readFileSync(join(lab,e.path));assert.equal(bytes.length,e.bytes);assert.equal(hash(bytes),e.sha256);}
+const tests=['rabin.test.mjs','capture-rabin-file.test.mjs','rabin-original.test.mjs','restic-rabin-snapshot.test.mjs','restic-rabin-lifecycle.test.mjs','restic-rabin-deadline.test.mjs','restic-compression.test.mjs','restic-compression-review.test.mjs'];
+const startedAtUtc=new Date().toISOString(),result=join(app,'results');mkdirSync(result,{recursive:true});
+writeFileSync(join(result,'rabin-source-before.json'),JSON.stringify({startedAtUtc,implementationFingerprints:before,preservationSha256:hash(preservationBytes)},null,2)+'\n');
+const run=spawnSync(process.execPath,['--test','--test-concurrency=1','--test-reporter=tap',...tests.map(n=>join(app,n))],{cwd:root,encoding:'utf8',windowsHide:true,timeout:300000,maxBuffer:4*1024*1024});
+const evidence=['rabin-integration.stdout.txt','rabin-integration.stderr.txt'].map((name,i)=>{const bytes=Buffer.from(i?run.stderr??'':run.stdout??'');writeFileSync(join(result,name),bytes);return{path:'products/rea-studio/apps/backup/results/'+name,bytes:bytes.length,sha256:hash(bytes)};});
+const after=capture();assert.deepEqual(after,before,'Current backup source changed across the focused verification.');assert.equal(hash(readFileSync(join(app,'results/rabin-source-study/preservation-manifest.json'))),hash(preservationBytes));
+const summary=Object.fromEntries(['tests','pass','fail','cancelled','skipped','todo','duration_ms'].map(label=>{const match=run.stdout?.match(new RegExp(`^# ${label} (\\d+(?:\\.\\d+)?)$`,'m'));assert.ok(match,`Missing summary ${label}`);return[label,Number(match[1])];}));
+const sourceBeforeBytes=readFileSync(join(result,'rabin-source-before.json'));evidence.push({path:'products/rea-studio/apps/backup/results/rabin-source-before.json',bytes:sourceBeforeBytes.length,sha256:hash(sourceBeforeBytes)});
+function observation(label){return readRabinObservation(run.stdout,label);}
+const boundary=observation('rabinBoundaryOriginalObservations'),snapshot=observation('rabinSnapshotOriginalObservations'),lifecycle=observation('rabinLifecycleObservations'),deadline=observation('rabinDeadlineObservations');
+assert.equal(run.status,0,run.stderr);assert.equal(summary.tests,47);assert.equal(summary.pass,47);assert.equal(summary.fail+summary.cancelled+summary.skipped+summary.todo,0);
+assert.equal(boundary.failure,null);assert.equal(boundary.comparisons.length,30);assert.equal(boundary.commands.length,30);assert.ok(boundary.comparisons.every(v=>v.orderedBoundaryAndSha256Match));assert.equal(boundary.comparisons.reduce((n,v)=>n+v.originalChunks.length,0),126);assert.equal(snapshot.length,4);assert.ok(snapshot.every(v=>v.exitCode===0));assert.equal(lifecycle.observations.length,20);assert.equal(deadline.cases.length,3);assert.ok(deadline.cases.every(v=>v.lateOpen+v.lateWrite+v.lateSync===0&&v.temporary.length+v.locks.length===0));
+const record={schema:'rea-restic-rabin-integration-validation/v1',startedAtUtc,checkedAtUtc:new Date().toISOString(),runtime:process.version,platform:process.platform,exitCode:run.status,summary,sourceBytesStableAcrossRun:true,implementationFingerprints:before,rawEvidence:evidence,preservation:{path:preservationPath,bytes:preservationBytes.length,sha256:hash(preservationBytes),exactSnapshots:preservation.snapshots.length},original:{...boundary.original,fileCases:30,orderedChunkEntries:126,boundaryExecutions:30,additionalCandidateSnapshotCheckAndRestoreExecutions:4,cutFingerprintRuntimeComparison:false},lifecycle:{productionModuleObservations:20,strictExpiredIOCases:3,subsequentIOAfterExpiry:0},historicalEvidenceReboundToCurrentSource:false,fullFeatureParityEstablished:false,universalSuperiorityEstablished:false,productionSecurityVerified:false,originalPerformanceCompared:false,scope:'Current bounded Rabin/capture/native lifecycle tests plus prior compression regression collection; exact pinned original ordered boundaries and candidate snapshot check/restore. No every-feature, all-file, scheduler, security, memory-isolation or speed superiority claim.'};
+writeFileSync(join(result,'rabin-validation.json'),JSON.stringify(record,null,2)+'\n');
+console.log(JSON.stringify({summary,sourceFiles:before.length,preservedSnapshots:preservation.snapshots.length,originalFileCases:30,orderedChunkEntries:126,lifecycleTests:20,strictExpiredIOCases:3,receiptSha256:hash(readFileSync(join(result,'rabin-validation.json')))}));

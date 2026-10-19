@@ -1,0 +1,99 @@
+{
+  "schema": "rea-hosted-publication-validation-attempt/v1",
+  "status": "failed",
+  "startedAtUtc": "2026-10-16T00:12:03.659Z",
+  "scope": "Publication integrity, syntax, links, credential patterns, immutable historical sources and finite cloud records; no behavioral-suite rerun.",
+  "execution": {
+    "CI": "true",
+    "GITHUB_ACTIONS": "true",
+    "RUNNER_ENVIRONMENT": "github-hosted",
+    "RUNNER_OS": "Windows",
+    "RUNNER_ARCH": "X64",
+    "GITHUB_SHA": "65e0b5a780e6c21f1728cd0c4e5a1c833710eb8c",
+    "GITHUB_REPOSITORY": "Ginderlax/rea-research-lab",
+    "GITHUB_REF": "refs/pull/1/merge",
+    "GITHUB_RUN_ID": "38828050485",
+    "GITHUB_RUN_ATTEMPT": "1"
+  },
+  "runtime": "v24.16.0",
+  "sourceRoot": "D:\\a\\rea-research-lab\\rea-research-lab",
+  "sourceCommit": "65e0b5a780e6c21f1728cd0c4e5a1c833710eb8c",
+  "candidateOverlay": false,
+  "phases": [
+    {
+      "name": "publication-write",
+      "status": "passed",
+      "command": [
+        "C:\\hostedtoolcache\\windows\\node\\24.16.0\\x64\\node.exe",
+        "scripts/verify-records.mjs",
+        "--write"
+      ],
+      "startedAtUtc": "2026-10-16T00:12:17.908Z",
+      "timeoutMs": 1200000,
+      "stdoutBytes": 30263,
+      "stderrBytes": 0,
+      "droppedBytes": 0,
+      "stdoutLimit": 2097152,
+      "stderrLimit": 1048576,
+      "pid": 7128,
+      "exitCode": 0,
+      "signal": null,
+      "closeObserved": true,
+      "failure": null,
+      "completedAtUtc": "2026-10-16T00:13:17.271Z"
+    },
+    {
+      "name": "publication-recheck",
+      "status": "passed",
+      "command": [
+        "C:\\hostedtoolcache\\windows\\node\\24.16.0\\x64\\node.exe",
+        "scripts/verify-records.mjs"
+      ],
+      "startedAtUtc": "2026-10-16T00:13:17.273Z",
+      "timeoutMs": 1200000,
+      "stdoutBytes": 30263,
+      "stderrBytes": 0,
+      "droppedBytes": 0,
+      "stdoutLimit": 2097152,
+      "stderrLimit": 1048576,
+      "pid": 7100,
+      "exitCode": 0,
+      "signal": null,
+      "closeObserved": true,
+      "failure": null,
+      "completedAtUtc": "2026-10-16T00:14:16.539Z"
+    }
+  ],
+  "historicalReceiptsRewritten": false,
+  "fullDevelopmentSuiteAcceptance": false,
+  "fullParity": false,
+  "superiority": false,
+  "applicationTestsExecuted": 0,
+  "originalExecutions": 0,
+  "branch": null,
+  "gitTree": "ca7eab7ee24bf3e71c6c2e13e25760d47e4206c5",
+  "payloadBefore": {
+    "files": 27201,
+    "bytes": 1298191309,
+    "rowsIdentity": {
+      "bytes": 6853747,
+      "sha256": "e0755bd7dbc3ce93f4ec78a77100e513cb11095e10fcda1db7aba30cc055e917"
+    }
+  },
+  "controls": {
+    "status": "passed",
+    "checks": 92
+  },
+  "generatedManifest": {
+    "bytes": 7778867,
+    "sha256": "ee3db146df4a91e538226198fba485996be2a196498be9e90041118c3d5c7bfc"
+  },
+  "generatedManifestValidated": false,
+  "firstRootWritePassed": true,
+  "completedAtUtc": "2026-10-16T00:14:16.544Z",
+  "failure": {
+    "name": "AssertionError",
+    "code": "ERR_ASSERTION",
+    "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    credential_pattern_scan_passed: true,\n    excluded_artifacts_not_in_payload: true,\n    finite_cloud_flow_vault: {\n      allCapturedCensusRowsClaimedCurrent: false,\n...\n          current10Mandatory: 10,\n+         finished: '2026-10-16T00:13:21.652Z',\n-         finished: '2026-10-16T00:12:22.506Z',\n          fullParity: false,\n          identities: {\n            dataset: '5ab5d2fdbea33dc3712c66050a47097170caef5bed7e7bf8fd22bc1637efffc7',\n            loader: '35fdaf67acd3b223c6f46419189a249c9a9b36d82e10065df2292615b4b74045',\n            reviewManifest: 'dd196558e07a7568d0424dff0a610a1b18627d0bee0b56c0cbbaad90f6f080c7',\n...\n          sourceOnly: true,\n+         started: '2026-10-16T00:13:18.134Z',\n-         started: '2026-10-16T00:12:18.782Z',\n          strictCorePrefixes7: 7,\n          superiority: false,\n          totalHistoricalAliases877: 877\n        },\n        sketchCurrentFocused: 39,\n"
+  }
+}

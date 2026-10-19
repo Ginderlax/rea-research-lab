@@ -1,0 +1,23 @@
+{
+  "schema": "rea-vault-group-edit-failure-ledger/v1",
+  "attempts": [
+    {
+      "stage": "original source discovery",
+      "failed": true,
+      "detail": "A guessed KeePass/Forms/PwGroupForm.cs archive entry did not exist. No bytes were extracted. A subsequent read-only archive inventory identified KeePass/Forms/GroupForm.cs and those exact original bytes were selected.",
+      "effect": "No prior stage or production files changed."
+    },
+    {
+      "stage": "backend-v1 collector",
+      "failed": true,
+      "detail": "All 18 backend tests passed with zero skips and stable source; the collector expected TAP but Node defaulted to the spec reporter, so summary values were null and the collector exited 1. The full run/source/output receipt remains preserved. The corrected collector explicitly selects TAP for a new run.",
+      "effect": "Implementation tests passed; this attempt is not counted as accepted validation."
+    },
+    {
+      "stage": "original-v1 UTF-8 helper input",
+      "failed": true,
+      "detail": "Three of four managed original tests passed; the Unicode creation comparison failed because Windows PowerShell read the UTF-8 configuration using its default legacy code page. The actual library name received mojibake. The helper now explicitly reads UTF-8; no application code changed. Seven actual assembly loads in the failed attempt remain recorded and are not counted as accepted comparison evidence.",
+      "effect": "original-v1 raw output, source snapshots and observations are preserved."
+    }
+  ]
+}

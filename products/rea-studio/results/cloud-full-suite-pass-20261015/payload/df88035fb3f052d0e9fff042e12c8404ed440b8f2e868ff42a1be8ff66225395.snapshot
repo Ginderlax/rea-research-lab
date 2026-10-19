@@ -1,0 +1,98 @@
+{
+  "schema": "rea-cloud-bsdtar-original-prerequisites/v1",
+  "status": "acquired",
+  "startedAtUtc": "2026-10-15T22:29:35.714Z",
+  "scope": "Official Microsoft image-byte acquisition and static PE inspection only; a newly explicit build26100.9278 EXE/DLL pair. No original execution, test, historical-DLL equivalence, production integration or full-suite result.",
+  "execution": {
+    "CI": "true",
+    "GITHUB_ACTIONS": "true",
+    "RUNNER_ENVIRONMENT": "github-hosted",
+    "RUNNER_OS": "Windows",
+    "RUNNER_ARCH": "X64",
+    "GITHUB_SHA": "4a69ae1f8e0156fa9608faf357d415f536ba95f7",
+    "GITHUB_REPOSITORY": "Ginderlax/rea-research-lab",
+    "GITHUB_RUN_ID": "38816488464",
+    "GITHUB_RUN_ATTEMPT": "1"
+  },
+  "runtime": {
+    "version": "v24.16.0",
+    "platform": "win32",
+    "architecture": "x64"
+  },
+  "bootstrap": {
+    "bytes": 9813,
+    "sha256": "435a4355efcfc998071b9a01874829cebcaf6f6af1aee1452bf2906417ea6e57"
+  },
+  "cache": "D:\\a\\rea-research-lab\\rea-research-lab\\.local\\bsdtar-original",
+  "assets": [
+    {
+      "name": "tar.exe",
+      "bytes": 92280,
+      "sha256": "4e598a8cec84af779e3377442fce2b94b976f614ed4c6e5a665e19308fd1e379",
+      "sourceUrl": "https://msdl.microsoft.com/download/symbols/tar.exe/BE8EDDEC14000/tar.exe",
+      "peTimeDateStamp": "BE8EDDEC",
+      "peSizeOfImage": "14000",
+      "expectedFileVersion": "3.8.8 (WinBuild.160101.0800)",
+      "expectedProductVersion": "10.0.26100.9278",
+      "referenceComponent": "amd64_bsdtar_31bf3856ad364e35_10.0.26100.9278_none_f20be6501bf1c655",
+      "historicalPin": "Exact historical tar.exe SHA256; the historical receipt did not bind its dynamically loaded archiveint.dll.",
+      "status": "acquired",
+      "authenticated": true,
+      "path": "D:\\a\\rea-research-lab\\rea-research-lab\\.local\\bsdtar-original\\tar.exe",
+      "observed": {
+        "bytes": 92280,
+        "sha256": "4e598a8cec84af779e3377442fce2b94b976f614ed4c6e5a665e19308fd1e379",
+        "pe": {
+          "machine": "AMD64",
+          "timeDateStamp": "BE8EDDEC",
+          "sizeOfImage": "14000"
+        }
+      },
+      "acquisition": {
+        "transport": "official Microsoft Symbol Server HTTPS endpoint",
+        "redirected": true,
+        "finalHost": "vsblobprodscussu5shard6.blob.core.windows.net",
+        "ephemeralRedirectUrlRetained": false
+      }
+    },
+    {
+      "name": "archiveint.dll",
+      "bytes": 1482752,
+      "sha256": "ca36efd61b33586e4cee69513bf3dcc8d20b65f37bd6495d5d82eb15833b5824",
+      "sourceUrl": "https://msdl.microsoft.com/download/symbols/archiveint.dll/0B7F5A2E16a000/archiveint.dll",
+      "peTimeDateStamp": "0B7F5A2E",
+      "peSizeOfImage": "16a000",
+      "expectedFileVersion": "3.8.8 (WinBuild.160101.0800)",
+      "expectedProductVersion": "10.0.26100.9278",
+      "referenceComponent": "amd64_libarchive-internal_31bf3856ad364e35_10.0.26100.9278_none_167f98d9fee4a658",
+      "historicalPin": "New explicit DLL identity paired with the EXE build; not claimed to identify the DLL loaded by the historical run.",
+      "status": "acquired",
+      "authenticated": true,
+      "path": "D:\\a\\rea-research-lab\\rea-research-lab\\.local\\bsdtar-original\\archiveint.dll",
+      "observed": {
+        "bytes": 1482752,
+        "sha256": "ca36efd61b33586e4cee69513bf3dcc8d20b65f37bd6495d5d82eb15833b5824",
+        "pe": {
+          "machine": "AMD64",
+          "timeDateStamp": "0B7F5A2E",
+          "sizeOfImage": "16a000"
+        }
+      },
+      "acquisition": {
+        "transport": "official Microsoft Symbol Server HTTPS endpoint",
+        "redirected": true,
+        "finalHost": "vsblobprodscussu5shard65.blob.core.windows.net",
+        "ephemeralRedirectUrlRetained": false
+      }
+    }
+  ],
+  "originalExecutions": 0,
+  "vendorBinariesPublished": false,
+  "signatureInspection": {
+    "performed": false,
+    "reason": "This pure-Node acquisition phase does not invoke signature/version tools or load original images. Exact size, SHA256 and selected static PE identity are mandatory."
+  },
+  "versionResourcesIndependentlyInspectedHere": false,
+  "nextValidation": "Use a separately recorded hosted test-only helper to copy and authenticate BOTH images into each private oracle directory before invoking --version or comparisons. A WINDIR-only EXE path override does not isolate its dynamic DLL.",
+  "completedAtUtc": "2026-10-15T22:29:36.609Z"
+}

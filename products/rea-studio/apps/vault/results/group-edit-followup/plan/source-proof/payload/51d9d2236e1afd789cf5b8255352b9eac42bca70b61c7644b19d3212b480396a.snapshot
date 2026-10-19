@@ -1,0 +1,3331 @@
+[
+  {
+    "name": "acknowledged-create",
+    "calls": [
+      {
+        "action": "status",
+        "input": {},
+        "result": {
+          "exists": true,
+          "locked": false,
+          "idleLockMinutes": 5
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "c0b25c5c7ee324a833a6069c7b59393ff814638c54a54f555aa5b4e1c7bd5a9c",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "7b3db5848cea3f5b6eaa2ad2ba654f6a3db25661a732a792b1e27fd6c99ebd33",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "fc44ef20601a966052cc6dcb0bc6149ae267d8af081bb7357e679aac7d7455d1",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "88a792cd33022095f4e21670669ee8be3001493b6deedb0802d98c2ec7d717c1"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "085c54977efe18ff884e2ab262694664638efecbe91da7e8da30ed9be32f0186"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "7725306c957b2b268dc1b57d1d735900b1f474a58408615456c07c56cc477cde"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "4e718295af09400339d11d621b7e4b0dddde4e9166e2bc99c9051b37d43ddeea"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "9d0cdb947a30b2352b5729a7b9bcca36f2297e2e134f92f3c6c5871f097c0a73"
+            }
+          ]
+        }
+      },
+      {
+        "action": "groupCreate",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "7725306c957b2b268dc1b57d1d735900b1f474a58408615456c07c56cc477cde",
+          "name": "Submitted child",
+          "notes": "Submitted notes"
+        },
+        "result": {
+          "created": true,
+          "id": "a40e7f0b-b3e9-4b08-9fa8-4f7d6d3e63e8",
+          "parentId": "00000000-0000-0000-0000-000000000003"
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "eb59f3af4f729ebb0f0ab341fc5226b7e6f9e7b05a81ac765ac8b442211663f7",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "601ab8570a69c84388efe6767be1e4ff61e542e1189a55504253b280a64a94f0",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "835e9db9af073935ed389fd61142c62e753029fc8c456f83294af9ada50c11d8",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 6,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "fb6696eaf33c1fb92b6ec8e0aeeb76546dddb78e7ca90dfd9b8168f27d50ffe6"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 4,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "010066e70e7ec7325c23b63e86bc1f12e28b2df6aa88c822564178c33eb9d69f"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "663c1b40bfc32867ebc43d56b742a77fd52e78f97ce49ea66fa8b3dfe26c0b8a"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "7ebb588d0bc770c330aba2d45d3f2e5b8886d670b3aec815b9022b21ee0c73df"
+            },
+            {
+              "id": "a40e7f0b-b3e9-4b08-9fa8-4f7d6d3e63e8",
+              "name": "Submitted child",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 0,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "93062ea06123bbd9af608da1ad9c45b1cc97100b7dd907fb8e8f77b911ddb1e6"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "7a3ded85e3f56a635241bf3aac702c794ce4d38462ffbd09d5db2b539a6ea02c"
+            }
+          ]
+        }
+      }
+    ],
+    "initialEncryptedStoreSHA256": "272332cf0907196b0bbb691cce469689030577a9de24d5611c23664c40afe600",
+    "finalEncryptedStoreSHA256": "d5003e8423db700f4030da7aa643e8d42b1a9fb5c1278e4907da6524f54474f6",
+    "cleanup": true,
+    "tempGone": true,
+    "DOMModel": true,
+    "nativeBrowser": false,
+    "canonicalFixtureReusedWithProvenance": true,
+    "originalExecutions": 0
+  },
+  {
+    "name": "acknowledged-save",
+    "calls": [
+      {
+        "action": "status",
+        "input": {},
+        "result": {
+          "exists": true,
+          "locked": false,
+          "idleLockMinutes": 5
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "52364a22d1231159d029438384b6e5dc31114e80e1aa9a3d2bcc7b16c2c89f47",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "d751b3880bcd7c768177ec0de5ee687c2da471711ac667b18744a9ac6525d8f4",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "1f121397c2dd386a455ab3913e7729e0571bfbe32cdcc611738f472d67f7e866",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "cc1625f6c038298bac83fcb9944fe82ad42367fce099a4b641109f6b8f5a91ab"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "595a5d5a796503fe750b24ae39dadc38fe4976636e6271b147a435c83531ef0e"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "6e49043a030c63cfc3631ba7376539b9694d7f9a5e886d5fbab99b0f617602d7"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "8eafbf1ab32450ed2b416d9a5bb3e2a0fa271d50c5c26946b2442f64fdb55983"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "54dba2a710ccbab12991395f276d453c4bb9638d34d7106fd516f0726121103b"
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupRead",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "6e49043a030c63cfc3631ba7376539b9694d7f9a5e886d5fbab99b0f617602d7"
+        },
+        "result": {
+          "group": {
+            "id": "00000000-0000-0000-0000-000000000003",
+            "name": "Selected",
+            "parentId": "00000000-0000-0000-0000-000000000002",
+            "inRecycleBin": false,
+            "isRecycleBin": false,
+            "groupCount": 2,
+            "entryCount": 2,
+            "canDelete": true,
+            "canEdit": true,
+            "canCreateChild": true,
+            "deleteIsPermanent": false,
+            "canRestorePreviousGroup": false,
+            "previousGroup": null,
+            "recycleRevision": "6e49043a030c63cfc3631ba7376539b9694d7f9a5e886d5fbab99b0f617602d7",
+            "notes": "",
+            "descendantGroups": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "parentId": "00000000-0000-0000-0000-000000000002",
+                "name": "Selected"
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "parentId": "00000000-0000-0000-0000-000000000003",
+                "name": "Deep"
+              }
+            ],
+            "entries": [
+              {
+                "id": "10000000-0000-0000-0000-000000000001",
+                "parentId": "00000000-0000-0000-0000-000000000003",
+                "title": "A",
+                "username": "synthetic user",
+                "url": "https://example.invalid"
+              },
+              {
+                "id": "10000000-0000-0000-0000-000000000002",
+                "parentId": "00000000-0000-0000-0000-000000000004",
+                "title": "B",
+                "username": "synthetic user",
+                "url": "https://example.invalid"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "action": "groupSave",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "6e49043a030c63cfc3631ba7376539b9694d7f9a5e886d5fbab99b0f617602d7",
+          "name": "Submitted renamed group",
+          "notes": "Submitted notes"
+        },
+        "result": {
+          "saved": true,
+          "id": "00000000-0000-0000-0000-000000000003",
+          "parentId": "00000000-0000-0000-0000-000000000002",
+          "affectedEntryIds": [
+            "10000000-0000-0000-0000-000000000001",
+            "10000000-0000-0000-0000-000000000002"
+          ]
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Submitted renamed group",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "b2929a258aecea85ab08e9a04e00f1f3f8510cabdaaedacd73cf3f418a648e7d",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Submitted renamed group/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "edbb9458e21f4dcd4cd4056d7ff349cb0eafc230a12029548f4b6ab51efcfadd",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "04d0a92cc8d7ed396e76fe2f0d7a1bad76e71d8fb98f5b51341719fc1937a72f",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "72658391b3f962a91af1143582b4050c640c921f850a8f8f269299b671e67b79"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "5a90ca599d8737cb6d59c34982b23db2a5cbb55b497fae6b049fef229ac1c5da"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Submitted renamed group",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "91f8c6c2a519b06456c2f329bfb76e9cb41b41d42d82828795c95f29d1824544"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "a6003b6f9ba6b4c51d5394ce275a61378c1cdb38e4b8b732d7e6803c39aa5f82"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "f1a57e4c08b9cc99a573ff366695ceaa9eb03b6823203587a280abf5a0f41f1a"
+            }
+          ]
+        }
+      }
+    ],
+    "initialEncryptedStoreSHA256": "d0a9133c602137b87487f1dfae8aab5b334dfefb5ed5d525038b7e09da9fbb35",
+    "finalEncryptedStoreSHA256": "ce0c0c0209e5101eafcd6b3ea5d943c706f4ee0974e9e79a8e1b63ff58d3bc09",
+    "cleanup": true,
+    "tempGone": true,
+    "DOMModel": true,
+    "nativeBrowser": false,
+    "canonicalFixtureReusedWithProvenance": true,
+    "originalExecutions": 0
+  },
+  {
+    "name": "late-value-create",
+    "calls": [
+      {
+        "action": "status",
+        "input": {},
+        "result": {
+          "exists": true,
+          "locked": false,
+          "idleLockMinutes": 5
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "259d29d7386f03f46ed90e69c15191b38fb47c87296ee95ffff04ed8d94581b7",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "2e445da8f8d4677c5e34fabe3baea9da5fcc69a1d769387ababb1418cc4e7284",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "18408b0bf0fec1de62f33c3df5a5d3e33d6ee79006e3a1920a022d211e8f3103",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "d39e81fee3a562e0a5b7e6c31ac6c3a48f94b5a88f7e8e96485b29325f289a94"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "6e233668fd21d0c44e7d56ddfc17a79749aaab3ee6936c39ecf9b0ff11ff9ff9"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "fa47a0a5d66c0da7d222415ff9e20fb5d6f518b6ab3f70f1f301c0183984eaf5"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "bc7b3c711e129e1338146c32a4bee221fc49a8b1ed88bc0ef65b360d450608ab"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "4f8399877d232097a32e5e9e7db9691120aa68ded5cbb81131e399722f20fb1e"
+            }
+          ]
+        }
+      },
+      {
+        "action": "groupCreate",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "fa47a0a5d66c0da7d222415ff9e20fb5d6f518b6ab3f70f1f301c0183984eaf5",
+          "name": "Submitted child",
+          "notes": "Submitted notes"
+        },
+        "result": {
+          "created": true,
+          "id": "62063a78-cd3e-45a7-a8d7-34b52689d76a",
+          "parentId": "00000000-0000-0000-0000-000000000003"
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "7bac799b44c483825697d613b66b48768d3f923cafa743b344d140b627d048ab",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "4f1fa903fb66d7c645dacb64e2acc36c2a5ff97989c5d39367450617214175b8",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "e65a892f3d06697886560b8144965525035076cf4e17ea94e8b5b16469ea19ac",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 6,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "b4a84b4df99930cc4deece1b6f3533151531b87515b958e524f06dc860beafd3"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 4,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "565251c054d81989fedf284f4b404b766f8bef353a49a1c1e9340bb38dcf3e21"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "5c738ee45d3ee8362cdecf708e4deea8d050387e21cd2de12913637a0f9690f0"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "10af8c40c0db530eae19f4c4b0d3c964b67e3f6cb1fe011b9f597880b9652828"
+            },
+            {
+              "id": "62063a78-cd3e-45a7-a8d7-34b52689d76a",
+              "name": "Submitted child",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 0,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "0d475775d85ff3c70c9843122675e1b01c210110ecc58725c52a6ee91660a69b"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "706810dfe3f941ad59afa36c4e04f4c77811d9ce6a822f09c779f2e1badfc445"
+            }
+          ]
+        }
+      },
+      {
+        "action": "groupSave",
+        "input": {
+          "id": "62063a78-cd3e-45a7-a8d7-34b52689d76a",
+          "revision": "0d475775d85ff3c70c9843122675e1b01c210110ecc58725c52a6ee91660a69b",
+          "name": "Later unsaved name",
+          "notes": "Later unsaved notes"
+        },
+        "result": {
+          "saved": true,
+          "id": "62063a78-cd3e-45a7-a8d7-34b52689d76a",
+          "parentId": "00000000-0000-0000-0000-000000000003",
+          "affectedEntryIds": []
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "cb18d39d30c549d962975bc8df30cbe709c6fd4e1a97c123b8baa45b921ebe6d",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "a971297f05abc3f9061a564ceb9065f4b4fd019b7b52ba8d29493dae5340d721",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "548795c028f406926a275243a0bde6288c0679822381b39b5b80dd35e379dce8",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 6,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "c2b19c6dedd9010130c202ae0f2655dea5766791ed12adc5593c95363321ae02"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 4,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "1b1a8bdb0055c303de531d4bbc058c5e66766a7322f621ffe48529e6aa6946ab"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "ab8c8fd8c21c0f5c434fa5fc52ec08ba9cf4d3b00d64a6313f0e9ff0dcefdd4a"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "69b9664b48d53dededf6fffe7490fecf0e2ef9d7b02eb14a8aac2f3a7c3b449e"
+            },
+            {
+              "id": "62063a78-cd3e-45a7-a8d7-34b52689d76a",
+              "name": "Later unsaved name",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 0,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "ac2cc3ae9fe306888fd37284ffac1cbbc6317c24ba4cf9553b2ff555f9474699"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "af38340ff3d5b21517cd5edddf0bfda9373387bdcbd87fb5d814737e88adae0a"
+            }
+          ]
+        }
+      }
+    ],
+    "initialEncryptedStoreSHA256": "39b096eca3e5399386c7273f3189e969e66c6161c2e1930d868fd4a422989c77",
+    "finalEncryptedStoreSHA256": "d820afb30554923e37864d2650aab623fe1243fd382b96aac0759fca33ce25ba",
+    "cleanup": true,
+    "tempGone": true,
+    "DOMModel": true,
+    "nativeBrowser": false,
+    "canonicalFixtureReusedWithProvenance": true,
+    "originalExecutions": 0
+  },
+  {
+    "name": "late-value-save",
+    "calls": [
+      {
+        "action": "status",
+        "input": {},
+        "result": {
+          "exists": true,
+          "locked": false,
+          "idleLockMinutes": 5
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "9691b1f946880ea745b88292c192a117b4cb16a306141c738234b4d0f8b5c615",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "c8d053a0457b83319293bb4d8633cd867f401ed800ffc60b5172cff95b6c631b",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "46ce5d9f48ecddd45bd0396543504c4a2f207ab6d351a81110bc83b75b473bc7",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "3c4afe49716d75ad60c092ce08f52e2f745084004cb357c9afccbbb9e05d4689"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "7333ced3cdc341ad3d225f456c04375529a14dd3f21a648b71cc4e164d274e14"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "dc0ec2eea0b1f46598e1bc4c425678cb056e156a7b2edfed2b42417d12e0a6d2"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "e5f410d188e815ea4d8dbfff999de366244c992c20b088aa1d013329ffd61357"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "6b19cb681b81796129a7d8570d586699a08bde5bc3ada20c83d482d71033e5ca"
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupRead",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "dc0ec2eea0b1f46598e1bc4c425678cb056e156a7b2edfed2b42417d12e0a6d2"
+        },
+        "result": {
+          "group": {
+            "id": "00000000-0000-0000-0000-000000000003",
+            "name": "Selected",
+            "parentId": "00000000-0000-0000-0000-000000000002",
+            "inRecycleBin": false,
+            "isRecycleBin": false,
+            "groupCount": 2,
+            "entryCount": 2,
+            "canDelete": true,
+            "canEdit": true,
+            "canCreateChild": true,
+            "deleteIsPermanent": false,
+            "canRestorePreviousGroup": false,
+            "previousGroup": null,
+            "recycleRevision": "dc0ec2eea0b1f46598e1bc4c425678cb056e156a7b2edfed2b42417d12e0a6d2",
+            "notes": "",
+            "descendantGroups": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "parentId": "00000000-0000-0000-0000-000000000002",
+                "name": "Selected"
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "parentId": "00000000-0000-0000-0000-000000000003",
+                "name": "Deep"
+              }
+            ],
+            "entries": [
+              {
+                "id": "10000000-0000-0000-0000-000000000001",
+                "parentId": "00000000-0000-0000-0000-000000000003",
+                "title": "A",
+                "username": "synthetic user",
+                "url": "https://example.invalid"
+              },
+              {
+                "id": "10000000-0000-0000-0000-000000000002",
+                "parentId": "00000000-0000-0000-0000-000000000004",
+                "title": "B",
+                "username": "synthetic user",
+                "url": "https://example.invalid"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "action": "groupSave",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "dc0ec2eea0b1f46598e1bc4c425678cb056e156a7b2edfed2b42417d12e0a6d2",
+          "name": "Submitted renamed group",
+          "notes": "Submitted notes"
+        },
+        "result": {
+          "saved": true,
+          "id": "00000000-0000-0000-0000-000000000003",
+          "parentId": "00000000-0000-0000-0000-000000000002",
+          "affectedEntryIds": [
+            "10000000-0000-0000-0000-000000000001",
+            "10000000-0000-0000-0000-000000000002"
+          ]
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Submitted renamed group",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "e75a5c5928c01839a073a0309f469e9c60ab2fa68e51a7d140285e72041070fc",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Submitted renamed group/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "43f41a2c6958a717dcd35eca29b904dc2c761c52cbbe639de8877b54cc8e4c2f",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "85baa6d9c52f8519932b018e74c98bd92067effa8c0014dba903de07f89dc12c",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "39994fc6d71d998eae49e6f41de35e24c75c8140aef4a7f23daa191cc1996b06"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "c70b9002c4280e34ce5ecfeb786d48f9fd0e298b90ae82978d253dcf27b408f3"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Submitted renamed group",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "b34e1254d225175d474c1a4e1de4a98a3083c0ce6552c4ccd0e27f452fc3f349"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "bce94d5955ec658564e55b26bd48d55a9e6956f8741bc72df9ab6359a5d00a73"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "2317c223a448d57abf5a9b5631e601f47ea8e4b43abc54ad3b8630ebe6fac1bb"
+            }
+          ]
+        }
+      },
+      {
+        "action": "groupSave",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "b34e1254d225175d474c1a4e1de4a98a3083c0ce6552c4ccd0e27f452fc3f349",
+          "name": "Later unsaved name",
+          "notes": "Later unsaved notes"
+        },
+        "result": {
+          "saved": true,
+          "id": "00000000-0000-0000-0000-000000000003",
+          "parentId": "00000000-0000-0000-0000-000000000002",
+          "affectedEntryIds": [
+            "10000000-0000-0000-0000-000000000001",
+            "10000000-0000-0000-0000-000000000002"
+          ]
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Later unsaved name",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "5459388864a9b4e98c34fc1e67d91d54cb790e21d22505763decb6994923a481",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Later unsaved name/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "639bcd0769bfd184487c741adfd1ccf9cf7a87529f8b45c1cfe2c99112b38175",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "91bbf796184d56357b519d37f5d47a04d0e17696cb2abcecd045401c1bdc8152",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "b5b6ab7b1038f79bc51bd8553d5570f8f72b4fd6749c5d798279d17f3eb447d2"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "57bc92b7d2bf1af09fc8e8003a6507421d1ea5bbbdf489915aa91042764ed67f"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Later unsaved name",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "de240969aea2746c243360836f956cd0de5d102ff777461a07d804dc53a4a62f"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "5d1ecd49e0048964894d8ce03eb5e181ab945c19ac5be80264a8c6f8ea678dbd"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "6d9fc35c1e2bcc6e9949b94a1cd57ce4f4fc810dcbb972ddc11de163ff7ded1c"
+            }
+          ]
+        }
+      }
+    ],
+    "initialEncryptedStoreSHA256": "e9a3788fe82b1287a20d174e07fc58e8640fbf3845fd204c127bedc7c55f1672",
+    "finalEncryptedStoreSHA256": "34c239bd3cd4507d898f5df806a51b5a549a5a85e5b1c76d190ab9e16df62eff",
+    "cleanup": true,
+    "tempGone": true,
+    "DOMModel": true,
+    "nativeBrowser": false,
+    "canonicalFixtureReusedWithProvenance": true,
+    "originalExecutions": 0
+  },
+  {
+    "name": "late-close",
+    "calls": [
+      {
+        "action": "status",
+        "input": {},
+        "result": {
+          "exists": true,
+          "locked": false,
+          "idleLockMinutes": 5
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "6ddf77c68f19fd163d0d6518ae07d43d2f9625fff0fcc0b568aaff1626c04fed",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "21395b95ce9ff3e57d750ee7d8d27acaf0b2f7c81e86c66ea991719659ef4580",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "c29e7db5480d7124c8b61365a3f1f02dfb45fce09e2758c97e04d3d2f28d4358",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "f59c6970f92a1da774b7f5fa054e9925a50cd5e77148a987053fb059b023927e"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "53009f39c24bdf803c8ddd1287a90af93844482a6403b705c0c88cd33dead6d4"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "0d8ce93ffec55652e14b90abd2d567f067291d6f23ac13055705cb6785b2ad7a"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "2c95ed70a8089cc325cdfac95fcc1b0985ee12b80aa4f8be19e562eaf1e12c5b"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "6b8f151ac0e009199f4271d59732200a38449cfdd5a2a67a1d049b57cbb28a49"
+            }
+          ]
+        }
+      },
+      {
+        "action": "groupCreate",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "0d8ce93ffec55652e14b90abd2d567f067291d6f23ac13055705cb6785b2ad7a",
+          "name": "Submitted child",
+          "notes": "Submitted notes"
+        },
+        "result": {
+          "created": true,
+          "id": "cddc0a21-dfce-4481-b797-aa913544419a",
+          "parentId": "00000000-0000-0000-0000-000000000003"
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "ce9c59e6b17db36100d20babf31bf492d01e008f87d4b19e75cc9c0079f4ff92",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "33e57f97e9b8dbbbede89073547714ff03353df0ad21baf56debb81c35131e56",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "53c7ec65877cde7da1673eb5cda2199c176b8b5fe3503bdba6f3659334390947",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 6,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "8292ba005f376c8aba784587176ca7262ae419f7b894a77aad96a7f1b07ff7c1"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 4,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "96a0353a1ac9a9db1f04e2f017a707a5a63e490f0fe2d7736b7339ee351d8a9e"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "3e7127cbc797757f13983e13e8ea215c90b052c6eaf8563f3611e34f05e9d4c2"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "d19324e6259f9ebbf0c9bb0da7581ae9b0890921f74d717e4af2fee08dacf60f"
+            },
+            {
+              "id": "cddc0a21-dfce-4481-b797-aa913544419a",
+              "name": "Submitted child",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 0,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "b2a70e735beb6506c861c9b9a4b56347ee34a64c17123b92bf32985732d7904f"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "1b6070082308cc939b302ba0ab29beeed1a0b6eb0896541a4ecd7dba29c19b1b"
+            }
+          ]
+        }
+      }
+    ],
+    "initialEncryptedStoreSHA256": "09a773ceaa54fb3c68ba36810dea7b3b4063db9915cc79efaf75b9a56f939a1e",
+    "finalEncryptedStoreSHA256": "9497b9f00a8f9d9baaf971cbd3b404b8061c64b7c5e94d77327a3c5730088716",
+    "cleanup": true,
+    "tempGone": true,
+    "DOMModel": true,
+    "nativeBrowser": false,
+    "canonicalFixtureReusedWithProvenance": true,
+    "originalExecutions": 0
+  },
+  {
+    "name": "late-disposal",
+    "calls": [
+      {
+        "action": "status",
+        "input": {},
+        "result": {
+          "exists": true,
+          "locked": false,
+          "idleLockMinutes": 5
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "dea9c24d4e2bcb25c42fa18f302f917d081d2bcbe177e85178d0f1526f601551",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "0d4b3abcbe454535cc6d3034d57b0526e0cf56e1afb5837f6df076f72e2dcb35",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "3e8a52285ab0c245181cb75b855552dc808f22cfd0ad0c6a898a4fbe08bafcb6",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "561fc276d495d2795ede1fe56d8d78c4c8e0c3847f51d3adf171130350cc1eb2"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "3660ea087bf6931f8d52fba3987dc3ca10c9e4ee69fedf8f790ca687248eee4b"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "98b54a8cb3173f10e8fe28faaf1f985ea512f085f16957d67205cd13a2c86fe1"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "23c43173b649002eea02e88b6017c9cd0a3c6ee8400d4a609b3cee364635aa84"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "def9879752d6c9d14b208b7ea93bf8a6d186bd333f62bfcf5c529adc36fc460c"
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupRead",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "98b54a8cb3173f10e8fe28faaf1f985ea512f085f16957d67205cd13a2c86fe1"
+        },
+        "result": {
+          "group": {
+            "id": "00000000-0000-0000-0000-000000000003",
+            "name": "Selected",
+            "parentId": "00000000-0000-0000-0000-000000000002",
+            "inRecycleBin": false,
+            "isRecycleBin": false,
+            "groupCount": 2,
+            "entryCount": 2,
+            "canDelete": true,
+            "canEdit": true,
+            "canCreateChild": true,
+            "deleteIsPermanent": false,
+            "canRestorePreviousGroup": false,
+            "previousGroup": null,
+            "recycleRevision": "98b54a8cb3173f10e8fe28faaf1f985ea512f085f16957d67205cd13a2c86fe1",
+            "notes": "",
+            "descendantGroups": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "parentId": "00000000-0000-0000-0000-000000000002",
+                "name": "Selected"
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "parentId": "00000000-0000-0000-0000-000000000003",
+                "name": "Deep"
+              }
+            ],
+            "entries": [
+              {
+                "id": "10000000-0000-0000-0000-000000000001",
+                "parentId": "00000000-0000-0000-0000-000000000003",
+                "title": "A",
+                "username": "synthetic user",
+                "url": "https://example.invalid"
+              },
+              {
+                "id": "10000000-0000-0000-0000-000000000002",
+                "parentId": "00000000-0000-0000-0000-000000000004",
+                "title": "B",
+                "username": "synthetic user",
+                "url": "https://example.invalid"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "action": "groupSave",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "98b54a8cb3173f10e8fe28faaf1f985ea512f085f16957d67205cd13a2c86fe1",
+          "name": "Submitted renamed group",
+          "notes": "Submitted notes"
+        },
+        "result": {
+          "saved": true,
+          "id": "00000000-0000-0000-0000-000000000003",
+          "parentId": "00000000-0000-0000-0000-000000000002",
+          "affectedEntryIds": [
+            "10000000-0000-0000-0000-000000000001",
+            "10000000-0000-0000-0000-000000000002"
+          ]
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Submitted renamed group",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "6d2b6c9e7dbbb26703790934b6c747f9391293362a1b3bcd948eaf0e16e67d94",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Submitted renamed group/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "7ce98a55699a33e6a9771855fbb15d2bc78b47b9c83a1e92294caf6dc65b6209",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "dadd92a06af79bb8f5d3c872b34c5823b3a57e3406d7f5e2352b374e4f0a7dc3",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "b5e83eeaa6c4b71f3e323225965c488ba52a81e6e369235f08595034b51e535d"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "63379ed7e5817f108f4f0307010ad0bbd91a8454f02a8c1f24f759aeed8b0096"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Submitted renamed group",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "7577a711b48ad52b8b382e1013a419c084d70bb1c632d4c243c02c0bf8a9fe4f"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "f533cb3050ee1ae0bb4124abcd2591d20e7147b0fa487c093f37ea61ae46c819"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "2dbab2b1ea4ffe1d99943ad7d18a8bb02b5ba68d41ced0bfe09edfeca91fb0fc"
+            }
+          ]
+        }
+      }
+    ],
+    "initialEncryptedStoreSHA256": "340d8e2ea8568d32d63a4737671a408f722796d44af65c87be05dc2a860c4956",
+    "finalEncryptedStoreSHA256": "4466b302bfa2598df7ddece61dda4584f1295bacc604e264ff8ca8d40f3d0b3c",
+    "cleanup": true,
+    "tempGone": true,
+    "DOMModel": true,
+    "nativeBrowser": false,
+    "canonicalFixtureReusedWithProvenance": true,
+    "originalExecutions": 0
+  },
+  {
+    "name": "late-entry-draft",
+    "calls": [
+      {
+        "action": "status",
+        "input": {},
+        "result": {
+          "exists": true,
+          "locked": false,
+          "idleLockMinutes": 5
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "6e314edb77a7a127739fd2072aee18b2b695c079a5ef18d22045d27237e444b9",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "4cc2225e94a7fcdfc6aaa650062dacf47a46e853f1d4c371d4f0f822e668a235",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "351e930920c8430f15b74cb0f63734809230512ccf84d66412f8078536fd5ab0",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "0184b3fcc8c8e47be5143ff2c912dea9166d107351ff49c8a693333f8a403e77"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "e44128506607f15a5fee268b91865228423f93917ea1a5f64ed75d4768e5aabf"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "bff25e300a786c3a73669fc44e1639d0e9f530988f7f9cad5182831cbacbc2ea"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "402eba4775ffe365976f9590399bb3b6a640493b321587f95a44b200c35e7e7f"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "fdd6e77d892c4d50cd6cacc7c97eab80d1619a0a7b84c242f6981b60e46d5682"
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupRead",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "bff25e300a786c3a73669fc44e1639d0e9f530988f7f9cad5182831cbacbc2ea"
+        },
+        "result": {
+          "group": {
+            "id": "00000000-0000-0000-0000-000000000003",
+            "name": "Selected",
+            "parentId": "00000000-0000-0000-0000-000000000002",
+            "inRecycleBin": false,
+            "isRecycleBin": false,
+            "groupCount": 2,
+            "entryCount": 2,
+            "canDelete": true,
+            "canEdit": true,
+            "canCreateChild": true,
+            "deleteIsPermanent": false,
+            "canRestorePreviousGroup": false,
+            "previousGroup": null,
+            "recycleRevision": "bff25e300a786c3a73669fc44e1639d0e9f530988f7f9cad5182831cbacbc2ea",
+            "notes": "",
+            "descendantGroups": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "parentId": "00000000-0000-0000-0000-000000000002",
+                "name": "Selected"
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "parentId": "00000000-0000-0000-0000-000000000003",
+                "name": "Deep"
+              }
+            ],
+            "entries": [
+              {
+                "id": "10000000-0000-0000-0000-000000000001",
+                "parentId": "00000000-0000-0000-0000-000000000003",
+                "title": "A",
+                "username": "synthetic user",
+                "url": "https://example.invalid"
+              },
+              {
+                "id": "10000000-0000-0000-0000-000000000002",
+                "parentId": "00000000-0000-0000-0000-000000000004",
+                "title": "B",
+                "username": "synthetic user",
+                "url": "https://example.invalid"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "action": "groupSave",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "bff25e300a786c3a73669fc44e1639d0e9f530988f7f9cad5182831cbacbc2ea",
+          "name": "Submitted renamed group",
+          "notes": "Submitted notes"
+        },
+        "result": {
+          "saved": true,
+          "id": "00000000-0000-0000-0000-000000000003",
+          "parentId": "00000000-0000-0000-0000-000000000002",
+          "affectedEntryIds": [
+            "10000000-0000-0000-0000-000000000001",
+            "10000000-0000-0000-0000-000000000002"
+          ]
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Submitted renamed group",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "a590c5be52c23358ec1a15781e2d4604aa10bf86916fbcefafc1238bdebd92bb",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Submitted renamed group/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "14dda09bd76071d13e0260baf4ce2ea48a6babe0d93bbf648ad4e4134ed21ce3",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "ac572426ead2253377f61afbf76f4db2c794419189dcc0911f5ee2c781fa3422",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "84eee19c52d64b6b067811b39aee212a1494a8bcca186d525142c9654c8c93d2"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "76d9df97b0533b38d82f8cabb7bd65381d77bbb4e56aa15c82ddb417ec1cfaaf"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Submitted renamed group",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "5c9b5b8c99342f61541d33663caf16685a4b0a3ad8921d5603a1898ea3028805"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "49bf714c9fec9f5856102aab435db911fd6641bcfc3c478ad9559052f3057459"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "6413e1ea31bdd1eed06807131380d69760f9e360bfb1c93f686252d89366df29"
+            }
+          ]
+        }
+      }
+    ],
+    "initialEncryptedStoreSHA256": "9df7c0540316414080047b0f1f42ddb90dde7341d4996904649f47d26af819fa",
+    "finalEncryptedStoreSHA256": "0d9c9bfe3428d463e02b68a35b10d91a8d6733f2b58a69ad0038034bc194f095",
+    "cleanup": true,
+    "tempGone": true,
+    "DOMModel": true,
+    "nativeBrowser": false,
+    "canonicalFixtureReusedWithProvenance": true,
+    "originalExecutions": 0
+  },
+  {
+    "name": "save-persistence-retry",
+    "calls": [
+      {
+        "action": "status",
+        "input": {},
+        "result": {
+          "exists": true,
+          "locked": false,
+          "idleLockMinutes": 5
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "1c33da5932667f5bbd9f12b7a1d425e6e6fe48581eeaecf207f593548c955ccb",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "140fc29bd06f6e72a80c515fda08f8d8fa0fcb2d409cc4b232be94e05f8bed69",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "ace5de6547c62101189f6df1e30b1067d39e3e50eb3087335a4e70ecb94565ff",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "32fc8b1d1ca30cdd75883b4c47076c8ab8d2cce0a0c309753a6e640f9bfc475d"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "ed23aae39402e3db6ae53a8bebde327b48e5052291fca04ab58ee845b8893ab2"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Selected",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "e51c692b9b4b9da7dc348496cf3683e8458164e9048ce92edc7a84876afe4af5"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "2545a626dd7d8bea12daa60b75b50be2ab9b1a8f32469c5695c1d520b54e98bc"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "d1f5be21bf0ad519199ccf218d5cbf9fca9b7d396241a606320ce76c063ca11d"
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupRead",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "e51c692b9b4b9da7dc348496cf3683e8458164e9048ce92edc7a84876afe4af5"
+        },
+        "result": {
+          "group": {
+            "id": "00000000-0000-0000-0000-000000000003",
+            "name": "Selected",
+            "parentId": "00000000-0000-0000-0000-000000000002",
+            "inRecycleBin": false,
+            "isRecycleBin": false,
+            "groupCount": 2,
+            "entryCount": 2,
+            "canDelete": true,
+            "canEdit": true,
+            "canCreateChild": true,
+            "deleteIsPermanent": false,
+            "canRestorePreviousGroup": false,
+            "previousGroup": null,
+            "recycleRevision": "e51c692b9b4b9da7dc348496cf3683e8458164e9048ce92edc7a84876afe4af5",
+            "notes": "",
+            "descendantGroups": [
+              {
+                "id": "00000000-0000-0000-0000-000000000003",
+                "parentId": "00000000-0000-0000-0000-000000000002",
+                "name": "Selected"
+              },
+              {
+                "id": "00000000-0000-0000-0000-000000000004",
+                "parentId": "00000000-0000-0000-0000-000000000003",
+                "name": "Deep"
+              }
+            ],
+            "entries": [
+              {
+                "id": "10000000-0000-0000-0000-000000000001",
+                "parentId": "00000000-0000-0000-0000-000000000003",
+                "title": "A",
+                "username": "synthetic user",
+                "url": "https://example.invalid"
+              },
+              {
+                "id": "10000000-0000-0000-0000-000000000002",
+                "parentId": "00000000-0000-0000-0000-000000000004",
+                "title": "B",
+                "username": "synthetic user",
+                "url": "https://example.invalid"
+              }
+            ]
+          }
+        }
+      },
+      {
+        "action": "groupSave",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "e51c692b9b4b9da7dc348496cf3683e8458164e9048ce92edc7a84876afe4af5",
+          "name": "Submitted renamed group",
+          "notes": "Submitted notes"
+        },
+        "error": "Owned persistence failure"
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Selected",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "1c33da5932667f5bbd9f12b7a1d425e6e6fe48581eeaecf207f593548c955ccb",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Selected/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "140fc29bd06f6e72a80c515fda08f8d8fa0fcb2d409cc4b232be94e05f8bed69",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "ace5de6547c62101189f6df1e30b1067d39e3e50eb3087335a4e70ecb94565ff",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "groupSave",
+        "input": {
+          "id": "00000000-0000-0000-0000-000000000003",
+          "revision": "e51c692b9b4b9da7dc348496cf3683e8458164e9048ce92edc7a84876afe4af5",
+          "name": "Submitted renamed group",
+          "notes": "Submitted notes"
+        },
+        "result": {
+          "saved": true,
+          "id": "00000000-0000-0000-0000-000000000003",
+          "parentId": "00000000-0000-0000-0000-000000000002",
+          "affectedEntryIds": [
+            "10000000-0000-0000-0000-000000000001",
+            "10000000-0000-0000-0000-000000000002"
+          ]
+        }
+      },
+      {
+        "action": "list",
+        "input": {
+          "search": ""
+        },
+        "result": {
+          "entries": [
+            {
+              "id": "10000000-0000-0000-0000-000000000001",
+              "group": "Parent/Submitted renamed group",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000003",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "A",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "f5f4c333fa6181924c2d4566f69e9b77d9fd84d30c5d046dd04feff6370c3eed",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000002",
+              "group": "Parent/Submitted renamed group/Deep",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000004",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "B",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "8dc6679bde88539943674c41dbdaba4e357d16a1c900ab3b1389c525f8c40f84",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            },
+            {
+              "id": "10000000-0000-0000-0000-000000000003",
+              "group": "Other",
+              "kdbxGroupId": "00000000-0000-0000-0000-000000000005",
+              "createdAt": "2024-01-01T00:00:00.000Z",
+              "updatedAt": "2024-01-01T00:00:00.000Z",
+              "title": "C",
+              "username": "synthetic user",
+              "url": "https://example.invalid",
+              "recycleRevision": "0c19410f300b0c5400bf68437734e9fd434851cc9a2327f65c101844827a706c",
+              "inRecycleBin": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null
+            }
+          ]
+        }
+      },
+      {
+        "action": "recycleGroupList",
+        "input": {
+          "bin": false
+        },
+        "result": {
+          "enabled": true,
+          "hasBin": false,
+          "groups": [
+            {
+              "id": "00000000-0000-0000-0000-000000000001",
+              "name": "REA Vault",
+              "parentId": null,
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 5,
+              "entryCount": 3,
+              "canDelete": false,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "ddb77b33fbeb3e02db173813e4083bf9b616e0c707221fe911a1d815e67ad018"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000002",
+              "name": "Parent",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 3,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "67fee5b46b8b34e6f9ac1211987ce57eb176a0a8444731be611a2ffd7314db6b"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000003",
+              "name": "Submitted renamed group",
+              "parentId": "00000000-0000-0000-0000-000000000002",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 2,
+              "entryCount": 2,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "04e704163c1c1eee977be2addf7eb70ec6d756902d0d4a54e79d417e0369d31a"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000004",
+              "name": "Deep",
+              "parentId": "00000000-0000-0000-0000-000000000003",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "62b2a3497ddb0be713b53cdd5f0bb7c1b4d74d79a2ac1dfe575f574805a40709"
+            },
+            {
+              "id": "00000000-0000-0000-0000-000000000005",
+              "name": "Other",
+              "parentId": "00000000-0000-0000-0000-000000000001",
+              "inRecycleBin": false,
+              "isRecycleBin": false,
+              "groupCount": 1,
+              "entryCount": 1,
+              "canDelete": true,
+              "canEdit": true,
+              "canCreateChild": true,
+              "deleteIsPermanent": false,
+              "canRestorePreviousGroup": false,
+              "previousGroup": null,
+              "recycleRevision": "35a7d65bdeca2548ed11f12f1a36d940eb4867fe541ca934a42a52375920b2a8"
+            }
+          ]
+        }
+      }
+    ],
+    "initialEncryptedStoreSHA256": "79ef0db7e2e21d93d5a76e57526afbcbd7afce66a49ad9f7af3f95d902adc9a5",
+    "finalEncryptedStoreSHA256": "6db30f15ee288e25728c8a8c1bb2989a8c5d59d2ae8419d33c85a48f98db4abb",
+    "cleanup": true,
+    "tempGone": true,
+    "DOMModel": true,
+    "nativeBrowser": false,
+    "canonicalFixtureReusedWithProvenance": true,
+    "originalExecutions": 0
+  }
+]

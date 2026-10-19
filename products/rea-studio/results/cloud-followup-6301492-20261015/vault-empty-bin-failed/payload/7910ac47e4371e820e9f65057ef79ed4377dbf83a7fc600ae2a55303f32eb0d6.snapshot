@@ -1,0 +1,1450 @@
+TAP version 13
+# Subtest: vault HTTP CRUD persists encrypted data across host restarts and authenticates master passwords
+ok 1 - vault HTTP CRUD persists encrypted data across host restarts and authenticates master passwords
+  ---
+  duration_ms: 777.8464
+  type: 'test'
+  ...
+# REA_VAULT_HTTP_RECYCLE_EXPORT {"softDeletedExportedEntries":1,"activeEntries":0,"recycledEntries":1,"historySnapshotsRetained":1,"exportedUUIDBinMembership":true,"previousParentRetained":true,"metadataRetained":true,"recycledRestartRetained":true,"purgedExportedEntries":0,"tombstones":1,"tombstoneUUIDMatches":true,"purgeRestartRetained":true,"unsupportedEmptyBinRejected":true,"failedMutationsLeaveEncryptedBytesExact":true,"secondTestHostInstances":4,"secondTestHostInstanceRestarts":3,"actualOSHostProcessRestarts":0,"originalExecutions":0}
+# Subtest: KDBX HTTP import/export preserves encrypted document metadata across restart and failed replacement leaves existing data intact
+ok 2 - KDBX HTTP import/export preserves encrypted document metadata across restart and failed replacement leaves existing data intact
+  ---
+  duration_ms: 622.4823
+  type: 'test'
+  ...
+# Subtest: encrypted entries survive lock and unlock without persisted plaintext; wrong passwords and tampering fail
+ok 3 - encrypted entries survive lock and unlock without persisted plaintext; wrong passwords and tampering fail
+  ---
+  duration_ms: 425.7801
+  type: 'test'
+  ...
+# Subtest: password changes rotate salt/key, encrypted export can be imported, and concurrent entries are retained
+ok 4 - password changes rotate salt/key, encrypted export can be imported, and concurrent entries are retained
+  ---
+  duration_ms: 610.8772
+  type: 'test'
+  ...
+# Subtest: TOTP matches six RFC 6238 SHA-1 vectors and rejects invalid Base32
+ok 5 - TOTP matches six RFC 6238 SHA-1 vectors and rejects invalid Base32
+  ---
+  duration_ms: 0.738
+  type: 'test'
+  ...
+# Subtest: idle timer locks the vault without requiring a later expiry-check request
+ok 6 - idle timer locks the vault without requiring a later expiry-check request
+  ---
+  duration_ms: 84.7756
+  type: 'test'
+  ...
+# Subtest: dispose during held encrypted persistence cannot reopen the session and committed state unlocks empty
+ok 7 - dispose during held encrypted persistence cannot reopen the session and committed state unlocks empty
+  ---
+  duration_ms: 443.8395
+  type: 'test'
+  ...
+# Subtest: queued lock stays serialized behind held encrypted empty-bin persistence
+ok 8 - queued lock stays serialized behind held encrypted empty-bin persistence
+  ---
+  duration_ms: 430.3866
+  type: 'test'
+  ...
+# Subtest: detached old bin confirmation cannot delete contents after opening a dirty current group draft
+ok 9 - detached old bin confirmation cannot delete contents after opening a dirty current group draft
+  ---
+  duration_ms: 352.5619
+  type: 'test'
+  ...
+# Subtest: disposed render cannot publish a held actual empty-bin preview
+ok 10 - disposed render cannot publish a held actual empty-bin preview
+  ---
+  duration_ms: 342.2278
+  type: 'test'
+  ...
+# Subtest: disposed render cannot issue refreshes or republish a held committed empty-bin response
+ok 11 - disposed render cannot issue refreshes or republish a held committed empty-bin response
+  ---
+  duration_ms: 370.3389
+  type: 'test'
+  ...
+# Subtest: actual released empty-bin nested/direct and disabled-bin library contracts agree
+not ok 12 - actual released empty-bin nested/direct and disabled-bin library contracts agree
+  ---
+  duration_ms: 4635.2524
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\vault\\bin-empty-original.test.mjs:102:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    original (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/vault/bin-empty-original.test.mjs:77:170)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/vault/bin-empty-original.test.mjs:102:141)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: actual released empty-bin save/reopen and fresh empty-bin no-op remain exact
+not ok 13 - actual released empty-bin save/reopen and fresh empty-bin no-op remain exact
+  ---
+  duration_ms: 404.7855
+  type: 'test'
+  location: 'D:\\a\\rea-research-lab\\rea-research-lab\\products\\rea-studio\\apps\\vault\\bin-empty-original.test.mjs:103:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    1 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    original (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/vault/bin-empty-original.test.mjs:77:170)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async TestContext.<anonymous> (file:///D:/a/rea-research-lab/rea-research-lab/products/rea-studio/apps/vault/bin-empty-original.test.mjs:103:99)
+    async Test.run (node:internal/test_runner/test:1313:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:897:7)
+  ...
+# Subtest: encrypted empty-bin commit retains bin and outside entry through lock/reopen
+ok 14 - encrypted empty-bin commit retains bin and outside entry through lock/reopen
+  ---
+  duration_ms: 189.797
+  type: 'test'
+  ...
+# Subtest: unchecked/extra-input/cross-domain/stale commands refuse before encrypted persistence
+ok 15 - unchecked/extra-input/cross-domain/stale commands refuse before encrypted persistence
+  ---
+  duration_ms: 103.8656
+  type: 'test'
+  ...
+# Subtest: failed store write leaves encrypted backend/session unchanged and permits explicit fresh retry
+ok 16 - failed store write leaves encrypted backend/session unchanged and permits explicit fresh retry
+  ---
+  duration_ms: 100.8721
+  type: 'test'
+  ...
+# Subtest: queued caller data is captured and concurrent old selection refuses after the first commit
+ok 17 - queued caller data is captured and concurrent old selection refuses after the first commit
+  ---
+  duration_ms: 96.4574
+  type: 'test'
+  ...
+# Subtest: fresh already-empty command is a no-op with no extra encrypted-store write
+ok 18 - fresh already-empty command is a no-op with no extra encrypted-store write
+  ---
+  duration_ms: 89.8904
+  type: 'test'
+  ...
+# Subtest: empty-bin UI requires explicit confirmation and retains bin/outside data
+ok 19 - empty-bin UI requires explicit confirmation and retains bin/outside data
+  ---
+  duration_ms: 378.1043
+  type: 'test'
+  ...
+# Subtest: unsaved entry draft refuses empty-bin transport without clearing the draft/preview
+ok 20 - unsaved entry draft refuses empty-bin transport without clearing the draft/preview
+  ---
+  duration_ms: 330.9543
+  type: 'test'
+  ...
+# Subtest: held old empty-bin preview cannot reopen a closed group panel
+ok 21 - held old empty-bin preview cannot reopen a closed group panel
+  ---
+  duration_ms: 329.6635
+  type: 'test'
+  ...
+# Subtest: held committed empty-bin response cannot clear a newer draft after panel close
+ok 22 - held committed empty-bin response cannot clear a newer draft after panel close
+  ---
+  duration_ms: 327.0217
+  type: 'test'
+  ...
+# Subtest: a refreshed empty-bin preview invalidates an older detached confirmation control
+ok 23 - a refreshed empty-bin preview invalidates an older detached confirmation control
+  ---
+  duration_ms: 330.1392
+  type: 'test'
+  ...
+# Subtest: ordinary persistence failure retains contents and requires a fresh unchecked preview before retry
+ok 24 - ordinary persistence failure retains contents and requires a fresh unchecked preview before retry
+  ---
+  duration_ms: 347.6894
+  type: 'test'
+  ...
+# Subtest: empty-bin preview identifies all descendants and contains no entry secrets or history
+ok 25 - empty-bin preview identifies all descendants and contains no entry secrets or history
+  ---
+  duration_ms: 22.2391
+  type: 'test'
+  ...
+# Subtest: empty keeps exact bin metadata, outside subtree, attachment table and caller bytes
+ok 26 - empty keeps exact bin metadata, outside subtree, attachment table and caller bytes
+  ---
+  duration_ms: 14.0129
+  type: 'test'
+  ...
+# Subtest: direct bin entries precede recursive groups and no bin/history UUID tombstone is appended
+ok 27 - direct bin entries precede recursive groups and no bin/history UUID tombstone is appended
+  ---
+  duration_ms: 16.5932
+  type: 'test'
+  ...
+# Subtest: prior tombstones remain ordered and new descendants receive the one explicit operation clock
+ok 28 - prior tombstones remain ordered and new descendants receive the one explicit operation clock
+  ---
+  duration_ms: 15.9242
+  type: 'test'
+  ...
+# Subtest: confirmation is literal true and stale graph/key/group tokens cannot authorize emptying
+ok 29 - confirmation is literal true and stale graph/key/group tokens cannot authorize emptying
+  ---
+  duration_ms: 19.7432
+  type: 'test'
+  ...
+# Subtest: disabled recycling does not prevent explicitly emptying an existing UUID bin
+ok 30 - disabled recycling does not prevent explicitly emptying an existing UUID bin
+  ---
+  duration_ms: 11.3913
+  type: 'test'
+  ...
+# Subtest: missing or dangling bin cannot select another group, and a root-bin identity still refuses
+ok 31 - missing or dangling bin cannot select another group, and a root-bin identity still refuses
+  ---
+  duration_ms: 10.1283
+  type: 'test'
+  ...
+# Subtest: tombstone expansion refuses before changing any caller document
+ok 32 - tombstone expansion refuses before changing any caller document
+  ---
+  duration_ms: 350.8019
+  type: 'test'
+  ...
+# Subtest: invalid clocks refuse and a second fresh empty preview yields a byte-identical no-op
+ok 33 - invalid clocks refuse and a second fresh empty preview yields a byte-identical no-op
+  ---
+  duration_ms: 20.9642
+  type: 'test'
+  ...
+# Subtest: cleanup invalidates a held history preview and prevents private fields or an owned idle timer from republishing
+ok 34 - cleanup invalidates a held history preview and prevents private fields or an owned idle timer from republishing
+  ---
+  duration_ms: 120.8003
+  type: 'test'
+  ...
+# Subtest: cleanup during held post-Restore read cannot resurrect selection, secret fields or an old timer over a reopened view
+ok 35 - cleanup during held post-Restore read cannot resurrect selection, secret fields or an old timer over a reopened view
+  ---
+  duration_ms: 99.9008
+  type: 'test'
+  ...
+# Subtest: the active view idle callback still locks and clears its own editor after a disposal-safe reopen
+ok 36 - the active view idle callback still locks and clears its own editor after a disposal-safe reopen
+  ---
+  duration_ms: 90.4894
+  type: 'test'
+  ...
+# Subtest: each supported editable value changed before Restore refuses the effect without relying on input events
+ok 37 - each supported editable value changed before Restore refuses the effect without relying on input events
+  ---
+  duration_ms: 695.1189
+  type: 'test'
+  ...
+# Subtest: a draft typed while the post-Restore read is held retains editor fields and saves to the same entry
+ok 38 - a draft typed while the post-Restore read is held retains editor fields and saves to the same entry
+  ---
+  duration_ms: 104.5366
+  type: 'test'
+  ...
+# Subtest: new-entry Save response retains the subsequent draft and its committed identity for the next Save
+ok 39 - new-entry Save response retains the subsequent draft and its committed identity for the next Save
+  ---
+  duration_ms: 96.7791
+  type: 'test'
+  ...
+# Subtest: typing and reverting values while Restore is held still preserves the active editor through the input revision
+ok 40 - typing and reverting values while Restore is held still preserves the active editor through the input revision
+  ---
+  duration_ms: 95.2675
+  type: 'test'
+  ...
+# Subtest: a delayed Delete response retains newly typed values as a new draft with no deleted identity
+ok 41 - a delayed Delete response retains newly typed values as a new draft with no deleted identity
+  ---
+  duration_ms: 92.3655
+  type: 'test'
+  ...
+# Subtest: a delayed generated-password response cannot overwrite a newer explicitly typed password
+ok 42 - a delayed generated-password response cannot overwrite a newer explicitly typed password
+  ---
+  duration_ms: 86.8807
+  type: 'test'
+  ...
+# Subtest: Search during held committed recursive effect issues no read; internal completion restores only current rows and retains newer draft
+ok 43 - Search during held committed recursive effect issues no read; internal completion restores only current rows and retains newer draft
+  ---
+  duration_ms: 117.811
+  type: 'test'
+  ...
+# Subtest: failed recursive write leaves rows cleared until explicit Search, then fresh group reconfirmation retries same backend identity
+ok 44 - failed recursive write leaves rows cleared until explicit Search, then fresh group reconfirmation retries same backend identity
+  ---
+  duration_ms: 97.4442
+  type: 'test'
+  ...
+# Subtest: unconfirmed and dirty recursive refusals do not clear active rows or disable ordinary Search
+ok 45 - unconfirmed and dirty recursive refusals do not clear active rows or disable ordinary Search
+  ---
+  duration_ms: 93.3428
+  type: 'test'
+  ...
+# Subtest: completed old entry-bin password read cannot publish after recursive permanent deletion
+ok 46 - completed old entry-bin password read cannot publish after recursive permanent deletion
+  ---
+  duration_ms: 133.7076
+  type: 'test'
+  ...
+# Subtest: completed old bin list cannot resurrect descendant rows after recursive restore
+ok 47 - completed old bin list cannot resurrect descendant rows after recursive restore
+  ---
+  duration_ms: 110.3187
+  type: 'test'
+  ...
+# Subtest: already displayed password is scrubbed in detached controls before recursive write starts
+ok 48 - already displayed password is scrubbed in detached controls before recursive write starts
+  ---
+  duration_ms: 107.1193
+  type: 'test'
+  ...
+# Subtest: unconfirmed group refusal leaves existing entry-bin preview intact and performs no group write
+ok 49 - unconfirmed group refusal leaves existing entry-bin preview intact and performs no group write
+  ---
+  duration_ms: 98.3044
+  type: 'test'
+  ...
+# Subtest: completed older active-entry list must not republish deleted descendant rows while group commit response is held
+ok 50 - completed older active-entry list must not republish deleted descendant rows while group commit response is held
+  ---
+  duration_ms: 96.022
+  type: 'test'
+  ...
+# Subtest: view disposal while completed bin read is held scrubs current values and suppresses publication
+ok 51 - view disposal while completed bin read is held scrubs current values and suppresses publication
+  ---
+  duration_ms: 94.9951
+  type: 'test'
+  ...
+# Subtest: older completed entry-bin list is invalidated before recursive purge and cannot republish its old rows
+ok 52 - older completed entry-bin list is invalidated before recursive purge and cannot republish its old rows
+  ---
+  duration_ms: 107.8566
+  type: 'test'
+  ...
+# Subtest: confirmed group effect scrubs an existing masked bin password immediately, before held persistence resolves
+ok 53 - confirmed group effect scrubs an existing masked bin password immediately, before held persistence resolves
+  ---
+  duration_ms: 90.7843
+  type: 'test'
+  ...
+# Subtest: unconfirmed and dirty refusals leave current bin preview/private field untouched and issue zero group mutations
+ok 54 - unconfirmed and dirty refusals leave current bin preview/private field untouched and issue zero group mutations
+  ---
+  duration_ms: 88.8727
+  type: 'test'
+  ...
+# Subtest: held group preview cannot append stale descendant details after purge starts
+ok 55 - held group preview cannot append stale descendant details after purge starts
+  ---
+  duration_ms: 90.2324
+  type: 'test'
+  ...
+# Subtest: failed purge drops held old bin publication; explicit fresh reopen and reconfirmation retry preserve backend atomicity
+ok 56 - failed purge drops held old bin publication; explicit fresh reopen and reconfirmation retry preserve backend atomicity
+  ---
+  duration_ms: 91.3205
+  type: 'test'
+  ...
+# Subtest: disposal before held purge commit suppresses every late view read while the real durable mutation completes
+ok 57 - disposal before held purge commit suppresses every late view read while the real durable mutation completes
+  ---
+  duration_ms: 92.6344
+  type: 'test'
+  ...
+# Subtest: held descendant entry-bin read after group purge must not republish purged password
+ok 58 - held descendant entry-bin read after group purge must not republish purged password
+  ---
+  duration_ms: 112.2002
+  type: 'test'
+  ...
+# Subtest: held descendant entry-bin read after group purge explicit-close control
+ok 59 - held descendant entry-bin read after group purge explicit-close control
+  ---
+  duration_ms: 93.1004
+  type: 'test'
+  ...
+# Subtest: fresh group edit preserves unknown fields/history and literal Unicode markup through encrypted reload with new revision
+ok 60 - fresh group edit preserves unknown fields/history and literal Unicode markup through encrypted reload with new revision
+  ---
+  duration_ms: 456.5364
+  type: 'test'
+  ...
+# Subtest: fresh queued Create captures name/notes before await and rejects accessor inputs without calling getters
+ok 61 - fresh queued Create captures name/notes before await and rejects accessor inputs without calling getters
+  ---
+  duration_ms: 354.5802
+  type: 'test'
+  ...
+# Subtest: fresh pending group Save clears recycled preview and entry list before a real response, retaining newer New-entry draft
+ok 62 - fresh pending group Save clears recycled preview and entry list before a real response, retaining newer New-entry draft
+  ---
+  duration_ms: 362.6214
+  type: 'test'
+  ...
+# Subtest: fresh group Save first active-list await retains enabled notes draft and dirty refresh refuses
+ok 63 - fresh group Save first active-list await retains enabled notes draft and dirty refresh refuses
+  ---
+  duration_ms: 336.5766
+  type: 'test'
+  ...
+# Subtest: fresh disposal during held committed group response clears drafts and cannot publish later
+ok 64 - fresh disposal during held committed group response clears drafts and cannot publish later
+  ---
+  duration_ms: 342.6898
+  type: 'test'
+  ...
+# Subtest: correction create acknowledged unchanged values clear the editor after exactly one successful mutation
+ok 65 - correction create acknowledged unchanged values clear the editor after exactly one successful mutation
+  ---
+  duration_ms: 378.205
+  type: 'test'
+  ...
+# Subtest: correction save acknowledged unchanged values clear the editor after exactly one successful mutation
+ok 66 - correction save acknowledged unchanged values clear the editor after exactly one successful mutation
+  ---
+  duration_ms: 342.1439
+  type: 'test'
+  ...
+# Subtest: correction create late programmatic value change preserves draft and follows the saved UUID/MAC on next Save
+ok 67 - correction create late programmatic value change preserves draft and follows the saved UUID/MAC on next Save
+  ---
+  duration_ms: 346.6367
+  type: 'test'
+  ...
+# Subtest: correction save late programmatic value change preserves draft and follows the saved UUID/MAC on next Save
+ok 68 - correction save late programmatic value change preserves draft and follows the saved UUID/MAC on next Save
+  ---
+  duration_ms: 338.0506
+  type: 'test'
+  ...
+# Subtest: correction explicit Close while final list is held stays closed and preserves an independent newer entry draft
+ok 69 - correction explicit Close while final list is held stays closed and preserves an independent newer entry draft
+  ---
+  duration_ms: 342.0431
+  type: 'test'
+  ...
+# Subtest: correction final-list disposal prevents publication and scrubs held form values
+ok 70 - correction final-list disposal prevents publication and scrubs held form values
+  ---
+  duration_ms: 332.8893
+  type: 'test'
+  ...
+# Subtest: correction group-list completion can clear an acknowledged group form without clearing newer entry values
+ok 71 - correction group-list completion can clear an acknowledged group form without clearing newer entry values
+  ---
+  duration_ms: 325.5651
+  type: 'test'
+  ...
+# Subtest: correction failed Save persistence retains existing group editor and retry writes a single final state
+ok 72 - correction failed Save persistence retains existing group editor and retry writes a single final state
+  ---
+  duration_ms: 337.2856
+  type: 'test'
+  ...
+# Subtest: independent create retains newer enabled group draft while final group-list response is held
+ok 73 - independent create retains newer enabled group draft while final group-list response is held
+  ---
+  duration_ms: 374.0259
+  type: 'test'
+  ...
+# Subtest: independent save retains newer enabled group draft while final group-list response is held
+ok 74 - independent save retains newer enabled group draft while final group-list response is held
+  ---
+  duration_ms: 335.2989
+  type: 'test'
+  ...
+# Subtest: independent first active-list wait retains a newly typed create draft and subsequent Save targets the new UUID/MAC
+ok 75 - independent first active-list wait retains a newly typed create draft and subsequent Save targets the new UUID/MAC
+  ---
+  duration_ms: 337.2765
+  type: 'test'
+  ...
+# Subtest: independent failed group persistence retains the editable draft and retries exactly once without duplicate children
+ok 76 - independent failed group persistence retains the editable draft and retries exactly once without duplicate children
+  ---
+  duration_ms: 342.5663
+  type: 'test'
+  ...
+# Subtest: independent closed group panel stays closed during held active list and newer entry draft remains enabled
+ok 77 - independent closed group panel stays closed during held active list and newer entry draft remains enabled
+  ---
+  duration_ms: 339.2588
+  type: 'test'
+  ...
+# Subtest: independent selected entry and dirty new-entry guards refuse group edits before encrypted writes
+ok 78 - independent selected entry and dirty new-entry guards refuse group edits before encrypted writes
+  ---
+  duration_ms: 339.506
+  type: 'test'
+  ...
+# Subtest: fresh final-list Create continuation commits once then saves newer fields once to the newly created UUID/MAC
+ok 79 - fresh final-list Create continuation commits once then saves newer fields once to the newly created UUID/MAC
+  ---
+  duration_ms: 379.2357
+  type: 'test'
+  ...
+# Subtest: fresh held final-list Save clears an acknowledged effective draft even after temporary edits return to submitted values
+ok 80 - fresh held final-list Save clears an acknowledged effective draft even after temporary edits return to submitted values
+  ---
+  duration_ms: 345.182
+  type: 'test'
+  ...
+# Subtest: fresh failed Save preserves encrypted document/session revision and retries with exactly one accepted persistence write
+ok 81 - fresh failed Save preserves encrypted document/session revision and retries with exactly one accepted persistence write
+  ---
+  duration_ms: 346.8509
+  type: 'test'
+  ...
+# Subtest: fresh final-list committed Create disposal scrubs detached controls and never adds a second encrypted write or follow-up read
+ok 82 - fresh final-list committed Create disposal scrubs detached controls and never adds a second encrypted write or follow-up read
+  ---
+  duration_ms: 324.5264
+  type: 'test'
+  ...
+# Subtest: actual constructor/AddGroup/Touch modified without parents matches selected create defaults and untouched inheritance
+ok 83 - actual constructor/AddGroup/Touch modified without parents matches selected create defaults and untouched inheritance
+  ---
+  duration_ms: 1047.6658
+  type: 'test'
+  ...
+# Subtest: actual Touch and name/notes assignments match ancestor rename and preserved descendant history/binaries
+ok 84 - actual Touch and name/notes assignments match ancestor rename and preserved descendant history/binaries
+  ---
+  duration_ms: 578.9304
+  type: 'test'
+  ...
+# Subtest: actual selected subset accepts root, empty, whitespace and duplicate names without normalization
+ok 85 - actual selected subset accepts root, empty, whitespace and duplicate names without normalization
+  ---
+  duration_ms: 2176.0929
+  type: 'test'
+  ...
+# Subtest: candidate name/notes/create KDBX is read and saved by actual original with history and protected attachments
+ok 86 - candidate name/notes/create KDBX is read and saved by actual original with history and protected attachments
+  ---
+  duration_ms: 565.0813
+  type: 'test'
+  ...
+# Subtest: encrypted group creation/edit survives lock/reopen and updates projected child paths without leaking index notes
+ok 87 - encrypted group creation/edit survives lock/reopen and updates projected child paths without leaking index notes
+  ---
+  duration_ms: 195.5318
+  type: 'test'
+  ...
+# Subtest: failed encrypted writes leave create/edit memory and durable bytes untouched with retryable revision
+ok 88 - failed encrypted writes leave create/edit memory and durable bytes untouched with retryable revision
+  ---
+  duration_ms: 177.3715
+  type: 'test'
+  ...
+# Subtest: serialized competing edits reject stale revisions and privately capture queued caller text
+ok 89 - serialized competing edits reject stale revisions and privately capture queued caller text
+  ---
+  duration_ms: 88.7237
+  type: 'test'
+  ...
+# Subtest: locked, malformed and unsupported editing inputs refuse before writing
+ok 90 - locked, malformed and unsupported editing inputs refuse before writing
+  ---
+  duration_ms: 87.2473
+  type: 'test'
+  ...
+# Subtest: recycle-bin group editor attempts are rejected without durable change
+ok 91 - recycle-bin group editor attempts are rejected without durable change
+  ---
+  duration_ms: 88.6886
+  type: 'test'
+  ...
+# Subtest: disk store survives actual fresh Node process with empty group and renamed descendants
+ok 92 - disk store survives actual fresh Node process with empty group and renamed descendants
+  ---
+  duration_ms: 261.9682
+  type: 'test'
+  ...
+# Subtest: saving an entry after ancestor rename preserves its native group UUID and previous entry history
+ok 93 - saving an entry after ancestor rename preserves its native group UUID and previous entry history
+  ---
+  duration_ms: 97.8337
+  type: 'test'
+  ...
+# Subtest: owned DOM creates empty native child, edits selected name/notes, and rerenders descendant entry paths
+ok 94 - owned DOM creates empty native child, edits selected name/notes, and rerenders descendant entry paths
+  ---
+  duration_ms: 137.8145
+  type: 'test'
+  ...
+# Subtest: root exposes creation/details but no root deletion control
+ok 95 - root exposes creation/details but no root deletion control
+  ---
+  duration_ms: 100.2385
+  type: 'test'
+  ...
+# Subtest: selected entry and unannounced dirty new-entry values refuse group writes before transport and preserve both drafts
+ok 96 - selected entry and unannounced dirty new-entry values refuse group writes before transport and preserve both drafts
+  ---
+  duration_ms: 94.2478
+  type: 'test'
+  ...
+# Subtest: group draft must be explicitly discarded before closing, switching lists/editor or recycling a group
+ok 97 - group draft must be explicitly discarded before closing, switching lists/editor or recycling a group
+  ---
+  duration_ms: 90.3185
+  type: 'test'
+  ...
+# Subtest: group editor close refuses unsaved values until its own discard confirmation
+ok 98 - group editor close refuses unsaved values until its own discard confirmation
+  ---
+  duration_ms: 89.2683
+  type: 'test'
+  ...
+# Subtest: held committed save preserves newer group/entry drafts and renews only the saved group identity
+ok 99 - held committed save preserves newer group/entry drafts and renews only the saved group identity
+  ---
+  duration_ms: 102.2041
+  type: 'test'
+  ...
+# Subtest: held committed creation preserves newer group/entry drafts and renews only the saved group identity
+ok 100 - held committed creation preserves newer group/entry drafts and renews only the saved group identity
+  ---
+  duration_ms: 101.4025
+  type: 'test'
+  ...
+# Subtest: failed creation/save keeps encrypted data exact and mounted user draft can retry unchanged revision
+ok 101 - failed creation/save keeps encrypted data exact and mounted user draft can retry unchanged revision
+  ---
+  duration_ms: 191.5586
+  type: 'test'
+  ...
+# Subtest: held committed group save cannot publish or read after view disposal; typed values are scrubbed
+ok 102 - held committed group save cannot publish or read after view disposal; typed values are scrubbed
+  ---
+  duration_ms: 87.6566
+  type: 'test'
+  ...
+# Subtest: close panel while committed create is held suppresses callback reads and preserves newly typed entry draft
+ok 103 - close panel while committed create is held suppresses callback reads and preserves newly typed entry draft
+  ---
+  duration_ms: 90.1215
+  type: 'test'
+  ...
+# Subtest: late group notes read cannot open a disposed or superseded group editor
+ok 104 - late group notes read cannot open a disposed or superseded group editor
+  ---
+  duration_ms: 90.8094
+  type: 'test'
+  ...
+# Subtest: held earlier descendant preview and active-entry read cannot republish after rename begins
+ok 105 - held earlier descendant preview and active-entry read cannot republish after rename begins
+  ---
+  duration_ms: 100.9034
+  type: 'test'
+  ...
+# Subtest: older active list generation cannot republish after native creation commits
+ok 106 - older active list generation cannot republish after native creation commits
+  ---
+  duration_ms: 96.3123
+  type: 'test'
+  ...
+# Subtest: earlier bin list and masked password preview are invalidated before group details commit
+ok 107 - earlier bin list and masked password preview are invalidated before group details commit
+  ---
+  duration_ms: 197.7797
+  type: 'test'
+  ...
+# Subtest: already displayed bin secret is scrubbed at group creation start and dirty refusal leaves it intact
+ok 108 - already displayed bin secret is scrubbed at group creation start and dirty refusal leaves it intact
+  ---
+  duration_ms: 98.0828
+  type: 'test'
+  ...
+# Subtest: new group has released folder/inheritance defaults, owned identity, untouched parent times and no entry changes
+ok 109 - new group has released folder/inheritance defaults, owned identity, untouched parent times and no entry changes
+  ---
+  duration_ms: 41.5316
+  type: 'test'
+  ...
+# Subtest: name/notes edit projects every descendant path while preserving exact subtree entries/history/unknown fields/attachments
+ok 110 - name/notes edit projects every descendant path while preserving exact subtree entries/history/unknown fields/attachments
+  ---
+  duration_ms: 13.9264
+  type: 'test'
+  ...
+# Subtest: root remains protected from deletion but native root naming and child creation are safe
+ok 111 - root remains protected from deletion but native root naming and child creation are safe
+  ---
+  duration_ms: 14.7277
+  type: 'test'
+  ...
+# Subtest: empty, whitespace, duplicate and slash names follow text semantics without changing identity
+ok 112 - empty, whitespace, duplicate and slash names follow text semantics without changing identity
+  ---
+  duration_ms: 42.4078
+  type: 'test'
+  ...
+# Subtest: whole-graph revisions reject stale text/attachment edits, wrong key, wrong UUID and entry tokens transactionally
+ok 113 - whole-graph revisions reject stale text/attachment edits, wrong key, wrong UUID and entry tokens transactionally
+  ---
+  duration_ms: 20.8566
+  type: 'test'
+  ...
+# Subtest: recycled bin and descendants refuse creation/edit and expose active editor flags accurately
+ok 114 - recycled bin and descendants refuse creation/edit and expose active editor flags accurately
+  ---
+  duration_ms: 18.2135
+  type: 'test'
+  ...
+# Subtest: new UUID collision, zero and tombstoned UUID refusals leave caller unchanged
+ok 115 - new UUID collision, zero and tombstoned UUID refusals leave caller unchanged
+  ---
+  duration_ms: 25.9722
+  type: 'test'
+  ...
+# Subtest: bounded text, invalid XML, invalid usage and canonical clock refusal are transactional
+ok 116 - bounded text, invalid XML, invalid usage and canonical clock refusal are transactional
+  ---
+  duration_ms: 50.2584
+  type: 'test'
+  ...
+# Subtest: paths that exceed 256 characters refuse group creation and ancestor rename with full rollback
+ok 117 - paths that exceed 256 characters refuse group creation and ancestor rename with full rollback
+  ---
+  duration_ms: 6.4709
+  type: 'test'
+  ...
+# Subtest: unchanged save still touches only selected group and wraps native uint64 usage
+ok 118 - unchanged save still touches only selected group and wraps native uint64 usage
+  ---
+  duration_ms: 11.4764
+  type: 'test'
+  ...
+# Subtest: new group metadata pushes deep XML past the parser depth limit without mutating original
+ok 119 - new group metadata pushes deep XML past the parser depth limit without mutating original
+  ---
+  duration_ms: 9.6059
+  type: 'test'
+  ...
+# Subtest: native KDBX export/import retains new empty group, renamed paths, unknown fields and protected attachments
+ok 120 - native KDBX export/import retains new empty group, renamed paths, unknown fields and protected attachments
+  ---
+  duration_ms: 22.5352
+  type: 'test'
+  ...
+# Subtest: creation and edit stale every old group and entry recycle MAC without changing unaffected entry payload
+ok 121 - creation and edit stale every old group and entry recycle MAC without changing unaffected entry payload
+  ---
+  duration_ms: 24.0954
+  type: 'test'
+  ...
+# Subtest: unknown known-field attributes, icons, group settings and public metadata remain exact through editing
+ok 122 - unknown known-field attributes, icons, group settings and public metadata remain exact through editing
+  ---
+  duration_ms: 9.7789
+  type: 'test'
+  ...
+# Subtest: actual released group AddGroup/Touch/private bin helper matches recursive recycle then previous-parent restore
+ok 123 - actual released group AddGroup/Touch/private bin helper matches recursive recycle then previous-parent restore
+  ---
+  duration_ms: 1552.6046
+  type: 'test'
+  ...
+# Subtest: actual DeleteAllObjects recursive tombstone ordering and disabled/permanent decisions match
+ok 124 - actual DeleteAllObjects recursive tombstone ordering and disabled/permanent decisions match
+  ---
+  duration_ms: 1396.3074
+  type: 'test'
+  ...
+# Subtest: actual released root and previous-self/subtree/missing/zero guards agree with bounded refusal
+ok 125 - actual released root and previous-self/subtree/missing/zero guards agree with bounded refusal
+  ---
+  duration_ms: 3364.8062
+  type: 'test'
+  ...
+# Subtest: candidate moved group KDBX4.1 is read by original with previous parent/history retained; original save representation remains explicit
+ok 126 - candidate moved group KDBX4.1 is read by original with previous parent/history retained; original save representation remains explicit
+  ---
+  duration_ms: 694.901
+  type: 'test'
+  ...
+# Subtest: released default-feature writer downgrades to4.0 and loses group previous-parent after reopen
+ok 127 - released default-feature writer downgrades to4.0 and loses group previous-parent after reopen
+  ---
+  duration_ms: 686.1378
+  type: 'test'
+  ...
+# Subtest: released bin child/bin itself/bin-containing ancestor all use permanent recursive purge
+ok 128 - released bin child/bin itself/bin-containing ancestor all use permanent recursive purge
+  ---
+  duration_ms: 2043.5548
+  type: 'test'
+  ...
+# Subtest: protected descendant attachment survives recursive recycle and actual original KDBX save/reopen
+ok 129 - protected descendant attachment survives recursive recycle and actual original KDBX save/reopen
+  ---
+  duration_ms: 688.5205
+  type: 'test'
+  ...
+# Subtest: recursive group recycle/restore keeps exact descendants, UUID/history/unknown XML and does not touch descendants
+ok 130 - recursive group recycle/restore keeps exact descendants, UUID/history/unknown XML and does not touch descendants
+  ---
+  duration_ms: 31.6901
+  type: 'test'
+  ...
+# Subtest: group preview is UUID-bound, finite, copy-owned and excludes all passwords/history payloads
+ok 131 - group preview is UUID-bound, finite, copy-owned and excludes all passwords/history payloads
+  ---
+  duration_ms: 7.6598
+  type: 'test'
+  ...
+# Subtest: purge adds native tombstones in released entry-first/postorder/group-last sequence
+ok 132 - purge adds native tombstones in released entry-first/postorder/group-last sequence
+  ---
+  duration_ms: 6.5665
+  type: 'test'
+  ...
+# Subtest: root refusal and confirmations are transactional; disabled recycle permanently deletes
+ok 133 - root refusal and confirmations are transactional; disabled recycle permanently deletes
+  ---
+  duration_ms: 12.6445
+  type: 'test'
+  ...
+# Subtest: bin descendants, bin itself and ancestor containing the bin permanently delete; dangling bin UUID retained
+ok 134 - bin descendants, bin itself and ancestor containing the bin permanently delete; dangling bin UUID retained
+  ---
+  duration_ms: 24.3378
+  type: 'test'
+  ...
+# Subtest: previous-parent zero, missing, self, subtree, same parent and bin ancestry refuse without root fallback
+ok 135 - previous-parent zero, missing, self, subtree, same parent and bin ancestry refuse without root fallback
+  ---
+  duration_ms: 28.6114
+  type: 'test'
+  ...
+# Subtest: whole-graph tokens reject stale competing changes and entry tokens cannot authorize groups
+ok 136 - whole-graph tokens reject stale competing changes and entry tokens cannot authorize groups
+  ---
+  duration_ms: 9.1888
+  type: 'test'
+  ...
+# Subtest: tombstone overflow is rejected before altering any original subtree
+ok 137 - tombstone overflow is rejected before altering any original subtree
+  ---
+  duration_ms: 358.6528
+  type: 'test'
+  ...
+# Subtest: duplicate names cannot redirect group identity; active UUID collisions reject atomically
+ok 138 - duplicate names cannot redirect group identity; active UUID collisions reject atomically
+  ---
+  duration_ms: 10.3872
+  type: 'test'
+  ...
+# Subtest: group clock validation and uint64 wrap leave modification time and descendants untouched
+ok 139 - group clock validation and uint64 wrap leave modification time and descendants untouched
+  ---
+  duration_ms: 8.9468
+  type: 'test'
+  ...
+# Subtest: XML depth guard rejects expanded group movement without altering caller graph
+ok 140 - XML depth guard rejects expanded group movement without altering caller graph
+  ---
+  duration_ms: 7.8473
+  type: 'test'
+  ...
+# Subtest: recursive move/restore keeps exact protected attachment table and native Binary reference
+ok 141 - recursive move/restore keeps exact protected attachment table and native Binary reference
+  ---
+  duration_ms: 14.8852
+  type: 'test'
+  ...
+# Subtest: encrypted recursive group recycle survives lock/reopen and restore/purge with no secret in index/preview
+ok 142 - encrypted recursive group recycle survives lock/reopen and restore/purge with no secret in index/preview
+  ---
+  duration_ms: 290.7987
+  type: 'test'
+  ...
+# Subtest: failed encrypted persistence leaves group/entries/history/bin untouched and confirmation rejects before write
+ok 143 - failed encrypted persistence leaves group/entries/history/bin untouched and confirmation rejects before write
+  ---
+  duration_ms: 94.3775
+  type: 'test'
+  ...
+# Subtest: queued direct input target is privately captured; stale concurrent group tokens refuse after durable commit
+ok 144 - queued direct input target is privately captured; stale concurrent group tokens refuse after durable commit
+  ---
+  duration_ms: 91.2534
+  type: 'test'
+  ...
+# Subtest: actual group UI previews descendants without passwords, confirms recursive recycle and restore
+ok 145 - actual group UI previews descendants without passwords, confirms recursive recycle and restore
+  ---
+  duration_ms: 127.7744
+  type: 'test'
+  ...
+# Subtest: open entry and new dirty draft prevent group commands before any mutation transport
+ok 146 - open entry and new dirty draft prevent group commands before any mutation transport
+  ---
+  duration_ms: 86.6549
+  type: 'test'
+  ...
+# Subtest: held real committed recursive deletion retains newly typed draft, blocks duplicate/entry Save, and suppresses closed-panel publication
+ok 147 - held real committed recursive deletion retains newly typed draft, blocks duplicate/entry Save, and suppresses closed-panel publication
+  ---
+  duration_ms: 89.1924
+  type: 'test'
+  ...
+# Subtest: held group preview cannot publish after view disposal
+ok 148 - held group preview cannot publish after view disposal
+  ---
+  duration_ms: 86.89
+  type: 'test'
+  ...
+# Subtest: failed group persistence allows explicit fresh list/reconfirmation retry of unchanged group
+ok 149 - failed group persistence allows explicit fresh list/reconfirmation retry of unchanged group
+  ---
+  duration_ms: 96.1922
+  type: 'test'
+  ...
+# Subtest: older real entry read cannot reopen a now-recycled descendant after group mutation starts
+ok 150 - older real entry read cannot reopen a now-recycled descendant after group mutation starts
+  ---
+  duration_ms: 92.2187
+  type: 'test'
+  ...
+# Subtest: late committed group response performs no follow-up API read after disposal
+ok 151 - late committed group response performs no follow-up API read after disposal
+  ---
+  duration_ms: 86.0929
+  type: 'test'
+  ...
+# Subtest: automatic changed edit preserves prior version; no-op touches access and usage without history or mtime
+ok 152 - automatic changed edit preserves prior version; no-op touches access and usage without history or mtime
+  ---
+  duration_ms: 14.8652
+  type: 'test'
+  ...
+# Subtest: count, size, unlimited limits and oldest modification time preserve ordered survivors
+ok 153 - count, size, unlimited limits and oldest modification time preserve ordered survivors
+  ---
+  duration_ms: 16.9596
+  type: 'test'
+  ...
+# Subtest: restore keeps current location, history and UUID while restoring metadata and selected content
+ok 154 - restore keeps current location, history and UUID while restoring metadata and selected content
+  ---
+  duration_ms: 10.3462
+  type: 'test'
+  ...
+# Subtest: confirmation, stale selections, bad indices and cross-key tokens reject without mutation; explicit read is a copy
+ok 155 - confirmation, stale selections, bad indices and cross-key tokens reject without mutation; explicit read is a copy
+  ---
+  duration_ms: 5.9259
+  type: 'test'
+  ...
+# Subtest: malformed history, nested revisions, duplicate fields, bad attachment refs and combined bound reject before persistence
+ok 156 - malformed history, nested revisions, duplicate fields, bad attachment refs and combined bound reject before persistence
+  ---
+  duration_ms: 240.9576
+  type: 'test'
+  ...
+# Subtest: 1000 final revisions may prune one pending copy; unlimited overflow and late-year sentinel prune reject
+ok 157 - 1000 final revisions may prune one pending copy; unlimited overflow and late-year sentinel prune reject
+  ---
+  duration_ms: 547.1251
+  type: 'test'
+  ...
+# Subtest: original release direct backup and maintenance replay match native edits, metadata, no-op and oldest pruning
+ok 158 - original release direct backup and maintenance replay match native edits, metadata, no-op and oldest pruning
+  ---
+  duration_ms: 1857.5244
+  type: 'test'
+  ...
+# Subtest: original RestoreFromBackup copies old content and metadata while retaining live history/location
+ok 159 - original RestoreFromBackup copies old content and metadata while retaining live history/location
+  ---
+  duration_ms: 1749.9972
+  type: 'test'
+  ...
+# Subtest: original GetSize byte-accounting covers Unicode, protected and empty binaries, Auto-Type and unusual tag trimming
+ok 160 - original GetSize byte-accounting covers Unicode, protected and empty binaries, Auto-Type and unusual tag trimming
+  ---
+  duration_ms: 2492.1925
+  type: 'test'
+  ...
+# Subtest: original history settings boundary count0 and exact byte cutoff agree with candidate
+ok 161 - original history settings boundary count0 and exact byte cutoff agree with candidate
+  ---
+  duration_ms: 2337.6151
+  type: 'test'
+  ...
+# Subtest: public entry captures input before queue awaits and rejects failed storage without altering current/history
+ok 162 - public entry captures input before queue awaits and rejects failed storage without altering current/history
+  ---
+  duration_ms: 94.3489
+  type: 'test'
+  ...
+# Subtest: queued input is captured while persistence is held; lock waits for restored-state publication
+ok 163 - queued input is captured while persistence is held; lock waits for restored-state publication
+  ---
+  duration_ms: 168.1021
+  type: 'test'
+  ...
+# Subtest: unsafe own keys remain data, inherited/accessor inputs reject, and byte/structure bounds fail before store changes
+ok 164 - unsafe own keys remain data, inherited/accessor inputs reject, and byte/structure bounds fail before store changes
+  ---
+  duration_ms: 87.3199
+  type: 'test'
+  ...
+# REA_KEEPASS_HISTORY_ORIGINAL {"originalProcessExecutions":14,"guiExecutions":0,"detail":"D:\\\\a\\\\rea-research-lab\\\\rea-research-lab\\\\.local\\\\vault-history-fixtures\\\\5912\\\\observations\\\\history-original.json"}
+# Subtest: disk HTTP edit/history/confirmed restore survive genuine process restart and release opens native export
+ok 165 - disk HTTP edit/history/confirmed restore survive genuine process restart and release opens native export
+  ---
+  duration_ms: 1354.7693
+  type: 'test'
+  ...
+# Subtest: master-key rotation preserves history through restart, invalidates old private selection token and rejects old password
+ok 166 - master-key rotation preserves history through restart, invalidates old private selection token and rejects old password
+  ---
+  duration_ms: 806.3099
+  type: 'test'
+  ...
+# REA_KEEPASS_HISTORY_HTTP {"hostProcesses":5,"originalProcessExecutions":1,"detail":"D:\\\\a\\\\rea-research-lab\\\\rea-research-lab\\\\.local\\\\vault-history-fixtures\\\\2964\\\\observations\\\\history-http.json"}
+# Subtest: a timer from an older detached Vault view must not lock an actively reopened session
+ok 167 - a timer from an older detached Vault view must not lock an actively reopened session
+  ---
+  duration_ms: 113.4344
+  type: 'test'
+  ...
+# Subtest: KeePass 2.61.1 independently creates and opens KDBX across every supported KDF/cipher pair
+ok 168 - KeePass 2.61.1 independently creates and opens KDBX across every supported KDF/cipher pair
+  ---
+  duration_ms: 14076.8378
+  type: 'test'
+  ...
+# Subtest: original KeePass 3.1/Salsa20 import and 4.0 import preserve history and attachments on 4.1 export
+ok 169 - original KeePass 3.1/Salsa20 import and 4.0 import preserve history and attachments on 4.1 export
+  ---
+  duration_ms: 6375.1148
+  type: 'test'
+  ...
+# Subtest: independent original opens fresh Lab database; password + XML keyfile and keyfile-only work in both directions
+ok 170 - independent original opens fresh Lab database; password + XML keyfile and keyfile-only work in both directions
+  ---
+  duration_ms: 3902.9628
+  type: 'test'
+  ...
+# Subtest: original arbitrary 64-byte high-bit key files use hashed bytes rather than masked ASCII
+ok 171 - original arbitrary 64-byte high-bit key files use hashed bytes rather than masked ASCII
+  ---
+  duration_ms: 1689.6978
+  type: 'test'
+  ...
+# Subtest: authentic original compressed database with oversized attachment fails the inflation limit
+ok 172 - authentic original compressed database with oversized attachment fails the inflation limit
+  ---
+  duration_ms: 961.8021
+  type: 'test'
+  ...
+# Subtest: legacy compressed attachments stop at the remaining aggregate XML/Base64 budget before retaining all binaries
+ok 173 - legacy compressed attachments stop at the remaining aggregate XML/Base64 budget before retaining all binaries
+  ---
+  duration_ms: 2129.7583
+  type: 'test'
+  ...
+# Subtest: Base64 decoding handles large values up to the 8 MiB bound without regex stack growth
+ok 174 - Base64 decoding handles large values up to the 8 MiB bound without regex stack growth
+  ---
+  duration_ms: 86.7641
+  type: 'test'
+  ...
+# Subtest: KDBX 4.0/4.1, AES/ChaCha20, AES-KDF/Argon2d/Argon2id and gzip/none roundtrip actual data
+ok 175 - KDBX 4.0/4.1, AES/ChaCha20, AES-KDF/Argon2d/Argon2id and gzip/none roundtrip actual data
+  ---
+  duration_ms: 313.0613
+  type: 'test'
+  ...
+# Subtest: KDBX authentication rejects wrong password/key, modified header/body/HMAC, truncation and trailing bytes
+ok 176 - KDBX authentication rejects wrong password/key, modified header/body/HMAC, truncation and trailing bytes
+  ---
+  duration_ms: 6.5976
+  type: 'test'
+  ...
+# Subtest: key files accept raw, hex, XML v1/v2 and hashed arbitrary contents with integrity checks
+ok 177 - key files accept raw, hex, XML v1/v2 and hashed arbitrary contents with integrity checks
+  ---
+  duration_ms: 3.1396
+  type: 'test'
+  ...
+# Subtest: XML literal newline normalization and character-reference preservation follow XML 1.0
+ok 178 - XML literal newline normalization and character-reference preservation follow XML 1.0
+  ---
+  duration_ms: 0.4304
+  type: 'test'
+  ...
+# Subtest: parser rejects future format/KDF, costly derivation, unsafe XML and missing references instead of dropping content
+ok 179 - parser rejects future format/KDF, costly derivation, unsafe XML and missing references instead of dropping content
+  ---
+  duration_ms: 10.1191
+  type: 'test'
+  ...
+# Subtest: restore refuses an already modified main editor and preserves the unsaved draft
+ok 180 - restore refuses an already modified main editor and preserves the unsaved draft
+  ---
+  duration_ms: 120.7069
+  type: 'test'
+  ...
+# Subtest: Close bin during post-restore active-list refresh remains closed
+ok 181 - Close bin during post-restore active-list refresh remains closed
+  ---
+  duration_ms: 122.8336
+  type: 'test'
+  ...
+# Subtest: Close bin during post-purge active-list refresh remains closed
+ok 182 - Close bin during post-purge active-list refresh remains closed
+  ---
+  duration_ms: 93.7266
+  type: 'test'
+  ...
+# Subtest: post-restore active-list refresh does not erase a newer bin preview generation
+ok 183 - post-restore active-list refresh does not erase a newer bin preview generation
+  ---
+  duration_ms: 102.7077
+  type: 'test'
+  ...
+# Subtest: held recycled read rejected after cleanup cannot expose password or rearm detached controls
+ok 184 - held recycled read rejected after cleanup cannot expose password or rearm detached controls
+  ---
+  duration_ms: 91.4127
+  type: 'test'
+  ...
+# Subtest: held permanent-delete response keeps newer same-editor draft as a new entry without resurrecting deleted UUID
+ok 185 - held permanent-delete response keeps newer same-editor draft as a new entry without resurrecting deleted UUID
+  ---
+  duration_ms: 98.5961
+  type: 'test'
+  ...
+# Subtest: unchecked restore confirmation refuses mutation and leaves current bin preview usable
+ok 186 - unchecked restore confirmation refuses mutation and leaves current bin preview usable
+  ---
+  duration_ms: 122.1846
+  type: 'test'
+  ...
+# Subtest: unchecked purge confirmation refuses mutation and leaves current bin preview usable
+ok 187 - unchecked purge confirmation refuses mutation and leaves current bin preview usable
+  ---
+  duration_ms: 94.6342
+  type: 'test'
+  ...
+# Subtest: normal restore retains the current bin and refreshes active/bin results
+ok 188 - normal restore retains the current bin and refreshes active/bin results
+  ---
+  duration_ms: 124.0394
+  type: 'test'
+  ...
+# Subtest: normal purge retains the current bin and refreshes active/bin results
+ok 189 - normal purge retains the current bin and refreshes active/bin results
+  ---
+  duration_ms: 95.9021
+  type: 'test'
+  ...
+# Subtest: same-bin stale revision refuses preview until a fresh bin list supplies its current token
+ok 190 - same-bin stale revision refuses preview until a fresh bin list supplies its current token
+  ---
+  duration_ms: 105.1077
+  type: 'test'
+  ...
+# Subtest: closing then explicitly reopening during held mutation preserves the newer bin without another old refresh
+ok 191 - closing then explicitly reopening during held mutation preserves the newer bin without another old refresh
+  ---
+  duration_ms: 93.0312
+  type: 'test'
+  ...
+# Subtest: actual shared HTTP host persists native bin/history/recovery/tombstones through three genuine process starts
+ok 192 - actual shared HTTP host persists native bin/history/recovery/tombstones through three genuine process starts
+  ---
+  duration_ms: 834.747
+  type: 'test'
+  ...
+# Subtest: actual host retains token guard, entry-only rejection and private runtime/oracle/source routes
+ok 193 - actual host retains token guard, entry-only rejection and private runtime/oracle/source routes
+  ---
+  duration_ms: 242.5225
+  type: 'test'
+  ...
+# REA_RECYCLE_HTTP {"detail":"D:\\\\a\\\\rea-research-lab\\\\rea-research-lab\\\\products\\\\rea-studio\\\\.local\\\\recycle-http-observations.json","hostProcesses":4,"originalExecutions":0}
+# Subtest: actual release helper/library lifecycle matches native delete/previous-parent recovery/purge and original reader opens candidate output
+ok 194 - actual release helper/library lifecycle matches native delete/previous-parent recovery/purge and original reader opens candidate output
+  ---
+  duration_ms: 2973.7984
+  type: 'test'
+  ...
+# Subtest: released tombstones match native explicit permanent override
+ok 195 - released tombstones match native explicit permanent override
+  ---
+  duration_ms: 1725.75
+  type: 'test'
+  ...
+# Subtest: released tombstones match native disabled original recycle setting
+ok 196 - released tombstones match native disabled original recycle setting
+  ---
+  duration_ms: 1716.9139
+  type: 'test'
+  ...
+# Subtest: default released KDBX4.0 save loses previous parent; candidate4.1 export retains its explicitly newer recovery metadata
+ok 197 - default released KDBX4.0 save loses previous parent; candidate4.1 export retains its explicitly newer recovery metadata
+  ---
+  duration_ms: 1826.6586
+  type: 'test'
+  ...
+# REA_RECYCLE_ORIGINAL {"assemblyLoads":14,"detail":"D:\\\\a\\\\rea-research-lab\\\\rea-research-lab\\\\products\\\\rea-studio\\\\.local\\\\original-comparisons.json"}
+# Subtest: actual encrypted session recycle/recover/purge persists across lock/reload and retains history
+ok 198 - actual encrypted session recycle/recover/purge persists across lock/reload and retains history
+  ---
+  duration_ms: 282.2556
+  type: 'test'
+  ...
+# Subtest: failed persistence publishes neither deletion nor history/bin mutation
+ok 199 - failed persistence publishes neither deletion nor history/bin mutation
+  ---
+  duration_ms: 88.4467
+  type: 'test'
+  ...
+# Subtest: queued caller input is captured and stale competing deletion rejects after durable commit
+ok 200 - queued caller input is captured and stale competing deletion rejects after durable commit
+  ---
+  duration_ms: 88.4233
+  type: 'test'
+  ...
+# Subtest: group deletion and whole-bin emptying explicitly reject with encrypted bytes unchanged
+ok 201 - group deletion and whole-bin emptying explicitly reject with encrypted bytes unchanged
+  ---
+  duration_ms: 81.002
+  type: 'test'
+  ...
+# Subtest: recycled entries cannot be edited or restored through active history/TOTP commands
+ok 202 - recycled entries cannot be edited or restored through active history/TOTP commands
+  ---
+  duration_ms: 94.6858
+  type: 'test'
+  ...
+# Subtest: actual client deletion/readonly masked preview/confirmed previous-group recovery and permanent purge use separate bin controls
+ok 203 - actual client deletion/readonly masked preview/confirmed previous-group recovery and permanent purge use separate bin controls
+  ---
+  duration_ms: 131.4964
+  type: 'test'
+  ...
+# Subtest: late bin preview cannot expose secrets after Close bin or disposed view
+ok 204 - late bin preview cannot expose secrets after Close bin or disposed view
+  ---
+  duration_ms: 94.5741
+  type: 'test'
+  ...
+# Subtest: held recovery response preserves another enabled editor draft and never changes its save identity
+ok 205 - held recovery response preserves another enabled editor draft and never changes its save identity
+  ---
+  duration_ms: 105.0163
+  type: 'test'
+  ...
+# Subtest: held post-recovery bin list cannot replace a newer enabled Show-bin generation
+ok 206 - held post-recovery bin list cannot replace a newer enabled Show-bin generation
+  ---
+  duration_ms: 93.0462
+  type: 'test'
+  ...
+# Subtest: normal deletion creates a real native bin, keeps content/history, and restores identity to previous UUID
+ok 207 - normal deletion creates a real native bin, keeps content/history, and restores identity to previous UUID
+  ---
+  duration_ms: 17.622
+  type: 'test'
+  ...
+# Subtest: bin source defaults have trash icon, searching/Auto-Type disabled and no new history version
+ok 208 - bin source defaults have trash icon, searching/Auto-Type disabled and no new history version
+  ---
+  duration_ms: 3.448
+  type: 'test'
+  ...
+# Subtest: permanent delete adds native UUID/time tombstone and cannot restore
+ok 209 - permanent delete adds native UUID/time tombstone and cannot restore
+  ---
+  duration_ms: 3.2822
+  type: 'test'
+  ...
+# Subtest: disabled bin setting permanently deletes; deleting an existing bin entry also adds tombstone
+ok 210 - disabled bin setting permanently deletes; deleting an existing bin entry also adds tombstone
+  ---
+  duration_ms: 6.7125
+  type: 'test'
+  ...
+# Subtest: MAC rejects stale dataset, cross-key, mutated entry and missing confirmation without input changes
+ok 211 - MAC rejects stale dataset, cross-key, mutated entry and missing confirmation without input changes
+  ---
+  duration_ms: 2.7596
+  type: 'test'
+  ...
+# Subtest: permissive/malformed clocks reject without writing and uint64 touch wraps exactly
+ok 212 - permissive/malformed clocks reject without writing and uint64 touch wraps exactly
+  ---
+  duration_ms: 6.6037
+  type: 'test'
+  ...
+# Subtest: absent/zero previous group rejects recover and keeps encrypted-representation data unchanged
+ok 213 - absent/zero previous group rejects recover and keeps encrypted-representation data unchanged
+  ---
+  duration_ms: 6.9718
+  type: 'test'
+  ...
+# Subtest: malformed root-bin UUID and invalid boolean settings reject before mutation
+ok 214 - malformed root-bin UUID and invalid boolean settings reject before mutation
+  ---
+  duration_ms: 2.6779
+  type: 'test'
+  ...
+# Subtest: explicit preview returns a copy and attachment values are included in selection binding
+ok 215 - explicit preview returns a copy and attachment values are included in selection binding
+  ---
+  duration_ms: 2.3822
+  type: 'test'
+  ...
+# Subtest: duplicate names do not redirect UUID recovery; existing bin is reused
+ok 216 - duplicate names do not redirect UUID recovery; existing bin is reused
+  ---
+  duration_ms: 11.2063
+  type: 'test'
+  ...
+# Subtest: bin creation cannot exceed the10,000-group bound and input stays unchanged
+ok 217 - bin creation cannot exceed the10,000-group bound and input stays unchanged
+  ---
+  duration_ms: 505.4562
+  type: 'test'
+  ...
+# Subtest: previous-parent within a bin is not offered as recoverable; descendant bin entries purge by ancestry
+ok 218 - previous-parent within a bin is not offered as recoverable; descendant bin entries purge by ancestry
+  ---
+  duration_ms: 3.8755
+  type: 'test'
+  ...
+# Subtest: same-editor draft typed after a restore request remains visible when the delayed response completes
+ok 219 - same-editor draft typed after a restore request remains visible when the delayed response completes
+  ---
+  duration_ms: 123.5331
+  type: 'test'
+  ...
+# Subtest: same-editor draft typed after a save request remains visible when the delayed response completes
+ok 220 - same-editor draft typed after a save request remains visible when the delayed response completes
+  ---
+  duration_ms: 91.4642
+  type: 'test'
+  ...
+# Subtest: a held Open A read cannot replace a later Open B editor or redirect its save
+ok 221 - a held Open A read cannot replace a later Open B editor or redirect its save
+  ---
+  duration_ms: 122.3749
+  type: 'test'
+  ...
+# Subtest: closing history while its preview is held prevents late secret publication
+ok 222 - closing history while its preview is held prevents late secret publication
+  ---
+  duration_ms: 92.1825
+  type: 'test'
+  ...
+# Subtest: an older search response cannot replace newer search results or a new editor draft
+ok 223 - an older search response cannot replace newer search results or a new editor draft
+  ---
+  duration_ms: 91.93
+  type: 'test'
+  ...
+# Subtest: New entry remains a new identity after a late post-restore read
+ok 224 - New entry remains a new identity after a late post-restore read
+  ---
+  duration_ms: 127.1961
+  type: 'test'
+  ...
+# Subtest: locking during a held restore read cannot resurrect its old selected entry after unlock
+ok 225 - locking during a held restore read cannot resurrect its old selected entry after unlock
+  ---
+  duration_ms: 175.1593
+  type: 'test'
+  ...
+# Subtest: late explicit history preview cannot populate a newly opened empty editor
+ok 226 - late explicit history preview cannot populate a newly opened empty editor
+  ---
+  duration_ms: 94.3881
+  type: 'test'
+  ...
+# Subtest: a delayed post-restore list does not change the next editor selected by the user
+ok 227 - a delayed post-restore list does not change the next editor selected by the user
+  ---
+  duration_ms: 101.6089
+  type: 'test'
+  ...
+# Subtest: a failed history restore persistence keeps ciphertext and active entry/history unchanged
+ok 228 - a failed history restore persistence keeps ciphertext and active entry/history unchanged
+  ---
+  duration_ms: 96.0322
+  type: 'test'
+  ...
+# Subtest: ordinary save completion preserves a different editor opened while that response was held
+ok 229 - ordinary save completion preserves a different editor opened while that response was held
+  ---
+  duration_ms: 90.0998
+  type: 'test'
+  ...
+# Subtest: late post-restore read must not redirect the newly selected editor save to a different entry
+ok 230 - late post-restore read must not redirect the newly selected editor save to a different entry
+  ---
+  duration_ms: 131.6806
+  type: 'test'
+  ...
+# Subtest: staged DOM interaction lists redacted history, explicitly views masked secret and confirms restoration
+ok 231 - staged DOM interaction lists redacted history, explicitly views masked secret and confirms restoration
+  ---
+  duration_ms: 114.4121
+  type: 'test'
+  ...
+# Subtest: history result arriving after selecting New entry cannot populate a stale editor
+ok 232 - history result arriving after selecting New entry cannot populate a stale editor
+  ---
+  duration_ms: 86.9184
+  type: 'test'
+  ...
+# Subtest: released unknown-time family is oldest rather than a future UTC date; boundary and two-unknown ties match
+ok 233 - released unknown-time family is oldest rather than a future UTC date; boundary and two-unknown ties match
+  ---
+  duration_ms: 5287.486
+  type: 'test'
+  ...
+# REA_KEEPASS_HISTORY_UNKNOWN {"originalProcessExecutions":9,"detail":"D:\\\\a\\\\rea-research-lab\\\\rea-research-lab\\\\.local\\\\vault-history-fixtures\\\\5364\\\\observations\\\\history-unknown-time.json"}
+1..233
+# tests 233
+# suites 0
+# pass 231
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 107475.2994

@@ -1,0 +1,39 @@
+{
+  "title": "Native stat calculation example",
+  "schemaVersion": 42,
+  "unknownRoot": { "retained": true },
+  "panels": [
+    {
+      "id": 7,
+      "type": "stat",
+      "title": "Population variance and count",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 12, "unknownGrid": "keep" },
+      "fieldConfig": {
+        "defaults": { "nullValueMode": "null as zero", "unknownField": true },
+        "overrides": []
+      },
+      "options": {
+        "unknownOption": 123,
+        "reduceOptions": { "calcs": ["stdDev", "countAll"], "values": false, "unknownReduceOption": "keep" }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": { "type": "remote-example", "uid": "never-accessed" },
+          "expr": "unknown_query()",
+          "unknownQuery": { "marker": "synthetic-no-credentials" },
+          "data": [
+            {
+              "name": "saved",
+              "fields": [
+                { "name": "value", "type": "number", "config": { "unknownFrameConfig": "keep" }, "values": [2, null, 6] }
+              ]
+            }
+          ]
+        }
+      ],
+      "transformations": []
+    }
+  ],
+  "templating": { "list": [] }
+}

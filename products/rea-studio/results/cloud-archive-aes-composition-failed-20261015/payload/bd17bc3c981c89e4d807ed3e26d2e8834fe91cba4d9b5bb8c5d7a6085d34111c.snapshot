@@ -1,0 +1,132 @@
+// Bounded local backup orchestration only: authenticate/copy existing files.
+// No application, original, test, build, network or historical-verifier execution.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+import { fileURLToPath } from 'node:url';
+const work = path.dirname(fileURLToPath(import.meta.url));
+const lab = path.resolve(work, '../outputs/rea-research-lab');
+const sha = bytes => createHash('sha256').update(bytes).digest('hex');
+const id = bytes => ({ bytes: bytes.length, sha256: sha(bytes) });
+const safe = name => {
+  assert(typeof name === 'string' && name.length && !/[\\:\x00-\x1f\x7f]/.test(name) && !name.startsWith('/'));
+  assert(name.split('/').every(part => part && part !== '.' && part !== '..'));
+  return name;
+};
+function read(root, relative) {
+  safe(relative);
+  let target = root;
+  for (const part of relative.split('/')) { target = path.join(target, part); assert(!fs.lstatSync(target).isSymbolicLink()); }
+  const stat = fs.statSync(target);
+  assert(stat.isFile() && stat.size <= 8 * 1024 * 1024);
+  return fs.readFileSync(target);
+}
+function names(root, relative = '') {
+  return fs.readdirSync(path.join(root, relative), { withFileTypes: true }).flatMap(entry => {
+    assert(!entry.isSymbolicLink());
+    const name = relative ? relative + '/' + entry.name : entry.name;
+    safe(name);
+    return entry.isDirectory() ? names(root, name) : (assert(entry.isFile()), [name]);
+  }).sort();
+}
+const credentialPattern = /\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|Authorization:\s*Bearer\s+[A-Za-z0-9._~-]{20,}/i;
+function backup(run, artifact, digest) {
+  const directory = path.join(work, `cloud-verification-backups/run-${run}/artifact-${artifact}`);
+  const receiptBytes = read(directory, 'local-backup-verification.json'), receipt = JSON.parse(receiptBytes);
+  assert.equal(receipt.schema, 'rea-local-cloud-evidence-backup/v1');
+  assert.equal(receipt.artifactSHA256, digest); assert.equal(receipt.allCRCAndBytesReadable, true);
+  const artifactBytes = fs.readFileSync(directory + '.zip');
+  assert.equal(sha(artifactBytes), digest); assert.equal(artifactBytes.length, receipt.archiveBytes);
+  const readable = path.join(directory, 'readable-evidence'), inventory = names(readable), rows = new Map();
+  for (const row of receipt.files) {
+    safe(row.path); assert(!rows.has(row.path));
+    assert.deepEqual(id(read(readable, row.path)), { bytes: row.bytes, sha256: row.sha256 });
+    rows.set(row.path, row);
+  }
+  assert.deepEqual(inventory, [...rows.keys()].sort());
+  return { directory, readable, receiptBytes, receipt, inventory, rows };
+}
+function capsule(prefix) {
+  const target = path.join(lab, safe(prefix));
+  assert(!fs.existsSync(target), 'Preserve a new capsule; never overwrite an existing one');
+  fs.mkdirSync(target); fs.mkdirSync(path.join(target, 'payload'));
+  const records = [], objects = new Set();
+  function save(sourcePath, bytes) {
+    safe(sourcePath); assert(!records.some(row => row.sourcePath === sourcePath));
+    assert(!credentialPattern.test(bytes.toString('utf8')), 'Potential credential pattern; public copy refused');
+    const digest = sha(bytes), relative = 'payload/' + digest + '.snapshot';
+    if (!objects.has(digest)) { fs.writeFileSync(path.join(target, relative), bytes, { flag: 'wx' }); objects.add(digest); }
+    assert.deepEqual(id(read(target, relative)), id(bytes));
+    records.push({ sourcePath, path: relative, ...id(bytes) });
+  }
+  function finish(metadata) {
+    save('preservation-collector.mjs', fs.readFileSync(fileURLToPath(import.meta.url)));
+    const manifest = { ...metadata, records, uniqueInertObjects: objects.size, allCopiesExact: true, allPayloadsInert: true,
+      localApplicationExecutions: 0, localOriginalExecutions: 0, localTests: 0, localBuilds: 0,
+      fullDevelopmentSuiteAcceptance: false, fullParity: false, superiority: false, historicalReceiptsRebound: false };
+    const bytes = Buffer.from(JSON.stringify(manifest, null, 2) + '\n');
+    fs.writeFileSync(path.join(target, 'preservation-manifest.json'), bytes, { flag: 'wx' });
+    return { prefix, records: records.length, objects: objects.size, manifestSHA256: sha(bytes) };
+  }
+  return { save, finish };
+}
+const commit = 'a2e0aa78c408b8058cf0661343029046952fd675';
+const flow = backup(38805892204, 12005889574, '983b5b68987d5151d5aa9f003dde281cdd8530e97410ac9b75f8a18e7c6b189d');
+const attempt = JSON.parse(read(flow.readable, 'attempt-validation.json'));
+assert.equal(attempt.repositoryCommit, commit); assert.equal(attempt.status, 'passed'); assert.equal(attempt.scope, 'flow-vault');
+assert.equal(attempt.summary.pass, 282); assert.equal(attempt.summary.tests, 282);
+assert.equal(attempt.summary.fail + attempt.summary.cancelled + attempt.summary.skipped + attempt.summary.todo, 0);
+assert.equal(attempt.sourceFiles, 764); assert.equal(attempt.sourceSnapshotFiles, 342); assert.equal(attempt.sourceStable, true);
+assert.deepEqual(read(flow.readable, 'source-before.json'), read(flow.readable, 'source-after.json'));
+const controls = JSON.parse(read(flow.readable, 'collector-controls/controls-validation.json'));
+assert.equal(controls.status, 'passed'); assert.equal(controls.passedControls, 4); assert.equal(controls.expectedControls, 4);
+assert.equal(controls.hostedRun.commit, commit); assert.equal(controls.hostedRun.runId, '38805892204');
+assert.equal(controls.productAcceptance, false); assert.equal(controls.realOriginalExecutions, 0); assert.equal(controls.realApplicationExecutions, 0);
+const omitted = flow.inventory.filter(name => /(^|\/)source\//.test(name)).map(name => ({ sourcePath: name, bytes: flow.rows.get(name).bytes, sha256: flow.rows.get(name).sha256 }));
+assert.equal(omitted.filter(row => row.sourcePath.startsWith('source/')).length, 342);
+assert.equal(omitted.filter(row => !row.sourcePath.startsWith('source/')).length, 60);
+const retained = flow.inventory.filter(name => !/(^|\/)source\//.test(name));
+assert.equal(retained.length, 61);
+const flowCapsule = capsule('products/rea-studio/results/cloud-flow-vault-controls-20261015');
+for (const name of retained) flowCapsule.save(name, read(flow.readable, name));
+flowCapsule.save('local-backup-verification.json', flow.receiptBytes);
+const flowResult = flowCapsule.finish({
+  schema: 'rea-cloud-flow-vault-controls-preservation/v1', at: new Date().toISOString(), sourceCommit: commit,
+  runId: 38805892204, runAttempt: 1, runURL: 'https://github.com/Ginderlax/rea-research-lab/actions/runs/38805892204',
+  artifactId: 12005889574, artifactSHA256: flow.receipt.artifactSHA256, summary: attempt.summary,
+  sourceFiles: 764, sourceStableDuringRecordedRun: true, activeSourceSnapshotsInVerifiedLocalBackup: 342,
+  collectorControls: { passed: 4, expected: 4, synthetic: true, productAcceptance: false, originalExecutions: 0 },
+  publicSourceSnapshotPayloads: 0, omittedSourceSnapshotPayloads: omitted,
+  omittedMainSourceSnapshotPayloads: 342, omittedSyntheticSourceSnapshotPayloads: 60,
+  omissionScope: 'All root source/ and nested /source/ snapshot trees are excluded from this public capsule. Actual source-before/source-after and source-snapshot-manifest records are retained, including each synthetic control. All402 omitted snapshot files remain byte-verified and readable in the complete local artifact backup.',
+  completeLocalBackupVerified: true, localBackupReceipt: 'local-backup-verification.json',
+  acceptanceScope: 'Finite Flow/Vault contracts on the recorded a2e0 source epoch plus four separate synthetic collector controls. Later runner or composition fixes require their own actual result.',
+});
+const archive = backup(38805892328, 12005819513, '151cd727c850b572f3003154395b76987c4dee078778ff319cddc0d88f2eb8a4');
+assert.deepEqual(archive.inventory, ['composition.json', 'workflow-attempt.json']);
+const composition = JSON.parse(read(archive.readable, 'composition.json')), workflow = JSON.parse(read(archive.readable, 'workflow-attempt.json'));
+assert.equal(composition.sourceCommit, commit); assert.equal(composition.status, 'failed');
+assert.equal(composition.sourcePayloads.length, 0); assert.equal(composition.transitions.length, 0); assert.equal(composition.testsExecutedByComposer, 0);
+assert.equal(workflow.runId, '38805892328'); assert.equal(workflow.composeOutcome, 'failure');
+assert.equal(workflow.acquisitionOutcome, 'skipped'); assert.equal(workflow.verificationOutcome, 'skipped');
+const archiveCapsule = capsule('products/rea-studio/results/cloud-archive-aes-composition-failed-20261015');
+for (const name of archive.inventory) archiveCapsule.save(name, read(archive.readable, name));
+archiveCapsule.save('local-backup-verification.json', archive.receiptBytes);
+const jobLog = read(path.join(work, 'cloud-verification-backups/job-116666516143'), 'logs.txt');
+archiveCapsule.save('job-log-116666516143.txt', jobLog);
+const archiveResult = archiveCapsule.finish({
+  schema: 'rea-cloud-archive-aes-composition-failure-preservation/v1', at: new Date().toISOString(), sourceCommit: commit,
+  runId: 38805892328, runAttempt: 1, runURL: 'https://github.com/Ginderlax/rea-research-lab/actions/runs/38805892328',
+  artifactId: 12005819513, artifactSHA256: archive.receipt.artifactSHA256, status: 'failed-before-acquisition-and-tests',
+  artifactFiles: 2, jobLog: { jobId: 116666516143, sourcePath: 'job-log-116666516143.txt', ...id(jobLog), credentialPatternScan: 'no-match' },
+  failure: composition.failure, failureScope: 'Baseline source-census qualification before any overlay transition, original acquisition or selected test execution.',
+  applicationBehaviorFailureClaimed: false, plannedExperimentalGroups: 160, executedExperimentalGroups: 0,
+  applicationExecutions: 0, originalExecutions: 0, compositionTransitions: 0, completedTestReceipt: false,
+  productionInstalled: false, completeAvailableArtifactPreserved: true, completeLocalBackupVerified: true,
+  laterCensusFixAcceptance: 'Pending a separate actual hosted rerun; this failed attempt is immutable.',
+});
+const result = { schema: 'rea-cloud-followup-preservation-orchestration/v1', at: new Date().toISOString(), flow: flowResult, archive: archiveResult,
+  omittedMainSnapshots: 342, omittedSyntheticSnapshots: 60, localApplicationExecutions: 0, localTests: 0, localBuilds: 0 };
+fs.writeFileSync(path.join(work, 'cloud-recovery-20261015/followup-preservation.json'), JSON.stringify(result, null, 2) + '\n', { flag: 'wx' });
+console.log(JSON.stringify(result));

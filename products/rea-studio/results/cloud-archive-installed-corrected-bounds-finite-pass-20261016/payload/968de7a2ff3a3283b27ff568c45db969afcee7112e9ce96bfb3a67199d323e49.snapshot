@@ -1,0 +1,291 @@
+"""Verify installed Archive backup bytes and recorded evidence. Never run product code."""
+from pathlib import Path
+import hashlib, json, re, stat, subprocess, sys, zipfile, zlib
+
+source = Path(sys.argv[1]).resolve()
+expected, role, run, commit = sys.argv[2:6]
+assert len(sys.argv) == 6
+assert role in ('finite', 'browser') and run == '38911241646' and commit == '016ecd175c0700d1a94d5219af6719989a4a6e45'
+work = Path(__file__).resolve().parent
+assert source.is_relative_to((work / 'cloud-verification-backups').resolve()) and source.is_file()
+sha = lambda value: hashlib.sha256(value).hexdigest()
+identity = lambda value: {'bytes': len(value), 'sha256': sha(value)}
+raw = source.read_bytes()
+assert len(raw) <= 32 * 1024 * 1024 and sha(raw) == expected
+folder = source.parent / source.stem
+folder.mkdir(exist_ok=False)
+
+def unpack(archive, destination, outer=False):
+    destination.mkdir(parents=True, exist_ok=True)
+    files, seen = [], set()
+    with zipfile.ZipFile(archive) as stream:
+        assert len(stream.infolist()) <= (4 if outer else 2500)
+        assert sum(row.file_size for row in stream.infolist()) <= (32 if outer else 96) * 1024 * 1024
+        for row in stream.infolist():
+            name = row.filename
+            assert name and name not in seen and not name.startswith(('/', '\\')) and '\\' not in name and ':' not in name
+            seen.add(name)
+            assert all(part not in ('.', '..') for part in Path(name).parts) and not stat.S_ISLNK(row.external_attr >> 16)
+            target = (destination / name).resolve()
+            assert target.is_relative_to(destination.resolve())
+            if row.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+                continue
+            assert row.file_size <= (15 if outer else 8) * 1024 * 1024
+            value = stream.read(row)  # ZIP CRC is checked by this read.
+            assert len(value) == row.file_size
+            target.parent.mkdir(parents=True, exist_ok=True)
+            with target.open('xb') as output:
+                output.write(value)
+            assert target.read_bytes() == value
+            files.append({'path': name, **identity(value)})
+    return files
+
+outer_files = unpack(source, folder / 'downloaded-contents', True)
+assert len(outer_files) == 1 and outer_files[0]['path'] == 'rea-archive-installed-' + role + '-' + run + '-1.zip'
+archives = list((folder / 'downloaded-contents').rglob('*.zip'))
+assert len(archives) == 1 and archives[0].stat().st_size <= 15 * 1024 * 1024
+evidence = folder / 'readable-evidence'
+files = unpack(archives[0], evidence)
+
+def ordinary(relative):
+    assert relative and not relative.startswith(('/', '\\')) and '\\' not in relative and ':' not in relative
+    assert all(part not in ('.', '..') for part in Path(relative).parts)
+    target = (evidence / relative).resolve()
+    assert target.is_relative_to(evidence.resolve()) and target.is_file() and not target.is_symlink()
+    return target
+
+def data(relative):
+    target = ordinary(relative)
+    assert target.stat().st_size <= 8 * 1024 * 1024
+    return json.loads(target.read_text(encoding='utf-8-sig'))
+
+def same_attempt(value):
+    execution = value['execution']
+    assert execution['GITHUB_SHA'] == commit and execution['GITHUB_RUN_ID'] == run and execution['GITHUB_RUN_ATTEMPT'] == '1'
+    assert execution['GITHUB_REPOSITORY'] == 'Ginderlax/rea-research-lab' and execution['RUNNER_ENVIRONMENT'] == 'github-hosted'
+    assert execution['GITHUB_ACTIONS'] == 'true' and execution['CI'] == 'true'
+
+def selected_identity(row):
+    return {'bytes': row['bytes'], 'sha256': row['sha256']}
+
+def png(value):
+    assert value[:8] == bytes.fromhex('89504e470d0a1a0a')
+    at, first, ended = 8, True, False
+    while at + 12 <= len(value):
+        length = int.from_bytes(value[at:at+4], 'big')
+        kind, end = value[at+4:at+8], at + 12 + length
+        assert end <= len(value)
+        assert zlib.crc32(value[at+4:end-4]) & 0xffffffff == int.from_bytes(value[end-4:end], 'big')
+        if first:
+            assert kind == b'IHDR' and length == 13
+            assert 0 < int.from_bytes(value[at+8:at+12], 'big') <= 20000 and 0 < int.from_bytes(value[at+12:at+16], 'big') <= 20000
+            first = False
+        at = end
+        if kind == b'IEND':
+            assert length == 0 and at == len(value)
+            ended = True
+            break
+    assert ended
+
+result = {'schema': 'rea-local-installed-archive-corrected-bounds-backup-verification/v1', 'role': role, 'runId': run, 'sourceCommit': commit,
+          'artifact': str(source), 'artifactSHA256': expected, 'archiveBytes': len(raw), 'readableEvidence': str(evidence),
+          'files': files, 'allCRCAndBytesReadable': True, 'evidenceConsistencyErrors': [], 'recordedContractPassed': False,
+          'localProductExecutions': 0, 'localTests': 0, 'localBuilds': 0, 'localBrowserExecutions': 0, 'attempt': None,
+          'acceptanceScope': 'Backup readability and recorded cloud evidence consistency only. Failed attempts stay failed; no application, verifier, test, original or browser executes locally.',
+          'fullParity': False, 'superiority': False}
+try:
+    before = data('archive-installed-source-check.json')
+    assert before['schema'] == 'rea-archive-hosted-installed-source-check/v1' and before['status'] == 'verified-unexecuted-committed-afterimages'
+    same_attempt(before)
+    assert before['sourceCommit'] == commit and before['mode'] == 'archive-aes-installed' and before['sourceOnly'] is True
+    assert before['sourceMutationPerformed'] is False and before['installationPerformedByCommand'] is False and before['historicalReceiptsRebound'] is False
+    assert before['applicationExecutions'] + before['originalExecutions'] + before['browserExecutions'] == 0
+    auth = before['authentication']
+    assert auth['currentArchiveFiles'] == 62 and auth['exactAfterTargets'] == 21 and auth['allArchiveGitBound'] and auth['currentTargetsGitBound']
+    assert auth['authenticatedPaths'] == 115 and auth['authenticatedBytes'] <= 8 * 1024 * 1024
+    correction_target = 'products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs'
+    correction_before = {'bytes': 4437, 'sha256': 'de8b502980907967bab762da46e6056b024dc93a5ddd5b1bd5e21610e6980c71'}
+    correction_after = {'bytes': 5255, 'sha256': '1bdeed45439ab2094c55973d0790866991ed3f81ab5eca505d01977dee84b303'}
+    correction_manifest = {'path': 'products/rea-studio/results/archive-aes-properties-fixture-correction-20261016/source-transition.json', 'bytes': 2486, 'sha256': 'c076b092431eae7bc3c468d168633ee07aa7858aba1291d510edcaa1ded4919f'}
+    assert auth['fixtureCorrection'] == {'manifest': correction_manifest, 'target': correction_target, 'before': correction_before, 'after': correction_after,
+        'historicalAfterImage': 'products/rea-studio/experiments/archive-aes/snapshots/proposal/products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs.snapshot', 'changedTargets': 1, 'historicalReceiptsRebound': False}
+    rows = auth['archiveSources'] + auth['selectedOriginalSources']
+    assert len(auth['archiveSources']) == 62 and len(auth['currentTargets']) == 21 and len(auth['selectedOriginalSources']) == 22
+    assert len({row['path'] for row in rows}) == 84
+    repository = work.parent / 'outputs/rea-research-lab'
+    # Git metadata reading is backup/orchestration, never product execution.
+    tree_result = subprocess.run(['git', '-C', str(repository), 'ls-tree', '-z', '--full-tree', commit, '--'] + [row['path'] for row in rows], capture_output=True, check=True, timeout=30)
+    tree = {}
+    for item in tree_result.stdout.split(b'\0'):
+        if not item:
+            continue
+        prefix, relative = item.decode('utf-8').split('\t', 1)
+        mode, kind, object_id = prefix.split(' ')
+        assert mode in ('100644', '100755') and kind == 'blob'
+        tree[relative] = object_id
+    assert len(tree) == 84
+    for row in rows:
+        value = ordinary('installed-source/' + row['path'] + '.snapshot').read_bytes()
+        assert identity(value) == selected_identity(row)
+        assert row['gitBlob'] == tree[row['path']]
+        algorithm = hashlib.sha1 if len(row['gitBlob']) == 40 else hashlib.sha256
+        assert algorithm(('blob ' + str(len(value)) + '\0').encode() + value).hexdigest() == row['gitBlob']
+    def committed_bytes(relative):
+        assert relative and not relative.startswith('/') and '\\' not in relative and ':' not in relative
+        assert all(part not in ('', '.', '..') for part in relative.split('/'))
+        return subprocess.run(['git', '-C', str(repository), 'show', commit + ':' + relative], capture_output=True, check=True, timeout=30).stdout
+
+    bundle_bytes = committed_bytes(auth['sourceBundle']['path'])
+    assert identity(bundle_bytes) == {'bytes': 80331, 'sha256': 'ed6d16f52f9209ac144f1f08d395c3e86e4c124c73a3a18a488654506ff155bb'}
+    bundle = json.loads(bundle_bytes)
+    targets = {row['target']: row for row in bundle['finalTargets']}
+    assert len(targets) == 21
+    for row in auth['currentTargets']:
+        assert selected_identity(row) == (correction_after if row['path'] == correction_target else targets[row['path']]['after'])
+    correction_bytes = committed_bytes(correction_manifest['path'])
+    assert identity(correction_bytes) == selected_identity(correction_manifest)
+    correction = json.loads(correction_bytes)
+    assert correction['before'] == correction_before and correction['after'] == correction_after
+    assert correction['currentTarget'] == correction_target and correction['runtimeChanged'] is False
+    assert correction['historicalFiniteSelectionContainsBoundsTestPath'] is True and correction['historicalFiniteBoundsContentIsPredecessor'] is True
+    assert correction['freshFiniteIncludesCorrectedBoundsGroups'] == 3 and correction['targeted3OverlapFiniteSelection'] is True
+    for name, expected_pin in [('beforeImage', correction_before), ('afterImage', correction_after)]:
+        assert identity(committed_bytes(correction[name]['path'])) == expected_pin
+    assert identity(committed_bytes(correction['historicalAfterImage'])) == correction_before
+    original = {row['publicSnapshot']: selected_identity(row) for row in bundle['selectedOriginalSources']}
+    assert {row['path']: selected_identity(row) for row in auth['selectedOriginalSources']} == original
+    post = data('archive-installed-postrun-source-check.json')
+    same_attempt(post)
+    assert post['schema'] == 'rea-archive-hosted-installed-postrun-source-check/v1' and post['status'] == 'source-verified'
+    assert post['sourceCommit'] == commit and post['sourceStable'] is True and post['authentication'] == auth
+    assert post['beforeReceipt'] == identity(ordinary('archive-installed-source-check.json').read_bytes())
+    assert post['all62ArchiveGitBlobsAuthenticated'] and post['exact21CurrentAfterPinsAuthenticated'] and post['sourceMutationPerformed'] is False
+    workflow = data('installed-workflow-attempt.json')
+    assert workflow['sourceCommit'] == commit and workflow['runId'] == run and workflow['runAttempt'] == '1' and workflow['runnerEnvironment'] == 'github-hosted'
+    assert workflow['sourceOverlay'] is False and workflow['historicalReceiptsRebound'] is False and workflow['installationPerformedByWorkflow'] is False
+    required = ['checkoutOutcome', 'sourceBeforeOutcome', 'acquisitionOutcome', 'verificationOutcome', 'sourceAfterOutcome']
+    def authenticate_eligible_snapshots(active_rows, stored_prefix):
+        assert len({row['path'] for row in active_rows}) == len(active_rows)
+        assert all('\n' not in row['path'] and '\r' not in row['path'] for row in active_rows)
+        queries = ''.join(commit + ':products/rea-studio/' + row['path'] + '\n' for row in active_rows).encode('utf-8')
+        actual = subprocess.run(['git', '-C', str(repository), 'cat-file', '--batch-check'], input=queries, capture_output=True, check=True, timeout=30).stdout.splitlines()
+        assert len(actual) == len(active_rows)
+        blobs = {}
+        for row, item in zip(active_rows, actual):
+            object_id, kind, size = item.decode('ascii').split(' ')
+            assert kind == 'blob' and int(size) == row['bytes']
+            if 'gitBlob' in row:
+                assert row['gitBlob'] == object_id
+            blobs['products/rea-studio/' + row['path']] = object_id
+        assert len(blobs) == len(active_rows)
+        for row in active_rows:
+            relative = 'products/rea-studio/' + row['path']
+            value = ordinary(stored_prefix + row['path'] + '.snapshot').read_bytes()
+            assert identity(value) == selected_identity(row)
+            algorithm = hashlib.sha1 if len(blobs[relative]) == 40 else hashlib.sha256
+            assert algorithm(('blob ' + str(len(value)) + '\0').encode() + value).hexdigest() == blobs[relative]
+        return len(active_rows)
+    if role == 'finite':
+        attempt = data('verification/attempt-validation.json')
+        result['attempt'] = {key: attempt.get(key) for key in ('status', 'scope', 'repositoryCommit', 'summary', 'sourceFiles', 'sourceStable', 'sourceSnapshotFiles', 'failure', 'archiveInstalled')}
+        assert attempt['scope'] == 'archive-aes-installed' and attempt['repositoryCommit'] == commit and attempt['executionEnvironment'] == 'github-hosted'
+        assert attempt['runtime']['version'] == 'v24.16.0' and not attempt.get('experimentalOverlay') and not attempt.get('oracleTestOverlay')
+        assert attempt['archiveInstalled']['allArchiveGitBound'] and attempt['archiveInstalled']['allCommittedSourcesStableAfter']
+        assert attempt['archiveInstalled']['sourceMutationPerformed'] is False and attempt['archiveInstalled']['exactAfterTargets'] == 21
+        source_before, source_after = data('verification/source-before.json'), data('verification/source-after.json')
+        assert source_before == source_after and attempt['sourceStable'] is True and len(source_before) == attempt['sourceFiles']
+        snapshots = data('verification/source-snapshot-manifest.json')['files']
+        assert len(snapshots) == attempt['sourceSnapshotFiles']
+        for row in snapshots:
+            assert identity(ordinary('verification/' + row['path']).read_bytes()) == selected_identity(row)
+        git_sources = data('verification/git-baseline-active-source.json')
+        assert git_sources['excludedTargets'] == [] and git_sources['repositoryCommit'] == commit
+        assert len(git_sources['files']) == attempt['archiveInstalled']['gitBaselineEligibleActiveFiles'] == len(snapshots)
+        assert authenticate_eligible_snapshots(git_sources['files'], 'verification/source/') == len(snapshots)
+        observed = ordinary('verification/stdout.txt').read_text(encoding='utf-8')
+        for key, value in attempt['summary'].items():
+            matches = re.findall(r'^# ' + key + r' (\d+(?:\.\d+)?)\r?$', observed, re.M)
+            assert matches and float(matches[-1]) == value
+        acquired = data('original-acquisition.json')
+        same_attempt(acquired)
+        assert acquired['status'] == 'acquired' and acquired['mode'] == 'archive-aes-installed' and len(acquired['assets']) == 2
+        assert acquired['installedSourceCheck'] == identity(ordinary('archive-installed-source-check.json').read_bytes())
+        assert attempt['status'] == 'passed' and attempt['exitCode'] == 0 and attempt['childCloseObserved'] is True and attempt['failure'] is None
+        assert attempt['summary']['tests'] == attempt['summary']['pass'] == 161
+        assert sum(attempt['summary'][key] for key in ('fail', 'cancelled', 'skipped', 'todo')) == 0
+        assert len(attempt['selectedTestFiles']) == 13
+        assert 'apps/archive/sevenzip-aes-bounds.test.mjs' in attempt['selectedTestFiles']
+        bounds = data('bounds-attempt.json')
+        assert bounds['schema'] == 'rea-archive-installed-bounds-attempt/v1'
+        same_attempt(bounds)
+        assert bounds['sourceCommit'] == commit and bounds['status'] == 'passed'
+        assert bounds['expectedGroups'] == 3 and bounds['selectedTestFiles'] == ['apps/archive/sevenzip-aes-bounds.test.mjs']
+        assert bounds['command']['arguments'] == ['--test', '--test-reporter=tap', '--test-concurrency=1', 'apps/archive/sevenzip-aes-bounds.test.mjs']
+        assert bounds['command']['cwd'] == 'products/rea-studio' and bounds['command']['executable'].lower().endswith('node.exe')
+        assert bounds['source'] == next(row for row in auth['currentTargets'] if row['path'] == correction_target)
+        assert bounds['installedSourceCheck'] == identity(ordinary('archive-installed-source-check.json').read_bytes())
+        assert bounds['fixtureCorrection'] == auth['fixtureCorrection']
+        assert bounds['finite161Aggregated'] is False and bounds['historicalReceiptsRebound'] is False
+        assert bounds['originalExecutions'] == 0 and bounds['fullArchiveSuite'] is False and bounds['fullParity'] is False and bounds['superiority'] is False
+        assert bounds['timeoutMs'] == 120000 and bounds['maxBufferBytes'] == 2 * 1024 * 1024
+        assert bounds['synchronousChildReturned'] is True and bounds['exitCode'] == 0 and bounds['signal'] is None and bounds['childError'] is None
+        assert bounds['sourceStable'] is True and bounds['output']['complete'] is True
+        assert bounds['summary'] == {'tests': 3, 'pass': 3, 'fail': 0, 'cancelled': 0, 'skipped': 0, 'todo': 0}
+        for stream in ['stdout', 'stderr']:
+            assert identity(ordinary('bounds.' + stream + '.txt').read_bytes()) == bounds['output'][stream]
+        assert ordinary('bounds.stderr.txt').stat().st_size == 0
+        bounds_stdout = ordinary('bounds.stdout.txt').read_text(encoding='utf-8')
+        for key, count in bounds['summary'].items():
+            assert re.findall(r'^# ' + key + r' ([0-9]+)\r?$', bounds_stdout, re.M) == [str(count)]
+        assert workflow['boundsOutcome'] == 'success' and workflow['boundsGroupsSeparateFromFinite161'] is True
+        assert post['checkedAtUtc'] >= bounds['completedAtUtc'] >= bounds['startedAtUtc']
+        result.update({'stableCensusRows': len(source_before), 'sourceSnapshotFilesVerified': len(snapshots), 'eligibleGitBlobsIndependentlyAuthenticated': len(git_sources['files']), 'all62CurrentGitBlobsIndependentlyVerified': True, 'all21CurrentPinsVerified': True,
+            'finite161RecordedPass': True, 'overlappingTargeted3RecordedPass': True, 'targeted3AlreadyWithinFinite161': True, 'targetedAndFiniteCountsAggregated': False, 'boundsReceipt': identity(ordinary('bounds-attempt.json').read_bytes()), 'boundsSummary': bounds['summary']})
+    else:
+        attempt = data('browser-attempt.json')
+        same_attempt(attempt)
+        result['attempt'] = {key: attempt.get(key) for key in ('status', 'sourceCommit', 'summary', 'sourceFiles', 'sourceStable', 'failure', 'archiveInstalled', 'testsByteOverlay')}
+        assert attempt['sourceCommit'] == commit and attempt['testsByteOverlay'] is False and not attempt.get('overlay')
+        assert attempt['archiveInstalled']['allArchiveGitBound'] and attempt['archiveInstalled']['sourceMutationPerformed'] is False
+        source_before, source_after = data('browser-source-before.json'), data('browser-source-after.json')
+        assert source_before == source_after and attempt['sourceStable'] is True and len(source_before) == attempt['sourceFiles']
+        for row in source_before:
+            assert identity(ordinary('source/' + row['path'] + '.snapshot').read_bytes()) == selected_identity(row)
+        assert authenticate_eligible_snapshots(source_before, 'source/') == len(source_before)
+        browser_post = data('browser-postrun-source-check.json')
+        same_attempt(browser_post)
+        assert browser_post['status'] == 'source-verified' and browser_post['sourceStable'] is True and browser_post['testsByteOverlay'] is False
+        assert browser_post['browserAttempt'] == identity(ordinary('browser-attempt.json').read_bytes())
+        assert browser_post['sourceAuthentication'] == attempt['sourceAuthentication']
+        assert attempt['sourceAuthentication']['allEligibleGitBlobs'] == len(source_before) and attempt['sourceAuthentication']['sourceOverlay'] is False
+        acquisition = data('browser-tooling-acquisition.json')
+        same_attempt(acquisition)
+        assert acquisition['status'] == 'acquired' and acquisition['sourceCommit'] == commit
+        assert attempt['acquisition'] == identity(ordinary('browser-tooling-acquisition.json').read_bytes()) and acquisition['browserImage'] == attempt['browserImage']
+        roster = data('source/browser-tests/archive-aes-roster.json.snapshot')
+        cases = [data(str(filename.relative_to(evidence)).replace('\\', '/')) for filename in evidence.glob('case-*.json')]
+        assert len(cases) == 6 and sorted(row['title'] for row in cases) == sorted(roster)
+        for case in cases:
+            assert case['schema'] == 'rea-cloud-browser-archive-case-observation/v1' and case['retry'] == 0 and case['errors'] == []
+            assert case['actualDownloads'] == case['originalProductExecutions'] == 0 and case['productDownloadUIAbsent'] is True
+            assert case['realBrowser'] and case['actualHTTP'] and case['serverCloseObserved']
+        assert len(attempt['screenshots']) == 6
+        for row in attempt['screenshots']:
+            value = ordinary(row['path']).read_bytes()
+            assert identity(value) == selected_identity(row)
+            png(value)
+        report = data('playwright-results.json')
+        assert [report['stats'][key] for key in ('expected', 'unexpected', 'skipped', 'flaky')] == [6, 0, 0, 0] and report['errors'] == []
+        assert attempt['status'] == 'passed' and attempt['summary'] == {'tests': 6, 'passed': 6, 'failed': 0, 'skipped': 0, 'flaky': 0, 'retries': 0, 'exactRealDownloads': 0, 'exactCreatedArchiveArtifacts': 3, 'exactRestoredFileArtifacts': 5, 'productDownloadUIAbsent': True, 'originalProcesses': 0}
+        required.append('browserPostcheckOutcome')
+        result.update({'stableCensusRows': len(source_before), 'sourceSnapshotFilesVerified': len(source_before), 'eligibleGitBlobsIndependentlyAuthenticated': len(source_before), 'all62CurrentGitBlobsIndependentlyVerified': True, 'all21CurrentPinsVerified': True, 'validPNGScreenshots': 6, 'browser6RecordedPass': True})
+    assert all(workflow[key] == 'success' for key in required)
+    assert not (evidence / 'storage-failure.json').exists()
+    result['recordedContractPassed'] = True
+except Exception as error:
+    result['evidenceConsistencyErrors'].append({'type': type(error).__name__, 'message': str(error)})
+with (folder / 'local-installed-archive-backup-verification.json').open('x', encoding='utf-8') as output:
+    json.dump(result, output, indent=2)
+    output.write('\n')
+print(json.dumps({key: value for key, value in result.items() if key != 'files'}))

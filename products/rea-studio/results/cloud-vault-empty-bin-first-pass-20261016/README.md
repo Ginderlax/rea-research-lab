@@ -1,0 +1,5 @@
+# Vault empty recycle bin: first hosted finite pass
+
+An actual hosted Windows run passed233/233 finite Vault tests across45 files using the exact nine-target experimental composition. Four separate observed original-library children each loaded the released KeePass assembly and called DeleteAllObjects once. Native save/reopen retains the observed4.1→4.0 header change and raw .392Z dates; the exact authenticated original whole-second serialization rule matches all28 named date fields and every remaining named field is deep-exact. The source composition remains uninstalled. These finite library and candidate tests do not establish real-browser, arbitrary-format/XML, full KeePass-program, security, performance, every documented-feature parity or superiority acceptance.
+
+Each record lists decoded and stored bytes/SHA. Read identity storage directly; decompress gzip storage and verify decoded identity. Only source/ snapshots are omitted publicly; complete readable local copies are verified. Earlier failures remain separate. No original executable or vendor archive is published.

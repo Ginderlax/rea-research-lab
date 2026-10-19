@@ -1,0 +1,205 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: archive-aes.spec.mjs >> Archive AES 7Z content UI round trip retain Unicode bytes
+- Location: archive-aes.spec.mjs:138:38
+
+# Error details
+
+```
+Error: EEXIST: file already exists, open 'D:\a\_temp\rea-browser-evidence-38824829929-1\browser-observation.json'
+```
+
+# Test source
+
+```ts
+  1   | // Real Chromium / unchanged experimental app. Archive has no download UI.
+  2   | // Owned filesystem observers preserve actual UI-created archives/restored bytes.
+  3   | // No original 7-Zip binary is acquired or executed. Request bodies/headers and
+  4   | // traces are not retained. Only freshly generated synthetic passwords are used.
+  5   | import assert from 'node:assert/strict';
+  6   | import fs from 'node:fs/promises';
+  7   | import path from 'node:path';
+  8   | import { randomBytes, createHash } from 'node:crypto';
+  9   | import { test as base, expect } from '@playwright/test';
+  10  | assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
+  11  | assert.equal(process.env.CI, 'true'); assert.equal(process.env.GITHUB_ACTIONS, 'true');
+  12  | assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
+  13  | const { start } = await import('../server.mjs');
+  14  | const evidence = await fs.realpath(process.env.REA_BROWSER_EVIDENCE);
+  15  | const dataRoot = await fs.realpath(process.env.REA_BROWSER_DATA_ROOT);
+  16  | const metadata = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+  17  | const write = (name, value) => fs.writeFile(path.join(evidence, name), JSON.stringify(value, null, 2) + '\n', { flag: 'wx' });
+  18  | const deferred = () => { let resolve, reject; const promise = new Promise((a, b) => { resolve = a; reject = b; }); return { promise, resolve, reject }; };
+  19  | async function bounded(promise, milliseconds, label) { let timer; try { return await Promise.race([promise, new Promise((_, reject) => timer = setTimeout(() => reject(new Error(label)), milliseconds))]); } finally { clearTimeout(timer); } }
+  20  | const sampleName = 'astral-😀-é-e\u0301.txt', sampleText = 'Owned Archive browser content\nUnicode 😀 é e\u0301\nSecond line\n';
+  21  | const rootView = page => page.locator('#app-root > div');
+  22  | const privateFields = page => page.locator('#app-root input[type="password"]');
+  23  | async function absent(filename) { try { await fs.lstat(filename); return false; } catch (error) { if (error.code === 'ENOENT') return true; throw error; } }
+  24  | const test = base.extend({
+  25  |   studio: async ({ page }, use, info) => {
+  26  |     const dataDir = await fs.mkdtemp(path.join(dataRoot, 'archive-case-'));
+  27  |     const instance = await start({ port: 0, dataDir });
+  28  |     const workspace = await fs.realpath(path.join(dataDir, 'archive', 'workspace'));
+  29  |     const observations = [], requests = [], faults = [], errors = [], held = [], auxiliaryErrors = [], expectedErrors = new Set(), downloads = [];
+  30  |     page.on('download', item => { downloads.push({ suggestedFilename: item.suggestedFilename() }); errors.push({ type: 'unexpected-download', message: 'Archive has no product download UI' }); });
+  31  |     page.on('pageerror', error => errors.push({ type: 'pageerror', message: error.message }));
+  32  |     page.on('console', message => {
+  33  |       if (message.type() !== 'error') return;
+  34  |       const value = { type: 'console', message: message.text(), location: message.location() };
+  35  |       if (value.location.url === instance.url + '/favicon.ico' && /404/.test(value.message)) auxiliaryErrors.push(value);
+  36  |       else if (expectedErrors.has(value.location.url) && /400/.test(value.message)) auxiliaryErrors.push({ ...value, expectedRefusal: true });
+  37  |       else errors.push(value);
+  38  |     });
+  39  |     page.on('requestfailed', request => { if (request.url().startsWith(instance.url + '/')) errors.push({ type: 'requestfailed', path: new URL(request.url()).pathname, failure: request.failure() }); });
+  40  |     page.on('request', request => {
+  41  |       if (!request.url().startsWith(instance.url + '/api/')) return;
+  42  |       assert(requests.length < 200, 'Finite request limit exceeded');
+  43  |       // Deliberately do not retain postData, token headers, passwords or raw bodies.
+  44  |       let input = {}; if (request.method() === 'POST') input = request.postDataJSON();
+  45  |       requests.push({ method: request.method(), path: new URL(request.url()).pathname, keys: Object.keys(input).sort(), passwordSupplied: Object.hasOwn(input, 'password') });
+  46  |     });
+  47  |     async function hold(action) {
+  48  |       const entered = deferred(), released = deferred(), finished = deferred(); let used = false;
+  49  |       await page.route(instance.url + '/api/archive/' + action, async route => {
+  50  |         if (used) return route.continue(); used = true;
+  51  |         try {
+  52  |           const response = await route.fetch({ timeout: 20000 }), body = await response.body();
+  53  |           assert(response.ok(), 'Timing gate requires an actual successful unchanged host response');
+  54  |           faults.push({ kind: 'delay-after-actual-host-response', action, status: response.status(), body: metadata(body), handlerMocked: false, operationAlreadyCommitted: true });
+  55  |           entered.resolve(JSON.parse(body).result); await released.promise; await route.fulfill({ response });
+  56  |         } catch (error) { entered.reject(error); throw error; } finally { finished.resolve(); }
+  57  |       });
+  58  |       const gate = { entered: entered.promise, release: released.resolve, finished: finished.promise, used: () => used }; held.push(gate); return gate;
+  59  |     }
+  60  |     async function preserveArchive(relative, label) {
+  61  |       assert(/^[a-z0-9-]+\.(zip|7z)$/.test(label));
+  62  |       const filename = path.join(workspace, ...relative.split('/')), stat = await fs.lstat(filename), real = await fs.realpath(filename);
+  63  |       assert(stat.isFile() && !stat.isSymbolicLink() && stat.size <= 256 * 1024);
+  64  |       assert(real.toLowerCase().startsWith(workspace.toLowerCase() + path.sep));
+  65  |       const bytes = await fs.readFile(real), target = path.join(evidence, 'workspace-artifacts', label);
+  66  |       assert.equal(bytes.subarray(0, label.endsWith('.zip') ? 4 : 6).toString('hex'), label.endsWith('.zip') ? '504b0304' : '377abcaf271c');
+  67  |       await fs.mkdir(path.dirname(target), { recursive: true }); await fs.writeFile(target, bytes, { flag: 'wx' });
+  68  |       const preserved = await fs.readFile(target); assert(preserved.equals(bytes));
+  69  |       observations.push({ kind: 'real-ui-created-workspace-archive', path: 'workspace-artifacts/' + label, expected: metadata(bytes), observed: metadata(preserved), productDownloadUIAbsent: true, actualDownloads: 0, observer: 'Owned fixture filesystem read and exact portable copy, not a browser download' });
+  70  |     }
+  71  |     const s = { page, url: instance.url, token: instance.token, workspace, observations, requests, faults, hold, preserveArchive, expectedErrors };
+  72  |     try { await use(s); }
+  73  |     finally {
+  74  |       let serverCloseObserved = false;
+  75  |       try {
+  76  |         for (const gate of held) gate.release();
+  77  |         await bounded(Promise.all(held.filter(gate => gate.used()).map(gate => gate.finished)), 5000, 'Held actual response cleanup deadline exceeded');
+  78  |         await privateFields(page).evaluateAll(nodes => nodes.forEach(node => { node.value = ''; }));
+  79  |         await fs.mkdir(path.join(evidence, 'screenshots'), { recursive: true });
+  80  |         await page.screenshot({ path: path.join(evidence, 'screenshots', info.testId + '.png'), fullPage: false });
+  81  |       } finally {
+  82  |         try { await bounded(instance.close(), 5000, 'Owned Studio close deadline exceeded'); serverCloseObserved = true; }
+  83  |         finally {
+  84  |           await write('case-' + info.testId + '.json', { schema: 'rea-cloud-browser-archive-case-observation/v1', testId: info.testId, title: info.title, statusAtFixtureClose: info.status, retry: info.retry, url: instance.url, ownedDataDirectory: dataDir, serverCloseObserved, realBrowser: true, actualHTTP: true, originalProductExecutions: 0, productDownloadUIAbsent: true, actualDownloads: downloads.length, observations, requests, faults, expectedAuxiliaryResourceErrors: auxiliaryErrors, errors });
+  85  |         }
+  86  |       }
+  87  |       expect(errors, 'No unexpected real browser errors').toEqual([]);
+  88  |     }
+  89  |   },
+  90  | });
+  91  | test.beforeAll(async ({ browser }) => {
+  92  |   expect(browser.version()).toBe('156.0.8078.4');
+> 93  |   await write('browser-observation.json', { schema: 'rea-cloud-real-browser-observation/v1', browser: 'chromium', channel: 'chromium', version: browser.version(), realBrowserFixtureCreated: true, retries: 0 });
+      |   ^ Error: EEXIST: file already exists, open 'D:\a\_temp\rea-browser-evidence-38824829929-1\browser-observation.json'
+  94  | });
+  95  | async function open(s) { await s.page.goto(s.url + '/#archive'); await expect(s.page.getByRole('heading', { name: 'REA Archive', exact: true })).toBeVisible(); }
+  96  | async function done(s) { await expect(rootView(s.page)).toHaveAttribute('aria-busy', 'false'); await expect(rootView(s.page).locator(':scope > p.status')).toHaveText('Done.'); }
+  97  | async function source(s) {
+  98  |   await s.page.getByLabel('Workspace file path', { exact: true }).fill('archive/source/' + sampleName);
+  99  |   await s.page.getByLabel('Text content', { exact: true }).fill(sampleText);
+  100 |   await s.page.getByRole('button', { name: 'Create file', exact: true }).click(); await done(s);
+  101 | }
+  102 | async function configure(s, { encrypted = true, headers = false, output = 'archive/browser.7z', password } = {}) {
+  103 |   await s.page.getByLabel('Archive format', { exact: true }).selectOption(encrypted ? 'sevenzip' : 'zip');
+  104 |   await s.page.getByLabel('New archive path', { exact: true }).fill(output);
+  105 |   if (encrypted) {
+  106 |     await s.page.getByLabel('Encrypt 7Z contents with AES-256', { exact: true }).check();
+  107 |     await s.page.getByLabel('7Z creation password (1–128 UTF16 units)', { exact: true }).fill(password);
+  108 |     if (headers) await s.page.getByLabel('Encrypt 7Z names and header metadata', { exact: true }).check();
+  109 |   }
+  110 | }
+  111 | async function readPassword(s, password) {
+  112 |   await s.page.getByLabel('Use a password for this 7Z archive', { exact: true }).check();
+  113 |   await s.page.getByLabel('7Z inspection/extraction password', { exact: true }).fill(password);
+  114 | }
+  115 | async function create(s) { await s.page.getByRole('button', { name: 'Create archive', exact: true }).click(); await done(s); await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0]); }
+  116 | async function extract(s, destination, password) {
+  117 |   if (password) await readPassword(s, password);
+  118 |   await s.page.getByLabel('New destination folder', { exact: true }).fill(destination);
+  119 |   await s.page.getByLabel('Confirm extraction', { exact: true }).check();
+  120 |   await s.page.getByRole('button', { name: 'Verify and extract', exact: true }).click(); await done(s);
+  121 |   const bytes = await fs.readFile(path.join(s.workspace, destination, sampleName)); assert.deepEqual(metadata(bytes), metadata(Buffer.from(sampleText)));
+  122 |   const artifact = 'workspace-artifacts/' + destination.split('/').at(-1) + '.txt';
+  123 |   await fs.mkdir(path.join(evidence, 'workspace-artifacts'), { recursive: true }); await fs.writeFile(path.join(evidence, artifact), bytes, { flag: 'wx' });
+  124 |   s.observations.push({ kind: 'real-ui-extraction-content', path: destination + '/' + sampleName, artifact, expected: metadata(Buffer.from(sampleText)), observed: metadata(bytes) });
+  125 |   await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0]);
+  126 | }
+  127 | test('Archive plain ZIP UI round trip retain Unicode bytes and refuse ZIP encryption', async ({ studio: s }) => {
+  128 |   await open(s); await source(s); await configure(s, { encrypted: false, output: 'archive/plain.zip' });
+  129 |   await expect(s.page.getByLabel('Encrypt 7Z contents with AES-256', { exact: true })).toBeDisabled();
+  130 |   await expect(s.page.getByLabel('7Z creation password (1–128 UTF16 units)', { exact: true })).toBeDisabled();
+  131 |   await create(s); await s.page.getByRole('button', { name: 'List and verify every entry', exact: true }).click(); await done(s);
+  132 |   await expect(s.page.getByRole('cell', { name: sampleName, exact: true })).toBeVisible();
+  133 |   await extract(s, 'archive/plain-restored'); await s.preserveArchive('archive/plain.zip', 'archive-plain.zip');
+  134 |   const response = await s.page.request.post(s.url + '/api/archive/create', { headers: { 'X-REA-Token': s.token }, data: { format: 'zip', source: 'archive/source', output: 'archive/refused.zip', password: randomBytes(18).toString('hex') } });
+  135 |   expect(response.status()).toBe(400); expect((await response.json()).error).toBe('Password encryption is supported only for7Z.'); expect(await absent(path.join(s.workspace, 'archive/refused.zip'))).toBe(true);
+  136 |   s.observations.push({ kind: 'encrypted-zip-refusal', actualBrowserDisabledControls: true, additionalProgrammaticAPIControl: true, ordinaryUIAESZIPWorkflowSupported: false, httpStatus: response.status(), noArchiveWritten: true });
+  137 | });
+  138 | for (const headers of [false, true]) test(headers ? 'Archive AES 7Z encrypted-header UI round trip retain Unicode bytes' : 'Archive AES 7Z content UI round trip retain Unicode bytes', async ({ studio: s }) => {
+  139 |   const password = randomBytes(18).toString('hex'), label = headers ? 'header' : 'content';
+  140 |   await open(s); await source(s); await configure(s, { headers, password, output: 'archive/' + label + '.7z' }); await create(s);
+  141 |   await readPassword(s, password); await s.page.getByRole('button', { name: 'List and verify every entry', exact: true }).click(); await done(s);
+  142 |   await expect(s.page.getByRole('cell', { name: sampleName, exact: true })).toBeVisible(); await expect(s.page.getByRole('cell', { name: 'AES-256', exact: true })).toBeVisible();
+  143 |   if (headers) await expect(s.page.getByText(/Names and header metadata were encrypted/)).toBeVisible();
+  144 |   await extract(s, 'archive/' + label + '-restored', password); await s.preserveArchive('archive/' + label + '.7z', 'archive-aes-' + label + '.7z');
+  145 |   s.observations.push({ kind: 'aes-7z-ui-roundtrip', headerEncrypted: headers, contentBytesExact: true, passwordFieldsCleared: true });
+  146 | });
+  147 | test('Archive wrong password refuses real list and extraction before destination creation', async ({ studio: s }) => {
+  148 |   const password = randomBytes(18).toString('hex'); await open(s); await source(s); await configure(s, { headers: true, password }); await create(s);
+  149 |   for (const action of ['list', 'extract']) {
+  150 |     s.expectedErrors.add(s.url + '/api/archive/' + action); await readPassword(s, 'incorrect-owned-fixture-password');
+  151 |     if (action === 'extract') { await s.page.getByLabel('New destination folder', { exact: true }).fill('archive/refused-restore'); await s.page.getByLabel('Confirm extraction', { exact: true }).check(); }
+  152 |     const pending = s.page.waitForResponse(r => r.url() === s.url + '/api/archive/' + action && r.request().method() === 'POST');
+  153 |     await s.page.getByRole('button', { name: action === 'list' ? 'List and verify every entry' : 'Verify and extract', exact: true }).click();
+  154 |     const response = await pending; expect(response.status()).toBe(400); await expect(rootView(s.page)).toHaveAttribute('aria-busy', 'false');
+  155 |     await expect(rootView(s.page).locator(':scope > p.status')).not.toHaveText('Done.'); await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0]);
+  156 |     s.observations.push({ kind: 'wrong-password-refusal', action, status: response.status(), body: metadata(await response.body()), passwordRetainedInEvidence: false });
+  157 |   }
+  158 |   expect(await absent(path.join(s.workspace, 'archive/refused-restore'))).toBe(true);
+  159 |   expect((await fs.readdir(path.join(s.workspace, 'archive'))).some(name => name.endsWith('.partial'))).toBe(false);
+  160 |   await extract(s, 'archive/correct-after-refusal', password);
+  161 | });
+  162 | test('Archive held actual create response keeps controls busy and clears private fields', async ({ studio: s }) => {
+  163 |   const password = randomBytes(18).toString('hex'); await open(s); await source(s); await configure(s, { password });
+  164 |   const gate = await s.hold('create'); await s.page.getByRole('button', { name: 'Create archive', exact: true }).click(); await gate.entered;
+  165 |   await expect(rootView(s.page)).toHaveAttribute('aria-busy', 'true');
+  166 |   expect(await rootView(s.page).locator('button,input,select,textarea').evaluateAll(nodes => nodes.every(node => node.disabled))).toBe(true);
+  167 |   expect(s.requests.filter(row => row.path === '/api/archive/create')).toHaveLength(1);
+  168 |   gate.release(); await gate.finished; await done(s); await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0]);
+  169 |   expect(s.requests.filter(row => row.path === '/api/archive/create')).toHaveLength(1);
+  170 |   await extract(s, 'archive/held-create-restored', password);
+  171 | });
+  172 | test('Archive disposal scrubs detached passwords after actual committed extraction', async ({ studio: s }) => {
+  173 |   const password = randomBytes(18).toString('hex'); await open(s); await source(s); await configure(s, { password }); await create(s); await readPassword(s, password);
+  174 |   await s.page.getByLabel('New destination folder', { exact: true }).fill('archive/disposed-restored'); await s.page.getByLabel('Confirm extraction', { exact: true }).check();
+  175 |   const detached = await privateFields(s.page).elementHandles(), gate = await s.hold('extract');
+  176 |   await s.page.getByRole('button', { name: 'Verify and extract', exact: true }).click(); await gate.entered;
+  177 |   const committed = await fs.readFile(path.join(s.workspace, 'archive/disposed-restored', sampleName)); assert.deepEqual(metadata(committed), metadata(Buffer.from(sampleText)));
+  178 |   await s.page.getByRole('button', { name: 'Lab Editor', exact: true }).click(); await expect(s.page.getByRole('heading', { name: 'Workspace Editor', exact: true })).toBeVisible();
+  179 |   for (const field of detached) expect(await field.evaluate(node => ({ units: node.value.length, connected: node.isConnected }))).toEqual({ units: 0, connected: false });
+  180 |   gate.release(); await gate.finished; await expect(s.page.getByRole('heading', { name: 'REA Archive', exact: true })).toHaveCount(0);
+  181 |   s.observations.push({ kind: 'disposal-after-real-extraction-commit', destinationPreserved: true, content: metadata(committed), detachedPasswordUnits: [0, 0], serverCancellationClaimed: false, staleArchiveUIAbsent: true });
+  182 | });
+  183 | 
+```

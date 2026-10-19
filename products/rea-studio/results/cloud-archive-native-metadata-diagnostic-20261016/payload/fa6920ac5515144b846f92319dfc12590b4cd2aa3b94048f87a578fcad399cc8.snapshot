@@ -1,0 +1,47 @@
+from pathlib import Path
+import json,hashlib,difflib
+ROOT=Path(__file__).resolve().parents[1];WORK=ROOT/'work';STAGE=WORK/'native-diagnostic-backup-template-r3-20261016-next'
+assert not STAGE.exists()
+ident=lambda b:{'bytes':len(b),'sha256':hashlib.sha256(b).hexdigest()}
+old_stage=WORK/'native-diagnostic-backup-template-20261016-next'
+old_auth_raw=(old_stage/'source-authority.json').read_bytes();assert ident(old_auth_raw)=={'bytes':15056,'sha256':'40dc4f677ebc3d04cef76a4da2e0e2510db08aa138e243c69459ee1b7709ccc6'}
+old_auth=json.loads(old_auth_raw)
+auth_path=WORK/'archive-native-diagnostic-proposal-r3-next/copy-authority.json';auth_raw=auth_path.read_bytes();assert ident(auth_raw)=={'bytes':15756,'sha256':'475459a83f5535793d1f544ddde3b9c7bbc7e89dc52664931bea177979cd8977'}
+auth=json.loads(auth_raw);assert auth['fixedInputSources']==old_auth['fixedSourceRows'][:67]
+rows=auth['fixedInputSources']+[{'path':r['path'],**r['after']} for r in auth['files']]
+assert len(rows)==70 and sum(r['bytes'] for r in rows)==876654
+for row in auth['files']: assert ident((Path(auth['candidateRoot'])/row['path']).read_bytes())==row['after']
+reader_old=(WORK/'unpack-archive-native-diagnostic-PENDING.py').read_bytes();assert ident(reader_old)=={k:old_auth['reader'][k] for k in ('bytes','sha256')}
+collector_old=(WORK/'collect-archive-native-diagnostic-PENDING.mjs').read_bytes();assert ident(collector_old)=={k:old_auth['collector'][k] for k in ('bytes','sha256')}
+old_rows=json.dumps(old_auth['fixedSourceRows'],indent=2).encode();new_rows=json.dumps(rows,indent=2).encode()
+assert reader_old.count(old_rows)==1
+reader_new=reader_old.replace(old_rows,new_rows)
+assert reader_new.count(b"command['hook']=='tooling/cloud/archive-native-metadata-trace.mjs'")==1
+reader_new=reader_new.replace(b"command['hook']=='tooling/cloud/archive-native-metadata-trace.mjs'",b"command['hook']=='scripts/archive-native-metadata-trace.mjs'")
+assert reader_new.count(b"'-native-diagnostic-reader-v1'")==1
+reader_new=reader_new.replace(b"'-native-diagnostic-reader-v1'",b"'-native-diagnostic-reader-r3-v1'")
+reader_name='unpack-archive-native-diagnostic-r3-PENDING.py';reader_id=ident(reader_new)
+collector_new=collector_old
+replacements=[(b"READER='unpack-archive-native-diagnostic-PENDING.py'",("READER='"+reader_name+"'").encode()),
+ (('READER_BYTES='+str(old_auth['reader']['bytes'])).encode(),('READER_BYTES='+str(reader_id['bytes'])).encode()),
+ (old_auth['reader']['sha256'].encode(),reader_id['sha256'].encode()),
+ (b"'-native-diagnostic-reader-v1'",b"'-native-diagnostic-reader-r3-v1'")]
+for before,after in replacements: assert collector_new.count(before)==1;collector_new=collector_new.replace(before,after)
+STAGE.mkdir()
+for name,raw in [(reader_name,reader_new),('collect-archive-native-diagnostic-r3-PENDING.mjs',collector_new)]:
+ file=WORK/name;assert not file.exists();file.write_bytes(raw);assert file.read_bytes()==raw;(STAGE/(name+'.snapshot')).write_bytes(raw)
+(STAGE/'prior-template-authority.json.snapshot').write_bytes(old_auth_raw);(STAGE/'diagnostic-r3-source-authority.json.snapshot').write_bytes(auth_raw)
+for kind,before,after in [('reader',reader_old,reader_new),('collector',collector_old,collector_new)]:
+ diff=''.join(difflib.unified_diff(before.decode().splitlines(True),after.decode().splitlines(True),fromfile='preserved-r2/'+kind,tofile='r3/'+kind))
+ (STAGE/(kind+'-r2-to-r3.diff')).write_text(diff,encoding='utf-8',newline='')
+doc=(old_stage/'README.md').read_text(encoding='utf-8').replace('876,714','876,654')
+doc+='\nThis R3 template preserves the complete old R2 template and adapts only the reviewed relocation of two diagnostic modules from ignored tooling/cloud to tracked root scripts, the three resulting tooling identities, the exact recorded hook path, and distinct reader/versioned backup filenames. All67 baseline sources, native script, options, TAP groups, schemas and acceptance/refusal gates are unchanged. Final R3 diagnostic source peer is required before binding/use.\n'
+(STAGE/'README.md').write_text(doc,encoding='utf-8',newline='')
+record={**old_auth,'schema':'rea-native-diagnostic-unbound-backup-template-authority/v3','reader':{'path':'work/'+reader_name,**reader_id},
+ 'collector':{'path':'work/collect-archive-native-diagnostic-r3-PENDING.mjs',**ident(collector_new)},
+ 'diagnosticSourceAuthority':{'path':'work/archive-native-diagnostic-proposal-r3-next/copy-authority.json',**ident(auth_raw)},
+ 'diagnosticSourcePeer':{'status':'R3-independent-source-peer-pending; oldR2peer-preserved-in-prior-authority'},
+ 'fixedSourceRows':rows,'sourceBytes':876654,'priorImmutableTemplateAuthority':{'path':'work/native-diagnostic-backup-template-20261016-next/source-authority.json',**ident(old_auth_raw)},
+ 'relocationOnlyDelta':True,'backupTemplateExecution':0,'apiCalls':0}
+raw=(json.dumps(record,indent=2)+'\n').encode();(STAGE/'source-authority.json').write_bytes(raw)
+print(json.dumps({'stage':str(STAGE),'authority':ident(raw),'reader':reader_id,'collector':ident(collector_new)}))

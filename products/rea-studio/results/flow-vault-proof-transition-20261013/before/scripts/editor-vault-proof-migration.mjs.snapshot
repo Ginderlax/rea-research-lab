@@ -1,0 +1,582 @@
+import assert from 'node:assert/strict';
+import {readFileSync,lstatSync,realpathSync} from 'node:fs';
+import {resolve,relative,sep} from 'node:path';
+import {createHash} from 'node:crypto';
+const fixed={
+  "schema": "rea-editor-vault-explicit-proof-transition/v1",
+  "installation": {
+    "manifest": {
+      "path": "products/rea-studio/results/editor-vault-reviewed-production-installation-20261013/preservation-manifest.json",
+      "bytes": 605900,
+      "sha256": "3f810b748bfee60e396df83b668face23e52645871fcfcded3a4074445ce86d5"
+    },
+    "record": {
+      "path": "products/rea-studio/results/editor-vault-reviewed-production-installation-20261013/installation.json",
+      "bytes": 496101,
+      "sha256": "89c6f2f0b5c81becc957506d590ead6c7cd550e33e8519f0ff2c3c77ec2d253d"
+    },
+    "records": 1098,
+    "installed": 30
+  },
+  "sources": [
+    {
+      "path": "products/rea-studio/apps/editor/SEARCH-PATTERNS.md",
+      "before": null,
+      "after": {
+        "bytes": 4541,
+        "sha256": "10cf1448c9afcfffb50f775c382c8cf2ca5ec102c4e3ed52e18bd5431af4e744"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/SEARCH.md",
+      "before": {
+        "bytes": 4604,
+        "sha256": "3c13316ea1332fefdd86dbfdda55114cc0eae2f234094abbaa6ce9d7aa5878b4"
+      },
+      "after": {
+        "bytes": 4957,
+        "sha256": "601012ade78da4d20eac980d32172509772ddf73f7e45ffe62503205a363aac8"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/client.mjs",
+      "before": {
+        "bytes": 17759,
+        "sha256": "295e557ee7c341f2e1ca6fb68aac32e558455556d0c6490f6075970025afb65c"
+      },
+      "after": {
+        "bytes": 19681,
+        "sha256": "113a0781b166c9fb4c8994abcefeac0818d55719975e35dfdbead13fa4f3d62a"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/search-pattern-session.mjs",
+      "before": null,
+      "after": {
+        "bytes": 4350,
+        "sha256": "01d81f633026bb8a2fa3f41af8b28cdc42821d95ac3e203f0c459c0bffdd88f6"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/search-pattern-worker.mjs",
+      "before": null,
+      "after": {
+        "bytes": 896,
+        "sha256": "c09535024e5893587a0079fc2f40c2cf790e5e55c1c726433a1dbf136d0d7f8b"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/search-pattern.NOTICE.md",
+      "before": null,
+      "after": {
+        "bytes": 783,
+        "sha256": "4edabb8ae68998f800378febc4b113f315dd33ca9263bdcc95ce5bfd9b81adcc"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/search-pattern.integration.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 2249,
+        "sha256": "c43970eba9a07fdd3722b61237332400d707d016233a4a157a50dab78ebff219"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/search-pattern.mjs",
+      "before": null,
+      "after": {
+        "bytes": 2890,
+        "sha256": "82956f54f988cb1229d51df9048974a47ec466db451f0687ed332347562ea4b5"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/search-pattern.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 7714,
+        "sha256": "3b775e746c38c2f9c069bdcde1486c8e307803ca1655a9ce27344a736f6e9d23"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/search-pattern.ui.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 9654,
+        "sha256": "c8ecdde9c4809bcc6d0209dc030e24dd1b7d1fdb87217b38df585c9c88ba6bb4"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/server.mjs",
+      "before": {
+        "bytes": 6303,
+        "sha256": "9036f3f139f6aeb31d07cf159694e8db127e3b65a136c1aaf20bebcf14e0acad"
+      },
+      "after": {
+        "bytes": 6354,
+        "sha256": "b745eaf2b8702f2ca8b31fcbf01b377fbbede89425ebb87c83f6bd0dc0269572"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/workspace-search.mjs",
+      "before": {
+        "bytes": 6133,
+        "sha256": "e0c53274f2577754064870d3613ed3fc0348c8c62d523d58223f80d3d6f5c38d"
+      },
+      "after": {
+        "bytes": 8121,
+        "sha256": "8c9fe66723e8de6b81244a593653c22f11cd87d0cffaeb09381e29d434b97c4f"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/TEXTAREA-COORDINATES.md",
+      "before": null,
+      "after": {
+        "bytes": 4087,
+        "sha256": "77a79d482c54c097778b3b3af0b244bbbe33c7c131fe8564c6577c062541c1db"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/editor/textarea-navigation.ui.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 10588,
+        "sha256": "6540a581e17ccb3333c9894249833071c993302b1a6a9066d546af109ce63ad8"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/GROUP-RECYCLE-NOTICE.md",
+      "before": null,
+      "after": {
+        "bytes": 1863,
+        "sha256": "5d1561da10d88a1c955afbec24cc39fc13ecbd8c0dca5b8c5cf3a4e93eb692c3"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/GROUP-RECYCLE.md",
+      "before": null,
+      "after": {
+        "bytes": 8377,
+        "sha256": "8168d5bef70088c069b7f679ae56e6cfce65d5680e7b30a595b280a1f29e4de1"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/README.md",
+      "before": {
+        "bytes": 9017,
+        "sha256": "8d3a2adf135a05c75cde799cf716d26073714f630b7302691b0662813eedd336"
+      },
+      "after": {
+        "bytes": 10690,
+        "sha256": "656ae34d5675f34b84d0cd7c290821e3de843702310556a9240177e4ca3af3ba"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/client.mjs",
+      "before": {
+        "bytes": 20650,
+        "sha256": "85661f40f4176feeb8edf16d0dba77ec674c5123c1baf60a8fce2233d566f129"
+      },
+      "after": {
+        "bytes": 24831,
+        "sha256": "6409badcd044cadc07d17edd4d749165f5cd5498d206f946f299da48d05477a5"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/group-active-controls.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 4493,
+        "sha256": "b93ff8426d2191f8b6eb35c382fe53cd14ad5db0d24129d2d945e28ecb8066c0"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/group-active-root-replay.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 9365,
+        "sha256": "b235b225c87f5f62784d4f28adc52f14423ee647068155080686480d044418a7"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/group-coherence-boundaries.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 6819,
+        "sha256": "b9b094ea7c8caeff769f0a9639b726bcbf5f7affa5978d42b2284768b55a9d77"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/group-coherence-replay.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 3201,
+        "sha256": "dc170a96d41520e4f479ee22df8517630442a13ece49f63f48571f3c802f143d"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/group-fixture.mjs",
+      "before": null,
+      "after": {
+        "bytes": 2987,
+        "sha256": "390837c8fc4b7001b0db04de7cdde1ca79aacdacba50e97a41bb2fde3e707bdd"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/group-oracle.ps1",
+      "before": null,
+      "after": {
+        "bytes": 7106,
+        "sha256": "6eb69d263594cecb97b651b92bc780100d6de30ee84f3306021f97660eff85f7"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/group-original.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 10587,
+        "sha256": "f8d7efe1eef99d60028895dc16efb8db771455eff2b2867cfefa3db1c48a41c4"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/group-recycle.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 10106,
+        "sha256": "1c733f6a8c7c30cfba6ccff3ee589951445ae02d8011434cc39d3b166d38cfaf"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/group-server.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 3698,
+        "sha256": "5876279b8febd852f5ee5df0969112b51c4ac86dee5fc89152fc7e878319a685"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/group-ui.test.mjs",
+      "before": null,
+      "after": {
+        "bytes": 6896,
+        "sha256": "6f7be81d5f54f9766b34b29117827010335001ae2357dae72d9fe9256ad78c31"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/recycle.mjs",
+      "before": {
+        "bytes": 9424,
+        "sha256": "edcab6bd77e21bbc50924f593b88f3073860ff25d19db84bb234a5a3088061cb"
+      },
+      "after": {
+        "bytes": 15642,
+        "sha256": "7146759668dc03909ccb02123708c81cf23c4d125958078ae10f780723c1c3d5"
+      }
+    },
+    {
+      "path": "products/rea-studio/apps/vault/server.mjs",
+      "before": {
+        "bytes": 16483,
+        "sha256": "ac6db70cc12c5af760b6940af76b2f4dfdbc1d7921a6ee12edd73e7ed524ddbc"
+      },
+      "after": {
+        "bytes": 17211,
+        "sha256": "1769f1ff70d92285a81f0ec9c61bd871d0d48978450915915c6f2489afa4ef8b"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "path": "products/rea-studio/apps/editor/SEARCH.md",
+      "before": {
+        "bytes": 4604,
+        "sha256": "3c13316ea1332fefdd86dbfdda55114cc0eae2f234094abbaa6ce9d7aa5878b4"
+      },
+      "after": {
+        "bytes": 4957,
+        "sha256": "601012ade78da4d20eac980d32172509772ddf73f7e45ffe62503205a363aac8"
+      },
+      "sourceRoot": "work/editor-search-pattern-textarea-fix-next",
+      "sourcePath": "candidate/products/rea-studio/apps/editor/SEARCH.md",
+      "originalDeclaredSource": "candidate/products/rea-studio/apps/editor/SEARCH.md",
+      "sourcePlan": "work/editor-pattern-root-installation-plan-next",
+      "historicalPath": "products/rea-studio/apps/editor/results/position-range-selection-followup/accepted-independent81/current-source/products/rea-studio/apps/editor/SEARCH.md.snapshot.snapshot",
+      "authority": "existing-fixed-API81-source",
+      "affectedInOld720": false
+    },
+    {
+      "path": "products/rea-studio/apps/editor/client.mjs",
+      "before": {
+        "bytes": 17759,
+        "sha256": "295e557ee7c341f2e1ca6fb68aac32e558455556d0c6490f6075970025afb65c"
+      },
+      "after": {
+        "bytes": 19681,
+        "sha256": "113a0781b166c9fb4c8994abcefeac0818d55719975e35dfdbead13fa4f3d62a"
+      },
+      "sourceRoot": "work/editor-search-pattern-textarea-fix-next",
+      "sourcePath": "candidate/products/rea-studio/apps/editor/client.mjs",
+      "originalDeclaredSource": "candidate/products/rea-studio/apps/editor/client.mjs",
+      "sourcePlan": "work/editor-pattern-root-installation-plan-next",
+      "historicalPath": "products/rea-studio/results/notes-layout-value-api-combined-20261013/source/apps/editor/client.mjs.snapshot.snapshot",
+      "authority": "fixed-f0-847-source-capsule",
+      "affectedInOld720": true
+    },
+    {
+      "path": "products/rea-studio/apps/editor/server.mjs",
+      "before": {
+        "bytes": 6303,
+        "sha256": "9036f3f139f6aeb31d07cf159694e8db127e3b65a136c1aaf20bebcf14e0acad"
+      },
+      "after": {
+        "bytes": 6354,
+        "sha256": "b745eaf2b8702f2ca8b31fcbf01b377fbbede89425ebb87c83f6bd0dc0269572"
+      },
+      "sourceRoot": "work/editor-search-pattern-textarea-fix-next",
+      "sourcePath": "candidate/products/rea-studio/apps/editor/server.mjs",
+      "originalDeclaredSource": "candidate/products/rea-studio/apps/editor/server.mjs",
+      "sourcePlan": "work/editor-pattern-root-installation-plan-next",
+      "historicalPath": "products/rea-studio/results/notes-layout-value-api-combined-20261013/source/apps/editor/server.mjs.snapshot.snapshot",
+      "authority": "fixed-f0-847-source-capsule",
+      "affectedInOld720": true
+    },
+    {
+      "path": "products/rea-studio/apps/editor/workspace-search.mjs",
+      "before": {
+        "bytes": 6133,
+        "sha256": "e0c53274f2577754064870d3613ed3fc0348c8c62d523d58223f80d3d6f5c38d"
+      },
+      "after": {
+        "bytes": 8121,
+        "sha256": "8c9fe66723e8de6b81244a593653c22f11cd87d0cffaeb09381e29d434b97c4f"
+      },
+      "sourceRoot": "work/editor-search-pattern-textarea-fix-next",
+      "sourcePath": "candidate/products/rea-studio/apps/editor/workspace-search.mjs",
+      "originalDeclaredSource": "candidate/products/rea-studio/apps/editor/workspace-search.mjs",
+      "sourcePlan": "work/editor-pattern-root-installation-plan-next",
+      "historicalPath": "products/rea-studio/results/notes-layout-value-api-combined-20261013/source/apps/editor/workspace-search.mjs.snapshot.snapshot",
+      "authority": "fixed-f0-847-source-capsule",
+      "affectedInOld720": true
+    },
+    {
+      "path": "products/rea-studio/apps/vault/README.md",
+      "before": {
+        "bytes": 9017,
+        "sha256": "8d3a2adf135a05c75cde799cf716d26073714f630b7302691b0662813eedd336"
+      },
+      "after": {
+        "bytes": 10690,
+        "sha256": "656ae34d5675f34b84d0cd7c290821e3de843702310556a9240177e4ca3af3ba"
+      },
+      "sourceRoot": "work/vault-group-publication-plan-next",
+      "sourcePath": "documentation-proposal/README.md",
+      "originalDeclaredSource": "documentation-proposal/README.md",
+      "sourcePlan": "work/vault-group-publication-plan-next",
+      "historicalPath": "products/rea-studio/results/editor-vault-reviewed-production-installation-20261013/before-images/products/rea-studio/apps/vault/README.md.snapshot",
+      "authority": "new-fixed-Vault-README-before-image",
+      "affectedInOld720": false
+    },
+    {
+      "path": "products/rea-studio/apps/vault/client.mjs",
+      "before": {
+        "bytes": 20650,
+        "sha256": "85661f40f4176feeb8edf16d0dba77ec674c5123c1baf60a8fce2233d566f129"
+      },
+      "after": {
+        "bytes": 24831,
+        "sha256": "6409badcd044cadc07d17edd4d749165f5cd5498d206f946f299da48d05477a5"
+      },
+      "sourceRoot": "work/vault-group-publication-plan-next",
+      "sourcePath": "source-proof/payload/6409badcd044cadc07d17edd4d749165f5cd5498d206f946f299da48d05477a5.snapshot",
+      "originalDeclaredSource": "products/rea-studio/apps/vault/client.mjs",
+      "sourcePlan": "work/vault-group-publication-plan-next",
+      "historicalPath": "products/rea-studio/results/notes-layout-value-api-combined-20261013/source/apps/vault/client.mjs.snapshot.snapshot",
+      "authority": "fixed-f0-847-source-capsule",
+      "affectedInOld720": true
+    },
+    {
+      "path": "products/rea-studio/apps/vault/recycle.mjs",
+      "before": {
+        "bytes": 9424,
+        "sha256": "edcab6bd77e21bbc50924f593b88f3073860ff25d19db84bb234a5a3088061cb"
+      },
+      "after": {
+        "bytes": 15642,
+        "sha256": "7146759668dc03909ccb02123708c81cf23c4d125958078ae10f780723c1c3d5"
+      },
+      "sourceRoot": "work/vault-group-publication-plan-next",
+      "sourcePath": "source-proof/payload/7146759668dc03909ccb02123708c81cf23c4d125958078ae10f780723c1c3d5.snapshot",
+      "originalDeclaredSource": "products/rea-studio/apps/vault/recycle.mjs",
+      "sourcePlan": "work/vault-group-publication-plan-next",
+      "historicalPath": "products/rea-studio/results/notes-layout-value-api-combined-20261013/source/apps/vault/recycle.mjs.snapshot.snapshot",
+      "authority": "fixed-f0-847-source-capsule",
+      "affectedInOld720": true
+    },
+    {
+      "path": "products/rea-studio/apps/vault/server.mjs",
+      "before": {
+        "bytes": 16483,
+        "sha256": "ac6db70cc12c5af760b6940af76b2f4dfdbc1d7921a6ee12edd73e7ed524ddbc"
+      },
+      "after": {
+        "bytes": 17211,
+        "sha256": "1769f1ff70d92285a81f0ec9c61bd871d0d48978450915915c6f2489afa4ef8b"
+      },
+      "sourceRoot": "work/vault-group-publication-plan-next",
+      "sourcePath": "source-proof/payload/1769f1ff70d92285a81f0ec9c61bd871d0d48978450915915c6f2489afa4ef8b.snapshot",
+      "originalDeclaredSource": "products/rea-studio/apps/vault/server.mjs",
+      "sourcePlan": "work/vault-group-publication-plan-next",
+      "historicalPath": "products/rea-studio/results/notes-layout-value-api-combined-20261013/source/apps/vault/server.mjs.snapshot.snapshot",
+      "authority": "fixed-f0-847-source-capsule",
+      "affectedInOld720": true
+    }
+  ],
+  "sharedHost": {
+    "path": "products/rea-studio/server.mjs",
+    "bytes": 7840,
+    "sha256": "85fe09b1b52a1d91e9d09c85d99c6e768ac4b793f5d7694a1760a4c0560a0a94"
+  },
+  "metadata": {
+    "development": {
+      "path": "products/rea-studio/results/development-validation.json",
+      "bytes": 133943,
+      "sha256": "1175423a8aa2660f3baea923f2ed0fdc932a53d176c0040901054eec0f1bd859",
+      "historicalPath": "products/rea-studio/results/editor-vault-reviewed-production-installation-20261013/before-metadata/products/rea-studio/results/development-validation.json.snapshot",
+      "tests": 847,
+      "sources": 720
+    },
+    "status": {
+      "path": "products/rea-studio/STATUS.json",
+      "bytes": 9550,
+      "sha256": "b41a3ece8ff01530c0174ad9c4c4d08f529e9185be5a2b3822c8bf4b92692b69",
+      "historicalPath": "products/rea-studio/results/editor-vault-reviewed-production-installation-20261013/before-metadata/products/rea-studio/STATUS.json.snapshot"
+    }
+  },
+  "verifiers": [
+    {
+      "path": "scripts/verify-editor-value-api-followups.mjs",
+      "before": {
+        "bytes": 22213,
+        "sha256": "ff71c33e5f3261f5244af719722d83a651a2e41f3075466baeead16412631589"
+      },
+      "after": {
+        "bytes": 22551,
+        "sha256": "ef80f2ba98cf81b637fa8a361196ceab84f06fb9e1de5d87ccb1d0965e31017f"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-editor-value-api-followups.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-editor-save-followup.mjs",
+      "before": {
+        "bytes": 6745,
+        "sha256": "4b93961b46b79fe901eafcfc3e1eda564803b60a12be411feb58350da604f001"
+      },
+      "after": {
+        "bytes": 7424,
+        "sha256": "fb3f465eaaefab1197c170410355f30764308e3f5b4e58e30d0c8059fe3e96c3"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-editor-save-followup.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-notes-inline-followups.mjs",
+      "before": {
+        "bytes": 23739,
+        "sha256": "b4387535d7fcbdecab43688fef286bbeccb87b826949b314fff5e5bbd6169c5e"
+      },
+      "after": {
+        "bytes": 24029,
+        "sha256": "9e8ce71e3b5bf794b3788e97cbc695223265154d48426201f5aa22f5dedd995f"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-notes-inline-followups.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-notes-vault-followups.mjs",
+      "before": {
+        "bytes": 24952,
+        "sha256": "864794cf7fd9e875d05da339326a32e985182829a033324c014b7c2d775e6c6f"
+      },
+      "after": {
+        "bytes": 25251,
+        "sha256": "645cf96a7edd098f3d310b24ee949bc5a150190d9b0984cc61ab03f282bbe59c"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-notes-vault-followups.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-followup-records.mjs",
+      "before": {
+        "bytes": 37311,
+        "sha256": "0d06219b7437fc99d27597713a176c108fd60c9c3a1fb016ffe3acf321a4d58d"
+      },
+      "after": {
+        "bytes": 37879,
+        "sha256": "92a23a59963713966f8e6c630ea6f89e2dfe8248d8dadfacd662bf349bcd6f7e"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-followup-records.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-notes-layout-value-api-checkpoint.mjs",
+      "before": {
+        "bytes": 11580,
+        "sha256": "41a503447b3fc260bfe36141dbf8aa2420d5ec0a96735f78c456c1595e95b6e0"
+      },
+      "after": {
+        "bytes": 11915,
+        "sha256": "b7db454e0d08779c6f0c0307c9fad4bd3ef5dc66c2aef5ee89eb05f168d1014a"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-notes-layout-value-api-checkpoint.mjs.snapshot"
+    },
+    {
+      "path": "scripts/verify-records.mjs",
+      "before": {
+        "bytes": 142428,
+        "sha256": "8283f709444328e1dee3483c46322a07652c2be1d2ac71ff94269c2e645e6702"
+      },
+      "after": {
+        "bytes": 142684,
+        "sha256": "42f2c1c25325867d9b366a71d9e17e87349fe258cdb1b24f9f5f5585b38d77c6"
+      },
+      "historicalPath": "products/rea-studio/results/editor-vault-proof-migration-20261013/verifier-before/verify-records.mjs.snapshot"
+    }
+  ],
+  "oldCapsule": {
+    "path": "products/rea-studio/results/notes-layout-value-api-combined-20261013/preservation-manifest.json",
+    "bytes": 237470,
+    "sha256": "1826eba75ba777edbe69bdb44874a0827dbf684e9305ea49f51af134549b7004",
+    "sourceFiles": 720,
+    "snapshots": 727,
+    "selectedAuthOnly": true
+  },
+  "scope": {
+    "historical847NotCurrentAcceptance": true,
+    "historical78NotCurrentAcceptance": true,
+    "namedMigrationsOnly": true,
+    "applicationExecutions": 0,
+    "originalExecutions": 0,
+    "browserExecutions": 0,
+    "benchmarks": 0,
+    "fullParity": false
+  }
+};
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const identity=b=>({bytes:b.length,sha256:sha(b)});
+function same(a,b,n){assert.equal(a.bytes,b.bytes,n+' bytes');assert.equal(a.sha256,b.sha256,n+' SHA256');}
+function safe(p){assert(typeof p==='string'&&p.length>0&&p.length<=4096&&!/[\\:\x00-\x1f\x7f]/.test(p)&&!p.startsWith('/'));for(const s of p.split('/'))assert(s&&s!=='.'&&s!=='..'&&!['.local','work','node_modules','artifacts','tooling'].includes(s),'Unsafe public proof path');return p;}
+function expected(r){assert(r&&Number.isSafeInteger(r.bytes)&&r.bytes>=0&&r.bytes<=32*1024*1024&&/^[0-9a-f]{64}$/.test(r.sha256));return {bytes:r.bytes,sha256:r.sha256};}
+/** Fixed source-only transition. No caller supplied routes or disable flag.
+ * The before bytes remain historical; every named installed after is required.
+ * This is bounded I/O authentication, not an atomic filesystem snapshot.
+ */
+export function createEditorVaultProofMigration(rawRead){assert.equal(typeof rawRead,'function');const seen=new Map();let total=0;
+ function read(p,r){safe(p);const b=rawRead(p);assert(Buffer.isBuffer(b)&&b.length<=32*1024*1024);const id=identity(b);if(r)same(id,expected(r),p);if(seen.has(p))same(id,seen.get(p),'Changed proof '+p);else{seen.set(p,id);total+=b.length;assert(seen.size<=100&&total<=16*1024*1024,'Transition aggregate bound');}return b;}
+ const manifest=JSON.parse(read(fixed.installation.manifest.path,fixed.installation.manifest));assert.equal(manifest.schema,'rea-editor-vault-root-installation-preservation/v1');assert.equal(manifest.records.length,1098);
+ const oldCapsule=JSON.parse(read(fixed.oldCapsule.path,fixed.oldCapsule));assert.equal(oldCapsule.sourceFiles,720);assert.equal(oldCapsule.snapshots.length,727);assert.equal(oldCapsule.developmentValidationSHA256,fixed.metadata.development.sha256);
+ const installed=JSON.parse(read(fixed.installation.record.path,fixed.installation.record));assert.equal(installed.installed.length,30);assert.deepEqual(installed.installed.map(r=>({path:r.destination,before:r.before,after:r.after})),fixed.sources);
+ const sourceRoutes=new Map(fixed.routes.map(r=>[r.path,r]));assert.equal(sourceRoutes.size,8);assert.equal(fixed.routes.filter(r=>r.affectedInOld720).length,6);
+ for(const r of fixed.sources)read(r.path,r.after);read(fixed.sharedHost.path,fixed.sharedHost);
+ const verifierRoutes=new Map(fixed.verifiers.map(r=>[r.path,r]));assert.equal(verifierRoutes.size,7);for(const r of fixed.verifiers){read(r.path,r.after);read(r.historicalPath,r.before);}
+ for(const r of fixed.routes){read(r.historicalPath,r.before);const installationRow=installed.installed.find(s=>s.destination===r.path);assert(installationRow);same(installationRow.before,r.before,r.path);same(installationRow.after,r.after,r.path);}
+ for(const r of Object.values(fixed.metadata))read(r.historicalPath,r);
+ function resolveHistorical(p,r){safe(p);const row=sourceRoutes.get(p),v=verifierRoutes.get(p);if(!row&&!v)return null;assert(r,'Named transition requires an explicit expected identity: '+p);const id=expected(r);if(id.bytes===(row??v).after.bytes&&id.sha256===(row??v).after.sha256)return null;same(id,(row??v).before,'No unlisted historical identity allowed: '+p);return (row??v).historicalPath;}
+ function summary(){for(const [p,r]of seen)read(p,r);return{sourceOnly:true,namedSourceRoutes:8,old720ChangedCodeRoutes:6,docsOutside720:2,currentInstalledSourcesMandatory:30,currentSharedHostMandatory:1,currentVerifierAfterMandatory:7,historical847NotCurrentAcceptance:true,historical78NotCurrentAcceptance:true,unknownPathsNotMapped:true,authenticatedFiles:seen.size,authenticatedBytes:total,applicationExecutions:0,originalExecutions:0,browserExecutions:0,benchmarks:0,fullParity:false};}
+ return{resolve:resolveHistorical,historicalMetadata(name){assert(Object.hasOwn(fixed.metadata,name),'Only development/status beforemetadata');const r=fixed.metadata[name];return read(r.historicalPath,r);},historicalVerifier(p){assert(verifierRoutes.has(p),'Only named verifier beforeimages');const r=verifierRoutes.get(p);return read(r.historicalPath,r.before);},editorMismatchesIncludingHistoricalHost(rows){assert(Array.isArray(rows)&&rows.length===31);const result=[];for(const r of rows){const route=sourceRoutes.get(r.path);if(route){same(r,route.before,'Fixed old Editor source');result.push({path:r.path,testedSha256:r.sha256,liveSha256:route.after.sha256});}else if(r.path===fixed.sharedHost.path){assert.equal(r.bytes,7741);assert.equal(r.sha256,'807a473ec0334f60dfd58f2df8901c722f1bd4eb1d64c62d9ba1ea65c2b6b55f');result.push({path:r.path,testedSha256:r.sha256,liveSha256:fixed.sharedHost.sha256});}}assert.equal(result.length,5);return result;},summary};
+}
+export function createEditorVaultProofMigrationFromRoot(root){const base=realpathSync(resolve(root));return createEditorVaultProofMigration(p=>{safe(p);let at=base;for(const s of p.split('/')){at=resolve(at,s);assert(!lstatSync(at).isSymbolicLink(),'Reparse proof path');}const real=realpathSync(at),rel=relative(base,real);assert(rel&&rel!=='..'&&!rel.startsWith('..'+sep)&&!rel.startsWith(sep));const stat=lstatSync(at);assert(stat.isFile()&&stat.size<=32*1024*1024);const b=readFileSync(at);assert.equal(b.length,stat.size);return b;});}

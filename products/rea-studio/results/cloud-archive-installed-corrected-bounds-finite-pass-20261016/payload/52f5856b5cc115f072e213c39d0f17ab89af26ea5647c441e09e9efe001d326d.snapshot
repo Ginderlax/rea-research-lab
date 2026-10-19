@@ -1,0 +1,118 @@
+// Lightweight filing of two completed, independently readable cloud backups.
+// Never imports/evaluates application, verifier, original, test or browser code.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { createHash } from 'node:crypto';
+import { gzipSync, gunzipSync } from 'node:zlib';
+import { spawnSync } from 'node:child_process';
+const work = import.meta.dirname, repository = path.resolve(work, '../outputs/rea-research-lab');
+const stage = path.join(work, 'cloud-archive-installed-corrected-bounds-success-20261016-next'), candidate = path.join(stage, 'public-candidate');
+const runRoot = path.join(work, 'cloud-verification-backups/run-38911241646');
+const run = '38911241646', commit = '016ecd175c0700d1a94d5219af6719989a4a6e45';
+const identity = bytes => ({ bytes: bytes.length, sha256: createHash('sha256').update(bytes).digest('hex') });
+const credentials = /\b(?:ghp_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16})\b|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/;
+function safe(name) { assert(typeof name === 'string' && name && !/[\\:\x00-\x1f\x7f]/.test(name) && !name.startsWith('/') && name.split('/').every(part => part && part !== '.' && part !== '..')); return name; }
+function read(base, name) { safe(name); let at = base; for (const part of name.split('/')) { at = path.join(at, part); assert(!fs.lstatSync(at).isSymbolicLink()); } const info = fs.lstatSync(at); assert(info.isFile() && info.size <= 8 * 1024 * 1024); const bytes = fs.readFileSync(at); assert.equal(bytes.length, info.size); return bytes; }
+const collectionBytes = read(runRoot, 'installed-collection-summary.json'), collection = JSON.parse(collectionBytes);
+assert.equal(collection.runId, run); assert.equal(collection.headSHA, commit); assert.equal(collection.runStatus, 'completed'); assert.equal(collection.runConclusion, 'success'); assert.equal(collection.terminalCompleteCollection, true);
+assert.equal(collection.jobs.length, 2); assert.equal(collection.artifacts.length, 2);
+const nativeBytes = read(runRoot, 'native-artifacts-and-original-observation-readback.json'), native = JSON.parse(nativeBytes);
+assert.equal(native.createdArchivesVerified, 3); assert.equal(native.restoredFilesByteExactVerified, 5); assert.equal(native.singleBrowserWorkerObservationAuthenticated, true); assert.equal(native.encryptedArchivesDecryptedLocally, 0);
+const bundlePath = 'products/rea-studio/experiments/archive-aes/bundle.json', bundleBytes = read(repository, bundlePath), bundle = JSON.parse(bundleBytes);
+assert.deepEqual(identity(bundleBytes), { bytes: 80331, sha256: 'ed6d16f52f9209ac144f1f08d395c3e86e4c124c73a3a18a488654506ff155bb' });
+const journalPath = 'products/rea-studio/results/archive-aes-installed-20261016/installation-receipt.json';
+const journalBytes = read(repository, journalPath), journal = JSON.parse(journalBytes);
+const gitJournal = spawnSync('git', ['-C', repository, 'show', commit + ':' + journalPath], { shell: false, windowsHide: true, timeout: 30000, maxBuffer: 2 * 1024 * 1024 }); assert.equal(gitJournal.status, 0); assert.deepEqual(journalBytes, gitJournal.stdout);
+assert.equal(journal.schema, 'rea-archive-actual-source-installation/v1'); assert.equal(journal.sourceFilesInstalled, true); assert.equal(journal.freshHostedInstalledAcceptance, false);
+assert.equal(journal.applicationSourceTargets, 21); assert.equal(journal.applicationReplacementTargets, 6); assert.equal(journal.applicationAdditions, 15); assert.equal(journal.historicalReceiptsRewritten, false);
+for (const target of bundle.finalTargets) { const row = journal.files.find(row => row.path === target.target); assert(row); assert.deepEqual(row.after, target.after); assert.deepEqual(row.before, target.before); assert.equal(row.actualReadbackVerified, true); assert.equal(row.recoverableAfterAlias, target.source); }
+const correctionPath = 'products/rea-studio/results/archive-aes-properties-fixture-correction-20261016/source-transition.json';
+const correctionBytes = read(repository, correctionPath), correction = JSON.parse(correctionBytes);
+assert.deepEqual(identity(correctionBytes), { bytes: 2486, sha256: 'c076b092431eae7bc3c468d168633ee07aa7858aba1291d510edcaa1ded4919f' });
+assert.equal(correction.currentTarget, 'products/rea-studio/apps/archive/sevenzip-aes-bounds.test.mjs');
+assert.equal(correction.freshFiniteIncludesCorrectedBoundsGroups, 3); assert.equal(correction.targeted3OverlapFiniteSelection, true);
+const gitCorrection = spawnSync('git', ['-C', repository, 'show', commit + ':' + correctionPath], { shell: false, windowsHide: true, timeout: 30000, maxBuffer: 2 * 1024 * 1024 }); assert.equal(gitCorrection.status, 0); assert.deepEqual(correctionBytes, gitCorrection.stdout);
+assert(!fs.existsSync(stage)); fs.mkdirSync(candidate, { recursive: true });
+const authorities = [], capsules = [];
+const descriptors = [{ role: 'finite', job: 117007335684, artifact: 12050616271, digest: '656eb2c5c5cc67206923d0dae43811548ce3e6c57f6828d43f8bea53c75d789c', archiveBytes: 1893950, readableFiles: 470, snapshots: 365, census: 788 },
+  { role: 'browser', job: 117007336495, artifact: 12050033224, digest: 'a43e59c3626108efc5aa1d3bddb2ba8305a1afa087459117527272c11471e121', archiveBytes: 2084714, readableFiles: 474, snapshots: 346, census: 346 }];
+for (const descriptor of descriptors) {
+  const { role, job, artifact } = descriptor;
+  const prefix = 'products/rea-studio/results/cloud-archive-installed-corrected-bounds-' + role + '-pass-20261016', target = path.join(candidate, prefix);
+  assert(!fs.existsSync(path.join(repository, prefix))); fs.mkdirSync(path.join(target, 'payload'), { recursive: true });
+  const artifactMetadata = collection.artifacts.find(row => row.artifactId === artifact), jobMetadata = collection.jobs.find(row => row.jobId === job);
+  assert(artifactMetadata && artifactMetadata.role === role && artifactMetadata.recordedContractPassed); assert.deepEqual(artifactMetadata.evidenceConsistencyErrors, []); assert.equal(jobMetadata.conclusion, 'success'); assert.equal(jobMetadata.status, 'completed');
+  const backup = path.join(runRoot, 'artifact-' + artifact), evidence = path.join(backup, 'readable-evidence');
+  const verificationBytes = read(backup, 'local-installed-archive-backup-verification.json'), verification = JSON.parse(verificationBytes);
+  assert.equal(verification.artifactSHA256, descriptor.digest); assert.equal(verification.archiveBytes, descriptor.archiveBytes); assert.equal(verification.files.length, descriptor.readableFiles); assert.equal(verification.allCRCAndBytesReadable, true); assert.equal(verification.recordedContractPassed, true); assert.deepEqual(verification.evidenceConsistencyErrors, []);
+  assert.equal(verification.all62CurrentGitBlobsIndependentlyVerified, true); assert.equal(verification.all21CurrentPinsVerified, true); assert.equal(verification.sourceSnapshotFilesVerified, descriptor.snapshots); assert.equal(verification.eligibleGitBlobsIndependentlyAuthenticated, descriptor.snapshots);
+  if (role === 'finite') { assert.equal(verification.finite161RecordedPass, true); assert.equal(verification.overlappingTargeted3RecordedPass, true); assert.equal(verification.targeted3AlreadyWithinFinite161, true); assert.equal(verification.targetedAndFiniteCountsAggregated, false); }
+  const zip = fs.readFileSync(backup + '.zip'); assert.deepEqual(identity(zip), { bytes: descriptor.archiveBytes, sha256: descriptor.digest });
+  const files = new Map(verification.files.map(row => [safe(row.path), row])); assert.equal(files.size, verification.files.length);
+  const omit = name => name.startsWith('installed-source/') || name.startsWith(role === 'finite' ? 'verification/source/' : 'source/');
+  const omitted = [...files.values()].filter(row => omit(row.path)).map(row => ({ sourcePath: row.path, bytes: row.bytes, sha256: row.sha256 }));
+  assert.equal(omitted.length, descriptor.snapshots + 84);
+  const retained = [...files.keys()].filter(name => !omit(name)); assert.equal(retained.length, role === 'finite' ? 21 : 44);
+  function artifactBytes(name) { const bytes = read(evidence, name), row = files.get(name); assert(row); assert.deepEqual(identity(bytes), { bytes: row.bytes, sha256: row.sha256 }); return bytes; }
+  const records = [], objects = new Map(); let rawBytes = 0;
+  function save(sourcePath, bytes, origin) {
+    safe(sourcePath); assert(!records.some(row => row.sourcePath === sourcePath)); assert(!credentials.test(bytes.toString('utf8'))); rawBytes += bytes.length; assert(rawBytes <= 16 * 1024 * 1024);
+    let stored = bytes, encoding = 'identity'; if (bytes.length > 65536) { const compressed = gzipSync(bytes, { level: 9 }); if (compressed.length < bytes.length * .85) { stored = compressed; encoding = 'gzip'; assert.deepEqual(gunzipSync(stored), bytes); } }
+    const pin = identity(bytes), suffix = bytes.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex')) ? '.png' : encoding === 'gzip' ? '.gz.snapshot' : sourcePath.startsWith('portable-artifact/') ? '.zip.snapshot' : '.snapshot';
+    const relative = 'payload/' + pin.sha256 + suffix, storedPin = identity(stored);
+    if (!objects.has(relative)) { fs.writeFileSync(path.join(target, relative), stored, { flag: 'wx' }); objects.set(relative, storedPin); }
+    assert.deepEqual(read(target, relative), stored); records.push({ sourcePath, path: relative, ...pin, storage: { encoding, ...storedPin }, origin });
+  }
+  for (const name of retained) save('artifact/' + name, artifactBytes(name), 'Exact non-source-subtree bytes from this role-specific verified hosted artifact');
+  save('portable-artifact/complete-github-artifact.zip', zip, 'Exact digest-matched complete outer GitHub artifact ZIP, including its complete readable inner evidence ZIP and every source snapshot; no acquired original vendor programs');
+  save('local/local-installed-archive-backup-verification.json', verificationBytes, 'Complete outer/inner ZIP CRC/readability and current source/recorded-contract reader receipt');
+  save('local/installed-collection-summary.json', collectionBytes, 'Explicit two-job read-only run/job/artifact binding; scopes remain separate');
+  save('local/native-artifacts-and-original-observation-readback.json', nativeBytes, 'Native8 byte/CRC readbacks, one worker observation and retained original comparison-record checks');
+  const logBytes = fs.readFileSync(jobMetadata.rawJobLog.path); assert.deepEqual(identity(logBytes), { bytes: jobMetadata.rawJobLog.bytes, sha256: jobMetadata.rawJobLog.sha256 }); save('wrapper/job-' + job + '.txt', logBytes, 'Exact actual hosted job wrapper log');
+  for (const row of collection.controlPlane) { const bytes = fs.readFileSync(row.path); assert.deepEqual(identity(bytes), { bytes: row.bytes, sha256: row.sha256 }); save('control-plane/' + row.kind + '.json', bytes, 'Raw authenticated GitHub API response containing both explicit job identities'); }
+  for (const name of ['collect-installed-archive-38911241646.mjs', 'unpack-installed-archive-run-38911241646.py', 'verify-installed-archive-native-run-38911241646.py']) save('readers/' + name, read(work, name), 'Exact read-only orchestration/backup reader source; no product execution');
+  save('readers/preservation-collector.mjs', fs.readFileSync(import.meta.filename), 'This exact work-only preservation implementation');
+  save('source-installation-journal.json', journalBytes, 'Exact original21 source-installation journal retained in tested016ecd; its predecessor test identity and unexecuted statement remain unchanged, with the one later test-only correction separately authenticated');
+  save('corrected-bounds-source-transition.json', correctionBytes, 'Exact separate R5 one-test source correction, preserving original21 historical aliases and all old receipts');
+  const before = JSON.parse(artifactBytes('archive-installed-source-check.json')), after = JSON.parse(artifactBytes('archive-installed-postrun-source-check.json'));
+  assert.deepEqual(before.authentication, after.authentication); assert.equal(after.sourceStable, true); assert.equal(before.sourceCommit, commit); assert.equal(before.authentication.archiveSources.length, 62); assert.equal(before.authentication.currentTargets.length, 21);
+  const attempt = JSON.parse(artifactBytes(role === 'finite' ? 'verification/attempt-validation.json' : 'browser-attempt.json'));
+  assert.equal(attempt.status, 'passed'); assert.equal(attempt.sourceStable, true); assert.equal(attempt.sourceFiles, descriptor.census);
+  assert.equal(before.authentication.authenticatedPaths, 115); assert.deepEqual(before.authentication.fixtureCorrection.manifest, { path: correctionPath, ...identity(correctionBytes) });
+  for (const row of before.authentication.currentTargets) { const original = bundle.finalTargets.find(target => target.target === row.path); assert(original); assert.deepEqual({ bytes: row.bytes, sha256: row.sha256 }, row.path === correction.currentTarget ? correction.after : original.after); }
+  const bounds = role === 'finite' ? JSON.parse(artifactBytes('bounds-attempt.json')) : null;
+  if (bounds) { assert.equal(bounds.status, 'passed'); assert.equal(bounds.sourceStable, true); assert.deepEqual(bounds.summary, { tests: 3, pass: 3, fail: 0, cancelled: 0, skipped: 0, todo: 0 }); assert.equal(bounds.finite161Aggregated, false); }
+  const manifest = { schema: 'rea-cloud-archive-installed-corrected-bounds-' + role + '-pass-preservation/v1', createdAtUtc: new Date().toISOString(), status: 'passed-finite-installed-source-contracts',
+    runId: Number(run), runAttempt: 1, jobId: job, jobName: jobMetadata.name, runURL: 'https://github.com/Ginderlax/rea-research-lab/actions/runs/' + run,
+    sourceCommit: commit, testedGitCommit: commit, artifactId: artifact, artifactSHA256: descriptor.digest, artifactArchiveBytes: descriptor.archiveBytes,
+    executionEnvironment: 'github-hosted', runnerLabel: 'windows-2022', node: 'v24.16.0', sourceMode: 'archive-aes-installed', applicationSourceOverlayTargets: 0, testSourceOverlayTargets: 0,
+    summary: attempt.summary, selectedTestFiles: role === 'finite' ? attempt.selectedTestFiles : null, sourceFiles: descriptor.census, sourceStable: true,
+    separatelyRepeatedBoundsSummary: bounds?.summary ?? null, repeatedBoundsAlreadyIncludedInFinite161: role === 'finite', repeatedBoundsCountAddedToFinite161: false,
+    correctedBoundsSourceTransition: { path: correctionPath, ...identity(correctionBytes), exactTestedGitBlobReadback: true, oneChangedTest: true, runtimeChanged: false, old21AliasesAndHistoricalReceiptsRewritten: false },
+    allCurrentArchiveFiles: 62, everyCurrentArchiveGitBlobIndependentlyReadbackVerified: true, exactCurrentAfterTargets: 21, currentTargets: before.authentication.currentTargets,
+    selectedOriginalSourceFilesAuthenticated: 22, separatelyExecutedSourcePostcheck: 'passed', separatelyExecutedBrowserGitPostcheck: role === 'browser' ? 'source-verified' : 'not-this-scope',
+    eligibleActiveGitBlobsAuthenticated: descriptor.snapshots, activeCensusSourceSnapshotsInVerifiedLocalBackup: descriptor.snapshots, installedSourceSnapshotsInVerifiedLocalBackup: 84,
+    completeReadableLocalBackupVerified: true, localReadableFiles: descriptor.readableFiles, retainedArtifactFiles: retained.length, publicSourceSnapshotDirectAliases: 0,
+    completePublicHostedArtifactZipRetained: true, completeZipIncludesEveryHostedArtifactRole: true, publicSnapshotPayloadsInsideCompleteZip: omitted.length, sourceSnapshotIdentitiesInsideCompleteZip: omitted,
+    omissionScope: 'Duplicate direct source-snapshot aliases are omitted. Every snapshot byte and every other hosted role remain recoverable inside the retained exact complete outer GitHub artifact ZIP and its inner portable evidence ZIP, as well as the complete readable local backup. Every non-source artifact file, native workspace artifact, raw job/API response and reader/filing source is also retained separately and losslessly. No acquired original vendor programs are retained.',
+    records, uniquePublicObjects: objects.size, allStoredAndDecodedCopiesExact: true,
+    installationJournal: { path: journalPath, ...identity(journalBytes), exactTestedGitBlobReadback: true, sourceEpoch: 'Original21 install, before one separately authenticated later test correction', historicalUnexecutedStatementRewritten: false },
+    installationPerformedByCloudRun: false, installerReceiptVerifiedByHostedCollectors: false,
+    finite161Acceptance: role === 'finite', actualSixScenarioBrowserAcceptance: role === 'browser', nativeCreatedArchives: role === 'browser' ? 3 : null, restoredFilesByteExact: role === 'browser' ? 5 : null,
+    actualDownloads: role === 'browser' ? 0 : null, originalProductExecutionsInBrowserScope: role === 'browser' ? 0 : null, productDownloadUIAbsent: true,
+    originalComparisonRecords: role === 'finite' ? { selectedRetainedHelperInvocations: 63, selectedRetainedVectors: 29, executableAndDLLPinsAuthenticated: true, wrongPasswordRefusalRecordsPreserved: true, notTotalOriginalProcessesAcross13Files: true } : null,
+    fullArchiveSuiteAcceptance: false, fullDevelopmentSuiteAcceptance: false, everyDocumentedFeatureAcceptance: false, securityAcceptance: false, performanceSuperiorityEstablished: false,
+    historicalReceiptsRebound: false, historicalSourcePlansRewritten: false, countsAggregatedAcrossJobs: false, fullParity: false, superiority: false,
+    localProductExecutions: 0, localOriginalExecutions: 0, localTests: 0, localBuilds: 0, localBrowserExecutions: 0,
+    acceptanceScope: role === 'finite' ? 'Actual161 passing groups across the fixed13-file finite Archive selection on committed016ecd sources, including the corrected three bounds groups. A separate3/3 targeted rerun repeats that subset and is not added to161. All62 Archive Git blobs/21 current pins,365 eligible active Git blobs and independent source postcheck passed. Retained63 original-helper invocations/29 vectors are separate observations. No full Archive, every-feature, full-suite, browser, security, parity or superiority acceptance.' : 'Actual six passing real Chromium scenarios on committed016ecd sources, with all62 Archive Git blobs/21 current pins including one closed test correction,346 eligible active Git blobs and both separate postchecks passed. Three native archives and five restored files are byte-preserved, six PNGs and one actual worker observation authenticated; zero downloads and original processes. No full browser matrix, every-feature, full-suite, security, parity or superiority acceptance.' };
+  const manifestBytes = Buffer.from(JSON.stringify(manifest, null, 2) + '\n'); fs.writeFileSync(path.join(target, 'preservation-manifest.json'), manifestBytes, { flag: 'wx' });
+  for (const row of records) { const stored = read(target, row.path); assert.deepEqual(identity(stored), { bytes: row.storage.bytes, sha256: row.storage.sha256 }); assert.deepEqual(identity(row.storage.encoding === 'gzip' ? gunzipSync(stored) : stored), { bytes: row.bytes, sha256: row.sha256 }); }
+  const publicRows = [{ path: prefix + '/preservation-manifest.json', before: null, after: identity(manifestBytes) }, ...[...objects].map(([name, pin]) => ({ path: prefix + '/' + name, before: null, after: pin }))];
+  authorities.push(...publicRows); capsules.push({ role, prefix, manifest: identity(manifestBytes), records: records.length, objects: objects.size, files: publicRows.length, retainedArtifactFiles: retained.length, snapshotsInsideCompleteZip: omitted.length, completeArtifactZipRetained: true, rawRoleBytes: rawBytes });
+}
+const authority = { schema: 'rea-installed-archive-corrected-bounds-two-scope-success-preservation-authority/v1', stage, sourceOnlyFiling: true, files: authorities.length, bytes: authorities.reduce((total, row) => total + row.after.bytes, 0), rows: authorities, capsules,
+  sourceCommit: commit, runId: run, distinctJobScopes: 2, allStoredAndDecodedReadbacksExact: true, completeLocalBackupsReadable: true, publicDirectActiveSourceSnapshotAliases: 0, completePublicHostedArtifactZips: 2, allSnapshotBytesInsidePublicZips: true, independentReviewPending: true,
+  localProductExecutions: 0, localOriginalExecutions: 0, localTests: 0, localBuilds: 0, localBrowserExecutions: 0, activeFilesWritten: 0, gitMutations: 0, fullParity: false, superiority: false };
+const authorityBytes = Buffer.from(JSON.stringify(authority, null, 2) + '\n'); fs.writeFileSync(path.join(stage, 'copy-authority.json'), authorityBytes, { flag: 'wx' });
+console.log(JSON.stringify({ files: authority.files, bytes: authority.bytes, authority: identity(authorityBytes), capsules }));

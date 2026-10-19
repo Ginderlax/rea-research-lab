@@ -1,0 +1,8 @@
+[
+  {"id":"tab.demo","type":"tab","label":"Native temperature routing","disabled":false,"info":"Synthetic compatibility demonstration"},
+  {"id":"inject.demo","type":"inject","z":"tab.demo","name":"Temperature 28","props":[{"p":"payload","v":"28","vt":"num"},{"p":"topic","v":"temperature","vt":"str"}],"repeat":"","crontab":"","once":false,"x":140,"y":100,"wires":[["change.demo"]]},
+  {"id":"change.demo","type":"change","z":"tab.demo","name":"Remember temperature","rules":[{"t":"set","p":"lastTemperature","pt":"flow","to":"payload","tot":"msg"},{"t":"set","p":"remembered","pt":"msg","to":"lastTemperature","tot":"flow"}],"x":380,"y":100,"wires":[["switch.demo"]]},
+  {"id":"switch.demo","type":"switch","z":"tab.demo","name":"Hot or normal","property":"payload","propertyType":"msg","rules":[{"t":"gte","v":"25","vt":"num"},{"t":"else"}],"checkall":"false","repair":false,"outputs":2,"x":640,"y":100,"wires":[["hot.demo"],["normal.demo"]]},
+  {"id":"hot.demo","type":"debug","z":"tab.demo","name":"Hot","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"true","targetType":"msg","x":880,"y":70,"wires":[]},
+  {"id":"normal.demo","type":"debug","z":"tab.demo","name":"Normal","active":true,"tosidebar":true,"console":false,"tostatus":false,"complete":"true","targetType":"msg","x":880,"y":160,"wires":[]}
+]

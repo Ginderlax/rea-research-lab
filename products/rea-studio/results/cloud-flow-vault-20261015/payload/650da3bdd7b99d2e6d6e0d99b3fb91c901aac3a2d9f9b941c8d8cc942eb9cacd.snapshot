@@ -1,0 +1,19 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {fixture,render,Element} from './lifecycle-ui-fixture.mjs';
+test('a timer from an older detached Vault view must not lock an actively reopened session',async t=>{
+  const actualSet=globalThis.setTimeout,actualClear=globalThis.clearTimeout,logicalTimers=new Map();let serial=0;
+  globalThis.setTimeout=(callback,delay,...args)=>{if(delay!==300000)return actualSet(callback,delay,...args);const id={ownedLogicalTimer:++serial};logicalTimers.set(id,{callback,args});return id;};
+  globalThis.clearTimeout=id=>{if(logicalTimers.has(id)){logicalTimers.delete(id);return;}return actualClear(id);};
+  t.after(()=>{globalThis.setTimeout=actualSet;globalThis.clearTimeout=actualClear;logicalTimers.clear();});
+  const f=await fixture(t,'detached-view-idle-timer'),holder=new Element('div');holder.append(f.root);
+  const clientTimers=()=>[...logicalTimers.values()].filter(timer=>timer.callback.constructor.name==='AsyncFunction');
+  assert.equal(clientTimers().length,1);const [oldId,oldTimer]=[...logicalTimers].find(([,timer])=>timer.callback.constructor.name==='AsyncFunction');
+  if(typeof f.cleanup==='function')f.cleanup();
+  const reopened=new Element('main');holder.replaceChildren(reopened);await render(reopened,(action,input)=>{f.requests.push({action,context:'reopened-view',id:input?.id});return f.call(action,input);});
+  f.observation.oldRootDetached=f.root.parentElement===null;f.observation.oldTimerStillScheduled=logicalTimers.has(oldId);f.observation.cleanupReturned=typeof f.cleanup==='function';
+  f.observation.before={locked:(await f.call('status')).locked};
+  f.observation.oldCallbackInvoked=logicalTimers.has(oldId);if(f.observation.oldCallbackInvoked)await oldTimer.callback(...oldTimer.args);
+  f.observation.after={locked:(await f.call('status')).locked};
+  f.observation.scope='Logical five-minute timer callback executed directly, real frozen client/server and owned DOM model, no real elapsed timing or original GUI execution.';
+  assert.equal(f.observation.after.locked,false,'A newer active Vault view must not be locked by an older detached view timer.');
+});

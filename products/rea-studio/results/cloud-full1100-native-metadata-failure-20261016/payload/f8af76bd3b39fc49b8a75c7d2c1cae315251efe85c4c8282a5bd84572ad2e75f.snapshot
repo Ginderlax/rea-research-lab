@@ -1,0 +1,61 @@
+Independent source review of bootstrap-cloud-bsdtar.mjs
+2026-10-15
+
+Disposition: no blocking source issue found for the proposed hosted acquisition
+phase. This is source-only review, not acquisition, binary, signature, loader,
+test, historical-DLL or full-suite acceptance.
+
+Read: the complete new bootstrap, PLAN.txt, the formats loader patch, the unchanged
+formats.test.mjs historical bsdtar pin, existing Flow/Vault bootstrap readiness
+pin, and root/Archive ignore files. No file in the application or bootstrap was
+edited. No binary, network HEAD/GET, process probe, signature/version tool, loader,
+test, build, syntax checker or whole-repository census was run by this reviewer.
+
+The tar.exe SHA is identical to the historical formats.test.mjs pin. Both new
+asset sizes, SHA values and timestamp/image-size URL components agree with the
+identified-image provenance in PLAN.txt. The reviewer did not independently
+rehash the identified WinSxS binaries or verify hosted GET availability. Those
+remain the acquisition phase's actual checks.
+
+The download sources are fixed HTTPS msdl.microsoft.com Symbol Server URLs.
+The implementation permits only its named Microsoft host or a blob.core.windows.net
+redirect host, retains only the final hostname, and does not preserve a redirected
+SAS URL. Each complete download is limited to its exact expected bytes and a
+45-second abort signal. Size and SHA must agree before any image is saved.
+Static checks validate MZ, PE signature, AMD64 machine, TimeDateStamp and
+SizeOfImage at the expected PE offsets inside the already authenticated bytes.
+Version-resource text is labeled expected/uninspected; no version/signature
+observation is falsely claimed. Exact SHA binds the full image, beyond the
+selected redundant header fields.
+
+There is no child-process import, process-launch call, native image load or
+original execution in the acquisition source. It requires hosted Windows,
+Node24.16.0, CI=true, GITHUB_ACTIONS=true, RUNNER_ENVIRONMENT=github-hosted and
+the named GitHub run/source variables. These are source guards; the actual
+workflow/run evidence establishes where execution occurred.
+
+The evidence destination resolves the nearest existing ancestor and requires a
+strict child of the real RUNNER_TEMP. The cache is fixed below repo/.local;
+the .local and cache directories reject symbolic/reparse links, and cached
+images require ordinary-file lstat, exact size, SHA and static PE checks.
+Downloads write an exclusive partial only after full authentication, sync it,
+and rename inside that private cache. Concurrent filesystem replacement is not
+claimed eliminated. Root .gitignore excludes .local, EXE and DLL images. Evidence
+receipts contain metadata/identities, not vendor image contents.
+
+The initial receipt uses exclusive creation and sync. Per-asset and terminal
+updates use exclusive synced temporary files and rename. Ordinary network,
+download, digest, PE and cache failures are recorded as status failed. Storage or
+receipt-writing failure can leave the last durable running/acquired state and/or
+temporary receipt; no filesystem scheme promises terminal evidence after an
+unrecoverable storage failure. Preserve those files and workflow logs if it occurs.
+
+The newly explicit archiveint.dll identity is correctly distinguished from the
+DLL dynamically loaded during the old historical EXE-only run. A future loader
+smoke/comparison must authenticate and place both images together in its private
+oracle directory, record its actual invocation and count it separately from
+acquisition. The hosted workflow's x64 Node selection should remain explicit.
+
+Next action: perform the proposed hosted exact GET acquisition, then separately
+record the paired-image loader smoke. Preserve failures; do not upgrade these
+source-review findings into an execution claim.

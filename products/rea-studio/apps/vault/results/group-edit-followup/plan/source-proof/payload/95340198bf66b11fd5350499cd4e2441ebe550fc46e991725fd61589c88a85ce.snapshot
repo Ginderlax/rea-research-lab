@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: encrypted group creation/edit survives lock/reopen and updates projected child paths without leaking index notes
+ok 1 - encrypted group creation/edit survives lock/reopen and updates projected child paths without leaking index notes
+  ---
+  duration_ms: 114.8921
+  type: 'test'
+  ...
+# Subtest: failed encrypted writes leave create/edit memory and durable bytes untouched with retryable revision
+ok 2 - failed encrypted writes leave create/edit memory and durable bytes untouched with retryable revision
+  ---
+  duration_ms: 96.2591
+  type: 'test'
+  ...
+# Subtest: serialized competing edits reject stale revisions and privately capture queued caller text
+ok 3 - serialized competing edits reject stale revisions and privately capture queued caller text
+  ---
+  duration_ms: 46.5854
+  type: 'test'
+  ...
+# Subtest: locked, malformed and unsupported editing inputs refuse before writing
+ok 4 - locked, malformed and unsupported editing inputs refuse before writing
+  ---
+  duration_ms: 45.976
+  type: 'test'
+  ...
+# Subtest: recycle-bin group editor attempts are rejected without durable change
+ok 5 - recycle-bin group editor attempts are rejected without durable change
+  ---
+  duration_ms: 45.4404
+  type: 'test'
+  ...
+# Subtest: disk store survives actual fresh Node process with empty group and renamed descendants
+ok 6 - disk store survives actual fresh Node process with empty group and renamed descendants
+  ---
+  duration_ms: 156.759
+  type: 'test'
+  ...
+# Subtest: new group has released folder/inheritance defaults, owned identity, untouched parent times and no entry changes
+ok 7 - new group has released folder/inheritance defaults, owned identity, untouched parent times and no entry changes
+  ---
+  duration_ms: 11.7978
+  type: 'test'
+  ...
+# Subtest: name/notes edit projects every descendant path while preserving exact subtree entries/history/unknown fields/attachments
+ok 8 - name/notes edit projects every descendant path while preserving exact subtree entries/history/unknown fields/attachments
+  ---
+  duration_ms: 6.4768
+  type: 'test'
+  ...
+# Subtest: root remains protected from deletion but native root naming and child creation are safe
+ok 9 - root remains protected from deletion but native root naming and child creation are safe
+  ---
+  duration_ms: 6.3272
+  type: 'test'
+  ...
+# Subtest: empty, whitespace, duplicate and slash names follow text semantics without changing identity
+ok 10 - empty, whitespace, duplicate and slash names follow text semantics without changing identity
+  ---
+  duration_ms: 14.5492
+  type: 'test'
+  ...
+# Subtest: whole-graph revisions reject stale text/attachment edits, wrong key, wrong UUID and entry tokens transactionally
+ok 11 - whole-graph revisions reject stale text/attachment edits, wrong key, wrong UUID and entry tokens transactionally
+  ---
+  duration_ms: 7.6589
+  type: 'test'
+  ...
+# Subtest: recycled bin and descendants refuse creation/edit and expose active editor flags accurately
+ok 12 - recycled bin and descendants refuse creation/edit and expose active editor flags accurately
+  ---
+  duration_ms: 7.0713
+  type: 'test'
+  ...
+# Subtest: new UUID collision, zero and tombstoned UUID refusals leave caller unchanged
+ok 13 - new UUID collision, zero and tombstoned UUID refusals leave caller unchanged
+  ---
+  duration_ms: 8.1175
+  type: 'test'
+  ...
+# Subtest: bounded text, invalid XML, invalid usage and canonical clock refusal are transactional
+ok 14 - bounded text, invalid XML, invalid usage and canonical clock refusal are transactional
+  ---
+  duration_ms: 18.4841
+  type: 'test'
+  ...
+# Subtest: paths that exceed 256 characters refuse group creation and ancestor rename with full rollback
+ok 15 - paths that exceed 256 characters refuse group creation and ancestor rename with full rollback
+  ---
+  duration_ms: 2.7081
+  type: 'test'
+  ...
+# Subtest: unchanged save still touches only selected group and wraps native uint64 usage
+ok 16 - unchanged save still touches only selected group and wraps native uint64 usage
+  ---
+  duration_ms: 3.4197
+  type: 'test'
+  ...
+# Subtest: new group metadata pushes deep XML past the parser depth limit without mutating original
+ok 17 - new group metadata pushes deep XML past the parser depth limit without mutating original
+  ---
+  duration_ms: 4.4447
+  type: 'test'
+  ...
+# Subtest: native KDBX export/import retains new empty group, renamed paths, unknown fields and protected attachments
+ok 18 - native KDBX export/import retains new empty group, renamed paths, unknown fields and protected attachments
+  ---
+  duration_ms: 9.7785
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 728.8846

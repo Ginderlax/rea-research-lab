@@ -1,0 +1,128 @@
+{
+  "schema": "rea-Notes-new-to-do-future-source-contract/v1",
+  "sourceOnly": true,
+  "parentSourceAuthority": {
+    "bytes": 13003,
+    "sha256": "a223a3e3498a83e5fd6b3f5619e6c66c6cc337b6de770849a3e62a5155fc47e4"
+  },
+  "originalRelease": "Joplin Desktop3.6.14",
+  "originalTag": "v3.6.14",
+  "originalCommit": "7e2765a3857754d12dbadea442b60ceaf9d4b23d",
+  "originalSources": [
+    {
+      "path": "products/rea-studio/apps/notes/results/notebooks-followup/stage/original/packages/lib/models/Note.ts.snapshot.snapshot",
+      "bytes": 45302,
+      "sha256": "5f1a200dc970179ad6fd193f7ffc47f09f88261cff8f893ccc793517ebbe9647",
+      "url": "https://github.com/laurent22/joplin/blob/7e2765a3857754d12dbadea442b60ceaf9d4b23d/packages/lib/models/Note.ts"
+    },
+    {
+      "path": "products/rea-studio/apps/notes/results/notebooks-followup/stage/original/packages/lib/BaseModel.ts.snapshot.snapshot",
+      "bytes": 26960,
+      "sha256": "c0a19f6d2d689cc75de99e4ba57058ec02f9171c5b5b3c739aa45d11d5920fde",
+      "url": "https://github.com/laurent22/joplin/blob/7e2765a3857754d12dbadea442b60ceaf9d4b23d/packages/lib/BaseModel.ts"
+    },
+    {
+      "path": "products/rea-studio/experiments/notes-new-todo/original/LICENSE.snapshot",
+      "bytes": 998,
+      "sha256": "f6b29267fe2c4251ed95cf9c846b47774a970c5960be9eb8a409f21ffd98425e",
+      "url": "https://github.com/laurent22/joplin/blob/7e2765a3857754d12dbadea442b60ceaf9d4b23d/LICENSE"
+    },
+    {
+      "path": "products/rea-studio/experiments/notes-new-todo/original/packages/app-desktop/gui/WindowCommandsAndDialogs/commands/newNote.ts.snapshot",
+      "bytes": 1341,
+      "sha256": "f5f0e9f3a5f9f2188b99c51778dbb88e5d99d3ab6e2cf0ae0ec879cdb99c0eed",
+      "url": "https://github.com/laurent22/joplin/blob/7e2765a3857754d12dbadea442b60ceaf9d4b23d/packages/app-desktop/gui/WindowCommandsAndDialogs/commands/newNote.ts"
+    },
+    {
+      "path": "products/rea-studio/experiments/notes-new-todo/original/packages/app-desktop/gui/WindowCommandsAndDialogs/commands/newTodo.ts.snapshot",
+      "bytes": 591,
+      "sha256": "218a695d94fafb17d1650dc0601ca4c684628c9a1a6c923887d73937211aef6f",
+      "url": "https://github.com/laurent22/joplin/blob/7e2765a3857754d12dbadea442b60ceaf9d4b23d/packages/app-desktop/gui/WindowCommandsAndDialogs/commands/newTodo.ts"
+    },
+    {
+      "path": "products/rea-studio/experiments/notes-new-todo/original/readme/apps/to-dos.md.snapshot",
+      "bytes": 1821,
+      "sha256": "69032c8f30c6aa782b105fe852a38a7756cfa16bcc3fcd426e2b09d9fedb1c11",
+      "url": "https://github.com/laurent22/joplin/blob/7e2765a3857754d12dbadea442b60ceaf9d4b23d/readme/apps/to-dos.md"
+    }
+  ],
+  "sourceFindings": [
+    "The pinned to-do documentation provides a desktop New to-do entry above the list. Its ordering prose is internally inconsistent; sorting remains outside this feature.",
+    "Note.newTodo calls Note.new(parentId) then sets is_todo=true; Note.new preserves the selected parent and obtains remaining defaults from its superclass.",
+    "The desktop newTodo command delegates newNote(body,true). newNote uses the valid active folder, is_todo1, the supplied body and provisional:true, then selects and sorts the saved item.",
+    "The desktop enabled condition requires one valid selected folder outside conflict/read-only/trash. The candidate draft permits explicit notebook choice and defaults to Notes, a disclosed policy difference."
+  ],
+  "candidateContract": [
+    "New to-do chooses an unsaved draft type; no mutation or provisional record occurs until explicit Save.",
+    "A new save may carry newTodo:true; only Boolean values are accepted and existing-note saves must omit the flag. Saved-note type changes keep their existing endpoints.",
+    "Snapshot caller fields before waiting on the queue; validate and bind notebook in cloned state, then make one state commit containing both note and to-do fields.",
+    "Revision1 creation starts open with due0/completed0/history0. Ordinary later saves preserve to-do state and build bounded history; cold restart and JEX preserve supported metadata.",
+    "One pending save blocks duplicate saves, preserves newer typed body at the returned revision, and respects a newer editor or disposed view after real commit or failure.",
+    "After actual save commit, a later list-refresh failure is a separate outcome. Its message may publish only while the accepted generation, draft revision and all current field values still match; newer typing keeps its unsaved status and next save uses the committed ID/revision.",
+    "A pending Save does not block unrelated notebook confirmation/organization through the general admission gate. Save and organization cleanup each preserve the other owner and current deletion state; pending Save remains excluded at the duplicate-save and to-do mutation boundaries."
+  ],
+  "plannedComparisons": {
+    "selectedHelperParentAndTypeComparisons": 4,
+    "desktopCommandArgumentComparisons": 2,
+    "comparisonsAddedToTestGroupCounts": false,
+    "originalDefaultFieldAdapter": true,
+    "originalDatabaseExecutions": 0,
+    "originalGuiExecutions": 0,
+    "originalFullApplicationExecutions": 0
+  },
+  "unchangedHistoricalScope": [
+    "Notes92 finite campaign",
+    "Notes8 browser campaign",
+    "Notes installed-source R4 authority",
+    "old13 Notes tests",
+    "current shared collectors and workflows",
+    "all root proofs and requirement registries"
+  ],
+  "localProductExecutions": 0,
+  "localTests": 0,
+  "localSyntaxChecks": 0,
+  "localBuilds": 0,
+  "freshHostedAcceptance": false,
+  "fullParity": false,
+  "superiority": false,
+  "retrievalNotes": {
+    "twoGuessedTopLevelDesktopCommandPathsReturned404": true,
+    "correctPathsDiscoveredFromPinnedGuiGitTree": true,
+    "rawCommandsAuthenticatedByGitBlobSha1": true
+  },
+  "userCopy": "Due dates help you track tasks; reminders are not available yet.",
+  "reviewCorrection": {
+    "preservedFutureR3Authority": {
+      "bytes": 7613,
+      "sha256": "cfbd705854ecdd1c4f5ab6fc3a5e72ec3edfa1c12ddc9bb45cd5c38710996291"
+    },
+    "finding": "The prior generation-only post-accept refresh catch could replace a newer same-editor unsaved-draft status with a delayed refresh error.",
+    "correction": "Separate save failure from committed-save list-refresh failure, and require generation, draft revision and field ownership before any late error or final success publication.",
+    "newSourceRegressionGroups": 1,
+    "candidateExecuted": false
+  },
+  "sourceEpoch": "R5 corrected future source proposal; fresh hosted acceptance pending",
+  "preservedFutureR4Authority": {
+    "bytes": 7958,
+    "sha256": "f34bc8608b1661202c11acf42f531051706b1c29b24db155945766cae841be64"
+  },
+  "canonicalBaselineQualification": "Existing unchanged ensureOrganization materializes metadataEdited:false on a read copy of a first-save note. Invalid400/GET/restart/list operations must preserve every original persisted byte. A later valid write can persist that existing normalization. Full raw-note invariance across unrelated valid New To-do creation is tested only after a real ordinary second Save establishes a canonical revision2/history1/metadataEdited:true baseline; no field is dropped.",
+  "failedExperimentCorrection": {
+    "runId": "38926216286",
+    "headSHA": "b635c33d971768682360e2c518b9b2bb0840985b",
+    "finite": {
+      "groups": 111,
+      "passed": 107,
+      "failed": 4
+    },
+    "browser": {
+      "cases": 8,
+      "passed": 7,
+      "failed": 1
+    },
+    "runtimeCorrection": "Four exact client literals restore existing notebook-operation admission during a held Save and symmetric busy ownership;17 old tests remain unchanged.",
+    "testCorrection": "Existing unchanged ensureOrganization materializes metadataEdited:false on a read copy of a first-save note. Invalid400/GET/restart/list operations must preserve every original persisted byte. A later valid write can persist that existing normalization. Full raw-note invariance across unrelated valid New To-do creation is tested only after a real ordinary second Save establishes a canonical revision2/history1/metadataEdited:true baseline; no field is dropped.",
+    "runtimeNormalizationChanged": false,
+    "freshR5Executed": false
+  }
+}

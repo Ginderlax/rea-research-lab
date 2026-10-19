@@ -1,0 +1,63 @@
+"""Read stored evidence and local Git objects only. Never execute product code."""
+import hashlib
+import json
+import subprocess
+from pathlib import Path
+
+work = Path(__file__).resolve().parent
+repo = work.parent / 'outputs' / 'rea-research-lab'
+head = 'f61cb2ee1969b5fc4059f4e20961526d0594c519'
+backup = work / 'cloud-verification-backups' / 'run-38908759571'
+evidence = backup / 'artifact-12049048068-reader-v2' / 'readable-evidence'
+ident = lambda data: {'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()}
+load = lambda name: json.loads((evidence / name).read_bytes())
+artifact = backup / 'artifact-12049048068.zip'
+assert ident(artifact.read_bytes()) == {'bytes': 2011834, 'sha256': 'e1686da1bf3e082e761873476e757a6523ea3848c1797f7da6b0796b72d16fe2'}
+tree_bytes = subprocess.run(['git', '-C', str(repo), 'ls-tree', '-r', '-z', '--full-tree', head, '--', 'products/rea-studio'], check=True, capture_output=True).stdout
+tree = {}
+for record in tree_bytes.split(b'\0'):
+    if not record:
+        continue
+    fields, name = record.split(b'\t', 1)
+    mode, kind, oid = fields.decode().split()
+    if kind == 'blob' and mode in ('100644', '100755'):
+        tree[name.decode()] = oid
+composition = load('notes-todo-composition.json')
+assert composition['sourceCommit'] == head and len(composition['transitions']) == 8
+targets = {row['path']: row for row in composition['transitions']}
+rows = load('browser-source-before.json')
+assert len(rows) == 383 and rows == load('browser-source-after.json') == load('browser-postrun-source-after.json')
+audited, overlaid, committed, total = [], 0, 0, 0
+for row in rows:
+    relative = 'products/rea-studio/' + row['path']
+    snapshot = evidence / 'source' / (row['path'] + '.snapshot')
+    assert snapshot.is_file() and not snapshot.is_symlink()
+    data = snapshot.read_bytes()
+    assert ident(data) == {key: row[key] for key in ('bytes', 'sha256')}
+    total += len(data)
+    if relative in targets:
+        assert ident(data) == targets[relative]['after']
+        overlaid += 1
+        binding = 'exact-composition-after'
+    else:
+        oid = hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
+        assert tree.get(relative) == oid, relative
+        committed += 1
+        binding = oid
+    audited.append({'path': relative, **ident(data), 'binding': binding})
+assert overlaid == 7 and committed == 376
+for relative, row in targets.items():
+    data = (evidence / 'after' / (relative + '.snapshot')).read_bytes()
+    assert ident(data) == row['after']
+    if row['before'] is None:
+        assert relative not in tree
+    else:
+        before = (evidence / 'before' / (relative + '.snapshot')).read_bytes()
+        assert ident(before) == row['before']
+        assert hashlib.sha1(b'blob ' + str(len(before)).encode() + b'\0' + before).hexdigest() == tree[relative]
+result = {'schema': 'rea-notes8-independent-backup-git-audit/v1', 'runId': '38908759571', 'sourceCommit': head, 'artifact': ident(artifact.read_bytes()), 'sourceSnapshots': len(rows), 'snapshotBytes': total, 'exactComposedEligibleAfterImages': overlaid, 'otherEligibleGitBlobsAuthenticated': committed, 'allEightAfterImagesAuthenticated': True, 'exactThreeGitBeforeImagesAndFiveAbsentAdditionsAuthenticated': True, 'beforeAfterAndPostcheckCensusEqual': True, 'localProductExecutions': 0, 'localBrowserExecutions': 0, 'localTests': 0, 'localBuilds': 0, 'auditedSources': audited}
+output = work / 'notes-browser-backup-git-audit-38908759571.json'
+with output.open('x', encoding='utf-8') as stream:
+    json.dump(result, stream, indent=2)
+    stream.write('\n')
+print(json.dumps({key: value for key, value in result.items() if key != 'auditedSources'}))

@@ -1,0 +1,501 @@
+{
+  "schema": "rea-notes-search-any-public-outcome/v1",
+  "status": "BOUNDED_ORIGINAL_COMPARISONS_AND_REGRESSION_OBSERVED_WITH_OPEN_NOTEBOOK_DIFFERENCES",
+  "sourceCommit": "cb88fb39dc874a5f445d3bea6d86f9ddf651b936",
+  "sourceParent": "ab26bf14bc1a55a723566bbafb3ca391c3ef671c",
+  "sourceBranch": "experiment/notes-search-any-20261019",
+  "runId": "39219566349",
+  "attempt": 1,
+  "jobId": "117951438092",
+  "job": "notes-any-observed-values",
+  "artifactId": "12170744748",
+  "links": {
+    "source": "https://github.com/Ginderlax/rea-research-lab/tree/cb88fb39dc874a5f445d3bea6d86f9ddf651b936/products/rea-studio/experiments/notes-search-any-20261019",
+    "run": "https://github.com/Ginderlax/rea-research-lab/actions/runs/39219566349/attempts/1",
+    "job": "https://github.com/Ginderlax/rea-research-lab/actions/runs/39219566349/job/117951438092",
+    "cases": "https://github.com/Ginderlax/rea-research-lab/blob/cb88fb39dc874a5f445d3bea6d86f9ddf651b936/products/rea-studio/experiments/notes-search-any-20261019/ANY-CASES.json",
+    "observer": "https://github.com/Ginderlax/rea-research-lab/blob/cb88fb39dc874a5f445d3bea6d86f9ddf651b936/products/rea-studio/experiments/notes-search-any-20261019/tests/original-any-values.test.mjs"
+  },
+  "runtime": {
+    "provider": "GitHub Actions",
+    "runnerEnvironment": "github-hosted",
+    "runnerLabel": "windows-2022",
+    "architecture": "X64",
+    "Node": "v24.16.0",
+    "runnerName": "GitHub Actions 1000000340"
+  },
+  "original": {
+    "product": "Joplin Desktop",
+    "release": "3.6.14",
+    "commit": "7e2765a3857754d12dbadea442b60ceaf9d4b23d",
+    "sourcePins": {
+      "packages/lib/services/search/filterParser.ts": {
+        "bytes": 4501,
+        "sha256": "e0e0d0690664748c563fabac620ac74839312dcb17cd351f16130f1918d17653",
+        "gitBlob": "97bb6ffc6f5300767cad1123e03e725b585d22ae"
+      },
+      "packages/lib/services/search/queryBuilder.ts": {
+        "bytes": 16896,
+        "sha256": "fd6a671fa6b305116c10163f417e35474764005f73e39ffd5ab24521db6acfcb",
+        "gitBlob": "bad8f89695186a40248db6e1baf75cdf16ce4754"
+      }
+    },
+    "adapter": "One date-service import replaced by deny-on-access proxy, unused by these fixtures; other date functions in the original builder do use that service. Original function bodies and SQL retained.",
+    "executed": "Authenticated standalone parser/query-builder on synthetic in-memory SQLite",
+    "originalFullApplicationExecuted": false,
+    "persistedOriginalSearchDatabaseExecuted": false,
+    "GUIExecuted": false,
+    "FTSEngineExecuted": false,
+    "rankingCompared": false,
+    "SearchEngineNormalizationCompared": false
+  },
+  "observations": {
+    "path": "raw/observations/01/original-any-values.jsonl",
+    "bytes": 122680,
+    "sha256": "ad35f658f8fe3e95fb15e597ee9c1c66b42b0d253b1867dc9c6df46b4fd95c75",
+    "physicalLines": 58,
+    "headerRows": 1,
+    "caseRows": 56,
+    "footerRows": 1,
+    "strictComparisons": 48,
+    "parserComparisons": 16,
+    "parserValueComparisons": 12,
+    "parserErrorComparisons": 4,
+    "nonNotebookMetadataSQLComparisons": 32,
+    "strictComparisonsAgree": 48,
+    "notebookDiagnosticRows": 8,
+    "notebookAgreementRequired": false,
+    "hypothesizedIDsUsedAsOracle": false
+  },
+  "syntheticFixture": {
+    "reuse": "Exact six folders and six note rows from preserved search-query-original.test.mjs; keep original48/32 arrays and historical receipts unchanged.",
+    "folders": [
+      {
+        "id": "a",
+        "title": "Lab",
+        "parent": ""
+      },
+      {
+        "id": "b",
+        "title": "Child",
+        "parent": "a"
+      },
+      {
+        "id": "c",
+        "title": "Other",
+        "parent": ""
+      },
+      {
+        "id": "d",
+        "title": "Lab",
+        "parent": "c"
+      },
+      {
+        "id": "e",
+        "title": "Deep",
+        "parent": "b"
+      },
+      {
+        "id": "f",
+        "title": "Archive",
+        "parent": ""
+      }
+    ],
+    "notes": [
+      {
+        "id": "n1",
+        "title": "Plan",
+        "body": "ready",
+        "folder": "a",
+        "tags": [
+          "Work",
+          "office"
+        ],
+        "todo": false,
+        "completed": 0
+      },
+      {
+        "id": "n2",
+        "title": "Task",
+        "body": "ready",
+        "folder": "b",
+        "tags": [
+          "work",
+          "important"
+        ],
+        "todo": true,
+        "completed": 0
+      },
+      {
+        "id": "n3",
+        "title": "Done",
+        "body": "archived",
+        "folder": "d",
+        "tags": [
+          "spam"
+        ],
+        "todo": true,
+        "completed": 10
+      },
+      {
+        "id": "n4",
+        "title": "Untagged",
+        "body": "ready",
+        "folder": "c",
+        "tags": [],
+        "todo": false,
+        "completed": 0
+      },
+      {
+        "id": "n5",
+        "title": "Deep note",
+        "body": "ready",
+        "folder": "e",
+        "tags": [
+          "R&D_1",
+          "50%",
+          "Équipe"
+        ],
+        "todo": false,
+        "completed": 0
+      },
+      {
+        "id": "n6",
+        "title": "Other task",
+        "body": "ready",
+        "folder": "f",
+        "tags": [
+          "R&Dx1",
+          "5000",
+          "équipe"
+        ],
+        "todo": true,
+        "completed": 20
+      }
+    ]
+  },
+  "notebookDiagnostics": {
+    "laneA": "Synthetic metadata schema without notes_fts; all 8 actual outcomes are missing-table errors",
+    "laneB": "Same schema plus ordinary, nonvirtual notes_fts mirror with ROWID/ID/full stored-content verified. No FTS engine and no original SQL rewrite.",
+    "laneACountMissingNotesFTSTable": 8,
+    "laneBReplacementEqualCount": 4,
+    "laneBReplacementDifferentCount": 4,
+    "differingCaseIDs": [
+      "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-002",
+      "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-003",
+      "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-007",
+      "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-008"
+    ],
+    "diagnosticsAreNotParityPasses": true,
+    "actualOutcomes": [
+      {
+        "caseId": "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-001",
+        "query": "any:1 notebook:Lab tag:work tag:spam",
+        "comparisonRequired": false,
+        "actualLaneAOutcome": {
+          "error": {
+            "name": "Error",
+            "message": "no such table: notes_fts",
+            "code": "ERR_SQLITE_ERROR",
+            "errcode": 1,
+            "errstr": "SQL logic error"
+          }
+        },
+        "actualLaneBOutcome": {
+          "value": [
+            "n1",
+            "n2",
+            "n3"
+          ]
+        },
+        "actualReplacementOutcome": {
+          "value": [
+            "n1",
+            "n2",
+            "n3"
+          ]
+        },
+        "laneBReplacementEqual": true
+      },
+      {
+        "caseId": "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-002",
+        "query": "any:0 notebook:Lab tag:work",
+        "comparisonRequired": false,
+        "actualLaneAOutcome": {
+          "error": {
+            "name": "Error",
+            "message": "no such table: notes_fts",
+            "code": "ERR_SQLITE_ERROR",
+            "errcode": 1,
+            "errstr": "SQL logic error"
+          }
+        },
+        "actualLaneBOutcome": {
+          "value": []
+        },
+        "actualReplacementOutcome": {
+          "value": [
+            "n1",
+            "n2"
+          ]
+        },
+        "laneBReplacementEqual": false
+      },
+      {
+        "caseId": "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-003",
+        "query": "any:1 notebook:Lab -notebook:Child tag:work tag:spam",
+        "comparisonRequired": false,
+        "actualLaneAOutcome": {
+          "error": {
+            "name": "Error",
+            "message": "no such table: notes_fts",
+            "code": "ERR_SQLITE_ERROR",
+            "errcode": 1,
+            "errstr": "SQL logic error"
+          }
+        },
+        "actualLaneBOutcome": {
+          "value": [
+            "n1",
+            "n2",
+            "n3"
+          ]
+        },
+        "actualReplacementOutcome": {
+          "value": [
+            "n1",
+            "n3"
+          ]
+        },
+        "laneBReplacementEqual": false
+      },
+      {
+        "caseId": "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-004",
+        "query": "any:1 notebook:Lab notebook:Archive tag:work type:todo",
+        "comparisonRequired": false,
+        "actualLaneAOutcome": {
+          "error": {
+            "name": "Error",
+            "message": "no such table: notes_fts",
+            "code": "ERR_SQLITE_ERROR",
+            "errcode": 1,
+            "errstr": "SQL logic error"
+          }
+        },
+        "actualLaneBOutcome": {
+          "value": [
+            "n1",
+            "n2",
+            "n3",
+            "n6"
+          ]
+        },
+        "actualReplacementOutcome": {
+          "value": [
+            "n1",
+            "n2",
+            "n3",
+            "n6"
+          ]
+        },
+        "laneBReplacementEqual": true
+      },
+      {
+        "caseId": "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-005",
+        "query": "any:1 -notebook:Lab type:todo",
+        "comparisonRequired": false,
+        "actualLaneAOutcome": {
+          "error": {
+            "name": "Error",
+            "message": "no such table: notes_fts",
+            "code": "ERR_SQLITE_ERROR",
+            "errcode": 1,
+            "errstr": "SQL logic error"
+          }
+        },
+        "actualLaneBOutcome": {
+          "value": [
+            "n6"
+          ]
+        },
+        "actualReplacementOutcome": {
+          "value": [
+            "n6"
+          ]
+        },
+        "laneBReplacementEqual": true
+      },
+      {
+        "caseId": "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-006",
+        "query": "any:1 notebook:NoSuchNotebook type:todo",
+        "comparisonRequired": false,
+        "actualLaneAOutcome": {
+          "error": {
+            "name": "Error",
+            "message": "no such table: notes_fts",
+            "code": "ERR_SQLITE_ERROR",
+            "errcode": 1,
+            "errstr": "SQL logic error"
+          }
+        },
+        "actualLaneBOutcome": {
+          "value": []
+        },
+        "actualReplacementOutcome": {
+          "value": []
+        },
+        "laneBReplacementEqual": true
+      },
+      {
+        "caseId": "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-007",
+        "query": "any:1 notebook:Lab",
+        "comparisonRequired": false,
+        "actualLaneAOutcome": {
+          "error": {
+            "name": "Error",
+            "message": "no such table: notes_fts",
+            "code": "ERR_SQLITE_ERROR",
+            "errcode": 1,
+            "errstr": "SQL logic error"
+          }
+        },
+        "actualLaneBOutcome": {
+          "value": []
+        },
+        "actualReplacementOutcome": {
+          "value": [
+            "n1",
+            "n2",
+            "n3",
+            "n5"
+          ]
+        },
+        "laneBReplacementEqual": false
+      },
+      {
+        "caseId": "REA-JOPLIN-3_6_14-ANY-SCOPE-DIAG-008",
+        "query": "any:0 notebook:Lab",
+        "comparisonRequired": false,
+        "actualLaneAOutcome": {
+          "error": {
+            "name": "Error",
+            "message": "no such table: notes_fts",
+            "code": "ERR_SQLITE_ERROR",
+            "errcode": 1,
+            "errstr": "SQL logic error"
+          }
+        },
+        "actualLaneBOutcome": {
+          "value": []
+        },
+        "actualReplacementOutcome": {
+          "value": [
+            "n1",
+            "n2",
+            "n3",
+            "n5"
+          ]
+        },
+        "laneBReplacementEqual": false
+      }
+    ]
+  },
+  "TAP": {
+    "moduleCount": 30,
+    "newOriginalObserverResults": 59,
+    "newOriginalObserverChildCases": 56,
+    "newOriginalObserverParents": 3,
+    "retainedRegressionModules": 29,
+    "retainedRegressionResults": 242,
+    "totalResults": 301,
+    "pass": 301,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "retries": 0,
+    "timeouts": 0,
+    "overflows": 0,
+    "rawLogsIncomplete": 0,
+    "retainedOriginalParserSQLCaseCount": 80,
+    "retainedOriginalParserSQLTAPCount": 82,
+    "old80OverlapEarlierStudies": true,
+    "totalIsNotDistinctFeatureCount": true,
+    "rawRoot": "raw/tests",
+    "realHTTPModuleResults": 5,
+    "syntheticDOMSearchModuleResults": 5,
+    "realBrowserANYResults": 0
+  },
+  "sources": {
+    "eligibleNotesFiles": 46,
+    "captureGroups": [
+      "before",
+      "ready",
+      "postrun-observed",
+      "pre-restoration",
+      "restored"
+    ],
+    "sourceFilesPerGroup": 144,
+    "totalPhysicalSourceSnapshots": 720,
+    "sourceRawBefore": 1543962,
+    "sourceRawReady": 1561981,
+    "sourceRawPostrunObserved": 1561981,
+    "sourceRawPreRestoration": 1561981,
+    "sourceRawRestored": 1543962,
+    "declaredOverlayTargets": 6,
+    "allPhysicalPinsChecked": true,
+    "restoredBaselineMatchesBefore": true,
+    "observedOnlyManifestsRetainUnqualifiedFlags": true,
+    "sourceOverlay": true,
+    "canonicalANYInstallation": false,
+    "currentPublicationProfileAcceptance": false
+  },
+  "publicSelection": {
+    "index": "RAW-INDEX.json",
+    "rawFiles": 114,
+    "generatedFiles": [
+      "README.md",
+      "OUTCOME.json",
+      "RAW-INDEX.json"
+    ],
+    "totalFiles": 117,
+    "rawCopiedBytes": 1042487,
+    "largestRawMemberBytes": 128240,
+    "originalArtifactMemberCount": 840,
+    "rawCopiesUnchanged": true,
+    "sourceContentSnapshotsIncluded": false,
+    "originalZIPIncluded": false,
+    "privateReviewerControlsIncluded": false,
+    "historicalReceiptsRebound": false
+  },
+  "reviewScope": "Original comparison findings were independently reviewed separately from the observer author. Physical source/TAP data and diagnostic scope have separate review. This public report does not self-approve the observer implementation or establish full-product acceptance.",
+  "openIssues": [
+    {
+      "kind": "notebook compatibility",
+      "status": "Four ordinary-mirror Lane B differences remain unresolved compatibility-policy questions",
+      "subjectSource": "cb88fb39dc874a5f445d3bea6d86f9ddf651b936"
+    },
+    {
+      "kind": "prior AB26 publication and audit",
+      "status": "Separate AB26 publication run failed; delivery audit's 986 reported failures remain unresolved. This CB88 evidence does not clear those failures.",
+      "subjectSource": "ab26bf14bc1a55a723566bbafb3ca391c3ef671c",
+      "link": "https://github.com/Ginderlax/rea-research-lab/actions/runs/39213485324",
+      "AB26RawEvidenceIncluded": false
+    },
+    {
+      "kind": "prior AB26 browserRoster metadata",
+      "status": "Known unused field identity mismatch remains outside this campaign, not consumed or repaired",
+      "subjectSource": "ab26bf14bc1a55a723566bbafb3ca391c3ef671c",
+      "path": "products/rea-studio/experiments/notes46-installed-search-browser-20261019/SOURCE-PLAN.json",
+      "field": "browserRoster"
+    },
+    {
+      "kind": "further acceptance",
+      "status": "Real-browser ANY, canonical installation/full publication closure, remaining documented filters, FTS/normalization/ranking and measured performance remain open"
+    }
+  ],
+  "fullParity": false,
+  "superiority": false,
+  "performanceMeasured": false,
+  "allTenComplete": false
+}

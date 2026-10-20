@@ -97,13 +97,31 @@ class Repository {
     this.accountMetadata(bytes.length);
     return unpack(open(this.key,bytes),this.config.version,size => this.accountMetadata(size));
   }
-  async unlock(value) {
-    password(value); const keys = await this.names('keys',limits.keys);
+  async unlock(value, options) {
+    password(value,options); const keys = await this.names('keys',limits.keys);
     for (const keyID of keys) {
-      this.guard(); const doc = json(await this.read(`keys/${keyID}`,64 * 1024,keyID));
-      const user = await passwordKey(doc,value); let plain;
-      try { plain = open(user,base64(doc.data)); } catch (error) { if (error.message.startsWith('Restic authentication failed')) continue; throw error; }
-      this.key = masterKey(json(plain)); this.keyID = keyID; break;
+      // Storage bounds, links, read stability and the operation deadline stay
+      // fatal. Opaque per-key damage cannot prevent trying a later credential.
+      this.guard(); const bytes = await this.read(`keys/${keyID}`,64 * 1024);
+      if (hash(bytes) !== keyID) continue;
+      let doc;
+      try { doc = json(bytes); } catch { continue; }
+      if (!doc || typeof doc !== 'object' || Array.isArray(doc)) continue;
+      let encrypted;
+      try { base64(doc.salt,64); encrypted = base64(doc.data); } catch { continue; }
+      // Excessive or unsupported KDF parameters are still fatal budget guards.
+      const user = await passwordKey(doc,value,options);
+      try {
+        let plain;
+        try { plain = open(user,encrypted); }
+        catch (error) { if (error.message.startsWith('Restic authentication failed') || error.message === 'Invalid restic encrypted data.') continue; throw error; }
+        let master;
+        try { master = json(plain); } catch { continue; }
+        if (!master || typeof master !== 'object' || Array.isArray(master)) continue;
+        try { this.key = masterKey(master); }
+        catch (error) { if (['Invalid restic base64 value.','Invalid restic key length.','Invalid restic encryption key.'].includes(error.message)) continue; throw error; }
+        this.keyID = keyID; break;
+      } finally { for (const bytes of Object.values(user)) bytes.fill(0); }
     }
     if (!this.key) throw new Error('Restic authentication failed: wrong password or no usable key.');
     const config = unpack(open(this.key,await this.read('config',64 * 1024)),2,size => this.accountMetadata(size));
@@ -279,11 +297,152 @@ class Repository {
   }
 }
 
+function keyAccessOptions(input) { return { insecureNoPassword:input.insecureNoPassword }; }
+function keyMetadata(document, keyID, currentKeyID) {
+  if (!document || typeof document !== 'object' || Array.isArray(document) || (document.username != null && typeof document.username !== 'string') || (document.hostname != null && typeof document.hostname !== 'string')) throw new Error('Invalid restic key metadata.');
+  const created = document.created ?? null; resticTime(created);
+  return { current:keyID === currentKeyID,id:keyID,userName:document.username ?? '',hostName:document.hostname ?? '',created:timeText(created) };
+}
+async function keyInventory(repo) {
+  const rows = [];
+  for (const keyID of await repo.names('keys',limits.keys)) {
+    // Unused keys are opaque bytes here. Even an already damaged key can be
+    // removed, while every preserved file is compared byte for byte below.
+    rows.push({ id:keyID,bytes:await repo.read(`keys/${keyID}`,64 * 1024) });
+  }
+  return rows;
+}
+async function listNativeKeys(repo) {
+  const keys = [], keyWarnings = [];
+  for (const keyID of await repo.names('keys',limits.keys)) {
+    const bytes = await repo.read(`keys/${keyID}`,64 * 1024);
+    if (hash(bytes) !== keyID) { keyWarnings.push({ id:keyID,message:'Restic storage SHA-256 verification failed.' }); continue; }
+    let document;
+    try { document = json(bytes); }
+    catch { keyWarnings.push({ id:keyID,message:'Invalid restic key JSON.' }); continue; }
+    try {
+      keys.push(keyMetadata(document,keyID,repo.keyID));
+    } catch (error) {
+      repo.guard(); // Per-entry warnings cannot hide an expired operation.
+      keyWarnings.push({ id:keyID,message:error.message });
+    }
+  }
+  repo.guard();
+  return { format:'restic',repository:repo.relative,version:repo.config.version,currentKeyID:repo.keyID,keys,keyWarnings };
+}
+async function sameKeyInventory(repo, expected) {
+  const actual = await repo.names('keys',limits.keys);
+  if (JSON.stringify(actual) !== JSON.stringify(expected.map(row => row.id).sort())) throw new Error('Restic key inventory changed during the operation.');
+  for (const row of expected) if (!(await repo.read(`keys/${row.id}`,64 * 1024)).equals(row.bytes)) throw new Error('Restic key bytes changed during the operation.');
+}
+function keyLabel(value, fallback, label) {
+  if (value === undefined || value === '') return fallback;
+  if (typeof value !== 'string' || !value.isWellFormed() || Buffer.byteLength(value) > 1024) throw new Error(`New key ${label} must contain at most 1,024 UTF-8 bytes.`);
+  return value;
+}
+function newKeyInput(input) {
+  const options = { insecureNoPassword:input.newInsecureNoPassword };
+  password(input.newPassword,options);
+  if (typeof input.newPasswordConfirm !== 'string' || input.newPasswordConfirm !== input.newPassword) throw new Error('The two new repository passwords must match.');
+  let username = ''; try { username = os.userInfo().username; } catch { /* Match original best-effort OS metadata. */ }
+  return { password:input.newPassword,options,username:keyLabel(input.username,username,'user'),hostname:keyLabel(input.hostname,os.hostname(),'host') };
+}
+async function configBytes(repo) {
+  const bytes = await repo.read('config',64 * 1024);
+  const document = unpack(open(repo.key,bytes),2,size => repo.accountMetadata(size));
+  if (!encode(document).equals(encode(repo.config))) throw new Error('Restic authenticated configuration changed during key management.');
+  return bytes;
+}
+async function verifyNewKey(repo, keyID, value, options, expectedConfig) {
+  const document = json(await repo.read(`keys/${keyID}`,64 * 1024,keyID));
+  const user = await passwordKey(document,value,options); let candidate;
+  try {
+    candidate = masterKey(json(open(user,base64(document.data))));
+    if (!['encrypt','k','r'].every(name => candidate[name].equals(repo.key[name]))) throw new Error('New restic key does not preserve the repository master key.');
+    const actualConfig = await repo.read('config',64 * 1024);
+    if (!actualConfig.equals(expectedConfig)) throw new Error('Restic configuration bytes changed while verifying the new key.');
+    const configDocument = unpack(open(candidate,actualConfig),2,size => repo.accountMetadata(size));
+    if (!encode(configDocument).equals(encode(repo.config))) throw new Error('New restic key could not authenticate the expected configuration.');
+  } finally {
+    for (const bytes of Object.values(user)) bytes.fill(0);
+    if (candidate) for (const bytes of Object.values(candidate)) bytes.fill(0);
+  }
+}
+async function removeKeyFile(repo, row) {
+  await repo.assertLock();
+  if (!(await repo.read(`keys/${row.id}`,64 * 1024)).equals(row.bytes)) throw new Error('Restic key changed before removal.');
+  await fs.unlink(repo.location(`keys/${row.id}`));
+}
+async function addNativeKey(repo, input, changePassword) {
+  if (changePassword && input.confirm !== true) throw new Error('Changing the repository password requires confirmation.');
+  const chosen = newKeyInput(input), before = await keyInventory(repo), previousKeyID = repo.keyID;
+  if (before.length >= limits.keys) throw new Error('The bounded native repository already has 16 keys. Remove a different key before adding or changing a password.');
+  const expectedConfig = await configBytes(repo), calibrated = await calibrateWriter();
+  const document = { created:new Date().toISOString(),username:chosen.username,hostname:chosen.hostname,kdf:'scrypt',N:calibrated.N,r:calibrated.r,p:calibrated.p,salt:randomBytes(64).toString('base64') };
+  const user = await passwordKey(document,chosen.password,chosen.options);
+  try { document.data = seal(user,encode(masterJSON(repo.key))).toString('base64'); }
+  finally { for (const bytes of Object.values(user)) bytes.fill(0); }
+  const bytes = encode(document), keyID = hash(bytes), row = { id:keyID,bytes,document };
+  if (before.some(old => old.id === keyID)) throw new Error('A newly generated restic key unexpectedly already exists.');
+  await repo.assertLock(); await sameKeyInventory(repo,before);
+  let published = false;
+  try {
+    await repo.atomic(`keys/${keyID}`,bytes); published = true;
+    await verifyNewKey(repo,keyID,chosen.password,chosen.options,expectedConfig);
+    await sameKeyInventory(repo,[...before,row]); await repo.assertLock();
+  } catch (error) {
+    // Only the exact newly owned immutable key is eligible for rollback. The
+    // previous working key is never removed before persistent-key validation.
+    try {
+      const existing = await repo.read(`keys/${keyID}`,64 * 1024,keyID);
+      if (!existing.equals(bytes)) throw new Error('New key bytes differ; manual cleanup is required.');
+      await removeKeyFile(repo,row);
+    } catch (cleanup) {
+      if (cleanup.code !== 'ENOENT') repo.cleanupWarnings.push({ scope:'unverified-new-key',path:`keys/${keyID}`,message:cleanup.message,published });
+    }
+    throw error;
+  }
+  repo.keyID = keyID;
+  if (changePassword) {
+    const previous = before.find(old => old.id === previousKeyID);
+    try {
+      if (!previous) throw new Error('The previously authenticated key is missing.');
+      await removeKeyFile(repo,previous);
+      await sameKeyInventory(repo,[...before.filter(old => old.id !== previousKeyID),row]);
+      if (!(await configBytes(repo)).equals(expectedConfig)) throw new Error('Restic configuration bytes changed after password replacement.');
+    } catch (error) {
+      throw new Error(`New key ${keyID} was verified. Removal of previous key ${previousKeyID} did not complete cleanly; both credentials may remain usable. Inspect keys with the new password before retrying. ${error.message}`);
+    }
+  }
+  return { format:'restic',repository:repo.relative,version:repo.config.version,keyID,previousKeyID,oldKeyRemoved:changePassword,newKeyVerified:true,masterKeyPreserved:true,configUnchanged:true,key:keyMetadata(document,keyID,keyID),insecureEmptyPassword:chosen.password === '' };
+}
+async function removeNativeKey(repo, input) {
+  if (input.confirm !== true) throw new Error('Removing a repository key requires confirmation.');
+  if (typeof input.keyID !== 'string' || !/^[a-f0-9]{1,64}$/.test(input.keyID)) throw new Error('Use a lowercase hexadecimal restic key ID or unique prefix.');
+  const before = await keyInventory(repo), matches = before.filter(row => row.id.startsWith(input.keyID));
+  if (!matches.length) throw new Error('No restic key matches that ID prefix.');
+  if (matches.length !== 1) throw new Error('Restic key ID prefix is ambiguous. Use a longer unique prefix.');
+  const selected = matches[0];
+  if (selected.id === repo.keyID) throw new Error('Refusing to remove the key currently used to access the repository.');
+  const expectedConfig = await configBytes(repo); await sameKeyInventory(repo,before);
+  await removeKeyFile(repo,selected);
+  try {
+    await sameKeyInventory(repo,before.filter(row => row.id !== selected.id));
+    if (!(await configBytes(repo)).equals(expectedConfig)) throw new Error('Restic configuration bytes changed after key removal.');
+  } catch (error) {
+    const failure = new Error(`Restic key ${selected.id} was removed. Post-removal verification did not complete; inspect the remaining keys before retrying. ${error.message}`);
+    Object.assign(failure,{ removedKeyID:selected.id,currentKeyID:repo.keyID,keyRemoved:true,postRemovalVerified:false });
+    throw failure;
+  }
+  return { format:'restic',repository:repo.relative,removedKeyID:selected.id,currentKeyID:repo.keyID,remainingKeys:before.length - 1,configUnchanged:true,keyRemoved:true,postRemovalVerified:true };
+}
+
+
 async function initialize(repo,input) {
-  password(input.password); const version = input.version ?? 1; if (![1,2].includes(version)) throw new Error('Native restic repository version must be 1 or 2.');
+  password(input.password,keyAccessOptions(input)); const version = input.version ?? 1; if (![1,2].includes(version)) throw new Error('Native restic repository version must be 1 or 2.');
   const calibrated = await calibrateWriter();
   const key = randomKey(), salt = randomBytes(64), keyDoc = { created:new Date().toISOString(),username:'rea-studio',hostname:os.hostname(),kdf:'scrypt',N:calibrated.N,r:calibrated.r,p:calibrated.p,salt:salt.toString('base64') };
-  keyDoc.data = seal(await passwordKey(keyDoc,input.password),encode(masterJSON(key))).toString('base64');
+  keyDoc.data = seal(await passwordKey(keyDoc,input.password,keyAccessOptions(input)),encode(masterJSON(key))).toString('base64');
   const config = { version,id:randomBytes(32).toString('hex'),chunker_polynomial:randomPolynomial() };
   const root = repo.location(); await fs.mkdir(path.dirname(root),{ recursive:true }); await fs.mkdir(root);
   for (const directory of ['data','index','keys','locks','snapshots','tmp']) await fs.mkdir(repo.location(directory));
@@ -382,11 +541,14 @@ export async function handleNative({ action,input,workspace }) {
   try {
     if (action === 'nativeInit') result = await initialize(repo,input);
     else {
-      await repo.unlock(input.password);
+      await repo.unlock(input.password,keyAccessOptions(input));
       repo.compression = compressionMode(input.compression);
       await repo.lock();
       if (action === 'nativeInfo') result = { format:'restic',repository:repo.relative,version:repo.config.version,id:repo.config.id,chunker_polynomial:repo.config.chunker_polynomial,keyID:repo.keyID,encrypted:true };
       else if (action === 'nativeList') result = { format:'restic',version:repo.config.version,snapshots:await repo.snapshots() };
+      else if (action === 'nativeKeyList') result = await listNativeKeys(repo);
+      else if (action === 'nativeKeyAdd' || action === 'nativeKeyPasswd') result = await addNativeKey(repo,input,action === 'nativeKeyPasswd');
+      else if (action === 'nativeKeyRemove') result = await removeNativeKey(repo,input);
       else if (action === 'nativeSnapshot') result = await snapshot(repo,input);
       else if (['nativeInspect','nativeCheck','nativeRestore'].includes(action)) {
         const selectedResult = await selected(repo,input);

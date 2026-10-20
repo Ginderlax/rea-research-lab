@@ -39,3 +39,9 @@ History is local and unencrypted; no automatic history pruning exists. These wor
 Official baseline references reviewed on 2026-10-12: [rclone documentation](https://rclone.org/docs/), [copy](https://rclone.org/commands/rclone_copy/), [sync](https://rclone.org/commands/rclone_sync/) and [bisync](https://rclone.org/bisync/). Live documentation references are not a frozen, exhaustive inventory for the pinned release.
 
 All application code is original Node.js/DOM code and imports no rclone or prior lab reconstruction implementation.
+
+## Source draft: Copy from WebDAV
+
+A separate reviewed remote-to-local COPY slice is authored in `dav-download.mjs` and the **Copy from WebDAV** card. It retains local extras, requires fresh request credentials and explicit approval, rechecks complete inventories, uses conditional remote reads, stages and verifies local bytes, retains replacement preimages and discloses partial completion. It adds no remote mutation or deletion action. Starting a preview in the other direction invalidates cached opposite-direction tokens to preserve the existing service memory cap.
+
+Read [WEBDAV-DOWNLOAD.md](WEBDAV-DOWNLOAD.md) for exact actions, selection/mtime limits, recovery and concurrency boundaries, authored regressions and unfinished validation. This source draft has not been executed or accepted. Existing local/upload receipts remain historical; this direction still requires independent exact-source review and fresh hosted finite/original/browser evidence. Parent requirements RCLONE.COPY.001 and RCLONE.PROVIDER.001 and all full-product completion gates remain incomplete.

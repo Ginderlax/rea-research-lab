@@ -1,0 +1,154 @@
+{
+  "schema": "rea-sync-webdav-download-original-corpus/v1",
+  "status": "source-authored-unexecuted-no-expected-original-decisions",
+  "direction": "webdav-to-local",
+  "remoteModifiedHTTP": "Thu, 01 Oct 2026 00:00:00 GMT",
+  "remoteModifiedISO": "2026-10-01T00:00:00.000Z",
+  "localDestinationTimeMeaning": "remoteModifiedISO plus destinationDeltaMs; this explicitly reverses the upload corpus's time-bearing side",
+  "profileKeys": [
+    "checksum",
+    "sizeOnly",
+    "ignoreSize",
+    "ignoreTimes",
+    "ignoreExisting",
+    "update",
+    "noUpdateModtime"
+  ],
+  "profileMasks": {
+    "first": 0,
+    "last": 127
+  },
+  "cases": [
+    {
+      "id": "missing",
+      "path": "missing.txt",
+      "source": "new",
+      "destinationDeltaMs": 0
+    },
+    {
+      "id": "identical",
+      "path": "identical.txt",
+      "source": "same",
+      "destination": "same",
+      "destinationDeltaMs": 0
+    },
+    {
+      "id": "different-bytes-same-size",
+      "path": "different-bytes-same-size.txt",
+      "source": "AAAA",
+      "destination": "BBBB",
+      "destinationDeltaMs": 0
+    },
+    {
+      "id": "different-size",
+      "path": "different-size.txt",
+      "source": "longer",
+      "destination": "x",
+      "destinationDeltaMs": 0
+    },
+    {
+      "id": "local-older-1001",
+      "path": "timeminus1001.txt",
+      "source": "source",
+      "destination": "target",
+      "destinationDeltaMs": -1001
+    },
+    {
+      "id": "local-older-1000",
+      "path": "timeminus1000.txt",
+      "source": "source",
+      "destination": "target",
+      "destinationDeltaMs": -1000
+    },
+    {
+      "id": "local-older-999",
+      "path": "timeminus999.txt",
+      "source": "source",
+      "destination": "target",
+      "destinationDeltaMs": -999
+    },
+    {
+      "id": "local-newer-999",
+      "path": "timeplus999.txt",
+      "source": "source",
+      "destination": "target",
+      "destinationDeltaMs": 999
+    },
+    {
+      "id": "local-newer-1000",
+      "path": "timeplus1000.txt",
+      "source": "source",
+      "destination": "target",
+      "destinationDeltaMs": 1000
+    },
+    {
+      "id": "local-newer-1001",
+      "path": "timeplus1001.txt",
+      "source": "source",
+      "destination": "target",
+      "destinationDeltaMs": 1001
+    },
+    {
+      "id": "zero",
+      "path": "zero.txt",
+      "source": "",
+      "destination": "",
+      "destinationDeltaMs": 0
+    }
+  ],
+  "heldOutFolders": [
+    {
+      "id": "nested-binary-utf8",
+      "filters": {}
+    },
+    {
+      "id": "excluded-temporary",
+      "filters": {
+        "exclude": [
+          "*.tmp"
+        ]
+      }
+    },
+    {
+      "id": "included-text",
+      "filters": {
+        "include": [
+          "*.txt"
+        ]
+      }
+    },
+    {
+      "id": "ordered-directory-filter",
+      "filters": {
+        "filter": [
+          "- blocked/**",
+          "+ **"
+        ]
+      }
+    },
+    {
+      "id": "missing-local-target",
+      "filters": {},
+      "targetMissing": true
+    },
+    {
+      "id": "empty-remote-keeps-local-extras",
+      "filters": {},
+      "emptyRemote": true
+    },
+    {
+      "filters": {},
+      "id": "empty-remote-missing-target",
+      "targetMissing": true,
+      "emptyRemote": true
+    }
+  ],
+  "scopeLimits": [
+    "COPY only",
+    "vendor=other",
+    "no local removals",
+    "no default empty remote directory creation",
+    "millisecond time corpus; no nanosecond precision claim",
+    "full byte/path/mtime outputs must be derived from actual fresh original execution"
+  ]
+}

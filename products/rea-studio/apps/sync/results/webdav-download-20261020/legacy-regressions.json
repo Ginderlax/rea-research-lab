@@ -1,0 +1,203 @@
+{
+  "schema": "rea-sync-webdav-download-public-preserved-regressions/v1",
+  "source": "9424e52d438cdd68dc2ee7778170155ecbde948d",
+  "freshCorpusExecutions": true,
+  "historicalReceiptsModified": false,
+  "localComparisons": {
+    "profiles": 140,
+    "scenarios": 10,
+    "decisions": 1400,
+    "copy": 539,
+    "updateModtime": 23,
+    "skip": 838,
+    "originalCommands": 141,
+    "sourceBytesAndTimesUnchanged": true
+  },
+  "localFilters": {
+    "cases": 56,
+    "sourceFiles": 132,
+    "originalCommands": 57,
+    "selectedPathObservations": 1999,
+    "expectedExit1CaseIndexes": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ]
+  },
+  "localTransfers": {
+    "folders": 21,
+    "originalCommands": 43,
+    "finalFileRows": 152,
+    "fullBytesDirectoriesFileTimesEqual": true,
+    "sourceTreesUnchanged": true,
+    "resultPersistence": "Passing source-associated assertion; private store/history tree not retained in target/source snapshots."
+  },
+  "webdavUpload": {
+    "profiles": 128,
+    "filesPerProfile": 11,
+    "pairedDecisions": 1408,
+    "selectedProfilePUTs": 472,
+    "nativeConditionalPUTsChecked": 472,
+    "heldoutFolders": 8,
+    "originalCommands": 266,
+    "redundantOriginalMKCOL405": 6,
+    "heldoutRows": [
+      {
+        "caseID": "webdav-upload-heldout-copy-0",
+        "mode": "copy",
+        "filters": {},
+        "successfulMutationActions": [
+          "MKCOL,folder",
+          "PUT,a.txt",
+          "PUT,b.tmp",
+          "PUT,blocked/data.txt",
+          "PUT,folder/space name.txt"
+        ],
+        "finalFileRows": 7,
+        "finalDirectories": 3,
+        "folderSHA256": "4e53ecf43807f560f397d69407186a85959e1dac6eaa0bf87604c2ad73a19de7"
+      },
+      {
+        "caseID": "webdav-upload-heldout-copy-1",
+        "mode": "copy",
+        "filters": {
+          "exclude": [
+            "*.tmp"
+          ]
+        },
+        "successfulMutationActions": [
+          "MKCOL,folder",
+          "PUT,a.txt",
+          "PUT,blocked/data.txt",
+          "PUT,folder/space name.txt"
+        ],
+        "finalFileRows": 6,
+        "finalDirectories": 3,
+        "folderSHA256": "c44f4aeb414110eda2e878774cde795019eb99a2ec014826949759b2514b4750"
+      },
+      {
+        "caseID": "webdav-upload-heldout-copy-2",
+        "mode": "copy",
+        "filters": {
+          "include": [
+            "*.txt"
+          ]
+        },
+        "successfulMutationActions": [
+          "MKCOL,folder",
+          "PUT,a.txt",
+          "PUT,blocked/data.txt",
+          "PUT,folder/space name.txt"
+        ],
+        "finalFileRows": 6,
+        "finalDirectories": 3,
+        "folderSHA256": "c44f4aeb414110eda2e878774cde795019eb99a2ec014826949759b2514b4750"
+      },
+      {
+        "caseID": "webdav-upload-heldout-copy-3",
+        "mode": "copy",
+        "filters": {
+          "filter": [
+            "- blocked/**",
+            "+ **"
+          ]
+        },
+        "successfulMutationActions": [
+          "MKCOL,folder",
+          "PUT,a.txt",
+          "PUT,b.tmp",
+          "PUT,folder/space name.txt"
+        ],
+        "finalFileRows": 6,
+        "finalDirectories": 3,
+        "folderSHA256": "63526349cee2b3efdee474432e957789eb30657efc84a2d93c893a7aa9166b82"
+      },
+      {
+        "caseID": "webdav-upload-heldout-sync-0",
+        "mode": "sync",
+        "filters": {},
+        "successfulMutationActions": [
+          "DELETE,blocked/old.txt",
+          "DELETE,extra.tmp",
+          "DELETE,extra.txt",
+          "MKCOL,folder",
+          "PUT,a.txt",
+          "PUT,b.tmp",
+          "PUT,blocked/data.txt",
+          "PUT,folder/space name.txt"
+        ],
+        "finalFileRows": 4,
+        "finalDirectories": 3,
+        "folderSHA256": "bd3570d406409d6e3f5ae9ddca2e9760c6a1fb096cf95cfbd5d7ea58c554d788"
+      },
+      {
+        "caseID": "webdav-upload-heldout-sync-1",
+        "mode": "sync",
+        "filters": {
+          "exclude": [
+            "*.tmp"
+          ]
+        },
+        "successfulMutationActions": [
+          "DELETE,blocked/old.txt",
+          "DELETE,extra.txt",
+          "MKCOL,folder",
+          "PUT,a.txt",
+          "PUT,blocked/data.txt",
+          "PUT,folder/space name.txt"
+        ],
+        "finalFileRows": 4,
+        "finalDirectories": 3,
+        "folderSHA256": "7714ac4e35bbfc2a7f36dbeb8ecd876b3b2f4914b85f4c810f085047d533f468"
+      },
+      {
+        "caseID": "webdav-upload-heldout-sync-2",
+        "mode": "sync",
+        "filters": {
+          "include": [
+            "*.txt"
+          ]
+        },
+        "successfulMutationActions": [
+          "DELETE,blocked/old.txt",
+          "DELETE,extra.txt",
+          "MKCOL,folder",
+          "PUT,a.txt",
+          "PUT,blocked/data.txt",
+          "PUT,folder/space name.txt"
+        ],
+        "finalFileRows": 4,
+        "finalDirectories": 3,
+        "folderSHA256": "7714ac4e35bbfc2a7f36dbeb8ecd876b3b2f4914b85f4c810f085047d533f468"
+      },
+      {
+        "caseID": "webdav-upload-heldout-sync-3",
+        "mode": "sync",
+        "filters": {
+          "filter": [
+            "- blocked/**",
+            "+ **"
+          ]
+        },
+        "successfulMutationActions": [
+          "DELETE,extra.tmp",
+          "DELETE,extra.txt",
+          "MKCOL,folder",
+          "PUT,a.txt",
+          "PUT,b.tmp",
+          "PUT,folder/space name.txt"
+        ],
+        "finalFileRows": 4,
+        "finalDirectories": 3,
+        "folderSHA256": "4133903a6d569b9321ba19922943856b52e5ed57c8270c5b6114568a6d610968"
+      }
+    ]
+  },
+  "limits": [
+    "Existing local and upload commands/corpora were executed freshly on testedsource9424; historical studies are not rebound.",
+    "Original makes6 redundant existing-collection MKCOL requests receiving405. Successful mutation selections/full final outputs match within scope; full HTTP request trace equivalence is not claimed.",
+    "Fixed owned generic WebDAV modification dates, source-associated result persistence/cleanup, no arbitrary provider or directory timestamp parity."
+  ]
+}

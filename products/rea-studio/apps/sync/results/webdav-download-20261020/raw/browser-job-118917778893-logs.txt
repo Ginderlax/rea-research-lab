@@ -1,0 +1,450 @@
+﻿2026-10-20T22:16:11.5314487Z Current runner version: '2.337.0'
+2026-10-20T22:16:11.5353026Z ##[group]Runner Image Provisioner
+2026-10-20T22:16:11.5354393Z Hosted Compute Agent
+2026-10-20T22:16:11.5355383Z Version: 20261012.601
+2026-10-20T22:16:11.5356441Z Commit: f3dc54e1fb89da6852db922499a0233137369e1d
+2026-10-20T22:16:11.5357741Z Build Date: 2026-10-12T17:48:21Z
+2026-10-20T22:16:11.5358912Z Worker ID: {c8f2783c-df9a-4562-ac33-8a63d4753291}
+2026-10-20T22:16:11.5360023Z Region: eastus
+2026-10-20T22:16:11.5360920Z Cloud: Azure
+2026-10-20T22:16:11.5361729Z ##[endgroup]
+2026-10-20T22:16:11.5364111Z ##[group]Operating System
+2026-10-20T22:16:11.5365187Z Microsoft Windows Server 2022
+2026-10-20T22:16:11.5366184Z 10.0.20348
+2026-10-20T22:16:11.5367049Z Datacenter
+2026-10-20T22:16:11.5367836Z ##[endgroup]
+2026-10-20T22:16:11.5368789Z ##[group]Runner Image
+2026-10-20T22:16:11.5369823Z Image: windows-2022
+2026-10-20T22:16:11.5370759Z Version: 20261012.333.1
+2026-10-20T22:16:11.5373459Z Included Software: https://github.com/actions/runner-images/blob/win22/20261012.333/images/windows/Windows2022-Readme.md
+2026-10-20T22:16:11.5376243Z Image Release: https://github.com/actions/runner-images/releases/tag/win22%2F20261012.333
+2026-10-20T22:16:11.5377925Z ##[endgroup]
+2026-10-20T22:16:11.5379718Z ##[group]GITHUB_TOKEN Permissions
+2026-10-20T22:16:11.5382447Z Contents: read
+2026-10-20T22:16:11.5383379Z Metadata: read
+2026-10-20T22:16:11.5385781Z ##[endgroup]
+2026-10-20T22:16:11.5388651Z Secret source: Actions
+2026-10-20T22:16:11.5389562Z Cache mode: write
+2026-10-20T22:16:11.5390250Z Prepare workflow directory
+2026-10-20T22:16:11.6043196Z Prepare all required actions
+2026-10-20T22:16:11.6112774Z Getting action download info
+2026-10-20T22:16:11.7749107Z Download action repository 'actions/checkout@11d5960a326750d5838078e36cf38b85af677262' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-20T22:16:11.9196735Z Download action repository 'actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+2026-10-20T22:16:12.1592309Z Download action repository 'actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-10-20T22:16:12.5030017Z Complete job name: Sync download / browser
+2026-10-20T22:16:12.6720043Z ##[group]Run git config --global core.longpaths true
+2026-10-20T22:16:12.6721136Z [36;1mgit config --global core.longpaths true[0m
+2026-10-20T22:16:12.6861901Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-20T22:16:12.6862986Z env:
+2026-10-20T22:16:12.6863419Z   CI: true
+2026-10-20T22:16:12.6863982Z   REA_SYNC_PARENT: beab1f3668cf652e7663f3fd7216ac607506ac06
+2026-10-20T22:16:12.6865140Z   REA_SYNC_ADMISSION_SCRIPT_SHA256: a7ba8de04599b09aa756ee5bbaff7e11aa409a2543a006f6113b014fdf5d7105
+2026-10-20T22:16:12.6866541Z   REA_SYNC_MANIFEST_SHA256: b18c2fcc8d04d742693150cd5c2700573dae80721a0859507126dd038c49b264
+2026-10-20T22:16:12.6867516Z   REA_SYNC_ROLE: browser
+2026-10-20T22:16:12.6868046Z ##[endgroup]
+2026-10-20T22:16:13.6848488Z ##[group]Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+2026-10-20T22:16:13.6850086Z with:
+2026-10-20T22:16:13.6850999Z   ref: 9424e52d438cdd68dc2ee7778170155ecbde948d
+2026-10-20T22:16:13.6852222Z   persist-credentials: false
+2026-10-20T22:16:13.6853213Z   fetch-depth: 2
+2026-10-20T22:16:13.6854132Z   repository: Ginderlax/rea-research-lab
+2026-10-20T22:16:13.6862546Z   token: ***
+2026-10-20T22:16:13.6863366Z   ssh-strict: true
+2026-10-20T22:16:13.6864214Z   ssh-user: git
+2026-10-20T22:16:13.6865028Z   clean: true
+2026-10-20T22:16:13.6865886Z   sparse-checkout-cone-mode: true
+2026-10-20T22:16:13.6866920Z   fetch-tags: false
+2026-10-20T22:16:13.6867771Z   show-progress: true
+2026-10-20T22:16:13.6868638Z   lfs: false
+2026-10-20T22:16:13.6869434Z   submodules: false
+2026-10-20T22:16:13.6870308Z   set-safe-directory: true
+2026-10-20T22:16:13.6871311Z   allow-unsafe-pr-checkout: false
+2026-10-20T22:16:13.6872329Z env:
+2026-10-20T22:16:13.6875479Z   CI: true
+2026-10-20T22:16:13.6876497Z   REA_SYNC_PARENT: beab1f3668cf652e7663f3fd7216ac607506ac06
+2026-10-20T22:16:13.6878569Z   REA_SYNC_ADMISSION_SCRIPT_SHA256: a7ba8de04599b09aa756ee5bbaff7e11aa409a2543a006f6113b014fdf5d7105
+2026-10-20T22:16:13.6881059Z   REA_SYNC_MANIFEST_SHA256: b18c2fcc8d04d742693150cd5c2700573dae80721a0859507126dd038c49b264
+2026-10-20T22:16:13.6882784Z   REA_SYNC_ROLE: browser
+2026-10-20T22:16:13.6883688Z ##[endgroup]
+2026-10-20T22:16:13.8343025Z Syncing repository: Ginderlax/rea-research-lab
+2026-10-20T22:16:13.8345728Z ##[group]Getting Git version info
+2026-10-20T22:16:13.8347123Z Working directory is 'D:\a\rea-research-lab\rea-research-lab'
+2026-10-20T22:16:13.9457872Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-20T22:16:13.9737944Z git version 2.56.0.windows.2
+2026-10-20T22:16:13.9779212Z ##[endgroup]
+2026-10-20T22:16:13.9793730Z Copying 'C:\Users\runneradmin\.gitconfig' to 'D:\a\_temp\ac62c56d-e48e-4dfa-b252-a1da4548730a\.gitconfig'
+2026-10-20T22:16:13.9814278Z Temporarily overriding HOME='D:\a\_temp\ac62c56d-e48e-4dfa-b252-a1da4548730a' before making global git config changes
+2026-10-20T22:16:13.9816943Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-20T22:16:13.9825360Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\rea-research-lab\rea-research-lab
+2026-10-20T22:16:14.0114743Z Deleting the contents of 'D:\a\rea-research-lab\rea-research-lab'
+2026-10-20T22:16:14.0120173Z ##[group]Initializing the repository
+2026-10-20T22:16:14.0129099Z [command]"C:\Program Files\Git\bin\git.exe" init D:\a\rea-research-lab\rea-research-lab
+2026-10-20T22:16:14.1169978Z Initialized empty Git repository in D:/a/rea-research-lab/rea-research-lab/.git/
+2026-10-20T22:16:14.1213027Z [command]"C:\Program Files\Git\bin\git.exe" remote add origin https://github.com/Ginderlax/rea-research-lab
+2026-10-20T22:16:14.1839995Z ##[endgroup]
+2026-10-20T22:16:14.1842636Z ##[group]Disabling automatic garbage collection
+2026-10-20T22:16:14.1850890Z [command]"C:\Program Files\Git\bin\git.exe" config --local gc.auto 0
+2026-10-20T22:16:14.2156621Z ##[endgroup]
+2026-10-20T22:16:14.2158855Z ##[group]Setting up auth
+2026-10-20T22:16:14.2172469Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-20T22:16:14.2549739Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-20T22:16:15.8390863Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-20T22:16:15.8688065Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-20T22:16:16.3667243Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-20T22:16:16.3970951Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-20T22:16:16.8658117Z [command]"C:\Program Files\Git\bin\git.exe" config --local http.https://github.com/.extraheader "AUTHORIZATION: basic ***"
+2026-10-20T22:16:16.8954917Z ##[endgroup]
+2026-10-20T22:16:16.8955622Z ##[group]Fetching the repository
+2026-10-20T22:16:16.8967561Z [command]"C:\Program Files\Git\bin\git.exe" -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=2 origin 9424e52d438cdd68dc2ee7778170155ecbde948d
+2026-10-20T22:16:21.2235755Z From https://github.com/Ginderlax/rea-research-lab
+2026-10-20T22:16:21.2236772Z  * branch            9424e52d438cdd68dc2ee7778170155ecbde948d -> FETCH_HEAD
+2026-10-20T22:16:21.2269710Z ##[endgroup]
+2026-10-20T22:16:21.2272209Z ##[group]Determining the checkout info
+2026-10-20T22:16:21.2273414Z ##[endgroup]
+2026-10-20T22:16:21.2287666Z [command]"C:\Program Files\Git\bin\git.exe" sparse-checkout disable
+2026-10-20T22:16:21.2738800Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all extensions.worktreeConfig
+2026-10-20T22:16:21.3023364Z ##[group]Checking out the ref
+2026-10-20T22:16:21.3032006Z [command]"C:\Program Files\Git\bin\git.exe" checkout --progress --force 9424e52d438cdd68dc2ee7778170155ecbde948d
+2026-10-20T22:16:22.5100771Z Updating files:  10% (2920/29165)
+2026-10-20T22:16:22.6047004Z Updating files:  11% (3209/29165)
+2026-10-20T22:16:22.6762024Z Updating files:  12% (3500/29165)
+2026-10-20T22:16:22.7432495Z Updating files:  13% (3792/29165)
+2026-10-20T22:16:22.8094925Z Updating files:  14% (4084/29165)
+2026-10-20T22:16:22.9108718Z Updating files:  15% (4375/29165)
+2026-10-20T22:16:23.0156646Z Updating files:  16% (4667/29165)
+2026-10-20T22:16:23.1093677Z Updating files:  17% (4959/29165)
+2026-10-20T22:16:23.1775226Z Updating files:  18% (5250/29165)
+2026-10-20T22:16:23.2521957Z Updating files:  19% (5542/29165)
+2026-10-20T22:16:23.3809095Z Updating files:  20% (5833/29165)
+2026-10-20T22:16:23.3887440Z Updating files:  21% (6125/29165)
+2026-10-20T22:16:23.4499900Z Updating files:  21% (6161/29165)
+2026-10-20T22:16:23.5277776Z Updating files:  22% (6417/29165)
+2026-10-20T22:16:23.6032158Z Updating files:  23% (6708/29165)
+2026-10-20T22:16:23.6674710Z Updating files:  24% (7000/29165)
+2026-10-20T22:16:23.7468931Z Updating files:  25% (7292/29165)
+2026-10-20T22:16:23.8436121Z Updating files:  26% (7583/29165)
+2026-10-20T22:16:23.9164078Z Updating files:  27% (7875/29165)
+2026-10-20T22:16:23.9884772Z Updating files:  28% (8167/29165)
+2026-10-20T22:16:24.0497248Z Updating files:  29% (8458/29165)
+2026-10-20T22:16:24.1251729Z Updating files:  30% (8750/29165)
+2026-10-20T22:16:24.1992926Z Updating files:  31% (9042/29165)
+2026-10-20T22:16:24.2724552Z Updating files:  32% (9333/29165)
+2026-10-20T22:16:24.3891933Z Updating files:  33% (9625/29165)
+2026-10-20T22:16:24.3903364Z Updating files:  33% (9911/29165)
+2026-10-20T22:16:24.4647534Z Updating files:  34% (9917/29165)
+2026-10-20T22:16:24.5296451Z Updating files:  35% (10208/29165)
+2026-10-20T22:16:24.5945443Z Updating files:  36% (10500/29165)
+2026-10-20T22:16:24.6550995Z Updating files:  37% (10792/29165)
+2026-10-20T22:16:24.7422940Z Updating files:  38% (11083/29165)
+2026-10-20T22:16:24.9606392Z Updating files:  39% (11375/29165)
+2026-10-20T22:16:25.0528122Z Updating files:  40% (11666/29165)
+2026-10-20T22:16:25.1303473Z Updating files:  41% (11958/29165)
+2026-10-20T22:16:25.1992447Z Updating files:  42% (12250/29165)
+2026-10-20T22:16:25.2750366Z Updating files:  43% (12541/29165)
+2026-10-20T22:16:25.3613029Z Updating files:  44% (12833/29165)
+2026-10-20T22:16:25.3894515Z Updating files:  45% (13125/29165)
+2026-10-20T22:16:25.4772871Z Updating files:  45% (13224/29165)
+2026-10-20T22:16:25.5485417Z Updating files:  46% (13416/29165)
+2026-10-20T22:16:25.6165004Z Updating files:  47% (13708/29165)
+2026-10-20T22:16:25.6753915Z Updating files:  48% (14000/29165)
+2026-10-20T22:16:25.7536807Z Updating files:  49% (14291/29165)
+2026-10-20T22:16:25.9301051Z Updating files:  50% (14583/29165)
+2026-10-20T22:16:26.0174600Z Updating files:  51% (14875/29165)
+2026-10-20T22:16:26.1471739Z Updating files:  52% (15166/29165)
+2026-10-20T22:16:26.2332602Z Updating files:  53% (15458/29165)
+2026-10-20T22:16:26.3163385Z Updating files:  54% (15750/29165)
+2026-10-20T22:16:26.3759975Z Updating files:  55% (16041/29165)
+2026-10-20T22:16:26.3905137Z Updating files:  56% (16333/29165)
+2026-10-20T22:16:26.4392376Z Updating files:  56% (16410/29165)
+2026-10-20T22:16:26.5182363Z Updating files:  57% (16625/29165)
+2026-10-20T22:16:26.6009732Z Updating files:  58% (16916/29165)
+2026-10-20T22:16:26.7426966Z Updating files:  59% (17208/29165)
+2026-10-20T22:16:26.7887165Z Updating files:  60% (17499/29165)
+2026-10-20T22:16:26.8318642Z Updating files:  61% (17791/29165)
+2026-10-20T22:16:26.8755706Z Updating files:  62% (18083/29165)
+2026-10-20T22:16:26.9558243Z Updating files:  63% (18374/29165)
+2026-10-20T22:16:27.0003334Z Updating files:  64% (18666/29165)
+2026-10-20T22:16:27.0514166Z Updating files:  65% (18958/29165)
+2026-10-20T22:16:27.1113697Z Updating files:  66% (19249/29165)
+2026-10-20T22:16:27.2766290Z Updating files:  67% (19541/29165)
+2026-10-20T22:16:27.3191402Z Updating files:  68% (19833/29165)
+2026-10-20T22:16:27.3612855Z Updating files:  69% (20124/29165)
+2026-10-20T22:16:27.3909500Z Updating files:  70% (20416/29165)
+2026-10-20T22:16:27.4357956Z Updating files:  70% (20570/29165)
+2026-10-20T22:16:27.4799802Z Updating files:  71% (20708/29165)
+2026-10-20T22:16:27.5246195Z Updating files:  72% (20999/29165)
+2026-10-20T22:16:27.5660508Z Updating files:  73% (21291/29165)
+2026-10-20T22:16:27.6253432Z Updating files:  74% (21583/29165)
+2026-10-20T22:16:27.6694912Z Updating files:  75% (21874/29165)
+2026-10-20T22:16:27.7341507Z Updating files:  76% (22166/29165)
+2026-10-20T22:16:27.8321766Z Updating files:  77% (22458/29165)
+2026-10-20T22:16:27.9090183Z Updating files:  78% (22749/29165)
+2026-10-20T22:16:27.9824239Z Updating files:  79% (23041/29165)
+2026-10-20T22:16:28.0558091Z Updating files:  80% (23332/29165)
+2026-10-20T22:16:28.1981937Z Updating files:  81% (23624/29165)
+2026-10-20T22:16:28.2801229Z Updating files:  82% (23916/29165)
+2026-10-20T22:16:28.3674393Z Updating files:  83% (24207/29165)
+2026-10-20T22:16:28.3908183Z Updating files:  84% (24499/29165)
+2026-10-20T22:16:28.4905484Z Updating files:  84% (24571/29165)
+2026-10-20T22:16:28.8355101Z Updating files:  85% (24791/29165)
+2026-10-20T22:16:28.9139285Z Updating files:  86% (25082/29165)
+2026-10-20T22:16:29.0292173Z Updating files:  87% (25374/29165)
+2026-10-20T22:16:29.2425595Z Updating files:  88% (25666/29165)
+2026-10-20T22:16:29.3807386Z Updating files:  89% (25957/29165)
+2026-10-20T22:16:29.4058327Z Updating files:  90% (26249/29165)
+2026-10-20T22:16:29.4667471Z Updating files:  90% (26338/29165)
+2026-10-20T22:16:29.5469103Z Updating files:  91% (26541/29165)
+2026-10-20T22:16:29.6769751Z Updating files:  92% (26832/29165)
+2026-10-20T22:16:29.7545901Z Updating files:  93% (27124/29165)
+2026-10-20T22:16:29.8496386Z Updating files:  94% (27416/29165)
+2026-10-20T22:16:30.1679050Z Updating files:  95% (27707/29165)
+2026-10-20T22:16:30.2623190Z Updating files:  96% (27999/29165)
+2026-10-20T22:16:30.3365546Z Updating files:  97% (28291/29165)
+2026-10-20T22:16:30.4060373Z Updating files:  98% (28582/29165)
+2026-10-20T22:16:30.4118172Z Updating files:  98% (28860/29165)
+2026-10-20T22:16:30.4840429Z Updating files:  99% (28874/29165)
+2026-10-20T22:16:30.4840898Z Updating files: 100% (29165/29165)
+2026-10-20T22:16:30.4841180Z Updating files: 100% (29165/29165), done.
+2026-10-20T22:16:30.5431969Z Note: switching to '9424e52d438cdd68dc2ee7778170155ecbde948d'.
+2026-10-20T22:16:30.5432495Z 
+2026-10-20T22:16:30.5433130Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-20T22:16:30.5433933Z changes and commit them, and you can discard any commits you make in this
+2026-10-20T22:16:30.5434669Z state without impacting any branches by switching back to a branch.
+2026-10-20T22:16:30.5434951Z 
+2026-10-20T22:16:30.5435141Z If you want to create a new branch to retain commits you create, you may
+2026-10-20T22:16:30.5435567Z do so (now or later) by using -c with the switch command. Example:
+2026-10-20T22:16:30.5435825Z 
+2026-10-20T22:16:30.5435939Z   git switch -c <new-branch-name>
+2026-10-20T22:16:30.5436123Z 
+2026-10-20T22:16:30.5436212Z Or undo this operation with:
+2026-10-20T22:16:30.5436369Z 
+2026-10-20T22:16:30.5436440Z   git switch -
+2026-10-20T22:16:30.5436556Z 
+2026-10-20T22:16:30.5436754Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-20T22:16:30.5437054Z 
+2026-10-20T22:16:30.5437325Z HEAD is now at 9424e52 Add reviewed WebDAV downloads with local recovery and hosted comparisons
+2026-10-20T22:16:30.5585231Z ##[endgroup]
+2026-10-20T22:16:30.5907521Z [command]"C:\Program Files\Git\bin\git.exe" log -1 --format=%H
+2026-10-20T22:16:30.6171817Z 9424e52d438cdd68dc2ee7778170155ecbde948d
+2026-10-20T22:16:30.6206464Z ##[group]Removing auth
+2026-10-20T22:16:30.6219199Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-20T22:16:30.6513253Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-20T22:16:31.1577073Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-20T22:16:31.1828687Z http.https://github.com/.extraheader
+2026-10-20T22:16:31.1865522Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+2026-10-20T22:16:31.2160132Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-20T22:16:31.7689289Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-20T22:16:31.7975347Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-20T22:16:32.2671041Z ##[endgroup]
+2026-10-20T22:16:32.3057445Z ##[group]Run actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+2026-10-20T22:16:32.3058112Z with:
+2026-10-20T22:16:32.3058399Z   node-version: 24.16.0
+2026-10-20T22:16:32.3058736Z   architecture: x64
+2026-10-20T22:16:32.3059036Z   check-latest: false
+2026-10-20T22:16:32.3059350Z   always-auth: false
+2026-10-20T22:16:32.3063463Z   token: ***
+2026-10-20T22:16:32.3063737Z env:
+2026-10-20T22:16:32.3063983Z   CI: true
+2026-10-20T22:16:32.3064368Z   REA_SYNC_PARENT: beab1f3668cf652e7663f3fd7216ac607506ac06
+2026-10-20T22:16:32.3065236Z   REA_SYNC_ADMISSION_SCRIPT_SHA256: a7ba8de04599b09aa756ee5bbaff7e11aa409a2543a006f6113b014fdf5d7105
+2026-10-20T22:16:32.3066287Z   REA_SYNC_MANIFEST_SHA256: b18c2fcc8d04d742693150cd5c2700573dae80721a0859507126dd038c49b264
+2026-10-20T22:16:32.3066984Z   REA_SYNC_ROLE: browser
+2026-10-20T22:16:32.3067312Z ##[endgroup]
+2026-10-20T22:16:32.4671742Z Attempting to download 24.16.0...
+2026-10-20T22:16:32.4837650Z (node:3184) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-20T22:16:32.4838982Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-20T22:16:32.9799049Z Acquiring 24.16.0 - x64 from https://github.com/actions/node-versions/releases/download/24.16.0-26265092718/node-24.16.0-win32-x64.7z
+2026-10-20T22:16:33.3511431Z Extracting ...
+2026-10-20T22:16:35.1261100Z Adding to the cache ...
+2026-10-20T22:16:41.7704645Z ##[group]Environment details
+2026-10-20T22:16:43.5778936Z node: v24.16.0
+2026-10-20T22:16:43.5779255Z npm: 11.13.0
+2026-10-20T22:16:43.5779440Z yarn: 1.22.22
+2026-10-20T22:16:43.5779910Z ##[endgroup]
+2026-10-20T22:16:43.6042383Z ##[group]Run $evidence=Join-Path $env:RUNNER_TEMP ('rea-sync-download-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+2026-10-20T22:16:43.6043395Z [36;1m$evidence=Join-Path $env:RUNNER_TEMP ('rea-sync-download-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)[0m
+2026-10-20T22:16:43.6044091Z [36;1mif(Test-Path -LiteralPath $evidence){throw 'Refuse earlier evidence.'}[0m
+2026-10-20T22:16:43.6044830Z [36;1m$cache=Join-Path $env:RUNNER_TEMP ('rea-sync-download-chromium-'+$env:REA_SYNC_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)[0m
+2026-10-20T22:16:43.6045580Z [36;1mif(Test-Path -LiteralPath $cache){throw 'Refuse earlier browser cache.'}[0m
+2026-10-20T22:16:43.6046818Z [36;1mNew-Item -ItemType Directory -Path $cache|Out-Null[0m
+2026-10-20T22:16:43.6047317Z [36;1m'REA_SYNC_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append[0m
+2026-10-20T22:16:43.6047987Z [36;1m'PLAYWRIGHT_BROWSERS_PATH='+$cache|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append[0m
+2026-10-20T22:16:43.6089130Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-20T22:16:43.6089465Z env:
+2026-10-20T22:16:43.6089631Z   CI: true
+2026-10-20T22:16:43.6089878Z   REA_SYNC_PARENT: beab1f3668cf652e7663f3fd7216ac607506ac06
+2026-10-20T22:16:43.6090407Z   REA_SYNC_ADMISSION_SCRIPT_SHA256: a7ba8de04599b09aa756ee5bbaff7e11aa409a2543a006f6113b014fdf5d7105
+2026-10-20T22:16:43.6091052Z   REA_SYNC_MANIFEST_SHA256: b18c2fcc8d04d742693150cd5c2700573dae80721a0859507126dd038c49b264
+2026-10-20T22:16:43.6091480Z   REA_SYNC_ROLE: browser
+2026-10-20T22:16:43.6091684Z ##[endgroup]
+2026-10-20T22:16:44.0707967Z ##[group]Run $gate='products/rea-studio/scripts/sync-webdav-download-source-admission.ps1'
+2026-10-20T22:16:44.0708809Z [36;1m$gate='products/rea-studio/scripts/sync-webdav-download-source-admission.ps1'[0m
+2026-10-20T22:16:44.0710036Z [36;1mif($env:REA_SYNC_ADMISSION_SCRIPT_SHA256 -cnotmatch '^[0-9a-f]{64}$' -or (Get-FileHash -LiteralPath $gate -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SYNC_ADMISSION_SCRIPT_SHA256){throw 'Reviewed admission hash required.'}[0m
+2026-10-20T22:16:44.0711451Z [36;1m& $gate -Phase before -Evidence $env:REA_SYNC_EVIDENCE -ExpectedManifestSHA256 $env:REA_SYNC_MANIFEST_SHA256 -ExpectedParent $env:REA_SYNC_PARENT[0m
+2026-10-20T22:16:44.0751522Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-20T22:16:44.0751872Z env:
+2026-10-20T22:16:44.0752040Z   CI: true
+2026-10-20T22:16:44.0752286Z   REA_SYNC_PARENT: beab1f3668cf652e7663f3fd7216ac607506ac06
+2026-10-20T22:16:44.0752856Z   REA_SYNC_ADMISSION_SCRIPT_SHA256: a7ba8de04599b09aa756ee5bbaff7e11aa409a2543a006f6113b014fdf5d7105
+2026-10-20T22:16:44.0753495Z   REA_SYNC_MANIFEST_SHA256: b18c2fcc8d04d742693150cd5c2700573dae80721a0859507126dd038c49b264
+2026-10-20T22:16:44.0753915Z   REA_SYNC_ROLE: browser
+2026-10-20T22:16:44.0754231Z   REA_SYNC_EVIDENCE: D:\a\_temp\rea-sync-download-browser-39506842840-1
+2026-10-20T22:16:44.0754742Z   PLAYWRIGHT_BROWSERS_PATH: D:\a\_temp\rea-sync-download-chromium-browser-39506842840-1
+2026-10-20T22:16:44.0755153Z ##[endgroup]
+2026-10-20T22:16:56.0266248Z Authenticated 107 source blobs, 1055446 raw bytes; phase before.
+2026-10-20T22:16:56.0932452Z ##[group]Run node products/rea-studio/scripts/verify-sync-webdav-download-cloud.mjs --role browser --evidence "$env:REA_SYNC_EVIDENCE"
+2026-10-20T22:16:56.0933509Z [36;1mnode products/rea-studio/scripts/verify-sync-webdav-download-cloud.mjs --role browser --evidence "$env:REA_SYNC_EVIDENCE"[0m
+2026-10-20T22:16:56.0973130Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-20T22:16:56.0973511Z env:
+2026-10-20T22:16:56.0973684Z   CI: true
+2026-10-20T22:16:56.0973937Z   REA_SYNC_PARENT: beab1f3668cf652e7663f3fd7216ac607506ac06
+2026-10-20T22:16:56.0974527Z   REA_SYNC_ADMISSION_SCRIPT_SHA256: a7ba8de04599b09aa756ee5bbaff7e11aa409a2543a006f6113b014fdf5d7105
+2026-10-20T22:16:56.0975155Z   REA_SYNC_MANIFEST_SHA256: b18c2fcc8d04d742693150cd5c2700573dae80721a0859507126dd038c49b264
+2026-10-20T22:16:56.0975583Z   REA_SYNC_ROLE: browser
+2026-10-20T22:16:56.0975906Z   REA_SYNC_EVIDENCE: D:\a\_temp\rea-sync-download-browser-39506842840-1
+2026-10-20T22:16:56.0976455Z   PLAYWRIGHT_BROWSERS_PATH: D:\a\_temp\rea-sync-download-chromium-browser-39506842840-1
+2026-10-20T22:16:56.0976871Z ##[endgroup]
+2026-10-20T22:16:57.7964010Z 
+2026-10-20T22:16:57.7965140Z added 3 packages in 984ms
+2026-10-20T22:16:59.7404819Z Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248)[2m from https://cdn.playwright.dev/builds/cft/156.0.8078.4/win64/chrome-win64.zip[22m
+2026-10-20T22:17:00.1806511Z |                                                                                |   0% of 197.5 MiB
+2026-10-20T22:17:00.4483058Z |■■■■■■■■                                                                        |  10% of 197.5 MiB
+2026-10-20T22:17:00.6147611Z |■■■■■■■■■■■■■■■■                                                                |  20% of 197.5 MiB
+2026-10-20T22:17:00.7991192Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 197.5 MiB
+2026-10-20T22:17:01.0064067Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 197.5 MiB
+2026-10-20T22:17:01.2301616Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 197.5 MiB
+2026-10-20T22:17:01.4743616Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 197.5 MiB
+2026-10-20T22:17:01.7362300Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 197.5 MiB
+2026-10-20T22:17:01.9703993Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 197.5 MiB
+2026-10-20T22:17:02.1706653Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 197.5 MiB
+2026-10-20T22:17:02.3645695Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 197.5 MiB
+2026-10-20T22:17:07.8534915Z Chrome for Testing 156.0.8078.4 (playwright chromium v1248) downloaded to D:\a\_temp\rea-sync-download-chromium-browser-39506842840-1\chromium-1248
+2026-10-20T22:17:07.8541377Z Downloading FFmpeg (playwright ffmpeg v1013)[2m from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-win64.zip[22m
+2026-10-20T22:17:08.2526122Z |                                                                                |   0% of 1.6 MiB
+2026-10-20T22:17:08.2575207Z |■■■■■■■■                                                                        |  10% of 1.6 MiB
+2026-10-20T22:17:08.2599816Z |■■■■■■■■■■■■■■■■                                                                |  20% of 1.6 MiB
+2026-10-20T22:17:08.2623335Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 1.6 MiB
+2026-10-20T22:17:08.2643681Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 1.6 MiB
+2026-10-20T22:17:08.2668314Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 1.6 MiB
+2026-10-20T22:17:08.2696674Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 1.6 MiB
+2026-10-20T22:17:08.2719176Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 1.6 MiB
+2026-10-20T22:17:08.2742246Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 1.6 MiB
+2026-10-20T22:17:08.2760991Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 1.6 MiB
+2026-10-20T22:17:08.2777625Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 1.6 MiB
+2026-10-20T22:17:08.3492020Z FFmpeg (playwright ffmpeg v1013) downloaded to D:\a\_temp\rea-sync-download-chromium-browser-39506842840-1\ffmpeg-1013
+2026-10-20T22:17:08.3497580Z Downloading Winldd (playwright winldd v1007)[2m from https://cdn.playwright.dev/dbazure/download/playwright/builds/winldd/1007/winldd-win64.zip[22m
+2026-10-20T22:17:08.7384055Z |                                                                                |   1% of 0.1 MiB
+2026-10-20T22:17:08.7395962Z |■■■■■■■■                                                                        |  10% of 0.1 MiB
+2026-10-20T22:17:08.7420764Z |■■■■■■■■■■■■■■■■                                                                |  20% of 0.1 MiB
+2026-10-20T22:17:08.7428174Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  31% of 0.1 MiB
+2026-10-20T22:17:08.7434555Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 0.1 MiB
+2026-10-20T22:17:08.7438898Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  61% of 0.1 MiB
+2026-10-20T22:17:08.7440484Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  74% of 0.1 MiB
+2026-10-20T22:17:08.7446520Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  87% of 0.1 MiB
+2026-10-20T22:17:08.7448960Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  99% of 0.1 MiB
+2026-10-20T22:17:08.7450491Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 0.1 MiB
+2026-10-20T22:17:08.7711008Z Winldd (playwright winldd v1007) downloaded to D:\a\_temp\rea-sync-download-chromium-browser-39506842840-1\winldd-1007
+2026-10-20T22:17:09.3011469Z {"phase":"acquire","status":"acquired","sourceCommit":"9424e52d438cdd68dc2ee7778170155ecbde948d","summary":null,"sourceStable":null}
+2026-10-20T22:17:10.2440585Z 
+2026-10-20T22:17:10.2441429Z Running 5 tests using 1 worker
+2026-10-20T22:17:10.2441955Z 
+2026-10-20T22:17:10.7114692Z [1/5] sync-webdav-download.spec.mjs:49:1 › visible reviewed download preserves exact bytes, local extras, recovery and restart status
+2026-10-20T22:17:14.4168739Z [2/5] sync-webdav-download.spec.mjs:54:1 › full visible preview export contains every path beyond the one hundred row display
+2026-10-20T22:17:20.4678613Z [3/5] sync-webdav-download.spec.mjs:58:1 › missing approval and wrong credentials clear download secrets and preserve local files
+2026-10-20T22:17:21.2163438Z [4/5] sync-webdav-download.spec.mjs:62:1 › held genuine preview prevents a second request and rejects settings edited while awaiting it
+2026-10-20T22:17:21.9354283Z [5/5] sync-webdav-download.spec.mjs:66:1 › remote and local changes after preview receive genuine refusal without overwriting local bytes
+2026-10-20T22:17:23.0632267Z   5 passed (13.1s)
+2026-10-20T22:17:23.1869119Z ##[group]Run $gate='products/rea-studio/scripts/sync-webdav-download-source-admission.ps1'
+2026-10-20T22:17:23.1870123Z [36;1m$gate='products/rea-studio/scripts/sync-webdav-download-source-admission.ps1'[0m
+2026-10-20T22:17:23.1871043Z [36;1mif((Get-FileHash -LiteralPath $gate -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SYNC_ADMISSION_SCRIPT_SHA256){throw 'Admission changed.'}[0m
+2026-10-20T22:17:23.1872179Z [36;1m& $gate -Phase after -Evidence $env:REA_SYNC_EVIDENCE -ExpectedManifestSHA256 $env:REA_SYNC_MANIFEST_SHA256 -ExpectedParent $env:REA_SYNC_PARENT[0m
+2026-10-20T22:17:23.1915472Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-20T22:17:23.1915810Z env:
+2026-10-20T22:17:23.1915965Z   CI: true
+2026-10-20T22:17:23.1916203Z   REA_SYNC_PARENT: beab1f3668cf652e7663f3fd7216ac607506ac06
+2026-10-20T22:17:23.1916725Z   REA_SYNC_ADMISSION_SCRIPT_SHA256: a7ba8de04599b09aa756ee5bbaff7e11aa409a2543a006f6113b014fdf5d7105
+2026-10-20T22:17:23.1917384Z   REA_SYNC_MANIFEST_SHA256: b18c2fcc8d04d742693150cd5c2700573dae80721a0859507126dd038c49b264
+2026-10-20T22:17:23.1917819Z   REA_SYNC_ROLE: browser
+2026-10-20T22:17:23.1918132Z   REA_SYNC_EVIDENCE: D:\a\_temp\rea-sync-download-browser-39506842840-1
+2026-10-20T22:17:23.1918643Z   PLAYWRIGHT_BROWSERS_PATH: D:\a\_temp\rea-sync-download-chromium-browser-39506842840-1
+2026-10-20T22:17:23.1919060Z ##[endgroup]
+2026-10-20T22:17:34.6226992Z Authenticated 107 source blobs, 1055446 raw bytes; phase after.
+2026-10-20T22:17:34.6868832Z ##[group]Run $evidence=$env:REA_SYNC_EVIDENCE
+2026-10-20T22:17:34.6869297Z [36;1m$evidence=$env:REA_SYNC_EVIDENCE[0m
+2026-10-20T22:17:34.6869945Z [36;1mif(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-sync-download-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}[0m
+2026-10-20T22:17:34.6870655Z [36;1mNew-Item -ItemType Directory -Path $evidence -Force|Out-Null[0m
+2026-10-20T22:17:34.6872688Z [36;1m@{schema='rea-sync-webdav-download-workflow/v1';role='browser';sourceCommit=$env:GITHUB_SHA;sourceParent=$env:REA_SYNC_PARENT;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;checkoutOutcome='success';sourceBeforeOutcome='success';verificationOutcome='success';sourceAfterOutcome='success';sourceOverlay=$false;fullSuite=$false;historicalReceiptsRebound=$false;fullParity=$false;superiority=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8[0m
+2026-10-20T22:17:34.6874965Z [36;1m$files=@(Get-ChildItem -LiteralPath $evidence -Recurse -File);$bytes=($files|Measure-Object -Property Length -Sum).Sum[0m
+2026-10-20T22:17:34.6875782Z [36;1m$bounded=$files.Count -le 10000 -and $bytes -le 128*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0[0m
+2026-10-20T22:17:34.6876409Z [36;1mAdd-Type -AssemblyName System.IO.Compression.FileSystem[0m
+2026-10-20T22:17:34.6877047Z [36;1m$archive=Join-Path $env:RUNNER_TEMP ('rea-sync-download-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')[0m
+2026-10-20T22:17:34.6877933Z [36;1mif($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}[0m
+2026-10-20T22:17:34.6878662Z [36;1m$zipBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}[0m
+2026-10-20T22:17:34.6879104Z [36;1mif(-not $bounded -or $zipBytes -gt 15*1024*1024){[0m
+2026-10-20T22:17:34.6879921Z [36;1m  $fallback=Join-Path $env:RUNNER_TEMP ('rea-sync-download-browser-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT);New-Item -ItemType Directory -Path $fallback|Out-Null[0m
+2026-10-20T22:17:34.6881134Z [36;1m  foreach($f in Get-ChildItem -LiteralPath $evidence -File){if($f.Length -le 512*1024){Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $fallback $f.Name)}}[0m
+2026-10-20T22:17:34.6883110Z [36;1m  @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$bytes;zipBytes=$zipBytes;limitBytes=15*1024*1024;reason='Incomplete diagnostics only; no portable acceptance.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8[0m
+2026-10-20T22:17:34.6886153Z [36;1m  $archive=Join-Path $env:RUNNER_TEMP ('rea-sync-download-browser-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip');[IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)[0m
+2026-10-20T22:17:34.6887750Z [36;1m  if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append};throw 'Complete evidence unavailable; fallback is not acceptance.'[0m
+2026-10-20T22:17:34.6888594Z [36;1m}[0m
+2026-10-20T22:17:34.6888939Z [36;1m'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append[0m
+2026-10-20T22:17:34.6929074Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+2026-10-20T22:17:34.6929419Z env:
+2026-10-20T22:17:34.6929578Z   CI: true
+2026-10-20T22:17:34.6929811Z   REA_SYNC_PARENT: beab1f3668cf652e7663f3fd7216ac607506ac06
+2026-10-20T22:17:34.6930338Z   REA_SYNC_ADMISSION_SCRIPT_SHA256: a7ba8de04599b09aa756ee5bbaff7e11aa409a2543a006f6113b014fdf5d7105
+2026-10-20T22:17:34.6930975Z   REA_SYNC_MANIFEST_SHA256: b18c2fcc8d04d742693150cd5c2700573dae80721a0859507126dd038c49b264
+2026-10-20T22:17:34.6933774Z   REA_SYNC_ROLE: browser
+2026-10-20T22:17:34.6934199Z   REA_SYNC_EVIDENCE: D:\a\_temp\rea-sync-download-browser-39506842840-1
+2026-10-20T22:17:34.6934738Z   PLAYWRIGHT_BROWSERS_PATH: D:\a\_temp\rea-sync-download-chromium-browser-39506842840-1
+2026-10-20T22:17:34.6935158Z ##[endgroup]
+2026-10-20T22:17:35.2698930Z ##[group]Run actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+2026-10-20T22:17:35.2699385Z with:
+2026-10-20T22:17:35.2699625Z   name: sync-webdav-download-browser-39506842840-1
+2026-10-20T22:17:35.2700013Z   path: D:\a\_temp\rea-sync-download-browser-39506842840-1.zip
+2026-10-20T22:17:35.2700373Z   if-no-files-found: error
+2026-10-20T22:17:35.2700588Z   compression-level: 0
+2026-10-20T22:17:35.2700792Z   retention-days: 1
+2026-10-20T22:17:35.2700972Z   overwrite: false
+2026-10-20T22:17:35.2701169Z   include-hidden-files: false
+2026-10-20T22:17:35.2701382Z env:
+2026-10-20T22:17:35.2701535Z   CI: true
+2026-10-20T22:17:35.2701759Z   REA_SYNC_PARENT: beab1f3668cf652e7663f3fd7216ac607506ac06
+2026-10-20T22:17:35.2702278Z   REA_SYNC_ADMISSION_SCRIPT_SHA256: a7ba8de04599b09aa756ee5bbaff7e11aa409a2543a006f6113b014fdf5d7105
+2026-10-20T22:17:35.2702902Z   REA_SYNC_MANIFEST_SHA256: b18c2fcc8d04d742693150cd5c2700573dae80721a0859507126dd038c49b264
+2026-10-20T22:17:35.2703350Z   REA_SYNC_ROLE: browser
+2026-10-20T22:17:35.2703662Z   REA_SYNC_EVIDENCE: D:\a\_temp\rea-sync-download-browser-39506842840-1
+2026-10-20T22:17:35.2704165Z   PLAYWRIGHT_BROWSERS_PATH: D:\a\_temp\rea-sync-download-chromium-browser-39506842840-1
+2026-10-20T22:17:35.2704577Z ##[endgroup]
+2026-10-20T22:17:35.4699931Z (node:8028) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-20T22:17:35.4701434Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-20T22:17:35.4758359Z With the provided path, there will be 1 file uploaded
+2026-10-20T22:17:35.4763926Z Artifact name is valid!
+2026-10-20T22:17:35.4766889Z Root directory input is valid!
+2026-10-20T22:17:35.6803334Z Beginning upload of artifact content to blob storage
+2026-10-20T22:17:35.7073183Z (node:8028) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-10-20T22:17:35.7837084Z Uploaded bytes 1040435
+2026-10-20T22:17:35.7977813Z Finished uploading artifact content to blob storage!
+2026-10-20T22:17:35.7979582Z SHA256 digest of uploaded artifact zip is ee2dae2377f418b2ec33c91054a18108d8c364e8bf23b9c6c198eb70ad838fb5
+2026-10-20T22:17:35.7981807Z Finalizing artifact upload
+2026-10-20T22:17:36.0261228Z Artifact sync-webdav-download-browser-39506842840-1.zip successfully finalized. Artifact ID 12303896737
+2026-10-20T22:17:36.0263259Z Artifact sync-webdav-download-browser-39506842840-1 has been successfully uploaded! Final size is 1040435 bytes. Artifact ID is 12303896737
+2026-10-20T22:17:36.0273200Z Artifact download URL: https://github.com/Ginderlax/rea-research-lab/actions/runs/39506842840/artifacts/12303896737
+2026-10-20T22:17:36.0554987Z Post job cleanup.
+2026-10-20T22:17:36.1969849Z (node:6432) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-20T22:17:36.1971026Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-20T22:17:36.2238319Z Post job cleanup.
+2026-10-20T22:17:36.4390932Z [command]"C:\Program Files\Git\bin\git.exe" version
+2026-10-20T22:17:36.4657052Z git version 2.56.0.windows.2
+2026-10-20T22:17:36.4707698Z Copying 'C:\Users\runneradmin\.gitconfig' to 'D:\a\_temp\1272de84-b140-4586-9f61-ebcd3f881f5a\.gitconfig'
+2026-10-20T22:17:36.4728237Z Temporarily overriding HOME='D:\a\_temp\1272de84-b140-4586-9f61-ebcd3f881f5a' before making global git config changes
+2026-10-20T22:17:36.4729707Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-20T22:17:36.4740347Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\rea-research-lab\rea-research-lab
+2026-10-20T22:17:36.5037203Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+2026-10-20T22:17:36.5339530Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+2026-10-20T22:17:37.0522434Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-20T22:17:37.0819430Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+2026-10-20T22:17:37.5596589Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-20T22:17:37.5937322Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "git config --local --show-origin --name-only --get-regexp remote.origin.url"
+2026-10-20T22:17:38.0788892Z Cleaning up orphan processes
+2026-10-20T22:17:38.1373081Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@11d5960a326750d5838078e36cf38b85af677262, actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020, actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

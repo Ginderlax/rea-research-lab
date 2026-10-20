@@ -2230,8 +2230,15 @@
             "restic.030_preparing_a_new_repo"
           ],
           "current_app_status": "implemented-local-subset",
-          "current_app_scope": "Native password-derived encrypted key/data/metadata records with independent cipher/MAC vectors and original check/restore. Full key management and security assessment remain open.",
-          "evidence": [],
+          "current_app_scope": "Native password-derived encrypted key/data/metadata records with historical independent cipher/MAC vectors and original check/restore. A source-authored bounded native key list/add/remove/passwd candidate adds explicit default-false access/new-key empty-password flags, persisted same-master/config verification before old-key removal, opaque-byte mutation inventories, malformed-entry display warnings and completed-deletion disclosure. Its focused regression sources are unexecuted; hosted Windows 2022/Node 24.16.0 checks, pinned original key-command comparisons, real-browser verification, full key-management acceptance and security assessment remain open. Historical encryption receipts are not rebound to this candidate.",
+          "evidence": [
+            "products/rea-studio/apps/backup/restic.mjs",
+            "products/rea-studio/apps/backup/restic-crypto.mjs",
+            "products/rea-studio/apps/backup/native-key.test.mjs",
+            "products/rea-studio/apps/backup/native-key-failure.test.mjs",
+            "products/rea-studio/apps/backup/native-key.http.test.mjs",
+            "products/rea-studio/apps/backup/native-key.ui.test.mjs"
+          ],
           "acceptance_checks": [
             "Match authenticated repository encryption, key lifecycle, key commands and wrong-password handling."
           ],

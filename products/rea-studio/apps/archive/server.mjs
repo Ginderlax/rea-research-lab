@@ -8,6 +8,7 @@ import { makeGzip, readGzip } from './gzip.mjs';
 import { isZstd, makeZstd, readZstd } from './zstd.mjs';
 import { read7zWithInfo, write7z } from './sevenzip.mjs';
 import { OperationBudget } from './operation-budget.mjs';
+import { validateZipPassword } from './zip-aes.mjs';
 import { readSourceMetadata } from './source-metadata.mjs';
 export { makeZip, readZip, crc32 } from './zip.mjs';
 async function safe(workspace, relative) {
@@ -65,7 +66,7 @@ function readArchive(bytes, relative, includeData = false, budget, password) {
       ...(includeData ? { data } : {}) }));
     return { format: 'sevenzip', entries, headerEncrypted: decoded.headerEncrypted };
   }
-  if (bytes.length >= 4 && [0x04034b50, 0x06054b50].includes(bytes.readUInt32LE(0))) return { format: 'zip', entries: readZip(bytes, includeData) };
+  if (bytes.length >= 4 && [0x04034b50, 0x06054b50].includes(bytes.readUInt32LE(0))) return { format: 'zip', entries: readZip(bytes, includeData, {password,operationBudget:budget}), headerEncrypted:false };
   if (bytes[0] === 31 && bytes[1] === 139) {
     const tar = /\.(?:tgz|tar\.gz)$/i.test(relative), inflated = readGzip(bytes, tar ? MAX_CONTAINER : MAX_FILE);
     if (tar) return { format: 'tgz', entries: readTar(inflated.data, includeData), members: inflated.members };
@@ -90,9 +91,17 @@ async function run({ action, input = {}, workspace }, sourceMetadata) {
   }
   if (action === 'create') {
     const format = input.format ?? 'zip', extensions = { zip: /\.zip$/i, sevenzip: /\.7z$/i, tar: /\.tar$/i, tgz: /\.(?:tar\.gz|tgz)$/i, gzip: /\.gz$/i, zstd: /\.zst$/i, tzst: /\.(?:tar\.zst|tzst)$/i };
-    if (format !== 'sevenzip' && (input.password !== undefined || input.encryptHeaders === true)) throw new Error('Password encryption is supported only for7Z.');
-    if (input.password !== undefined && (typeof input.password !== 'string' || input.password.length < 1 || input.password.length > 128)) throw new Error('7Z writer password must contain1–128 UTF16 code units.');
-    if (input.encryptHeaders === true && input.password === undefined) throw new Error('7Z header encryption requires a password.');
+    if(format==='zip'){
+      if(input.encryption===undefined&&input.password!==undefined)throw new Error('Choose AES-256 ZIP encryption before supplying a ZIP password.');
+      if(input.encryption!==undefined&&input.encryption!=='aes256')throw new Error('Choose AES-256 ZIP encryption.');
+      if(input.encryptHeaders===true)throw new Error('ZIP AES leaves file names and archive metadata visible; header encryption is unsupported.');
+      if(input.encryption==='aes256'){const password=validateZipPassword(input.password);password.fill(0);if(input.zip64===true||input.dataDescriptor===true||!['store','deflate'].includes(input.compression??'deflate'))throw new Error('ZIP AES supports classic stored or DEFLATE entries without ZIP64 or data descriptors.');}
+    }else{
+      if(input.encryption!==undefined)throw new Error('The explicit AES-256 encryption method is supported only for ZIP.');
+      if(format!=='sevenzip'&&(input.password!==undefined||input.encryptHeaders===true))throw new Error('Password encryption is supported for7Z or explicitly selected AES-256 ZIP.');
+      if(input.password!==undefined&&(typeof input.password!=='string'||input.password.length<1||input.password.length>128))throw new Error('7Z writer password must contain1–128 UTF16 code units.');
+      if(input.encryptHeaders===true&&input.password===undefined)throw new Error('7Z header encryption requires a password.');
+    }
     if (!Object.hasOwn(extensions, format) || !extensions[format].test(input.output ?? '') || format === 'gzip' && /\.(?:tgz|tar\.gz)$/i.test(input.output) || format === 'zstd' && /\.(?:tzst|tar\.zst)$/i.test(input.output)) throw new Error('Choose ZIP (.zip), 7Z (.7z), TAR (.tar), TAR.GZ (.tar.gz/.tgz), GZIP (.gz), Zstandard (.zst), or TAR.ZST (.tar.zst/.tzst) with its matching output extension.');
     const location = await safe(workspace, input.output); let entries;
     if (['gzip','zstd'].includes(format)) {
@@ -106,7 +115,7 @@ async function run({ action, input = {}, workspace }, sourceMetadata) {
     } else entries = await collect(workspace, input.source, budget, sourceMetadata);
     budget.check();
     let archive;
-    if (format === 'zip') archive = makeZip(entries, input.compression ?? 'deflate', { zip64: input.zip64 === true, level: input.level, comment: input.comment });
+    if (format === 'zip') archive = makeZip(entries, input.compression ?? 'deflate', { zip64: input.zip64 === true, level: input.level, comment: input.comment, encryption:input.encryption, password:input.password, operationBudget:budget });
     else if (format === 'sevenzip') {
       const compression = input.compression ?? 'lzma2';
       if (!['store', 'deflate', 'lzma', 'lzma2'].includes(compression)) throw new Error('7Z supports LZMA2, LZMA, DEFLATE or uncompressed store.');
@@ -121,7 +130,7 @@ async function run({ action, input = {}, workspace }, sourceMetadata) {
     else if (format === 'zstd') archive = makeZstd(entries[0].data, { level: input.level });
     else archive = makeGzip(entries[0].data, { level: input.level, name: /[^\x01-\xff]/.test(entries[0].name) ? undefined : entries[0].name, modifiedAt: entries[0].modifiedAt, comment: input.comment });
     const verified = readArchive(archive, input.output, false, budget, input.password); budget.check(); await fs.mkdir(path.dirname(location), { recursive: true }); budget.check(); await fs.writeFile(location, archive, { flag: 'wx' });
-    return { path: input.output, format, entries: entries.length, bytes: archive.length, originalBytes: entries.reduce((n,e) => n + e.data.length, 0), ...(format === 'sevenzip' ? { encrypted: verified.headerEncrypted || verified.entries.some(e => e.encrypted), headerEncrypted: verified.headerEncrypted } : {}) };
+    return { path: input.output, format, entries: entries.length, bytes: archive.length, originalBytes: entries.reduce((n,e) => n + e.data.length, 0), ...(['sevenzip','zip'].includes(format) ? { encrypted: verified.headerEncrypted || verified.entries.some(e => e.encrypted), headerEncrypted: verified.headerEncrypted } : {}) };
   }
   if (action === 'list' || action === 'test') {
     const result = readArchive(await load(workspace, input.path), input.path, false, budget, input.password); budget.check();

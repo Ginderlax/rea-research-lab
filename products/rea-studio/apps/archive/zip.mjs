@@ -1,5 +1,7 @@
 import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { makeZstd, readZstd } from './zstd.mjs';
+import {ZIP_AES,validateZipPassword,encryptWinZipAES,decryptWinZipAES} from './zip-aes.mjs';
+import {operationBudget,optionalOperationBudget} from './operation-budget.mjs';
 
 export const MAX_TOTAL = 64 * 1024 * 1024, MAX_FILE = 16 * 1024 * 1024, MAX_ENTRIES = 10000;
 const table = Array.from({ length: 256 }, (_, n) => { let c = n; for (let i = 0; i < 8; i++) c = c & 1 ? 0xedb88320 ^ c >>> 1 : c >>> 1; return c >>> 0; });
@@ -60,32 +62,49 @@ function entryName(encoded, flags, fields) {
   return [...encoded].map(value => value < 128 ? String.fromCharCode(value) : CP437_HIGH[value - 128]).join('');
 }
 export function makeZip(entries, compression = 'deflate', options = {}) {
+  const encrypted=options.encryption!==undefined;if(encrypted&&options.encryption!=='aes256')throw new Error('Choose AES-256 ZIP encryption.');
+  if(!encrypted&&options.password!==undefined)throw new Error('Choose AES-256 ZIP encryption before supplying a ZIP password.');
+  if(encrypted){const password=validateZipPassword(options.password);password.fill(0);if(options.zip64===true||options.dataDescriptor===true||!['store','deflate'].includes(compression))throw new Error('ZIP AES supports classic stored or DEFLATE entries without ZIP64 or data descriptors.');}
+  const budget=encrypted?operationBudget(options):optionalOperationBudget(options);
   if (!['store','deflate','zstd'].includes(compression)) throw new Error('Choose store, deflate or zstd compression.');
   if (!Array.isArray(entries) || entries.length > MAX_ENTRIES) throw new Error('Archive has too many entries.');
   if (options.level !== undefined && (!Number.isInteger(options.level) || options.level < (compression === 'zstd' ? 1 : 0) || options.level > (compression === 'zstd' ? 19 : 9))) throw new Error(compression === 'zstd' ? 'Choose a Zstandard compression level from one to nineteen.' : 'Choose a compression level from zero to nine.');
   const comment = Buffer.from(options.comment ?? '', 'utf8'); if (comment.length > 65535) throw new Error('ZIP comment exceeds 65535 bytes.');
   collisions(entries); const zip64 = options.zip64 === true, descriptor = options.dataDescriptor === true;
-  const locals = [], centrals = []; let offset = 0, total = 0; const seen = new Set();
+  const locals = [], centrals = []; let offset = 0, total = 0, runningCentralSize=0; const seen = new Set();
   for (const item of entries) {
+    budget?.check(); budget?.work(1);
     const normalized = clean(item.name), identity = normalized.toLowerCase(); if (seen.has(identity)) throw new Error('Duplicate archive path.'); seen.add(identity);
     const directory = !!item.directory, name = Buffer.from(normalized + (directory ? '/' : ''), 'utf8'), data = directory ? Buffer.alloc(0) : Buffer.from(item.data);
+    let compressed; try {
     total += data.length; if (data.length > MAX_FILE || total > MAX_TOTAL || name.length > 65535) throw new Error('Archive input exceeds the local size limit.');
-    const method = directory || compression === 'store' ? 0 : compression === 'zstd' ? 93 : 8, compressed = method === 93 ? makeZstd(data, { level: options.level }) : method === 8 ? deflateRawSync(data, { level: options.level ?? 6 }) : data, checksum = crc32(data);
-    const stamp = timestampFields(item), localExtra = Buffer.concat([zip64 ? zip64Extra([descriptor ? 0 : data.length, descriptor ? 0 : compressed.length]) : Buffer.alloc(0), stamp.data]);
-    const centralExtra = Buffer.concat([zip64 ? zip64Extra([data.length, compressed.length, offset]) : Buffer.alloc(0), stamp.data]), version = method === 93 ? 63 : zip64 ? 45 : 20, flags = 0x800 | (descriptor ? 8 : 0);
-    const local = Buffer.alloc(30); local.writeUInt32LE(0x04034b50); local.writeUInt16LE(version, 4); local.writeUInt16LE(flags, 6); local.writeUInt16LE(method, 8); local.writeUInt16LE(stamp.dosTime, 10); local.writeUInt16LE(stamp.dosDate, 12);
-    local.writeUInt32LE(descriptor ? 0 : checksum, 14); local.writeUInt32LE(zip64 ? 0xffffffff : descriptor ? 0 : compressed.length, 18); local.writeUInt32LE(zip64 ? 0xffffffff : descriptor ? 0 : data.length, 22); local.writeUInt16LE(name.length, 26); local.writeUInt16LE(localExtra.length, 28);
+    budget?.work(data.length); const method = directory || compression === 'store' ? 0 : compression === 'zstd' ? 93 : 8; compressed = method === 93 ? makeZstd(data, { level: options.level }) : method === 8 ? deflateRawSync(data, { level: options.level ?? 6 }) : data; const checksum = crc32(data); budget?.check();
+    const aes=encrypted&&!directory,packed=aes?encryptWinZipAES(compressed,{password:options.password,operationBudget:budget}):compressed,actualChecksum=aes?0:checksum,wireMethod=aes?ZIP_AES.method:method;
+    const aesExtra=aes?extra(ZIP_AES.extraID,Buffer.from([2,0,0x41,0x45,3,method,0])):Buffer.alloc(0);
+    const stamp = timestampFields(item), localExtra = Buffer.concat([zip64 ? zip64Extra([descriptor ? 0 : data.length, descriptor ? 0 : packed.length]) : Buffer.alloc(0), stamp.data,aesExtra]);
+    const centralExtra = Buffer.concat([zip64 ? zip64Extra([data.length, packed.length, offset]) : Buffer.alloc(0), stamp.data,aesExtra]), version = aes ? 51 : method === 93 ? 63 : zip64 ? 45 : 20, flags = 0x800 | (descriptor ? 8 : 0) | (aes ? 1 : 0);
+    const local = Buffer.alloc(30); local.writeUInt32LE(0x04034b50); local.writeUInt16LE(version, 4); local.writeUInt16LE(flags, 6); local.writeUInt16LE(wireMethod, 8); local.writeUInt16LE(stamp.dosTime, 10); local.writeUInt16LE(stamp.dosDate, 12);
+    local.writeUInt32LE(descriptor ? 0 : actualChecksum, 14); local.writeUInt32LE(zip64 ? 0xffffffff : descriptor ? 0 : packed.length, 18); local.writeUInt32LE(zip64 ? 0xffffffff : descriptor ? 0 : data.length, 22); local.writeUInt16LE(name.length, 26); local.writeUInt16LE(localExtra.length, 28);
     const trailer = descriptor ? Buffer.alloc(zip64 ? 24 : 16) : Buffer.alloc(0); if (descriptor) { trailer.writeUInt32LE(0x08074b50); trailer.writeUInt32LE(checksum, 4); if (zip64) { trailer.writeBigUInt64LE(BigInt(compressed.length), 8); trailer.writeBigUInt64LE(BigInt(data.length), 16); } else { trailer.writeUInt32LE(compressed.length, 8); trailer.writeUInt32LE(data.length, 12); } }
-    const central = Buffer.alloc(46); central.writeUInt32LE(0x02014b50); central.writeUInt16LE(version, 4); central.writeUInt16LE(version, 6); central.writeUInt16LE(flags, 8); central.writeUInt16LE(method, 10); central.writeUInt16LE(stamp.dosTime, 12); central.writeUInt16LE(stamp.dosDate, 14); central.writeUInt32LE(checksum, 16);
-    central.writeUInt32LE(zip64 ? 0xffffffff : compressed.length, 20); central.writeUInt32LE(zip64 ? 0xffffffff : data.length, 24); central.writeUInt16LE(name.length, 28); central.writeUInt16LE(centralExtra.length, 30); central.writeUInt32LE(directory ? 0x10 : 0, 38); central.writeUInt32LE(zip64 ? 0xffffffff : offset, 42);
-    locals.push(local, name, localExtra, compressed, trailer); centrals.push(central, name, centralExtra); offset += local.length + name.length + localExtra.length + compressed.length + trailer.length;
+    const central = Buffer.alloc(46); central.writeUInt32LE(0x02014b50); central.writeUInt16LE(version, 4); central.writeUInt16LE(version, 6); central.writeUInt16LE(flags, 8); central.writeUInt16LE(wireMethod, 10); central.writeUInt16LE(stamp.dosTime, 12); central.writeUInt16LE(stamp.dosDate, 14); central.writeUInt32LE(actualChecksum, 16);
+    central.writeUInt32LE(zip64 ? 0xffffffff : packed.length, 20); central.writeUInt32LE(zip64 ? 0xffffffff : data.length, 24); central.writeUInt16LE(name.length, 28); central.writeUInt16LE(centralExtra.length, 30); central.writeUInt32LE(directory ? 0x10 : 0, 38); central.writeUInt32LE(zip64 ? 0xffffffff : offset, 42);
+    locals.push(local, name, localExtra, packed, trailer); centrals.push(central, name, centralExtra); offset += local.length + name.length + localExtra.length + packed.length + trailer.length;
+    runningCentralSize+=central.length+name.length+centralExtra.length;
+    budget?.check(); if(encrypted&&offset+runningCentralSize+22+comment.length>MAX_TOTAL+4*1024*1024)throw new Error('Encrypted ZIP exceeds the local input size limit.');
+    } finally { if(encrypted){if(compressed&&compressed!==data)compressed.fill(0);data.fill(0);} }
   }
   const centralSize = centrals.reduce((sum, b) => sum + b.length, 0), ends = [];
   if (zip64) { const z = Buffer.alloc(56); z.writeUInt32LE(0x06064b50); z.writeBigUInt64LE(44n, 4); z.writeUInt16LE(45, 12); z.writeUInt16LE(45, 14); z.writeBigUInt64LE(BigInt(entries.length), 24); z.writeBigUInt64LE(BigInt(entries.length), 32); z.writeBigUInt64LE(BigInt(centralSize), 40); z.writeBigUInt64LE(BigInt(offset), 48); const locator = Buffer.alloc(20); locator.writeUInt32LE(0x07064b50); locator.writeBigUInt64LE(BigInt(offset + centralSize), 8); locator.writeUInt32LE(1, 16); ends.push(z, locator); }
   const end = Buffer.alloc(22); end.writeUInt32LE(0x06054b50); end.writeUInt16LE(zip64 ? 0xffff : entries.length, 8); end.writeUInt16LE(zip64 ? 0xffff : entries.length, 10); end.writeUInt32LE(zip64 ? 0xffffffff : centralSize, 12); end.writeUInt32LE(zip64 ? 0xffffffff : offset, 16); end.writeUInt16LE(comment.length, 20);
   return Buffer.concat([...locals, ...centrals, ...ends, end, comment]);
 }
-export function readZip(buffer, includeData = false) {
+function aesFields(fields) {
+  const value=fields.get(ZIP_AES.extraID);
+  if(!value||value.length<7||![1,2].includes(value.readUInt16LE(0))||value[2]!==0x41||value[3]!==0x45||value[4]!==ZIP_AES.strength||![0,8].includes(value.readUInt16LE(5)))throw new Error('Unsupported or inconsistent WinZip AES-256 ZIP metadata.');
+  return {version:value.readUInt16LE(0),method:value.readUInt16LE(5),raw:value};
+}
+export function readZip(buffer, includeData = false, options = {}) {
+  let budget=optionalOperationBudget(options); budget?.check();
   if (!Buffer.isBuffer(buffer) || buffer.length > MAX_TOTAL + 4 * 1024 * 1024 || buffer.length < 22) throw new Error('Invalid ZIP size.');
   let end = -1; for (let i = buffer.length - 22; i >= Math.max(0, buffer.length - 65557); i--) if (buffer.readUInt32LE(i) === 0x06054b50 && i + 22 + buffer.readUInt16LE(i + 20) === buffer.length) { end = i; break; }
   if (end < 0) throw new Error('ZIP end record not found.');
@@ -100,13 +119,20 @@ export function readZip(buffer, includeData = false) {
   } else if (disk === 0xffff || centralDisk === 0xffff || diskCount === 0xffff || count === 0xffff || centralSize === 0xffffffff || start === 0xffffffff) throw new Error('Missing ZIP64 end locator.');
   if (disk || centralDisk || diskCount !== count) throw new Error('Multi-disk ZIP is not supported.');
   if (count > MAX_ENTRIES || start + centralSize !== directoryEnd) throw new Error('Invalid central directory.');
-  const output = [], seen = new Set(), intervals = []; let cursor = start, total = 0;
+  // First validate every layout/path/size, then authenticate every AES payload.
+  // No compressed member is inflated until both whole-archive phases succeed.
+  const output = [], records=[], decrypted=new Map(), seen = new Set(), intervals = []; let cursor = start, total = 0;
   for (let i = 0; i < count; i++) {
+    budget?.check(); budget?.work(1);
     if (cursor + 46 > directoryEnd || buffer.readUInt32LE(cursor) !== 0x02014b50) throw new Error('Invalid ZIP central directory.');
     const flags = buffer.readUInt16LE(cursor + 8), method = buffer.readUInt16LE(cursor + 10), checksum = buffer.readUInt32LE(cursor + 16), nameLength = buffer.readUInt16LE(cursor + 28), extraLength = buffer.readUInt16LE(cursor + 30), commentLength = buffer.readUInt16LE(cursor + 32), mode = buffer.readUInt32LE(cursor + 38) >>> 16;
-    if (flags & ~0x80e || ![0,8,93].includes(method) || (method !== 8 && (flags & 6)) || (mode & 0xf000) === 0xa000) throw new Error('Encrypted, linked or unsupported ZIP entry.');
+    const aes=method===ZIP_AES.method;
+    if (flags & ~(aes?0x807:0x80e) || ![0,8,93,ZIP_AES.method].includes(method) || (!aes&&method!==8&&(flags&6)) || (mode & 0xf000) === 0xa000 || (aes&&!(flags&1))) throw new Error('Encrypted, linked or unsupported ZIP entry.');
     const entryEnd = cursor + 46 + nameLength + extraLength + commentLength; if (entryEnd > directoryEnd) throw new Error('Truncated ZIP directory.');
     const encoded = buffer.subarray(cursor + 46, cursor + 46 + nameLength), fields = extras(buffer.subarray(cursor + 46 + nameLength, cursor + 46 + nameLength + extraLength));
+    const encryption=aes?aesFields(fields):null;
+    if(!aes&&fields.has(ZIP_AES.extraID))throw new Error('ZIP encryption metadata disagrees with its method.');
+    if(aes){budget??=operationBudget(options);if(encryption.method!==8&&(flags&6))throw new Error('ZIP AES compression flags disagree with its method.');if(encryption.version===2&&checksum!==0)throw new Error('WinZip AE-2 ZIP must use a zero CRC field.');}
     const central64Sizes = buffer.readUInt32LE(cursor + 24) === 0xffffffff || buffer.readUInt32LE(cursor + 20) === 0xffffffff;
     const [size, compressedSize, localOffset, entryDisk] = expand64(fields, [[buffer.readUInt32LE(cursor + 24), 0xffffffff], [buffer.readUInt32LE(cursor + 20), 0xffffffff], [buffer.readUInt32LE(cursor + 42), 0xffffffff], [buffer.readUInt16LE(cursor + 34), 0xffff, 4]]); if (entryDisk) throw new Error('Multi-disk ZIP entry is not supported.');
     const name = entryName(encoded, flags, fields), normalized = clean(name), identity = normalized.toLowerCase(), directory = name.endsWith('/'); if (seen.has(identity)) throw new Error('Duplicate archive path.'); seen.add(identity);
@@ -115,6 +141,8 @@ export function readZip(buffer, includeData = false) {
     const localNameLength = buffer.readUInt16LE(localOffset + 26), localExtraLength = buffer.readUInt16LE(localOffset + 28), dataStart = localOffset + 30 + localNameLength + localExtraLength;
     if (dataStart + compressedSize > start || buffer.readUInt16LE(localOffset + 6) !== flags || buffer.readUInt16LE(localOffset + 8) !== method || !buffer.subarray(localOffset + 30, localOffset + 30 + localNameLength).equals(encoded)) throw new Error('ZIP headers disagree.');
     const localFields = extras(buffer.subarray(localOffset + 30 + localNameLength, dataStart)), local64 = buffer.readUInt32LE(localOffset + 18) === 0xffffffff || buffer.readUInt32LE(localOffset + 22) === 0xffffffff;
+    if(aes){const localEncryption=aesFields(localFields);if(!localEncryption.raw.equals(encryption.raw))throw new Error('Local and central ZIP AES metadata disagree.');if(buffer.readUInt16LE(cursor+6)!==51||buffer.readUInt16LE(localOffset+4)!==51)throw new Error('Unsupported ZIP AES extraction version.');if(directory||hasLocator||central64Sizes||local64||fields.has(1)||localFields.has(1)||buffer.readUInt32LE(cursor+42)===0xffffffff||buffer.readUInt16LE(cursor+34)===0xffff||flags&8)throw new Error('ZIP AES supports classic stored or DEFLATE files without ZIP64 or data descriptors.');}
+    else if(localFields.has(ZIP_AES.extraID))throw new Error('ZIP encryption metadata disagrees with its method.');
     const [localSize, localCompressed] = expand64(localFields, [[buffer.readUInt32LE(localOffset + 22), 0xffffffff], [buffer.readUInt32LE(localOffset + 18), 0xffffffff]]);
     let dataEnd = dataStart + compressedSize;
     if (flags & 8) {
@@ -126,10 +154,25 @@ export function readZip(buffer, includeData = false) {
       if (descriptorEnd === null) throw new Error('ZIP data descriptor disagrees with its directory.'); dataEnd = descriptorEnd;
       if ((localSize && localSize !== size) || (localCompressed && localCompressed !== compressedSize) || (buffer.readUInt32LE(localOffset + 14) && buffer.readUInt32LE(localOffset + 14) !== checksum)) throw new Error('ZIP streaming header disagrees.');
     } else if (buffer.readUInt32LE(localOffset + 14) !== checksum || localCompressed !== compressedSize || localSize !== size) throw new Error('ZIP sizes or checksums disagree.');
-    intervals.push([localOffset, dataEnd]); const compressed = buffer.subarray(dataStart, dataStart + compressedSize); let data;
-    try { if (method === 93) data = readZstd(compressed, size).data; else if (method === 8) { const inflated = inflateRawSync(compressed, { maxOutputLength: Math.max(1, size), info: true }); if (inflated.engine.bytesWritten !== compressed.length) throw new Error('Unused compressed bytes.'); data = inflated.buffer; } else data = Buffer.from(compressed); } catch { throw new Error('ZIP compressed data is corrupt or exceeds its declared size.'); }
-    if (data.length !== size || crc32(data) !== checksum || (directory && size !== 0)) throw new Error('ZIP data failed size or CRC integrity verification.');
-    output.push({ name, size, compressedSize, method: method === 93 ? 'zstd' : method === 8 ? 'deflate' : 'store', crc32: checksum.toString(16).padStart(8,'0'), directory, zip64: local64 || fields.has(1), dataDescriptor: Boolean(flags & 8), ...dates(fields, buffer.readUInt16LE(cursor + 12), buffer.readUInt16LE(cursor + 14)), ...(includeData ? { data } : {}) }); cursor = entryEnd;
+    intervals.push([localOffset, dataEnd]);
+    records.push({name,size,compressedSize,checksum,directory,method:encryption?.method??method,encryption,dataStart,zip64:local64||fields.has(1),dataDescriptor:Boolean(flags&8),timestamps:dates(fields,buffer.readUInt16LE(cursor+12),buffer.readUInt16LE(cursor+14))});cursor=entryEnd;
   }
-  if (cursor !== directoryEnd) throw new Error('ZIP directory entry count mismatch.'); intervals.sort((a,b) => a[0] - b[0]); for (let i = 1; i < intervals.length; i++) if (intervals[i][0] < intervals[i - 1][1]) throw new Error('Overlapping ZIP entries are unsupported.'); collisions(output); return output;
+  if (cursor !== directoryEnd) throw new Error('ZIP directory entry count mismatch.'); intervals.sort((a,b) => a[0] - b[0]); for (let i = 1; i < intervals.length; i++) if (intervals[i][0] < intervals[i - 1][1]) throw new Error('Overlapping ZIP entries are unsupported.'); collisions(records);
+  if(records.some(record=>record.encryption)&&intervals[0][0]!==0)throw new Error('ZIP AES self-extracting or leading-prefix archives are unsupported.');
+  try{
+    for(const record of records)if(record.encryption){budget.check();decrypted.set(record,decryptWinZipAES(buffer.subarray(record.dataStart,record.dataStart+record.compressedSize),{password:options.password,operationBudget:budget}));}
+    for(const record of records){
+      const {name,size,compressedSize,checksum,directory,method,encryption,zip64,dataDescriptor,timestamps}=record,compressed=decrypted.get(record)??buffer.subarray(record.dataStart,record.dataStart+compressedSize);let data;
+      try{
+        budget?.check();budget?.work(compressed.length+size);
+        try{if(method===93)data=readZstd(compressed,size).data;else if(method===8){const inflated=inflateRawSync(compressed,{maxOutputLength:Math.max(1,size),info:true});data=inflated.buffer;if(inflated.engine.bytesWritten!==compressed.length)throw new Error('Unused compressed bytes.');}else data=Buffer.from(compressed);}catch{throw new Error('ZIP compressed data is corrupt or exceeds its declared size.');}
+        budget?.check();const contentChecksum=!encryption||encryption.version===1;
+        if(data.length!==size||(contentChecksum&&crc32(data)!==checksum)||(directory&&size!==0))throw new Error('ZIP data failed size or CRC integrity verification.');
+        output.push({name,size,compressedSize,method:method===93?'zstd':method===8?'deflate':'store',...(contentChecksum?{crc32:checksum.toString(16).padStart(8,'0')} : {}),directory,zip64,dataDescriptor,...timestamps,...(encryption?{contentChecksum,encrypted:true,encryption:'winzip-aes256',aesVersion:encryption.version,authenticationVerified:true}:{}),...(includeData?{data}:{})});
+        if(includeData)data=undefined;
+      }finally{data?.fill(0);}
+    }
+    budget?.check();return output;
+  }catch(error){for(const entry of output)entry.data?.fill(0);throw error;}
+  finally{for(const value of decrypted.values())value.fill(0);}
 }

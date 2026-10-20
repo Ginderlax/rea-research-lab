@@ -11,6 +11,7 @@ import { makeTar, readTar, MAX_CONTAINER } from './tar.mjs';
 import { makeGzip, readGzip } from './gzip.mjs';
 import { handle } from './server.mjs';
 import { createWorkspace } from '../../lib/storage.mjs';
+import { prepareOriginalBsdtar } from './bsdtar-original-test-helper.mjs';
 
 const FILE_LIMIT = 16 * 1024 * 1024, TOTAL_LIMIT = 64 * 1024 * 1024;
 const lab = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -51,9 +52,8 @@ async function sevenZip(root) {
   const executable = path.join(directory, '7za.exe'); await fs.writeFile(executable, bytes, { flag: 'wx' }); return args => command(executable, args, root);
 }
 async function bsdtar(root) {
-  const original = path.join(process.env.WINDIR || 'C:/Windows', 'System32/tar.exe'); const bytes = await fs.readFile(original);
-  assert.equal(sha(bytes), '4e598a8cec84af779e3377442fce2b94b976f614ed4c6e5a665e19308fd1e379', 'The recorded Windows bsdtar oracle changed; rebind explicitly before claiming this comparison.');
-  const executable = path.join(root, 'oracle-bsdtar.exe'); await fs.writeFile(executable, bytes, { flag: 'wx' }); assert.match(command(executable, ['--version'], root).toString(), /bsdtar 3\.8\.8 - libarchive 3\.8\.8/);
+  const executable = await prepareOriginalBsdtar(root, 'oracle-bsdtar.exe');
+  assert.match(command(executable, ['--version'], root).toString(), /bsdtar 3\.8\.8 - libarchive 3\.8\.8/);
   return args => command(executable, args, root);
 }
 function compareEntries(actual, expected = entries, prefix = '') {

@@ -1,0 +1,208 @@
+{
+  "sourceOnly": true,
+  "schema": "rea-archive-zip-aes-current-ui-source-transition/v4",
+  "base": "9424e52d438cdd68dc2ee7778170155ecbde948d",
+  "existingSemanticScenarios": 5,
+  "changes": [
+    {
+      "label": "dedicated ZIP controls and visibility/compatibility disclosure",
+      "from": "  createPassword.autocomplete = 'off'; privateFields.push(createPassword);",
+      "to": "  createPassword.autocomplete = 'off'; privateFields.push(createPassword);\n  const zipEncrypt = field(create,'Encrypt ZIP contents with AES-256','','checkbox'), zipPassword = field(create,'ZIP creation password (1–99 ASCII characters)','','password');\n  zipPassword.autocomplete = 'off'; privateFields.push(zipPassword);\n  create.append(node('p','Encrypted ZIP protects file contents; names and archive comments remain visible. Use Store or DEFLATE with the ordinary ZIP layout. ZIP passwords accept 1–99 ASCII characters; other characters are unsupported.','muted'));",
+      "occurrences": 1
+    },
+    {
+      "label": "clear secret inputs when format changes",
+      "from": "format.addEventListener('change', () => { output.value",
+      "to": "format.addEventListener('change', () => { privateFields.forEach(c => { c.value = ''; }); output.value",
+      "occurrences": 1
+    },
+    {
+      "label": "separate format controls preserve unsupported combination boundaries",
+      "from": "  function encryptionControls() { encrypt.disabled = format.value !== 'sevenzip'; createPassword.disabled = format.value !== 'sevenzip' || !encrypt.checked; encryptHeaders.disabled = createPassword.disabled; }\n  encrypt.addEventListener('change', encryptionControls);",
+      "to": "  function encryptionControls() {\n    encrypt.disabled = format.value !== 'sevenzip'; createPassword.disabled = format.value !== 'sevenzip' || !encrypt.checked; encryptHeaders.disabled = createPassword.disabled;\n    zipEncrypt.disabled = format.value !== 'zip' || compression.value === 'zstd' || zip64.checked;\n    if (zipEncrypt.disabled) { zipEncrypt.checked = false; zipPassword.value = ''; }\n    zipPassword.disabled = zipEncrypt.disabled || !zipEncrypt.checked;\n    zip64.disabled = format.value !== 'zip' || zipEncrypt.checked;\n  }\n  encrypt.addEventListener('change', () => { if (!encrypt.checked) createPassword.value = ''; encryptionControls(); });\n  zipEncrypt.addEventListener('change', () => { if (!zipEncrypt.checked) zipPassword.value = ''; encryptionControls(); });\n  zip64.addEventListener('change', encryptionControls);",
+      "occurrences": 1
+    },
+    {
+      "label": "explicit ZIP creation selection",
+      "from": "const encrypted = format.value === 'sevenzip' && encrypt.checked; const result",
+      "to": "const encrypted = format.value === 'sevenzip' && encrypt.checked, encryptedZip = format.value === 'zip' && zipEncrypt.checked; const result",
+      "occurrences": 1
+    },
+    {
+      "label": "request-scoped AESZIP fields",
+      "from": "...(encrypted ? { password: createPassword.value, encryptHeaders: encryptHeaders.checked } : {})",
+      "to": "...(encrypted ? { password: createPassword.value, encryptHeaders: encryptHeaders.checked } : {}), ...(encryptedZip ? { encryption: 'aes256', password: zipPassword.value } : {})",
+      "occurrences": 1
+    },
+    {
+      "label": "accurate shared password toggle label",
+      "from": "Use a password for this 7Z archive",
+      "to": "Use an archive password",
+      "occurrences": 1
+    },
+    {
+      "label": "accurate shared password input label",
+      "from": "7Z inspection/extraction password",
+      "to": "Inspection/extraction password",
+      "occurrences": 1
+    },
+    {
+      "label": "clear unused inspection password",
+      "from": "usePassword.addEventListener('change',() => { readPassword.disabled = !usePassword.checked; });",
+      "to": "usePassword.addEventListener('change',() => { readPassword.disabled = !usePassword.checked; if (!usePassword.checked) readPassword.value = ''; });",
+      "occurrences": 1
+    },
+    {
+      "label": "accurate CRC/authentication result disclosure",
+      "from": "TAR verifies header checksums; ZIP and GZIP verify content CRC. 7Z verifies content CRC when recorded. Zstandard verifies content checksums when present.",
+      "to": "TAR verifies header checksums. Ordinary ZIP and GZIP verify content CRC. Encrypted ZIP verifies its content authentication code and any recorded content CRC. Archive names and comments are not authenticated. 7Z verifies content CRC when recorded. Zstandard verifies content checksums when present.",
+      "occurrences": 1
+    },
+    {
+      "label": "legacy five semantic tests follow renamed shared toggle",
+      "from": "Use a password for this 7Z archive",
+      "to": "Use an archive password",
+      "occurrences": 8
+    },
+    {
+      "label": "legacy five semantic tests follow renamed shared input",
+      "from": "7Z inspection/extraction password",
+      "to": "Inspection/extraction password",
+      "occurrences": 4
+    },
+    {
+      "label": "retained six browser shared toggle label",
+      "from": "Use a password for this 7Z archive",
+      "to": "Use an archive password",
+      "occurrences": 1
+    },
+    {
+      "label": "retained six browser shared input label",
+      "from": "7Z inspection/extraction password",
+      "to": "Inspection/extraction password",
+      "occurrences": 1
+    },
+    {
+      "label": "all three password inputs must be empty",
+      "from": ".toEqual([0, 0])",
+      "to": ".toEqual([0, 0, 0])",
+      "occurrences": 4
+    },
+    {
+      "label": "all three detached password inputs observed empty",
+      "from": "detachedPasswordUnits: [0, 0]",
+      "to": "detachedPasswordUnits: [0, 0, 0]",
+      "occurrences": 1
+    },
+    {
+      "label": "legacy no-method ZIP password retains400/no-write with accurate error",
+      "from": "'Password encryption is supported only for7Z.'",
+      "to": "'Choose AES-256 ZIP encryption before supplying a ZIP password.'",
+      "occurrences": 1
+    },
+    {
+      "label": "legacy first scenario accurately names preserved refusal",
+      "from": "Archive plain ZIP UI round trip retain Unicode bytes and refuse ZIP encryption",
+      "to": "Archive plain ZIP UI round trip retain Unicode bytes and require an explicit encryption method",
+      "occurrences": 1
+    },
+    {
+      "label": "observation names actual refusal",
+      "from": "kind: 'encrypted-zip-refusal'",
+      "to": "kind: 'zip-password-without-explicit-method-refusal'",
+      "occurrences": 1
+    },
+    {
+      "label": "old unsupported claim replaced with actual tested boundary",
+      "from": "ordinaryUIAESZIPWorkflowSupported: false",
+      "to": "explicitZIPMethodRequired: true",
+      "occurrences": 1
+    },
+    {
+      "label": "six scenario roster matches renamed boundary",
+      "from": "Archive plain ZIP UI round trip retain Unicode bytes and refuse ZIP encryption",
+      "to": "Archive plain ZIP UI round trip retain Unicode bytes and require an explicit encryption method",
+      "occurrences": 1
+    }
+  ],
+  "newSemanticScenarios": 5,
+  "existingBrowserScenarios": 6,
+  "scope": "New explicit ZIP controls and accurate shared password labels. Existing five semantic and six Chromium scenario invariants retained; all three fields now checked. No historical receipt is changed or rebound.",
+  "historicalReceiptsChanged": false,
+  "changedCurrentFiles": [
+    {
+      "path": "products/rea-studio/apps/archive/client.mjs",
+      "bytes": 12372,
+      "sha256": "270f53578a5af8a6be8676d6f2ae8f1994928d94dc923f140f6c7693b094b5b1"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/sevenzip-aes-ui.test.mjs",
+      "bytes": 4549,
+      "sha256": "9f5ecceaa9ad9d450dc39e9e501c93bfe3659bdf45d0576453d6d88942389d80"
+    },
+    {
+      "path": "products/rea-studio/browser-tests/archive-aes.spec.mjs",
+      "bytes": 18620,
+      "sha256": "f0f4d96bdd2bb3596e5ac97a888690fac7536401081e88c98679791560dce665"
+    },
+    {
+      "path": "products/rea-studio/browser-tests/archive-aes-roster.json",
+      "bytes": 496,
+      "sha256": "b4486b8e0a3a4621fa341371c80e0c328df263f11667b8f217e67019bd05678e"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/zip-aes-ui.test.mjs",
+      "bytes": 6539,
+      "sha256": "e439b9e647cd000172d8cb3393532496b8a1554d1b4384050152873e9cc0e62e"
+    },
+    {
+      "path": "products/rea-studio/browser-tests/archive-zip-aes.spec.mjs",
+      "bytes": 19799,
+      "sha256": "3928d0a725368972669cbf40106eb86c5a2362f6345acbba1091be473249ede0"
+    },
+    {
+      "path": "products/rea-studio/browser-tests/archive-zip-aes-roster.json",
+      "bytes": 1337,
+      "sha256": "aa9534ea4ba4da0d526bcad9df77f57e6bd250764dc318213b0b12d93daee37e"
+    },
+    {
+      "path": "products/rea-studio/browser-tests/playwright.archive-zip-aes.config.mjs",
+      "bytes": 1278,
+      "sha256": "4bb78a7128bfcf1886f546eca0ac0df541bb264c3edce6decab6711b51f78c5a"
+    }
+  ],
+  "newBrowserScenarios": 5,
+  "combinedBrowserScenarios": 11,
+  "newBrowserHostRestartClaimed": false,
+  "newBrowserReloadObservedOnly": true,
+  "wordingRevision": {
+    "reason": "Keep algorithm-version details in compatibility documentation. The result still explains authentication and recorded CRC checks; AE2 CRC remains absent in the table.",
+    "changes": [
+      {
+        "path": "products/rea-studio/apps/archive/client.mjs",
+        "from": "Encrypted ZIP verifies its content authentication code; AE-1 also verifies CRC, while AE-2 does not record a content CRC.",
+        "to": "Encrypted ZIP verifies its content authentication code and any recorded content CRC.",
+        "occurrences": 1
+      },
+      {
+        "path": "products/rea-studio/apps/archive/zip-aes-ui.test.mjs",
+        "from": "includes('AE-2 does not record a content CRC')",
+        "to": "includes('any recorded content CRC')",
+        "occurrences": 1
+      },
+      {
+        "path": "products/rea-studio/browser-tests/archive-zip-aes.spec.mjs",
+        "from": "getByText(/AE-2 does not record a content CRC/)",
+        "to": "getByText(/Encrypted ZIP verifies its content authentication code and any recorded content CRC/)",
+        "occurrences": 1
+      }
+    ]
+  },
+  "workerReceiptNamespaceCorrection": {
+    "path": "products/rea-studio/browser-tests/archive-zip-aes.spec.mjs",
+    "from": "await write('browser-observation-process-' + process.pid + '.json', { schema: 'rea-cloud-archive-browser-worker-observation/v1', observation, execution, pid: process.pid });",
+    "to": "await write('browser-observation-process-' + process.pid + '-zip-aes.json', { schema: 'rea-cloud-archive-browser-worker-observation/v1', sourceFile: 'archive-zip-aes.spec.mjs', observation, execution, pid: process.pid });",
+    "occurrences": 1,
+    "reason": "The combined two-spec configuration may reuse one worker PID. Keep both exclusive per-spec observations instead of colliding or overwriting a receipt."
+  }
+}

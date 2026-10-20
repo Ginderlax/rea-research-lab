@@ -1,0 +1,29 @@
+{
+  "schema": "rea-archive-classic-winzip-aes256-subset/v1",
+  "status": "SOURCE_AUTHORED_HOSTED_VALIDATION_PENDING",
+  "product": "archive",
+  "baseline": {"product":"7-Zip","version":"26.04","sourceCommit":"9128b80e3a471108678e2b3ec3c985861c8d7b0f","wholeOriginalRequired":true,"zipOracle":"complete released 7z.exe with matching 7z.dll","bootstrapNotOracle":"7zr.exe"},
+  "sourceBase": "9424e52d438cdd68dc2ee7778170155ecbde948d",
+  "requirements": [
+    {"id":"ARCHIVE.ZIP.AES256.001","behavior":"Explicit encryption:aes256 creates classic AE-2 stored/DEFLATE file payloads; directory records stay plain; names and metadata visible."},
+    {"id":"ARCHIVE.ZIP.AES256.002","behavior":"Read AE-1 and AE-2 vendorAE/strength3/method99 with matching local/central extras; require version-needed51 and supported underlying method0/8."},
+    {"id":"ARCHIVE.ZIP.AES256.003","behavior":"PBKDF2-HMAC-SHA1/1000 derives32-byte AES key,32-byte MAC key,two-byte verifier; salt16 and authentication tag10."},
+    {"id":"ARCHIVE.ZIP.AES256.004","behavior":"AES counter preincrements little-endian low64 fromzero; upper64 stayszero; authenticate ciphertext and verifier before decrypting."},
+    {"id":"ARCHIVE.ZIP.AES256.005","behavior":"Validate whole archive layout/paths, authenticate all AES compressed payloads, then inflate/copy any member and return only all-verified entries."},
+    {"id":"ARCHIVE.ZIP.AES256.006","behavior":"AE-1 verifies recordedCRC; AE-2 requireszero wireCRC and omits result.crc32 with contentChecksum:false."},
+    {"id":"ARCHIVE.ZIP.AES256.007","behavior":"Writer1–99ASCII U+0020..007F; reader explicit0–99 sameASCII; missing readerpassword differsfromempty; no arbitraryUTF8passwordclaim."},
+    {"id":"ARCHIVE.ZIP.AES256.008","behavior":"ZIP password without explicit selector remains400/no-write with exact method-selection error."},
+    {"id":"ARCHIVE.ZIP.AES256.009","behavior":"List/test/extract verify every encryptedfile; extraction requiresconfirmation/newdestination and authenticatesbefore destination/stagingwrites."},
+    {"id":"ARCHIVE.ZIP.AES256.010","behavior":"Keep10000entries/16MiBperfile/64MiBdecodedtotal/68MiBZIP bounds and sharedcooperative15s/2B default budget, max60s/8B; no hardnativeinterrupt orRSSclaim."},
+    {"id":"ARCHIVE.ZIP.AES256.011","behavior":"Overwrite covered owned temporary key/passwordbyte/counter/keystream/decryptedcompressed buffers; no promise of JavaScript/native/callercopy erasure."},
+    {"id":"ARCHIVE.ZIP.AES256.012","behavior":"Queue snapshots retain request encryption/password/path; responses/workspacerecords do not intentionally retain requestpassword; hostrestart reopens archives."},
+    {"id":"ARCHIVE.ZIP.AES256.013","behavior":"Preserve unencrypted ZIP/ZIP64/descriptors/Zstandard/names/dates/CRC/path/source-metadata guards and historical161-test invariants."},
+    {"id":"ARCHIVE.ZIP.AES256.014","behavior":"Require complete authenticated7Zip wholeprogram original comparisons, actual byte/presence/state receipts and AE1 independent-construction provenance."},
+    {"id":"ARCHIVE.ZIP.AES256.015","behavior":"Reject ZipCrypto/PKWAREstrong/AES128/192/GCM/encryptedZIP64/descriptors/Zstd/directories/headers/multidisk/SFX/unknownprofiles without weakening plain regressions."}
+  ],
+  "newFiniteModules": ["apps/archive/zip-aes.test.mjs","apps/archive/zip-aes-http.test.mjs"],
+  "rootOwnedDOMAndBrowserTransition": "Separate exact-source authority covers client/newDOM/oldlabels/threepasswordcontrols and sixold+fivenew realbrowser scenarios.",
+  "evidenceRules": {"verifiedCloudOnly":true,"sourceBeforeAndAfter":true,"historicalReceiptsChanged":false,"originalCommandTranscriptsRequired":true,"secretArgumentsRedacted":true,"rawPasswordsRetained":false,"testsNotExecutedByAuthor":true},
+  "fullProductComplete": false,
+  "universalSuperiorityEstablished": false
+}

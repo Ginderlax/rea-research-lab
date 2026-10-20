@@ -1,0 +1,108 @@
+name: Archive ZIP AES on exact committed sources
+# Reviewed exact admission and manifest raw hashes are frozen below.
+on:
+  workflow_dispatch:
+  push:
+    branches: ['experiment/archive-zip-aes-20261020-r1']
+
+permissions:
+  contents: read
+concurrency:
+  group: archive-zip-aes-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: 'true'
+  REA_ARCHIVE_ZIP_PARENT: '7f71cb5bbee54c1bc96611235cf905585994a6ea'
+  REA_ARCHIVE_ZIP_ADMISSION_SCRIPT_SHA256: 'e3ad91d1bc7c3671bf3005786d4d94ef8864039b9fe2060353b5db6b685eb8bb'
+  REA_ARCHIVE_ZIP_MANIFEST_SHA256: 'c11a48d9f9b173c7e2869d69af09ec8af40fbd7ab1ba841f9163bab75105ce12'
+
+jobs:
+  validate:
+    name: Archive ZIP AES / ${{ matrix.role }}
+    strategy:
+      fail-fast: false
+      matrix:
+        role: [finite, zip-original, browser]
+    env:
+      REA_ARCHIVE_ZIP_ROLE: ${{ matrix.role }}
+    runs-on: windows-2022
+    timeout-minutes: 65
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out actual source and its fixed sole parent
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select exact Windows x64 Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Choose fresh owned evidence directory
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-archive-zip-aes-${{ matrix.role }}-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          if(Test-Path -LiteralPath $evidence){throw 'Refuse earlier evidence.'}
+          $cache=Join-Path $env:RUNNER_TEMP ('rea-archive-zip-aes-chromium-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          if(Test-Path -LiteralPath $cache){throw 'Refuse earlier browser cache.'}
+          New-Item -ItemType Directory -Path $cache|Out-Null
+          'REA_ARCHIVE_ZIP_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          'PLAYWRIGHT_BROWSERS_PATH='+$cache|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Authenticate reviewed admission before any project JavaScript
+        id: before
+        shell: pwsh
+        run: |
+          $gate='products/rea-studio/scripts/archive-zip-aes-source-admission.ps1'
+          if($env:REA_ARCHIVE_ZIP_ADMISSION_SCRIPT_SHA256 -cnotmatch '^[0-9a-f]{64}$' -or (Get-FileHash -LiteralPath $gate -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_ARCHIVE_ZIP_ADMISSION_SCRIPT_SHA256){throw 'Reviewed admission hash required.'}
+          & $gate -Phase before -Evidence $env:REA_ARCHIVE_ZIP_EVIDENCE -ExpectedManifestSHA256 $env:REA_ARCHIVE_ZIP_MANIFEST_SHA256 -ExpectedParent $env:REA_ARCHIVE_ZIP_PARENT
+      - name: Run the separately identified admitted Archive role
+        id: verify
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-archive-zip-aes-cloud.mjs --role ${{ matrix.role }} --evidence "$env:REA_ARCHIVE_ZIP_EVIDENCE"
+      - name: Recheck every source after success or failure
+        id: after
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: |
+          $gate='products/rea-studio/scripts/archive-zip-aes-source-admission.ps1'
+          if((Get-FileHash -LiteralPath $gate -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_ARCHIVE_ZIP_ADMISSION_SCRIPT_SHA256){throw 'Admission changed.'}
+          & $gate -Phase after -Evidence $env:REA_ARCHIVE_ZIP_EVIDENCE -ExpectedManifestSHA256 $env:REA_ARCHIVE_ZIP_MANIFEST_SHA256 -ExpectedParent $env:REA_ARCHIVE_ZIP_PARENT
+      - name: Package bounded complete evidence or explicitly incomplete diagnostics
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence=$env:REA_ARCHIVE_ZIP_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-archive-zip-aes-${{ matrix.role }}-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-archive-zip-aes-workflow/v1';role='${{ matrix.role }}';sourceCommit=$env:GITHUB_SHA;sourceParent=$env:REA_ARCHIVE_ZIP_PARENT;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;fullSuite=$false;historicalReceiptsRebound=$false;fullParity=$false;superiority=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -Recurse -File);$bytes=($files|Measure-Object -Property Length -Sum).Sum
+          $bounded=$files.Count -le 10000 -and $bytes -le 128*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-archive-zip-aes-${{ matrix.role }}-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $zipBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $zipBytes -gt 15*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-archive-zip-aes-${{ matrix.role }}-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT);New-Item -ItemType Directory -Path $fallback|Out-Null
+            foreach($f in Get-ChildItem -LiteralPath $evidence -File){if($f.Length -le 512*1024){Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $fallback $f.Name)}}
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$bytes;zipBytes=$zipBytes;limitBytes=15*1024*1024;reason='Incomplete diagnostics only; no portable acceptance.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-archive-zip-aes-${{ matrix.role }}-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip');[IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append};throw 'Complete evidence unavailable; fallback is not acceptance.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve evidence without changing failed gates
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: archive-zip-aes-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

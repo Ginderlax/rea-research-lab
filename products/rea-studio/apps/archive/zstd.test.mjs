@@ -14,6 +14,7 @@ import { createWorkspace } from '../../lib/storage.mjs';
 import { handle } from './server.mjs';
 import { start } from '../../server.mjs';
 import { installerPath, bootstrapPath } from './bootstrap-original.mjs';
+import { prepareOriginalBsdtar } from './bsdtar-original-test-helper.mjs';
 
 const directory = path.dirname(fileURLToPath(import.meta.url)), lab = path.resolve(directory, '../../../..');
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -35,8 +36,9 @@ async function completeOracle(root) {
   return args => command(path.join(oracle, '7z.exe'), args, root);
 }
 async function bsdtar(root) {
-  const bytes = await fs.readFile(path.join(process.env.WINDIR || 'C:/Windows', 'System32/tar.exe')); assert.equal(sha(bytes), '4e598a8cec84af779e3377442fce2b94b976f614ed4c6e5a665e19308fd1e379');
-  const exe = path.join(root, 'bsdtar.exe'); await fs.writeFile(exe, bytes, { flag: 'wx' }); assert.match(command(exe, ['--version'], root).toString(), /bsdtar 3\.8\.8.*libzstd\/1\.5\.7/); return args => command(exe, args, root);
+  const exe = await prepareOriginalBsdtar(root, 'bsdtar.exe');
+  assert.match(command(exe, ['--version'], root).toString(), /bsdtar 3\.8\.8.*libzstd\/1\.5\.7/);
+  return args => command(exe, args, root);
 }
 
 test('authenticated independent ZSTD, TAR.ZST and ZIP 93 fixtures decode exact bytes', async () => {

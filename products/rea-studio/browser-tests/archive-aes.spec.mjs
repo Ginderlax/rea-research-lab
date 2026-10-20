@@ -118,10 +118,10 @@ async function configure(s, { encrypted = true, headers = false, output = 'archi
   }
 }
 async function readPassword(s, password) {
-  await s.page.getByLabel('Use a password for this 7Z archive', { exact: true }).check();
-  await s.page.getByLabel('7Z inspection/extraction password', { exact: true }).fill(password);
+  await s.page.getByLabel('Use an archive password', { exact: true }).check();
+  await s.page.getByLabel('Inspection/extraction password', { exact: true }).fill(password);
 }
-async function create(s) { await s.page.getByRole('button', { name: 'Create archive', exact: true }).click(); await done(s); await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0]); }
+async function create(s) { await s.page.getByRole('button', { name: 'Create archive', exact: true }).click(); await done(s); await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0, 0]); }
 async function extract(s, destination, password) {
   if (password) await readPassword(s, password);
   await s.page.getByLabel('New destination folder', { exact: true }).fill(destination);
@@ -131,9 +131,9 @@ async function extract(s, destination, password) {
   const artifact = 'workspace-artifacts/' + destination.split('/').at(-1) + '.txt';
   await fs.mkdir(path.join(evidence, 'workspace-artifacts'), { recursive: true }); await fs.writeFile(path.join(evidence, artifact), bytes, { flag: 'wx' });
   s.observations.push({ kind: 'real-ui-extraction-content', path: destination + '/' + sampleName, artifact, expected: metadata(Buffer.from(sampleText)), observed: metadata(bytes) });
-  await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0]);
+  await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0, 0]);
 }
-test('Archive plain ZIP UI round trip retain Unicode bytes and refuse ZIP encryption', async ({ studio: s }) => {
+test('Archive plain ZIP UI round trip retain Unicode bytes and require an explicit encryption method', async ({ studio: s }) => {
   await open(s); await source(s); await configure(s, { encrypted: false, output: 'archive/plain.zip' });
   await expect(s.page.getByLabel('Encrypt 7Z contents with AES-256', { exact: true })).toBeDisabled();
   await expect(s.page.getByLabel('7Z creation password (1–128 UTF16 units)', { exact: true })).toBeDisabled();
@@ -141,8 +141,8 @@ test('Archive plain ZIP UI round trip retain Unicode bytes and refuse ZIP encryp
   await expect(s.page.getByRole('cell', { name: sampleName, exact: true })).toBeVisible();
   await extract(s, 'archive/plain-restored'); await s.preserveArchive('archive/plain.zip', 'archive-plain.zip');
   const response = await s.page.request.post(s.url + '/api/archive/create', { headers: { 'X-REA-Token': s.token }, data: { format: 'zip', source: 'archive/source', output: 'archive/refused.zip', password: randomBytes(18).toString('hex') } });
-  expect(response.status()).toBe(400); expect((await response.json()).error).toBe('Password encryption is supported only for7Z.'); expect(await absent(path.join(s.workspace, 'archive/refused.zip'))).toBe(true);
-  s.observations.push({ kind: 'encrypted-zip-refusal', actualBrowserDisabledControls: true, additionalProgrammaticAPIControl: true, ordinaryUIAESZIPWorkflowSupported: false, httpStatus: response.status(), noArchiveWritten: true });
+  expect(response.status()).toBe(400); expect((await response.json()).error).toBe('Choose AES-256 ZIP encryption before supplying a ZIP password.'); expect(await absent(path.join(s.workspace, 'archive/refused.zip'))).toBe(true);
+  s.observations.push({ kind: 'zip-password-without-explicit-method-refusal', actualBrowserDisabledControls: true, additionalProgrammaticAPIControl: true, explicitZIPMethodRequired: true, httpStatus: response.status(), noArchiveWritten: true });
 });
 for (const headers of [false, true]) test(headers ? 'Archive AES 7Z encrypted-header UI round trip retain Unicode bytes' : 'Archive AES 7Z content UI round trip retain Unicode bytes', async ({ studio: s }) => {
   const password = randomBytes(18).toString('hex'), label = headers ? 'header' : 'content';
@@ -161,7 +161,7 @@ test('Archive wrong password refuses real list and extraction before destination
     const pending = s.page.waitForResponse(r => r.url() === s.url + '/api/archive/' + action && r.request().method() === 'POST');
     await s.page.getByRole('button', { name: action === 'list' ? 'List and verify every entry' : 'Verify and extract', exact: true }).click();
     const response = await pending; expect(response.status()).toBe(400); await expect(rootView(s.page)).toHaveAttribute('aria-busy', 'false');
-    await expect(rootView(s.page).locator(':scope > p.status')).not.toHaveText('Done.'); await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0]);
+    await expect(rootView(s.page).locator(':scope > p.status')).not.toHaveText('Done.'); await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0, 0]);
     s.observations.push({ kind: 'wrong-password-refusal', action, status: response.status(), body: metadata(await response.body()), passwordRetainedInEvidence: false });
   }
   expect(await absent(path.join(s.workspace, 'archive/refused-restore'))).toBe(true);
@@ -174,7 +174,7 @@ test('Archive held actual create response keeps controls busy and clears private
   await expect(rootView(s.page)).toHaveAttribute('aria-busy', 'true');
   expect(await rootView(s.page).locator('button,input,select,textarea').evaluateAll(nodes => nodes.every(node => node.disabled))).toBe(true);
   expect(s.requests.filter(row => row.path === '/api/archive/create')).toHaveLength(1);
-  gate.release(); await gate.finished; await done(s); await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0]);
+  gate.release(); await gate.finished; await done(s); await expect.poll(() => privateFields(s.page).evaluateAll(nodes => nodes.map(node => node.value.length))).toEqual([0, 0, 0]);
   expect(s.requests.filter(row => row.path === '/api/archive/create')).toHaveLength(1);
   await extract(s, 'archive/held-create-restored', password);
 });
@@ -187,5 +187,5 @@ test('Archive disposal scrubs detached passwords after actual committed extracti
   await s.page.getByRole('button', { name: 'Lab Editor', exact: true }).click(); await expect(s.page.getByRole('heading', { name: 'Workspace Editor', exact: true })).toBeVisible();
   for (const field of detached) expect(await field.evaluate(node => ({ units: node.value.length, connected: node.isConnected }))).toEqual({ units: 0, connected: false });
   gate.release(); await gate.finished; await expect(s.page.getByRole('heading', { name: 'REA Archive', exact: true })).toHaveCount(0);
-  s.observations.push({ kind: 'disposal-after-real-extraction-commit', destinationPreserved: true, content: metadata(committed), detachedPasswordUnits: [0, 0], serverCancellationClaimed: false, staleArchiveUIAbsent: true });
+  s.observations.push({ kind: 'disposal-after-real-extraction-commit', destinationPreserved: true, content: metadata(committed), detachedPasswordUnits: [0, 0, 0], serverCancellationClaimed: false, staleArchiveUIAbsent: true });
 });

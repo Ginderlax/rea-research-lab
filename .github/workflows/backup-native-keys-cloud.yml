@@ -1,0 +1,178 @@
+name: Native Backup key feature on exact committed sources
+# Reviewed exact source manifest and admission hashes are frozen below.
+on:
+  workflow_dispatch:
+  push:
+    branches: ['experiment/backup-native-keys-*']
+
+permissions:
+  contents: read
+concurrency:
+  group: backup-native-keys-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CI: 'true'
+  REA_KEY_PARENT: '078435d396e06681e470a4968d3256b371a08b65'
+  REA_KEY_ADMISSION_SCRIPT_SHA256: '89321500462b2f22c1b07a8f088a6e2abcaf254281b27654270f20340a0a08a4'
+  REA_KEY_MANIFEST_SHA256: '2debaec91f40960d22aceffd560dd04e3e7f937e6fa0cf3fed273e326251fbc1'
+
+jobs:
+  finite:
+    runs-on: windows-2022
+    timeout-minutes: 50
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out actual source and its fixed sole parent
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select exact Windows x64 Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Choose fresh owned evidence directory
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-backup-key-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          if(Test-Path -LiteralPath $evidence){throw 'Refuse earlier evidence.'}
+          'REA_KEY_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Authenticate reviewed admission before any project JavaScript
+        id: before
+        shell: pwsh
+        run: |
+          $gate='products/rea-studio/scripts/backup-native-keys-source-admission.ps1'
+          if($env:REA_KEY_ADMISSION_SCRIPT_SHA256 -cnotmatch '^[0-9a-f]{64}$' -or (Get-FileHash -LiteralPath $gate -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_KEY_ADMISSION_SCRIPT_SHA256){throw 'Reviewed admission hash required.'}
+          & $gate -Phase before -Evidence $env:REA_KEY_EVIDENCE -ExpectedManifestSHA256 $env:REA_KEY_MANIFEST_SHA256 -ExpectedParent $env:REA_KEY_PARENT
+      - name: Authenticate restic and execute all22 finite Backup modules
+        id: verify
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-backup-native-keys-cloud.mjs --role finite --evidence "$env:REA_KEY_EVIDENCE"
+      - name: Recheck every source after success or failure
+        id: after
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: |
+          $gate='products/rea-studio/scripts/backup-native-keys-source-admission.ps1'
+          if((Get-FileHash -LiteralPath $gate -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_KEY_ADMISSION_SCRIPT_SHA256){throw 'Admission changed.'}
+          & $gate -Phase after -Evidence $env:REA_KEY_EVIDENCE -ExpectedManifestSHA256 $env:REA_KEY_MANIFEST_SHA256 -ExpectedParent $env:REA_KEY_PARENT
+      - name: Package bounded complete evidence or explicitly incomplete diagnostics
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence=$env:REA_KEY_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-backup-key-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-backup-native-keys-workflow/v1';role='finite';sourceCommit=$env:GITHUB_SHA;sourceParent=$env:REA_KEY_PARENT;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;fullSuite=$false;historicalReceiptsRebound=$false;fullParity=$false;superiority=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -Recurse -File);$bytes=($files|Measure-Object -Property Length -Sum).Sum
+          $bounded=$files.Count -le 2500 -and $bytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-backup-key-finite-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $zipBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $zipBytes -gt 15*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-backup-key-finite-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT);New-Item -ItemType Directory -Path $fallback|Out-Null
+            foreach($f in Get-ChildItem -LiteralPath $evidence -File){if($f.Length -le 512*1024){Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $fallback $f.Name)}}
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$bytes;zipBytes=$zipBytes;limitBytes=15*1024*1024;reason='Incomplete diagnostics only; no portable acceptance.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-backup-key-finite-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip');[IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append};throw 'Complete evidence unavailable; fallback is not acceptance.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve evidence without changing failed gates
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backup-native-keys-finite-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+
+  browser:
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out actual source and its fixed sole parent
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select exact Windows x64 Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Choose fresh owned evidence and Chromium cache
+        shell: pwsh
+        run: |
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-backup-key-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          $cache=Join-Path $env:RUNNER_TEMP ('rea-backup-key-chromium-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          if((Test-Path -LiteralPath $evidence) -or (Test-Path -LiteralPath $cache)){throw 'Refuse earlier evidence/cache.'}
+          New-Item -ItemType Directory -Path $cache|Out-Null
+          'REA_KEY_EVIDENCE='+$evidence|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          'PLAYWRIGHT_BROWSERS_PATH='+$cache|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      - name: Authenticate reviewed admission before any project JavaScript
+        id: before
+        shell: pwsh
+        run: |
+          $gate='products/rea-studio/scripts/backup-native-keys-source-admission.ps1'
+          if($env:REA_KEY_ADMISSION_SCRIPT_SHA256 -cnotmatch '^[0-9a-f]{64}$' -or (Get-FileHash -LiteralPath $gate -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_KEY_ADMISSION_SCRIPT_SHA256){throw 'Reviewed admission hash required.'}
+          & $gate -Phase before -Evidence $env:REA_KEY_EVIDENCE -ExpectedManifestSHA256 $env:REA_KEY_MANIFEST_SHA256 -ExpectedParent $env:REA_KEY_PARENT
+      - name: Acquire locked tooling and execute five real Chromium cases
+        id: verify
+        shell: pwsh
+        run: node products/rea-studio/scripts/verify-backup-native-keys-cloud.mjs --role browser --evidence "$env:REA_KEY_EVIDENCE"
+      - name: Recheck every source after success or failure
+        id: after
+        if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
+        shell: pwsh
+        run: |
+          $gate='products/rea-studio/scripts/backup-native-keys-source-admission.ps1'
+          if((Get-FileHash -LiteralPath $gate -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_KEY_ADMISSION_SCRIPT_SHA256){throw 'Admission changed.'}
+          & $gate -Phase after -Evidence $env:REA_KEY_EVIDENCE -ExpectedManifestSHA256 $env:REA_KEY_MANIFEST_SHA256 -ExpectedParent $env:REA_KEY_PARENT
+      - name: Package bounded complete evidence or explicitly incomplete diagnostics
+        id: evidence
+        if: always()
+        shell: pwsh
+        run: |
+          $evidence=$env:REA_KEY_EVIDENCE
+          if(-not $evidence){$evidence=Join-Path $env:RUNNER_TEMP ('rea-backup-key-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)}
+          New-Item -ItemType Directory -Path $evidence -Force|Out-Null
+          @{schema='rea-backup-native-keys-workflow/v1';role='browser';sourceCommit=$env:GITHUB_SHA;sourceParent=$env:REA_KEY_PARENT;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;fullSuite=$false;historicalReceiptsRebound=$false;fullParity=$false;superiority=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $evidence 'workflow-attempt.json') -Encoding utf8
+          $files=@(Get-ChildItem -LiteralPath $evidence -Recurse -File);$bytes=($files|Measure-Object -Property Length -Sum).Sum
+          $bounded=$files.Count -le 2500 -and $bytes -le 96*1024*1024 -and @($files|Where-Object {$_.Length -gt 8*1024*1024}).Count -eq 0
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $archive=Join-Path $env:RUNNER_TEMP ('rea-backup-key-browser-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip')
+          if($bounded){[IO.Compression.ZipFile]::CreateFromDirectory($evidence,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)}
+          $zipBytes=if($bounded){(Get-Item -LiteralPath $archive).Length}else{$null}
+          if(-not $bounded -or $zipBytes -gt 15*1024*1024){
+            $fallback=Join-Path $env:RUNNER_TEMP ('rea-backup-key-browser-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT);New-Item -ItemType Directory -Path $fallback|Out-Null
+            foreach($f in Get-ChildItem -LiteralPath $evidence -File){if($f.Length -le 512*1024){Copy-Item -LiteralPath $f.FullName -Destination (Join-Path $fallback $f.Name)}}
+            @{schema='rea-cloud-evidence-storage-failure/v1';status='failed';completeEvidenceUploaded=$false;sourceSnapshotsUploaded=$false;rawLogsComplete=$false;rawFiles=$files.Count;rawBytes=$bytes;zipBytes=$zipBytes;limitBytes=15*1024*1024;reason='Incomplete diagnostics only; no portable acceptance.'}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $fallback 'storage-failure.json') -Encoding utf8
+            $archive=Join-Path $env:RUNNER_TEMP ('rea-backup-key-browser-incomplete-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT+'.zip');[IO.Compression.ZipFile]::CreateFromDirectory($fallback,$archive,[IO.Compression.CompressionLevel]::Optimal,$false)
+            if((Get-Item -LiteralPath $archive).Length -le 15*1024*1024){'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append};throw 'Complete evidence unavailable; fallback is not acceptance.'
+          }
+          'artifact_path='+$archive|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+      - name: Preserve evidence without changing failed gates
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backup-native-keys-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

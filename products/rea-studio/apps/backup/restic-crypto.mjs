@@ -43,12 +43,17 @@ export function base64(value, size) {
   if (bytes.toString('base64') !== value || (size !== undefined && bytes.length !== size)) throw new Error('Invalid restic key length.');
   return bytes;
 }
-export function password(value) {
+export function password(value, { insecureNoPassword = false } = {}) {
+  if (typeof insecureNoPassword !== 'boolean') throw new Error('The insecure empty-password option must be a boolean.');
+  if (insecureNoPassword) {
+    if (value !== '') throw new Error('Explicit empty-password access requires an empty password field.');
+    return value;
+  }
   if (typeof value !== 'string' || !value || Buffer.byteLength(value) > 1024) throw new Error('Enter a nonempty repository password of at most 1,024 bytes.');
   return value;
 }
-export async function passwordKey(document, value) {
-  password(value);
+export async function passwordKey(document, value, options) {
+  password(value,options);
   const { N, r, p } = document;
   if (document.kdf !== 'scrypt' || !Number.isSafeInteger(N) || N < 2 || N > 262144 || (N & (N - 1)) !== 0 || !Number.isSafeInteger(r) || r < 1 || r > 32 || !Number.isSafeInteger(p) || p < 1 || p > 64 || N * r > 1048576 || N * r * p > 8388608) throw new Error('Unsupported or excessive restic scrypt parameters.');
   const bytes = await derive(value,base64(document.salt,64),64,{ N,r,p,maxmem: 144 * 1024 * 1024 });

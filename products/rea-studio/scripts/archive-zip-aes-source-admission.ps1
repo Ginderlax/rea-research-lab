@@ -8,7 +8,7 @@ $ErrorActionPreference='Stop'
 if($env:CI -ne 'true' -or $env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64'){throw 'Verified hosted Windows x64 context required.'}
 if($env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_JOB -notin @('validate')){throw 'Unexpected repository/job.'}
 if($env:REA_ARCHIVE_ZIP_ROLE -notin @('finite','zip-original','browser')){throw 'Unexpected separately identified role.'}
-if($ExpectedManifestSHA256 -cnotmatch '^[0-9a-f]{64}$' -or $ExpectedParent -cne '7f71cb5bbee54c1bc96611235cf905585994a6ea'){throw 'Final reviewed manifest and exact Sync publication parent are required.'}
+if($ExpectedManifestSHA256 -cnotmatch '^[0-9a-f]{64}$' -or $ExpectedParent -cne '25c8ddea51bab236ee7e21218bc532afcc797fd6'){throw 'Final reviewed manifest and exact Archive repair parent are required.'}
 if($env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$' -or $env:GITHUB_RUN_ID -cnotmatch '^\d+$' -or $env:GITHUB_RUN_ATTEMPT -cnotmatch '^\d+$'){throw 'Invalid actual attempt identity.'}
 function Git([string[]]$Arguments){$out=& git.exe @Arguments;if($LASTEXITCODE -ne 0){throw ('Git read failed: '+($Arguments -join ' '))};return $out}
 $root=[IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)
@@ -16,7 +16,7 @@ if((Get-Location).Path -cne $root){throw 'Admission must run in the exact checko
 if([string](Git -Arguments @('rev-parse','HEAD')) -cne $env:GITHUB_SHA){throw 'Actual checkout SHA mismatch.'}
 if($env:GITHUB_WORKFLOW_SHA -cne $env:GITHUB_SHA){throw 'Workflow must come from this same actual source commit.'}
 $parents=([string](Git -Arguments @('rev-list','--parents','-n','1','HEAD'))).Split(' ')
-if($parents.Length -ne 2 -or $parents[0] -cne $env:GITHUB_SHA -or $parents[1] -cne $ExpectedParent){throw 'Expected the reviewed sole parent Sync publication.'}
+if($parents.Length -ne 2 -or $parents[0] -cne $env:GITHUB_SHA -or $parents[1] -cne $ExpectedParent){throw 'Expected the reviewed sole parent Archive source.'}
 $statusOutput=@(Git -Arguments @('status','--porcelain=v1','--untracked-files=all'))
 if($statusOutput.Count -ne 0){
   # A clean checkout requires exactly zero native status records. Any returned

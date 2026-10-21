@@ -6,12 +6,15 @@ export async function render(root,api) {
   let busy = false, mounted = true;
   const privateFields = [];
   async function request(action,input) { const value = await api(action,input); if (!mounted) throw new Error('Archive view closed.'); return value; }
-  function button(parent,label,fn) { const b = node('button',label,'button'); b.type = 'button'; b.addEventListener('click',async () => {
+  function clearOutcome(output) { if (output) { output.textContent = ''; output.className = 'status'; } }
+  function button(parent,label,fn,output) { const b = node('button',label,'button'), outcome = node('p','', 'status'); b.type = 'button'; outcome.setAttribute('data-archive-operation',label); outcome.setAttribute('aria-live','polite'); b.addEventListener('click',async () => {
     if (busy || !mounted) return; busy = true; root.setAttribute('aria-busy', 'true');
     const controls = [...root.querySelectorAll('button,input,select,textarea')].map(c => [c,c.disabled]); controls.forEach(([c]) => { c.disabled = true; });
-    status.textContent = 'Working…'; try { await fn(); if (mounted) status.textContent = 'Done.'; } catch (error) { if (mounted) status.textContent = error.message; }
+    if (output) output.replaceChildren(); clearOutcome(outcome); status.className = 'status'; status.textContent = 'Working…'; outcome.textContent = 'Working…';
+    try { await fn(); if (mounted) { status.textContent = 'Done.'; outcome.textContent = 'Done.'; } }
+    catch (error) { if (mounted) { status.textContent = error.message; status.className = 'status error'; outcome.textContent = error.message; outcome.className = 'status error'; } }
     finally { privateFields.forEach(c => { c.value = ''; }); if (mounted) { controls.forEach(([c,disabled]) => { c.disabled = disabled; }); busy = false; root.setAttribute('aria-busy', 'false'); } }
-  }); parent.append(b); }
+  }); parent.append(b,outcome); return outcome; }
   const sample = node('section',undefined,'card'); sample.append(node('h3','Create a workspace file')); root.append(sample);
   const filename = field(sample,'Workspace file path','archive/source/hello.txt'), text = field(sample,'Text content','Hello from REA Archive.','textarea');
   button(sample,'Create file',async () => { const result = await request('putFile',{ path: filename.value, content: text.value }); filename.value = result.path; });
@@ -61,18 +64,22 @@ export async function render(root,api) {
   zipEncrypt.addEventListener('change', () => { if (!zipEncrypt.checked) zipPassword.value = ''; encryptionControls(); });
   zip64.addEventListener('change', encryptionControls);
   compressionControls();
-  const created = node('p','', 'status'); create.append(created);
-  button(create,'Create archive',async () => { const encrypted = format.value === 'sevenzip' && encrypt.checked, encryptedZip = format.value === 'zip' && zipEncrypt.checked; const result = await request('create',{ source: source.value, output: output.value, format: format.value, compression: compression.value, level: Number(level.value), profile: profile.value, encodedHeader: encodedHeader.checked, zip64: zip64.checked, solid: solid.checked, comment: comment.value, ...(encrypted ? { password: createPassword.value, encryptHeaders: encryptHeaders.checked } : {}), ...(encryptedZip ? { encryption: 'aes256', password: zipPassword.value } : {}) }); created.textContent = `${result.entries} entries · ${result.originalBytes} input bytes → ${result.bytes} ${result.format === 'sevenzip' ? '7Z' : result.format.toUpperCase()} bytes${result.encrypted ? ' · AES-256' : ''}`; archivePath.value = result.path; });
+  const created = node('p','', 'status'); created.setAttribute('data-archive-result','create'); create.append(created);
+  button(create,'Create archive',async () => { const encrypted = format.value === 'sevenzip' && encrypt.checked, encryptedZip = format.value === 'zip' && zipEncrypt.checked; const result = await request('create',{ source: source.value, output: output.value, format: format.value, compression: compression.value, level: Number(level.value), profile: profile.value, encodedHeader: encodedHeader.checked, zip64: zip64.checked, solid: solid.checked, comment: comment.value, ...(encrypted ? { password: createPassword.value, encryptHeaders: encryptHeaders.checked } : {}), ...(encryptedZip ? { encryption: 'aes256', password: zipPassword.value } : {}) }); created.textContent = `${result.entries} entries · ${result.originalBytes} input bytes → ${result.bytes} ${result.format === 'sevenzip' ? '7Z' : result.format.toUpperCase()} bytes${result.encrypted ? ' · AES-256' : ''}`; archivePath.value = result.path; invalidateArchiveResults(); },created);
   const inspect = node('section',undefined,'card'); inspect.append(node('h3','Inspect and test archive')); root.append(inspect);
-  const archivePath = field(inspect,'Archive path','archive/hello.zip'), listing = node('div'); inspect.append(listing);
+  const archivePath = field(inspect,'Archive path','archive/hello.zip'), listing = node('div'); listing.setAttribute('data-archive-listing','true'); inspect.append(listing);
   const usePassword = field(inspect,'Use an archive password','','checkbox'), readPassword = field(inspect,'Inspection/extraction password','','password'); readPassword.autocomplete = 'off'; readPassword.disabled = true; privateFields.push(readPassword); usePassword.addEventListener('change',() => { readPassword.disabled = !usePassword.checked; if (!usePassword.checked) readPassword.value = ''; });
-  button(inspect,'List and verify every entry',async () => {
+  const inspectedOutcome = button(inspect,'List and verify every entry',async () => {
     const result = await request('list',{ path: archivePath.value, ...(usePassword.checked ? { password: readPassword.value } : {}) }), label = result.format === 'sevenzip' ? '7Z' : result.format.toUpperCase(); listing.replaceChildren(node('p',`${label} integrity and size checks passed for ${result.entries.length} entries.${result.headerEncrypted ? ' Names and header metadata were encrypted.' : ''} TAR verifies header checksums. Ordinary ZIP and GZIP verify content CRC. Encrypted ZIP verifies its content authentication code and any recorded content CRC. Archive names and comments are not authenticated. 7Z verifies content CRC when recorded. Zstandard verifies content checksums when present.`));
     const table = node('table'), head = node('tr'); for (const title of ['Path','Bytes','Stored bytes','Method','Layout','Encryption','Modified','CRC-32']) head.append(node('th',title)); table.append(head);
     for (const entry of result.entries) { const row = node('tr'); for (const value of [entry.name,entry.size,entry.compressedSize ?? (entry.solid ? 'Shared solid block' : ''),entry.method,entry.zip64 ? 'ZIP64' : entry.solid ? '7Z solid' : label,entry.encrypted ? 'AES-256' : '',entry.modifiedAt ?? '',entry.crc32 ?? 'Not recorded']) row.append(node('td',String(value))); table.append(row); } listing.append(table);
-  });
+  },listing);
   const extract = node('section',undefined,'card'); extract.append(node('h3','Extract to a new folder')); root.append(extract);
-  const destination = field(extract,'New destination folder','archive/restored'), confirm = field(extract,'Confirm extraction','','checkbox'), result = node('p','', 'status'); extract.append(result);
-  button(extract,'Verify and extract',async () => { const value = await request('extract',{ path: archivePath.value, destination: destination.value, confirm: confirm.checked, ...(usePassword.checked ? { password: readPassword.value } : {}) }); result.textContent = `${value.extracted} entries extracted to ${value.destination}.`; });
+  const destination = field(extract,'New destination folder','archive/restored'), confirm = field(extract,'Confirm extraction','','checkbox'), result = node('p','', 'status'); result.setAttribute('data-archive-result','extract'); extract.append(result);
+  const extractedOutcome = button(extract,'Verify and extract',async () => { const value = await request('extract',{ path: archivePath.value, destination: destination.value, confirm: confirm.checked, ...(usePassword.checked ? { password: readPassword.value } : {}) }); result.textContent = `${value.extracted} entries extracted to ${value.destination}.`; },result);
+  function invalidateArchiveResults() { listing.replaceChildren(); clearOutcome(inspectedOutcome); clearOutcome(result); clearOutcome(extractedOutcome); }
+  function archiveContextChanged() { if (busy || !mounted) return; invalidateArchiveResults(); clearOutcome(status); }
+  function destinationContextChanged() { if (busy || !mounted) return; clearOutcome(result); clearOutcome(extractedOutcome); clearOutcome(status); }
+  for (const event of ['input','change']) { archivePath.addEventListener(event,archiveContextChanged); destination.addEventListener(event,destinationContextChanged); }
   return () => { if (!mounted) return; mounted = false; privateFields.forEach(c => { c.value = ''; }); root.setAttribute('aria-busy','false'); };
 }

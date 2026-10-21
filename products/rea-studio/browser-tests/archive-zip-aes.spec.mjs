@@ -20,6 +20,8 @@ async function bounded(promise, milliseconds, label) { let timer; try { return a
 const sampleName = 'astral-😀-é-e\u0301.txt', sampleText = 'Owned Archive browser content\nUnicode 😀 é e\u0301\nSecond line\n';
 const rootView = page => page.locator('#app-root > div');
 const privateFields = page => page.locator('#app-root input[type="password"]');
+const operationOutcome = (page,label) => rootView(page).locator('[data-archive-operation="'+label+'"]');
+const extractionResult = page => rootView(page).locator('[data-archive-result="extract"]');
 async function absent(filename) { try { await fs.lstat(filename); return false; } catch (error) { if (error.code === 'ENOENT') return true; throw error; } }
 const test = base.extend({
   studio: async ({ page }, use, info) => {
@@ -152,6 +154,15 @@ for(const compression of ['store','deflate']) test('Archive AES ZIP '+compressio
   await s.page.getByRole('button',{name:'List and verify every entry',exact:true}).click();await done(s);
   await expect(s.page.getByRole('cell',{name:sampleName,exact:true})).toBeVisible();await expect(s.page.getByRole('cell',{name:'AES-256',exact:true})).toBeVisible();
   await expect(s.page.getByText(/Encrypted ZIP verifies its content authentication code and any recorded content CRC/)).toBeVisible();
+  const requestsBeforeContext=s.requests.length;
+  await s.page.getByLabel('Archive path',{exact:true}).fill('archive/not-inspected-'+compression+'.zip');
+  await expect(s.page.getByRole('cell',{name:sampleName,exact:true})).toHaveCount(0);
+  await expect(operationOutcome(s.page,'List and verify every entry')).toHaveText('');
+  expect(s.requests.length).toBe(requestsBeforeContext);
+  await s.page.getByLabel('Archive path',{exact:true}).fill('archive/'+compression+'.zip');await readPassword(s,password);
+  await s.page.getByRole('button',{name:'List and verify every entry',exact:true}).click();await done(s);
+  await expect(s.page.getByRole('cell',{name:sampleName,exact:true})).toBeVisible();
+  s.observations.push({kind:'archive-context-invalidates-prior-inspection',compression,oldListingAbsent:true,contextChangeRequests:0,freshInspectionPassed:true});
   await extract(s,'archive/zip-'+compression+'-restored',password);
   s.observations.push({kind:'aes-zip-ui-roundtrip',compression,reloadObserved:true,hostRestartClaimed:false,contentBytesExact:true,namesVisible:true,passwordFieldsCleared:3,archive:metadata(bytes)});
 });
@@ -164,19 +175,29 @@ test('Archive AES ZIP wrong password and corrupted authentication refuse extract
     const pending=s.page.waitForResponse(r=>r.url()===s.url+'/api/archive/'+action&&r.request().method()==='POST');await s.page.getByRole('button',{name:action==='list'?'List and verify every entry':'Verify and extract',exact:true}).click();
     const response=await pending;expect(response.status()).toBe(400);await expect(rootView(s.page)).toHaveAttribute('aria-busy','false');await expect(rootView(s.page).locator(':scope > p.status')).not.toHaveText('Done.');
     await expect.poll(()=>privateFields(s.page).evaluateAll(nodes=>nodes.map(node=>node.value.length))).toEqual([0,0,0]);
+    const localOutcome=operationOutcome(s.page,action==='list'?'List and verify every entry':'Verify and extract');
+    await expect(localOutcome).toHaveClass('status error');await expect(localOutcome).toContainText(/password|authentication/i);
+    if(action==='list')await expect(s.page.getByRole('cell',{name:sampleName,exact:true})).toHaveCount(0);
+    else await expect(extractionResult(s.page)).toHaveText('');
+    s.observations.push({kind:'operation-local-current-refusal',action,status:response.status(),inlineErrorVisible:true,oldOperationOutputAbsent:true});
     s.observations.push({kind:'aes-zip-wrong-password-refusal',action,status:response.status(),body:metadata(await response.body()),passwordRetained:false});
   }
   expect(await absent(path.join(s.workspace,'archive/zip-wrong-refused'))).toBe(true);
   await extract(s,'archive/zip-correct-after-refusal',password);
+  await expect(extractionResult(s.page)).toContainText('archive/zip-correct-after-refusal');
   const location=path.join(s.workspace,'archive/aes.zip'),before=await fs.readFile(location),corrupted=Buffer.from(before);
   assert.equal(corrupted.readUInt32LE(0),0x04034b50);const size=corrupted.readUInt32LE(18),dataAt=30+corrupted.readUInt16LE(26)+corrupted.readUInt16LE(28);assert(size>=28&&dataAt+size<=corrupted.length);
   corrupted[dataAt+size-1]^=1;await fs.writeFile(location,corrupted);assert((await fs.readFile(location)).equals(corrupted));
   await s.preserveArchive('archive/aes.zip','archive-zip-aes-corrupted-tag.zip');
   await readPassword(s,password);await s.page.getByLabel('New destination folder',{exact:true}).fill('archive/zip-corrupt-refused');
+  await expect(extractionResult(s.page)).toHaveText('');await expect(operationOutcome(s.page,'Verify and extract')).toHaveText('');
   const pending=s.page.waitForResponse(r=>r.url()===s.url+'/api/archive/extract'&&r.request().method()==='POST');await s.page.getByRole('button',{name:'Verify and extract',exact:true}).click();const response=await pending;
   expect(response.status()).toBe(400);await expect(rootView(s.page)).toHaveAttribute('aria-busy','false');await expect(rootView(s.page).locator(':scope > p.status')).not.toHaveText('Done.');
   expect(await absent(path.join(s.workspace,'archive/zip-corrupt-refused'))).toBe(true);expect((await fs.readdir(path.join(s.workspace,'archive'))).some(n=>n.includes('.partial-'))).toBe(false);
   await expect.poll(()=>privateFields(s.page).evaluateAll(nodes=>nodes.map(node=>node.value.length))).toEqual([0,0,0]);
+  await expect(extractionResult(s.page)).toHaveText('');await expect(operationOutcome(s.page,'Verify and extract')).toHaveClass('status error');
+  await expect(operationOutcome(s.page,'Verify and extract')).toContainText(/password|authentication/i);
+  s.observations.push({kind:'success-then-tag-refusal-current-operation-output',priorSuccessDestination:'archive/zip-correct-after-refusal',currentDestination:'archive/zip-corrupt-refused',previousSuccessCleared:true,inlineErrorVisible:true,status:response.status(),noDestination:true});
   s.observations.push({kind:'aes-zip-tag-mutation-refusal',mutation:'one byte of actual last authentication code; owned fixture only',before:metadata(before),after:metadata(corrupted),status:response.status(),noDestination:true});
 });
 

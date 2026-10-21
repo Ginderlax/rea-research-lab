@@ -8,7 +8,7 @@ $ErrorActionPreference='Stop'
 if($env:CI -ne 'true' -or $env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64'){throw 'Verified hosted Windows x64 context required.'}
 if($env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_JOB -notin @('validate')){throw 'Unexpected repository/job.'}
 if($env:REA_ARCHIVE_ZIP_ROLE -notin @('finite','zip-original','browser')){throw 'Unexpected separately identified role.'}
-if($ExpectedManifestSHA256 -cnotmatch '^[0-9a-f]{64}$' -or $ExpectedParent -cne '25c8ddea51bab236ee7e21218bc532afcc797fd6'){throw 'Final reviewed manifest and exact Archive repair parent are required.'}
+if($ExpectedManifestSHA256 -cnotmatch '^[0-9a-f]{64}$' -or $ExpectedParent -cne '9ff4caac1cfb75e5df50245e7d455be2bc8b8b4d'){throw 'Final reviewed manifest and exact Archive repair parent are required.'}
 if($env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$' -or $env:GITHUB_RUN_ID -cnotmatch '^\d+$' -or $env:GITHUB_RUN_ATTEMPT -cnotmatch '^\d+$'){throw 'Invalid actual attempt identity.'}
 function Git([string[]]$Arguments){$out=& git.exe @Arguments;if($LASTEXITCODE -ne 0){throw ('Git read failed: '+($Arguments -join ' '))};return $out}
 $root=[IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)

@@ -65,3 +65,47 @@ test('held ZIP creation blocks duplicate operations and disposal scrubs all thre
   for(const label of ['7Z creation password (1–128 UTF16 units)','ZIP creation password (1–99 ASCII characters)','Inspection/extraction password'])assert.equal(d.field(label).value,'');
   const before=d.root.textContent;gate.resolve({path:'late.zip',format:'zip',entries:1,originalBytes:8,bytes:170,encrypted:true});await pending;assert.equal(d.root.textContent,before);
 });
+
+test('operation-local outcomes clear prior results before pending requests and context changes without weakening password or busy cleanup',async t=>{
+  let held=null,failure=null;const calls=[];
+  const d=await setup(t,async(action,input)=>{
+    calls.push({action,input:{...input}});
+    if(held)return held.promise;
+    if(failure)throw new Error(failure);
+    if(action==='list')return{format:'zip',entries:[{name:'owned.txt',size:8,method:'deflate',encrypted:true,aesVersion:2}]};
+    if(action==='extract')return{extracted:1,destination:input.destination};
+    throw new Error('Unexpected operation in owned DOM regression');
+  });
+  const marked=(tag,key,value)=>d.root.querySelectorAll(tag).find(n=>n.getAttribute(key)===value);
+  const listing=marked('div','data-archive-listing','true'), extracted=marked('p','data-archive-result','extract');
+  const listOutcome=marked('p','data-archive-operation','List and verify every entry'), extractOutcome=marked('p','data-archive-operation','Verify and extract');
+  assert(listing&&extracted&&listOutcome&&extractOutcome);
+  assert.equal(listOutcome.getAttribute('aria-live'),'polite');assert.equal(extractOutcome.getAttribute('aria-live'),'polite');
+  d.field('Use an archive password').checked=true;await d.field('Use an archive password').emit('change');
+  d.field('Inspection/extraction password').value='owned fresh read';await d.button('List and verify every entry').click();
+  assert(listing.textContent.includes('owned.txt'));assert.equal(listOutcome.textContent,'Done.');
+  held=deferred();d.field('Inspection/extraction password').value='owned pending read';
+  const pending=d.button('List and verify every entry').click(),count=calls.length;
+  assert.equal(listing.textContent,'');assert.equal(listOutcome.textContent,'Working…');assert.equal(listOutcome.className,'status');
+  assert.equal(d.root.getAttribute('aria-busy'),'true');await d.button('List and verify every entry').click();assert.equal(calls.length,count);
+  held.reject(new Error('ZIP password or content authentication failed.'));await pending;held=null;
+  assert.equal(listing.textContent,'');assert.equal(listOutcome.className,'status error');assert.equal(listOutcome.textContent,'ZIP password or content authentication failed.');
+  for(const label of ['7Z creation password (1–128 UTF16 units)','ZIP creation password (1–99 ASCII characters)','Inspection/extraction password'])assert.equal(d.field(label).value,'');
+  assert.equal(d.root.getAttribute('aria-busy'),'false');assert.equal(d.button('Verify and extract').disabled,false);
+  d.field('Inspection/extraction password').value='owned fresh retry';await d.button('List and verify every entry').click();assert(listing.textContent.includes('owned.txt'));
+  const beforeContext=calls.length;d.field('Archive path').value='archive/other.zip';await d.field('Archive path').emit('input');
+  assert.equal(listing.textContent,'');assert.equal(listOutcome.textContent,'');assert.equal(calls.length,beforeContext);
+  d.field('Archive path').value='archive/hello.zip';await d.field('Archive path').emit('change');
+  d.field('Confirm extraction').checked=true;d.field('Inspection/extraction password').value='owned extraction';await d.button('Verify and extract').click();
+  assert(extracted.textContent.includes('archive/restored'));assert.equal(extractOutcome.textContent,'Done.');
+  held=deferred();d.field('Inspection/extraction password').value='owned rejected extraction';const pendingExtract=d.button('Verify and extract').click();
+  assert.equal(extracted.textContent,'');assert.equal(extractOutcome.textContent,'Working…');
+  held.reject(new Error('ZIP password or content authentication failed.'));await pendingExtract;held=null;
+  assert.equal(extracted.textContent,'');assert.equal(extractOutcome.className,'status error');assert(extractOutcome.textContent.includes('authentication failed'));
+  d.field('Inspection/extraction password').value='owned successful extraction';await d.button('Verify and extract').click();assert(extracted.textContent.includes('archive/restored'));
+  const beforeDestination=calls.length;d.field('New destination folder').value='archive/new-target';await d.field('New destination folder').emit('input');
+  assert.equal(extracted.textContent,'');assert.equal(extractOutcome.textContent,'');assert.equal(calls.length,beforeDestination);
+  failure='ZIP content authentication failed for the owned tag case.';d.field('Inspection/extraction password').value='owned tag read';await d.button('Verify and extract').click();
+  assert.equal(extracted.textContent,'');assert.equal(extractOutcome.className,'status error');assert.equal(extractOutcome.textContent,failure);
+  assert.equal(d.field('Inspection/extraction password').value,'');assert.equal(d.root.getAttribute('aria-busy'),'false');
+});

@@ -9,9 +9,9 @@ assert.equal(process.env.CI,'true');assert.equal(process.env.GITHUB_ACTIONS,'tru
 const studio=fileURLToPath(new URL('../',import.meta.url));
 assert([2,3].includes(process.argv.length));if(process.argv.length===3)assert.equal(process.argv[2],'--original');const original=process.argv.length===3;
 const roster=JSON.parse(fs.readFileSync(path.join(studio,'experiments/archive-zip-aes/finite-roster.json'),'utf8'));
-assert.equal(roster.schema,'rea-archive-zip-aes-finite-roster/v1');assert.equal(roster.testFiles.length,19);assert.deepEqual(roster.testFiles,[...new Set(roster.testFiles)].sort());
+assert.equal(roster.schema,'rea-archive-zip-aes-finite-roster/v1');assert.equal(roster.testFiles.length,21);assert.deepEqual(roster.testFiles,[...new Set(roster.testFiles)].sort());
 for(const p of roster.testFiles)assert(/^apps\/archive\/[a-z0-9.-]+\.test\.mjs$/.test(p));
-const physical=fs.readdirSync(path.join(studio,'apps/archive')).filter(n=>n.endsWith('.test.mjs')).map(n=>'apps/archive/'+n).sort();assert.deepEqual(physical,[...roster.testFiles,...roster.originalTestFiles].sort());assert.deepEqual(roster.originalTestFiles,['apps/archive/zip-aes-original.test.mjs']);
+const physical=fs.readdirSync(path.join(studio,'apps/archive')).filter(n=>n.endsWith('.test.mjs')).map(n=>'apps/archive/'+n).sort();assert.deepEqual(physical,[...roster.testFiles,...roster.originalTestFiles].sort());assert.deepEqual(roster.originalTestFiles,['apps/archive/flat-extract-original.test.mjs','apps/archive/zip-aes-original.test.mjs']);
 const selected=original?roster.originalTestFiles:roster.testFiles;let failures=0;const completed=new Set(),stream=run({files:selected.map(p=>path.join(studio,p)),concurrency:1,isolation:'process'});
 for await(const event of stream){
   if(event.type==='test:fail')failures++;

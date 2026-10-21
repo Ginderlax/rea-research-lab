@@ -222,3 +222,64 @@ test('Archive AES ZIP disposal clears detached passwords after actual committed 
   gate.release();await gate.finished;await expect(s.page.getByRole('heading',{name:'REA Archive',exact:true})).toHaveCount(0);
   s.observations.push({kind:'aes-zip-disposal-after-real-extraction',content:metadata(committed),detachedPasswordUnits:[0,0,0],destinationPreserved:true,serverCancellationClaimed:false,staleArchiveUIAbsent:true});
 });
+
+// New flattened-extraction cases. All preceding eleven scenario bodies and
+// shared fixture behavior remain unchanged; owned binary input is fixture setup.
+async function flatFixture(s,{collision=false}={}){
+  const relative=collision?'archive/flat-collision-input':'archive/flat-input';
+  const files=collision?[
+    {path:'a/report.txt',data:Buffer.from('first')},{path:'b/report.txt',data:Buffer.from('second')},
+    {path:'unique/first.bin',data:Buffer.from([0,255,1,254])},
+  ]:[
+    {path:'branch/bytes.bin',data:Buffer.from(Array.from({length:1024},(_,i)=>(i*31+7)%256))},
+    {path:'branch/deeper/café-😀.txt',data:Buffer.from('Owned real-browser flat Unicode λ 😀 é e\u0301\n')},
+    {path:'branch/empty.bin',data:Buffer.alloc(0)},
+  ];
+  for(const row of files){const file=path.join(s.workspace,...relative.split('/'),...row.path.split('/'));await fs.mkdir(path.dirname(file),{recursive:true});await fs.writeFile(file,row.data,{flag:'wx'});}
+  if(!collision)await fs.mkdir(path.join(s.workspace,...relative.split('/'),'empty-directory'));
+  s.observations.push({kind:'flat-ui-owned-fixture',relative,files:files.map(row=>({path:row.path,...metadata(row.data)})),ownedFilesystemSeedOnly:true,productBinaryEditorClaimed:false});
+  await s.page.getByLabel('Source folder (one file for GZIP or Zstandard)',{exact:true}).fill(relative);
+  await s.page.getByRole('combobox',{name:'Archive format',exact:true}).selectOption('zip');
+  await s.page.getByRole('combobox',{name:'Compression',exact:true}).selectOption('store');
+  await s.page.getByLabel('New archive path',{exact:true}).fill(collision?'archive/flat-collision.zip':'archive/flat-nested.zip');
+  await create(s);return files;
+}
+async function preserveFlatFile(s,relative,label,expected){
+  assert(/^[a-z0-9-]+\.(bin|txt)$/.test(label));
+  const file=path.join(s.workspace,...relative.split('/')),stat=await fs.lstat(file),real=await fs.realpath(file);
+  assert(stat.isFile()&&!stat.isSymbolicLink()&&stat.nlink===1&&stat.size<=256*1024);
+  assert(real.toLowerCase().startsWith(s.workspace.toLowerCase()+path.sep));
+  const bytes=await fs.readFile(real);assert(bytes.equals(expected));const artifact='workspace-artifacts/'+label;
+  await fs.mkdir(path.join(evidence,'workspace-artifacts'),{recursive:true});await fs.writeFile(path.join(evidence,artifact),bytes,{flag:'wx'});
+  const retained=await fs.readFile(path.join(evidence,artifact));assert(retained.equals(expected));
+  s.observations.push({kind:'flat-ui-extracted-file',path:relative,artifact,expected:metadata(expected),observed:metadata(retained),syntheticProducer:'flatFixture in this admitted browser source',actualBrowserDownload:false});
+}
+test('Archive Files only and Full paths real UI extractions preserve nested binary Unicode and empty file bytes',async({studio:s})=>{
+  await open(s);const files=await flatFixture(s);await s.preserveArchive('archive/flat-nested.zip','archive-flat-nested.zip');
+  const mode=s.page.getByRole('combobox',{name:'Extraction paths',exact:true});await expect(mode).toHaveValue('full');
+  await mode.selectOption('flat');await s.page.getByLabel('New destination folder',{exact:true}).fill('archive/flat-result');await s.page.getByLabel('Confirm extraction',{exact:true}).check();
+  let pending=s.page.waitForResponse(r=>r.url()===s.url+'/api/archive/extract'&&r.request().method()==='POST');
+  await s.page.getByRole('button',{name:'Verify and extract',exact:true}).click();let response=await pending;expect(response.status()).toBe(200);expect(response.request().postDataJSON().pathMode).toBe('flat');await done(s);
+  expect((await fs.readdir(path.join(s.workspace,'archive/flat-result'))).sort()).toEqual(files.map(row=>path.posix.basename(row.path)).sort());
+  for(const[row,label]of files.map((row,index)=>[row,['binary.bin','unicode.txt','empty.bin'][index]]))await preserveFlatFile(s,'archive/flat-result/'+path.posix.basename(row.path),'flat-zip-'+label,row.data);
+  await expect(extractionResult(s.page)).toContainText('3 entries extracted to archive/flat-result');
+  const count=s.requests.length;await mode.selectOption('full');await expect(extractionResult(s.page)).toHaveText('');await expect(operationOutcome(s.page,'Verify and extract')).toHaveText('');expect(s.requests.length).toBe(count);
+  await s.page.getByLabel('New destination folder',{exact:true}).fill('archive/full-result');pending=s.page.waitForResponse(r=>r.url()===s.url+'/api/archive/extract'&&r.request().method()==='POST');
+  await s.page.getByRole('button',{name:'Verify and extract',exact:true}).click();response=await pending;expect(response.status()).toBe(200);expect(response.request().postDataJSON().pathMode).toBe('full');await done(s);
+  for(const[row,label]of files.map((row,index)=>[row,['binary.bin','unicode.txt','empty.bin'][index]]))await preserveFlatFile(s,'archive/full-result/'+row.path,'full-zip-'+label,row.data);
+  expect((await fs.lstat(path.join(s.workspace,'archive/full-result/empty-directory'))).isDirectory()).toBe(true);
+  expect((await fs.lstat(path.join(s.workspace,'archive/full-result/branch/deeper'))).isDirectory()).toBe(true);
+  expect(s.requests.filter(row=>row.path==='/api/archive/extract')).toHaveLength(2);
+  s.observations.push({kind:'flat-ui-mode-roundtrip',defaultMode:'full',requestModes:['flat','full'],successfulHTTPStatuses:[200,200],fileBytesExact:true,flatDirectoryEntriesSkipped:true,fullEmptyDirectoryRetained:true,modeChangeRequests:0,oldResultClearedOnModeChange:true,actualExtractions:2});
+});
+test('Archive Files only basename collision returns actual HTTP400 before creating destination parents',async({studio:s})=>{
+  await open(s);await flatFixture(s,{collision:true});const archive=await fs.readFile(path.join(s.workspace,'archive/flat-collision.zip'));
+  await s.preserveArchive('archive/flat-collision.zip','archive-flat-collision.zip');
+  await s.page.getByRole('combobox',{name:'Extraction paths',exact:true}).selectOption('flat');await s.page.getByLabel('New destination folder',{exact:true}).fill('archive/collision-parent/target');await s.page.getByLabel('Confirm extraction',{exact:true}).check();
+  s.expectedErrors.add(s.url+'/api/archive/extract');const pending=s.page.waitForResponse(r=>r.url()===s.url+'/api/archive/extract'&&r.request().method()==='POST');
+  await s.page.getByRole('button',{name:'Verify and extract',exact:true}).click();const response=await pending;expect(response.status()).toBe(400);expect(response.request().postDataJSON().pathMode).toBe('flat');
+  await expect(rootView(s.page)).toHaveAttribute('aria-busy','false');await expect(operationOutcome(s.page,'Verify and extract')).toHaveClass('status error');await expect(operationOutcome(s.page,'Verify and extract')).toContainText('duplicate filenames');await expect(extractionResult(s.page)).toHaveText('');
+  expect(await absent(path.join(s.workspace,'archive/collision-parent'))).toBe(true);expect((await fs.readFile(path.join(s.workspace,'archive/flat-collision.zip'))).equals(archive)).toBe(true);
+  expect(s.requests.filter(row=>row.path==='/api/archive/extract')).toHaveLength(1);await expect.poll(()=>privateFields(s.page).evaluateAll(nodes=>nodes.map(node=>node.value.length))).toEqual([0,0,0]);
+  s.observations.push({kind:'flat-ui-collision-refusal',status:400,requestMode:'flat',body:metadata(await response.body()),noDestinationParent:true,archiveBefore:metadata(archive),archiveAfter:metadata(await fs.readFile(path.join(s.workspace,'archive/flat-collision.zip'))),inlineErrorVisible:true,oldOutcomeAbsent:true,passwordFieldsCleared:3,partialFilesWritten:false});
+});

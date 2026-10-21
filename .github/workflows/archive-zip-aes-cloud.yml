@@ -1,10 +1,9 @@
-# Prospective next-feature integration, not an authorization to rerun an old
-# product. All __REVIEWED_*__ seams block dispatch until root final composition.
-name: Prospective Archive feature with safe evidence
+# Bound source for a future product campaign; push authorization and runtime evidence remain pending.
+name: Prospective Archive flat extraction with safe evidence
 on:
   workflow_dispatch:
   push:
-    branches: ['__REVIEWED_NEXT_FEATURE_BRANCH__']
+    branches: ['experiment/archive-flat-extract-20261021-r1']
 permissions:
   contents: read
 concurrency:
@@ -12,17 +11,17 @@ concurrency:
   cancel-in-progress: false
 env:
   CI: 'true'
-  REA_ARCHIVE_ZIP_PARENT: '6aeb166588d834c9635940e542b2de4e98b1eaf2'
-  REA_SAFE_FEATURE_BRANCH: '__REVIEWED_NEXT_FEATURE_BRANCH__'
-  REA_ARCHIVE_ZIP_MANIFEST_SHA256: '__REVIEWED_SOURCE_MANIFEST_SHA256__'
-  REA_ARCHIVE_ZIP_ADMISSION_SCRIPT_SHA256: '1cb262ec35614783f456fbfec68aef910ab633ffa4575c8e0758e6cebc8d8a34'
-  REA_SAFE_CAPTURE_SHA256: 'e7490d623f27f862906de1d09a4f55eef62d0591344ae82d51463f848e8a4b9c'
+  REA_ARCHIVE_ZIP_PARENT: '393a2051d4825a222056fb639441bce022e552c2'
+  REA_SAFE_FEATURE_BRANCH: 'experiment/archive-flat-extract-20261021-r1'
+  REA_ARCHIVE_ZIP_MANIFEST_SHA256: 'fe558f9adb91347e3454b63ccc225443b47ab1a351bbf0ecd81c548d861d0afe'
+  REA_ARCHIVE_ZIP_ADMISSION_SCRIPT_SHA256: 'b2ad9b8ec5c40a90c6dc5d582f98fb5a5642e44ac1ce340302be1a511f5697e7'
+  REA_SAFE_CAPTURE_SHA256: 'a46c5b55f358437e0876a5eb19851eac9f9667172476975fdf9c20744856deea'
   REA_SAFE_FILTER_SHA256: '9fa0bfecb53c4a946a5e41987363bb61b3522c0cf16e4181afb32ecbc47f806b'
-  REA_SAFE_COLLECTOR_SHA256: 'f5d3d74ff2045679a5d08399748e79660f94939103f9ceaadb915c47d2fc0e9d'
-  REA_SAFE_EVIDENCE_POLICY_SHA256: '1c9df2389217ce81302f4a68535f40a6452f805674e1f662a609a78235979c21'
+  REA_SAFE_COLLECTOR_SHA256: '060b543995e0f1d4b317206abd76b9f56b7acd2dc12508446a85bc758f782a43'
+  REA_SAFE_EVIDENCE_POLICY_SHA256: '579041418b5ee365e387c9f9a14ce95ba64d444e19f21a9cbf304fc55d228206'
 jobs:
   validate:
-    name: Safe Archive feature / ${{ matrix.role }}
+    name: Safe Archive flat feature / ${{ matrix.role }}
     strategy:
       fail-fast: false
       matrix:
@@ -34,7 +33,9 @@ jobs:
     steps:
       - name: Enable long source paths
         shell: pwsh
-        run: git config --global core.longpaths true
+        run: |
+          $ErrorActionPreference='Stop'
+          try { & git.exe config --global core.longpaths true *> $null;if($LASTEXITCODE -ne 0){throw 'Long path setup refused'} } catch {Write-Output '{"schema":"rea-safe-bootstrap-console/v1","status":"failed","code":"LONG_PATH_SETUP_REFUSED"}';exit 1}
       - name: Check out actual source and fixed sole parent
         id: checkout
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
@@ -48,74 +49,157 @@ jobs:
           node-version: '24.16.0'
           architecture: x64
           check-latest: false
-      - name: Choose new owned unuploaded staging and safe-view paths
+      - name: Choose new private staging and safe-view paths
         shell: pwsh
         run: |
-          $raw=Join-Path $env:RUNNER_TEMP ('rea-archive-zip-aes-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
-          $safe=Join-Path $env:RUNNER_TEMP ('rea-safe-archive-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
-          $cache=Join-Path $env:RUNNER_TEMP ('rea-safe-archive-chromium-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
-          foreach($owned in @($raw,$safe,$cache)){if(Test-Path -LiteralPath $owned){throw 'Refuse earlier owned output.'}}
-          New-Item -ItemType Directory -Path $cache|Out-Null
-          'REA_ARCHIVE_ZIP_EVIDENCE='+$raw|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          'REA_SAFE_EVIDENCE='+$safe|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          'PLAYWRIGHT_BROWSERS_PATH='+$cache|Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $ErrorActionPreference='Stop'
+          try {
+            if($env:REA_ARCHIVE_ZIP_ROLE -cnotin @('finite','zip-original','browser') -or $env:GITHUB_RUN_ID -cnotmatch '^[1-9][0-9]*$' -or $env:GITHUB_RUN_ATTEMPT -cnotmatch '^[1-9][0-9]*$'){throw 'Fixed staging subject refused'}
+            $raw=Join-Path $env:RUNNER_TEMP ('rea-archive-zip-aes-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            $safe=Join-Path $env:RUNNER_TEMP ('rea-safe-archive-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            $cache=Join-Path $env:RUNNER_TEMP ('rea-safe-archive-chromium-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            foreach($owned in @($raw,$safe,$cache)){if(Test-Path -LiteralPath $owned){throw 'Earlier output refused'}}
+            $null=New-Item -ItemType Directory -Path $cache
+            [IO.File]::AppendAllText($env:GITHUB_ENV,'REA_ARCHIVE_ZIP_EVIDENCE='+$raw+"`n"+'REA_SAFE_EVIDENCE='+$safe+"`n"+'PLAYWRIGHT_BROWSERS_PATH='+$cache+"`n",[Text.UTF8Encoding]::new($false))
+          } catch {Write-Output '{"schema":"rea-safe-bootstrap-console/v1","status":"failed","code":"OWNED_STAGING_REFUSED"}';exit 1}
       - name: Authenticate launcher before project JavaScript
         id: launcher
         shell: pwsh
         run: |
-          $pairs=@(@('products/rea-studio/scripts/capture-safe-cloud-console.mjs',$env:REA_SAFE_CAPTURE_SHA256),@('products/rea-studio/scripts/prepare-safe-cloud-evidence.mjs',$env:REA_SAFE_FILTER_SHA256),@('products/rea-studio/scripts/verify-archive-zip-aes-cloud.mjs',$env:REA_SAFE_COLLECTOR_SHA256),@('products/rea-studio/scripts/archive-zip-aes-source-admission.ps1',$env:REA_ARCHIVE_ZIP_ADMISSION_SCRIPT_SHA256),@('products/rea-studio/experiments/archive-safe-evidence/policy.json',$env:REA_SAFE_EVIDENCE_POLICY_SHA256))
-          foreach($pair in $pairs){if($pair[1] -cnotmatch '^[0-9a-f]{64}$' -or (Get-FileHash -LiteralPath $pair[0] -Algorithm SHA256).Hash.ToLowerInvariant() -cne $pair[1]){throw 'Reviewed gate source hash required.'}}
-          if($env:REA_ARCHIVE_ZIP_MANIFEST_SHA256 -cnotmatch '^[0-9a-f]{64}$' -or $env:REA_SAFE_FEATURE_BRANCH.StartsWith('__') -or $env:GITHUB_REF -cne ('refs/heads/'+$env:REA_SAFE_FEATURE_BRANCH)){throw 'Final reviewed feature source composition required.'}
-      - name: Admit complete actual source with captured console
+          $ErrorActionPreference='Stop'
+          try {
+            $pairs=@(@('products/rea-studio/scripts/capture-safe-cloud-console.mjs',$env:REA_SAFE_CAPTURE_SHA256),@('products/rea-studio/scripts/prepare-safe-cloud-evidence.mjs',$env:REA_SAFE_FILTER_SHA256),@('products/rea-studio/scripts/verify-archive-zip-aes-cloud.mjs',$env:REA_SAFE_COLLECTOR_SHA256),@('products/rea-studio/scripts/archive-zip-aes-source-admission.ps1',$env:REA_ARCHIVE_ZIP_ADMISSION_SCRIPT_SHA256),@('products/rea-studio/experiments/archive-safe-evidence/policy.json',$env:REA_SAFE_EVIDENCE_POLICY_SHA256))
+            foreach($pair in $pairs){if($pair[1] -cnotmatch '^[0-9a-f]{64}$' -or (Get-FileHash -LiteralPath $pair[0] -Algorithm SHA256).Hash.ToLowerInvariant() -cne $pair[1]){throw 'Fixed gate source refused'}}
+            if($env:REA_ARCHIVE_ZIP_MANIFEST_SHA256 -cnotmatch '^[0-9a-f]{64}$' -or $env:REA_SAFE_FEATURE_BRANCH.StartsWith('__') -or $env:GITHUB_REF -cne ('refs/heads/'+$env:REA_SAFE_FEATURE_BRANCH)){throw 'Final composition refused'}
+          } catch {Write-Output '{"schema":"rea-safe-bootstrap-console/v1","status":"failed","code":"FINAL_COMPOSITION_REQUIRED"}';exit 1}
+      - name: Admit complete source with private console staging
         id: before
         if: steps.launcher.outcome == 'success'
         shell: pwsh
-        run: node products/rea-studio/scripts/capture-safe-cloud-console.mjs --phase before --evidence "$env:REA_ARCHIVE_ZIP_EVIDENCE"
-      - name: Run next admitted feature with no raw console forwarding
+        run: |
+          $ErrorActionPreference='Stop'
+          try {
+            if($env:REA_ARCHIVE_ZIP_ROLE -cnotin @('finite','zip-original','browser') -or $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$' -or $env:GITHUB_RUN_ID -cnotmatch '^[1-9][0-9]*$' -or $env:GITHUB_RUN_ATTEMPT -cnotmatch '^[1-9][0-9]*$'){throw 'Fixed subject refused'}
+            $capture='products/rea-studio/scripts/capture-safe-cloud-console.mjs'
+            if((Get-FileHash -LiteralPath $capture -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_CAPTURE_SHA256){throw 'Capture source refused'}
+            $top=Join-Path $env:RUNNER_TEMP ('rea-private-archive-orchestration-before-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            if(Test-Path -LiteralPath $top){throw 'Earlier orchestration output refused'};$null=New-Item -ItemType Directory -Path $top
+            if(((Get-Item -LiteralPath $top).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'Orchestration root refused'}
+            $stdout=Join-Path $top 'wrapper.stdout.txt';$stderr=Join-Path $top 'wrapper.stderr.txt'
+            & node $capture --phase before --evidence "$env:REA_ARCHIVE_ZIP_EVIDENCE" 1>$stdout 2>$stderr
+            $nativeExit=$LASTEXITCODE
+            if((Get-Item -LiteralPath $stdout).Length -gt 65536 -or (Get-Item -LiteralPath $stderr).Length -ne 0){throw 'Wrapper projection refused'}
+            $record=Get-Content -LiteralPath $stdout -Raw|ConvertFrom-Json -AsHashtable -DateKind String
+            $keys=@('schema','phase','role','source','status','stdoutBytes','stderrBytes','droppedBytes','exitCode','closeObserved','failureCode','rawChildOutputEchoed')
+            if($record -isnot [Collections.IDictionary] -or $record.Count -ne 12 -or @($record.Keys|Where-Object {$_ -cnotin $keys}).Count -ne 0 -or $record.schema -cne 'rea-safe-capture-console/v1' -or $record.phase -cne 'before' -or $record.role -cne $env:REA_ARCHIVE_ZIP_ROLE -or $record.source -cne $env:GITHUB_SHA -or $record.status -cnotin @('passed','failed') -or $record.rawChildOutputEchoed -ne $false){throw 'Fixed wrapper subject refused'}
+            if($record.stdoutBytes -isnot [long] -and $record.stdoutBytes -isnot [int]){throw 'Fixed byte scalar refused'}
+            if($record.stderrBytes -isnot [long] -and $record.stderrBytes -isnot [int]){throw 'Fixed byte scalar refused'}
+            if($record.stdoutBytes -lt 0 -or $record.stdoutBytes -gt 8388608 -or $record.stderrBytes -lt 0 -or $record.stderrBytes -gt 2097152 -or $record.droppedBytes -isnot [long] -and $record.droppedBytes -isnot [int] -or $record.closeObserved -isnot [bool] -or ($null -ne $record.exitCode -and $record.exitCode -isnot [long] -and $record.exitCode -isnot [int]) -or ($null -ne $record.failureCode -and ($record.failureCode -isnot [string] -or $record.failureCode -cnotmatch '^[A-Z0-9_]{1,64}$'))){throw 'Fixed wrapper fields refused'}
+            $record|ConvertTo-Json -Compress
+            if($nativeExit -ne 0 -or $record.status -cne 'passed' -or $record.exitCode -ne 0 -or $record.closeObserved -ne $true -or $record.droppedBytes -ne 0 -or $null -ne $record.failureCode){exit 1}
+          } catch {Write-Output '{"schema":"rea-safe-workflow-phase-console/v1","phase":"before","status":"failed","code":"OWNED_PHASE_REFUSED","rawOutputEchoed":false}';exit 1}
+      - name: Run admitted product sources without console forwarding
         id: verify
         if: steps.before.outcome == 'success'
         shell: pwsh
-        run: node products/rea-studio/scripts/capture-safe-cloud-console.mjs --phase run --evidence "$env:REA_ARCHIVE_ZIP_EVIDENCE"
-      - name: Recheck every source after success or failure
+        run: |
+          $ErrorActionPreference='Stop'
+          try {
+            if($env:REA_ARCHIVE_ZIP_ROLE -cnotin @('finite','zip-original','browser') -or $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$' -or $env:GITHUB_RUN_ID -cnotmatch '^[1-9][0-9]*$' -or $env:GITHUB_RUN_ATTEMPT -cnotmatch '^[1-9][0-9]*$'){throw 'Fixed subject refused'}
+            $capture='products/rea-studio/scripts/capture-safe-cloud-console.mjs'
+            if((Get-FileHash -LiteralPath $capture -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_CAPTURE_SHA256){throw 'Capture source refused'}
+            $top=Join-Path $env:RUNNER_TEMP ('rea-private-archive-orchestration-run-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            if(Test-Path -LiteralPath $top){throw 'Earlier orchestration output refused'};$null=New-Item -ItemType Directory -Path $top
+            if(((Get-Item -LiteralPath $top).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'Orchestration root refused'}
+            $stdout=Join-Path $top 'wrapper.stdout.txt';$stderr=Join-Path $top 'wrapper.stderr.txt'
+            & node $capture --phase run --evidence "$env:REA_ARCHIVE_ZIP_EVIDENCE" 1>$stdout 2>$stderr
+            $nativeExit=$LASTEXITCODE
+            if((Get-Item -LiteralPath $stdout).Length -gt 65536 -or (Get-Item -LiteralPath $stderr).Length -ne 0){throw 'Wrapper projection refused'}
+            $record=Get-Content -LiteralPath $stdout -Raw|ConvertFrom-Json -AsHashtable -DateKind String
+            $keys=@('schema','phase','role','source','status','stdoutBytes','stderrBytes','droppedBytes','exitCode','closeObserved','failureCode','rawChildOutputEchoed')
+            if($record -isnot [Collections.IDictionary] -or $record.Count -ne 12 -or @($record.Keys|Where-Object {$_ -cnotin $keys}).Count -ne 0 -or $record.schema -cne 'rea-safe-capture-console/v1' -or $record.phase -cne 'run' -or $record.role -cne $env:REA_ARCHIVE_ZIP_ROLE -or $record.source -cne $env:GITHUB_SHA -or $record.status -cnotin @('passed','failed') -or $record.rawChildOutputEchoed -ne $false){throw 'Fixed wrapper subject refused'}
+            if($record.stdoutBytes -isnot [long] -and $record.stdoutBytes -isnot [int]){throw 'Fixed byte scalar refused'}
+            if($record.stderrBytes -isnot [long] -and $record.stderrBytes -isnot [int]){throw 'Fixed byte scalar refused'}
+            if($record.stdoutBytes -lt 0 -or $record.stdoutBytes -gt 8388608 -or $record.stderrBytes -lt 0 -or $record.stderrBytes -gt 2097152 -or $record.droppedBytes -isnot [long] -and $record.droppedBytes -isnot [int] -or $record.closeObserved -isnot [bool] -or ($null -ne $record.exitCode -and $record.exitCode -isnot [long] -and $record.exitCode -isnot [int]) -or ($null -ne $record.failureCode -and ($record.failureCode -isnot [string] -or $record.failureCode -cnotmatch '^[A-Z0-9_]{1,64}$'))){throw 'Fixed wrapper fields refused'}
+            $record|ConvertTo-Json -Compress
+            if($nativeExit -ne 0 -or $record.status -cne 'passed' -or $record.exitCode -ne 0 -or $record.closeObserved -ne $true -or $record.droppedBytes -ne 0 -or $null -ne $record.failureCode){exit 1}
+          } catch {Write-Output '{"schema":"rea-safe-workflow-phase-console/v1","phase":"run","status":"failed","code":"OWNED_PHASE_REFUSED","rawOutputEchoed":false}';exit 1}
+      - name: Recheck all source after success or failure
         id: after
         if: always() && steps.before.outcome != '' && steps.before.outcome != 'skipped'
         shell: pwsh
         run: |
-          $capture='products/rea-studio/scripts/capture-safe-cloud-console.mjs'
-          if((Get-FileHash -LiteralPath $capture -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_CAPTURE_SHA256){throw 'Reviewed console capture changed.'}
-          node $capture --phase after --evidence "$env:REA_ARCHIVE_ZIP_EVIDENCE"
-      - name: Admit complete privacy-filtered safe evidence or fixed safe diagnostics
+          $ErrorActionPreference='Stop'
+          try {
+            if($env:REA_ARCHIVE_ZIP_ROLE -cnotin @('finite','zip-original','browser') -or $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$' -or $env:GITHUB_RUN_ID -cnotmatch '^[1-9][0-9]*$' -or $env:GITHUB_RUN_ATTEMPT -cnotmatch '^[1-9][0-9]*$'){throw 'Fixed subject refused'}
+            $capture='products/rea-studio/scripts/capture-safe-cloud-console.mjs'
+            if((Get-FileHash -LiteralPath $capture -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_CAPTURE_SHA256){throw 'Capture source refused'}
+            $top=Join-Path $env:RUNNER_TEMP ('rea-private-archive-orchestration-after-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            if(Test-Path -LiteralPath $top){throw 'Earlier orchestration output refused'};$null=New-Item -ItemType Directory -Path $top
+            if(((Get-Item -LiteralPath $top).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'Orchestration root refused'}
+            $stdout=Join-Path $top 'wrapper.stdout.txt';$stderr=Join-Path $top 'wrapper.stderr.txt'
+            & node $capture --phase after --evidence "$env:REA_ARCHIVE_ZIP_EVIDENCE" 1>$stdout 2>$stderr
+            $nativeExit=$LASTEXITCODE
+            if((Get-Item -LiteralPath $stdout).Length -gt 65536 -or (Get-Item -LiteralPath $stderr).Length -ne 0){throw 'Wrapper projection refused'}
+            $record=Get-Content -LiteralPath $stdout -Raw|ConvertFrom-Json -AsHashtable -DateKind String
+            $keys=@('schema','phase','role','source','status','stdoutBytes','stderrBytes','droppedBytes','exitCode','closeObserved','failureCode','rawChildOutputEchoed')
+            if($record -isnot [Collections.IDictionary] -or $record.Count -ne 12 -or @($record.Keys|Where-Object {$_ -cnotin $keys}).Count -ne 0 -or $record.schema -cne 'rea-safe-capture-console/v1' -or $record.phase -cne 'after' -or $record.role -cne $env:REA_ARCHIVE_ZIP_ROLE -or $record.source -cne $env:GITHUB_SHA -or $record.status -cnotin @('passed','failed') -or $record.rawChildOutputEchoed -ne $false){throw 'Fixed wrapper subject refused'}
+            if($record.stdoutBytes -isnot [long] -and $record.stdoutBytes -isnot [int]){throw 'Fixed byte scalar refused'}
+            if($record.stderrBytes -isnot [long] -and $record.stderrBytes -isnot [int]){throw 'Fixed byte scalar refused'}
+            if($record.stdoutBytes -lt 0 -or $record.stdoutBytes -gt 8388608 -or $record.stderrBytes -lt 0 -or $record.stderrBytes -gt 2097152 -or $record.droppedBytes -isnot [long] -and $record.droppedBytes -isnot [int] -or $record.closeObserved -isnot [bool] -or ($null -ne $record.exitCode -and $record.exitCode -isnot [long] -and $record.exitCode -isnot [int]) -or ($null -ne $record.failureCode -and ($record.failureCode -isnot [string] -or $record.failureCode -cnotmatch '^[A-Z0-9_]{1,64}$'))){throw 'Fixed wrapper fields refused'}
+            $record|ConvertTo-Json -Compress
+            if($nativeExit -ne 0 -or $record.status -cne 'passed' -or $record.exitCode -ne 0 -or $record.closeObserved -ne $true -or $record.droppedBytes -ne 0 -or $null -ne $record.failureCode){exit 1}
+          } catch {Write-Output '{"schema":"rea-safe-workflow-phase-console/v1","phase":"after","status":"failed","code":"OWNED_PHASE_REFUSED","rawOutputEchoed":false}';exit 1}
+      - name: Publish only the separately captured fixed safe filter result
         id: evidence
         if: always()
         shell: pwsh
         run: |
           $ErrorActionPreference='Stop'
           try {
-            if($env:REA_ARCHIVE_ZIP_ROLE -notin @('finite','zip-original','browser') -or $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$' -or $env:GITHUB_RUN_ID -cnotmatch '^[1-9][0-9]*$' -or $env:GITHUB_RUN_ATTEMPT -cnotmatch '^[1-9][0-9]*$'){throw 'Safe identity not available.'}
-            $expectedRaw=Join-Path $env:RUNNER_TEMP ('rea-archive-zip-aes-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
-            $expectedSafe=Join-Path $env:RUNNER_TEMP ('rea-safe-archive-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
-            if($env:REA_ARCHIVE_ZIP_EVIDENCE -cne $expectedRaw -or $env:REA_SAFE_EVIDENCE -cne $expectedSafe -or -not(Test-Path -LiteralPath $expectedRaw)){throw 'Owned source staging unavailable.'}
-            $rawItem=Get-Item -LiteralPath $expectedRaw
-            if(-not $rawItem.PSIsContainer -or ($rawItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'Owned staging must be ordinary.'}
-            @{schema='rea-archive-zip-aes-workflow/v1';role=$env:REA_ARCHIVE_ZIP_ROLE;sourceCommit=$env:GITHUB_SHA;sourceParent=$env:REA_ARCHIVE_ZIP_PARENT;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;fullSuite=$false;historicalReceiptsRebound=$false;fullParity=$false;superiority=$false;uploadedRepresentation='privacy-filtered-safe-view';rawCompleteEvidenceUploadAllowed=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $expectedRaw 'workflow-attempt.json') -Encoding utf8
-            $filter='products/rea-studio/scripts/prepare-safe-cloud-evidence.mjs'
-            $policy='products/rea-studio/experiments/archive-safe-evidence/policy.json'
-            if($env:REA_SAFE_FILTER_SHA256 -cnotmatch '^[0-9a-f]{64}$' -or (Get-FileHash -LiteralPath $filter -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_FILTER_SHA256 -or (Get-FileHash -LiteralPath $policy -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_EVIDENCE_POLICY_SHA256){throw 'Reviewed safe filter/policy changed.'}
-            node $filter --raw $expectedRaw --output $expectedSafe --policy $policy
-            if($LASTEXITCODE -ne 0){throw 'Safe view not admitted.'}
-          } catch {
-            # Deliberately no raw copy, captured child message, exception text,
-            # matched snippets, token/URL or unclassified log/source fallback.
+            $raw=$env:REA_ARCHIVE_ZIP_EVIDENCE
+            if(-not $raw -or -not(Test-Path -LiteralPath $raw)){throw 'Private evidence absent'}
+            $record=[ordered]@{schema='rea-archive-zip-aes-workflow/v1';role=$env:REA_ARCHIVE_ZIP_ROLE;sourceCommit=$env:GITHUB_SHA;sourceParent=$env:REA_ARCHIVE_ZIP_PARENT;runId=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;checkoutOutcome='${{ steps.checkout.outcome }}';sourceBeforeOutcome='${{ steps.before.outcome }}';verificationOutcome='${{ steps.verify.outcome }}';sourceAfterOutcome='${{ steps.after.outcome }}';sourceOverlay=$false;fullSuite=$false;historicalReceiptsRebound=$false;fullParity=$false;superiority=$false;uploadedRepresentation='privacy-filtered-safe-view';rawCompleteEvidenceUploadAllowed=$false}
+            $b=[Text.UTF8Encoding]::new($false).GetBytes(($record|ConvertTo-Json)+"`n");$s=[IO.File]::Open((Join-Path $raw 'workflow-attempt.json'),[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$s.Write($b,0,$b.Length)}finally{$s.Dispose()}
+          } catch {Write-Output '{"schema":"rea-safe-workflow-phase-console/v1","status":"failed","code":"WORKFLOW_SUBJECT_UNAVAILABLE"}';exit 1}
+          $ErrorActionPreference='Stop'
+          try {
+            if($env:REA_ARCHIVE_ZIP_ROLE -cnotin @('finite','zip-original','browser') -or $env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$' -or $env:GITHUB_RUN_ID -cnotmatch '^[1-9][0-9]*$' -or $env:GITHUB_RUN_ATTEMPT -cnotmatch '^[1-9][0-9]*$'){throw 'Fixed subject refused'}
+            $capture='products/rea-studio/scripts/capture-safe-cloud-console.mjs'
+            if((Get-FileHash -LiteralPath $capture -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_CAPTURE_SHA256){throw 'Capture source refused'}
+            $top=Join-Path $env:RUNNER_TEMP ('rea-private-archive-orchestration-filter-'+$env:REA_ARCHIVE_ZIP_ROLE+'-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            if(Test-Path -LiteralPath $top){throw 'Earlier orchestration output refused'};$null=New-Item -ItemType Directory -Path $top
+            if(((Get-Item -LiteralPath $top).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'Orchestration root refused'}
+            $stdout=Join-Path $top 'wrapper.stdout.txt';$stderr=Join-Path $top 'wrapper.stderr.txt'
+            & node $capture --phase filter --evidence "$env:REA_ARCHIVE_ZIP_EVIDENCE" 1>$stdout 2>$stderr
+            $nativeExit=$LASTEXITCODE
+            if((Get-Item -LiteralPath $stdout).Length -gt 65536 -or (Get-Item -LiteralPath $stderr).Length -ne 0){throw 'Wrapper projection refused'}
+            $record=Get-Content -LiteralPath $stdout -Raw|ConvertFrom-Json -AsHashtable -DateKind String
+            $keys=@('schema','phase','role','source','status','stdoutBytes','stderrBytes','droppedBytes','exitCode','closeObserved','failureCode','rawChildOutputEchoed')
+            if($record -isnot [Collections.IDictionary] -or $record.Count -ne 12 -or @($record.Keys|Where-Object {$_ -cnotin $keys}).Count -ne 0 -or $record.schema -cne 'rea-safe-capture-console/v1' -or $record.phase -cne 'filter' -or $record.role -cne $env:REA_ARCHIVE_ZIP_ROLE -or $record.source -cne $env:GITHUB_SHA -or $record.status -cnotin @('passed','failed') -or $record.rawChildOutputEchoed -ne $false){throw 'Fixed wrapper subject refused'}
+            if($record.stdoutBytes -isnot [long] -and $record.stdoutBytes -isnot [int]){throw 'Fixed byte scalar refused'}
+            if($record.stderrBytes -isnot [long] -and $record.stderrBytes -isnot [int]){throw 'Fixed byte scalar refused'}
+            if($record.stdoutBytes -lt 0 -or $record.stdoutBytes -gt 8388608 -or $record.stderrBytes -lt 0 -or $record.stderrBytes -gt 2097152 -or $record.droppedBytes -isnot [long] -and $record.droppedBytes -isnot [int] -or $record.closeObserved -isnot [bool] -or ($null -ne $record.exitCode -and $record.exitCode -isnot [long] -and $record.exitCode -isnot [int]) -or ($null -ne $record.failureCode -and ($record.failureCode -isnot [string] -or $record.failureCode -cnotmatch '^[A-Z0-9_]{1,64}$'))){throw 'Fixed wrapper fields refused'}
+            $record|ConvertTo-Json -Compress
+            if($nativeExit -ne 0 -or $record.status -cne 'passed' -or $record.exitCode -ne 0 -or $record.closeObserved -ne $true -or $record.droppedBytes -ne 0 -or $null -ne $record.failureCode){exit 1}
+          } catch {Write-Output '{"schema":"rea-safe-workflow-phase-console/v1","phase":"filter","status":"failed","code":"OWNED_PHASE_REFUSED","rawOutputEchoed":false}';exit 1}
+      - name: Retain only a fixed diagnostic when safe evidence is unavailable
+        id: diagnostic
+        if: always() && steps.evidence.outcome != 'success'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          try {
+            if($env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$' -or $env:GITHUB_RUN_ID -cnotmatch '^[1-9][0-9]*$' -or $env:GITHUB_RUN_ATTEMPT -cnotmatch '^[1-9][0-9]*$'){throw 'Fixed diagnostic subject refused'}
             $diagnostic=Join-Path $env:RUNNER_TEMP ('rea-safe-archive-diagnostic-${{ matrix.role }}-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
-            if(Test-Path -LiteralPath $diagnostic){throw 'Refuse earlier safe diagnostic.'}
-            New-Item -ItemType Directory -Path $diagnostic|Out-Null
-            $source=if($env:GITHUB_SHA -cmatch '^[0-9a-f]{40}$'){$env:GITHUB_SHA}else{'unqualified'}
-            @{schema='rea-safe-cloud-diagnostic-only/v1';status='failed';source=$source;role='${{ matrix.role }}';reasonCode='SAFE_EVIDENCE_UNAVAILABLE';completeRawEvidenceUploaded=$false;sourceBodiesUploaded=$false;rawLogsComplete=$false;productAcceptance=$false;profileValuesOrSnippetsRetained=$false}|ConvertTo-Json|Set-Content -LiteralPath (Join-Path $diagnostic 'safe-diagnostic.json') -Encoding utf8
-            'artifact_path='+$diagnostic|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
-            throw 'Safe evidence unavailable; fixed sanitized diagnostics only, no acceptance.'
-          }
-      - name: Preserve only the admitted safe view without changing failed gates
-        if: always() && steps.evidence.outputs.artifact_path != ''
+            if(Test-Path -LiteralPath $diagnostic){throw 'Earlier diagnostic refused'};$null=New-Item -ItemType Directory -Path $diagnostic
+            $v=[ordered]@{schema='rea-safe-cloud-diagnostic-only/v1';status='failed';source=$env:GITHUB_SHA;role='${{ matrix.role }}';reasonCode='SAFE_EVIDENCE_UNAVAILABLE';completeRawEvidenceUploaded=$false;sourceBodiesUploaded=$false;rawLogsComplete=$false;productAcceptance=$false;profileValuesOrSnippetsRetained=$false}
+            $b=[Text.UTF8Encoding]::new($false).GetBytes(($v|ConvertTo-Json)+"`n");$s=[IO.File]::Open((Join-Path $diagnostic 'safe-diagnostic.json'),[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$s.Write($b,0,$b.Length)}finally{$s.Dispose()}
+            [IO.File]::AppendAllText($env:GITHUB_OUTPUT,'artifact_path='+$diagnostic+"`n",[Text.UTF8Encoding]::new($false))
+            Write-Output '{"schema":"rea-safe-workflow-phase-console/v1","status":"incomplete","code":"FIXED_DIAGNOSTIC_ONLY"}'
+          } catch {Write-Output '{"schema":"rea-safe-workflow-phase-console/v1","status":"failed","code":"FIXED_DIAGNOSTIC_REFUSED"}';exit 1}
+      - name: Preserve the admitted direct safe tree
+        if: always() && steps.evidence.outcome == 'success' && steps.evidence.outputs.artifact_path != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: archive-privacy-filtered-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -123,4 +207,13 @@ jobs:
           include-hidden-files: true
           if-no-files-found: error
           compression-level: 6
+          retention-days: 1
+      - name: Preserve fixed diagnostics without changing failed gates
+        if: always() && steps.diagnostic.outcome == 'success' && steps.diagnostic.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: archive-privacy-filtered-incomplete-${{ matrix.role }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.diagnostic.outputs.artifact_path }}
+          if-no-files-found: error
+          compression-level: 0
           retention-days: 1

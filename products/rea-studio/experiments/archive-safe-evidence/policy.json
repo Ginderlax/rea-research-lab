@@ -1,7 +1,7 @@
 {
   "schema": "rea-safe-cloud-evidence-policy/v1",
-  "branch": "__REVIEWED_NEXT_FEATURE_BRANCH__",
-  "parent": "6aeb166588d834c9635940e542b2de4e98b1eaf2",
+  "branch": "experiment/archive-flat-extract-20261021-r1",
+  "parent": "393a2051d4825a222056fb639441bce022e552c2",
   "sourceManifest": "products/rea-studio/experiments/archive-zip-aes/source-admission.json",
   "workflow": ".github/workflows/archive-zip-aes-cloud.yml",
   "expectedSourceOmissions": [
@@ -9,8 +9,9 @@
     "products/rea-studio/apps/archive/lzma-provenance.json",
     "products/rea-studio/apps/archive/lzma-validation.json",
     "products/rea-studio/apps/archive/sevenzip-source-references.json",
+    "products/rea-studio/apps/archive/source-metadata.test.mjs",
     "products/rea-studio/apps/archive/zstd-validation.json",
-    "products/rea-studio/apps/archive/source-metadata.test.mjs"
+    "products/rea-studio/scripts/validate-safe-cloud-evidence.mjs"
   ],
   "sourceOpaquePins": [
     {
@@ -95,6 +96,26 @@
         "pattern": "^zip-original/cas/[0-9a-f]{64}\\.bin$",
         "kind": "synthetic-opaque",
         "maxBytes": 8388608
+      },
+      {
+        "pattern": "^flat-original/original-processes\\.json$",
+        "kind": "text",
+        "maxBytes": 8388608
+      },
+      {
+        "pattern": "^flat-original/snapshots/[a-z0-9-]+\\.json$",
+        "kind": "text",
+        "maxBytes": 8388608
+      },
+      {
+        "pattern": "^flat-original/commands/[0-9]{3}\\.(?:stdout|stderr)\\.txt$",
+        "kind": "text",
+        "maxBytes": 8388608
+      },
+      {
+        "pattern": "^flat-original/cas/[0-9a-f]{64}\\.bin$",
+        "kind": "synthetic-opaque",
+        "maxBytes": 8388608
       }
     ],
     "browser": [
@@ -150,6 +171,21 @@
       },
       {
         "pattern": "^workspace-artifacts/(?:content-restored|correct-after-refusal|header-restored|held-create-restored|plain-restored|zip-correct-after-refusal|zip-deflate-restored|zip-held-restored|zip-store-restored)\\.txt$",
+        "kind": "text",
+        "maxBytes": 262144
+      },
+      {
+        "pattern": "^workspace-artifacts/archive-flat-(?:nested|collision)\\.zip$",
+        "kind": "synthetic-opaque",
+        "maxBytes": 262144
+      },
+      {
+        "pattern": "^workspace-artifacts/(?:flat|full)-zip-(?:binary|empty)\\.bin$",
+        "kind": "synthetic-opaque",
+        "maxBytes": 1024
+      },
+      {
+        "pattern": "^workspace-artifacts/(?:flat|full)-zip-unicode\\.txt$",
         "kind": "text",
         "maxBytes": 262144
       }

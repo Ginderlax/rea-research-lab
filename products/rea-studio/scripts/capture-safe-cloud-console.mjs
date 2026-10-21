@@ -38,7 +38,7 @@ async function main(){
   need(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA)&&process.env.GITHUB_WORKFLOW_SHA===process.env.GITHUB_SHA,'ACTUAL_SOURCE');
   need(typeof process.env.REA_SAFE_FEATURE_BRANCH==='string'&&!process.env.REA_SAFE_FEATURE_BRANCH.startsWith('__')&&process.env.GITHUB_REF==='refs/heads/'+process.env.REA_SAFE_FEATURE_BRANCH,'REVIEWED_FEATURE_REF');
   need(/^[0-9a-f]{40}$/.test(process.env.REA_ARCHIVE_ZIP_PARENT),'PARENT_IDENTITY');need(/^[1-9][0-9]*$/.test(process.env.GITHUB_RUN_ID)&&/^[1-9][0-9]*$/.test(process.env.GITHUB_RUN_ATTEMPT),'ACTUAL_ATTEMPT');
-  const args=process.argv.slice(2);need(args.length===4&&args[0]==='--phase'&&['before','run','after','filter-validation'].includes(args[1])&&args[2]==='--evidence','CAPTURE_ARGUMENTS');
+  const args=process.argv.slice(2);need(args.length===4&&args[0]==='--phase'&&['before','run','after','filter-validation','filter'].includes(args[1])&&args[2]==='--evidence','CAPTURE_ARGUMENTS');
   const phase=args[1],role=process.env.REA_ARCHIVE_ZIP_ROLE;need(['finite','zip-original','browser'].includes(role),'ROLE');
   const temporary=fs.realpathSync(process.env.RUNNER_TEMP);ordinary(temporary);const evidence=path.resolve(args[3]);
   const expectedName=phase==='filter-validation'?'rea-filter-validation-console-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT:'rea-archive-zip-aes-'+role+'-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT;
@@ -46,9 +46,19 @@ async function main(){
   if(phase==='before'||phase==='filter-validation'){need(!fs.existsSync(evidence),'NO_EARLIER_RAW_ROOT');fs.mkdirSync(evidence);}ordinary(evidence);
   const studio=fileURLToPath(new URL('../',import.meta.url)),repository=path.resolve(studio,'../..');ordinary(repository);
   reviewed(fileURLToPath(import.meta.url),process.env.REA_SAFE_CAPTURE_SHA256);
-  let command,argv;
+  let command,argv,safeOutput=null,captureRoot=evidence,privateFilterOutput=null;
   if(phase==='filter-validation'){
     command=process.execPath;argv=[reviewed(path.join(studio,'scripts/validate-safe-cloud-evidence.mjs'),process.env.REA_SAFE_VALIDATOR_SHA256)];
+  }else if(phase==='filter'){
+    safeOutput=path.resolve(process.env.REA_SAFE_EVIDENCE??'');
+    need(path.dirname(safeOutput)===temporary&&path.basename(safeOutput)==='rea-safe-archive-'+role+'-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT,'FIXED_SAFE_FILTER_ROOT');
+    need(!fs.existsSync(safeOutput),'NO_EARLIER_SAFE_FILTER_OUTPUT');
+    captureRoot=path.join(temporary,'rea-safe-archive-filter-console-'+role+'-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT);
+    need(path.dirname(captureRoot)===temporary&&!fs.existsSync(captureRoot),'NO_EARLIER_FILTER_CONSOLE');fs.mkdirSync(captureRoot);ordinary(captureRoot);
+    privateFilterOutput=path.join(captureRoot,'private-filter-output.txt');fs.writeFileSync(privateFilterOutput,Buffer.alloc(0),{flag:'wx'});ordinary(privateFilterOutput,true);
+    const filter=reviewed(path.join(studio,'scripts/prepare-safe-cloud-evidence.mjs'),process.env.REA_SAFE_FILTER_SHA256);
+    const policy=reviewed(path.join(studio,'experiments/archive-safe-evidence/policy.json'),process.env.REA_SAFE_EVIDENCE_POLICY_SHA256);
+    command=process.execPath;argv=[filter,'--raw',evidence,'--output',safeOutput,'--policy',policy];
   }else if(phase==='run'){
     const collector=reviewed(path.join(studio,'scripts/verify-archive-zip-aes-cloud.mjs'),process.env.REA_SAFE_COLLECTOR_SHA256);
     command=process.execPath;argv=[collector,'--role',role,'--evidence',evidence];
@@ -60,9 +70,9 @@ async function main(){
     need(HASH.test(process.env.REA_ARCHIVE_ZIP_MANIFEST_SHA256),'REVIEWED_MANIFEST_HASH');
     argv=['-NoLogo','-NoProfile','-NonInteractive','-File',gate,'-Phase',phase,'-Evidence',evidence,'-ExpectedManifestSHA256',process.env.REA_ARCHIVE_ZIP_MANIFEST_SHA256,'-ExpectedParent',process.env.REA_ARCHIVE_ZIP_PARENT];
   }
-  const limits={stdout:8*1024*1024,stderr:2*1024*1024},files={stdout:path.join(evidence,'console-'+phase+'.stdout.txt'),stderr:path.join(evidence,'console-'+phase+'.stderr.txt')};
+  const limits={stdout:8*1024*1024,stderr:2*1024*1024},files={stdout:path.join(captureRoot,'console-'+phase+'.stdout.txt'),stderr:path.join(captureRoot,'console-'+phase+'.stderr.txt')};
   const fds={stdout:fs.openSync(files.stdout,'wx'),stderr:fs.openSync(files.stderr,'wx')};
-  const record={schema:'rea-owned-top-level-console-capture/v1',phase,role,source:process.env.GITHUB_SHA,parent:process.env.REA_ARCHIVE_ZIP_PARENT,runID:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,job:process.env.GITHUB_JOB,status:'running',sourceCommand:'reviewed '+(phase==='filter-validation'?'synthetic filter validation':phase==='run'?'Archive collector':'source admission'),stdout:{path:path.basename(files.stdout),bytes:0,limit:limits.stdout},stderr:{path:path.basename(files.stderr),bytes:0,limit:limits.stderr},droppedBytes:0,closeObserved:false,exitCode:null,signal:null,failureCode:null,rawChildOutputEchoed:false,originalExecutionAcceptance:false};
+  const record={schema:'rea-owned-top-level-console-capture/v1',phase,role,source:process.env.GITHUB_SHA,parent:process.env.REA_ARCHIVE_ZIP_PARENT,runID:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,job:process.env.GITHUB_JOB,status:'running',sourceCommand:'reviewed '+(phase==='filter-validation'?'synthetic filter validation':phase==='filter'?'privacy filter':phase==='run'?'Archive collector':'source admission'),stdout:{path:path.basename(files.stdout),bytes:0,limit:limits.stdout},stderr:{path:path.basename(files.stderr),bytes:0,limit:limits.stderr},droppedBytes:0,closeObserved:false,exitCode:null,signal:null,failureCode:null,rawChildOutputEchoed:false,originalExecutionAcceptance:false};
   const activeSignals=[];let child=null;
   try{
     const outcome=await new Promise(resolve=>{
@@ -78,6 +88,9 @@ async function main(){
       // Children retain actual read-only execution identity and owned fixture
       // paths, but cannot publish file commands or use inherited action tokens.
       for(const name of Object.keys(childEnvironment))if(/^(?:GITHUB_(?:OUTPUT|ENV|PATH|STEP_SUMMARY|STATE|TOKEN)|GH_TOKEN|ACTIONS_RUNTIME_TOKEN|ACTIONS_ID_TOKEN_REQUEST_(?:TOKEN|URL))$/i.test(name))delete childEnvironment[name];
+      // Only the reviewed metadata filter receives a fake private channel. It
+      // never receives the real step output file or an action/auth token.
+      if(phase==='filter')childEnvironment.GITHUB_OUTPUT=privateFilterOutput;
       child=spawn(command,argv,{cwd:repository,env:childEnvironment,shell:false,windowsHide:true,stdio:['ignore','pipe','pipe']});
       deadline=setTimeout(()=>stop('CAPTURE_DEADLINE'),phase==='run'?58*60*1000:5*60*1000);
       for(const kind of['stdout','stderr']){
@@ -92,11 +105,33 @@ async function main(){
       child.on('close',(exitCode,signal)=>finish(exitCode,signal,true));
     });
     Object.assign(record,outcome);record.status=record.failureCode===null&&record.closeObserved&&record.exitCode===0&&record.signal===null&&record.droppedBytes===0?'passed':'failed';
+    if(phase==='filter'&&record.status==='passed'){
+      function small(file,maximum){
+        ordinary(file,true);const before=fs.lstatSync(file,{bigint:true});need(before.size<=BigInt(maximum),'FILTER_PROJECTION_BYTE_BOUND');const fd=fs.openSync(file,'r');
+        try{const opened=fs.fstatSync(fd,{bigint:true});for(const key of['dev','ino','size','mtimeNs','ctimeNs'])need(opened[key]===before[key],'FILTER_PROJECTION_OPEN_IDENTITY');const b=Buffer.alloc(Number(before.size)+1);let offset=0;while(offset<b.length){const n=fs.readSync(fd,b,offset,b.length-offset,null);if(n===0)break;offset+=n;}const after=fs.fstatSync(fd,{bigint:true}),atPath=fs.lstatSync(file,{bigint:true});need(atPath.isFile()&&!atPath.isSymbolicLink()&&atPath.nlink===1n,'FILTER_PROJECTION_PATH_CHANGED');for(const key of['dev','ino','size','mtimeNs','ctimeNs'])need(after[key]===before[key]&&atPath[key]===before[key],'FILTER_PROJECTION_READ_IDENTITY');need(offset===Number(before.size),'FILTER_PROJECTION_READ_LENGTH');return b.subarray(0,offset);}finally{fs.closeSync(fd);}
+      }
+      need(record.stderr.bytes===0,'FILTER_PROJECTION_STDERR');const stdout=small(files.stdout,65536),projection=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(stdout));
+      need(Object.keys(projection).sort().join('|')===['schema','status','role','source','outputFiles','outputBytes','omittedFiles','rawCompleteArchiveUploaded','productAcceptance'].sort().join('|'),'FILTER_PROJECTION_KEYS');
+      need(projection.schema==='rea-safe-evidence-filter-console/v1'&&projection.status==='safe-view-ready'&&projection.role===role&&projection.source===record.source&&projection.rawCompleteArchiveUploaded===false&&projection.productAcceptance===false,'FILTER_SUCCESS_PROJECTION');
+      ordinary(safeOutput);const safeBytes=small(path.join(safeOutput,'safe-evidence.json'),4*1024*1024),safe=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(safeBytes));
+      const expectedExecution={repository:process.env.GITHUB_REPOSITORY,source:record.source,parent:record.parent,workflowSHA:process.env.GITHUB_WORKFLOW_SHA,ref:process.env.GITHUB_REF,runID:record.runID,attempt:record.attempt,job:record.job,role};
+      need(JSON.stringify(Object.entries(safe.execution??{}).sort())===JSON.stringify(Object.entries(expectedExecution).sort()),'FILTER_SAFE_SUBJECT');
+      need(safe.schema==='rea-safe-cloud-evidence-representation/v1'&&safe.status==='complete-derived-safe-view'&&safe.completeSourceAdmission===true&&safe.rawCompleteArchiveUploaded===false&&safe.historicalReceiptsRebound===false&&safe.productAcceptance===false&&safe.fullParity===false&&safe.superiority===false&&safe.sourceManifestSHA256===process.env.REA_ARCHIVE_ZIP_MANIFEST_SHA256,'FILTER_SAFE_REPRESENTATION');
+      need(Number.isSafeInteger(projection.outputFiles)&&Number.isSafeInteger(projection.outputBytes)&&Number.isSafeInteger(projection.omittedFiles)&&projection.outputFiles===safe.retainedFiles+3&&projection.omittedFiles===safe.omittedFiles&&projection.outputFiles>0&&projection.outputBytes>=0,'FILTER_SAFE_COUNTS');
+      const omissionBytes=small(path.join(safeOutput,'omissions.json'),4*1024*1024),retainedBytes=small(path.join(safeOutput,'retained-members.json'),4*1024*1024);
+      need(projection.outputBytes===safe.retainedBytes+safeBytes.length+omissionBytes.length+retainedBytes.length,'FILTER_SAFE_BYTE_TOTAL');
+      need(small(privateFilterOutput,4096).equals(Buffer.from('artifact_path='+safeOutput+'\n')),'FILTER_FAKE_OUTPUT_EXACT');
+      record.safeFilterProjection={verified:true,outputFiles:projection.outputFiles,outputBytes:projection.outputBytes,omittedFiles:projection.omittedFiles,realOutputChannelInherited:false,rawFilterStreamsUploaded:false};
+    }
   }catch{record.status='failed';record.failureCode??='CAPTURE_DRIVER_REFUSED';}
   finally{
     for(const[name,handler]of activeSignals)process.off(name,handler);
     for(const kind of['stdout','stderr']){fs.fsyncSync(fds[kind]);fs.closeSync(fds[kind]);ordinary(files[kind],true);const b=fs.readFileSync(files[kind]);need(b.length===record[kind].bytes,'CAPTURE_STREAM_READBACK');record[kind].sha256=sha(b);}
-    save(path.join(evidence,'console-'+phase+'.json'),record);
+    save(path.join(captureRoot,'console-'+phase+'.json'),record);
+  }
+  if(phase==='filter'&&record.status==='passed'){
+    need(record.safeFilterProjection?.verified===true&&typeof process.env.GITHUB_OUTPUT==='string'&&process.env.GITHUB_OUTPUT.length>0,'OWNED_PARENT_FILTER_OUTPUT');
+    fs.appendFileSync(process.env.GITHUB_OUTPUT,'artifact_path='+safeOutput+'\n');
   }
   // Never log command arguments, a captured byte, error.message/stack, source
   // excerpts, credentials, URLs, or arbitrary environment values.

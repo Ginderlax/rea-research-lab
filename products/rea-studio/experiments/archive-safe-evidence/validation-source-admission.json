@@ -1,8 +1,8 @@
 {
   "schema": "rea-synthetic-evidence-control-source-admission/v1",
-  "status": "FROZEN_SOURCE_FOR_FILTER_AND_CONSOLE_CONTROLS_ONLY",
-  "parent": "8d5bcfd81b91b290758ae6543c05248acdc3e574",
-  "branch": "experiment/evidence-filter-validation-20261021-r1",
+  "status": "FROZEN_SOURCE_FOR_FOUR_SYNTHETIC_FILTER_AND_CONSOLE_CONTROLS_ONLY",
+  "parent": "393a2051d4825a222056fb639441bce022e552c2",
+  "branch": "experiment/evidence-filter-phase-validation-20261021",
   "files": [
     {
       "path": ".github/workflows/archive-zip-aes-cloud.yml",
@@ -11,8 +11,8 @@
     },
     {
       "path": "products/rea-studio/experiments/archive-safe-evidence/policy.json",
-      "bytes": 5955,
-      "sha256": "1c9df2389217ce81302f4a68535f40a6452f805674e1f662a609a78235979c21"
+      "bytes": 1464,
+      "sha256": "80a8827c087150d8ee309dff5eced96c7ba3fa6f6771688bf4f81b01da2381a3"
     },
     {
       "path": "products/rea-studio/scripts/archive-zip-aes-source-admission.ps1",
@@ -21,18 +21,23 @@
     },
     {
       "path": "products/rea-studio/scripts/capture-safe-cloud-console.mjs",
-      "bytes": 10369,
-      "sha256": "e7490d623f27f862906de1d09a4f55eef62d0591344ae82d51463f848e8a4b9c"
+      "bytes": 15933,
+      "sha256": "a46c5b55f358437e0876a5eb19851eac9f9667172476975fdf9c20744856deea"
+    },
+    {
+      "path": "products/rea-studio/scripts/evidence-filter-phase-control.mjs",
+      "bytes": 24879,
+      "sha256": "e4c5309b01b87daab66a0bd31dd6aeeeb3562b41c31e9de5a007425d839d15c4"
     },
     {
       "path": "products/rea-studio/scripts/evidence-filter-validation-control.ps1",
-      "bytes": 21398,
-      "sha256": "84e952d7478f0a71c491ec8d3a3bd1bd6f23ba672e12a84bcbd9c958d705f7a3"
+      "bytes": 24095,
+      "sha256": "9498cc75274f2cc4375b6e8cbec534f1825d4a9963fd8c4ea90f9b05f3e14a89"
     },
     {
       "path": "products/rea-studio/scripts/evidence-filter-validation-source-admission.ps1",
-      "bytes": 8411,
-      "sha256": "69379ac350de9ab6acf1030bd2756e9cf15191d9d2251ee454986f90bdc799b5"
+      "bytes": 8450,
+      "sha256": "f678f28ac24d99cf68f368243cbc0d2930d8464645f7af1d1be06a2eda0e994b"
     },
     {
       "path": "products/rea-studio/scripts/prepare-safe-cloud-evidence.mjs",
@@ -41,8 +46,8 @@
     },
     {
       "path": "products/rea-studio/scripts/validate-safe-cloud-evidence.mjs",
-      "bytes": 19353,
-      "sha256": "429fff039851220a2a6be836916c18ee94b510af8005f25901fa3756e9c57494"
+      "bytes": 20884,
+      "sha256": "431410d34f5d2d43ea67485c819609a373d82f360af682dd9c75d005bcca446a"
     },
     {
       "path": "products/rea-studio/scripts/verify-archive-zip-aes-cloud.mjs",
@@ -50,19 +55,24 @@
       "sha256": "f5d3d74ff2045679a5d08399748e79660f94939103f9ceaadb915c47d2fc0e9d"
     }
   ],
-  "rawBytes": 126442,
+  "rawBytes": 156661,
   "selfExcluded": [
     "products/rea-studio/experiments/archive-safe-evidence/validation-source-admission.json",
     ".github/workflows/evidence-filter-validation-cloud.yml"
   ],
   "defaultSyntheticCases": 17,
   "separateExpectedFailureSentinel": true,
+  "separateCapturedFilterPhaseControls": [
+    "filter-success",
+    "filter-refusal"
+  ],
   "supportedExecution": {
     "runner": "GitHub-hosted",
     "image": "windows-2022",
     "architecture": "X64",
     "node": "v24.16.0",
-    "job": "validate"
+    "job": "validate",
+    "separateHosts": 4
   },
   "productExecutionApproved": false,
   "fullProductAcceptance": false,

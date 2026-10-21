@@ -1,37 +1,17 @@
 {
   "schema": "rea-safe-cloud-evidence-policy/v1",
-  "branch": "__REVIEWED_NEXT_FEATURE_BRANCH__",
-  "parent": "6aeb166588d834c9635940e542b2de4e98b1eaf2",
-  "sourceManifest": "products/rea-studio/experiments/archive-zip-aes/source-admission.json",
-  "workflow": ".github/workflows/archive-zip-aes-cloud.yml",
+  "branch": "experiment/evidence-filter-phase-validation-20261021",
+  "parent": "393a2051d4825a222056fb639441bce022e552c2",
+  "sourceManifest": "synthetic/source-admission.json",
+  "workflow": ".github/workflows/synthetic-filter-fixture.yml",
   "expectedSourceOmissions": [
-    "products/rea-studio/apps/archive/formats-validation.json",
-    "products/rea-studio/apps/archive/lzma-provenance.json",
-    "products/rea-studio/apps/archive/lzma-validation.json",
-    "products/rea-studio/apps/archive/sevenzip-source-references.json",
-    "products/rea-studio/apps/archive/zstd-validation.json",
-    "products/rea-studio/apps/archive/source-metadata.test.mjs"
+    "synthetic/sources/owned-00.mjs"
   ],
   "sourceOpaquePins": [
     {
-      "path": "products/rea-studio/apps/archive/fixtures/zstd/native-zip93.zip",
-      "bytes": 427,
-      "sha256": "e9282f76dbd3c080d0e12ef95489458523ebbc65c2951f4b8f3cb880a16c5d8b"
-    },
-    {
-      "path": "products/rea-studio/apps/archive/fixtures/zstd/native.tar.zst",
-      "bytes": 631,
-      "sha256": "7e5b29933b77431c8481499f01176058991db7036ad18e711e043218d37458a0"
-    },
-    {
-      "path": "products/rea-studio/apps/archive/fixtures/zstd/native.zst",
-      "bytes": 311,
-      "sha256": "9c4b8c03e5eb7932d349586ecf1e0f379bc021a543792dfb95fb6b5381b3f5ab"
-    },
-    {
-      "path": "products/rea-studio/apps/archive/fixtures/zstd/payload.bin",
-      "bytes": 16416,
-      "sha256": "b5b8d051cbbf49c16c0cf7e65fe35796601d64449d70938921b9bb368510721e"
+      "path": "synthetic/sources/owned-invalid-utf8.zst",
+      "bytes": 8,
+      "sha256": "de3400ee08e1380e50112bf46d4ecc894c58dbed463bde21c64447cd2e45a35f"
     }
   ],
   "runnerLogPaths": [
@@ -40,118 +20,38 @@
   "roles": {
     "finite": [
       {
-        "pattern": "^(?:source-(?:before|after)\\.json|workflow-attempt\\.json|archive-zip-aes-(?:attempt\\.json|events\\.jsonl)|console-(?:before|run|after)\\.(?:json|stdout\\.txt|stderr\\.txt))$",
+        "pattern": "^source-(?:before|after)\\.json$",
         "kind": "text",
-        "maxBytes": 8388608
+        "maxBytes": 1048576
       },
       {
-        "pattern": "^(?:original-acquire|bsdtar-acquire|browser-acquire|archive-finite|zip-original|archive-zip-aes-browser)\\.(?:stdout|stderr)\\.txt$",
+        "pattern": "^result\\.txt$",
         "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^(?:bootstrap-[1-3]\\.stderr\\.txt|archive-original-acquisition\\.json|bsdtar-original-acquisition\\.json|browser-tooling-acquisition\\.json)$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^finite-observations/(?:bidirectional|http|zip-aes-core|zip-aes-http)\\.json$",
-        "kind": "text",
-        "maxBytes": 8388608
+        "maxBytes": 1048576
       }
     ],
     "zip-original": [
       {
-        "pattern": "^(?:source-(?:before|after)\\.json|workflow-attempt\\.json|archive-zip-aes-(?:attempt\\.json|events\\.jsonl)|console-(?:before|run|after)\\.(?:json|stdout\\.txt|stderr\\.txt))$",
+        "pattern": "^source-(?:before|after)\\.json$",
         "kind": "text",
-        "maxBytes": 8388608
+        "maxBytes": 1048576
       },
       {
-        "pattern": "^(?:original-acquire|bsdtar-acquire|browser-acquire|archive-finite|zip-original|archive-zip-aes-browser)\\.(?:stdout|stderr)\\.txt$",
+        "pattern": "^result\\.txt$",
         "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^(?:bootstrap-[1-3]\\.stderr\\.txt|archive-original-acquisition\\.json|bsdtar-original-acquisition\\.json|browser-tooling-acquisition\\.json)$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^zip-original/original-processes\\.json$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^zip-original/snapshots/[a-z0-9-]+\\.json$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^zip-original/commands/[0-9]{3}\\.(?:stdout|stderr)\\.txt$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^zip-original/cas/[0-9a-f]{64}\\.bin$",
-        "kind": "synthetic-opaque",
-        "maxBytes": 8388608
+        "maxBytes": 1048576
       }
     ],
     "browser": [
       {
-        "pattern": "^(?:source-(?:before|after)\\.json|workflow-attempt\\.json|archive-zip-aes-(?:attempt\\.json|events\\.jsonl)|console-(?:before|run|after)\\.(?:json|stdout\\.txt|stderr\\.txt))$",
+        "pattern": "^source-(?:before|after)\\.json$",
         "kind": "text",
-        "maxBytes": 8388608
+        "maxBytes": 1048576
       },
       {
-        "pattern": "^(?:original-acquire|bsdtar-acquire|browser-acquire|archive-finite|zip-original|archive-zip-aes-browser)\\.(?:stdout|stderr)\\.txt$",
+        "pattern": "^result\\.txt$",
         "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^(?:bootstrap-[1-3]\\.stderr\\.txt|archive-original-acquisition\\.json|bsdtar-original-acquisition\\.json|browser-tooling-acquisition\\.json)$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^browser-acquire-(?:events\\.jsonl|stderr\\.txt|stdout\\.txt)$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^browser-observation(?:-process-[0-9]+(?:-zip-aes)?)?\\.json$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^case-[a-f0-9]{20}-[a-f0-9]{20}\\.json$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^playwright-results\\.json$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^playwright-output/\\.last-run\\.json$",
-        "kind": "text",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^screenshots/[a-f0-9]{20}-[a-f0-9]{20}\\.png$",
-        "kind": "synthetic-opaque",
-        "maxBytes": 8388608
-      },
-      {
-        "pattern": "^workspace-artifacts/(?:archive-plain\\.zip|archive-aes-(?:content|header)\\.7z|archive-zip-aes-(?:corrupted-tag|deflate|store)\\.zip)$",
-        "kind": "synthetic-opaque",
-        "maxBytes": 262144
-      },
-      {
-        "pattern": "^workspace-artifacts/(?:content-restored|correct-after-refusal|header-restored|held-create-restored|plain-restored|zip-correct-after-refusal|zip-deflate-restored|zip-held-restored|zip-store-restored)\\.txt$",
-        "kind": "text",
-        "maxBytes": 262144
+        "maxBytes": 1048576
       }
     ]
   }

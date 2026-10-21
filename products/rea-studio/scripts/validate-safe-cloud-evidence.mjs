@@ -16,8 +16,8 @@ const evidence=path.join(temporary,'rea-filter-validation-console-'+runID+'-'+at
 function boundary(){
   assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');assert.equal(process.version,'v24.16.0');
   for(const[name,value]of Object.entries({CI:'true',GITHUB_ACTIONS:'true',RUNNER_ENVIRONMENT:'github-hosted',RUNNER_OS:'Windows',RUNNER_ARCH:'X64',GITHUB_REPOSITORY:'Ginderlax/rea-research-lab',GITHUB_JOB:'validate'}))assert.equal(process.env[name],value);
-  assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));assert.equal(process.env.GITHUB_WORKFLOW_SHA,process.env.GITHUB_SHA);assert.equal(process.env.REA_ARCHIVE_ZIP_PARENT,'8d5bcfd81b91b290758ae6543c05248acdc3e574');
-  assert.equal(process.env.GITHUB_REF,'refs/heads/experiment/evidence-filter-validation-20261021-r1');
+  assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));assert.equal(process.env.GITHUB_WORKFLOW_SHA,process.env.GITHUB_SHA);assert.equal(process.env.REA_ARCHIVE_ZIP_PARENT,'393a2051d4825a222056fb639441bce022e552c2');
+  assert.equal(process.env.GITHUB_REF,'refs/heads/experiment/evidence-filter-phase-validation-20261021');
   assert(/^[1-9][0-9]*$/.test(runID));assert(/^[1-9][0-9]*$/.test(attempt));
   assert.equal(fs.realpathSync(evidence),evidence);assert(fs.lstatSync(evidence).isDirectory());assert(!fs.lstatSync(evidence).isSymbolicLink());
 }
@@ -124,5 +124,13 @@ function finalize(){
   const b=encoded(provenance);assert.equal(scanProfile(b,'filter-validation-provenance.json','finite').omit,false);fs.writeFileSync(path.join(evidence,'filter-validation-provenance.json'),b,{flag:'wx'});
   assert(typeof process.env.GITHUB_OUTPUT==='string');fs.appendFileSync(process.env.GITHUB_OUTPUT,'artifact_path='+evidence+'\n');console.log(JSON.stringify({schema:provenance.schema,status:provenance.status,files:7,productTests:0}));if(!passed)process.exitCode=1;
 }
-try{boundary();if(process.env.REA_SAFE_CONTROL_SENTINEL!==undefined){assert.equal(process.env.REA_SAFE_CONTROL_SENTINEL,'expected-failure');controlledSentinel();}else if(process.argv.length===2)main();else{assert.deepEqual(process.argv.slice(2),['--finalize']);finalize();}}
+try{
+  boundary();assert(['filter','sentinel','filter-success','filter-refusal'].includes(process.env.REA_SAFE_CONTROL_MODE));
+  if(['filter-success','filter-refusal'].includes(process.env.REA_SAFE_CONTROL_MODE)){
+    assert.deepEqual(process.argv.slice(2),[]);assert.equal(process.env.REA_SAFE_CONTROL_SENTINEL,undefined);assert(/^[0-9a-f]{64}$/.test(process.env.REA_SAFE_FILTER_PHASE_CONTROL_SHA256));
+    const url=new URL('./evidence-filter-phase-control.mjs',import.meta.url),before=fs.lstatSync(url,{bigint:true});assert(before.isFile()&&!before.isSymbolicLink()&&before.nlink===1n&&before.size<=65536n);const fd=fs.openSync(url,'r');
+    try{const opened=fs.fstatSync(fd,{bigint:true});for(const key of['dev','ino','size','mtimeNs','ctimeNs'])assert.equal(opened[key],before[key]);const b=Buffer.alloc(Number(before.size)+1);let offset=0;while(offset<b.length){const n=fs.readSync(fd,b,offset,b.length-offset,null);if(n===0)break;offset+=n;}const after=fs.fstatSync(fd,{bigint:true}),atPath=fs.lstatSync(url,{bigint:true});assert(atPath.isFile()&&!atPath.isSymbolicLink()&&atPath.nlink===1n);for(const key of['dev','ino','size','mtimeNs','ctimeNs']){assert.equal(after[key],before[key]);assert.equal(atPath[key],before[key]);}assert.equal(offset,Number(before.size));assert.equal(sha(b.subarray(0,offset)),process.env.REA_SAFE_FILTER_PHASE_CONTROL_SHA256);}finally{fs.closeSync(fd);}
+    const leaf=await import(url.href);assert.equal(typeof leaf.runCapturedFilterPhaseControl,'function');leaf.runCapturedFilterPhaseControl();
+  }else if(process.env.REA_SAFE_CONTROL_SENTINEL!==undefined){assert.equal(process.env.REA_SAFE_CONTROL_SENTINEL,'expected-failure');controlledSentinel();}else if(process.argv.length===2)main();else{assert.deepEqual(process.argv.slice(2),['--finalize']);finalize();}
+}
 catch(error){console.error(JSON.stringify({schema:'rea-filter-validation-safe-console/v1',status:'failed',code:typeof error.code==='string'&&/^[A-Z0-9_]{1,64}$/.test(error.code)?error.code:'VALIDATION_REFUSED',productTests:0}));process.exitCode=1;}

@@ -138,21 +138,41 @@ async function run({ action, input = {}, workspace }, sourceMetadata) {
   }
   if (action === 'extract') {
     if (input.confirm !== true) throw new Error('Extraction requires confirmation.');
-    const { entries } = readArchive(await load(workspace, input.path), input.path, true, budget, input.password), destination = await safe(workspace, input.destination); budget.check();
+    const pathMode = input.pathMode === undefined ? 'full' : input.pathMode;
+    if (!['full', 'flat'].includes(pathMode)) throw new Error('Choose Full paths or Files only extraction.');
+    const { entries } = readArchive(await load(workspace, input.path), input.path, true, budget, input.password);
+    let extractionEntries = entries;
+    if (pathMode === 'flat') {
+      extractionEntries = []; const lowerNames = new Set(), upperNames = new Set();
+      // Validate every stored path before discarding its folders. Build the
+      // complete flat plan before creating a destination parent or staging.
+      for (const entry of entries) {
+        budget.check(); budget.work(1);
+        const storedName = clean(entry.name);
+        if (entry.directory) continue;
+        const name = clean(path.posix.basename(storedName)), normalized = name.normalize('NFC');
+        const lower = normalized.toLowerCase(), upper = normalized.toUpperCase();
+        // Conservative case aliases, including expansions, are refused. This
+        // is not an exhaustive filesystem Unicode-equivalence model.
+        if (lowerNames.has(lower) || upperNames.has(upper)) throw new Error('Files only extraction has duplicate filenames; use Full paths or a different archive.');
+        lowerNames.add(lower); upperNames.add(upper); extractionEntries.push({ ...entry, name });
+      }
+    }
+    const destination = await safe(workspace, input.destination); budget.check();
     try { await fs.lstat(destination); throw new Error('Choose a new extraction folder; existing folders are never overwritten.'); }
     catch (error) { if (error.code !== 'ENOENT') throw error; }
     await fs.mkdir(path.dirname(destination), { recursive: true });
     const staging = await safe(workspace,`${input.destination}.partial-${randomUUID()}`);
     await fs.mkdir(staging);
     try {
-      for (const entry of entries) {
+      for (const entry of extractionEntries) {
         budget.check(); budget.work(1);
         const location = path.join(staging, ...clean(entry.name).split('/'));
         if (entry.directory) await fs.mkdir(location, { recursive: true });
         else { await fs.mkdir(path.dirname(location), { recursive: true }); await fs.writeFile(location, entry.data, { flag: 'wx' }); }
       }
       // Restore directory dates last, after writing their children.
-      for (const entry of [...entries].sort((a,b) => b.name.length - a.name.length)) if (entry.modifiedAt) {
+      for (const entry of [...extractionEntries].sort((a,b) => b.name.length - a.name.length)) if (entry.modifiedAt) {
         budget.check();
         const location = path.join(staging, ...clean(entry.name).split('/'));
         await fs.utimes(location, new Date(entry.accessedAt ?? entry.modifiedAt), new Date(entry.modifiedAt));
@@ -164,7 +184,7 @@ async function run({ action, input = {}, workspace }, sourceMetadata) {
       for (const child of await fs.readdir(staging)) await fs.rename(path.join(staging,child),path.join(destination,child));
       await fs.rmdir(staging);
     } catch (error) { await fs.rm(staging, { recursive: true, force: true }); throw error; }
-    return { extracted: entries.length, destination: input.destination, verified: true };
+    return { extracted: extractionEntries.length, destination: input.destination, verified: true };
   }
   throw new Error('Unknown archive action.');
 }

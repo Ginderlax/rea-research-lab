@@ -76,10 +76,14 @@ export async function render(root,api) {
   },listing);
   const extract = node('section',undefined,'card'); extract.append(node('h3','Extract to a new folder')); root.append(extract);
   const destination = field(extract,'New destination folder','archive/restored'), confirm = field(extract,'Confirm extraction','','checkbox'), result = node('p','', 'status'); result.setAttribute('data-archive-result','extract'); extract.append(result);
-  const extractedOutcome = button(extract,'Verify and extract',async () => { const value = await request('extract',{ path: archivePath.value, destination: destination.value, confirm: confirm.checked, ...(usePassword.checked ? { password: readPassword.value } : {}) }); result.textContent = `${value.extracted} entries extracted to ${value.destination}.`; },result);
+  const pathModeLabel = node('label','Extraction paths'), pathMode = node('select');
+  for (const [value,label] of [['full','Full paths'],['flat','Files only']]) { const option = node('option',label); option.value = value; pathMode.append(option); }
+  pathMode.value = 'full'; pathModeLabel.append(pathMode); extract.append(pathModeLabel,node('p','Files only puts each regular file in the destination without its parent folders. Empty directories are skipped. Duplicate filenames are refused before extraction.','muted'));
+  const extractedOutcome = button(extract,'Verify and extract',async () => { const value = await request('extract',{ path: archivePath.value, destination: destination.value, confirm: confirm.checked, pathMode: pathMode.value, ...(usePassword.checked ? { password: readPassword.value } : {}) }); result.textContent = `${value.extracted} entries extracted to ${value.destination}.`; },result);
   function invalidateArchiveResults() { listing.replaceChildren(); clearOutcome(inspectedOutcome); clearOutcome(result); clearOutcome(extractedOutcome); }
   function archiveContextChanged() { if (busy || !mounted) return; invalidateArchiveResults(); clearOutcome(status); }
   function destinationContextChanged() { if (busy || !mounted) return; clearOutcome(result); clearOutcome(extractedOutcome); clearOutcome(status); }
   for (const event of ['input','change']) { archivePath.addEventListener(event,archiveContextChanged); destination.addEventListener(event,destinationContextChanged); }
+  for (const event of ['input','change']) pathMode.addEventListener(event,destinationContextChanged);
   return () => { if (!mounted) return; mounted = false; privateFields.forEach(c => { c.value = ''; }); root.setAttribute('aria-busy','false'); };
 }

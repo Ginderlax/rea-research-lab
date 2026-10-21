@@ -1,0 +1,151 @@
+name: Synthetic evidence filter and console controls
+on:
+  workflow_dispatch:
+  push:
+    branches: ['experiment/evidence-filter-validation-20261021']
+permissions:
+  contents: read
+concurrency:
+  group: evidence-filter-controls-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  CI: 'true'
+  REA_SAFE_FEATURE_BRANCH: 'experiment/evidence-filter-validation-20261021'
+  REA_ARCHIVE_ZIP_PARENT: '6aeb166588d834c9635940e542b2de4e98b1eaf2'
+  REA_ARCHIVE_ZIP_ROLE: 'finite'
+  REA_SAFE_CAPTURE_SHA256: 'e7490d623f27f862906de1d09a4f55eef62d0591344ae82d51463f848e8a4b9c'
+  REA_SAFE_VALIDATOR_SHA256: '1029a6d4d1f79790d3d5301a47a550f5044276de76ad72cbe8adfe636888765d'
+  REA_SAFE_CONTROL_PS_SHA256: '85ff940d2e105bb1ba0416d827507d250cf281101f44856f724dfcf336383235'
+  REA_SAFE_CONTROL_ADMISSION_SHA256: 'd586c549b06a278b2457dcc8a6f479570c3840db2adf645ad31cac7f9446b3d9'
+  REA_SAFE_CONTROL_MANIFEST_SHA256: '142f758138c46069bbff30e97481472aba1c7f82836aa524ebe68269626fdf0e'
+jobs:
+  validate:
+    name: Evidence privacy control / ${{ matrix.control }}
+    runs-on: windows-2022
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - control: filter
+            sentinel: ''
+            publicPrefix: rea-filter-validation-console
+          - control: sentinel
+            sentinel: expected-failure
+            publicPrefix: rea-filter-validation-public-sentinel
+    env:
+      REA_SAFE_CONTROL_MODE: ${{ matrix.control }}
+      REA_SAFE_CONTROL_SENTINEL: ${{ matrix.sentinel }}
+      GH_TOKEN: 'REA_SYNTHETIC_CONTROL_VALUE_NO_AUTH'
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the actual isolated control source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select fixed supported Windows x64 Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Admit all nine control sources before any project JavaScript
+        id: before
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          try {
+            $p='products/rea-studio/scripts/evidence-filter-validation-source-admission.ps1'
+            if((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_CONTROL_ADMISSION_SHA256){throw 'Source admission refused'}
+            & $p -Phase before -ExpectedManifestSHA256 $env:REA_SAFE_CONTROL_MANIFEST_SHA256
+            if($LASTEXITCODE -ne 0){exit 1}
+          } catch {Write-Output '{"schema":"rea-safe-bootstrap-console/v1","status":"failed","code":"BEFORE_SOURCE_REFUSED"}';exit 1}
+      - name: Exercise real capture with the selected synthetic control
+        id: capture
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          try {
+            $p='products/rea-studio/scripts/evidence-filter-validation-control.ps1'
+            if((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_CONTROL_PS_SHA256){throw 'Control source refused'}
+            & $p -Phase capture
+            if($LASTEXITCODE -ne 0){exit 1}
+          } catch {Write-Output '{"schema":"rea-safe-bootstrap-console/v1","status":"failed","code":"CAPTURE_CONTROL_REFUSED"}';exit 1}
+      - name: Recheck every control source after success or failure
+        id: after
+        if: always() && steps.before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          try {
+            $p='products/rea-studio/scripts/evidence-filter-validation-source-admission.ps1'
+            if((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_CONTROL_ADMISSION_SHA256){throw 'Source admission changed'}
+            & $p -Phase after -ExpectedManifestSHA256 $env:REA_SAFE_CONTROL_MANIFEST_SHA256
+            if($LASTEXITCODE -ne 0){exit 1}
+          } catch {Write-Output '{"schema":"rea-safe-bootstrap-console/v1","status":"failed","code":"AFTER_SOURCE_REFUSED"}';exit 1}
+      - name: Materialize the strictly scoped safe observations
+        id: finalize
+        if: always() && steps.before.outcome == 'success' && steps.after.outcome == 'success'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          try {
+            $p='products/rea-studio/scripts/evidence-filter-validation-control.ps1'
+            if((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_CONTROL_PS_SHA256){throw 'Control source changed'}
+            & $p -Phase finalize
+            if($LASTEXITCODE -ne 0){exit 1}
+          } catch {Write-Output '{"schema":"rea-safe-bootstrap-console/v1","status":"failed","code":"SAFE_FINALIZATION_REFUSED"}';exit 1}
+      - name: Admit the one literal safe artifact tree
+        id: admit
+        if: always() && steps.before.outcome == 'success' && steps.after.outcome == 'success'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          try {
+            $p='products/rea-studio/scripts/evidence-filter-validation-control.ps1'
+            if((Get-FileHash -LiteralPath $p -Algorithm SHA256).Hash.ToLowerInvariant() -cne $env:REA_SAFE_CONTROL_PS_SHA256){throw 'Control source changed'}
+            & $p -Phase admit
+            if($LASTEXITCODE -ne 0){exit 1}
+          } catch {Write-Output '{"schema":"rea-safe-bootstrap-console/v1","status":"failed","code":"SAFE_ARTIFACT_ADMISSION_REFUSED"}';exit 1}
+      - name: Upload only the admitted safe representation
+        if: always() && steps.admit.outcome == 'success' && steps.admit.outputs.approved == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: evidence-filter-${{ matrix.control }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/${{ matrix.publicPrefix }}-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1
+      - name: Create fixed diagnostics if safe observations were unavailable
+        id: diagnostic
+        if: always() && steps.admit.outcome != 'success'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference='Stop'
+          try {
+            if($env:GITHUB_SHA -cnotmatch '^[0-9a-f]{40}$' -or $env:GITHUB_RUN_ID -cnotmatch '^[1-9][0-9]*$' -or $env:GITHUB_RUN_ATTEMPT -cnotmatch '^[1-9][0-9]*$' -or $env:REA_SAFE_CONTROL_MODE -cnotin @('filter','sentinel')){throw 'Diagnostic subject refused'}
+            $root=[IO.Path]::GetFullPath($env:RUNNER_TEMP)
+            if(((Get-Item -LiteralPath $root).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'Diagnostic root refused'}
+            $p=Join-Path $root ('rea-filter-validation-fixed-diagnostic-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+            if([IO.Path]::GetDirectoryName($p) -cne $root -or (Test-Path -LiteralPath $p)){throw 'Prior diagnostic refused'}
+            $null=New-Item -ItemType Directory -Path $p
+            $v=[ordered]@{schema='rea-fixed-incomplete-control-diagnostic/v1';status='incomplete-or-failed';control=$env:REA_SAFE_CONTROL_MODE;source=$env:GITHUB_SHA;parent='6aeb166588d834c9635940e542b2de4e98b1eaf2';runID=$env:GITHUB_RUN_ID;attempt=$env:GITHUB_RUN_ATTEMPT;code='HOSTED_CONTROL_INCOMPLETE';rawSourceBodiesUploaded=$false;rawChildStreamsUploaded=$false;productExecutions=0;productAcceptance=$false;detailsOmitted=$true}
+            $b=[Text.UTF8Encoding]::new($false).GetBytes(($v|ConvertTo-Json -Depth 5)+"`n")
+            $file=Join-Path $p 'diagnostic.json';$s=[IO.File]::Open($file,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None);try{$s.Write($b,0,$b.Length)}finally{$s.Dispose()}
+            if((Get-ChildItem -LiteralPath $p -Force).Count -ne 1 -or (Get-Item -LiteralPath $file).Length -ne $b.Length){throw 'Diagnostic readback refused'}
+            [IO.File]::AppendAllText($env:GITHUB_OUTPUT,'safe=true'+"`n",[Text.UTF8Encoding]::new($false))
+            Write-Output '{"schema":"rea-safe-bootstrap-console/v1","status":"incomplete","code":"FIXED_DIAGNOSTIC_ONLY"}'
+          } catch {Write-Output '{"schema":"rea-safe-bootstrap-console/v1","status":"failed","code":"DIAGNOSTIC_REFUSED"}';exit 1}
+      - name: Retain fixed diagnostics without converting failures to a pass
+        if: always() && steps.diagnostic.outcome == 'success' && steps.diagnostic.outputs.safe == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: evidence-filter-${{ matrix.control }}-incomplete-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rea-filter-validation-fixed-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 1

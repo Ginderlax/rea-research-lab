@@ -1,0 +1,75 @@
+{
+  "schema": "rea-archive-zip-aes-public-requirements-matrix/v1",
+  "requirement": "ARCHIVE.ZIP.WINZIP_AES256.001",
+  "source": "482575f6232981cfeca05b89ba6b7e0b4cb81e30",
+  "rows": [
+    {
+      "feature": "ClassicAES256ZIP writing",
+      "scope": "AE2; Store and DEFLATE; names/comments visible",
+      "evidence": [
+        "11 core groups",
+        "eight original groups including native-to-original t/x",
+        "five DOM and five new browser scenarios"
+      ]
+    },
+    {
+      "feature": "ClassicAES256ZIP reading",
+      "scope": "AE1 and AE2; Store/DEFLATE; explicit empty distinct from missing password",
+      "evidence": [
+        "independent synthetic AE1 accepted by original before native",
+        "original-to-native method checks",
+        "finite/HTTP cases"
+      ]
+    },
+    {
+      "feature": "Password policies",
+      "scope": "Writer1–99 ASCII U+0020–U+007F; one/99/DEL boundary; reader explicit-empty fixtures",
+      "evidence": [
+        "three ASCII profiles",
+        "two explicit-empty versions",
+        "new core/HTTP/DOM groups"
+      ]
+    },
+    {
+      "feature": "Authentication/layout failures",
+      "scope": "Selected wrong password/verifier/ciphertext/tag, AE1CRC and malformed metadata cases; before extraction writes",
+      "evidence": [
+        "expected original exit2 commands",
+        "six native malformed refusals",
+        "HTTP400 and real browser no-destination assertions"
+      ]
+    },
+    {
+      "feature": "Interface state",
+      "scope": "Explicit method, busy exclusion, three-field clearing, disposal and reload",
+      "evidence": [
+        "five new DOM groups",
+        "five new actual browser scenarios"
+      ],
+      "limit": "Stale prior green extraction result remains a documented4825 presentation issue."
+    },
+    {
+      "feature": "Retained behavior",
+      "scope": "198 earlier regression groups plus six retained real browser scenarios",
+      "evidence": [
+        "finite-results.json",
+        "browser-results.json"
+      ],
+      "limit": "Finite selection is not full original-product feature coverage."
+    }
+  ],
+  "unsupported": [
+    "non-ASCII passwords",
+    "other AES strengths orGCM",
+    "ZipCrypto",
+    "encrypted ZIP64/descriptors/Zstandard",
+    "split archives",
+    "leading-prefix/SFX AES ZIPs",
+    "full7Zip/WinZip product replacement"
+  ],
+  "fullProductAcceptance": false,
+  "fullParity": false,
+  "superiority": false,
+  "allTenComplete": false,
+  "historicalReceiptsRebound": false
+}

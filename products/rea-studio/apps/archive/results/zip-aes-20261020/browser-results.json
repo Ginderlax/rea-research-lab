@@ -1,0 +1,645 @@
+{
+  "schema": "rea-archive-zip-aes-public-browser-results/v1",
+  "source": "482575f6232981cfeca05b89ba6b7e0b4cb81e30",
+  "runID": "39517385265",
+  "attempt": 1,
+  "jobID": "118952715765",
+  "artifactID": "12308646278",
+  "runtime": {
+    "runner": "GitHub Actions 1000000390",
+    "Chromium": "156.0.8078.4",
+    "platform": "win32",
+    "runnerGroup": "GitHub Actions",
+    "labels": [
+      "windows-2022"
+    ],
+    "Playwright": "1.64.1",
+    "node": "v24.16.0"
+  },
+  "scenarios": 11,
+  "retainedScenarios": 6,
+  "newZIPScenarios": 5,
+  "retries": 0,
+  "cases": [
+    {
+      "id": "43647ef1e946c3ff6fc7-447a004699b8c382d256",
+      "name": "Archive plain ZIP UI round trip retain Unicode bytes and require an explicit encryption method",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 136,
+      "specFile": "archive-aes.spec.mjs",
+      "requests": 5,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/43647ef1e946c3ff6fc7-447a004699b8c382d256.png",
+        "bytes": 66052,
+        "sha256": "3cf3337c40bfd06fb83561c49a6c44cdffbecc30634bed680e7cc81a03738da5"
+      },
+      "observations": [
+        {
+          "kind": "real-ui-extraction-content",
+          "path": "archive/plain-restored/astral-😀-é-é.txt",
+          "artifact": "workspace-artifacts/plain-restored.txt",
+          "expected": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "observed": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          }
+        },
+        {
+          "kind": "real-ui-created-workspace-archive",
+          "path": "workspace-artifacts/archive-plain.zip",
+          "expected": {
+            "bytes": 278,
+            "sha256": "414094349d405a0d44645ef66212f0e43b8199e9278963f7bf020d2e61649386"
+          },
+          "observed": {
+            "bytes": 278,
+            "sha256": "414094349d405a0d44645ef66212f0e43b8199e9278963f7bf020d2e61649386"
+          },
+          "productDownloadUIAbsent": true,
+          "actualDownloads": 0,
+          "observer": "Owned fixture filesystem read and exact portable copy, not a browser download"
+        },
+        {
+          "kind": "zip-password-without-explicit-method-refusal",
+          "actualBrowserDisabledControls": true,
+          "additionalProgrammaticAPIControl": true,
+          "explicitZIPMethodRequired": true,
+          "httpStatus": 400,
+          "noArchiveWritten": true
+        }
+      ],
+      "faults": []
+    },
+    {
+      "id": "43647ef1e946c3ff6fc7-2f8082b3a610396525ca",
+      "name": "Archive AES 7Z content UI round trip retain Unicode bytes",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 147,
+      "specFile": "archive-aes.spec.mjs",
+      "requests": 5,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/43647ef1e946c3ff6fc7-2f8082b3a610396525ca.png",
+        "bytes": 67408,
+        "sha256": "102a2e924cc5545c5df9cb9878ebc79efab02867824a75bcb1b9152dc52a7c80"
+      },
+      "observations": [
+        {
+          "kind": "real-ui-extraction-content",
+          "path": "archive/content-restored/astral-😀-é-é.txt",
+          "artifact": "workspace-artifacts/content-restored.txt",
+          "expected": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "observed": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          }
+        },
+        {
+          "kind": "real-ui-created-workspace-archive",
+          "path": "workspace-artifacts/archive-aes-content.7z",
+          "expected": {
+            "bytes": 255,
+            "sha256": "47aec321a8e48b88663143f72ed5b38cc8b9d5f357faa58698b3f3ac1763ee0c"
+          },
+          "observed": {
+            "bytes": 255,
+            "sha256": "47aec321a8e48b88663143f72ed5b38cc8b9d5f357faa58698b3f3ac1763ee0c"
+          },
+          "productDownloadUIAbsent": true,
+          "actualDownloads": 0,
+          "observer": "Owned fixture filesystem read and exact portable copy, not a browser download"
+        },
+        {
+          "kind": "aes-7z-ui-roundtrip",
+          "headerEncrypted": false,
+          "contentBytesExact": true,
+          "passwordFieldsCleared": true
+        }
+      ],
+      "faults": []
+    },
+    {
+      "id": "43647ef1e946c3ff6fc7-e5687aa08248acedb8a9",
+      "name": "Archive AES 7Z encrypted-header UI round trip retain Unicode bytes",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 147,
+      "specFile": "archive-aes.spec.mjs",
+      "requests": 5,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/43647ef1e946c3ff6fc7-e5687aa08248acedb8a9.png",
+        "bytes": 68566,
+        "sha256": "7a58e1df91aa9ca490cc68c60d4a13d9c1c05b5803351462d997e336861d81d8"
+      },
+      "observations": [
+        {
+          "kind": "real-ui-extraction-content",
+          "path": "archive/header-restored/astral-😀-é-é.txt",
+          "artifact": "workspace-artifacts/header-restored.txt",
+          "expected": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "observed": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          }
+        },
+        {
+          "kind": "real-ui-created-workspace-archive",
+          "path": "workspace-artifacts/archive-aes-header.7z",
+          "expected": {
+            "bytes": 328,
+            "sha256": "8dc727a7803058f2cd740ebbd0f05eb69d8bde4e4fbd137ca5e8277233b9e0b1"
+          },
+          "observed": {
+            "bytes": 328,
+            "sha256": "8dc727a7803058f2cd740ebbd0f05eb69d8bde4e4fbd137ca5e8277233b9e0b1"
+          },
+          "productDownloadUIAbsent": true,
+          "actualDownloads": 0,
+          "observer": "Owned fixture filesystem read and exact portable copy, not a browser download"
+        },
+        {
+          "kind": "aes-7z-ui-roundtrip",
+          "headerEncrypted": true,
+          "contentBytesExact": true,
+          "passwordFieldsCleared": true
+        }
+      ],
+      "faults": []
+    },
+    {
+      "id": "43647ef1e946c3ff6fc7-06353a784fd6cd490cee",
+      "name": "Archive wrong password refuses real list and extraction before destination creation",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 156,
+      "specFile": "archive-aes.spec.mjs",
+      "requests": 6,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/43647ef1e946c3ff6fc7-06353a784fd6cd490cee.png",
+        "bytes": 68520,
+        "sha256": "d5cd7defd1fea0969235c540325ad6d2503b041badb56f7f7c749ddef2804d5b"
+      },
+      "observations": [
+        {
+          "kind": "wrong-password-refusal",
+          "action": "list",
+          "status": 400,
+          "body": {
+            "bytes": 35,
+            "sha256": "89ac0deb0cd89c7441ca1fbf4684e4cf9a288986c8d4023d27ce648b01f997ca"
+          },
+          "passwordRetainedInEvidence": false
+        },
+        {
+          "kind": "wrong-password-refusal",
+          "action": "extract",
+          "status": 400,
+          "body": {
+            "bytes": 35,
+            "sha256": "89ac0deb0cd89c7441ca1fbf4684e4cf9a288986c8d4023d27ce648b01f997ca"
+          },
+          "passwordRetainedInEvidence": false
+        },
+        {
+          "kind": "real-ui-extraction-content",
+          "path": "archive/correct-after-refusal/astral-😀-é-é.txt",
+          "artifact": "workspace-artifacts/correct-after-refusal.txt",
+          "expected": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "observed": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          }
+        }
+      ],
+      "faults": []
+    },
+    {
+      "id": "43647ef1e946c3ff6fc7-8d5951e0972424714d1b",
+      "name": "Archive held actual create response keeps controls busy and clears private fields",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 171,
+      "specFile": "archive-aes.spec.mjs",
+      "requests": 4,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/43647ef1e946c3ff6fc7-8d5951e0972424714d1b.png",
+        "bytes": 68437,
+        "sha256": "9015a6765aaa10603817259103082fedb5b4f5d847f606fbabe051e431a41d58"
+      },
+      "observations": [
+        {
+          "kind": "real-ui-extraction-content",
+          "path": "archive/held-create-restored/astral-😀-é-é.txt",
+          "artifact": "workspace-artifacts/held-create-restored.txt",
+          "expected": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "observed": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          }
+        }
+      ],
+      "faults": [
+        {
+          "kind": "delay-after-actual-host-response",
+          "action": "create",
+          "status": 200,
+          "body": {
+            "bytes": 144,
+            "sha256": "272004f772942387a0cdf0284203762d59a886698d2efc1943e7ad4edf0f05b7"
+          },
+          "handlerMocked": false,
+          "operationAlreadyCommitted": true
+        }
+      ]
+    },
+    {
+      "id": "43647ef1e946c3ff6fc7-1111b29582302c4bd1fe",
+      "name": "Archive disposal scrubs detached passwords after actual committed extraction",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 181,
+      "specFile": "archive-aes.spec.mjs",
+      "requests": 6,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/43647ef1e946c3ff6fc7-1111b29582302c4bd1fe.png",
+        "bytes": 59314,
+        "sha256": "285dc4e59e3ac4e3fcf8b21a174f28888ffc0eee3a0928d9fc5b3d65ec7718c6"
+      },
+      "observations": [
+        {
+          "kind": "disposal-after-real-extraction-commit",
+          "destinationPreserved": true,
+          "content": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "detachedPasswordUnits": [
+            0,
+            0,
+            0
+          ],
+          "serverCancellationClaimed": false,
+          "staleArchiveUIAbsent": true
+        }
+      ],
+      "faults": [
+        {
+          "kind": "delay-after-actual-host-response",
+          "action": "extract",
+          "status": 200,
+          "body": {
+            "bytes": 84,
+            "sha256": "51550a1ed72acedc90b96cbac300158763fcf6ae6b8f4470081cb3ecc7786888"
+          },
+          "handlerMocked": false,
+          "operationAlreadyCommitted": true
+        }
+      ]
+    },
+    {
+      "id": "5953c5f1e3f28747f584-e105b5ab459a4138d926",
+      "name": "Archive AES ZIP store UI creation, reload, verification and extraction retain Unicode bytes",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 145,
+      "specFile": "archive-zip-aes.spec.mjs",
+      "requests": 6,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/5953c5f1e3f28747f584-e105b5ab459a4138d926.png",
+        "bytes": 69801,
+        "sha256": "3024d81b7705307f4be04629eba1503a7d6e7612df405d621cac2996df578668"
+      },
+      "observations": [
+        {
+          "kind": "real-ui-created-workspace-archive",
+          "path": "workspace-artifacts/archive-zip-aes-store.zip",
+          "expected": {
+            "bytes": 326,
+            "sha256": "3f1a15708e9e26830b7eceb511cd090136824c7237b04e1d25e14d0e376c3a7f"
+          },
+          "observed": {
+            "bytes": 326,
+            "sha256": "3f1a15708e9e26830b7eceb511cd090136824c7237b04e1d25e14d0e376c3a7f"
+          },
+          "productDownloadUIAbsent": true,
+          "actualDownloads": 0,
+          "observer": "Owned fixture filesystem read and exact portable copy, not a browser download"
+        },
+        {
+          "kind": "real-ui-extraction-content",
+          "path": "archive/zip-store-restored/astral-😀-é-é.txt",
+          "artifact": "workspace-artifacts/zip-store-restored.txt",
+          "expected": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "observed": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          }
+        },
+        {
+          "kind": "aes-zip-ui-roundtrip",
+          "compression": "store",
+          "reloadObserved": true,
+          "hostRestartClaimed": false,
+          "contentBytesExact": true,
+          "namesVisible": true,
+          "passwordFieldsCleared": 3,
+          "archive": {
+            "bytes": 326,
+            "sha256": "3f1a15708e9e26830b7eceb511cd090136824c7237b04e1d25e14d0e376c3a7f"
+          }
+        }
+      ],
+      "faults": []
+    },
+    {
+      "id": "5953c5f1e3f28747f584-27d70da4f701c89db016",
+      "name": "Archive AES ZIP deflate UI creation, reload, verification and extraction retain Unicode bytes",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 145,
+      "specFile": "archive-zip-aes.spec.mjs",
+      "requests": 6,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/5953c5f1e3f28747f584-27d70da4f701c89db016.png",
+        "bytes": 69947,
+        "sha256": "9d44078c13b22b00e43c82edc98a935da7145508972caa02b0d146b6d83090f6"
+      },
+      "observations": [
+        {
+          "kind": "real-ui-created-workspace-archive",
+          "path": "workspace-artifacts/archive-zip-aes-deflate.zip",
+          "expected": {
+            "bytes": 328,
+            "sha256": "d00d1e8649fa5b97961545cf6cadd37316b011022b4d3ebd4fb44685b84520ae"
+          },
+          "observed": {
+            "bytes": 328,
+            "sha256": "d00d1e8649fa5b97961545cf6cadd37316b011022b4d3ebd4fb44685b84520ae"
+          },
+          "productDownloadUIAbsent": true,
+          "actualDownloads": 0,
+          "observer": "Owned fixture filesystem read and exact portable copy, not a browser download"
+        },
+        {
+          "kind": "real-ui-extraction-content",
+          "path": "archive/zip-deflate-restored/astral-😀-é-é.txt",
+          "artifact": "workspace-artifacts/zip-deflate-restored.txt",
+          "expected": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "observed": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          }
+        },
+        {
+          "kind": "aes-zip-ui-roundtrip",
+          "compression": "deflate",
+          "reloadObserved": true,
+          "hostRestartClaimed": false,
+          "contentBytesExact": true,
+          "namesVisible": true,
+          "passwordFieldsCleared": 3,
+          "archive": {
+            "bytes": 328,
+            "sha256": "d00d1e8649fa5b97961545cf6cadd37316b011022b4d3ebd4fb44685b84520ae"
+          }
+        }
+      ],
+      "faults": []
+    },
+    {
+      "id": "5953c5f1e3f28747f584-e7b0a4db2fd36794f4ab",
+      "name": "Archive AES ZIP wrong password and corrupted authentication refuse extraction before destination creation",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 159,
+      "specFile": "archive-zip-aes.spec.mjs",
+      "requests": 7,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/5953c5f1e3f28747f584-e7b0a4db2fd36794f4ab.png",
+        "bytes": 68765,
+        "sha256": "79bab5b75e7f0ce8054c22a4d0b3df8d0d9dbcd885837b1d72f153ef1ec44a3f"
+      },
+      "observations": [
+        {
+          "kind": "aes-zip-wrong-password-refusal",
+          "action": "list",
+          "status": 400,
+          "body": {
+            "bytes": 79,
+            "sha256": "8123f2966623dcd46ed6bda40008f0af306194d1242f8738903f3600b51a8922"
+          },
+          "passwordRetained": false
+        },
+        {
+          "kind": "aes-zip-wrong-password-refusal",
+          "action": "extract",
+          "status": 400,
+          "body": {
+            "bytes": 79,
+            "sha256": "8123f2966623dcd46ed6bda40008f0af306194d1242f8738903f3600b51a8922"
+          },
+          "passwordRetained": false
+        },
+        {
+          "kind": "real-ui-extraction-content",
+          "path": "archive/zip-correct-after-refusal/astral-😀-é-é.txt",
+          "artifact": "workspace-artifacts/zip-correct-after-refusal.txt",
+          "expected": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "observed": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          }
+        },
+        {
+          "kind": "real-ui-created-workspace-archive",
+          "path": "workspace-artifacts/archive-zip-aes-corrupted-tag.zip",
+          "expected": {
+            "bytes": 328,
+            "sha256": "4c44615ef11e710609c3f5d0c999edf6ccf9466eef1ebc3f6f83df976b6030dd"
+          },
+          "observed": {
+            "bytes": 328,
+            "sha256": "4c44615ef11e710609c3f5d0c999edf6ccf9466eef1ebc3f6f83df976b6030dd"
+          },
+          "productDownloadUIAbsent": true,
+          "actualDownloads": 0,
+          "observer": "Owned fixture filesystem read and exact portable copy, not a browser download"
+        },
+        {
+          "kind": "aes-zip-tag-mutation-refusal",
+          "mutation": "one byte of actual last authentication code; owned fixture only",
+          "before": {
+            "bytes": 328,
+            "sha256": "2585e164fc7b33689ea60c8f24b251d55dba4be3a25081179a4f592c70c3921f"
+          },
+          "after": {
+            "bytes": 328,
+            "sha256": "4c44615ef11e710609c3f5d0c999edf6ccf9466eef1ebc3f6f83df976b6030dd"
+          },
+          "status": 400,
+          "noDestination": true
+        }
+      ],
+      "faults": []
+    },
+    {
+      "id": "5953c5f1e3f28747f584-45df2ffa734ea2429dd1",
+      "name": "Archive AES ZIP held actual creation response blocks duplicate operations and clears all private fields",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 183,
+      "specFile": "archive-zip-aes.spec.mjs",
+      "requests": 4,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/5953c5f1e3f28747f584-45df2ffa734ea2429dd1.png",
+        "bytes": 68358,
+        "sha256": "1185ae03d92b5171a60da6060fcff7e0fd6f2994d0f95e01fb8eab35b9d6108b"
+      },
+      "observations": [
+        {
+          "kind": "real-ui-extraction-content",
+          "path": "archive/zip-held-restored/astral-😀-é-é.txt",
+          "artifact": "workspace-artifacts/zip-held-restored.txt",
+          "expected": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "observed": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          }
+        },
+        {
+          "kind": "aes-zip-held-response",
+          "actualOperationCommitted": true,
+          "duplicateRequests": 0,
+          "passwordFieldsCleared": 3
+        }
+      ],
+      "faults": [
+        {
+          "kind": "delay-after-actual-host-response",
+          "action": "create",
+          "status": 200,
+          "body": {
+            "bytes": 136,
+            "sha256": "82fb4401f26789243ea33ee36031893a6988113355756ba8426aa7e6275712ba"
+          },
+          "handlerMocked": false,
+          "operationAlreadyCommitted": true
+        }
+      ]
+    },
+    {
+      "id": "5953c5f1e3f28747f584-5ebb0ce73a3528d28cc6",
+      "name": "Archive AES ZIP disposal clears detached passwords after actual committed extraction",
+      "status": "passed",
+      "retry": 0,
+      "sourceLine": 193,
+      "specFile": "archive-zip-aes.spec.mjs",
+      "requests": 6,
+      "serverCloseObserved": true,
+      "screenshot": {
+        "path": "screenshots/5953c5f1e3f28747f584-5ebb0ce73a3528d28cc6.png",
+        "bytes": 59312,
+        "sha256": "c11fc35d35c093f731c7455ffa661d1fd54c074c202cd29b99f5b581c787d99b"
+      },
+      "observations": [
+        {
+          "kind": "aes-zip-disposal-after-real-extraction",
+          "content": {
+            "bytes": 62,
+            "sha256": "a03f174fa8377dae016b656544818c959564ddbdbb7a83be30f283d00cb374c0"
+          },
+          "detachedPasswordUnits": [
+            0,
+            0,
+            0
+          ],
+          "destinationPreserved": true,
+          "serverCancellationClaimed": false,
+          "staleArchiveUIAbsent": true
+        }
+      ],
+      "faults": [
+        {
+          "kind": "delay-after-actual-host-response",
+          "action": "extract",
+          "status": 200,
+          "body": {
+            "bytes": 88,
+            "sha256": "3b828784cffcbeeb9213053b7d1fd612336fd7659cff8e55bb178915f3303ea2"
+          },
+          "handlerMocked": false,
+          "operationAlreadyCommitted": true
+        }
+      ]
+    }
+  ],
+  "pageObservedAPIRequests": 60,
+  "additionalProgrammaticAPIControl": "One explicit plain-ZIP password/method refusal is performed via page.request and is not included in page request-event counts.",
+  "heldActualResponses": 4,
+  "recordedWrongPasswordRefusals": 4,
+  "recordedTagRefusals": 1,
+  "expectedAuxiliaryErrors": 16,
+  "hostRestartClaimed": false,
+  "separateContextCloseClaimed": false,
+  "staleGreenPanelRetained": true,
+  "limits": [
+    "Only this exact browser job/source/run/attempt is qualified here. Finite and original comparison results require separate reports. No old source/run qualification is rebound.",
+    "No archive parsing/reopening, product/original/import/syntax/test, cipher/KDF/HMAC/CRC execution, Git or network occurred. SHA256 and raw Git blob SHA1 are data identity checks only. Six retained archives are hashed as opaque ordinary bytes.",
+    "No-destination/partial-file absence, disabled busy controls, all-three private-field clearing, detached-field state, reload and navigation are source-associated passed assertions plus recorded case observations. No final owned workspace inventory or DOM snapshot is retained for independent replay.",
+    "Successful/failed HTTP body raw bytes are deliberately omitted; only status/size/hash observations are retained. No raw passwords, token headers, request bodies or traces are used for qualification.",
+    "The corrupted after-archive is retained and its before size/hash recorded, but a separate before archive is not retained for independent single-byte delta reconstruction.",
+    "PNG viewports are scrolled lower; only visible inspection password fields are blank. Creation fields/global status are above viewport. Two disposal screenshots show Lab Editor. The tag-refusal screenshot retains earlier green success output, so it is not proof of refusal.",
+    "Owned server close and four delayed actual-response completions are recorded. Playwright owns browser context; no separate context-close or host-restart observation is claimed. Browser cases reload only.",
+    "Generic tooling acquisition scope text mentions historical Flow/Vault scenarios; the actual two Archive spec files, exact eleven-name roster and real worker observations define this report. Browser executable digest is observed, not independently publisher-authenticated/signature or reproducible-build provenance."
+  ],
+  "qualification": {
+    "schema": "rea-archive-4825-browser-independent-data-qualification/v1",
+    "bytes": 726837,
+    "sha256": "8c96899382f7e087d45cc74087529dcd01f02deb764ef9f32a8e6d5c409a963e",
+    "checks": 3234,
+    "failed": 0
+  },
+  "fullProductAcceptance": false,
+  "fullParity": false,
+  "superiority": false,
+  "allTenComplete": false,
+  "historicalReceiptsRebound": false
+}

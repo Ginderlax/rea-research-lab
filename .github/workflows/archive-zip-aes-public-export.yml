@@ -1,0 +1,164 @@
+name: Archive ZIP AES privacy-filtered public export
+on:
+  workflow_dispatch:
+  push:
+    branches: ['evidence/archive-zip-aes-public-export-20261021-r2']
+
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: archive-zip-aes-public-export-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  CI: 'true'
+  REA_EXPORT_PARENT: '482575f6232981cfeca05b89ba6b7e0b4cb81e30'
+  REA_EXPORT_SCRIPT_SHA256: 'cc2d973825d960c48e11c8b00c40e8ed8f7a3ac990500c73bdc1414be963787f'
+  REA_EXPORT_INPUTS_SHA256: 'c149fe5fe1c050b75edeb23865a1f275e011b2e27e5ae947759912b9daef301d'
+
+jobs:
+  export:
+    name: Archive ZIP AES public export
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out exact export source and fixed parent
+        id: checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select exact Windows x64 Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Admit three reviewed sources, derive filtered copies, and recheck sources
+        id: derive
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Set-StrictMode -Version Latest
+          $ErrorActionPreference='Stop'
+          $scriptPath='products/rea-studio/scripts/export-archive-zip-aes-public.ps1'
+          $inputsPath='products/rea-studio/experiments/archive-zip-aes-public-export/inputs.json'
+          $workflowPath='.github/workflows/archive-zip-aes-public-export.yml'
+          $paths=@($workflowPath,$inputsPath,$scriptPath)
+          [Array]::Sort($paths,[StringComparer]::Ordinal)
+          function Need([bool]$ok,[string]$code){if(-not $ok){throw ('PUBLIC_EXPORT_ADMISSION_'+$code)}}
+          function Git-Output([string[]]$Arguments){
+            $rows=@(& git.exe @Arguments)
+            Need ($LASTEXITCODE -eq 0) 'GIT_COMMAND'
+            return $rows
+          }
+          function Plain([string]$path,[bool]$directory=$false){
+            $cursor=[IO.Path]::GetFullPath($path)
+            $leaf=Get-Item -LiteralPath $cursor -Force
+            Need ($leaf.PSIsContainer -eq $directory) 'ORDINARY_TYPE'
+            while($cursor){
+              $item=Get-Item -LiteralPath $cursor -Force
+              Need (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) 'REPARSE_POINT'
+              $next=[IO.Path]::GetDirectoryName($cursor)
+              if($next -ceq $cursor){break};$cursor=$next
+            }
+          }
+          function Save-JSON([string]$path,$value){
+            $bytes=[Text.UTF8Encoding]::new($false,$true).GetBytes(($value|ConvertTo-Json -Depth 30)+"`n")
+            Need ($bytes.Length -le 8MB) 'METADATA_BOUND'
+            $stream=[IO.File]::Open($path,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+            try{$stream.Write($bytes,0,$bytes.Length);$stream.Flush($true)}finally{$stream.Dispose()}
+          }
+          Plain $env:RUNNER_TEMP $true
+          $evidence=Join-Path $env:RUNNER_TEMP ('rea-archive-zip-aes-public-export-'+$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT)
+          Need (-not (Test-Path -LiteralPath $evidence)) 'FRESH_EVIDENCE'
+          [IO.Directory]::CreateDirectory($evidence)|Out-Null
+          $beforeOK=$false;$exportOK=$false;$afterOK=$false;$safeToUpload=$false
+          function Admit([string]$phase){
+            Need ($env:GITHUB_REPOSITORY -ceq 'Ginderlax/rea-research-lab' -and $env:GITHUB_REF -ceq 'refs/heads/evidence/archive-zip-aes-public-export-20261021-r2') 'REPO_BRANCH'
+            Need ($env:RUNNER_ENVIRONMENT -ceq 'github-hosted' -and $env:RUNNER_OS -ceq 'Windows' -and $env:RUNNER_ARCH -ceq 'X64') 'HOSTED_RUNTIME'
+            Need ($env:GITHUB_SHA -cmatch '^[0-9a-f]{40}$' -and $env:GITHUB_WORKFLOW_SHA -ceq $env:GITHUB_SHA -and $env:GITHUB_JOB -ceq 'export') 'WORKFLOW_IDENTITY'
+            Need ($env:REA_EXPORT_PARENT -ceq '482575f6232981cfeca05b89ba6b7e0b4cb81e30') 'FIXED_PARENT'
+            Need ($env:REA_EXPORT_SCRIPT_SHA256 -cmatch '^[0-9a-f]{64}$' -and $env:REA_EXPORT_INPUTS_SHA256 -cmatch '^[0-9a-f]{64}$') 'REVIEWED_PIN_FORMAT'
+            $head=@(Git-Output -Arguments @('rev-parse','HEAD'))
+            Need ($head.Count -eq 1 -and $head[0] -ceq $env:GITHUB_SHA) 'ACTUAL_COMMIT'
+            $parents=@(Git-Output -Arguments @('show','-s','--format=%P','HEAD'))
+            Need ($parents.Count -eq 1 -and $parents[0] -ceq $env:REA_EXPORT_PARENT) 'SOLE_PARENT'
+            $dirty=@(Git-Output -Arguments @('status','--porcelain=v1','--untracked-files=all'))
+            Need ($dirty.Count -eq 0) 'ZERO_STATUS_RECORDS'
+            $delta=@(Git-Output -Arguments @('diff-tree','--no-commit-id','--name-status','-r','HEAD'))
+            $expected=@($paths|ForEach-Object{'A'+[char]9+$_})
+            [Array]::Sort($delta,[StringComparer]::Ordinal);[Array]::Sort($expected,[StringComparer]::Ordinal)
+            Need ($delta.Count -eq 3 -and (($delta -join "`n") -ceq ($expected -join "`n"))) 'EXACT_THREE_ADDED_FILES'
+            $node=@(& node.exe --version)
+            Need ($LASTEXITCODE -eq 0 -and $node.Count -eq 1 -and $node[0] -ceq 'v24.16.0') 'EXACT_NODE_VERSION'
+            $observed=[Collections.Generic.List[object]]::new()
+            foreach($path in $paths){
+              Plain $path $false
+              Need ((Get-Item -LiteralPath $path).Length -le 2MB) 'SOURCE_BOUND'
+              $sha=(Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash.ToLowerInvariant()
+              if($path -ceq $scriptPath){Need ($sha -ceq $env:REA_EXPORT_SCRIPT_SHA256) 'SCRIPT_SHA256'}
+              if($path -ceq $inputsPath){Need ($sha -ceq $env:REA_EXPORT_INPUTS_SHA256) 'INPUT_SHA256'}
+              $tree=@(Git-Output -Arguments @('ls-tree','HEAD','--',$path))
+              $blob=@(Git-Output -Arguments @('hash-object','--no-filters','--',$path))
+              Need ($tree.Count -eq 1 -and $blob.Count -eq 1 -and $blob[0] -cmatch '^[0-9a-f]{40}$' -and $tree[0] -ceq ('100644 blob '+$blob[0]+[char]9+$path)) 'RAW_GIT_BLOB_AND_MODE'
+              $observed.Add([ordered]@{path=$path;bytes=(Get-Item -LiteralPath $path).Length;sha256=$sha;gitBlob=$blob[0];gitMode='100644'})
+            }
+            if($phase -ceq 'after'){
+              $before=Get-Content -LiteralPath (Join-Path $evidence 'source-before.json') -Raw -Encoding utf8|ConvertFrom-Json -AsHashtable
+              Need ($before.source -ceq $env:GITHUB_SHA -and $before.soleParent -ceq $env:REA_EXPORT_PARENT -and $before.runID -ceq $env:GITHUB_RUN_ID -and $before.runAttempt -ceq $env:GITHUB_RUN_ATTEMPT -and $before.role -ceq 'export') 'PHASE_IDENTITY_JOIN'
+              Need (@($before.sources).Count -eq 3) 'BEFORE_THREE_SOURCES'
+              for($i=0;$i -lt 3;$i++){
+                Need ($before.sources[$i].path -ceq $observed[$i].path -and $before.sources[$i].bytes -eq $observed[$i].bytes -and $before.sources[$i].sha256 -ceq $observed[$i].sha256 -and $before.sources[$i].gitBlob -ceq $observed[$i].gitBlob -and $before.sources[$i].gitMode -ceq $observed[$i].gitMode) 'SOURCE_PHASE_BYTES_STABLE'
+              }
+            }
+            $folder=Join-Path $evidence ('source-'+$phase)
+            Need (-not (Test-Path -LiteralPath $folder)) 'FRESH_SOURCE_PHASE'
+            [IO.Directory]::CreateDirectory($folder)|Out-Null
+            foreach($row in $observed){
+              $target=Join-Path $folder $row.path
+              [IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($target))|Out-Null
+              $sourceStream=[IO.File]::OpenRead($row.path);$targetStream=[IO.File]::Open($target,[IO.FileMode]::CreateNew,[IO.FileAccess]::Write,[IO.FileShare]::None)
+              try{$sourceStream.CopyTo($targetStream,65536);$targetStream.Flush($true)}finally{$targetStream.Dispose();$sourceStream.Dispose()}
+              Plain $target $false
+              Need ((Get-Item -LiteralPath $target).Length -eq $row.bytes -and (Get-FileHash -LiteralPath $target -Algorithm SHA256).Hash.ToLowerInvariant() -ceq $row.sha256) 'SOURCE_COPY_READBACK'
+            }
+            Save-JSON (Join-Path $evidence ('source-'+$phase+'.json')) ([ordered]@{schema='rea-archive-zip-aes-public-export-source-admission/v1';status='passed';phase=$phase;source=$env:GITHUB_SHA;soleParent=$env:REA_EXPORT_PARENT;workflowSHA=$env:GITHUB_WORKFLOW_SHA;runID=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;role='export';sources=$observed.ToArray();Node=$node[0];sourceOverlay=$false;productTestsExecuted=0;productBuilds=0;productImports=0;originalArtifactsModified=$false})
+          }
+          try{
+            Admit 'before';$beforeOK=$true
+            & $scriptPath -Inputs $inputsPath -Evidence $evidence -ExpectedInputsSHA256 $env:REA_EXPORT_INPUTS_SHA256
+            $exportOK=$true
+          }catch{
+            # No raw exception text, token, signed URL or matched value is retained.
+            $safeCode=if($_.Exception.Message -cmatch '^PUBLIC_EXPORT_[A-Z0-9_]+$'){$_.Exception.Message}else{'UNCLASSIFIED_WORKFLOW_FAILURE'}
+            Save-JSON (Join-Path $evidence 'workflow-failure.json') ([ordered]@{schema='rea-archive-zip-aes-public-export-workflow-failure/v1';safeCode=$safeCode;exceptionType=$_.Exception.GetType().FullName;status='failed';completeFilteredExport=$false;productAcceptance=$false})
+          }finally{
+            try{Admit 'after';$afterOK=$true}catch{
+              $safeCode=if($_.Exception.Message -cmatch '^PUBLIC_EXPORT_[A-Z0-9_]+$'){$_.Exception.Message}else{'UNCLASSIFIED_AFTER_FAILURE'}
+              Save-JSON (Join-Path $evidence 'source-after-failure.json') ([ordered]@{schema='rea-archive-zip-aes-public-export-after-failure/v1';safeCode=$safeCode;exceptionType=$_.Exception.GetType().FullName;status='failed';sourceStabilityQualified=$false})
+            }
+            Save-JSON (Join-Path $evidence 'workflow-attempt.json') ([ordered]@{schema='rea-archive-zip-aes-public-export-workflow/v1';source=$env:GITHUB_SHA;soleParent=$env:REA_EXPORT_PARENT;runID=$env:GITHUB_RUN_ID;runAttempt=$env:GITHUB_RUN_ATTEMPT;role='export';sourceBeforePassed=$beforeOK;exportPassed=$exportOK;sourceAfterPassed=$afterOK;completeFilteredExport=($beforeOK -and $exportOK -and $afterOK);rawCompletePublicEvidence=$false;productTestsRerun=$false;productAcceptance=$false;historicalReceiptsRebound=$false})
+            $files=@(Get-ChildItem -LiteralPath $evidence -Recurse -File -Force)
+            $directories=@(Get-ChildItem -LiteralPath $evidence -Recurse -Directory -Force)
+            $safeToUpload=$files.Count -le 10000 -and ($files|Measure-Object Length -Sum).Sum -le 128MB -and @($files|Where-Object{$_.Length -gt 8MB}).Count -eq 0
+            foreach($file in $files){Plain $file.FullName $false}
+            foreach($directory in $directories){Plain $directory.FullName $true}
+            if($safeToUpload){'evidence_path='+$evidence|Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append}
+          }
+          Need ($safeToUpload -and $beforeOK -and $exportOK -and $afterOK) 'INCOMPLETE_OR_FAILED_EXPORT'
+      - name: Retain bounded filtered evidence or explicit failure diagnostics
+        if: always() && steps.derive.outputs.evidence_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: archive-zip-aes-privacy-filtered-public-export-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.derive.outputs.evidence_path }}
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 6
+          retention-days: 7

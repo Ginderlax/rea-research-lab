@@ -4,8 +4,8 @@ param(
  [Parameter(Mandatory)][ValidatePattern('^[0-9a-f]{64}$')][string]$ExpectedManifestSHA256
 )
 $ErrorActionPreference='Stop'
-$expectedBranch='experiment/evidence-filter-validation-20261021'
-$expectedParent='6aeb166588d834c9635940e542b2de4e98b1eaf2'
+$expectedBranch='experiment/evidence-filter-validation-20261021-r1'
+$expectedParent='8d5bcfd81b91b290758ae6543c05248acdc3e574'
 $manifestPath='products/rea-studio/experiments/archive-safe-evidence/validation-source-admission.json'
 $workflowPath='.github/workflows/evidence-filter-validation-cloud.yml'
 $workspace=[IO.Path]::GetFullPath($env:GITHUB_WORKSPACE)

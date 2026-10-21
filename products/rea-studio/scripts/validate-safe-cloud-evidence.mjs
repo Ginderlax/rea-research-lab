@@ -16,8 +16,8 @@ const evidence=path.join(temporary,'rea-filter-validation-console-'+runID+'-'+at
 function boundary(){
   assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');assert.equal(process.version,'v24.16.0');
   for(const[name,value]of Object.entries({CI:'true',GITHUB_ACTIONS:'true',RUNNER_ENVIRONMENT:'github-hosted',RUNNER_OS:'Windows',RUNNER_ARCH:'X64',GITHUB_REPOSITORY:'Ginderlax/rea-research-lab',GITHUB_JOB:'validate'}))assert.equal(process.env[name],value);
-  assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));assert.equal(process.env.GITHUB_WORKFLOW_SHA,process.env.GITHUB_SHA);assert.equal(process.env.REA_ARCHIVE_ZIP_PARENT,'6aeb166588d834c9635940e542b2de4e98b1eaf2');
-  assert.equal(process.env.GITHUB_REF,'refs/heads/experiment/evidence-filter-validation-20261021');
+  assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));assert.equal(process.env.GITHUB_WORKFLOW_SHA,process.env.GITHUB_SHA);assert.equal(process.env.REA_ARCHIVE_ZIP_PARENT,'8d5bcfd81b91b290758ae6543c05248acdc3e574');
+  assert.equal(process.env.GITHUB_REF,'refs/heads/experiment/evidence-filter-validation-20261021-r1');
   assert(/^[1-9][0-9]*$/.test(runID));assert(/^[1-9][0-9]*$/.test(attempt));
   assert.equal(fs.realpathSync(evidence),evidence);assert(fs.lstatSync(evidence).isDirectory());assert(!fs.lstatSync(evidence).isSymbolicLink());
 }

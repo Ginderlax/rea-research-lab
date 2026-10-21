@@ -2,7 +2,8 @@
 param([Parameter(Mandatory)][ValidateSet('capture','finalize','admit')][string]$Phase)
 $ErrorActionPreference='Stop'
 $PSNativeCommandUseErrorActionPreference=$false
-function Need([bool]$ok,[string]$code){if(-not $ok){throw $code}}
+$stage='BOOTSTRAP'
+function Need([bool]$ok,[string]$code){if(-not $ok){$problem=[InvalidOperationException]::new('CONTROL_CHECK_REFUSED');$problem.Data['reaFixedCode']=$code;throw $problem}}
 function SHA([byte[]]$b){return [Convert]::ToHexString([Security.Cryptography.SHA256]::HashData($b)).ToLowerInvariant()}
 function Plain([string]$p,[bool]$file){
  $at=Get-Item -LiteralPath $p;Need ((($at.Attributes -band [IO.FileAttributes]::ReparsePoint) -eq 0) -and ($at.PSIsContainer -eq (-not $file))) 'ORDINARY_CONTROL_PATH'
@@ -21,33 +22,39 @@ function ChannelIdentities(){
 }
 function Reviewed([string]$relative,[string]$expected){Need ($expected -cmatch '^[0-9a-f]{64}$') 'REVIEWED_CONTROL_HASH';$p=Join-Path $env:GITHUB_WORKSPACE $relative;Need ((SHA (ReadBounded $p 262144)) -ceq $expected) 'REVIEWED_CONTROL_CHANGED';return $p}
 try{
- foreach($pair in @(@('CI','true'),@('GITHUB_ACTIONS','true'),@('RUNNER_ENVIRONMENT','github-hosted'),@('RUNNER_OS','Windows'),@('RUNNER_ARCH','X64'),@('GITHUB_REPOSITORY','Ginderlax/rea-research-lab'),@('GITHUB_JOB','validate'),@('REA_ARCHIVE_ZIP_ROLE','finite'),@('REA_ARCHIVE_ZIP_PARENT','6aeb166588d834c9635940e542b2de4e98b1eaf2'),@('REA_SAFE_FEATURE_BRANCH','experiment/evidence-filter-validation-20261021'))){Need ([Environment]::GetEnvironmentVariable($pair[0]) -ceq $pair[1]) 'CONTROL_HOSTED_ENVIRONMENT'}
- Need ($env:GITHUB_SHA -cmatch '^[0-9a-f]{40}$' -and $env:GITHUB_WORKFLOW_SHA -ceq $env:GITHUB_SHA -and $env:GITHUB_REF -ceq 'refs/heads/experiment/evidence-filter-validation-20261021') 'CONTROL_SOURCE_REF'
+ foreach($pair in @(@('CI','true'),@('GITHUB_ACTIONS','true'),@('RUNNER_ENVIRONMENT','github-hosted'),@('RUNNER_OS','Windows'),@('RUNNER_ARCH','X64'),@('GITHUB_REPOSITORY','Ginderlax/rea-research-lab'),@('GITHUB_JOB','validate'),@('REA_ARCHIVE_ZIP_ROLE','finite'),@('REA_ARCHIVE_ZIP_PARENT','8d5bcfd81b91b290758ae6543c05248acdc3e574'),@('REA_SAFE_FEATURE_BRANCH','experiment/evidence-filter-validation-20261021-r1'))){Need ([Environment]::GetEnvironmentVariable($pair[0]) -ceq $pair[1]) 'CONTROL_HOSTED_ENVIRONMENT'}
+ Need ($env:GITHUB_SHA -cmatch '^[0-9a-f]{40}$' -and $env:GITHUB_WORKFLOW_SHA -ceq $env:GITHUB_SHA -and $env:GITHUB_REF -ceq 'refs/heads/experiment/evidence-filter-validation-20261021-r1') 'CONTROL_SOURCE_REF'
  Need ($env:GITHUB_RUN_ID -cmatch '^[1-9][0-9]*$' -and $env:GITHUB_RUN_ATTEMPT -cmatch '^[1-9][0-9]*$' -and $env:REA_SAFE_CONTROL_MODE -cin @('filter','sentinel')) 'CONTROL_SUBJECT'
- if($env:REA_SAFE_CONTROL_MODE -ceq 'filter'){Need ([string]::IsNullOrEmpty($env:REA_SAFE_CONTROL_SENTINEL)) 'FILTER_MODE_NOT_SENTINEL';[Environment]::SetEnvironmentVariable('REA_SAFE_CONTROL_SENTINEL',$null,[EnvironmentVariableTarget]::Process)}else{Need ($env:REA_SAFE_CONTROL_SENTINEL -ceq 'expected-failure') 'EXACT_SENTINEL_MODE'}
+ $stage='SENTINEL_ENVIRONMENT'
+ if($env:REA_SAFE_CONTROL_MODE -ceq 'filter'){Need ([string]::IsNullOrEmpty($env:REA_SAFE_CONTROL_SENTINEL)) 'FILTER_MODE_NOT_SENTINEL';Remove-Item -LiteralPath 'Env:REA_SAFE_CONTROL_SENTINEL' -ErrorAction SilentlyContinue;Need (-not (Test-Path -LiteralPath 'Env:REA_SAFE_CONTROL_SENTINEL')) 'FILTER_SENTINEL_ENV_NOT_REMOVED'}else{Need ($env:REA_SAFE_CONTROL_SENTINEL -ceq 'expected-failure') 'EXACT_SENTINEL_MODE'}
  $temporary=[IO.Path]::GetFullPath($env:RUNNER_TEMP);$null=Plain $temporary $false;$suffix=$env:GITHUB_RUN_ID+'-'+$env:GITHUB_RUN_ATTEMPT
  $evidence=Join-Path $temporary ('rea-filter-validation-console-'+$suffix);$admission=Join-Path $temporary ('rea-filter-validation-admission-'+$suffix);$top=Join-Path $temporary ('rea-filter-validation-top-'+$suffix)
  $public=if($env:REA_SAFE_CONTROL_MODE -ceq 'filter'){$evidence}else{Join-Path $temporary ('rea-filter-validation-public-sentinel-'+$suffix)}
  foreach($p in @($evidence,$admission,$top,$public)){Need ([IO.Path]::GetDirectoryName($p) -ceq $temporary) 'FIXED_CONTROL_ROOT'}
+ $stage='REVIEWED_SOURCES'
  $capture=Reviewed 'products/rea-studio/scripts/capture-safe-cloud-console.mjs' $env:REA_SAFE_CAPTURE_SHA256
  $validator=Reviewed 'products/rea-studio/scripts/validate-safe-cloud-evidence.mjs' $env:REA_SAFE_VALIDATOR_SHA256
  if($Phase -ceq 'capture'){
   Need (-not (Test-Path -LiteralPath $top) -and -not (Test-Path -LiteralPath $evidence)) 'NO_EARLIER_CONTROL'
-  $null=New-Item -ItemType Directory -Path $top;$null=Plain $top $false;$before=ChannelIdentities
+  $null=New-Item -ItemType Directory -Path $top;$null=Plain $top $false;$stage='PARENT_CHANNELS_BEFORE';$before=ChannelIdentities
   $stdout=Join-Path $top 'capture.stdout.txt';$stderr=Join-Path $top 'capture.stderr.txt'
+  $stage='CAPTURE_LAUNCH'
   & node $capture --phase filter-validation --evidence $evidence 1>$stdout 2>$stderr
-  $exitCode=$LASTEXITCODE;$after=ChannelIdentities
+  $exitCode=$LASTEXITCODE;$stage='PARENT_CHANNELS_AFTER';$after=ChannelIdentities
   Need (($before|ConvertTo-Json -Depth 5 -Compress) -ceq ($after|ConvertTo-Json -Depth 5 -Compress)) 'FILE_COMMAND_CHANNEL_CHANGED'
   $topOut=ReadBounded $stdout;$topErr=ReadBounded $stderr
   Need ($topErr.Length -eq 0) 'UNEXPECTED_TOP_STDERR'
+  $stage='TOP_CONSOLE_PARSE'
   $topRecord=[Text.UTF8Encoding]::new($false,$true).GetString($topOut).Trim()|ConvertFrom-Json -AsHashtable -DateKind String
   $topKeys=@('schema','phase','role','source','status','stdoutBytes','stderrBytes','droppedBytes','exitCode','closeObserved','failureCode','rawChildOutputEchoed')
   Need ($topRecord -is [Collections.IDictionary] -and $topRecord.Count -eq $topKeys.Count -and @($topRecord.Keys|Where-Object {$_ -cnotin $topKeys}).Count -eq 0 -and $topRecord.schema -ceq 'rea-safe-capture-console/v1' -and $topRecord.phase -ceq 'filter-validation' -and $topRecord.role -ceq 'finite' -and $topRecord.source -ceq $env:GITHUB_SHA -and $topRecord.rawChildOutputEchoed -eq $false) 'TOP_CONSOLE_SCHEMA'
+  $stage='CAPTURE_RECORD'
   $record=JSON (Join-Path $evidence 'console-filter-validation.json')
   Need ($record.schema -ceq 'rea-owned-top-level-console-capture/v1' -and $record.phase -ceq 'filter-validation' -and $record.source -ceq $env:GITHUB_SHA -and $record.parent -ceq $env:REA_ARCHIVE_ZIP_PARENT -and $record.runID -ceq $env:GITHUB_RUN_ID -and $record.attempt -ceq $env:GITHUB_RUN_ATTEMPT -and $record.rawChildOutputEchoed -eq $false -and $record.closeObserved -eq $true -and $null -eq $record.signal -and $record.droppedBytes -eq 0 -and $null -eq $record.failureCode) 'ACTUAL_CAPTURE_RECORD'
   foreach($kind in @('stdout','stderr')){Need ($record[$kind].path -ceq ('console-filter-validation.'+$kind+'.txt')) 'FIXED_CAPTURE_STREAM';$b=ReadBounded (Join-Path $evidence $record[$kind].path);Need ($b.Length -eq $record[$kind].bytes -and (SHA $b) -ceq $record[$kind].sha256) 'CAPTURE_STREAM_IDENTITY'}
   Need ($topRecord.stdoutBytes -eq $record.stdout.bytes -and $topRecord.stderrBytes -eq $record.stderr.bytes -and $topRecord.droppedBytes -eq 0 -and $topRecord.closeObserved -eq $true -and $null -eq $topRecord.failureCode) 'SAFE_TOP_CONSOLE_JOIN'
   $sentinelProjection=$null
+  $stage='CAPTURE_FILTER_RESULT'
   if($env:REA_SAFE_CONTROL_MODE -ceq 'filter'){
    Need ($exitCode -eq 0 -and $record.status -ceq 'passed' -and $record.exitCode -eq 0 -and $topRecord.status -ceq 'passed' -and $topRecord.exitCode -eq 0) 'FILTER_CONTROL_FAILED'
   }else{
@@ -66,14 +73,17 @@ try{
   }
   SaveJSON (Join-Path $top 'capture-control-check.json') ([ordered]@{schema='rea-hosted-capture-control-check/v1';status='passed';control=$env:REA_SAFE_CONTROL_MODE;source=$env:GITHUB_SHA;runID=$env:GITHUB_RUN_ID;attempt=$env:GITHUB_RUN_ATTEMPT;parentExitCode=$exitCode;childExitCode=$record.exitCode;childStatus=$record.status;fileCommandChannelsUnchanged=$true;rawChildBytesEchoedToJobConsole=$false;topStdout=@{bytes=$topOut.Length;sha256=(SHA $topOut)};topStderr=@{bytes=$topErr.Length;sha256=(SHA $topErr)};sentinel=$sentinelProjection;productExecutions=0})
  }elseif($Phase -ceq 'finalize'){
+  $stage='SOURCE_IDENTITY_COPY'
   $null=Plain $admission $false;$null=Plain $evidence $false
   foreach($p in @('before','after')){CopyExact (Join-Path $admission ('source-admission-'+$p+'.json')) (Join-Path $evidence ('source-admission-'+$p+'.json'))}
   if($env:REA_SAFE_CONTROL_MODE -ceq 'filter'){
    # Keep native parser/import errors out of the public console as well.
    $null=Plain $top $false;$finalOut=Join-Path $top 'finalize.stdout.txt';$finalErr=Join-Path $top 'finalize.stderr.txt'
    Need (-not (Test-Path -LiteralPath $finalOut) -and -not (Test-Path -LiteralPath $finalErr)) 'NO_EARLIER_FINALIZATION'
+   $stage='FILTER_FINALIZER'
    & node $validator --finalize 1>$finalOut 2>$finalErr
    $finalExit=$LASTEXITCODE;$finalBytes=ReadBounded $finalOut;Need ((ReadBounded $finalErr).Length -eq 0) 'FINALIZER_STDERR'
+   $stage='FILTER_FINALIZER_PROJECTION'
    $finalRecord=[Text.UTF8Encoding]::new($false,$true).GetString($finalBytes).Trim()|ConvertFrom-Json -AsHashtable -DateKind String
    Need ($finalRecord.schema -ceq 'rea-synthetic-filter-validation-safe-artifact/v1' -and $finalRecord.files -eq 7 -and $finalRecord.productTests -eq 0 -and (($finalRecord.status -ceq 'passed' -and $finalExit -eq 0) -or ($finalRecord.status -ceq 'failed' -and $finalExit -eq 1))) 'FIXED_FINALIZER_PROJECTION'
    if($finalExit -ne 0){exit 1}
@@ -87,6 +97,7 @@ try{
    SaveJSON (Join-Path $public 'console-sentinel-provenance.json') ([ordered]@{schema='rea-synthetic-console-sentinel-safe-artifact/v1';status='passed';source=$env:GITHUB_SHA;parent=$env:REA_ARCHIVE_ZIP_PARENT;runID=$env:GITHUB_RUN_ID;attempt=$env:GITHUB_RUN_ATTEMPT;job='validate';representation='fixed safe projection of expected failing synthetic console capture; source identities only';files=$rows;rawSentinelStreamsUploaded=$false;rawSourceBodiesUploaded=$false;completeOriginalProductArtifact=$false;expectedChildFailurePreserved=$true;productTests=0;fullProductAcceptance=$false})
   }
  }elseif($Phase -ceq 'admit'){
+  $stage='SAFE_ARTIFACT_ADMISSION'
   $null=Plain $public $false
   if($env:REA_SAFE_CONTROL_MODE -ceq 'filter'){
    $names=@('console-filter-validation.json','console-filter-validation.stderr.txt','console-filter-validation.stdout.txt','filter-validation-report.json','source-admission-before.json','source-admission-after.json','filter-validation-provenance.json')
@@ -107,4 +118,10 @@ try{
  }
  [ordered]@{schema='rea-safe-control-orchestration-console/v1';phase=$Phase;control=$env:REA_SAFE_CONTROL_MODE;status='passed';source=$env:GITHUB_SHA;productExecutions=0}|ConvertTo-Json -Compress
  exit 0
-}catch{[ordered]@{schema='rea-safe-control-orchestration-console/v1';phase=$Phase;status='failed';code='CONTROL_ORCHESTRATION_REFUSED';productExecutions=0}|ConvertTo-Json -Compress;exit 1}
+}catch{
+ $allowedCodes=@('ACTUAL_CAPTURE_RECORD','BOOTSTRAP','CAPTURE_FILTER_RESULT','CAPTURE_LAUNCH','CAPTURE_RECORD','CAPTURE_STREAM_IDENTITY','CONTROL_ANCESTOR_LINK','CONTROL_HOSTED_ENVIRONMENT','CONTROL_ORCHESTRATION_REFUSED','CONTROL_READ_BOUND','CONTROL_READ_STABLE','CONTROL_SOURCE_REF','CONTROL_SUBJECT','CONTROL_WRITE_READBACK','COPY_READBACK','EXACT_PUBLIC_FILES','EXACT_SENTINEL_MODE','EXACT_SYNTHETIC_SENTINEL_STREAMS','FILE_COMMAND_CHANNEL_CHANGED','FILTER_CONTROL_FAILED','FILTER_FINALIZER','FILTER_FINALIZER_PROJECTION','FILTER_MODE_NOT_SENTINEL','FILTER_SENTINEL_ENV_NOT_REMOVED','FINALIZER_STDERR','FIXED_CAPTURE_STREAM','FIXED_CONTROL_ROOT','FIXED_FINALIZER_PROJECTION','INHERITED_TOKEN_OR_FILE_COMMAND_PRESENT','NO_EARLIER_CONTROL','NO_EARLIER_FINALIZATION','NO_EARLIER_SENTINEL_PUBLIC_VIEW','ORDINARY_CONTROL_PATH','OWNED_OUTPUT_CHANNEL','PARENT_CHANNELS_AFTER','PARENT_CHANNELS_BEFORE','QUALIFIED_SENTINEL_CAPTURE_CONTROL','RAW_SENTINEL_TOP_ECHO','REVIEWED_CONTROL_CHANGED','REVIEWED_CONTROL_HASH','REVIEWED_SOURCES','SAFE_ARTIFACT_ADMISSION','SAFE_FILTER_PROVENANCE','SAFE_MEMBER_ROSTER','SAFE_OUTPUT_IDENTITY','SAFE_OUTPUT_SIZE','SAFE_SENTINEL_MEMBER_ROSTER','SAFE_SENTINEL_OUTPUT_IDENTITY','SAFE_SENTINEL_PROVENANCE','SAFE_TOP_CONSOLE_JOIN','SENTINEL_BOOLEAN_ROSTERS','SENTINEL_CANARY_APPENDED','SENTINEL_ENVIRONMENT','SENTINEL_EXPECTED_FAILURE_NOT_PRESERVED','SENTINEL_RECORD_SUBJECT','SENTINEL_SAFE_PROJECTION_PROFILE','SENTINEL_STREAM_WITNESS_JOIN','SOURCE_IDENTITY_COPY','TOP_CONSOLE_PARSE','TOP_CONSOLE_SCHEMA','UNEXPECTED_TOP_STDERR')
+ $allowedStages=@('BOOTSTRAP','SENTINEL_ENVIRONMENT','REVIEWED_SOURCES','PARENT_CHANNELS_BEFORE','CAPTURE_LAUNCH','PARENT_CHANNELS_AFTER','TOP_CONSOLE_PARSE','CAPTURE_RECORD','CAPTURE_FILTER_RESULT','SOURCE_IDENTITY_COPY','FILTER_FINALIZER','FILTER_FINALIZER_PROJECTION','SAFE_ARTIFACT_ADMISSION')
+ $fixedCode=$_.Exception.Data['reaFixedCode'];if($fixedCode -cnotin $allowedCodes){$fixedCode='CONTROL_ORCHESTRATION_REFUSED'}
+ $fixedStage=if($stage -cin $allowedStages){$stage}else{'BOOTSTRAP'}
+ [ordered]@{schema='rea-safe-control-orchestration-console/v1';phase=$Phase;status='failed';code=$fixedCode;stage=$fixedStage;productExecutions=0}|ConvertTo-Json -Compress;exit 1
+}

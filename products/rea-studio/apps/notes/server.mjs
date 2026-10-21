@@ -4,10 +4,10 @@ import { decodeBase64, MAX_ARCHIVE, MAX_RESOURCE, digest, readJex, serializeReco
 import {ensureOrganization,bindNotebook,organizationList,changeNotebook,checkOrganizationRevision} from './notebooks.mjs';
 
 import {changeNotebookTrash,restoreNoteFromTrash,trashOrganizationRows} from './notebook-trash.mjs';
-import {todoState,changeTodo,todoMatches} from './core.mjs';
+import {todoState,changeTodo,todoMatches,openTodosFirstOption,orderTodoNotes} from './core.mjs';
 import {compileStructuredSearch} from './search-query.mjs';
 
-const stateKey = 'notes-state-v2', legacyPrefix = 'notes-note-';
+const stateKey = 'notes-state-v2', legacyPrefix = 'notes-note-', orderPreferenceKey = 'notes-open-todos-first-v1';
 let queue = Promise.resolve();
 const uuid = () => randomBytes(16).toString('hex');
 const stableId = text => createHash('sha256').update(text).digest('hex').slice(0, 32);
@@ -59,15 +59,21 @@ export async function handle({ action, input = {}, store, workspace }) {
     if(typeof scope!=='string'||!/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/.test(scope))throw new Error('Stored recovery identity is invalid; it was not replaced.');
     return{scope};
   });
+  if (action === 'list-order') {
+    const desired = openTodosFirstOption(input.openTodosFirst);
+    return exclusive(async () => { const previous = await store.get(orderPreferenceKey, null); if (previous !== desired) await store.set(orderPreferenceKey, desired); return {openTodosFirst: desired}; });
+  }
   if (action === 'list') {
+    let storedOrder; try { storedOrder = await store.get(orderPreferenceKey, true); } catch { storedOrder = null; }
+    const orderPreferenceAvailable = typeof storedOrder === 'boolean', openTodosFirst = input.openTodosFirst === undefined ? (orderPreferenceAvailable ? storedOrder : true) : openTodosFirstOption(input.openTodosFirst);
     const searchMode = input.searchMode ?? 'simple';
     if (!['simple', 'filters'].includes(searchMode)) throw new Error('Choose Text or Filters as the search mode.');
     const s = await state(store), search = text(input.search ?? '', 'Search', 500).trim(), tokens = search.toLowerCase().split(/\s+/).filter(Boolean), notes = Object.values(s.notes);
     const structured = searchMode === 'filters' ? compileStructuredSearch(search, s.records) : null;
     const matches = structured ? structured.matches : note => tokens.every(token => `${note.title}\n${note.body}\n${note.tags.join(' ')}\n${note.notebook}`.toLowerCase().includes(token));
     todoMatches({}, input.todoFilter);
-    const visible = notes.filter(note => todoMatches(note, input.todoFilter) && Boolean(note.deletedAt) === Boolean(input.trash) && (!input.notebook || note.notebook === input.notebook) && (!input.notebookId || note.notebookId === input.notebookId) && (!input.tag || note.tags.includes(input.tag)) && matches(note)).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
-    return { notes: visible.map(note => summary(note, structured ? structured.previewTerm : tokens[0])), tags: [...new Set(notes.filter(note => !note.deletedAt).flatMap(note => note.tags))].sort(), notebooks: [...new Set(notes.filter(note => !note.deletedAt).map(note => note.notebook))].sort(), total: visible.length };
+    const visible = orderTodoNotes(notes.filter(note => todoMatches(note, input.todoFilter) && Boolean(note.deletedAt) === Boolean(input.trash) && (!input.notebook || note.notebook === input.notebook) && (!input.notebookId || note.notebookId === input.notebookId) && (!input.tag || note.tags.includes(input.tag)) && matches(note)), openTodosFirst);
+    return { openTodosFirst, orderPreferenceAvailable, notes: visible.map(note => summary(note, structured ? structured.previewTerm : tokens[0])), tags: [...new Set(notes.filter(note => !note.deletedAt).flatMap(note => note.tags))].sort(), notebooks: [...new Set(notes.filter(note => !note.deletedAt).map(note => note.notebook))].sort(), total: visible.length };
   }
   if(action==='notebook-list'){const s=await state(store),rows=organizationList(s);return{...rows,notebooks:trashOrganizationRows(s,rows.notebooks)};}
   if(['notebook-trash','notebook-restore'].includes(action)){

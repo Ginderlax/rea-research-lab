@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {captureOwnedFixture,removeOwnedFixture} from './notes-owned-fixture-cleanup.mjs';
 import { test as base, expect } from '@playwright/test';
 import { start } from '../server.mjs';
 assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
@@ -20,11 +21,11 @@ async function boundedCleanup(operation, label) {
 const test = base.extend({
   host: async ({ page }, use, info) => {
     const dataDir = path.join(dataRoot, 'storage-' + info.testId.replace(/[^a-zA-Z0-9_-]/g, '_'));
-    await fs.mkdir(dataDir); const host = await start({ port: 0, dataDir });
+    await fs.mkdir(dataDir); const ownedData = await captureOwnedFixture(dataRoot,dataDir,'storage-'); const host = await start({ port: 0, dataDir });
     // This page/context belongs to this Playwright test. Close its HTTP clients
     // before the owned host, following the retained draft browser fixture.
     const ownedContext = page.context();
-    const cleanup = { contextClosed: false, hostClosed: false }, stages = [], errors = [];
+    const cleanup = { contextClosed: false, hostClosed: false, dataRemoved: false }, stages = [], errors = []; let dataRemoval = null;
     async function step(label, operation, key) {
       const started = Date.now();
       try { await boundedCleanup(operation(), label); cleanup[key] = true; }
@@ -35,9 +36,10 @@ const test = base.extend({
     finally {
       try { await step('close-owned-context', () => ownedContext.close(), 'contextClosed'); }
       finally { await step('close-owned-host', () => host.close(), 'hostClosed'); }
-      const report = { schema: 'rea-notes-storage-host-cleanup/v1', title: info.title, testId: info.testId, sourceCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, attempt: process.env.GITHUB_RUN_ATTEMPT, retry: info.retry, statusAtFixtureClose: info.status ?? null, ownership: 'Only this Playwright test context and its separately started host.', order: ['close-owned-context', 'close-owned-host'], stageDeadlineMs: 7000, cleanup, stages, errors, productBehaviorAssertionsChanged: false, fullParity: false, superiority: false };
+      if(cleanup.contextClosed&&cleanup.hostClosed)await step('remove-owned-data',async()=>{dataRemoval=await removeOwnedFixture(ownedData,{contextClosed:cleanup.contextClosed,hostClosed:cleanup.hostClosed});},'dataRemoved');
+      const report = { schema: 'rea-notes-storage-host-cleanup/v1', title: info.title, testId: info.testId, sourceCommit: process.env.GITHUB_SHA, runId: process.env.GITHUB_RUN_ID, attempt: process.env.GITHUB_RUN_ATTEMPT, retry: info.retry, statusAtFixtureClose: info.status ?? null, ownership: 'Only this Playwright test context and its separately started host.', order: ['close-owned-context', 'close-owned-host', 'remove-owned-data'], stageDeadlineMs: 7000, cleanup, stages, errors, dataRemoval, productBehaviorAssertionsChanged: false, fullParity: false, superiority: false };
       await record('storage-host-cleanup-' + info.testId.replace(/[^a-zA-Z0-9_-]/g, '_'), report);
-      assert.deepEqual(errors, []); assert.equal(cleanup.contextClosed, true); assert.equal(cleanup.hostClosed, true);
+      assert.deepEqual(errors, []); assert.equal(cleanup.contextClosed, true); assert.equal(cleanup.hostClosed, true); assert.equal(cleanup.dataRemoved, true);
     }
   },
 });

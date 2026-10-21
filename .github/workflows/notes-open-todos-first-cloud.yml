@@ -1,0 +1,496 @@
+# New prospective Notes ordering campaign; all acceptance comes from fresh hosted evidence.
+name: Notes open to-dos first current-source study
+on:
+  push:
+    branches: [experiment/notes-open-todos-first-20261021-r1]
+permissions:
+  contents: read
+concurrency:
+  group: notes-open-todos-first-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  CI: 'true'
+  TZ: UTC
+  REA_NOTES_ORDER_PARENT: '27374c78642d0086d5640fe25a887f5d8202dccc'
+  REA_SAFE_FEATURE_BRANCH: experiment/notes-open-todos-first-20261021-r1
+  REA_NOTES_ORDER_MANIFEST_SHA256: '143b7d616b6697b43b5db73a9d09e7a4ceeeb6360ac590c0c22ff3bfd06cbf96'
+  REA_SAFE_CAPTURE_SHA256: '694b42dca0c7aa1e6f5a424cea236cd4a4debdca3cf5ea922d9f00735d1bca58'
+  REA_SAFE_COLLECTOR_SHA256: '7354a66b9e2d1ea450e995665bb9f7426d6a7a6eb558c34680f600456537590e'
+  REA_SAFE_BOOTSTRAP_SHA256: 'c957fd2ff996f0c527a23bb9e218003cd2d55eabbe134f0c4f63efd05d2385b0'
+  REA_SAFE_QUALIFIER_SHA256: '72985390af1e9685550b23597148184752a58f27f2707550f506bdb0007b4b60'
+  REA_SAFE_FILTER_SHA256: '2b2404b3a5089be9c855209c2a3f780d1c1e2bdf4dd9c5d6aae6a2483704c3fa'
+  REA_SAFE_EVIDENCE_POLICY_SHA256: 'b7f82b9c350a88b4eed4afa5af5d5d83d1080f34fbcae4b23a4d6c06ef4375a6'
+  REA_SAFE_VALIDATOR_SHA256: '6a28c6cbac5940b2aa04d1dd156a6d1fb03725ff7a8d220114d08aeb2161bab6'
+  REA_SAFE_CURRENT_FULL_RUNNER_SHA256: 'd55c298eda108c43e6e6e921a18cfa7683b3b05d6c5a3b95873d98abe259b17f'
+jobs:
+  safe-evidence-controls:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    env:
+      REA_NOTES_ORDER_ROLE: finite
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact prospective source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select the reviewed runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Authenticate hosted context and fixed source entrypoints
+        id: admission
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r1' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          $actualParent = & git --no-replace-objects rev-parse HEAD^
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne '27374c78642d0086d5640fe25a887f5d8202dccc') { throw 'SOURCE_PARENT_REFUSED' }
+          $pins = @(
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
+            @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
+            @('products/rea-studio/scripts/verify-notes-open-todos-cloud.mjs', $env:REA_SAFE_COLLECTOR_SHA256),
+            @('products/rea-studio/scripts/bootstrap-notes-open-todos-cloud.mjs', $env:REA_SAFE_BOOTSTRAP_SHA256),
+            @('products/rea-studio/scripts/qualify-notes-open-todos-cloud.mjs', $env:REA_SAFE_QUALIFIER_SHA256),
+            @('products/rea-studio/scripts/prepare-safe-notes-order-evidence.mjs', $env:REA_SAFE_FILTER_SHA256),
+            @('products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs', $env:REA_SAFE_VALIDATOR_SHA256),
+            @('products/rea-studio/scripts/verify-cloud-current-installed.mjs', $env:REA_SAFE_CURRENT_FULL_RUNNER_SHA256),
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256)
+          )
+          foreach ($pin in $pins) {
+            if ($pin[1] -notmatch '^[0-9a-f]{64}$') { throw 'UNBOUND_ENTRYPOINT_PIN' }
+            $item = Get-Item -LiteralPath $pin[0] -Force
+            if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Get-FileHash -LiteralPath $pin[0] -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pin[1]) { throw 'SOURCE_ENTRYPOINT_PIN_REFUSED' }
+          }
+      - name: Exercise fresh synthetic privacy and source-admission controls
+        id: controls
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-filter-validation-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase filter-validation --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Finalize only the bounded synthetic control representation
+        id: evidence
+        if: always() && steps.admission.outcome == 'success'
+        shell: pwsh
+        run: |
+          node products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs --finalize
+          exit $LASTEXITCODE
+      - name: Preserve the synthetic control observations
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: notes-order-safe-controls-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+
+  full-current-installed:
+    needs: safe-evidence-controls
+    runs-on: windows-2022
+    timeout-minutes: 100
+    env:
+      REA_NOTES_ORDER_ROLE: full
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact prospective source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select the reviewed runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Authenticate hosted context and fixed source entrypoints
+        id: admission
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r1' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          $actualParent = & git --no-replace-objects rev-parse HEAD^
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne '27374c78642d0086d5640fe25a887f5d8202dccc') { throw 'SOURCE_PARENT_REFUSED' }
+          $pins = @(
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
+            @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
+            @('products/rea-studio/scripts/verify-notes-open-todos-cloud.mjs', $env:REA_SAFE_COLLECTOR_SHA256),
+            @('products/rea-studio/scripts/bootstrap-notes-open-todos-cloud.mjs', $env:REA_SAFE_BOOTSTRAP_SHA256),
+            @('products/rea-studio/scripts/qualify-notes-open-todos-cloud.mjs', $env:REA_SAFE_QUALIFIER_SHA256),
+            @('products/rea-studio/scripts/prepare-safe-notes-order-evidence.mjs', $env:REA_SAFE_FILTER_SHA256),
+            @('products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs', $env:REA_SAFE_VALIDATOR_SHA256),
+            @('products/rea-studio/scripts/verify-cloud-current-installed.mjs', $env:REA_SAFE_CURRENT_FULL_RUNNER_SHA256),
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256)
+          )
+          foreach ($pin in $pins) {
+            if ($pin[1] -notmatch '^[0-9a-f]{64}$') { throw 'UNBOUND_ENTRYPOINT_PIN' }
+            $item = Get-Item -LiteralPath $pin[0] -Force
+            if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Get-FileHash -LiteralPath $pin[0] -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pin[1]) { throw 'SOURCE_ENTRYPOINT_PIN_REFUSED' }
+          }
+      - name: Capture current admitted source before prerequisites
+        id: source_before
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase before --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Acquire only fresh role prerequisites
+        id: prerequisites
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase bootstrap --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Run the explicitly admitted current role
+        id: product
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase run --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Capture source after every attempted product phase
+        id: source_after
+        if: always() && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase after --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Qualify fresh source process and semantic evidence
+        id: qualification
+        if: always() && steps.product.outcome != 'skipped' && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase qualify --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Derive only the reviewed public evidence view
+        id: evidence
+        if: always() && steps.product.outcome != 'skipped' && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          $env:REA_SAFE_EVIDENCE = Join-Path $env:RUNNER_TEMP ('rea-safe-notes-order-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase filter --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Preserve the bounded public evidence representation
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: notes-order-full-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+
+  notes46-installed-finite:
+    needs: safe-evidence-controls
+    runs-on: windows-2022
+    timeout-minutes: 35
+    env:
+      REA_NOTES_ORDER_ROLE: finite
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact prospective source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select the reviewed runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Authenticate hosted context and fixed source entrypoints
+        id: admission
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r1' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          $actualParent = & git --no-replace-objects rev-parse HEAD^
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne '27374c78642d0086d5640fe25a887f5d8202dccc') { throw 'SOURCE_PARENT_REFUSED' }
+          $pins = @(
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
+            @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
+            @('products/rea-studio/scripts/verify-notes-open-todos-cloud.mjs', $env:REA_SAFE_COLLECTOR_SHA256),
+            @('products/rea-studio/scripts/bootstrap-notes-open-todos-cloud.mjs', $env:REA_SAFE_BOOTSTRAP_SHA256),
+            @('products/rea-studio/scripts/qualify-notes-open-todos-cloud.mjs', $env:REA_SAFE_QUALIFIER_SHA256),
+            @('products/rea-studio/scripts/prepare-safe-notes-order-evidence.mjs', $env:REA_SAFE_FILTER_SHA256),
+            @('products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs', $env:REA_SAFE_VALIDATOR_SHA256),
+            @('products/rea-studio/scripts/verify-cloud-current-installed.mjs', $env:REA_SAFE_CURRENT_FULL_RUNNER_SHA256),
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256)
+          )
+          foreach ($pin in $pins) {
+            if ($pin[1] -notmatch '^[0-9a-f]{64}$') { throw 'UNBOUND_ENTRYPOINT_PIN' }
+            $item = Get-Item -LiteralPath $pin[0] -Force
+            if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Get-FileHash -LiteralPath $pin[0] -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pin[1]) { throw 'SOURCE_ENTRYPOINT_PIN_REFUSED' }
+          }
+      - name: Capture current admitted source before prerequisites
+        id: source_before
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase before --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Acquire only fresh role prerequisites
+        id: prerequisites
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase bootstrap --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Run the explicitly admitted current role
+        id: product
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase run --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Capture source after every attempted product phase
+        id: source_after
+        if: always() && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase after --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Qualify fresh source process and semantic evidence
+        id: qualification
+        if: always() && steps.product.outcome != 'skipped' && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase qualify --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Derive only the reviewed public evidence view
+        id: evidence
+        if: always() && steps.product.outcome != 'skipped' && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          $env:REA_SAFE_EVIDENCE = Join-Path $env:RUNNER_TEMP ('rea-safe-notes-order-finite-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase filter --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Preserve the bounded public evidence representation
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: notes-order-finite-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+
+  notes46-observed-values:
+    needs: safe-evidence-controls
+    runs-on: windows-2022
+    timeout-minutes: 20
+    env:
+      REA_NOTES_ORDER_ROLE: values
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact prospective source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select the reviewed runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Authenticate hosted context and fixed source entrypoints
+        id: admission
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r1' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          $actualParent = & git --no-replace-objects rev-parse HEAD^
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne '27374c78642d0086d5640fe25a887f5d8202dccc') { throw 'SOURCE_PARENT_REFUSED' }
+          $pins = @(
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
+            @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
+            @('products/rea-studio/scripts/verify-notes-open-todos-cloud.mjs', $env:REA_SAFE_COLLECTOR_SHA256),
+            @('products/rea-studio/scripts/bootstrap-notes-open-todos-cloud.mjs', $env:REA_SAFE_BOOTSTRAP_SHA256),
+            @('products/rea-studio/scripts/qualify-notes-open-todos-cloud.mjs', $env:REA_SAFE_QUALIFIER_SHA256),
+            @('products/rea-studio/scripts/prepare-safe-notes-order-evidence.mjs', $env:REA_SAFE_FILTER_SHA256),
+            @('products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs', $env:REA_SAFE_VALIDATOR_SHA256),
+            @('products/rea-studio/scripts/verify-cloud-current-installed.mjs', $env:REA_SAFE_CURRENT_FULL_RUNNER_SHA256),
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256)
+          )
+          foreach ($pin in $pins) {
+            if ($pin[1] -notmatch '^[0-9a-f]{64}$') { throw 'UNBOUND_ENTRYPOINT_PIN' }
+            $item = Get-Item -LiteralPath $pin[0] -Force
+            if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Get-FileHash -LiteralPath $pin[0] -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pin[1]) { throw 'SOURCE_ENTRYPOINT_PIN_REFUSED' }
+          }
+      - name: Capture current admitted source before prerequisites
+        id: source_before
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-values-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase before --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Acquire only fresh role prerequisites
+        id: prerequisites
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-values-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase bootstrap --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Run the explicitly admitted current role
+        id: product
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-values-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase run --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Capture source after every attempted product phase
+        id: source_after
+        if: always() && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-values-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase after --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Qualify fresh source process and semantic evidence
+        id: qualification
+        if: always() && steps.product.outcome != 'skipped' && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-values-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase qualify --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Derive only the reviewed public evidence view
+        id: evidence
+        if: always() && steps.product.outcome != 'skipped' && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-values-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          $env:REA_SAFE_EVIDENCE = Join-Path $env:RUNNER_TEMP ('rea-safe-notes-order-values-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase filter --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Preserve the bounded public evidence representation
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: notes-order-values-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+
+  draft-recovery-real-chromium:
+    needs: safe-evidence-controls
+    runs-on: windows-2022
+    timeout-minutes: 40
+    env:
+      REA_NOTES_ORDER_ROLE: browser
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact prospective source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Select the reviewed runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+          architecture: x64
+          check-latest: false
+      - name: Authenticate hosted context and fixed source entrypoints
+        id: admission
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r1' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          $actualParent = & git --no-replace-objects rev-parse HEAD^
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne '27374c78642d0086d5640fe25a887f5d8202dccc') { throw 'SOURCE_PARENT_REFUSED' }
+          $pins = @(
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
+            @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
+            @('products/rea-studio/scripts/verify-notes-open-todos-cloud.mjs', $env:REA_SAFE_COLLECTOR_SHA256),
+            @('products/rea-studio/scripts/bootstrap-notes-open-todos-cloud.mjs', $env:REA_SAFE_BOOTSTRAP_SHA256),
+            @('products/rea-studio/scripts/qualify-notes-open-todos-cloud.mjs', $env:REA_SAFE_QUALIFIER_SHA256),
+            @('products/rea-studio/scripts/prepare-safe-notes-order-evidence.mjs', $env:REA_SAFE_FILTER_SHA256),
+            @('products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs', $env:REA_SAFE_VALIDATOR_SHA256),
+            @('products/rea-studio/scripts/verify-cloud-current-installed.mjs', $env:REA_SAFE_CURRENT_FULL_RUNNER_SHA256),
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256)
+          )
+          foreach ($pin in $pins) {
+            if ($pin[1] -notmatch '^[0-9a-f]{64}$') { throw 'UNBOUND_ENTRYPOINT_PIN' }
+            $item = Get-Item -LiteralPath $pin[0] -Force
+            if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Get-FileHash -LiteralPath $pin[0] -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pin[1]) { throw 'SOURCE_ENTRYPOINT_PIN_REFUSED' }
+          }
+      - name: Capture current admitted source before prerequisites
+        id: source_before
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-browser-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase before --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Acquire only fresh role prerequisites
+        id: prerequisites
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-browser-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase bootstrap --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Run the explicitly admitted current role
+        id: product
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-browser-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase run --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Capture source after every attempted product phase
+        id: source_after
+        if: always() && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-browser-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase after --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Qualify fresh source process and semantic evidence
+        id: qualification
+        if: always() && steps.product.outcome != 'skipped' && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-browser-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase qualify --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Derive only the reviewed public evidence view
+        id: evidence
+        if: always() && steps.product.outcome != 'skipped' && steps.source_before.outcome == 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-browser-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          $env:REA_SAFE_EVIDENCE = Join-Path $env:RUNNER_TEMP ('rea-safe-notes-order-browser-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase filter --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Preserve the bounded public evidence representation
+        if: always() && steps.evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: notes-order-browser-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0

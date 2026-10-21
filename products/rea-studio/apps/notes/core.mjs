@@ -38,3 +38,13 @@ export function todoMatches(note, filter = 'all') {
   const value = todoState(note);
   return filter === 'notes' ? !value.isTodo : filter === 'todos' ? value.isTodo : filter === 'open' ? value.isTodo && !value.completed : value.isTodo && Boolean(value.completed);
 }
+
+// Source-assisted open-to-do grouping; ordinary updated-time ties stay stable.
+export function openTodosFirstOption(value) {
+  if (typeof value !== 'boolean') throw new Error('Choose whether open to-dos appear first.');
+  return value;
+}
+export function orderTodoNotes(notes, openTodosFirst = true) {
+  openTodosFirstOption(openTodosFirst);
+  return notes.map((note, index) => ({note, index, open: openTodosFirst && todoState(note).isTodo && todoState(note).completed === 0})).sort((a, b) => Number(b.open) - Number(a.open) || b.note.updatedAt.localeCompare(a.note.updatedAt) || a.index - b.index).map(row => row.note);
+}

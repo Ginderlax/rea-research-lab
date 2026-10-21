@@ -1,0 +1,257 @@
+{
+  "schema": "rea-safe-cloud-evidence-policy/v1",
+  "branch": "experiment/notes-open-todos-first-20261021-r1",
+  "parent": "27374c78642d0086d5640fe25a887f5d8202dccc",
+  "sourceManifest": "products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json",
+  "sourceOpaquePins": [
+    {
+      "path": "products/rea-studio/apps/archive/fixtures/zstd/native-zip93.zip",
+      "bytes": 427,
+      "sha256": "e9282f76dbd3c080d0e12ef95489458523ebbc65c2951f4b8f3cb880a16c5d8b"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/fixtures/zstd/native.tar.zst",
+      "bytes": 631,
+      "sha256": "7e5b29933b77431c8481499f01176058991db7036ad18e711e043218d37458a0"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/fixtures/zstd/native.zst",
+      "bytes": 311,
+      "sha256": "9c4b8c03e5eb7932d349586ecf1e0f379bc021a543792dfb95fb6b5381b3f5ab"
+    },
+    {
+      "path": "products/rea-studio/apps/archive/fixtures/zstd/payload.bin",
+      "bytes": 16416,
+      "sha256": "b5b8d051cbbf49c16c0cf7e65fe35796601d64449d70938921b9bb368510721e"
+    },
+    {
+      "bytes": 9728,
+      "sha256": "044885c906ba7d8cb97a95fbdd6bc2323ba31a3c301e7ed1d6e592acec8944af",
+      "path": "products/rea-studio/apps/notes/fixtures/pinned-joplin.jex"
+    }
+  ],
+  "workflow": ".github/workflows/notes-open-todos-first-cloud.yml",
+  "runnerLogPaths": [
+    "current-full/stdout.txt",
+    "full-suite/stdout.txt"
+  ],
+  "roles": {
+    "finite": [
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^(?:source-(?:before|preexecution|after)|collector-(?:before|run|after)|bootstrap-summary|qualifier-(?:full|finite|values|browser))\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^console-(?:before|bootstrap|run|after|qualify)\\.(?:json|stdout\\.txt|stderr\\.txt)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^(?:finite-(?:0[1-9]|[12][0-9])|new-order-api)/(?:stdout\\.txt|stderr\\.txt|process\\.json)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^finite-observations/(?:12/inline-confirmation|13/fresh-boundaries|14/publication-boundaries|15/review)\\.json$"
+      }
+    ],
+    "browser": [
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^(?:source-(?:before|preexecution|after)|collector-(?:before|run|after)|bootstrap-summary|qualifier-(?:full|finite|values|browser))\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^console-(?:before|bootstrap|run|after|qualify)\\.(?:json|stdout\\.txt|stderr\\.txt)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^bootstrap-chromium\\.(?:stdout\\.txt|stderr\\.txt|process\\.json)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^(?:browser-tooling-acquisition\\.json|browser-acquire-(?:stdout\\.txt|stderr\\.txt|events\\.jsonl))$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^chromium42/(?:stdout\\.txt|stderr\\.txt|process\\.json)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^browser-(?:case-cleanup-qualification|cleanup)\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^browser/(?:playwright-results\\.json|playwright-output/\\.last-run\\.json)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^browser/(?:any-case-|search-case-|order-case-|case-)[a-f0-9]{20}-[a-f0-9]{20}\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^browser/(?:notes-draft-case-[a-f0-9]{20}|storage-0[1-8]-[a-z0-9-]+)\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^browser/(?:browser-observation(?:-process-[1-9][0-9]*)?)\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^browser/notes-records/[a-f0-9]{20}-[a-f0-9]{20}\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^browser/notes-native-tar-list-[a-f0-9]{20}-[a-f0-9]{20}\\.txt$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "synthetic-opaque",
+        "pattern": "^browser/screenshots/(?:any-|search-|order-)?[a-f0-9]{20}-[a-f0-9]{20}\\.png$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "synthetic-opaque",
+        "pattern": "^browser/notes-draft-failure-[a-f0-9]{20}\\.png$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "synthetic-opaque",
+        "pattern": "^browser/downloads/[a-f0-9]{20}-[a-f0-9]{20}-new-task-notes\\.jex$"
+      },
+      {
+        "maxBytes": 5,
+        "kind": "synthetic-opaque",
+        "pattern": "^browser/downloads/[a-f0-9]{20}-[a-f0-9]{20}-resource-sample\\.bin$"
+      },
+      {
+        "pattern": "^browser/storage-host-cleanup-[a-f0-9]{20}-[a-f0-9]{20}\\.json$",
+        "kind": "text",
+        "maxBytes": 8388608
+      },
+      {
+        "pattern": "^browser/playwright-output/[A-Za-z0-9_-]{1,200}/error-context\\.md$",
+        "kind": "text",
+        "maxBytes": 8388608
+      }
+    ],
+    "values": [
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^(?:source-(?:before|preexecution|after)|collector-(?:before|run|after)|bootstrap-summary|qualifier-(?:full|finite|values|browser))\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^console-(?:before|bootstrap|run|after|qualify)\\.(?:json|stdout\\.txt|stderr\\.txt)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^(?:retained-original80|new-original32)/(?:stdout\\.txt|stderr\\.txt|process\\.json)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^original-values/original-search-values\\.jsonl$"
+      }
+    ],
+    "full": [
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^(?:source-(?:before|preexecution|after)|collector-(?:before|run|after)|bootstrap-summary|qualifier-(?:full|finite|values|browser))\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^console-(?:before|bootstrap|run|after|qualify)\\.(?:json|stdout\\.txt|stderr\\.txt)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^bootstrap-(?:flow-vault|archive-joint|bsdtar|bsdtar-smoke|additional|rclone)\\.(?:stdout\\.txt|stderr\\.txt|process\\.json)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^(?:prerequisite-acquisition|windows-tar-readiness|archive-original-acquisition|bsdtar-original-acquisition|bsdtar-original-smoke|development-prerequisites|current-full-prerequisites|rclone-prerequisites)\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^(?:bootstrap-[1-3]\\.stderr\\.txt|bsdtar-smoke-(?:stdout|stderr)\\.txt|development-prerequisites\\.events\\.jsonl)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^development-prerequisite-logs/(?:automation-native-acquisition|automation-routing-extract-[1-9][0-9]*|sketch-acquisition|restic-acquisition)\\.(?:stdout|stderr)\\.txt$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^current-full/(?:stdout\\.txt|stderr\\.txt|process\\.json)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^full-suite/(?:attempt-validation|source-before|source-after|source-snapshot-manifest|git-baseline-active-source)\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^full-suite/(?:events\\.jsonl|stdout\\.txt|stderr\\.txt|bootstrap-prerequisites\\.json\\.snapshot)$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^full-suite/prerequisite-receipts/(?:flow-vault|archive|bsdtar|additional|bsdtar-smoke|sync)\\.json\\.snapshot$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^current-sync-original/(?:corpus-summary|process-summary|index)\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^full-suite/notes-observations/[a-z0-9-]+\\.json$"
+      },
+      {
+        "maxBytes": 8388608,
+        "kind": "text",
+        "pattern": "^full-suite/notes-legacy-trash-original\\.json$"
+      }
+    ]
+  },
+  "expectedSourceOmissions": [
+    "products/rea-studio/apps/archive/formats-validation.json",
+    "products/rea-studio/apps/archive/lzma-provenance.json",
+    "products/rea-studio/apps/archive/lzma-validation.json",
+    "products/rea-studio/apps/archive/sevenzip-source-references.json",
+    "products/rea-studio/apps/archive/source-metadata.test.mjs",
+    "products/rea-studio/apps/archive/zstd-validation.json",
+    "products/rea-studio/apps/automation/native-validation.json",
+    "products/rea-studio/scripts/validate-safe-cloud-evidence.mjs",
+    "products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs",
+    "projects/04-excalidraw/rea-evidence-summary.json",
+    "projects/05-joplin/rea-evidence-summary.json",
+    "projects/06-node-red/rea-evidence-summary.json"
+  ]
+}

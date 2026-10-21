@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {captureOwnedFixture,removeOwnedFixture} from './notes-owned-fixture-cleanup.mjs';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { test as base, expect } from '@playwright/test';
@@ -11,7 +12,7 @@ assert.equal(process.env.CI, 'true'); assert.equal(process.env.GITHUB_ACTIONS, '
 assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
 assert.equal(process.env.GITHUB_REPOSITORY, 'Ginderlax/rea-research-lab');
 assert.equal(process.env.GITHUB_JOB, 'draft-recovery-real-chromium');
-assert.equal(process.env.GITHUB_REF, 'refs/heads/experiment/notes46-installed-search-20261019');
+assert.equal(process.env.GITHUB_REF, 'refs/heads/experiment/notes-open-todos-first-20261021-r1');
 assert.equal(process.env.GITHUB_EVENT_NAME, 'push');
 for (const name of ['GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT']) assert(process.env[name]);
 const studioRoot = path.resolve(import.meta.dirname, '..');
@@ -37,13 +38,13 @@ const sourcePins = [
   ],
   [
     "apps/notes/client.mjs",
-    41238,
-    "9b5e4fbb82b2213d8b537c2629b9ff4e18682b87b2627f8cfb90fe351617e12e"
+    43808,
+    "7189efbac3e92427289a9eaefecc728ec5cf051406b6b4a633b8c229b82dbdec"
   ],
   [
     "apps/notes/core.mjs",
-    2657,
-    "06bf9ad2485e39d6c7dea51a3be9a232fefe9d1a2ed1e46482b0459d605aa44c"
+    3281,
+    "d50b877ef16f2e2dac8c83b3b808dd7b8293b3dde5ce6b52cf4c7eaecab20a60"
   ],
   [
     "apps/notes/draft-recovery-test-fixture.mjs",
@@ -227,8 +228,8 @@ const sourcePins = [
   ],
   [
     "apps/notes/server.mjs",
-    26210,
-    "6607972a00e2254dd5c799a80c122375b28f12ceeb5eef0c59b26cc12de30d24"
+    26956,
+    "eaf01f14ea108ae91f5b85d9b5f1781cd25dfa8ef2d2e99c9c08848f5802726e"
   ],
   [
     "apps/notes/todo-original.test.mjs",
@@ -271,7 +272,7 @@ const dueInput = '2030-03-14T09:26:53.123', dueUtc = '2030-03-14T09:26:53.123Z';
 
 const test = base.extend({
   studio: async ({ page }, use, info) => {
-    const dataDir = await fs.mkdtemp(path.join(dataRoot, 'notes-new-todo-case-'));
+    const dataDir = await fs.mkdtemp(path.join(dataRoot, 'notes-new-todo-case-')); const ownedData = await captureOwnedFixture(dataRoot,dataDir,'notes-new-todo-case-');
     const instance = await start({ port: 0, dataDir });
     const observations = [], requests = [], responses = [], faults = [], holds = [], downloads = [], savedDownloads = [];
     const errors = [], consoleErrors = [], auxiliaryErrors = [], expectedHttpFailures = [], responseTasks = new Set();
@@ -411,7 +412,7 @@ const test = base.extend({
     };
     try { await use(s); }
     finally {
-      const teardown = { stage: 'starting', heldRoutesFinished: false, drained: false, contextClosed: false, serverClosed: false, screenshotSaved: false, requestCounts, steps: [] }, failures = [];
+      const teardown = { stage: 'starting', heldRoutesFinished: false, drained: false, contextClosed: false, serverClosed: false, screenshotSaved: false, dataRemoved: false, dataRemoval: null, requestCounts, steps: [] }, failures = [];
       async function step(name, operation) { const row = { name, status: 'running', startedAtUtc: new Date().toISOString() }; teardown.steps.push(row); teardown.stage = name;
         try { await operation(); row.status = 'passed'; } catch (error) { row.status = 'failed'; row.failure = { name: error.name, message: error.message }; failures.push(error); } finally { row.completedAtUtc = new Date().toISOString(); } }
       await step('release-held-routes', async () => { assert.equal(activeDiskFault, null, 'Owned I/O fault must be restored before fixture release'); for (const gate of holds) gate.release(); await bounded(Promise.all(holds.filter(gate => gate.used()).map(gate => gate.finished)), 5000, 'Held route cleanup deadline'); teardown.heldRoutesFinished = true; });
@@ -420,6 +421,7 @@ const test = base.extend({
       await step('capture-synthetic-final-record', async () => { try { const current = await disk(); await fs.mkdir(path.join(evidence, 'notes-records'), { recursive: true }); const relative = 'notes-records/' + info.testId + '.json'; await fs.writeFile(path.join(evidence, relative), current.bytes, { flag: 'wx' }); observations.push({ kind: 'owned-synthetic-disk-record', path: relative, ...current.identity }); } catch (error) { if (error.code !== 'ENOENT') throw error; observations.push({ kind: 'owned-note-record-absent' }); } });
       await step('close-owned-context', async () => { await bounded(page.context().close(), 5000, 'Owned context close deadline'); teardown.contextClosed = true; assert.equal(pending.size, 0); });
       await step('close-owned-server', async () => { await bounded(instance.close(), 5000, 'Owned server close deadline'); teardown.serverClosed = true; });
+      if(teardown.contextClosed&&teardown.serverClosed)await step('remove-owned-data',async()=>{teardown.dataRemoval=await bounded(removeOwnedFixture(ownedData,{contextClosed:teardown.contextClosed,hostClosed:teardown.serverClosed}),5000,'Owned data removal deadline');teardown.dataRemoved=true;});
       teardown.pendingOwnedRequests = pending.size; teardown.activeOwnedIOFault = activeDiskFault !== null; teardown.stage = failures.length ? 'failed' : 'completed';
       const expectedConsole = consoleErrors.filter(item => expectedHttpFailures.some(row => row.observed && item.location.url === instance.url + row.path && /400/.test(item.message)));
       errors.push(...consoleErrors.filter(item => !expectedConsole.includes(item)));
@@ -432,6 +434,7 @@ const test = base.extend({
       expect(errors).toEqual([]); expect(expectedHttpFailures.every(row => row.observed)).toBe(true);
       if (failures.length) throw new AggregateError(failures, 'Notes owned fixture cleanup failed');
       expect(teardown.drained && teardown.contextClosed && teardown.serverClosed && teardown.heldRoutesFinished && !teardown.activeOwnedIOFault).toBe(true);
+      expect(teardown.dataRemoved).toBe(true);
     }
   }
 });

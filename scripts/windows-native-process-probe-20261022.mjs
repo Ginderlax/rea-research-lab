@@ -1,6 +1,6 @@
 // Source-only candidate. Publish only after independent review and root approval.
 // Fixed diagnostics only: no product imports, product comparisons or test changes.
-// R6 v2 is a new predeclared12-case module-path experiment, not a replay of R5.
+// R7 v3 is a new predeclared12-case trusted AllUsers insertion experiment, not a replay of R6.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -9,8 +9,8 @@ import {fileURLToPath} from 'node:url';
 import {execFile, spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 
-const PARENT = '19cb2f7e24780f40436a5015d3fa66ff2b735fa2';
-const BRANCH = 'refs/heads/experiment/windows-native-process-probe-20261022-r6';
+const PARENT = '0c191480269db106c6c1b0a3f9d719de4a754bc2';
+const BRANCH = 'refs/heads/experiment/windows-native-process-probe-20261022-r7';
 const SCRIPT_PATH = 'scripts/windows-native-process-probe-20261022.mjs';
 const WORKFLOW_PATH = '.github/workflows/windows-native-process-probe.yml';
 const METADATA_TIMEOUT = 15000, NET_TIMEOUT = 20000;
@@ -18,91 +18,91 @@ const METADATA_BUFFER = 64 * 1024 * 1024, NET_BUFFER = 1024 * 1024, RESULT_CAP =
 const METADATA_SCRIPT = "\n$ErrorActionPreference = 'Stop'\n$ProgressPreference = 'SilentlyContinue'\n[Console]::InputEncoding = New-Object System.Text.UTF8Encoding($false)\n[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)\n$culture = [Globalization.CultureInfo]::InvariantCulture\nfunction Stamp($date) {\n  $utc = $date.ToUniversalTime()\n  $milliseconds = ([decimal]$utc.Ticks - [decimal]621355968000000000) / [decimal]10000\n  return @{ utc = $utc.ToString(\"yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'\", $culture); ms = $milliseconds.ToString('0.0000', $culture) }\n}\ntry {\n  $request = [Console]::In.ReadToEnd() | ConvertFrom-Json -ErrorAction Stop\n  if ($request.version -ne 1 -or $null -eq $request.sources -or @($request.sources).Count -gt 10000) { throw 'request' }\n  $root = [IO.Path]::GetFullPath([string]$request.root)\n  $volume = [IO.Path]::GetPathRoot($root)\n  while ($root.Length -gt $volume.Length -and $root.EndsWith([IO.Path]::DirectorySeparatorChar)) { $root = $root.Substring(0, $root.Length - 1) }\n  if (([IO.File]::GetAttributes($root) -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'link' }\n  $prefix = $root\n  if (-not $prefix.EndsWith([IO.Path]::DirectorySeparatorChar)) { $prefix += [IO.Path]::DirectorySeparatorChar }\n  $rows = New-Object 'System.Collections.Generic.List[object]'\n  $index = 0\n  foreach ($source in @($request.sources)) {\n    $full = [IO.Path]::GetFullPath([string]$source.path)\n    if (-not $full.StartsWith($prefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'outside' }\n    # Check each current ancestor as well as the target. This supplements, rather\n    # than replaces, the application's original root-confined no-link walk.\n    $checked = $full\n    while ($true) {\n      if (([IO.File]::GetAttributes($checked) -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'link' }\n      if ([string]::Equals($checked, $root, [StringComparison]::OrdinalIgnoreCase)) { break }\n      $checked = [IO.Path]::GetDirectoryName($checked)\n      if ([string]::IsNullOrEmpty($checked)) { throw 'outside' }\n    }\n    $item = Get-Item -LiteralPath $full -Force -ErrorAction Stop\n    $item.Refresh()\n    if (-not $item.Exists -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'missing' }\n    $directory = $item -is [IO.DirectoryInfo]\n    if (-not $directory -and -not ($item -is [IO.FileInfo])) { throw 'type' }\n    if ($directory -ne [bool]$source.directory) { throw 'type' }\n    $modified = Stamp $item.LastWriteTimeUtc\n    $accessed = Stamp $item.LastAccessTimeUtc\n    $created = Stamp $item.CreationTimeUtc\n    # Both GetFullPath and FullName can expand a valid DOS short-path alias.\n    # Echo the submitted transport identity only after all native path checks.\n    $rows.Add(@{ index = $index; path = [string]$source.path; normalizedPath = $full; directory = $directory;\n      modifiedAtUtc = $modified.utc; modifiedAtMs = $modified.ms;\n      accessedAtUtc = $accessed.utc; accessedAtMs = $accessed.ms;\n      createdAtUtc = $created.utc; createdAtMs = $created.ms })\n    $index += 1\n  }\n  $response = @{ version = 1; items = @($rows.ToArray()) } | ConvertTo-Json -Compress -Depth 5\n  [Console]::Out.Write($response)\n} catch {\n  [Console]::Error.WriteLine('Native Windows source metadata failed.')\n  exit 1\n}\n";
 const NET_SCRIPT = "$ErrorActionPreference='Stop'\nAdd-Type -AssemblyName System.IO.Compression\nAdd-Type -AssemblyName System.IO.Compression.FileSystem\n$archivePath=Join-Path $env:REA_ZIP_TEST_DIR 'workspace/dotnet.zip'\n$localDate=[DateTime]::new(2012,3,4,0,6,8,[DateTimeKind]::Unspecified)\n$entryDate=[DateTimeOffset]::new($localDate,[TimeZoneInfo]::Local.GetUtcOffset($localDate))\n$stream=[System.IO.File]::Open($archivePath,[System.IO.FileMode]::CreateNew,[System.IO.FileAccess]::ReadWrite)\n$archive=[System.IO.Compression.ZipArchive]::new($stream,[System.IO.Compression.ZipArchiveMode]::Create)\ntry{$entry=$archive.CreateEntry('a.txt');$entry.LastWriteTime=$entryDate;$writer=[System.IO.StreamWriter]::new($entry.Open());try{$writer.Write('dates')}finally{$writer.Dispose()}}finally{$archive.Dispose()}\n$destination=Join-Path $env:REA_ZIP_TEST_DIR 'dotnet-restored'\n[System.IO.Compression.ZipFile]::ExtractToDirectory($archivePath,$destination)\n@{expected=$entryDate.UtcDateTime.ToString('o');restored=(Get-Item -LiteralPath (Join-Path $destination 'a.txt')).LastWriteTimeUtc.ToString('o')}|ConvertTo-Json -Compress";
 const COLLECTOR_KEYS = new Set(['PATH','PATHEXT','SYSTEMROOT','COMSPEC','TEMP','TMP','USERPROFILE','HOMEDRIVE','HOMEPATH','LOCALAPPDATA','APPDATA','CI','GITHUB_ACTIONS','RUNNER_ENVIRONMENT','RUNNER_OS','RUNNER_ARCH','RUNNER_TEMP','GITHUB_SHA','GITHUB_REF','GITHUB_EVENT_NAME','GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT','GITHUB_REPOSITORY','GITHUB_JOB','GITHUB_SERVER_URL','GITHUB_WORKFLOW']);
-const PROFILES = ["collector-allowlist","collector-plus-inherited-psmodulepath-only","collector-plus-trusted-winps-system-module-path-only"];
+const PROFILES = ["collector-plus-trusted-winps-system-module-path-only","collector-plus-trusted-winps-system-and-allusers-module-path-only","collector-plus-inherited-psmodulepath-only"];
 const CASE_PLAN = [
   {
     "order": 1,
-    "id": "metadata-forward-collector",
+    "id": "metadata-forward-trusted-winps-system",
     "command": "metadata",
     "pass": "forward",
-    "profile": "collector-allowlist"
+    "profile": "collector-plus-trusted-winps-system-module-path-only"
   },
   {
     "order": 2,
+    "id": "metadata-forward-trusted-winps-system-and-allusers",
+    "command": "metadata",
+    "pass": "forward",
+    "profile": "collector-plus-trusted-winps-system-and-allusers-module-path-only"
+  },
+  {
+    "order": 3,
     "id": "metadata-forward-inherited-modulepath",
     "command": "metadata",
     "pass": "forward",
     "profile": "collector-plus-inherited-psmodulepath-only"
   },
   {
-    "order": 3,
-    "id": "metadata-forward-trusted-winps-modulepath",
-    "command": "metadata",
-    "pass": "forward",
-    "profile": "collector-plus-trusted-winps-system-module-path-only"
-  },
-  {
     "order": 4,
-    "id": "metadata-reverse-trusted-winps-modulepath",
-    "command": "metadata",
-    "pass": "reverse",
-    "profile": "collector-plus-trusted-winps-system-module-path-only"
-  },
-  {
-    "order": 5,
     "id": "metadata-reverse-inherited-modulepath",
     "command": "metadata",
     "pass": "reverse",
     "profile": "collector-plus-inherited-psmodulepath-only"
   },
   {
-    "order": 6,
-    "id": "metadata-reverse-collector",
+    "order": 5,
+    "id": "metadata-reverse-trusted-winps-system-and-allusers",
     "command": "metadata",
     "pass": "reverse",
-    "profile": "collector-allowlist"
+    "profile": "collector-plus-trusted-winps-system-and-allusers-module-path-only"
+  },
+  {
+    "order": 6,
+    "id": "metadata-reverse-trusted-winps-system",
+    "command": "metadata",
+    "pass": "reverse",
+    "profile": "collector-plus-trusted-winps-system-module-path-only"
   },
   {
     "order": 7,
-    "id": "net-forward-collector",
+    "id": "net-forward-trusted-winps-system",
     "command": "original-net",
     "pass": "forward",
-    "profile": "collector-allowlist"
+    "profile": "collector-plus-trusted-winps-system-module-path-only"
   },
   {
     "order": 8,
+    "id": "net-forward-trusted-winps-system-and-allusers",
+    "command": "original-net",
+    "pass": "forward",
+    "profile": "collector-plus-trusted-winps-system-and-allusers-module-path-only"
+  },
+  {
+    "order": 9,
     "id": "net-forward-inherited-modulepath",
     "command": "original-net",
     "pass": "forward",
     "profile": "collector-plus-inherited-psmodulepath-only"
   },
   {
-    "order": 9,
-    "id": "net-forward-trusted-winps-modulepath",
-    "command": "original-net",
-    "pass": "forward",
-    "profile": "collector-plus-trusted-winps-system-module-path-only"
-  },
-  {
     "order": 10,
-    "id": "net-reverse-trusted-winps-modulepath",
-    "command": "original-net",
-    "pass": "reverse",
-    "profile": "collector-plus-trusted-winps-system-module-path-only"
-  },
-  {
-    "order": 11,
     "id": "net-reverse-inherited-modulepath",
     "command": "original-net",
     "pass": "reverse",
     "profile": "collector-plus-inherited-psmodulepath-only"
   },
   {
-    "order": 12,
-    "id": "net-reverse-collector",
+    "order": 11,
+    "id": "net-reverse-trusted-winps-system-and-allusers",
     "command": "original-net",
     "pass": "reverse",
-    "profile": "collector-allowlist"
+    "profile": "collector-plus-trusted-winps-system-and-allusers-module-path-only"
+  },
+  {
+    "order": 12,
+    "id": "net-reverse-trusted-winps-system",
+    "command": "original-net",
+    "pass": "reverse",
+    "profile": "collector-plus-trusted-winps-system-module-path-only"
   }
 ];
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -111,7 +111,19 @@ const commandPin = text => ({utf8Bytes:utf8(text).length,utf8SHA256:sha(utf8(tex
 const exactKeys = (value, names) => value && typeof value === 'object' && !Array.isArray(value) && JSON.stringify(Object.keys(value).sort()) === JSON.stringify([...names].sort());
 let outputFile = null, outputRoot = null;
 
-let trustedWindowsPowerShellModules = null;
+let trustedWindowsPowerShellModules = null, trustedWindowsPowerShellAllUsersModules = null;
+function ordinaryDirectory(directory) {
+  assert(typeof directory==='string' && /^[A-Za-z]:[\\/]/.test(directory) && !directory.includes('\0') && !directory.includes(';'));
+  assert.equal(path.win32.normalize(directory),directory);
+  let at=path.parse(directory).root;
+  for(const component of directory.slice(at.length).split(path.sep).filter(Boolean)) {
+    at=path.join(at,component);
+    const stat=fs.lstatSync(at);
+    assert(stat.isDirectory() && !stat.isSymbolicLink());
+  }
+  assert.equal(fs.realpathSync(directory).toLowerCase(),directory.toLowerCase());
+  return directory;
+}
 function trustedSystemModulesDirectory() {
   const systemRoot=process.env.SystemRoot ?? process.env.SYSTEMROOT ?? 'C:\\Windows';
   assert(typeof systemRoot==='string' && /^[A-Za-z]:[\\/]/.test(systemRoot) && !systemRoot.includes('\0'));
@@ -125,19 +137,49 @@ function trustedSystemModulesDirectory() {
   assert.equal(fs.realpathSync(directory).toLowerCase(),directory.toLowerCase());
   return directory;
 }
+function trustedAllUsersModulesDirectory() {
+  const matches=Object.entries(process.env).filter(([key])=>key.toUpperCase()==='PROGRAMFILES');
+  assert.equal(matches.length,1);
+  const programFiles=matches[0][1];
+  assert(typeof programFiles==='string' && programFiles.length>0 && programFiles.length<=32767 && !programFiles.includes('\0') && !programFiles.includes(';'));
+  assert.equal(path.win32.normalize(programFiles),programFiles);
+  assert.equal(path.win32.basename(programFiles).toLowerCase(),'program files');
+  assert.equal(path.win32.dirname(programFiles).toLowerCase(),path.win32.parse(trustedWindowsPowerShellModules).root.toLowerCase());
+  return ordinaryDirectory(path.win32.join(programFiles,'WindowsPowerShell','Modules'));
+}
+function inheritedModulePathValue() {
+  const matches=Object.entries(process.env).filter(([key])=>key.toUpperCase()==='PSMODULEPATH');
+  assert.equal(matches.length,1);
+  const [key,value]=matches[0];
+  assert(typeof value==='string' && value.length>0 && value.length<=32767 && !value.includes('\0'));
+  return {key,value};
+}
+function inheritedModulePathKnownMembershipOnly() {
+  const normalized=value=>path.win32.normalize(value).replace(/[\\/]+$/,'').toLowerCase();
+  const system=normalized(trustedWindowsPowerShellModules),allUsers=normalized(trustedWindowsPowerShellAllUsersModules);
+  const entries=inheritedModulePathValue().value.split(';').map(normalized);
+  // String comparison only: never stat, traverse, expand or publish an inherited entry.
+  return {
+    knownWinPSSystemModulesPresent:entries.includes(system),
+    knownWinPSAllUsersModulesPresent:entries.includes(allUsers),
+    unclassifiedEntriesPresent:entries.some(value=>value!==system && value!==allUsers)
+  };
+}
 function environmentProfile(name) {
   assert(PROFILES.includes(name));
   const env=Object.fromEntries(Object.entries(process.env).filter(([key])=>COLLECTOR_KEYS.has(key.toUpperCase())));
   assert(!Object.keys(env).some(key=>key.toUpperCase()==='PSMODULEPATH'));
   if(name==='collector-plus-inherited-psmodulepath-only') {
-    const matches=Object.entries(process.env).filter(([key])=>key.toUpperCase()==='PSMODULEPATH');
-    assert.equal(matches.length,1);
-    const [key,value]=matches[0];
-    assert(typeof value==='string' && value.length>0 && value.length<=32767 && !value.includes('\0'));
+    const {key,value}=inheritedModulePathValue();
     env[key]=value;
   } else if(name==='collector-plus-trusted-winps-system-module-path-only') {
     assert(typeof trustedWindowsPowerShellModules==='string');
     env.PSModulePath=trustedWindowsPowerShellModules;
+  } else {
+    assert.equal(name,'collector-plus-trusted-winps-system-and-allusers-module-path-only');
+    assert(typeof trustedWindowsPowerShellModules==='string' && typeof trustedWindowsPowerShellAllUsersModules==='string');
+    // Documented Windows PowerShell startup order inserts AllUsers before PSHOME.
+    env.PSModulePath=trustedWindowsPowerShellAllUsersModules+';'+trustedWindowsPowerShellModules;
   }
   return env;
 }
@@ -249,6 +291,7 @@ async function main() {
   assert.equal(readGit(['diff','--no-ext-diff','--no-textconv','--no-renames','--name-only',PARENT,'HEAD'],repository),[WORKFLOW_PATH,SCRIPT_PATH].join('\n'));
   assert.equal(readGit(['status','--porcelain=v1','--untracked-files=all'],repository),'');
   trustedWindowsPowerShellModules=trustedSystemModulesDirectory();
+  trustedWindowsPowerShellAllUsersModules=trustedAllUsersModulesDirectory();
   const temporary=fs.realpathSync(process.env.RUNNER_TEMP);
   assert(!fs.lstatSync(temporary).isSymbolicLink());
   outputRoot=path.join(temporary,'rea-windows-native-probe-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT);
@@ -264,7 +307,7 @@ async function main() {
     assert.deepEqual(rows.slice(3).map(row=>row.profile),[...PROFILES].reverse());
     for(const profile of PROFILES) assert.equal(rows.filter(row=>row.profile===profile).length,2);
   }
-  const report={schema:'rea-windows-native-process-probe/v2',status:'diagnostic-running',experiment:'R6-counterbalanced-single-modulepath-factor',source:process.env.GITHUB_SHA,parent:PARENT,branch:BRANCH,runID:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,hostedWindows2022X64Node2416GuardVerified:true,onlyTwoProspectiveSourcePathsChanged:true,commands:{metadata:commandPin(METADATA_SCRIPT),originalNET:commandPin(NET_SCRIPT)},environmentProfiles:PROFILES.map(profile=>({profile,systemKeyPresenceOnly:flagsForEnvironment(environmentProfile(profile)),environmentValuesPublished:false})),predeclaredCasePlan:CASE_PLAN,cases:[],requiredCases:12,metadataCases:6,originalNETCases:6,nativeMetadataTimeoutMs:METADATA_TIMEOUT,originalNETTimeoutMs:NET_TIMEOUT,nominalNativeTimeoutBudgetMs:210000,resultCapBytes:RESULT_CAP,trustedWinPSSystemModulesDirectoryVerified:true,trustedProfileUsesOnlySingleValidatedSystemModulePath:true,trustedProfileCopiesUserOrPS7ModulePaths:false,moduleDirectoriesCopied:0,inheritedModulePathComparisonOnly:true,allInheritedEnvironmentBaselineUsed:false,roleSpecificProductBootstrapEnvironmentReplayed:false,syntheticNativeNETArchivesNeverUploaded:true,existingOrMappedArchivesAccessed:0,productImportsOrExecution:0,testsOrProductThresholdsChanged:false,productAcceptance:false,runtimeAcceptance:false,semanticAcceptance:false,fullParity:false,allTenComplete:false,provenRootCause:false,environmentCausalityProven:false};
+  const report={schema:'rea-windows-native-process-probe/v3',status:'diagnostic-running',experiment:'R7-counterbalanced-trusted-winps-allusers-insertion-factor',source:process.env.GITHUB_SHA,parent:PARENT,branch:BRANCH,runID:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,hostedWindows2022X64Node2416GuardVerified:true,onlyTwoProspectiveSourcePathsChanged:true,commands:{metadata:commandPin(METADATA_SCRIPT),originalNET:commandPin(NET_SCRIPT)},environmentProfiles:PROFILES.map(profile=>({profile,systemKeyPresenceOnly:flagsForEnvironment(environmentProfile(profile)),environmentValuesPublished:false})),predeclaredCasePlan:CASE_PLAN,cases:[],requiredCases:12,metadataCases:6,originalNETCases:6,nativeMetadataTimeoutMs:METADATA_TIMEOUT,originalNETTimeoutMs:NET_TIMEOUT,nominalNativeTimeoutBudgetMs:210000,resultCapBytes:RESULT_CAP,trustedWinPSSystemModulesDirectoryVerified:true,trustedWinPSAllUsersModulesDirectoryVerified:true,trustedProfilesUseOnlyValidatedKnownWinPSDirectories:true,allUsersPrecedesSystemModulesInCombinedProfile:true,programFilesUsedOnlyToFormKnownAllUsersDirectory:true,additionalChildSystemEnvironmentKeysAdmitted:false,inheritedModulePathKnownMembershipOnly:inheritedModulePathKnownMembershipOnly(),inheritedEntriesInspectedOnFilesystem:false,trustedProfilesCopyUserOrPS7ModulePaths:false,moduleDirectoriesCopied:0,inheritedModulePathComparisonOnly:true,allInheritedEnvironmentBaselineUsed:false,roleSpecificProductBootstrapEnvironmentReplayed:false,syntheticNativeNETArchivesNeverUploaded:true,existingOrMappedArchivesAccessed:0,productImportsOrExecution:0,testsOrProductThresholdsChanged:false,productAcceptance:false,runtimeAcceptance:false,semanticAcceptance:false,fullParity:false,allTenComplete:false,provenRootCause:false,environmentCausalityProven:false};
   for(const specification of CASE_PLAN) {
     const env=environmentProfile(specification.profile),root=ownedFixture('case-'+String(specification.order).padStart(2,'0'));
     let record;
@@ -292,12 +335,12 @@ async function main() {
   report.casesRetained=12;
   report.mirrorOrderingVerified=true;
   report.coldStartAndOrderConfoundingExcluded=false;
-  report.followup='Compare both mirror passes per fixed command. A reproducible trusted WinPS system-only result may justify a separately reviewed finite launch-context fix; this diagnostic alone proves no product success or root cause. Preserve all original limits and all negative outcomes.';
+  report.followup='Compare both mirror passes per fixed command for C system-only, D validated AllUsers-before-system, and B inherited comparison. R6 did not support a system-only remediation. This new experiment alone approves no environment forwarding, product fix, product success or root cause. Preserve all original limits and all negative outcomes.';
   publish(report);
 }
 main().catch(() => {
   // Fixed classification only: exception text, child output and env values stay private.
-  const report={schema:'rea-windows-native-process-probe-guard-failure/v2',status:'guard-or-diagnostic-orchestration-failed',rawErrorPublished:false,rawStdoutPublished:false,rawStderrPublished:false,environmentValuesPublished:false,productAcceptance:false,runtimeAcceptance:false,semanticAcceptance:false,fullParity:false,allTenComplete:false};
+  const report={schema:'rea-windows-native-process-probe-guard-failure/v3',status:'guard-or-diagnostic-orchestration-failed',rawErrorPublished:false,rawStdoutPublished:false,rawStderrPublished:false,environmentValuesPublished:false,productAcceptance:false,runtimeAcceptance:false,semanticAcceptance:false,fullParity:false,allTenComplete:false};
   try { if(outputFile && !fs.existsSync(outputFile)) publish(report); else console.log(JSON.stringify(report)); } catch { console.log(JSON.stringify(report)); }
   process.exitCode=1;
 });

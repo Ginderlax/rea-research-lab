@@ -5,6 +5,7 @@ import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { spawn, spawnSync } from 'node:child_process';
 import { arch, platform } from 'node:os';
+import {admit as admitFullProgress} from './notes-full-progress-contract.mjs';
 
 // This collector writes only to its explicit evidence directory. In particular,
 // finite runs never replace results/development-validation.json or old receipts.
@@ -64,6 +65,7 @@ for (const directory of censusDirectories) assert(!inside(path.join(realStudio, 
 fs.mkdirSync(output, { recursive: true });
 assert(fs.statSync(output).isDirectory(), 'Output must be a directory');
 const reserved = ['attempt-validation.json', 'attempt-validation.json.tmp', 'events.jsonl', 'stdout.txt', 'stderr.txt', 'source-before.json', 'source-after.json', 'source-snapshot-manifest.json', 'source', 'runner.mjs.snapshot', 'development-validation.json', 'bootstrap-prerequisites.json.snapshot', 'overlay-composition.json.snapshot', 'experimental-test-selection.json.snapshot', 'oracle-test-composition.json.snapshot', 'oracle-test-bundle.json.snapshot', 'windows-path-composition.json.snapshot', 'windows-path-installed-source-check.json.snapshot', 'windows-path-bundle.json.snapshot', 'archive-installed-source-check.json.snapshot', 'archive-installed-test-selection.json.snapshot', 'git-baseline-active-source.json', 'prerequisite-receipts', 'vault-empty-bin-composition.json.snapshot', 'vault-empty-bin-bundle.json.snapshot', 'vault-empty-bin-original-summary.json.snapshot', 'empty-bin-original-observations', 'notes-installed-source-check.json.snapshot', 'notes-todo-composition.json.snapshot', 'notes-todo-bundle.json.snapshot', 'notes-todo-observations.json', 'notes-observations', 'notes-legacy-trash-original.json'];
+if(options.scope==='full-current-installed')reserved.push('module-progress.jsonl','module-progress.json');
 for (const name of reserved) assert(!fs.existsSync(path.join(output, name)), 'Evidence already exists; use a new run directory: ' + name);
 
 const open = name => fs.openSync(path.join(output, name), 'wx');
@@ -286,7 +288,7 @@ function verifyCurrentFullPrerequisites(manifest) {
   return records;
 }
 function verifyCurrentInstalledComposition() {
-  const parent='27374c78642d0086d5640fe25a887f5d8202dccc',branch='refs/heads/experiment/notes-open-todos-first-20261021-r1';
+  const parent='cf418c439be76d78a703a2e265166ceeb5fc4070',branch='refs/heads/experiment/notes-open-todos-first-20261021-r2';
   assert.equal(process.env.GITHUB_REF,branch);assert.equal(process.env.GITHUB_JOB,'full-current-installed');assert.equal(process.env.REA_NOTES_ORDER_ROLE,'full');assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');assert.equal(process.version,'v24.16.0');assert.equal(process.env.RUNNER_ENVIRONMENT,'github-hosted');assert.equal(process.env.RUNNER_OS,'Windows');assert.equal(process.env.RUNNER_ARCH,'X64');assert.equal(process.env.GITHUB_REPOSITORY,'Ginderlax/rea-research-lab');assert.equal(process.env.CI,'true');assert.equal(process.env.GITHUB_ACTIONS,'true');
   assert.equal(readGit(['rev-parse','HEAD^']).toString('utf8').trim(),parent);assert.equal(record.repositoryCommit,process.env.GITHUB_SHA);assert.deepEqual(visibleGitStatus(),[]);assert(!options.overlayManifest&&!options.installedManifest&&!options.sourceOnly);assert(options.bootstrapManifest);
   const filename=path.join(studio,'experiments/notes-open-todos-first-20261021/CAMPAIGN.json'),bytes=fs.readFileSync(filename),manifest=JSON.parse(bytes);assert.equal(sha256(bytes),process.env.REA_NOTES_ORDER_MANIFEST_SHA256);assert.equal(manifest.schema,'rea-notes-order-hosted-campaign/v1');assert.equal(manifest.parent,parent);assert.equal(manifest.branch,branch);assert.equal(manifest.executionAuthorized,true);assert.equal(manifest.sourceClosureReviewed,true);assert.equal(manifest.fullCurrentRosterReviewed,true);assert.equal(manifest.currentActiveTestFiles.length,184);assert.deepEqual(manifest.allowedOracleOverlays,[]);
@@ -576,7 +578,7 @@ function verifyGitBaselineActiveSources(rows, contract) {
   provenance.gitBaselineEligibleActiveBytesAuthenticated = true;
 }
 
-let before = null, currentInstalled = null, fullOracle = null, windowsPath = null, vaultEmptyBin = null, notesTodo = null, notesInstalled = null, archiveInstalled = null;
+let before = null, currentInstalled = null, fullOracle = null, windowsPath = null, vaultEmptyBin = null, notesTodo = null, notesInstalled = null, archiveInstalled = null, fullProgressContext = null;
 try {
   saveAttempt();
   event('running', { scope: options.scope, sourceOnly: options.sourceOnly });
@@ -695,7 +697,13 @@ try {
     if (options.scope === 'vault-empty-bin-experiment') env.REA_EMPTY_BIN_OBSERVATIONS = path.join(output, 'empty-bin-original-observations');
     if (notesTodo) env.NOTES_REVIEW_OUTPUT = pathToFileURL(path.join(output, 'notes-observations') + path.sep).href;
     delete env.NODE_TEST_CONTEXT;
-    record.command = [process.execPath, '--test', '--test-reporter=tap', '--test-concurrency=1', ...record.selectedTestFiles];
+    if(currentInstalled){
+      assert.equal(options.timeoutMs,2400000,'Progress diagnostics retain the existing40-minute execution deadline');
+      fullProgressContext=admitFullProgress();
+      assert.deepEqual(fullProgressContext.roster.map(r=>r.repositoryPath.replace(/^products\/rea-studio\//,'')).sort(),[...record.selectedTestFiles].sort());
+      record.command=[process.execPath,'--test','--test-reporter=tap','--test-reporter-destination=stdout','--test-reporter=./scripts/notes-full-progress-reporter.mjs','--test-reporter-destination=stderr','--test-concurrency=1',...record.selectedTestFiles];
+      record.progressDiagnostics={schema:'rea-notes-full-progress-runner-admission/v1',manifest:record.currentFullInstalled.manifest,rosterSHA256:fullProgressContext.subject.rosterSHA256,selectedModules:184,TAPReporter:'tap',TAPDestination:'stdout',secondReporterProducesConsoleBytes:false,singleNodeTestProcess:true,timeoutMilliseconds:2400000,productAcceptance:false};
+    }else record.command = [process.execPath, '--test', '--test-reporter=tap', '--test-concurrency=1', ...record.selectedTestFiles];
     const outcome = await new Promise(resolve => {
       let settled = false;
       const finish = result => {
@@ -817,6 +825,14 @@ try {
   record.completedAtUtc = new Date().toISOString();
   record.failure = record.failures.length ? record.failures.join('; ') : null;
   record.output = { stdoutBytes, stderrBytes, droppedOutputBytes, retainedOutputTruncated: droppedOutputBytes > 0, childCloseObserved: record.childCloseObserved ?? false };
+  if(fullProgressContext){
+    try{
+      const names=['tests','pass','fail','cancelled','skipped','todo'],measured=record.summary&&names.every(k=>Number.isSafeInteger(record.summary[k])&&record.summary[k]>=0&&record.summary[k]<=1000000)?Object.fromEntries(names.map(k=>[k,record.summary[k]])):null;
+      const observedSignal=record.signal===null?null:['SIGINT','SIGTERM','SIGKILL','SIGBREAK'].includes(record.signal)?record.signal:'OTHER_SIGNAL';
+      const terminationCode=stopReason==='execution deadline exceeded'?'EXECUTION_DEADLINE':receivedSignal||record.signal?'RECEIVED_SIGNAL':record.status==='passed'?'PASSED':record.childStarted?'PROCESS_FAILURE':'COLLECTOR_FAILURE';
+      saveJson('module-progress.json',{schema:'rea-notes-full-safe-process-state/v1',...fullProgressContext.subject,processStarted:record.childStarted===true,closeObserved:record.childCloseObserved===true,exitCode:record.exitCode,signal:observedSignal,terminationCode,timeoutMilliseconds:2400000,TAPSummary:measured,fullProductAcceptance:false});
+    }catch{failure('safe full progress metadata write failed');record.status='failed';record.failure=record.failures.join('; ');}
+  }
   if (record.status === 'passed' && options.scope === 'full') {
     try { saveJson('development-validation.json', {
       schema: 'rea-development-validation/v1', checked_at_utc: record.completedAtUtc,

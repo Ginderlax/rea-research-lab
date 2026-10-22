@@ -2,7 +2,7 @@
 name: Notes open to-dos first current-source study
 on:
   push:
-    branches: [experiment/notes-open-todos-first-20261021-r1]
+    branches: [experiment/notes-open-todos-first-20261021-r2]
 permissions:
   contents: read
 concurrency:
@@ -11,17 +11,24 @@ concurrency:
 env:
   CI: 'true'
   TZ: UTC
-  REA_NOTES_ORDER_PARENT: '27374c78642d0086d5640fe25a887f5d8202dccc'
-  REA_SAFE_FEATURE_BRANCH: experiment/notes-open-todos-first-20261021-r1
-  REA_NOTES_ORDER_MANIFEST_SHA256: '143b7d616b6697b43b5db73a9d09e7a4ceeeb6360ac590c0c22ff3bfd06cbf96'
-  REA_SAFE_CAPTURE_SHA256: '694b42dca0c7aa1e6f5a424cea236cd4a4debdca3cf5ea922d9f00735d1bca58'
-  REA_SAFE_COLLECTOR_SHA256: '7354a66b9e2d1ea450e995665bb9f7426d6a7a6eb558c34680f600456537590e'
-  REA_SAFE_BOOTSTRAP_SHA256: 'c957fd2ff996f0c527a23bb9e218003cd2d55eabbe134f0c4f63efd05d2385b0'
-  REA_SAFE_QUALIFIER_SHA256: '72985390af1e9685550b23597148184752a58f27f2707550f506bdb0007b4b60'
-  REA_SAFE_FILTER_SHA256: '2b2404b3a5089be9c855209c2a3f780d1c1e2bdf4dd9c5d6aae6a2483704c3fa'
-  REA_SAFE_EVIDENCE_POLICY_SHA256: 'b7f82b9c350a88b4eed4afa5af5d5d83d1080f34fbcae4b23a4d6c06ef4375a6'
-  REA_SAFE_VALIDATOR_SHA256: '6a28c6cbac5940b2aa04d1dd156a6d1fb03725ff7a8d220114d08aeb2161bab6'
-  REA_SAFE_CURRENT_FULL_RUNNER_SHA256: 'd55c298eda108c43e6e6e921a18cfa7683b3b05d6c5a3b95873d98abe259b17f'
+  REA_NOTES_ORDER_PARENT: 'cf418c439be76d78a703a2e265166ceeb5fc4070'
+  REA_SAFE_FEATURE_BRANCH: experiment/notes-open-todos-first-20261021-r2
+  REA_NOTES_ORDER_MANIFEST_SHA256: 'ed97b17b0039ff290f6e7896b0f7b10c06670cccb22855905af6374459882a0b'
+  REA_SAFE_CAPTURE_SHA256: 'a408a86a63e629cee2a19f74370f0b2376e9487becd648cdd147d50b7a35823c'
+  REA_SAFE_COLLECTOR_SHA256: 'f993b74cd25c1bd83bfd8228122cceb7124b96bc97c63f3c300d1c7a745cd211'
+  REA_SAFE_BOOTSTRAP_SHA256: 'ce15ca43c94568d78dd9abeabd989340d270906aa397c8ce7f589e812fbd3716'
+  REA_SAFE_QUALIFIER_SHA256: '5f23517464997fd53f65ff05aaf911fcdd73f8698eecf06523f0738f951f52e9'
+  REA_SAFE_FILTER_SHA256: 'd7f743e94a137379c1873e9a4f76411ff1614b616b624e1cc85fb489c0f2b68f'
+  REA_SAFE_EVIDENCE_POLICY_SHA256: '544e64136c18465ec0fd0613c092ce6b76374f7986557fee82f702949c45ba7a'
+  REA_SAFE_VALIDATOR_SHA256: '95510a0ee9ee61595a3a3eaac256b7e6707930079f15c915d0629001b3322702'
+  REA_SAFE_CURRENT_FULL_RUNNER_SHA256: '16a2053cd240f3f1cfdfd80fc80fbea72747f689873612d445be70832c7e8bae'
+  REA_SAFE_PROGRESS_CONTRACT_SHA256: 'a955a5cb34841270efff44499e9b0ae12f3b7c545cfbd4690579e26bc03bb753'
+  REA_SAFE_PROGRESS_REPORTER_SHA256: '7e4ef2da03d1972c214edeca0f5b80181e51b5c8b3bb90dfa91c58c9382f01b7'
+  REA_SAFE_PROGRESS_CONTROLS_SHA256: 'b7f8a0070ba8e11375698416cae92d1f39d905745bdb4b472c28c284bc5928ac'
+  REA_SAFE_DIAGNOSTIC_EXPORTER_SHA256: 'c914a3fd04105d099d5800ea3dd6bad946e886b2df5f2d3fae5ecd654c86f407'
+  REA_SAFE_DIAGNOSTIC_CONTROLS_SHA256: '9068556a232c4b90387d12d78520148f08668dbde27eda1a4835779bacaa98f6'
+  REA_SAFE_DIAGNOSTIC_CONTAINMENT_SHA256: '094eef13ad898eb6a654e12fbf4640b2b880f67b61144ae86d5b5d988e05d5c3'
+  REA_SAFE_ARCHIVE_METADATA_SHA256: '08497a24dcbe852df21a9afef32d366469cbba2ba4e322e40cf4ebacdbed1df3'
 jobs:
   safe-evidence-controls:
     runs-on: windows-2022
@@ -48,9 +55,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r1' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r2' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
           $actualParent = & git --no-replace-objects rev-parse HEAD^
-          if ($LASTEXITCODE -ne 0 -or $actualParent -ne '27374c78642d0086d5640fe25a887f5d8202dccc') { throw 'SOURCE_PARENT_REFUSED' }
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cf418c439be76d78a703a2e265166ceeb5fc4070') { throw 'SOURCE_PARENT_REFUSED' }
           $pins = @(
             @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
             @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
@@ -60,7 +67,14 @@ jobs:
             @('products/rea-studio/scripts/prepare-safe-notes-order-evidence.mjs', $env:REA_SAFE_FILTER_SHA256),
             @('products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs', $env:REA_SAFE_VALIDATOR_SHA256),
             @('products/rea-studio/scripts/verify-cloud-current-installed.mjs', $env:REA_SAFE_CURRENT_FULL_RUNNER_SHA256),
-            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256)
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress-contract.mjs', $env:REA_SAFE_PROGRESS_CONTRACT_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress-reporter.mjs', $env:REA_SAFE_PROGRESS_REPORTER_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress.cloud-check.mjs', $env:REA_SAFE_PROGRESS_CONTROLS_SHA256),
+            @('products/rea-studio/scripts/export-safe-notes-full-progress.mjs', $env:REA_SAFE_DIAGNOSTIC_EXPORTER_SHA256),
+            @('products/rea-studio/scripts/notes-full-diagnostic-exporter.cloud-check.mjs', $env:REA_SAFE_DIAGNOSTIC_CONTROLS_SHA256),
+            @('products/rea-studio/scripts/notes-full-diagnostic-containment-child.mjs', $env:REA_SAFE_DIAGNOSTIC_CONTAINMENT_SHA256),
+            @('products/rea-studio/scripts/project-notes-archive-original-metadata.mjs', $env:REA_SAFE_ARCHIVE_METADATA_SHA256)
           )
           foreach ($pin in $pins) {
             if ($pin[1] -notmatch '^[0-9a-f]{64}$') { throw 'UNBOUND_ENTRYPOINT_PIN' }
@@ -73,6 +87,13 @@ jobs:
         run: |
           $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-filter-validation-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
           node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase filter-validation --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Exercise fourteen closed progress and exporter metadata controls
+        id: diagnostic_controls
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-diagnostic-validation-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase diagnostic-validation --evidence "$raw"
           exit $LASTEXITCODE
       - name: Finalize only the bounded synthetic control representation
         id: evidence
@@ -87,6 +108,16 @@ jobs:
         with:
           name: notes-order-safe-controls-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
+
+      - name: Preserve only the closed fourteen-control summary
+        if: always() && steps.diagnostic_controls.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: notes-order-diagnostic-controls-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.diagnostic_controls.outputs.artifact_path }}
           if-no-files-found: error
           retention-days: 3
           compression-level: 0
@@ -117,9 +148,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r1' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r2' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
           $actualParent = & git --no-replace-objects rev-parse HEAD^
-          if ($LASTEXITCODE -ne 0 -or $actualParent -ne '27374c78642d0086d5640fe25a887f5d8202dccc') { throw 'SOURCE_PARENT_REFUSED' }
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cf418c439be76d78a703a2e265166ceeb5fc4070') { throw 'SOURCE_PARENT_REFUSED' }
           $pins = @(
             @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
             @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
@@ -129,13 +160,42 @@ jobs:
             @('products/rea-studio/scripts/prepare-safe-notes-order-evidence.mjs', $env:REA_SAFE_FILTER_SHA256),
             @('products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs', $env:REA_SAFE_VALIDATOR_SHA256),
             @('products/rea-studio/scripts/verify-cloud-current-installed.mjs', $env:REA_SAFE_CURRENT_FULL_RUNNER_SHA256),
-            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256)
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress-contract.mjs', $env:REA_SAFE_PROGRESS_CONTRACT_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress-reporter.mjs', $env:REA_SAFE_PROGRESS_REPORTER_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress.cloud-check.mjs', $env:REA_SAFE_PROGRESS_CONTROLS_SHA256),
+            @('products/rea-studio/scripts/export-safe-notes-full-progress.mjs', $env:REA_SAFE_DIAGNOSTIC_EXPORTER_SHA256),
+            @('products/rea-studio/scripts/notes-full-diagnostic-exporter.cloud-check.mjs', $env:REA_SAFE_DIAGNOSTIC_CONTROLS_SHA256),
+            @('products/rea-studio/scripts/notes-full-diagnostic-containment-child.mjs', $env:REA_SAFE_DIAGNOSTIC_CONTAINMENT_SHA256),
+            @('products/rea-studio/scripts/project-notes-archive-original-metadata.mjs', $env:REA_SAFE_ARCHIVE_METADATA_SHA256)
           )
           foreach ($pin in $pins) {
             if ($pin[1] -notmatch '^[0-9a-f]{64}$') { throw 'UNBOUND_ENTRYPOINT_PIN' }
             $item = Get-Item -LiteralPath $pin[0] -Force
             if ($item.PSIsContainer -or ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -or (Get-FileHash -LiteralPath $pin[0] -Algorithm SHA256).Hash.ToLowerInvariant() -ne $pin[1]) { throw 'SOURCE_ENTRYPOINT_PIN_REFUSED' }
           }
+      - name: Verify diagnostic channel containment on the actual full job
+        id: diagnostic_containment
+        shell: pwsh
+        run: |
+          $private = Join-Path $env:RUNNER_TEMP ('rea-notes-order-diagnostics-containment-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase diagnostics-containment --evidence "$private"
+          exit $LASTEXITCODE
+      - name: Require the owned diagnostic containment receipt
+        shell: pwsh
+        env:
+          CONTAINMENT_PASSED: ${{ steps.diagnostic_containment.outputs.containment_passed }}
+        run: |
+          if ($env:CONTAINMENT_PASSED -ne 'true') { throw 'DIAGNOSTIC_CONTAINMENT_NOT_QUALIFIED' }
+      - name: Preserve only the closed containment summary
+        if: always() && steps.diagnostic_containment.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: notes-order-full-containment-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.diagnostic_containment.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
       - name: Capture current admitted source before prerequisites
         id: source_before
         shell: pwsh
@@ -182,12 +242,30 @@ jobs:
           $env:REA_SAFE_EVIDENCE = Join-Path $env:RUNNER_TEMP ('rea-safe-notes-order-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
           node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase filter --evidence "$raw"
           exit $LASTEXITCODE
+      - name: Preserve safe failure diagnostics when the complete filter refuses
+        id: diagnostic_evidence
+        if: always() && steps.product.outcome != 'skipped' && steps.source_before.outcome == 'success' && steps.evidence.outcome != 'success'
+        shell: pwsh
+        run: |
+          $raw = Join-Path $env:RUNNER_TEMP ('rea-notes-order-full-' + $env:GITHUB_RUN_ID + '-' + $env:GITHUB_RUN_ATTEMPT)
+          node products/rea-studio/scripts/capture-notes-order-cloud-console.mjs --phase diagnostics --evidence "$raw"
+          exit $LASTEXITCODE
+      - name: Upload only the independent closed failure diagnostic
+        if: always() && steps.diagnostic_evidence.outputs.artifact_path != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: notes-order-full-diagnostic-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.diagnostic_evidence.outputs.artifact_path }}
+          if-no-files-found: error
+          retention-days: 3
+          compression-level: 0
       - name: Preserve the bounded public evidence representation
         if: always() && steps.evidence.outputs.artifact_path != ''
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: notes-order-full-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.evidence.outputs.artifact_path }}
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 3
           compression-level: 0
@@ -218,9 +296,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r1' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r2' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
           $actualParent = & git --no-replace-objects rev-parse HEAD^
-          if ($LASTEXITCODE -ne 0 -or $actualParent -ne '27374c78642d0086d5640fe25a887f5d8202dccc') { throw 'SOURCE_PARENT_REFUSED' }
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cf418c439be76d78a703a2e265166ceeb5fc4070') { throw 'SOURCE_PARENT_REFUSED' }
           $pins = @(
             @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
             @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
@@ -230,7 +308,14 @@ jobs:
             @('products/rea-studio/scripts/prepare-safe-notes-order-evidence.mjs', $env:REA_SAFE_FILTER_SHA256),
             @('products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs', $env:REA_SAFE_VALIDATOR_SHA256),
             @('products/rea-studio/scripts/verify-cloud-current-installed.mjs', $env:REA_SAFE_CURRENT_FULL_RUNNER_SHA256),
-            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256)
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress-contract.mjs', $env:REA_SAFE_PROGRESS_CONTRACT_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress-reporter.mjs', $env:REA_SAFE_PROGRESS_REPORTER_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress.cloud-check.mjs', $env:REA_SAFE_PROGRESS_CONTROLS_SHA256),
+            @('products/rea-studio/scripts/export-safe-notes-full-progress.mjs', $env:REA_SAFE_DIAGNOSTIC_EXPORTER_SHA256),
+            @('products/rea-studio/scripts/notes-full-diagnostic-exporter.cloud-check.mjs', $env:REA_SAFE_DIAGNOSTIC_CONTROLS_SHA256),
+            @('products/rea-studio/scripts/notes-full-diagnostic-containment-child.mjs', $env:REA_SAFE_DIAGNOSTIC_CONTAINMENT_SHA256),
+            @('products/rea-studio/scripts/project-notes-archive-original-metadata.mjs', $env:REA_SAFE_ARCHIVE_METADATA_SHA256)
           )
           foreach ($pin in $pins) {
             if ($pin[1] -notmatch '^[0-9a-f]{64}$') { throw 'UNBOUND_ENTRYPOINT_PIN' }
@@ -289,6 +374,7 @@ jobs:
         with:
           name: notes-order-finite-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.evidence.outputs.artifact_path }}
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 3
           compression-level: 0
@@ -319,9 +405,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r1' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r2' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
           $actualParent = & git --no-replace-objects rev-parse HEAD^
-          if ($LASTEXITCODE -ne 0 -or $actualParent -ne '27374c78642d0086d5640fe25a887f5d8202dccc') { throw 'SOURCE_PARENT_REFUSED' }
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cf418c439be76d78a703a2e265166ceeb5fc4070') { throw 'SOURCE_PARENT_REFUSED' }
           $pins = @(
             @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
             @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
@@ -331,7 +417,14 @@ jobs:
             @('products/rea-studio/scripts/prepare-safe-notes-order-evidence.mjs', $env:REA_SAFE_FILTER_SHA256),
             @('products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs', $env:REA_SAFE_VALIDATOR_SHA256),
             @('products/rea-studio/scripts/verify-cloud-current-installed.mjs', $env:REA_SAFE_CURRENT_FULL_RUNNER_SHA256),
-            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256)
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress-contract.mjs', $env:REA_SAFE_PROGRESS_CONTRACT_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress-reporter.mjs', $env:REA_SAFE_PROGRESS_REPORTER_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress.cloud-check.mjs', $env:REA_SAFE_PROGRESS_CONTROLS_SHA256),
+            @('products/rea-studio/scripts/export-safe-notes-full-progress.mjs', $env:REA_SAFE_DIAGNOSTIC_EXPORTER_SHA256),
+            @('products/rea-studio/scripts/notes-full-diagnostic-exporter.cloud-check.mjs', $env:REA_SAFE_DIAGNOSTIC_CONTROLS_SHA256),
+            @('products/rea-studio/scripts/notes-full-diagnostic-containment-child.mjs', $env:REA_SAFE_DIAGNOSTIC_CONTAINMENT_SHA256),
+            @('products/rea-studio/scripts/project-notes-archive-original-metadata.mjs', $env:REA_SAFE_ARCHIVE_METADATA_SHA256)
           )
           foreach ($pin in $pins) {
             if ($pin[1] -notmatch '^[0-9a-f]{64}$') { throw 'UNBOUND_ENTRYPOINT_PIN' }
@@ -390,6 +483,7 @@ jobs:
         with:
           name: notes-order-values-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.evidence.outputs.artifact_path }}
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 3
           compression-level: 0
@@ -420,9 +514,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r1' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r2' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
           $actualParent = & git --no-replace-objects rev-parse HEAD^
-          if ($LASTEXITCODE -ne 0 -or $actualParent -ne '27374c78642d0086d5640fe25a887f5d8202dccc') { throw 'SOURCE_PARENT_REFUSED' }
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cf418c439be76d78a703a2e265166ceeb5fc4070') { throw 'SOURCE_PARENT_REFUSED' }
           $pins = @(
             @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
             @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
@@ -432,7 +526,14 @@ jobs:
             @('products/rea-studio/scripts/prepare-safe-notes-order-evidence.mjs', $env:REA_SAFE_FILTER_SHA256),
             @('products/rea-studio/scripts/validate-safe-notes-order-evidence.mjs', $env:REA_SAFE_VALIDATOR_SHA256),
             @('products/rea-studio/scripts/verify-cloud-current-installed.mjs', $env:REA_SAFE_CURRENT_FULL_RUNNER_SHA256),
-            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256)
+            @('products/rea-studio/experiments/notes-open-todos-first-20261021/safe-evidence-policy.json', $env:REA_SAFE_EVIDENCE_POLICY_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress-contract.mjs', $env:REA_SAFE_PROGRESS_CONTRACT_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress-reporter.mjs', $env:REA_SAFE_PROGRESS_REPORTER_SHA256),
+            @('products/rea-studio/scripts/notes-full-progress.cloud-check.mjs', $env:REA_SAFE_PROGRESS_CONTROLS_SHA256),
+            @('products/rea-studio/scripts/export-safe-notes-full-progress.mjs', $env:REA_SAFE_DIAGNOSTIC_EXPORTER_SHA256),
+            @('products/rea-studio/scripts/notes-full-diagnostic-exporter.cloud-check.mjs', $env:REA_SAFE_DIAGNOSTIC_CONTROLS_SHA256),
+            @('products/rea-studio/scripts/notes-full-diagnostic-containment-child.mjs', $env:REA_SAFE_DIAGNOSTIC_CONTAINMENT_SHA256),
+            @('products/rea-studio/scripts/project-notes-archive-original-metadata.mjs', $env:REA_SAFE_ARCHIVE_METADATA_SHA256)
           )
           foreach ($pin in $pins) {
             if ($pin[1] -notmatch '^[0-9a-f]{64}$') { throw 'UNBOUND_ENTRYPOINT_PIN' }
@@ -491,6 +592,7 @@ jobs:
         with:
           name: notes-order-browser-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.evidence.outputs.artifact_path }}
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 3
           compression-level: 0

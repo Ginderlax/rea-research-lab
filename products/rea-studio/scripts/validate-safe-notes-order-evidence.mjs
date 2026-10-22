@@ -17,8 +17,8 @@ const evidence=path.join(temporary,'rea-notes-order-filter-validation-'+runID+'-
 function boundary(){
   assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');assert.equal(process.version,'v24.16.0');
   for(const[name,value]of Object.entries({CI:'true',GITHUB_ACTIONS:'true',RUNNER_ENVIRONMENT:'github-hosted',RUNNER_OS:'Windows',RUNNER_ARCH:'X64',GITHUB_REPOSITORY:'Ginderlax/rea-research-lab',GITHUB_JOB:'safe-evidence-controls'}))assert.equal(process.env[name],value);
-  assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));assert.equal(process.env.GITHUB_WORKFLOW_SHA,process.env.GITHUB_SHA);assert.equal(process.env.REA_NOTES_ORDER_PARENT,'27374c78642d0086d5640fe25a887f5d8202dccc');
-  assert.equal(process.env.GITHUB_REF,'refs/heads/experiment/notes-open-todos-first-20261021-r1');
+  assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));assert.equal(process.env.GITHUB_WORKFLOW_SHA,process.env.GITHUB_SHA);assert.equal(process.env.REA_NOTES_ORDER_PARENT,'cf418c439be76d78a703a2e265166ceeb5fc4070');
+  assert.equal(process.env.GITHUB_REF,'refs/heads/experiment/notes-open-todos-first-20261021-r2');
   assert(/^[1-9][0-9]*$/.test(runID));assert(/^[1-9][0-9]*$/.test(attempt));
   assert.equal(fs.realpathSync(evidence),evidence);assert(fs.lstatSync(evidence).isDirectory());assert(!fs.lstatSync(evidence).isSymbolicLink());
 }
@@ -64,7 +64,7 @@ function fixture({profileBody=Buffer.from('const value="C:/Users/Synthetic Owner
 }
 function addPrivateHandoff(f){
   const execution=f.execution,repository=path.resolve(fileURLToPath(new URL('../../../',import.meta.url)));
-  const values=role==='full'?{FLOW_ORIGINAL_CACHE:path.join(repository,'.local/flow-original'),REA_KEEPASS_EXE:path.join(repository,'.local/keepass-original/portable/KeePass.exe'),REA_ARCHIVE_ZIP_AES_ORIGINAL_EVIDENCE:raw,REA_ARCHIVE_ZIP_ROLE:'zip-original',REA_SYNC_DOWNLOAD_ORIGINAL_EVIDENCE:path.join(temporary,'rea-notes-order-sync-original-'+runID+'-'+attempt)}:role==='browser'?{PLAYWRIGHT_BROWSERS_PATH:path.join(temporary,'rea-notes-order-chromium-'+runID+'-'+attempt)}:{};
+  const values=role==='full'?{FLOW_ORIGINAL_CACHE:path.join(repository,'.local/flow-original'),REA_KEEPASS_EXE:path.join(repository,'.local/keepass-original/portable/KeePass.exe'),REA_ARCHIVE_ZIP_AES_ORIGINAL_EVIDENCE:path.join(temporary,'rea-notes-order-archive-original-'+runID+'-'+attempt),REA_ARCHIVE_ZIP_ROLE:'zip-original',REA_SYNC_DOWNLOAD_ORIGINAL_EVIDENCE:path.join(temporary,'rea-notes-order-sync-original-'+runID+'-'+attempt)}:role==='browser'?{PLAYWRIGHT_BROWSERS_PATH:path.join(temporary,'rea-notes-order-chromium-'+runID+'-'+attempt)}:{};
   const before=JSON.parse(fs.readFileSync(path.join(raw,'source-before.json'),'utf8'));
   const handoff={schema:'rea-notes-order-bootstrap-environment/v1',status:'acquired',execution:{GITHUB_SHA:execution.source,GITHUB_RUN_ID:runID,GITHUB_RUN_ATTEMPT:attempt,GITHUB_JOB:execution.job,GITHUB_REPOSITORY:execution.repository},role,values,manifest:before.manifest,failure:null};
   const b=encoded(handoff);write('bootstrap-environment.json',b);

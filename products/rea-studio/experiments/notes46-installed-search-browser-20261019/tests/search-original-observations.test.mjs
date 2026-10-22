@@ -14,7 +14,7 @@ const originalRoot = new URL('../../notes-search-grammar/original/', import.meta
 // This NEW diagnostic derivative preserves the released functions and all80
 // fixtures. It records actual results before the same strict assertions.
 assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
-for (const [key, value] of Object.entries({ CI:'true', GITHUB_ACTIONS:'true', RUNNER_ENVIRONMENT:'github-hosted', RUNNER_OS:'Windows', RUNNER_ARCH:'X64', GITHUB_REPOSITORY:'Ginderlax/rea-research-lab', GITHUB_REF:'refs/heads/experiment/notes-open-todos-first-20261021-r1', GITHUB_EVENT_NAME:'push', GITHUB_JOB:'notes46-observed-values' })) assert.equal(process.env[key], value, key);
+for (const [key, value] of Object.entries({ CI:'true', GITHUB_ACTIONS:'true', RUNNER_ENVIRONMENT:'github-hosted', RUNNER_OS:'Windows', RUNNER_ARCH:'X64', GITHUB_REPOSITORY:'Ginderlax/rea-research-lab', GITHUB_REF:'refs/heads/experiment/notes-open-todos-first-20261021-r2', GITHUB_EVENT_NAME:'push', GITHUB_JOB:'notes46-observed-values' })) assert.equal(process.env[key], value, key);
 assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));
 for (const key of ['GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT']) assert(/^[1-9][0-9]*$/.test(process.env[key]));
 const outputRoot = path.resolve(process.env.REA_SEARCH_VALUE_EVIDENCE ?? '');

@@ -13,7 +13,7 @@ const sourceEpoch='notes-open-todos-first-v1', studioRoot=path.resolve(import.me
 const identity=bytes=>({bytes:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex')});
 const bindings=JSON.parse(await fs.readFile(new URL('./notes-open-todos-first.source-bindings.json',import.meta.url),'utf8'));
 assert.equal(bindings.schema,'rea-notes-open-todos-first-browser-source-bindings/v1'); assert.equal(bindings.sourceEpoch,sourceEpoch);
-assert.equal(bindings.executionAuthorized,true); assert.equal(bindings.parent,'27374c78642d0086d5640fe25a887f5d8202dccc');
+assert.equal(bindings.executionAuthorized,true); assert.equal(bindings.parent,'cf418c439be76d78a703a2e265166ceeb5fc4070');
 assert.equal(typeof bindings.branch,'string'); assert(/^[A-Za-z0-9/_-]+$/.test(bindings.branch)); assert.equal(process.env.GITHUB_REF,'refs/heads/'+bindings.branch);
 assert.equal(bindings.runtimeSources.length,3); assert.equal(bindings.sharedRuntimeStaticSources.length,7);
 assert.equal(bindings.fullClosureAdmitted,true); assert.equal(bindings.productAcceptancePreclaimed,false);

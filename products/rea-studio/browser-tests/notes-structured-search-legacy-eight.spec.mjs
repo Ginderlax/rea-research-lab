@@ -12,7 +12,7 @@ assert.equal(process.env.CI, 'true'); assert.equal(process.env.GITHUB_ACTIONS, '
 assert.equal(process.env.RUNNER_ENVIRONMENT, 'github-hosted');
 assert.equal(process.env.GITHUB_REPOSITORY, 'Ginderlax/rea-research-lab');
 assert.equal(process.env.GITHUB_JOB, 'draft-recovery-real-chromium');
-assert.equal(process.env.GITHUB_REF, 'refs/heads/experiment/notes-open-todos-first-20261021-r1');
+assert.equal(process.env.GITHUB_REF, 'refs/heads/experiment/notes-open-todos-first-20261021-r2');
 assert.equal(process.env.GITHUB_EVENT_NAME, 'push');
 for (const name of ['GITHUB_SHA', 'GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT']) assert(process.env[name]);
 const studioRoot = path.resolve(import.meta.dirname, '..');

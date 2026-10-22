@@ -5,7 +5,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {spawn,spawnSync} from 'node:child_process';
-const parent='27374c78642d0086d5640fe25a887f5d8202dccc',branch='refs/heads/experiment/notes-open-todos-first-20261021-r1';
+const parent='cf418c439be76d78a703a2e265166ceeb5fc4070',branch='refs/heads/experiment/notes-open-todos-first-20261021-r2';
 assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');assert.equal(process.version,'v24.16.0');
 for(const [name,value] of Object.entries({CI:'true',GITHUB_ACTIONS:'true',RUNNER_ENVIRONMENT:'github-hosted',RUNNER_OS:'Windows',RUNNER_ARCH:'X64',GITHUB_REPOSITORY:'Ginderlax/rea-research-lab',GITHUB_REF:branch,REA_NOTES_ORDER_PARENT:parent}))assert.equal(process.env[name],value);
 const args=process.argv.slice(2);assert.equal(args.length,4);assert.equal(args[0],'--role');assert(['full','finite','values','browser'].includes(args[1]));assert.equal(args[2],'--evidence');assert(path.isAbsolute(args[3]));
@@ -27,18 +27,22 @@ async function child(name,relative,argv,extra={}) {
   const result=await new Promise(resolve=>{let done=false,stopping=false;const finish=(exitCode,signal,closeObserved)=>{if(done)return;done=true;clearTimeout(timer);clearTimeout(forced);resolve({exitCode,signal,closeObserved,failure});};const running=spawn(process.execPath,[relative,...argv],{cwd:repository,env:{...childEnvironment,...extra},shell:false,windowsHide:true,stdio:['ignore','pipe','pipe']});
     const stop=why=>{failure??=why;if(stopping||done)return;stopping=true;if(running.pid){const kill=spawnSync('taskkill.exe',['/PID',String(running.pid),'/T','/F'],{windowsHide:true,shell:false,timeout:10000,stdio:'ignore'});if(kill.status!==0)running.kill('SIGKILL');}forced??=setTimeout(()=>{running.stdout.destroy();running.stderr.destroy();finish(null,null,false);},5000);};
     const timer=setTimeout(()=>stop('prerequisite deadline exceeded'),timeoutMs);for(const kind of ['stdout','stderr']){running[kind].on('data',bytes=>{counts[kind]+=bytes.length;if(counts[kind]<=caps[kind])streams[kind].push(bytes);else stop(kind+' byte cap exceeded');});running[kind].on('error',error=>stop(kind+' stream '+error.code));}running.on('error',error=>{failure=error.code??error.message;});running.on('close',(code,signal)=>finish(code,signal,true));});
-  const receipt={schema:'rea-notes-order-bootstrap-child/v1',...execution,role,name,script:relative,argvProjection:argv.map(value=>value===evidence?'[OWNED_ROLE_EVIDENCE]':value),ownedEvidenceArgumentProjected:true,timeoutMs,...result,stdout:null,stderr:null};for(const kind of ['stdout','stderr']){const bytes=Buffer.concat(streams[kind]),file=`bootstrap-${name}.${kind}.txt`;fs.writeFileSync(path.join(evidence,file),bytes,{flag:'wx'});receipt[kind]={path:file,...identity(bytes),observedBytes:counts[kind],truncated:bytes.length!==counts[kind]};}save(`bootstrap-${name}.process.json`,receipt);processes.push(receipt);
+  const receipt={schema:'rea-notes-order-bootstrap-child/v1',...execution,role,name,script:relative,argvProjection:argv.map(value=>value===evidence?'[OWNED_ROLE_EVIDENCE]':value===archiveOriginalEvidence?'[OWNED_ARCHIVE_ORIGINAL_EVIDENCE]':value),ownedEvidenceArgumentProjected:true,timeoutMs,...result,stdout:null,stderr:null};for(const kind of ['stdout','stderr']){const bytes=Buffer.concat(streams[kind]),file=`bootstrap-${name}.${kind}.txt`;fs.writeFileSync(path.join(evidence,file),bytes,{flag:'wx'});receipt[kind]={path:file,...identity(bytes),observedBytes:counts[kind],truncated:bytes.length!==counts[kind]};}save(`bootstrap-${name}.process.json`,receipt);processes.push(receipt);
   assert.equal(result.failure,null);assert.equal(result.closeObserved,true);assert.equal(result.exitCode,0);assert.equal(result.signal,null);for(const kind of ['stdout','stderr'])assert.equal(receipt[kind].truncated,false);return receipt;
 }
-const values={};let status='failed',failure=null;
+const values={};let status='failed',failure=null,archiveOriginalEvidence=null,archiveAcquisitionCopy=null;
 try {
   if(role==='full') {
     const fakeEnv=path.join(temporary,`rea-notes-order-bootstrap-private-full-${process.env.GITHUB_RUN_ID}-${process.env.GITHUB_RUN_ATTEMPT}.txt`);assert.equal(path.dirname(fakeEnv),temporary);fs.writeFileSync(fakeEnv,'',{flag:'wx'});assert(noLinks(fakeEnv).isFile());
     await child('flow-vault','products/rea-studio/scripts/bootstrap-cloud-flow-vault.mjs',['--evidence',evidence],{GITHUB_ENV:fakeEnv});
     const lines=ordinary(fakeEnv,4096).toString('utf8').trimEnd().split(/\r?\n/);assert.equal(lines.length,2);for(const [index,key] of ['FLOW_ORIGINAL_CACHE','REA_KEEPASS_EXE'].entries()){assert(lines[index].startsWith(key+'='));values[key]=lines[index].slice(key.length+1);assert(!/[\r\n]/.test(values[key]));}
     assert.equal(values.FLOW_ORIGINAL_CACHE,path.join(repository,'.local/flow-original'));assert.equal(values.REA_KEEPASS_EXE,path.join(repository,'.local/keepass-original/portable/KeePass.exe'));assert(noLinks(values.FLOW_ORIGINAL_CACHE).isDirectory());assert(noLinks(values.REA_KEEPASS_EXE).isFile());
-    values.REA_ARCHIVE_ZIP_AES_ORIGINAL_EVIDENCE=evidence;values.REA_ARCHIVE_ZIP_ROLE='zip-original';
-    await child('archive-joint','products/rea-studio/scripts/acquire-archive-zip-aes-original.mjs',['--evidence',evidence],{REA_ARCHIVE_ZIP_ROLE:'zip-original'});
+    source('products/rea-studio/scripts/project-notes-archive-original-metadata.mjs');
+    const archiveBoundary=await import('./project-notes-archive-original-metadata.mjs');
+    archiveOriginalEvidence=archiveBoundary.createArchiveOriginalEvidence({temporary});
+    values.REA_ARCHIVE_ZIP_AES_ORIGINAL_EVIDENCE=archiveOriginalEvidence;values.REA_ARCHIVE_ZIP_ROLE='zip-original';
+    await child('archive-joint','products/rea-studio/scripts/acquire-archive-zip-aes-original.mjs',['--evidence',archiveOriginalEvidence],{REA_ARCHIVE_ZIP_ROLE:'zip-original'});
+    archiveAcquisitionCopy=archiveBoundary.copyArchiveAcquisitionMetadata({temporary,evidence});
     await child('bsdtar','products/rea-studio/scripts/bootstrap-cloud-bsdtar.mjs',['--evidence',evidence]);
     await child('bsdtar-smoke','products/rea-studio/scripts/verify-cloud-bsdtar.mjs',['--evidence',evidence]);
     await child('additional','products/rea-studio/scripts/bootstrap-cloud-development.mjs',['--evidence',evidence]);
@@ -61,6 +65,6 @@ try {
 } catch(error){failure={name:error.name,message:error.message};throw error;}
 finally {
   save('bootstrap-environment.json',{schema:'rea-notes-order-bootstrap-environment/v1',status,execution,role,values:status==='acquired'?values:{},manifest:identity(manifestBytes),failure});
-  save('bootstrap-summary.json',{schema:'rea-notes-order-bootstrap/v1',status,execution,role,manifest:identity(manifestBytes),processes,productTests:0,originalComparisonProcesses:0,historicalReceiptsRebound:false,failure});
+  save('bootstrap-summary.json',{schema:'rea-notes-order-bootstrap/v1',status,execution,role,manifest:identity(manifestBytes),processes,privateArchiveAcquisition:archiveAcquisitionCopy,productTests:0,originalComparisonProcesses:0,historicalReceiptsRebound:false,failure});
 }
 console.log(JSON.stringify({schema:'rea-notes-order-bootstrap-console/v1',status,role,processes:processes.length,productTests:0}));

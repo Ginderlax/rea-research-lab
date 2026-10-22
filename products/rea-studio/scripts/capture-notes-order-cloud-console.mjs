@@ -37,12 +37,12 @@ async function main(){
   for(const[name,value]of Object.entries({CI:'true',GITHUB_ACTIONS:'true',RUNNER_ENVIRONMENT:'github-hosted',RUNNER_OS:'Windows',RUNNER_ARCH:'X64',GITHUB_REPOSITORY:'Ginderlax/rea-research-lab'}))need(process.env[name]===value,'HOSTED_ENVIRONMENT');
   need(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA)&&process.env.GITHUB_WORKFLOW_SHA===process.env.GITHUB_SHA,'ACTUAL_SOURCE');
   need(typeof process.env.REA_SAFE_FEATURE_BRANCH==='string'&&!process.env.REA_SAFE_FEATURE_BRANCH.startsWith('__')&&process.env.GITHUB_REF==='refs/heads/'+process.env.REA_SAFE_FEATURE_BRANCH,'REVIEWED_FEATURE_REF');
-  need(process.env.REA_NOTES_ORDER_PARENT==='cf418c439be76d78a703a2e265166ceeb5fc4070','PARENT_IDENTITY');need(/^[1-9][0-9]*$/.test(process.env.GITHUB_RUN_ID)&&/^[1-9][0-9]*$/.test(process.env.GITHUB_RUN_ATTEMPT),'ACTUAL_ATTEMPT');
+  need(process.env.REA_NOTES_ORDER_PARENT==='cd4fbe97765a156b2dd591193ea3196b4d63b6b2','PARENT_IDENTITY');need(/^[1-9][0-9]*$/.test(process.env.GITHUB_RUN_ID)&&/^[1-9][0-9]*$/.test(process.env.GITHUB_RUN_ATTEMPT),'ACTUAL_ATTEMPT');
   const args=process.argv.slice(2);need(args.length===4&&args[0]==='--phase'&&['before','bootstrap','run','after','qualify','filter-validation','filter','diagnostics','diagnostics-containment','diagnostic-validation'].includes(args[1])&&args[2]==='--evidence','CAPTURE_ARGUMENTS');
   const phase=args[1],role=process.env.REA_NOTES_ORDER_ROLE;need(['full','finite','values','browser'].includes(role),'ROLE');if(phase==='diagnostics'||phase==='diagnostics-containment')need(role==='full','DIAGNOSTIC_FULL_ROLE_ONLY');
   const jobs={full:'full-current-installed',finite:'notes46-installed-finite',values:'notes46-observed-values',browser:'draft-recovery-real-chromium'};
   need(process.env.GITHUB_JOB===((phase==='filter-validation'||phase==='diagnostic-validation')?'safe-evidence-controls':jobs[role]),'ROLE_JOB');
-  need(process.env.REA_SAFE_FEATURE_BRANCH==='experiment/notes-open-todos-first-20261021-r2','FIXED_FEATURE_BRANCH');
+  need(process.env.REA_SAFE_FEATURE_BRANCH==='experiment/notes-open-todos-first-20261022-r3','FIXED_FEATURE_BRANCH');
   const temporary=fs.realpathSync(process.env.RUNNER_TEMP);ordinary(temporary);const evidence=path.resolve(args[3]);
   const expectedName=phase==='diagnostic-validation'?'rea-notes-order-diagnostic-validation-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT:phase==='diagnostics-containment'?'rea-notes-order-diagnostics-containment-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT:phase==='filter-validation'?'rea-notes-order-filter-validation-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT:'rea-notes-order-'+role+'-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT;
   need(path.dirname(evidence)===temporary&&path.basename(evidence)===expectedName,'OWNED_CAPTURE_ROOT');

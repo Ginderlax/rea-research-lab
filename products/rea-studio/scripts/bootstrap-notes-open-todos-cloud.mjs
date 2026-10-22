@@ -5,7 +5,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createHash} from 'node:crypto';
 import {spawn,spawnSync} from 'node:child_process';
-const parent='cf418c439be76d78a703a2e265166ceeb5fc4070',branch='refs/heads/experiment/notes-open-todos-first-20261021-r2';
+const parent='cd4fbe97765a156b2dd591193ea3196b4d63b6b2',branch='refs/heads/experiment/notes-open-todos-first-20261022-r3';
 assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');assert.equal(process.version,'v24.16.0');
 for(const [name,value] of Object.entries({CI:'true',GITHUB_ACTIONS:'true',RUNNER_ENVIRONMENT:'github-hosted',RUNNER_OS:'Windows',RUNNER_ARCH:'X64',GITHUB_REPOSITORY:'Ginderlax/rea-research-lab',GITHUB_REF:branch,REA_NOTES_ORDER_PARENT:parent}))assert.equal(process.env[name],value);
 const args=process.argv.slice(2);assert.equal(args.length,4);assert.equal(args[0],'--role');assert(['full','finite','values','browser'].includes(args[1]));assert.equal(args[2],'--evidence');assert(path.isAbsolute(args[3]));

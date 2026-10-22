@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 assert.equal(process.platform,'win32');assert.equal(process.env.GITHUB_ACTIONS,'true');assert.equal(process.env.RUNNER_ENVIRONMENT,'github-hosted');
-assert.equal(process.env.GITHUB_REF,'refs/heads/experiment/notes-open-todos-first-20261021-r2');
+assert.equal(process.env.GITHUB_REF,'refs/heads/experiment/notes-open-todos-first-20261022-r3');
 const same=(a,b)=>a.toLowerCase()===b.toLowerCase();
 assert.equal(process.env.GITHUB_JOB,'draft-recovery-real-chromium');
 for(const key of ['GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT'])assert(/^[1-9][0-9]*$/.test(process.env[key]));

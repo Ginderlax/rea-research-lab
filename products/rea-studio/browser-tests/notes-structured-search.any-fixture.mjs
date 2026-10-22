@@ -9,7 +9,7 @@ import { test as base, expect } from '@playwright/test';
 assert.equal(process.platform, 'win32'); assert.equal(process.version, 'v24.16.0');
 for (const [key, value] of Object.entries({ CI: 'true', GITHUB_ACTIONS: 'true', RUNNER_ENVIRONMENT: 'github-hosted',
   RUNNER_OS: 'Windows', RUNNER_ARCH: 'X64', GITHUB_REPOSITORY: 'Ginderlax/rea-research-lab',
-  GITHUB_JOB: 'draft-recovery-real-chromium', GITHUB_REF: 'refs/heads/experiment/notes-open-todos-first-20261021-r2', GITHUB_EVENT_NAME: 'push' })) assert.equal(process.env[key], value, key);
+  GITHUB_JOB: 'draft-recovery-real-chromium', GITHUB_REF: 'refs/heads/experiment/notes-open-todos-first-20261022-r3', GITHUB_EVENT_NAME: 'push' })) assert.equal(process.env[key], value, key);
 for (const key of ['GITHUB_RUN_ID', 'GITHUB_RUN_ATTEMPT']) assert(/^[1-9][0-9]*$/.test(process.env[key]));
 assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));
 const sourceEpoch = 'notes46-installed-any-wire-v1';

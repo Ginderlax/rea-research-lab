@@ -2,7 +2,7 @@
 name: Notes open to-dos first current-source study
 on:
   push:
-    branches: [experiment/notes-open-todos-first-20261021-r2]
+    branches: [experiment/notes-open-todos-first-20261022-r3]
 permissions:
   contents: read
 concurrency:
@@ -11,22 +11,22 @@ concurrency:
 env:
   CI: 'true'
   TZ: UTC
-  REA_NOTES_ORDER_PARENT: 'cf418c439be76d78a703a2e265166ceeb5fc4070'
-  REA_SAFE_FEATURE_BRANCH: experiment/notes-open-todos-first-20261021-r2
-  REA_NOTES_ORDER_MANIFEST_SHA256: 'ed97b17b0039ff290f6e7896b0f7b10c06670cccb22855905af6374459882a0b'
-  REA_SAFE_CAPTURE_SHA256: 'a408a86a63e629cee2a19f74370f0b2376e9487becd648cdd147d50b7a35823c'
-  REA_SAFE_COLLECTOR_SHA256: 'f993b74cd25c1bd83bfd8228122cceb7124b96bc97c63f3c300d1c7a745cd211'
-  REA_SAFE_BOOTSTRAP_SHA256: 'ce15ca43c94568d78dd9abeabd989340d270906aa397c8ce7f589e812fbd3716'
-  REA_SAFE_QUALIFIER_SHA256: '5f23517464997fd53f65ff05aaf911fcdd73f8698eecf06523f0738f951f52e9'
+  REA_NOTES_ORDER_PARENT: 'cd4fbe97765a156b2dd591193ea3196b4d63b6b2'
+  REA_SAFE_FEATURE_BRANCH: experiment/notes-open-todos-first-20261022-r3
+  REA_NOTES_ORDER_MANIFEST_SHA256: '1a54e3914eb662f7aebf2270e3eccb61878c221292dabdcc555acff93dd872ff'
+  REA_SAFE_CAPTURE_SHA256: '7455c38767075b332ec535b4c191324013fb66db2c53e4ce3cab2aa6e26370fe'
+  REA_SAFE_COLLECTOR_SHA256: 'fd621891e3574d509dd6b207f0b51fa45c5fa0c22957b3b725d203c8d85a0394'
+  REA_SAFE_BOOTSTRAP_SHA256: 'a1e02da6518a0f37d46165f417f8a98e012cef2e95799fa6b29d77b99cb43934'
+  REA_SAFE_QUALIFIER_SHA256: 'ffc53495a3983662061c08d90dc25b3259510dbde07011b2163c2e4397ffb9df'
   REA_SAFE_FILTER_SHA256: 'd7f743e94a137379c1873e9a4f76411ff1614b616b624e1cc85fb489c0f2b68f'
-  REA_SAFE_EVIDENCE_POLICY_SHA256: '544e64136c18465ec0fd0613c092ce6b76374f7986557fee82f702949c45ba7a'
-  REA_SAFE_VALIDATOR_SHA256: '95510a0ee9ee61595a3a3eaac256b7e6707930079f15c915d0629001b3322702'
-  REA_SAFE_CURRENT_FULL_RUNNER_SHA256: '16a2053cd240f3f1cfdfd80fc80fbea72747f689873612d445be70832c7e8bae'
-  REA_SAFE_PROGRESS_CONTRACT_SHA256: 'a955a5cb34841270efff44499e9b0ae12f3b7c545cfbd4690579e26bc03bb753'
+  REA_SAFE_EVIDENCE_POLICY_SHA256: 'cd37248158a1ab50cc7f075e77bebc8d0b8482a10c44e7618e0edab70ebede1c'
+  REA_SAFE_VALIDATOR_SHA256: '72ccee9a595d1a844be95b51a82436704a6cb41f4a1b79b553dd447a5125b300'
+  REA_SAFE_CURRENT_FULL_RUNNER_SHA256: '498fd695bd7f2e923f2076bb950122259207bee68ec1a61341bfad35395653e1'
+  REA_SAFE_PROGRESS_CONTRACT_SHA256: '45ee5d1f333ff1e99b3718cc4e89660c7166ccd05c0fab37758353822c728662'
   REA_SAFE_PROGRESS_REPORTER_SHA256: '7e4ef2da03d1972c214edeca0f5b80181e51b5c8b3bb90dfa91c58c9382f01b7'
-  REA_SAFE_PROGRESS_CONTROLS_SHA256: 'b7f8a0070ba8e11375698416cae92d1f39d905745bdb4b472c28c284bc5928ac'
+  REA_SAFE_PROGRESS_CONTROLS_SHA256: 'd4a44a5bbb34ad8935732de9042c68d4290d53a9f6cc66fbf14e39312ecf85cc'
   REA_SAFE_DIAGNOSTIC_EXPORTER_SHA256: 'c914a3fd04105d099d5800ea3dd6bad946e886b2df5f2d3fae5ecd654c86f407'
-  REA_SAFE_DIAGNOSTIC_CONTROLS_SHA256: '9068556a232c4b90387d12d78520148f08668dbde27eda1a4835779bacaa98f6'
+  REA_SAFE_DIAGNOSTIC_CONTROLS_SHA256: 'a59fbdb4fb6a94e6c947691ba56fbe53b9a4c2ef1d73cb2a21e15bfa42dcfea7'
   REA_SAFE_DIAGNOSTIC_CONTAINMENT_SHA256: '094eef13ad898eb6a654e12fbf4640b2b880f67b61144ae86d5b5d988e05d5c3'
   REA_SAFE_ARCHIVE_METADATA_SHA256: '08497a24dcbe852df21a9afef32d366469cbba2ba4e322e40cf4ebacdbed1df3'
 jobs:
@@ -55,9 +55,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r2' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261022-r3' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
           $actualParent = & git --no-replace-objects rev-parse HEAD^
-          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cf418c439be76d78a703a2e265166ceeb5fc4070') { throw 'SOURCE_PARENT_REFUSED' }
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cd4fbe97765a156b2dd591193ea3196b4d63b6b2') { throw 'SOURCE_PARENT_REFUSED' }
           $pins = @(
             @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
             @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
@@ -148,9 +148,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r2' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261022-r3' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
           $actualParent = & git --no-replace-objects rev-parse HEAD^
-          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cf418c439be76d78a703a2e265166ceeb5fc4070') { throw 'SOURCE_PARENT_REFUSED' }
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cd4fbe97765a156b2dd591193ea3196b4d63b6b2') { throw 'SOURCE_PARENT_REFUSED' }
           $pins = @(
             @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
             @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
@@ -296,9 +296,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r2' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261022-r3' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
           $actualParent = & git --no-replace-objects rev-parse HEAD^
-          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cf418c439be76d78a703a2e265166ceeb5fc4070') { throw 'SOURCE_PARENT_REFUSED' }
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cd4fbe97765a156b2dd591193ea3196b4d63b6b2') { throw 'SOURCE_PARENT_REFUSED' }
           $pins = @(
             @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
             @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
@@ -405,9 +405,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r2' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261022-r3' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
           $actualParent = & git --no-replace-objects rev-parse HEAD^
-          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cf418c439be76d78a703a2e265166ceeb5fc4070') { throw 'SOURCE_PARENT_REFUSED' }
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cd4fbe97765a156b2dd591193ea3196b4d63b6b2') { throw 'SOURCE_PARENT_REFUSED' }
           $pins = @(
             @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
             @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),
@@ -514,9 +514,9 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261021-r2' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
+          if ($env:GITHUB_SERVER_URL -ne 'https://github.com' -or $env:GITHUB_REPOSITORY -ne 'Ginderlax/rea-research-lab' -or $env:GITHUB_REF -ne 'refs/heads/experiment/notes-open-todos-first-20261022-r3' -or $env:GITHUB_EVENT_NAME -ne 'push' -or $env:RUNNER_ENVIRONMENT -ne 'github-hosted' -or $env:RUNNER_OS -ne 'Windows' -or $env:RUNNER_ARCH -ne 'X64') { throw 'HOSTED_SOURCE_CONTEXT_REFUSED' }
           $actualParent = & git --no-replace-objects rev-parse HEAD^
-          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cf418c439be76d78a703a2e265166ceeb5fc4070') { throw 'SOURCE_PARENT_REFUSED' }
+          if ($LASTEXITCODE -ne 0 -or $actualParent -ne 'cd4fbe97765a156b2dd591193ea3196b4d63b6b2') { throw 'SOURCE_PARENT_REFUSED' }
           $pins = @(
             @('products/rea-studio/experiments/notes-open-todos-first-20261021/CAMPAIGN.json', $env:REA_NOTES_ORDER_MANIFEST_SHA256),
             @('products/rea-studio/scripts/capture-notes-order-cloud-console.mjs', $env:REA_SAFE_CAPTURE_SHA256),

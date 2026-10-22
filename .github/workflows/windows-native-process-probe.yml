@@ -2,7 +2,7 @@ name: Windows native process environment probe
 on:
   push:
     branches:
-      - experiment/windows-native-process-probe-20261022-r4
+      - experiment/windows-native-process-probe-20261022-r5
 permissions:
   contents: read
 jobs:
@@ -10,6 +10,9 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 10
     steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
       - name: Check out exact prospective commit
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:

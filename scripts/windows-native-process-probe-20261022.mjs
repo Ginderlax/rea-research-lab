@@ -8,8 +8,8 @@ import {fileURLToPath} from 'node:url';
 import {execFile, spawnSync} from 'node:child_process';
 import {createHash} from 'node:crypto';
 
-const PARENT = '9744fa8df3b7d84457b903507055edb685d518a6';
-const BRANCH = 'refs/heads/experiment/windows-native-process-probe-20261022-r4';
+const PARENT = 'ee9aeb0d641fd517df0754b33f0d55b15214e768';
+const BRANCH = 'refs/heads/experiment/windows-native-process-probe-20261022-r5';
 const SCRIPT_PATH = 'scripts/windows-native-process-probe-20261022.mjs';
 const WORKFLOW_PATH = '.github/workflows/windows-native-process-probe.yml';
 const METADATA_TIMEOUT = 15000, NET_TIMEOUT = 20000, EXTENDED_READY_TIMEOUT = 45000;

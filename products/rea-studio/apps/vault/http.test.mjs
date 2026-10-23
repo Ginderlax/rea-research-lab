@@ -1,8 +1,8 @@
 import test,{after} from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs/promises';import path from 'node:path';import {spawn} from 'node:child_process';
 import {stageHostLifecycle} from './host-lifecycle.mjs';
-import {here,temp,original,observations,pass,observationsDirectory} from './harness.mjs';
+import {here,temp,original,observations,pass,observationsDirectory,nativeAttemptHistoryJSON} from './harness.mjs';
 const httpObservations=[];
-after(async()=>{await fs.mkdir(observationsDirectory,{recursive:true});await fs.writeFile(path.join(observationsDirectory,'history-http.json'),JSON.stringify({httpObservations,originalProcessExecutions:observations.length,observations},null,2));console.log('REA_KEEPASS_HISTORY_HTTP '+JSON.stringify({hostProcesses:httpObservations.filter(x=>x.event==='host').length,originalProcessExecutions:observations.length,detail:path.join(observationsDirectory,'history-http.json')}))});
+after(async()=>{await fs.mkdir(observationsDirectory,{recursive:true});await fs.writeFile(path.join(observationsDirectory,'history-http.json'),nativeAttemptHistoryJSON(httpObservations,observations));console.log('REA_KEEPASS_HISTORY_HTTP '+JSON.stringify({hostProcesses:httpObservations.filter(x=>x.event==='host').length,originalProcessExecutions:observations.length,detail:path.join(observationsDirectory,'history-http.json')}))});
 async function host(directory){const env={...process.env};delete env.NODE_TEST_CONTEXT;const p=spawn(process.execPath,[path.join(here,'http-runner.mjs'),directory],{env,windowsHide:true,stdio:['ignore','pipe','pipe','ipc']});
  const lifecycle=stageHostLifecycle(p,{onClosed:({code,logs})=>httpObservations.push({event:'closed',pid:p.pid,code,logs})});
  const value=await lifecycle.ready;httpObservations.push({event:'host',pid:p.pid,url:value.url});

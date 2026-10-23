@@ -1,0 +1,39 @@
+name: Windows native command phase probe
+on:
+  push:
+    branches:
+      - experiment/windows-native-command-phase-probe-20261022-r8
+permissions:
+  contents: read
+jobs:
+  native-command-phase-probe:
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out exact prospective commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Pin Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+      - name: Run fixed native command phase diagnostics
+        shell: pwsh
+        env:
+          REA_NATIVE_COMMAND_PHASE_SAFE_METADATA_ONLY: 'true'
+        run: node .github/workflows/windows-native-command-phase-source-20261022.mjs
+      - name: Preserve closed diagnostic metadata
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: windows-native-command-phase-probe-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rea-windows-native-command-phase-probe-${{ github.run_id }}-${{ github.run_attempt }}/reports/windows-native-command-phase-probe.json
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 7

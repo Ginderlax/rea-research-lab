@@ -1,0 +1,80 @@
+name: Vault host lifecycle diagnostics
+on:
+  push:
+    branches:
+      - diagnostic/vault-host-lifecycle-20261023-r1
+permissions:
+  contents: read
+jobs:
+  lifecycle-diagnostics:
+    runs-on: windows-2022
+    timeout-minutes: 8
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out exact diagnostic source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Pin Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+      - name: Authenticate exact payload and run scoped lifecycle diagnostics
+        shell: pwsh
+        env:
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+        run: |
+          $ErrorActionPreference = 'Stop'
+          @'
+          import assert from 'node:assert/strict';
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import {pathToFileURL} from 'node:url';
+          import {createHash} from 'node:crypto';
+          import {spawnSync} from 'node:child_process';
+          const PAYLOAD='.github/workflows/vault-http-host-lifecycle-diagnostic-sources.json';
+          const WORKFLOW='.github/workflows/vault-http-host-lifecycle-diagnostics.yml';
+          const PAYLOAD_SHA='1cb031c0d1f372c54e8ac56dec6a006e7707e3b549b5def8cfc7938e4c77f541';
+          const PARENT='3f77897f8782093b6e828987ac9105b6b782e705',PARENT_TREE='f887cf24e819a95be956f1f6658d81ab492c8848',GRANDPARENT='13eb681da3ea83e12560f2a2a0321b23bc28edb4';
+          const BRANCH='refs/heads/diagnostic/vault-host-lifecycle-20261023-r1';
+          const FILES=['run-hosted-diagnostics.mjs','candidate-v2/products/rea-studio/apps/vault/host-lifecycle.mjs','controls-v2/host-lifecycle-controls.test.mjs','legacy-witness/exact-r3-host-fixture.mjs','legacy-witness/exact-r3-host-negative-witness.test.mjs','real-process-probe/loopback-child-fixture.mjs','real-process-probe/real-host-lifecycle-boundary.test.mjs'];
+          const sha=b=>createHash('sha256').update(b).digest('hex');
+          const blob=b=>createHash('sha1').update(Buffer.concat([Buffer.from('blob '+b.length+'\0'),b])).digest('hex');
+          const keys=o=>Object.keys(o).sort();
+          const same=(a,b)=>path.resolve(a).toLowerCase()===path.resolve(b).toLowerCase();
+          const noAcceptance={runtimeAcceptance:false,productAcceptance:false,semanticAcceptance:false,fullParity:false,allTenComplete:false,R3CauseProven:false};
+          let stage='platform',repository,root,hooks,summary,result,sourceCapture,payloadIdentity,decoded=[],calls=[];
+          function relative(p){assert(typeof p==='string'&&/^[A-Za-z0-9_./-]+$/.test(p)&&!p.startsWith('/')&&!p.split('/').some(x=>x===''||x==='.'||x==='..'));return p;}
+          function ordinary(base,p){relative(p);const f=path.resolve(base,p);assert(f.toLowerCase().startsWith(base.toLowerCase()+path.sep));for(let at=path.dirname(f);;at=path.dirname(at)){const s=fs.lstatSync(at);assert(s.isDirectory()&&!s.isSymbolicLink()&&same(fs.realpathSync(at),at));if(same(at,base))break;assert(!same(path.dirname(at),at));}const a=fs.lstatSync(f);assert(a.isFile()&&!a.isSymbolicLink()&&a.nlink===1&&a.size<=131072);const fd=fs.openSync(f,'r');try{const b=fs.fstatSync(fd);for(const k of ['dev','ino','size','mtimeMs','birthtimeMs'])assert.equal(b[k],a[k]);const bytes=fs.readFileSync(fd),c=fs.fstatSync(fd),d=fs.lstatSync(f);assert.equal(bytes.length,a.size);for(const k of ['dev','ino','size','mtimeMs','birthtimeMs','ctimeMs']){assert.equal(c[k],b[k]);assert.equal(d[k],a[k]);}return bytes;}finally{fs.closeSync(fd);}}
+          function git(args){assert(calls.length<9);const env={};for(const key of ['PATH','PATHEXT','SYSTEMROOT','COMSPEC','TEMP','TMP']){const k=Object.keys(process.env).find(x=>x.toUpperCase()===key);if(k)env[key]=process.env[k];}Object.assign(env,{GIT_NO_REPLACE_OBJECTS:'1',GIT_NO_LAZY_FETCH:'1',GIT_TERMINAL_PROMPT:'0',GIT_OPTIONAL_LOCKS:'0',GIT_LITERAL_PATHSPECS:'1',GIT_CONFIG_COUNT:'0',GCM_INTERACTIVE:'Never'});const r=spawnSync('C:/Program Files/Git/cmd/git.exe',['--no-pager','-c','core.hooksPath='+hooks,'-c','core.fsmonitor=false','-c','core.untrackedCache=false','-c','gc.auto=0','-c','maintenance.auto=false','-c','commit.gpgSign=false','-c','protocol.allow=never',...args],{cwd:repository,env,shell:false,windowsHide:true,encoding:'buffer',timeout:10000,maxBuffer:1048576});const out=r.stdout??Buffer.alloc(0),err=r.stderr??Buffer.alloc(0);calls.push({command:args[0],exitCode:r.status,signal:r.signal??null,error:Boolean(r.error),stdoutBytes:out.length,stdoutSHA256:sha(out),stderrBytes:err.length,stderrSHA256:sha(err)});assert(!r.error&&r.status===0&&r.signal===null);return out;}
+          function commit(bytes){const t=new TextDecoder('utf-8',{fatal:true}).decode(bytes),h=t.slice(0,t.indexOf('\n\n')),trees=[...h.matchAll(/^tree ([0-9a-f]{40})$/gm)].map(x=>x[1]),parents=[...h.matchAll(/^parent ([0-9a-f]{40})$/gm)].map(x=>x[1]);assert.equal(trees.length,1);return{tree:trees[0],parents};}
+          function rows(bytes){return bytes.toString('utf8').split('\0').filter(Boolean).map(line=>{const m=/^100644 blob ([0-9a-f]{40})\t(.+)$/.exec(line);assert(m);return{path:m[2],gitBlob:m[1]};});}
+          function emit(value){const raw=Buffer.from(JSON.stringify(value,null,2)+'\n');assert(raw.length<=65536);if(summary){fs.writeFileSync(summary,raw,{flag:'wx'});assert.deepEqual(fs.readFileSync(summary),raw);}console.log('REA_VAULT_HOSTED_DIAGNOSTIC_REPORT_V1='+JSON.stringify(value));}
+          try{
+            assert.equal(process.platform,'win32');assert.equal(process.arch,'x64');assert.equal(process.version,'v24.16.0');for(const[k,v]of Object.entries({CI:'true',GITHUB_ACTIONS:'true',RUNNER_ENVIRONMENT:'github-hosted',RUNNER_OS:'Windows',RUNNER_ARCH:'X64',ImageOS:'win22',GITHUB_REPOSITORY:'Ginderlax/rea-research-lab',GITHUB_SERVER_URL:'https://github.com',GITHUB_REF:BRANCH,GITHUB_EVENT_NAME:'push',GITHUB_JOB:'lifecycle-diagnostics'}))assert.equal(process.env[k],v);for(const k of ['GITHUB_RUN_ID','GITHUB_RUN_ATTEMPT'])assert(/^[1-9][0-9]*$/.test(process.env[k]));assert(/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA));for(const k of Object.keys(process.env))if(['NODE_OPTIONS','NODE_PATH'].includes(k.toUpperCase()))assert(!process.env[k]);
+            repository=fs.realpathSync(process.env.GITHUB_WORKSPACE);assert(same(repository,process.env.GITHUB_WORKSPACE));const temp=fs.realpathSync(process.env.RUNNER_TEMP);assert(fs.lstatSync(temp).isDirectory()&&!fs.lstatSync(temp).isSymbolicLink()&&!same(temp,repository));root=path.join(temp,'rea-vault-lifecycle-diagnostics-'+process.env.GITHUB_RUN_ID+'-'+process.env.GITHUB_RUN_ATTEMPT);fs.mkdirSync(root);for(const n of ['reports','tmp','delivery','empty-hooks'])fs.mkdirSync(path.join(root,n));hooks=path.join(root,'empty-hooks');summary=path.join(root,'reports','diagnostic-summary.json');
+            stage='payload';const raw=ordinary(repository,PAYLOAD);assert.equal(sha(raw),PAYLOAD_SHA);payloadIdentity={path:PAYLOAD,bytes:raw.length,sha256:sha(raw),gitBlob:blob(raw)};const payload=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(raw));assert.deepEqual(keys(payload),['schema','format','repository','parent','parentTree','parentParent','stagingBranch','runBranch','canonicalProductHelper','files','phases','sourceCommit','run','attempt','executionApprovalFromPayload','scope','bounds'].sort());assert.equal(payload.schema,'rea-vault-lifecycle-closed-source-payload/v1');assert.equal(payload.format,'canonical-base64-source-files');assert.equal(payload.repository,'Ginderlax/rea-research-lab');assert.equal(payload.parent,PARENT);assert.equal(payload.parentTree,PARENT_TREE);assert.equal(payload.parentParent,GRANDPARENT);assert.equal(payload.runBranch,BRANCH);assert.equal(payload.stagingBranch,'staging/vault-host-lifecycle-diagnostics-20261023-r1');assert.equal(payload.executionApprovalFromPayload,false);assert.equal(payload.sourceCommit,null);assert.equal(payload.run,null);assert.equal(payload.attempt,null);assert.deepEqual(payload.files.map(x=>x.path),FILES);assert.equal(new Set(FILES).size,7);
+            let decodedBytes=0;for(const f of payload.files){assert.deepEqual(keys(f),['path','mode','encoding','bytes','sha256','gitBlob','base64'].sort());relative(f.path);assert.equal(f.mode,'100644');assert.equal(f.encoding,'base64');assert(Number.isInteger(f.bytes)&&f.bytes>0&&f.bytes<=65536);assert(/^[0-9a-f]{64}$/.test(f.sha256)&&/^[0-9a-f]{40}$/.test(f.gitBlob));assert(typeof f.base64==='string'&&/^[A-Za-z0-9+/]*={0,2}$/.test(f.base64));const bytes=Buffer.from(f.base64,'base64');assert.equal(bytes.toString('base64'),f.base64);assert.equal(bytes.length,f.bytes);assert.equal(sha(bytes),f.sha256);assert.equal(blob(bytes),f.gitBlob);decodedBytes+=bytes.length;assert(decodedBytes<=65536);decoded.push({path:f.path,bytes:f.bytes,sha256:f.sha256,gitBlob:f.gitBlob,data:bytes});}
+            stage='source';assert.equal(git(['rev-parse','HEAD']).toString('utf8').trim(),process.env.GITHUB_SHA);const head=commit(git(['cat-file','commit','HEAD']));assert.deepEqual(head.parents,[PARENT]);const parent=commit(git(['cat-file','commit',PARENT]));assert.equal(parent.tree,PARENT_TREE);assert.deepEqual(parent.parents,[GRANDPARENT]);const helper=payload.canonicalProductHelper;assert.deepEqual(helper,{path:'products/rea-studio/apps/vault/host-lifecycle.mjs',mode:'100644',bytes:4329,sha256:'a8cb8a9859aa03d2dc2d4da48d35901088effbd7a2f2ed66146f220e8c81f392',gitBlob:'3a01b8d523fa2d3ae2f375bd13e3b5968653367b'});const meta=rows(git(['ls-tree','-r','-z','--full-tree','HEAD','--',WORKFLOW,PAYLOAD,helper.path]));assert.equal(meta.length,3);const map=new Map(meta.map(r=>[r.path,r.gitBlob]));sourceCapture=[];for(const p of [WORKFLOW,PAYLOAD,helper.path]){const b=ordinary(repository,p);assert.equal(blob(b),map.get(p));sourceCapture.push({path:p,mode:'100644',bytes:b.length,sha256:sha(b),gitBlob:blob(b)});}const actualHelper=sourceCapture.find(x=>x.path===helper.path);for(const k of ['bytes','sha256','gitBlob'])assert.equal(actualHelper[k],helper[k]);const duplicate=decoded.find(x=>x.path==='candidate-v2/products/rea-studio/apps/vault/host-lifecycle.mjs');for(const k of ['bytes','sha256','gitBlob'])assert.equal(duplicate[k],helper[k]);
+            const diff=git(['diff','--raw','--no-ext-diff','--no-textconv','--no-renames','--abbrev=40','-z',PARENT,'HEAD','--']).toString('utf8').split('\0').filter(Boolean);assert.equal(diff.length,4);const changed=[];for(let i=0;i<4;i+=2){const m=/^:000000 100644 0{40} ([0-9a-f]{40}) A$/.exec(diff[i]);assert(m);changed.push(diff[i+1]);assert.equal(map.get(diff[i+1]),m[1]);}assert.deepEqual(changed.sort(),[PAYLOAD,WORKFLOW].sort());assert.equal(git(['status','--porcelain=v1','-z','--untracked-files=all']).length,0);const workflows=rows(git(['ls-tree','-r','-z','--full-tree','HEAD','--','.github/workflows'])).filter(x=>/\.ya?ml$/.test(x.path));assert.equal(workflows.length,29);assert(workflows.some(x=>x.path===WORKFLOW));
+            stage='extract';const delivery=path.join(root,'delivery');for(const f of decoded){const target=path.join(delivery,f.path);fs.mkdirSync(path.dirname(target),{recursive:true});fs.writeFileSync(target,f.data,{flag:'wx'});const check=ordinary(delivery,f.path);assert.equal(check.length,f.bytes);assert.equal(sha(check),f.sha256);assert.equal(blob(check),f.gitBlob);}const runner=decoded.find(x=>x.path==='run-hosted-diagnostics.mjs');assert(runner);stage='authenticated-module';const module=await import(pathToFileURL(path.join(delivery,runner.path)).href);assert.deepEqual(keys(module),['runHostedLifecycleDiagnostics']);
+            result=await module.runHostedLifecycleDiagnostics({schema:'rea-vault-lifecycle-authenticated-delivery/v1',repository:'Ginderlax/rea-research-lab',source:process.env.GITHUB_SHA,parent:PARENT,tree:head.tree,branch:BRANCH,run:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,job:'lifecycle-diagnostics',deliveryRoot:delivery,outputRoot:root});assert(result&&['diagnostics-passed','diagnostics-failed'].includes(result.status));for(const k of Object.keys(noAcceptance))assert.equal(result[k],false);
+            stage='source-after';assert.equal(git(['rev-parse','HEAD']).toString('utf8').trim(),process.env.GITHUB_SHA);assert.equal(git(['status','--porcelain=v1','-z','--untracked-files=all']).length,0);for(const r of sourceCapture){const b=ordinary(repository,r.path);assert.equal(b.length,r.bytes);assert.equal(sha(b),r.sha256);assert.equal(blob(b),r.gitBlob);}for(const f of decoded){const b=ordinary(delivery,f.path);assert.equal(sha(b),f.sha256);}assert.deepEqual(fs.readdirSync(hooks),[]);result.repositorySourceStableAfter=true;result.payload=payloadIdentity;result.publicSourceRows=sourceCapture;result.decodedSourceRows=decoded.map(({data,...meta})=>meta);result.bootstrapGitCalls=calls;result.completeTerminalAndTAPRequired=true;result.rawTokensEnvironmentOrErrorsPublished=false;emit(result);if(result.status!=='diagnostics-passed')process.exitCode=1;
+          }catch{try{emit({schema:'rea-vault-hosted-lifecycle-diagnostic-bootstrap-failure/v1',status:'diagnostics-failed',stage,source:/^[0-9a-f]{40}$/.test(process.env.GITHUB_SHA??'')?process.env.GITHUB_SHA:null,parent:PARENT,phases:result?.phases??[],bootstrapGitCalls:calls,payload:payloadIdentity??null,rawErrorPublished:false,fullPhaseCSourceClosureAdmitted:false,...noAcceptance});}catch{console.log('REA_VAULT_HOSTED_DIAGNOSTIC_REPORT_V1='+JSON.stringify({schema:'rea-vault-hosted-lifecycle-diagnostic-publication-failure/v1',status:'diagnostics-failed',rawErrorPublished:false,...noAcceptance}));}process.exitCode=1;}
+          
+          '@ | node --input-type=module
+          exit $LASTEXITCODE
+      - name: Preserve closed diagnostic summary
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: vault-host-lifecycle-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rea-vault-lifecycle-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}/reports/diagnostic-summary.json
+          if-no-files-found: error
+          include-hidden-files: false
+          retention-days: 7

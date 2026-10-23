@@ -1,0 +1,46 @@
+name: Vault original oracle prefix boundary observations
+on:
+  push:
+    branches:
+      - diagnostic/vault-native-oracle-prefix-20261023-r1
+permissions:
+  contents: read
+jobs:
+  vault-native-oracle-prefix-probe:
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - name: Enable long source paths
+        timeout-minutes: 1
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out exact reviewed diagnostic source
+        timeout-minutes: 1
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Pin hosted Node runtime
+        timeout-minutes: 2
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+      - name: Run guarded isolated startup observations
+        timeout-minutes: 5
+        shell: pwsh
+        env:
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          REA_VAULT_ENTRY_PROBE_SCOPE: 'oracle-prefix-lines1to4-default-open-only'
+          REA_ENTRY_CONTROLLER_SHA256: 4e26266bb2ed53381283ea91ac7a628bc652799cc7f1e925d89601097b3a16a2
+        run: node .github/workflows/vault-native-oracle-prefix-probe-20261023.mjs
+      - name: Preserve closed public diagnostic report only
+        timeout-minutes: 1
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: vault-native-oracle-prefix-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/rea-vault-oracle-prefix-probe-${{ github.run_id }}-${{ github.run_attempt }}/public-report.json
+          if-no-files-found: error
+          retention-days: 7

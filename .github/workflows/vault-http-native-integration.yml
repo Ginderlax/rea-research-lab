@@ -1,0 +1,43 @@
+name: Vault original HTTP native focused validation
+on:
+  push:
+    branches:
+      - validation/vault-http-native-integration-20261023-r1
+permissions:
+  contents: read
+jobs:
+  vault-http-native-integration:
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - name: Enable long source paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - name: Check out the exact reviewed source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Pin Node runtime
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.16.0'
+      - name: Run guarded original two-test diagnostic
+        shell: pwsh
+        env:
+          NODE_OPTIONS: ''
+          NODE_PATH: ''
+          REA_VAULT_FOCUSED_RUN_SCOPE: 'original-two-http-and-history-oracle-only'
+          REA_VAULT_CONTROLLER_SHA256: 6375aafbe6f799eddddf429baf18d495ad69eed2983c9659751af1daf2f58e3b
+        run: node .github/workflows/vault-http-native-integration-source-20261023.mjs
+      - name: Preserve only closed public and encrypted evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: vault-http-native-integration-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/rea-vault-http-native-integration-${{ github.run_id }}-${{ github.run_attempt }}/public-report.json
+            ${{ runner.temp }}/rea-vault-http-native-integration-${{ github.run_id }}-${{ github.run_attempt }}/encrypted-private-evidence.json
+          if-no-files-found: error
+          retention-days: 7
